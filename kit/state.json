@@ -35418,7 +35418,7 @@
     "T348",
     "T173"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "serve-static-files",
    "type": "build",
@@ -35527,11 +35527,26 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "last_failure": "PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): \"Tab from \"\" ... Expected: 3, Received: 0\" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState(\"load\") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_served.spec 1 passed). Reviewer confirmed ownership and cause. Fix: a harness task adds that one line.",
+   "last_failure": "PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): \"Tab from \"\" ... Expected: 3, Received: 0\" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState(\"load\") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_served.spec 1 passed). Reviewer confirmed ownership and cause. Fix: a harness task adds that one line.\nre-queued after plan fix D-3270: Plan gap fixed by D-3270 (#601): T362 owns the j1_keyboard load wait",
    "runner_closed_prs": [
     586
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): \"Tab from \"\" ... Expected: 3, Received: 0\" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState(\"load\") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_serve; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T362 --plan-fix D-### --reason \"...\"` (D-2859)"
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-12T18:07:12Z",
+     "reason": "Plan gap fixed by D-3270 (#601): T362 owns the j1_keyboard load wait",
+     "by": "manual-b3243dcc84bb",
+     "was": "plan gap reported: PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): \"Tab from \"\" ... Expected: 3, Received: 0\" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState(\"load\") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_serve; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T362 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-3270",
+     "plan_since": "2026-11-12T14:45:29Z",
+     "plan_base": "f2ec2c57dae946b04470c9acd41dd2da385a7e50",
+     "plan_head": "cc4a31e70ecdcf8741605ee799a84012261be252",
+     "plan_then": "f2fa7c6be46f17bf669b1837f2d30fd851d63c56f9352e5d073efef037989fa8",
+     "plan_now": "78d1176bc20c3ea717bfbb1becd14dcaf5058c51e9fd6ae7691162dba0ca984a"
+    }
+   ]
   },
   {
    "id": "T363",
@@ -41787,7 +41802,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T18:06:21Z",
+ "updated_at": "2026-11-12T18:07:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -41885,8 +41900,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "15f027539e25a77d8e54bc7f8f4ad451ead917c6",
- "starter": "actions",
+ "runner_sha": "cc4a31e70ecdcf8741605ee799a84012261be252",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
