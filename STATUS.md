@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:46:44Z by runner 59a298d3d846 (actions).
+Updated 2026-11-12T23:47:04Z by runner 59a298d3d846 (actions).
 
 **Building: T215 in progress since 23:45Z; 260 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 260 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z; lane 4: T255 claimed 23:45Z, lease until 02:45Z; lane 7: T351 claimed 22:49Z, lease until 01:49Z
+- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z; lane 4: T255 claimed 23:45Z, lease until 02:45Z
 - **Week:** 8% used, 167.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:46Z, 0 min before this update
 - **Keeper:** last ran 23:44Z, next wake 01:52Z
@@ -19,13 +19,14 @@ Updated 2026-11-12T23:46:44Z by runner 59a298d3d846 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T351 | privacy and quotes: spaced gate codes, lower-case street add | MERGE_PENDING | 1 | 57 min | 23:46Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T418 | Performance: lab Core Web Vitals and Ci's warn-only performa | MERGE_PENDING | 1 | 50 min | 23:24Z |  |
 | T347 | licensing (harness): remove the handyman split-job check; ea | MERGE_PENDING | 1 | 52 min | 23:24Z |  |
 | T162 | intake: the one intake order for the five paths and the Span | done | 1 | 36 min | 23:01Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | done | 3 | 30 min | 22:57Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T419 | calls (harness): TD-CALL-23's no-plaintext scan reads only t | done | 1 | 24 min | 22:37Z |  |
-| T351 | privacy and quotes: spaced gate codes, lower-case street add | resync | 1 | 58 min | 22:35Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T351 | privacy and quotes: spaced gate codes, lower-case street add | resync | 1 | 58 min | 22:35Z |  |
 | T417 | Performance: seeded fake-data route benchmark and the first  | done | 1 | 36 min | 22:22Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 3 | 40 min | 22:16Z |  |
 | T162 | intake: the one intake order for the five paths and the Span | resync | 1 | 22 min | 21:57Z |  |
@@ -170,7 +171,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T215 (lease until 2026-11-13T02:45:19Z)
 - lane 3: T372 (lease until 2026-11-13T02:46:03Z)
 - lane 4: T255 (lease until 2026-11-13T02:45:41Z)
-- lane 7: T351 (lease until 2026-11-13T01:49:37Z)
 
 ## Last usage reading
-- {"task": "T215", "at": "2026-11-12T23:43:09Z", "output_tokens": 190737, "cache_read_input_tokens": 42268811, "input_tokens": 607, "cache_creation_input_tokens": 766125}
+- {"task": "T351", "at": "2026-11-12T23:46:42Z", "cache_read_input_tokens": 3075676, "output_tokens": 28674, "input_tokens": 135, "cache_creation_input_tokens": 167496}
