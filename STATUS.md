@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T12:42:34Z by runner 86e6d6deb9fe (actions).
+Updated 2026-11-12T12:42:51Z by runner fd946f4ebc08 (actions).
 
 **Waiting for tokens until 17:00Z; 243 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,13 +9,13 @@ Updated 2026-11-12T12:42:34Z by runner 86e6d6deb9fe (actions).
 - **Lane:** idle since 12:41Z (no task in progress)
 - **Week:** 93% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:42Z, 0 min before this update
-- **Keeper:** last ran 12:39Z, next wake 14:53Z
+- **Keeper:** last ran 12:42Z, next wake 17:05Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+112 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+112 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
