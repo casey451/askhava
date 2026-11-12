@@ -189,3 +189,18 @@ fn td_sec_62_the_folder_comes_from_the_setting_or_the_environment() {
     }
     assert_eq!(StaticRoot::default(), StaticRoot::Built(image_dir()));
 }
+
+/// TD-SEC-62 (D-3242): the image copies the built files to the folder `image_dir()` names, so a
+/// package rename that moves `image_dir()` away from the Dockerfile's `COPY` line fails here. Read
+/// at run time, not compiled in: an `include_str!` would need the Dockerfile in `Ci`'s Rust path
+/// rules, which are protected (D-1867).
+#[test]
+fn td_sec_62_the_image_folder_is_where_the_dockerfile_copies_the_built_files() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../Dockerfile");
+    let dockerfile = std::fs::read_to_string(path).expect("the Dockerfile");
+    let copy = format!("COPY --from=browser /out/static {}", image_dir().display());
+    assert!(
+        dockerfile.lines().any(|line| line.trim() == copy),
+        "the Dockerfile has no line `{copy}`"
+    );
+}
