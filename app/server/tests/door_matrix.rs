@@ -21,6 +21,15 @@
 //! A row with a path parameter other than `{pick}`, `{complaint}`, `{kind}`, `{object}` or
 //! `{token}` fails naming it. With no such row served the probe passes with zero routes. Planted
 //! cases run the same judging code on a test-local router. Every name, phone and ID is fake.
+//!
+//! T401 (D-3106, D-3124; SEC-019, SEC-034, PICK-024): each side also has a released pick (a second
+//! quoted job of the same business, page-picked and released on the $0 path by
+//! [`released_pick`]); the exact path [`RELEASED_PAGE`] is filled with it, every other `{pick}`
+//! with the waiting pick, so Confirm and "Can't take it" rows keep a pick that can be confirmed.
+//! This file names no item of the fee crate (TD-FEE-07); the seeding lives in the submodule.
+
+#[path = r"door_matrix/released_pick.rs"]
+mod released_pick;
 
 use std::collections::BTreeSet;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -36,7 +45,7 @@ use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{JobStatus, create, job_number, move_to};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::Actor as AuditActor;
-use askhava_picks::api::{PagePick, page_pick};
+use askhava_picks::api::{PagePick, ViewAnswer, page_pick, released_view};
 use askhava_portals::api::{
     ActionKind, ActionTarget, CookieJar, PortalsError, Realm, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE,
     SignIn, SignInAddress, SignInMail, csrf_token, current_session, ensure_pre_session,
@@ -69,6 +78,8 @@ const ARCHITECTURE: &str = include_str!("../../../docs/architecture.md");
 const DOOR_CASES: &str = include_str!("../../../tests/security/door_cases.txt");
 /// The path parameters the probe can fill from its fixtures.
 const FILLS: [&str; 5] = ["{pick}", "{complaint}", "{kind}", "{object}", "{token}"];
+/// T300's released-job page, whose `{pick}` is the side's released pick (PICK-024, D-3106).
+const RELEASED_PAGE: &str = "/b/picks/{pick}";
 /// A well-formed link token nobody was given.
 const UNISSUED: &str = "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f";
 /// A base URL nothing listens on, for every vendor client, so no probe reaches a vendor.
@@ -225,6 +236,7 @@ struct Fixtures {
     numbers: [i64; 2],
     tokens: [String; 2],
     picks: [Uuid; 2],
+    released: [Uuid; 2],
     complaints: [Uuid; 2],
     links: [Minted; 2],
 }
@@ -244,6 +256,17 @@ impl Fixtures {
     /// The `{pick}` and `{complaint}` of `side`.
     fn ids(&self, side: usize) -> (Uuid, Uuid) {
         (self.picks[side], self.complaints[side])
+    }
+
+    /// The ids `template` is filled with for `side`: [`RELEASED_PAGE`] takes the released pick,
+    /// every other template the waiting one (SEC-019, PICK-024, D-3106).
+    fn ids_on(&self, template: &str, side: usize) -> (Uuid, Uuid) {
+        let (pick, complaint) = self.ids(side);
+        if template == RELEASED_PAGE {
+            (self.released[side], complaint)
+        } else {
+            (pick, complaint)
+        }
     }
 }
 
@@ -678,11 +701,17 @@ async fn quoted_job(db: &mut PgConnection, business: Uuid, now: Timestamp) -> Uu
     job
 }
 
-/// Homeowner `side`'s vault contact (fake name, phone, street) and her request naming `job`.
-async fn her_request(db: &mut PgConnection, side: usize, job: Uuid, now: Timestamp) -> Uuid {
+/// The vault over the router's own fake keys (`pairs`), so a page the router serves can read
+/// what the fixtures store (D-3125).
+fn vault() -> Vault {
     let key = |b: u8| SecretString::from(vault_key(b));
     let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
-    let vault = Vault::new(&key(0x59), &key(0x69), &url).expect("vault");
+    Vault::new(&key(0x41), &key(0x42), &url).expect("vault")
+}
+
+/// Homeowner `side`'s vault contact (fake name, phone, street) and her request naming `job`.
+async fn her_request(db: &mut PgConnection, side: usize, job: Uuid, now: Timestamp) -> Uuid {
+    let vault = vault();
     let new = NewContact {
         name: Some(SecretString::from(NAMES[side])),
         phone: Some(SecretString::from(PHONES[side])),
@@ -747,12 +776,25 @@ struct Side {
     number: i64,
     token: String,
     pick: Uuid,
+    released: Uuid,
     complaint: Uuid,
     link: Minted,
 }
 
+/// The page pick of the one quote on `job` (PICK-012).
+async fn picked(pool: &PgPool, job: Uuid, now: Timestamp) -> Uuid {
+    let mut tx = pool.begin().await.expect("tx");
+    let picked = page_pick(&mut tx, (job, false), 1, AuditActor::System, now).await;
+    tx.commit().await.expect("commit");
+    let PagePick::Picked(pick) = picked.expect("pick") else {
+        panic!("no new pick")
+    };
+    pick
+}
+
 /// Side `side`: a business with its owner, her job it quoted, her request and page pick of the
-/// quote, the job's quote token and number, a complaint and a Quote action link.
+/// quote, the job's quote token and number, a complaint and a Quote action link; and a second
+/// job of the business, quoted, page-picked and released to her contact on the $0 path (D-3106).
 async fn side(pool: &PgPool, side: usize, now: Timestamp) -> Side {
     let mut db = pool.acquire().await.expect("db");
     let business = create_business(&mut db, false, now)
@@ -767,12 +809,7 @@ async fn side(pool: &PgPool, side: usize, now: Timestamp) -> Side {
     };
     let job = quoted_job(&mut db, business, now).await;
     let contact = her_request(&mut db, side, job, now).await;
-    let mut tx = pool.begin().await.expect("tx");
-    let picked = page_pick(&mut tx, (job, false), 1, AuditActor::System, now).await;
-    tx.commit().await.expect("commit");
-    let PagePick::Picked(pick) = picked.expect("pick") else {
-        panic!("no new pick")
-    };
+    let pick = picked(pool, job, now).await;
     let key = SecretString::from("fake-id-secret-for-tests-00000001".to_owned());
     let secret = IdSecret::new(1, key).expect("secret");
     let token = issue(&mut db, &secret, job, now).await.expect("token");
@@ -785,6 +822,9 @@ async fn side(pool: &PgPool, side: usize, now: Timestamp) -> Side {
     };
     let complaint = record_complaint(&mut db, &words, now).await;
     let link = mint(&mut db, team, job, now).await;
+    let second = quoted_job(&mut db, business, now).await;
+    let free = picked(pool, second, now).await;
+    released_pick::release_free(pool, &vault(), (business, second, free), contact, now).await;
     Side {
         contact,
         team,
@@ -792,6 +832,7 @@ async fn side(pool: &PgPool, side: usize, now: Timestamp) -> Side {
         number,
         token: token.as_str().to_owned(),
         pick,
+        released: free,
         complaint: complaint.expect("complaint").id,
         link,
     }
@@ -906,6 +947,7 @@ async fn world(pool: &PgPool) -> World {
         numbers: [a.number, b.number],
         tokens: [a.token, b.token],
         picks: [a.pick, b.pick],
+        released: [a.released, b.released],
         complaints: [a.complaint, b.complaint],
         links: [a.link, b.link],
     };
@@ -930,14 +972,14 @@ async fn probe_page(
     let get = |path: String| async move {
         send(&w.app, (method, &path), &who.jar, Site::Own, Uuid::new_v4()).await
     };
-    let reply = get(fill(template, w.fx.ids(side), link)?).await;
+    let reply = get(fill(template, w.fx.ids_on(template, side), link)?).await;
     judge(door, (who.actor, method), &reply, &w.fx)?;
     let foreign = template.contains("{pick}") || template.contains("{complaint}");
     let realm = matches!(door, Door::Business | Door::Homeowner);
     if !realm || !allowed(door, who.actor) || !foreign {
         return Ok(());
     }
-    let theirs = get(fill(template, w.fx.ids(1 - side), link)?).await;
+    let theirs = get(fill(template, w.fx.ids_on(template, 1 - side), link)?).await;
     let unknown = get(fill(template, (Uuid::new_v4(), Uuid::new_v4()), link)?).await;
     judge_not_found(&theirs, &unknown)
 }
@@ -964,7 +1006,7 @@ async fn probe_link(
     let now = Timestamp::now();
     let mine = mint(&mut db, w.teams[0], w.fx.jobs[0], now).await;
     let theirs = mint(&mut db, w.teams[1], w.fx.jobs[1], now).await;
-    let ids = w.fx.ids(0);
+    let ids = w.fx.ids_on(template, 0);
     let get = |link: Minted| async move {
         let path = fill(template, ids, &link)?;
         Ok::<_, String>(send(&w.app, (method, &path), &who.jar, Site::Own, Uuid::new_v4()).await)
@@ -1003,7 +1045,7 @@ async fn probe_link(
 /// `csrf_rejected` event naming the template.
 async fn probe_csrf(w: &World, events: &Events, template: &str, who: &Who) -> Result<(), String> {
     let side = who.actor.side();
-    let path = fill(template, w.fx.ids(side), &w.fx.links[side])?;
+    let path = fill(template, w.fx.ids_on(template, side), &w.fx.links[side])?;
     for site in [Site::Cross, Site::WrongToken] {
         let id = Uuid::new_v4();
         let reply = send(&w.app, (&Method::POST, &path), &who.jar, site, id).await;
@@ -1046,6 +1088,30 @@ async fn td_sec_61_every_served_door_row_over_http(pool: PgPool) {
         if let Err(problem) = probe_row(&w, &events, row).await {
             panic!("{problem}");
         }
+    }
+}
+
+/// TD-SEC-61 (SEC-019, PICK-024, D-3106): each side's released pick is shown through
+/// `released_view` to its own business's owner and is the one not-found answer to the other
+/// side's; [`RELEASED_PAGE`] is filled with it and every other `{pick}` with the waiting pick.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_61_each_released_pick_opens_to_its_own_business_only(pool: PgPool) {
+    let w = world(&pool).await;
+    for side in 0..2 {
+        for (viewer, team) in w.teams.iter().enumerate() {
+            let proof = askhava_server::session_minter().business(team.member, team.business);
+            let pick = w.fx.released[side];
+            let answer = released_view(&pool, &vault(), &proof, pick).await;
+            let answer = answer.expect("view");
+            let right = if viewer == side {
+                matches!(answer, ViewAnswer::Shown(_))
+            } else {
+                matches!(answer, ViewAnswer::NotFound)
+            };
+            assert!(right, "released pick {side} to business {viewer}");
+        }
+        assert_eq!(w.fx.ids_on(RELEASED_PAGE, side).0, w.fx.released[side]);
+        assert_eq!(w.fx.ids_on("/b/picks/{pick}/confirm", side), w.fx.ids(side));
     }
 }
 
@@ -1109,6 +1175,7 @@ fn planted_fixtures() -> Fixtures {
         numbers: [1001, 1002],
         tokens: ["a".repeat(64), "b".repeat(64)],
         picks: [Uuid::from_u128(11), Uuid::from_u128(12)],
+        released: [Uuid::from_u128(31), Uuid::from_u128(32)],
         complaints: [Uuid::from_u128(21), Uuid::from_u128(22)],
         links: [link(1, "c"), link(2, "d")],
     }
