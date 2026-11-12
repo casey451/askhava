@@ -19,10 +19,11 @@ use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_ops::api::Actor;
 use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
-use sqlx::PgConnection;
 use sqlx::types::Uuid;
+use sqlx::{Connection, PgConnection};
 use subtle::ConstantTimeEq;
 
+use crate::consent::{ConsentError, request_welcome};
 use crate::email_verification::signup_email_waits;
 use crate::models::{self, BusinessesError};
 use crate::rules::{Checks, Event};
@@ -347,9 +348,10 @@ pub async fn record_match(
     settle(db, business, now).await
 }
 
-/// BIZ-003, BIZ-016, BIZ-040: moves a pending sign-up by its checks (active with the code and the
-/// match and no flag, needs review on a flag) and stamps when it began waiting (BIZ-020). While
-/// the sign-up email's check is unverified nothing activates; a flag still moves it to review.
+/// BIZ-003, BIZ-016, BIZ-040, CON-020: moves a pending sign-up by its checks (active with the code
+/// and the match and no flag, needs review on a flag) and stamps when it began waiting (BIZ-020).
+/// While the sign-up email's check is unverified nothing activates; a flag still moves it to
+/// review. An activation queues the welcome ([`request_welcome`]) in the same transaction (T268).
 ///
 /// # Errors
 /// [`SignupError::Businesses`].
@@ -358,22 +360,46 @@ pub async fn settle(
     business: Uuid,
     now: Timestamp,
 ) -> Result<AccountStatus, SignupError> {
-    let checks = models::signup_state(db, business).await?.checks();
-    let held = !checks.flagged && signup_email_waits(db, business).await?;
+    let mut tx = db.begin().await.map_err(|_| BusinessesError::Database)?;
+    let checks = models::signup_state(&mut tx, business).await?.checks();
+    let held = !checks.flagged && signup_email_waits(&mut tx, business).await?;
     let moved = if held {
         Err(BusinessesError::Refused)
     } else {
-        apply(db, business, Event::Checked(checks), Actor::System, now).await
+        apply(
+            &mut tx,
+            business,
+            Event::Checked(checks),
+            Actor::System,
+            now,
+        )
+        .await
     };
     let status = match moved {
-        Err(BusinessesError::Refused) => models::read(db, business).await?.status,
+        Err(BusinessesError::Refused) => models::read(&mut tx, business).await?.status,
         moved => moved?,
     };
-    models::start_review(db, business, now).await?;
+    models::start_review(&mut tx, business, now).await?;
+    welcome(&mut tx, business, now).await?;
+    tx.commit().await.map_err(|_| BusinessesError::Database)?;
     Ok(status)
 }
 
-/// BIZ-003: Casey approves a needs-review sign-up; it activates only with the code and the match.
+/// CON-020, D-1715: queues the welcome when `business` is now active (once; a repeat or another
+/// status queues nothing), in the caller's transaction.
+async fn welcome(tx: &mut PgConnection, business: Uuid, now: Timestamp) -> Result<(), SignupError> {
+    request_welcome(tx, business, now).await.map_err(|e| {
+        let e = match e {
+            ConsentError::Audit => BusinessesError::Audit,
+            _ => BusinessesError::Database,
+        };
+        SignupError::Businesses(e)
+    })?;
+    Ok(())
+}
+
+/// BIZ-003, CON-020: Casey approves a needs-review sign-up; it activates only with the code and
+/// the match, and the activation queues the welcome in the same transaction (T268).
 ///
 /// The sign-up email must be verified first (BIZ-040).
 ///
@@ -387,7 +413,11 @@ pub async fn approve(
     if signup_email_waits(db, business).await? {
         return Err(BusinessesError::Refused.into());
     }
-    let checks: Checks = models::signup_state(db, business).await?.checks();
+    let mut tx = db.begin().await.map_err(|_| BusinessesError::Database)?;
+    let checks: Checks = models::signup_state(&mut tx, business).await?.checks();
     let event = Event::OwnerApproved(checks);
-    Ok(apply(db, business, event, Actor::Owner(owner), now).await?)
+    let status = apply(&mut tx, business, event, Actor::Owner(owner), now).await?;
+    welcome(&mut tx, business, now).await?;
+    tx.commit().await.map_err(|_| BusinessesError::Database)?;
+    Ok(status)
 }
