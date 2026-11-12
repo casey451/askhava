@@ -33601,7 +33601,7 @@
     "T074",
     "T172"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "pin-every-workflow-action",
    "type": "harness",
@@ -33615,8 +33615,8 @@
     3053,
     3054
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/restore@v4, actions/cache/save@v4, anthropics/claude-code-action@v1 and actions/setup-python@v5; no task owns them (added after D-3083 in harness PRs #553 (D-3143) and #552 (D-3141)). Reviewer confirmed: lines exist on main, T345 owns list excludes both files, and with the pins applied the two tests fail (2 failed, 35 passed). Smallest fix: add both files to T345 owns under the D-3083 rule (only action-ref matches change, comparing the name before @); owns and files budget 10 -> ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/restore@v4, actions/cache/save@v4, anthropics/claude-code-action@v1 and actions/setup-python@v5; no task owns them (added after D-3083 in harness PRs #553 (D-3143) and #552 (D-3141)). Reviewer confirmed: lines exist on main, T345 owns list excludes both files, and with the pins applied the two tests fail (2 failed, 35 passed). Smallest fix: add both files to T345 owns under the D-3083 rule (only action-ref matches change, comparing the name before @); owns and files budget 10 -> 12.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/restore@v4, actions/cache/save@v4, anthropics/claude-code-action@v1 and actions/setup-python@v5; no task owns them (added after D-3083 in harness PRs #553 (D-3143) and #552 (D-3141)). Reviewer confirmed: lines exist on main, T345 owns list excludes both files, and with the pins applied the two tests fail (2 failed, 35 passed). Smallest fix: add both files to T345 owns under the D-3083 rule (only action-ref matches change, comparing the name before @); owns and files budget 10 -> 12.\nre-queued after plan fix D-3200: Plan gap fixed by #572 (D-3200): T345 owns test_runner_cache.py and test_runner_merge_early.py action-ref asserts",
    "history": [
     {
      "attempt": 1,
@@ -33658,6 +33658,19 @@
      "plan_head": "53361d7bd2797a688fd8a79ec891db15a06a0898",
      "plan_then": "0c23552bf40fe5fc28ce06f5d1176746402bb1fed459b40cad21989d1c1c4afe",
      "plan_now": "2183ca88ee56f18b4510ea9a689f78398ad337790ceeeb75a7e0624a54b71da2"
+    },
+    {
+     "at": "2026-11-12T09:22:48Z",
+     "reason": "Plan gap fixed by #572 (D-3200): T345 owns test_runner_cache.py and test_runner_merge_early.py action-ref asserts",
+     "by": "manual-6a89e9143be0",
+     "was": "plan gap reported: PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/restore@v4, actions/cache/save@v4, anthropics/claude-code-action@v1 and actions/setup-python@v5; no task owns them (added after D-3083 in harness PRs #553 (D-3143) and #552 (D-3141)). Reviewer confirmed: lines exist on main, T345 owns list excludes both files, and with the pins applied the two tests fail (2 failed, 35 passed). Smallest fix: add both files to T345 owns under the D-3083 rule (only action-ref matches change, comparing the name before @); owns and files budget 10 -> ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-3200",
+     "plan_since": "2026-11-12T08:42:50Z",
+     "plan_base": "a070309d52e682e05c22f068361bf788ad764afc",
+     "plan_head": "e0a2ab2aa1b46137e579efba50282c175c9189f3",
+     "plan_then": "2183ca88ee56f18b4510ea9a689f78398ad337790ceeeb75a7e0624a54b71da2",
+     "plan_now": "0ff1c9f2fe72abf3ba99253af748e26a4b202b32d5662e4ed9efbeb59b41e3ca"
     }
    ]
   },
@@ -39039,7 +39052,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T09:17:23Z",
+ "updated_at": "2026-11-12T09:22:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -39137,8 +39150,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fbe1e137ffb38adf6ef63968b9f931f116e02cb1",
- "starter": "actions",
+ "runner_sha": "e0a2ab2aa1b46137e579efba50282c175c9189f3",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "ec8a9684671f2d718b79acae014df8181c8c2abc",

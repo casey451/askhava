@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T09:17:23Z by runner fbe1e137ffb3 (actions).
+Updated 2026-11-12T09:22:48Z by runner e0a2ab2aa1b4 (manual).
 
 **Building: T358 in progress since 08:52Z; 233 of 395 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,12 @@ Updated 2026-11-12T09:17:23Z by runner fbe1e137ffb3 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T358 claimed 08:52Z, lease until 11:52Z; lane 4: T268 claimed 09:17Z, lease until 12:17Z
 - **Week:** 92% used, 8.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:16Z, 0 min before this update
+- **Last run:** 09:17Z, 5 min before this update
 - **Keeper:** last ran 09:16Z, next wake 11:54Z
 
 ## Needs attention
-- BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/restore@v4, actions/cache/save@v4, anthropics/claude-code-action@v1 and actions/setup-python@v5; no task owns them (added after D-3083 in harness PRs #553 (D-3143) and #552 (D-3141)). Reviewer confirmed: lines exist on main, T345 owns list excludes both files, and with the pins applied the two tests fail (2 failed, 35 passed). Smallest fix: add both files to T345 owns under the D-3083 rule (only action-ref matches change, comparing the name before @); owns and files budget 10 -> ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 15 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 14 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,6 +89,7 @@ Updated 2026-11-12T09:17:23Z by runner fbe1e137ffb3 (actions).
 | T327 | harness: every task kind the app queues has a handler in the | done | 1 | 48 min | 09:38Z |  |
 
 ### Plan and harness merges on main
+- 09:22Z Plan: T345 owns the runner tests that hard-code action tags (D-3200) (#572)
 - 09:13Z Plan: store the scrubbed job description and shown card so T251 can send approved cards (D-3189) (#568)
 - 08:32Z Harness: smoke ancestry reuse accepts squash commits whose identical tree passed Ci, Twin and Ally (D-3156) (#560)
 - 07:12Z Harness: close merged tasks before the smoke so their lanes free ~20 min sooner (D-3141) (#552)
