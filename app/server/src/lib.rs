@@ -26,6 +26,7 @@ use axum::Router;
 use axum::body::Body;
 use secrecy::SecretString;
 use sqlx::PgPool;
+use sqlx::types::Uuid;
 use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
@@ -370,8 +371,9 @@ where
 /// no-reply reminder and close (INT-019), the card approval auto-send (INT-041); `picks` the FEE-020
 /// card-fix notice on `payments`' event (D-492), and with `confirm` (read once from
 /// `ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES`) the pick notice (PICK-037, D-1503) and the Confirm
-/// window's end (PICK-019); `intake` the accepted-quote email after a Confirm, with no sender until
-/// the footer postal setting exists, so it sends nothing yet (PICK-042, D-3077); `payments` the pause watch that stops and resumes
+/// window's end (PICK-019); `intake` the accepted-quote email after a Confirm, still with no sender
+/// although the footer postal setting now exists, so it sends nothing until a follow-up builds
+/// one (PICK-042, D-3077, D-3098 (2)); `payments` the pause watch that stops and resumes
 /// the payment timers with the charging pause (FEE-038, D-1427); and, with
 /// `texts` ([`job_text_keys`]), the homeowner job texts `jobs` queues (JOB-010 to JOB-012,
 /// TXT-042, D-1030 (A)). It takes the release mint first, through [`release_minter`], so a second
@@ -439,7 +441,9 @@ where
 
 /// The production worker's whole registry (T327, D-2285): [`register_handlers`], then what only
 /// the worker adds: `privacy`'s sealed photo delete over the stream's store (PRIV-009, T276),
-/// `messaging`'s paused-emergency follow-up on the call list (TXT-023, T279), the hourly
+/// `messaging`'s paused-emergency follow-up on the call list (TXT-023, T279), with the footer
+/// postal setting (required in test and live) `messaging`'s business notices and charge receipts
+/// ([`register_notice_senders`], T313), the hourly
 /// no-handler check ([`no_handler_alert`], OPS-004) and, with the Twilio settings in `pairs`
 /// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027) and `picks`'
 /// masked-line retry (CALL-001). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
@@ -447,8 +451,8 @@ where
 ///
 /// # Errors
 ///
-/// A missing or bad Twilio setting in test or live, or a Twilio client that cannot be built,
-/// named, never its value.
+/// A missing or bad Twilio or postal-address setting in test or live, a postal address that is not
+/// a P.O. box or private mailbox, or a Twilio client that cannot be built, named, never its value.
 pub fn worker_registry<I>(
     settings: &Settings,
     stream: offdb_stream::OffDbStream<LocalStorage>,
@@ -463,7 +467,11 @@ where
 {
     let clock = Arc::clone(&stream.clock);
     let (photos, id_secret) = (Arc::new(stream.storage.clone()), stream.id_secret.clone());
+    let senders = notice_senders(settings, &id_secret)?;
     let mut registry = register_handlers(Arc::new(stream), texts, confirm);
+    if let Some(senders) = senders {
+        register_notice_senders(&mut registry, senders, (Arc::clone(&clock), confirm));
+    }
     let photo_clock = Arc::clone(&clock);
     askhava_privacy::api::register_photo_deletes(
         &mut registry,
@@ -505,6 +513,96 @@ where
             Environment::Test | Environment::Live => Err(io::Error::other(error)),
         },
     }
+}
+
+/// The composition's send-time checks for a business notice (D-1715, D-1760, D-1828): CON-019's
+/// `businesses::api::may_text` read at the send, and PICK-019's "Accept by" from
+/// `picks::api::notice_sent` with the worker's Confirm window; a pick that moved on, or a failed
+/// read, sends no pick notice.
+struct NoticeChecks {
+    confirm: askhava_picks::api::ConfirmSettings,
+}
+
+impl askhava_messaging::api::SendChecks for NoticeChecks {
+    async fn may_text(&self, conn: &mut sqlx::PgConnection, business: Uuid, phone: Uuid) -> bool {
+        askhava_businesses::api::may_text(conn, business, phone)
+            .await
+            .unwrap_or(false)
+    }
+
+    async fn accept_by(
+        &self,
+        conn: &mut sqlx::PgConnection,
+        pick: Uuid,
+        now: jiff::Timestamp,
+    ) -> Option<jiff::Timestamp> {
+        askhava_picks::api::notice_sent(conn, pick, now, self.confirm)
+            .await
+            .ok()
+            .flatten()
+    }
+}
+
+/// The business-notice and receipt senders over the footer's postal line (SEC-028, D-1826 (1)).
+type NoticeSenders = (
+    askhava_messaging::api::NoticeSender,
+    askhava_messaging::api::ReceiptSender,
+);
+
+/// Both senders from `ASKHAVA_POSTAL_ADDRESS` (a P.O. box or private mailbox, whichever the line
+/// names) and `ID_SECRET` (the email key and the version-1 link key, as [`job_text_keys`]); with no
+/// postal setting `None` in dev and CI (nothing registered, so those tasks wait) and an error
+/// naming the key in test and live, as [`twilio_config`] (T313, D-3095).
+fn notice_senders(
+    settings: &Settings,
+    id_secret: &SecretString,
+) -> io::Result<Option<NoticeSenders>> {
+    use askhava_messaging::api::{MailboxKind, NoticeSender, PostalAddress, ReceiptSender};
+    let postal = match settings.postal_address() {
+        Ok(postal) => postal,
+        Err(missing) => match settings.environment() {
+            Environment::Dev | Environment::Ci => return Ok(None),
+            Environment::Test | Environment::Live => return Err(io::Error::other(missing)),
+        },
+    };
+    let kind = match PostalAddress::new(postal, MailboxKind::PoBox) {
+        Ok(_) => MailboxKind::PoBox,
+        Err(_) => MailboxKind::PrivateMailbox,
+    };
+    let invalid = |_| io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value");
+    let links = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
+    let notice = NoticeSender::new((id_secret.clone(), links), postal, kind).map_err(invalid)?;
+    let receipt = ReceiptSender::new(id_secret.clone(), postal, kind).map_err(invalid)?;
+    Ok(Some((notice, receipt)))
+}
+
+/// Registers `messaging.business_notice` (`run_business_notice` with [`NoticeChecks`] and the
+/// worker's clock: CARD-020, CARD-021, BIZ-019, QH-005, D-2203) and `messaging.charge_receipt`
+/// (`run_receipt_email`, FEE-031, D-2287), the two senders [`notice_senders`] built.
+fn register_notice_senders(
+    registry: &mut Registry,
+    (notice, receipt): NoticeSenders,
+    (clock, confirm): (
+        Arc<dyn askhava_core::api::Clock>,
+        askhava_picks::api::ConfirmSettings,
+    ),
+) {
+    use askhava_messaging::api::{
+        BUSINESS_NOTICE_KIND, NoticeWorker, RECEIPT_EMAIL_KIND, run_business_notice,
+        run_receipt_email,
+    };
+    let worker = Arc::new(NoticeWorker {
+        sender: notice,
+        checks: NoticeChecks { confirm },
+        clock,
+    });
+    registry.register(BUSINESS_NOTICE_KIND, move |pool, task| {
+        run_business_notice(pool, Arc::clone(&worker), task)
+    });
+    let receipt = Arc::new(receipt);
+    registry.register(RECEIPT_EMAIL_KIND, move |pool, task| {
+        run_receipt_email(pool, Arc::clone(&receipt), task)
+    });
 }
 
 /// The business-account handlers: the complaint box's close (BIZ-029, T083) and a removed
@@ -940,5 +1038,42 @@ mod tests {
         let half = picks("dev", &full, (true, false)).expect_err("refused");
         assert_eq!(half.to_string(), "VAULT_KEY set without VAULT_INDEX_KEY");
         assert_ne!(crate::terms_version(), "unversioned");
+    }
+
+    /// `notice_senders` over `env`'s fake pairs plus `ASKHAVA_POSTAL_ADDRESS` when given.
+    fn senders(env: &str, postal: Option<&str>) -> std::io::Result<bool> {
+        let lists = settings_pairs(env);
+        let extra: Vec<(&str, &str)> = postal
+            .map(|p| ("ASKHAVA_POSTAL_ADDRESS", p))
+            .into_iter()
+            .collect();
+        let all = pairs(env, &[lists.as_slice(), extra.as_slice()].concat());
+        let settings = Settings::from_pairs(all).expect("settings");
+        super::notice_senders(&settings, &id_secret()).map(|s| s.is_some())
+    }
+
+    /// T313 (D-3095, D-1826 (1)): without the postal setting dev and CI build no business-notice
+    /// or receipt sender and the test and live projects refuse to start naming the key; a P.O.
+    /// box or private mailbox line builds both; any other line is refused naming the key.
+    #[test]
+    fn the_notice_senders_need_the_postal_setting_in_test_and_live() {
+        for env in ["dev", "ci"] {
+            assert!(!senders(env, None).expect("no sender"), "{env}");
+        }
+        for env in ["test", "live"] {
+            let refused = senders(env, None).expect_err("refused").to_string();
+            assert_eq!(
+                refused, "missing required setting ASKHAVA_POSTAL_ADDRESS",
+                "{env}"
+            );
+        }
+        assert!(senders("test", Some("PO Box 0000, Faketown, AZ 86400")).expect("box"));
+        assert!(senders("ci", Some("100 Fake Rd PMB 7, Faketown, AZ 86400")).expect("pmb"));
+        let home = senders("dev", Some("100 Fake Rd, Faketown, AZ 86400"));
+        let message = home.expect_err("refused").to_string();
+        assert_eq!(
+            message,
+            "setting ASKHAVA_POSTAL_ADDRESS has an invalid value"
+        );
     }
 }
