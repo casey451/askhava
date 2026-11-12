@@ -268,6 +268,11 @@ class Config:
     # writes is not claimed (`lanes.crate_clash`), so two lanes never edit one crate's CLAUDE.md or api.rs
     # at once. False claims as before (the D-3082 preference still orders).
     exclusive_crates: bool = False
+    # kit/runner.json "crate_cap" (D-3303): with exclusive crates, the most tasks in flight one crate may hold;
+    # 1 is D-3269's hard exclusion. `crate_full(crate)` says the crate's `CLAUDE.md` is at its line limit,
+    # which holds that crate to 1 whatever the cap (`lanes.crate_limit`); None counts no crate as full.
+    crate_cap: int = 1
+    crate_full: Callable[[str], bool] | None = None
     # kit/runner.json "smoke_ancestry_reuse" (D-3058): how many first-parent commits back the start routine may
     # stand on a real green smoke when every commit since is a DONE task's squash merge or a merge whose identical
     # tree passed Ci, Twin and Ally (D-3156; `st.ancestry_smoke`); 0 off.
@@ -1426,9 +1431,9 @@ def refill_lanes(cfg: Config, state: State, now: datetime, own: str | None = Non
         return []
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ready = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
-    if cfg.exclusive_crates:  # the claim's own exclusion, then two candidates of one crate fill one lane, not two (D-3269)
-        ready = lanes.exclusive_ids(_claim_ordered(cfg, state, ready, now), state, now, lambda tid: _task_def(cfg, state, tid))
-        ready = lanes.crate_disjoint(ready, lambda tid: _task_def(cfg, state, tid))
+    if cfg.exclusive_crates:  # the claim's own rule, run claim after claim: no lane for a task over a crate's limit (D-3269, D-3303)
+        ready = lanes.claimable_together(_claim_ordered(cfg, state, ready, now), state, now,
+                                         lambda tid: _task_def(cfg, state, tid), _crate_limit(cfg))
     if own in free:
         free, ready = [lane for lane in free if lane != own], ready[1:]
     return free[: len(ready)]
@@ -1520,12 +1525,17 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
 
 
 def _exclusive(cfg: Config, state: State, ids: list[str], now: datetime) -> list[str]:
-    """With kit/runner.json "exclusive_crates", `lanes.exclusive_ids` over the ordered ids (D-3269); else the ids.
-    When every candidate collides the list is empty and the cycle ends as with nothing eligible (`idle`): no
-    strike, the lane stays, and no refill run is started."""
+    """With kit/runner.json "exclusive_crates", `lanes.exclusive_ids` over the ordered ids under each crate's limit
+    (`_crate_limit`, D-3269, D-3303); else the ids. When every candidate is over a limit the list is empty and the
+    cycle ends as with nothing eligible (`idle`): no strike, the lane stays, and no refill run is started."""
     if not cfg.exclusive_crates:
         return ids
-    return lanes.exclusive_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid))
+    return lanes.exclusive_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), _crate_limit(cfg))
+
+
+def _crate_limit(cfg: Config) -> lanes.Limit:
+    """Each crate's most tasks in flight: kit/runner.json "crate_cap", 1 in a crate at its `CLAUDE.md` line limit (D-3303)."""
+    return lanes.crate_limit(cfg.crate_cap, cfg.crate_full)
 
 
 def _claim_ordered(cfg: Config, state: State, ids: list[str], now: datetime) -> list[str]:

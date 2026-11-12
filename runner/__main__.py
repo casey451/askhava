@@ -116,6 +116,7 @@ from runner.github_env import PREHANDIN_RED, SMOKE_PRE_LOG, GitHubEnv, alias_for
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import check_code_docs  # scripts/, standard library only
 import check_plan_lock  # scripts/, standard library only
 import check_state
 import pacing
@@ -231,6 +232,7 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        order=claim_order_setting(ROOT / "kit" / "runner.json"),
                        prefer_disjoint_crates=prefer_disjoint_crates(ROOT / "kit" / "runner.json"),
                        exclusive_crates=exclusive_crates(ROOT / "kit" / "runner.json"),
+                       crate_cap=crate_cap(ROOT / "kit" / "runner.json"), crate_full=crate_doc_full(ROOT),
                        smoke_ancestry=smoke_ancestry(ROOT / "kit" / "runner.json"))
     env.smoke_ancestry = cfg.smoke_ancestry  # the pre-session step's skip and the start routine agree (D-3058)
     return cfg, env
@@ -340,6 +342,31 @@ def exclusive_crates(settings: Path) -> bool:
     except (OSError, ValueError, AttributeError):
         return False
     return value is True
+
+
+def crate_cap(settings: Path) -> int:
+    """kit/runner.json "crate_cap" (D-3303): with "exclusive_crates", the most tasks in flight one `app/` crate may
+    hold; a whole number of at least 1, else 1 (D-3269's hard exclusion, the safer reading) when the file or key is
+    missing, unreadable or any other value."""
+    try:
+        value = json.loads(settings.read_text(encoding="utf-8")).get("crate_cap")
+    except (OSError, ValueError, AttributeError):
+        return 1
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 1 else 1
+
+
+def crate_doc_full(root: Path) -> Callable[[str], bool]:
+    """Whether an `app/<crate>/CLAUDE.md` in the runner's checkout of `main` is at scripts/check_code_docs.py's
+    line limit (`MAX_CRATE_DOC_LINES`, counted as that check counts), read at each claim (D-3303): such a crate
+    keeps one task in flight, since a second task's line cannot fit and both would rewrite the same lines. A
+    file that is missing or unreadable counts as full, the safer reading."""
+    def full(crate: str) -> bool:
+        try:
+            count = len((root / "app" / crate / "CLAUDE.md").read_text(encoding="utf-8").splitlines())
+        except (OSError, UnicodeDecodeError):
+            return True
+        return count >= check_code_docs.MAX_CRATE_DOC_LINES
+    return full
 
 
 def smoke_ancestry(settings: Path) -> int:
