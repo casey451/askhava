@@ -52,6 +52,9 @@
 //! T388: [`accepted_quote`] reads the quote a homeowner accepted as an [`AcceptedQuote`] (its page
 //! number, type, amount, earliest visit and the business's own words) for her accepted-quote email
 //! and quote page (PICK-042, D-3075).
+//! T406: [`submit_quote_with_facts`] stores a quote and its PICK-040 facts in one transaction;
+//! [`stored_facts`] reads them back with the earliest visit for the card and [`last_facts`] gives
+//! the business's last answers on a job type for the form's pre-fill (PICK-040, PICK-051).
 
 use sqlx::types::Uuid;
 
@@ -104,6 +107,7 @@ pub use crate::quote_card::{
     Summary, SummarySetting, SwitchRefused, TripFee, check_summary, format_definition, quote_card,
     review_lines, shown_card, switch_on,
 };
+pub use crate::quote_facts::{last_facts, stored_facts, submit_quote_with_facts};
 pub use crate::service::{card_holders, coverage, send_cards, send_job_cards, send_late_cards};
 pub use crate::update_texts::{
     LIMIT, NOT_UPDATE_TEXTS, Problem, SHORT, Shape, UPDATE_TEXTS, check, scan,
