@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T01:42:24Z by runner 18bfe8a6c0fd (actions).
+Updated 2026-11-12T01:42:39Z by runner 18bfe8a6c0fd (actions).
 
-**Building: T325 in progress since 01:11Z; 218 of 383 done; week 80% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 01:42Z; 218 of 383 done; week 80% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 218 of 383 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T325 claimed 01:11Z, lease until 04:11Z
+- **Lane:** idle since 01:42Z (no task in progress)
 - **Week:** 80% used, 32.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:37Z, 4 min before this update
+- **Last run:** 01:37Z, 5 min before this update
 - **Keeper:** last ran 01:24Z, next wake 04:14Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-12T01:42:24Z by runner 18bfe8a6c0fd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T325 | server: an inbound text stopped by a module error raises a b | MERGE_PENDING | 1 | 30 min | 01:42Z |  |
 | T368 | businesses (harness): the capability checklist offers every  | MERGE_PENDING | 1 | 25 min | 01:13Z |  |
 | T317 | server and intake: the inbound text route applies SEC-014's  | done | 2 | 53 min | 00:16Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
 | T313 | messaging and server: an EMERGENCY card notice goes at night | MERGE_PENDING | 1 | 35 min | 00:03Z |  |
@@ -161,7 +162,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T325 (lease until 2026-11-12T04:11:52Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T368", "at": "2026-11-12T01:13:31Z", "output_tokens": 96112, "cache_creation_input_tokens": 410407, "cache_read_input_tokens": 12256901, "input_tokens": 247}
+- {"task": "T325", "at": "2026-11-12T01:42:23Z", "cache_creation_input_tokens": 340642, "cache_read_input_tokens": 6543608, "output_tokens": 58738, "input_tokens": 214}
