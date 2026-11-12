@@ -2570,3 +2570,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Pre-flight fixes, round 11 (D-3286)
 
 - **What changed.** Five queued tasks got small wording fixes so they can run as written: two no longer load a large document they only add one line to, one uses the existing Spanish "we continue in English" text instead of adding a second copy, one has a corrected line reference, and two have their size estimates refreshed; no product rule changed.
+
+## Performance: measure first, targets as goals (D-3292)
+
+- **What was decided (by Fable, under your standing rule).** The speed targets in the performance review you shared are adopted as goals, not hard rules yet: the ZIP lookup should answer in under a tenth of a second and the matching step in under a quarter of a second for 95 of 100 requests, errors under 1 in 1,000, and the phone-page scores (LCP, INP, CLS) within Google's "good" range in a lab test. Faster figures (1.5 seconds to show a page, for example) are reported but not required.
+- **Nothing blocks the build on speed before launch.** Each check run reports the speed of the main pages and warns if one gets more than 25% slower; it never fails a change for time. Before launch, at the war games and at Gate C, the goals are checked once on measured numbers and then become real requirements.
+- **Three new tasks, measurement only.** T416 adds counters for database work (how many queries a page makes, how long a request waits for a database connection), T417 builds a benchmark on fake data the size of the Phoenix metro and writes the first report, and T418 adds the phone-page lab test and the warning in each check run. They run beside the current work. No fix is made until the numbers show it is needed, and no speed fix may weaken privacy, sign-in checks, duplicate-charge protection or payments.
+- **Worth a look.** The three tasks are in the current stage, so the stage cannot finish until they are done; they depend on nothing still in progress, so this should cost no time unless one of them gets stuck.
