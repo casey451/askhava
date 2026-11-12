@@ -795,6 +795,9 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /b/charges/{pick} | portals | T306 |
 | GET | /b/emergency-emails | portals | T306 |
 | POST | /b/emergency-emails | portals | T306 |
+| GET | /b/phones | portals | T397 |
+| POST | /b/phones/approve | portals | T397 |
+| POST | /b/phones/reject | portals | T397 |
 | GET | /owner/sign-in | portals | T303 |
 | POST | /owner/sign-in | portals | T303 |
 | POST | /owner/sign-in/passkey | portals | T303 |
