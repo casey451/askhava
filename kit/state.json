@@ -35257,8 +35257,8 @@
     "T348",
     "T173"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "BLOCKED",
+   "attempts": 2,
    "slug": "serve-static-files",
    "type": "build",
    "stage": "4",
@@ -35328,6 +35328,19 @@
      "started_at": "2026-11-12T12:56:41Z",
      "ended_at": "2026-11-12T13:35:26Z",
      "result": "check_failed"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 39,
+     "head_sha": "74c3a7dc47280825079ecd7651dc2ce3e58455f8",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-12T14:45:29Z",
+     "ended_at": "2026-11-12T15:06:45Z",
+     "result": "BLOCKED"
     }
    ],
    "reviewed_sha": "a1a1ba84f355a1b498829f0a2022511b653788ea",
@@ -35353,10 +35366,11 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    >  99 |   expect(at.index, `Tab from \"${before.name}\" reaches the next control in source order`).toBe(before.next);\n          |                                                                                          ^\n      100 |   expect(at.problems).toEqual([]);\n      101 |   return at;\n      102 | }\n        at tab (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:99:90)\n        at tabTo (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:107:20)\n        at /home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:172:5\n    Error Context: test-results/a11y/j1_keyboard-A11Y-005-A11Y--f2164--Pick-code-step-axe-on-each/error-context.md\n  3 failed\n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 320 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 768 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 1280 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n  171 passed (50.6s)\n##[error]Process completed with exit code 1.",
+   "last_failure": "PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): \"Tab from \"\" ... Expected: 3, Received: 0\" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState(\"load\") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_served.spec 1 passed). Reviewer confirmed ownership and cause. Fix: a harness task adds that one line.",
    "runner_closed_prs": [
     586
-   ]
+   ],
+   "reason": "plan gap reported: PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): \"Tab from \"\" ... Expected: 3, Received: 0\" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState(\"load\") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_serve; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T362 --plan-fix D-### --reason \"...\"` (D-2859)"
   },
   {
    "id": "T363",
@@ -38864,12 +38878,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T385",
-   "at": "2026-11-12T14:42:14Z",
-   "cache_read_input_tokens": 2258037,
-   "output_tokens": 20619,
-   "input_tokens": 119,
-   "cache_creation_input_tokens": 155895
+   "task": "T362",
+   "at": "2026-11-12T15:06:45Z",
+   "input_tokens": 171,
+   "output_tokens": 37086,
+   "cache_read_input_tokens": 3689580,
+   "cache_creation_input_tokens": 233608
   },
   "source": "session_reading 2026-11-12T14:55:44Z (week)",
   "by_task": {
@@ -41108,10 +41122,10 @@
    "T362": {
     "estimated_bytes": 617194,
     "estimated_tokens": 3276286,
-    "output_tokens": 99770,
-    "cache_creation_input_tokens": 498939,
-    "input_tokens": 302,
-    "cache_read_input_tokens": 12313104,
+    "output_tokens": 136856,
+    "cache_creation_input_tokens": 732547,
+    "input_tokens": 473,
+    "cache_read_input_tokens": 16002684,
     "last_model": "claude-opus-5-5"
    },
    "T385": {
@@ -41148,11 +41162,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-12T12:34:26Z",
-    "tokens": 11301825
+    "tokens": 11941648
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 429873927
+    "tokens": 430513750
    }
   },
   "session_reading": {
@@ -41163,7 +41177,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T15:01:28Z",
+ "updated_at": "2026-11-12T15:06:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -41261,7 +41275,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e2c37a7d0cadd117b412f6c0c3aa24dc1d5808fd",
+ "runner_sha": "74c3a7dc47280825079ecd7651dc2ce3e58455f8",
  "starter": "actions",
  "smoke_runs": [
   {

@@ -1,28 +1,30 @@
 # Ask Hava build status
 
-Updated 2026-11-12T15:01:28Z by runner e2c37a7d0cad (actions).
+Updated 2026-11-12T15:06:45Z by runner 74c3a7dc4728 (actions).
 
-**Building: T362 in progress since 14:45Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T389 in progress since 14:39Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 245 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T362 claimed 14:45Z, lease until 17:45Z; lane 2: T389 claimed 14:39Z, lease until 17:39Z
+- **Lane:** lane 2: T389 claimed 14:39Z, lease until 17:39Z
 - **Week:** 94% used, 0.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:01Z, 0 min before this update
+- **Last run:** 15:01Z, 5 min before this update
 - **Keeper:** last ran 15:01Z, next wake 17:41Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T362: plan gap reported: PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): "Tab from "" ... Expected: 3, Received: 0" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState("load") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_serve; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T362 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 24 problem(s) on tasks still to run (+115 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+115 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T362 | server: the built static files are served at /static/<crate> | BLOCKED | 2 | 21 min | 15:06Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 1 | 38 min | 14:42Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T370 | intake (harness): the night count the homeowner hears counts | check_failed | 1 | 22 min | 14:29Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z |  |
-| T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z |  |
 | T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
 | T378 | adapters, calls and stand-in (harness): every outbound call  | done | 1 | 45 min | 12:34Z |  |
 | T323 | ai: a new capitalized name at the start of a sentence counts | done | 1 | 24 min | 11:47Z |  |
@@ -87,8 +89,6 @@ Updated 2026-11-12T15:01:28Z by runner e2c37a7d0cad (actions).
 | T165 | businesses: business name, Google and Yelp links and license | resync | 1 | 47 min | 16:25Z |  |
 | T269 | portals: a business notice's signed link opens sign-in for t | done | 2 | 23 min | 16:14Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T269 | portals: a business notice's signed link opens sign-in for t | resync | 2 | 44 min | 15:46Z |  |
-| T384 | quotes and portals: the homeowner sees an edited quote as up | done | 2 | 18 min | 15:05Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
-| T214 | picks (harness): the homeowner's share box at the pick and t | BLOCKED | 2 | 3 min | 15:04Z |  |
 
 ### Plan and harness merges on main
 - 14:48Z Plan: trim T251 to its context limit (D-3256) (#590)
@@ -118,7 +118,6 @@ Updated 2026-11-12T15:01:28Z by runner e2c37a7d0cad (actions).
 - 18:49Z Plan: five lanes (D-3043) (#504)
 - 18:37Z Plan: T387 steadies payments branch coverage and adds margin, claimed first (D-3049) (#507)
 - 15:44Z Plan: T214 owns the final-Pick share box end to end and ticks it in five finished tests (D-3032) (#495)
-- 15:02Z Plan: T333 may book the webhook refund amount and hold the refunded notice on an unchecked refund (D-3018) (#487)
 
 ## Progress (requirements verified)
 
@@ -166,8 +165,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T362 (lease until 2026-11-12T17:45:29Z)
+- nothing
 - lane 2: T389 (lease until 2026-11-12T17:39:19Z)
 
 ## Last usage reading
-- {"task": "T385", "at": "2026-11-12T14:42:14Z", "cache_read_input_tokens": 2258037, "output_tokens": 20619, "input_tokens": 119, "cache_creation_input_tokens": 155895}
+- {"task": "T362", "at": "2026-11-12T15:06:45Z", "input_tokens": 171, "output_tokens": 37086, "cache_read_input_tokens": 3689580, "cache_creation_input_tokens": 233608}

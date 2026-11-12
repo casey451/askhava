@@ -2876,3 +2876,4 @@
 - 2026-11-12T15:00:54Z runner e2c37a7d0cad (actions): {}; T251 estimated 3.5M tokens (calibrated); week has 68k left (no five-hour budget, D-3056) after 5.9M still running in another lane (session_reading 2026-11-12T14:55:44Z (week)); waiting until 2026-11-12T17:00:00Z
 - 2026-11-12T15:01:12Z runner e2c37a7d0cad (actions): {}
 - 2026-11-12T15:01:28Z runner e2c37a7d0cad (actions): {}
+- 2026-11-12T15:06:45Z runner 74c3a7dc4728 (actions): {"T362": "IN_PROGRESS -> BLOCKED"}
