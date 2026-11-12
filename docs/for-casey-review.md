@@ -2377,3 +2377,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** The app can now look up the name to show for a business: its trade name (DBA) if it gave one at sign-up, otherwise its business name, checked again for phone numbers, links and "find us on" wording. The LIST reply and the "who's calling" text will use it once their own steps are built (T317, T318).
 - **Worth a look.** A business whose stored name fails that check, or that has no name stored, is left out of the list and you get one digest alert naming only the business, not the name. A business can't edit its name in the portal yet.
 - **Nothing needs you now.**
+
+## T317: a limit on new requests by text, and LIST names each business (D-3084 to D-3087)
+
+- **What changed.** A phone can open at most 5 new requests by text in an hour (and all phones together have an hourly cap); a 6th is not answered and you get one alert with no phone or words in it. Replies inside an open request, HELP, STOP and START after a STOP are never limited. A LIST reply now names each business that quoted.
+- **One thing you may want changed.** A text that matches the 911 list (for example "I smell gas") is never limited, so the homeowner always gets the 911 safety text, even at her limit. The cost: someone sending many such texts from many phones would get past the hourly cap. If you want a separate cap on emergency texts, say so; it needs a spec change.
+- **Nothing needs you now.**
