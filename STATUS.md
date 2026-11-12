@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:01:50Z by runner 309c3404e3c1 (actions).
+Updated 2026-11-12T23:02:07Z by runner 309c3404e3c1 (actions).
 
 **Building: T347 in progress since 22:32Z; 258 of 404 done; week 7% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 258 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T347 claimed 22:32Z, lease until 01:32Z; lane 4: T162 claimed 22:25Z, lease until 01:25Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z; lane 7: T351 claimed 22:49Z, lease until 01:49Z
+- **Lane:** lane 2: T347 claimed 22:32Z, lease until 01:32Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z; lane 7: T351 claimed 22:49Z, lease until 01:49Z
 - **Week:** 7% used, 165.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:58Z, 3 min before this update
 - **Keeper:** last ran 22:58Z, next wake 01:28Z
@@ -18,12 +18,13 @@ Updated 2026-11-12T23:01:50Z by runner 309c3404e3c1 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T162 | intake: the one intake order for the five paths and the Span | MERGE_PENDING | 1 | 36 min | 23:01Z | merging main into the reviewed head conflicts in app/intake/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 3 | 30 min | 22:57Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T419 | calls (harness): TD-CALL-23's no-plaintext scan reads only t | done | 1 | 24 min | 22:37Z |  |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | resync | 1 | 58 min | 22:35Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T417 | Performance: seeded fake-data route benchmark and the first  | done | 1 | 36 min | 22:22Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 3 | 40 min | 22:16Z |  |
-| T162 | intake: the one intake order for the five paths and the Span | resync | 1 | 22 min | 21:57Z | merging main into the reviewed head conflicts in app/intake/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T162 | intake: the one intake order for the five paths and the Span | resync | 1 | 22 min | 21:57Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | done | 3 | 28 min | 20:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | done | 2 | 82 min | 20:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T416 | Performance: database pool and query measurements (PERF-004) | done | 1 | 54 min | 19:59Z |  |
@@ -170,10 +171,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T347 (lease until 2026-11-13T01:32:05Z)
-- lane 4: T162 (lease until 2026-11-13T01:25:32Z)
 - lane 5: T215 (lease until 2026-11-13T01:29:12Z)
 - lane 6: T418 (lease until 2026-11-13T01:34:16Z)
 - lane 7: T351 (lease until 2026-11-13T01:49:37Z)
 
 ## Last usage reading
-- {"task": "T385", "at": "2026-11-12T22:57:10Z", "output_tokens": 24673, "input_tokens": 118, "cache_read_input_tokens": 2997698, "cache_creation_input_tokens": 262085}
+- {"task": "T162", "at": "2026-11-12T23:01:49Z", "cache_read_input_tokens": 1734719, "cache_creation_input_tokens": 158444, "input_tokens": 139, "output_tokens": 26364}
