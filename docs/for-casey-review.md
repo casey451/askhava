@@ -2,11 +2,18 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The catalog is stored when the app starts, and the Confirm step is fixed before it starts (plan change, D-3100, November 12)
+
+- **What happened.** The open item from D-3094 was real: nothing stores the catalog in the database when the app starts, so on a fresh deployment every category would read as switched off. Separately, the waiting step that serves the business's Confirm and pay page (T261) named an old form of one payment call and a type that does not exist, was planned to load slightly more than the allowed share of the AI's working memory, and would have broken an older browser test of the bank-approval step that it was told to leave alone.
+- **What changed.** A new small step, T400, stores the catalog each time the web app starts; it never switches a category on, so your on/off switches survive every restart. Every part of the app now follows one rule: your stored switch wins, and a category with no stored switch is off. The capability-checklist step (T368) follows that rule instead of falling back to the catalog file, and only adds one setup line to an older test. T261 now names the right call and type, updates one line of the architecture notes instead of loading a whole section (29% of the working memory instead of 46%), and may update that one older browser case so it checks the new "Checking with your bank" line too. No test is loosened.
+- **Closes** the open item listed under D-3094 below.
+- **Nothing needs you.**
+
 ## Six more waiting steps fixed before they start (plan change, D-3094, November 11)
 
 - **What happened.** A third check of steps still waiting in line found six that would have stopped partway or misled the worker: new homeowner emails that an older test would reject, a category switch that would have broken an older license-change test, a test case that already passes today and so proves nothing, and three steps told to use code they cannot reach.
 - **What changed.** Each step's instructions now name the right file or case: the opt-out emails step (T360) reuses the existing opt-out confirmation email and builds its one new email in code, as the check-in email does, so no older test is touched; a category never stored falls back to the catalog file's on/off setting, while a switch you make always wins. No rule for homeowners or businesses changes and no test is loosened.
-- **Open item for the next plan change.** Nothing loads the catalog into the database when the app starts, so on a fresh deployment the stored category switches are empty and the text intake treats every category as switched off, while the sign-up checklist would fall back to the catalog file. The fix (load the catalog at start-up) is left for a follow-up step.
+- **Open item for the next plan change (now owned by T400, D-3100).** Nothing loads the catalog into the database when the app starts, so on a fresh deployment the stored category switches are empty and the text intake treats every category as switched off, while the sign-up checklist would fall back to the catalog file. The fix (load the catalog at start-up) is left for a follow-up step.
 - **Nothing needs you.**
 
 ## Gate C now waits on proof, not just a date (plan change, D-3080, November 11)
