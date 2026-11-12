@@ -9,7 +9,9 @@
 //! row whose ID is the request's and whose time is its received time) and texts a code;
 //! [`confirm_request`] acts only on a stored, unanswered request of hers younger than
 //! [`ANSWER_WITHIN`] and a correct code, so a code alone (the sign-in one included) acts on
-//! nothing. A delete ([`delete_her_data`]) clears only her own jobs' photos
+//! nothing; each code is bound to its own request by a local challenge with a try cap
+//! (`crate::code_challenge`, SEC-055, T346), [`resend_request_code`] texts it again, and all
+//! three take the pool and hold no connection across Verify. A delete ([`delete_her_data`]) clears only her own jobs' photos
 //! (`intake::api::jobs_of_contact`) and the job text and cards stored under every request of hers
 //! (`quotes::api::forget_requests`, T411, PRIV-008, PRIV-011) and blanks those jobs' feedback
 //! words (`jobs::api::purge_feedback`, T315, JOB-017, D-2205), in one transaction with its
@@ -32,8 +34,9 @@ use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
 use serde_json::{Map, Value, json};
 use sqlx::types::Uuid;
-use sqlx::{Connection, PgConnection};
+use sqlx::{PgConnection, PgPool};
 
+use crate::code_challenge::{Purpose, open_challenge, reserve_try, use_challenge};
 use crate::homeowner_portal::OnFile;
 
 /// The download's path in the homeowner portal (not served yet, D-1934).
@@ -47,10 +50,6 @@ pub const DATA_CODE_ROUTE: &str = "/h/my-data/code";
 
 /// How long Ask Hava has to answer a delete or copy request (PRIV-031).
 pub const ANSWER_WITHIN: SignedDuration = SignedDuration::from_hours(30 * 24);
-
-/// One Verify send key per contact, kind and ten minutes (the code's life), so a double submit
-/// reuses the key (R13).
-const SEND_WINDOW_SECONDS: i64 = 600;
 
 /// The audit subject of a request's received row: her vault contact.
 const CONTACT_SUBJECT: &str = "privacy.contact";
@@ -117,6 +116,10 @@ pub enum RequestError {
     /// due date; nothing was done.
     #[error("no open request")]
     NoRequest,
+    /// SEC-055: the request has no live code (none sent, expired, used, or its tries spent);
+    /// Verify was not called and nothing was done; a new code is needed.
+    #[error("no live code for this request")]
+    NoLiveCode,
     /// Verify could not send or check the code; nothing was done.
     #[error("the code could not be sent or checked")]
     Verify,
@@ -148,35 +151,103 @@ fn database<E>(_: E) -> RequestError {
     RequestError::Database
 }
 
-/// PRIV-031: stores `kind` as received (its audit row, whose time is the received time) and
-/// texts a Verify code to the number on file. The row is written first, so a request is on record
-/// even if the send fails. The send key is the contact, kind and ten-minute window of `now`.
+/// PRIV-031, SEC-055: stores `kind` as received (its audit row, whose time is the received time)
+/// and texts a Verify code to the number on file under the request's own challenge
+/// ([`send_request_code`]). The row is written first, so a request is on record even if the send
+/// fails. No connection is held across Verify.
 ///
 /// # Errors
 /// [`RequestError::Database`] or [`RequestError::Verify`] when the code could not be sent.
 pub async fn open_request<V: VerifyAdapter>(
-    db: &mut PgConnection,
+    pool: &PgPool,
     (verify, key): (&V, &SecretString),
     on_file: &OnFile,
     (kind, now): (DataRequestKind, Timestamp),
 ) -> Result<DataRequest, RequestError> {
-    let subject = (CONTACT_SUBJECT, on_file.contact());
-    let id = audit(db, &entry(on_file, kind.actions().0, subject))
+    let request = {
+        let mut db = pool.acquire().await.map_err(database)?;
+        let subject = (CONTACT_SUBJECT, on_file.contact());
+        let id = audit(&mut db, &entry(on_file, kind.actions().0, subject))
+            .await
+            .map_err(database)?;
+        stored(&mut db, on_file, id)
+            .await?
+            .ok_or(RequestError::Database)?
+    };
+    send_request_code(pool, (verify, key), on_file, (request, now)).await?;
+    Ok(request)
+}
+
+/// PRIV-031, SEC-055: texts a new code for her open request `request_id` (hers, not past its due
+/// date at `now`); inside the code's life it reuses the request's challenge, so it gives no more
+/// tries. No connection is held across Verify.
+///
+/// # Errors
+/// [`RequestError::NoRequest`], [`RequestError::Database`] or [`RequestError::Verify`].
+pub async fn resend_request_code<V: VerifyAdapter>(
+    pool: &PgPool,
+    (verify, key): (&V, &SecretString),
+    on_file: &OnFile,
+    (request_id, now): (i64, Timestamp),
+) -> Result<DataRequest, RequestError> {
+    let request = open_one(pool, on_file, request_id, now).await?;
+    send_request_code(pool, (verify, key), on_file, (request, now)).await?;
+    Ok(request)
+}
+
+/// The challenge purpose and subject of `request` (SEC-055).
+fn challenge_of(request: &DataRequest) -> (Purpose, Uuid) {
+    let purpose = match request.kind {
+        DataRequestKind::Copy => Purpose::DataCopy,
+        DataRequestKind::Delete => Purpose::DataDelete,
+    };
+    (purpose, request_subject(request.id))
+}
+
+fn request_subject(request_id: i64) -> Uuid {
+    Uuid::from_u128(request_id.unsigned_abs().into())
+}
+
+/// SEC-055: opens or reuses `request`'s challenge in its own committed step, then sends the code;
+/// the send key is the contact, kind and challenge, so a double submit reuses it (R13).
+async fn send_request_code<V: VerifyAdapter>(
+    pool: &PgPool,
+    (verify, key): (&V, &SecretString),
+    on_file: &OnFile,
+    (request, now): (DataRequest, Timestamp),
+) -> Result<(), RequestError> {
+    let challenge = open_challenge(pool, challenge_of(&request), now)
         .await
-        .map_err(database)?;
-    let request = stored(db, on_file, id)
-        .await?
-        .ok_or(RequestError::Database)?;
-    let window = now.as_second().div_euclid(SEND_WINDOW_SECONDS).to_string();
+        .map_err(database)?
+        .to_string();
     let contact = on_file.contact().to_string();
-    let parts = [contact.as_str(), kind.actions().0, window.as_str()];
+    let parts = [
+        contact.as_str(),
+        request.kind.actions().0,
+        challenge.as_str(),
+    ];
     let idem = IdempotencyKey::derive(key, "verify.data_request", &parts);
     let phone = on_file.phone().expose_secret();
     verify
         .send_code(&idem, phone, CodeChannel::Sms)
         .await
-        .map_err(|_| RequestError::Verify)?;
-    Ok(request)
+        .map(|_| ())
+        .map_err(|_| RequestError::Verify)
+}
+
+/// Her stored request `request_id` while not past its due date at `now`, on a connection held
+/// only for the read.
+async fn open_one(
+    pool: &PgPool,
+    on_file: &OnFile,
+    request_id: i64,
+    now: Timestamp,
+) -> Result<DataRequest, RequestError> {
+    let mut db = pool.acquire().await.map_err(database)?;
+    stored(&mut db, on_file, request_id)
+        .await?
+        .filter(|request| now <= request.due_at())
+        .ok_or(RequestError::NoRequest)
 }
 
 /// The stored request `id` when it is a received row made by and about `on_file`'s contact.
@@ -206,35 +277,51 @@ async fn stored(
     }))
 }
 
-/// PRIV-031, PRIV-011: acts on her open request `request_id` only when it is hers, unanswered and
-/// not past its due date at `now`, and `code` is the Verify code sent to the number on file; else
-/// nothing is written or deleted. The confirmed audit row (one per request) and a delete of her
-/// vault entry and her own jobs' photos (`privacy::api::delete_my_data`) commit together.
+/// PRIV-031, PRIV-011, SEC-055: acts on her open request `request_id` only when it is hers, not
+/// past its due date at `now`, a try is reserved against the request's own live challenge
+/// ([`reserve_try`]; none, and Verify is never called: [`RequestError::NoLiveCode`]) and `code`
+/// is the Verify code sent to the number on file; else nothing is written or deleted. The used
+/// challenge, the confirmed audit row (one per request) and a delete ([`delete_her_data`]) commit
+/// together, so two right checks act once. No connection is held across Verify.
 ///
 /// # Errors
 /// [`RequestError`].
 pub async fn confirm_request<V: VerifyAdapter>(
-    db: &mut PgConnection,
+    pool: &PgPool,
     verify: &V,
     on_file: &OnFile,
     (request_id, code, now): (i64, &str, Timestamp),
 ) -> Result<Acted, RequestError> {
-    let request = stored(db, on_file, request_id)
-        .await?
-        .filter(|request| now <= request.due_at())
-        .ok_or(RequestError::NoRequest)?;
+    let request = open_one(pool, on_file, request_id, now).await?;
     let code = parse_code(code).ok_or(RequestError::WrongCode)?;
+    let reserved = reserve_try(pool, challenge_of(&request), now).await;
+    let challenge = reserved
+        .map_err(database)?
+        .ok_or(RequestError::NoLiveCode)?;
     let phone = on_file.phone().expose_secret();
     match verify.check_code(phone, code.digits()).await {
-        Ok(true) => {}
-        Ok(false) => return Err(RequestError::WrongCode),
-        Err(_) => return Err(RequestError::Verify),
+        Ok(true) => act(pool, on_file, (request, challenge, now)).await,
+        Ok(false) => Err(RequestError::WrongCode),
+        Err(_) => Err(RequestError::Verify),
     }
-    let mut tx = db.begin().await.map_err(database)?;
-    let subject = (
-        REQUEST_SUBJECT,
-        Uuid::from_u128(request_id.unsigned_abs().into()),
-    );
+}
+
+/// SEC-055, R11: uses `challenge`, writes the confirmed row and, for a delete, deletes her data,
+/// in one transaction; a challenge or request already used rolls back as
+/// [`RequestError::NoRequest`].
+async fn act(
+    pool: &PgPool,
+    on_file: &OnFile,
+    (request, challenge, now): (DataRequest, i64, Timestamp),
+) -> Result<Acted, RequestError> {
+    let mut tx = pool.begin().await.map_err(database)?;
+    if !use_challenge(&mut tx, challenge, now)
+        .await
+        .map_err(database)?
+    {
+        return Err(RequestError::NoRequest);
+    }
+    let subject = (REQUEST_SUBJECT, request_subject(request.id));
     let done = entry(on_file, request.kind.actions().1, subject);
     if !audit_once(&mut tx, &done).await.map_err(database)? {
         return Err(RequestError::NoRequest);
@@ -468,16 +555,51 @@ mod tests {
     use askhava_ops::api::export_audit;
     use jiff::{SignedDuration, Timestamp};
     use secrecy::SecretString;
+    use sqlx::postgres::PgPoolOptions;
     use sqlx::types::Uuid;
     use sqlx::{PgConnection, PgPool};
+    use std::future::Future;
+    use std::pin::Pin;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::task::Poll;
 
     use super::{
         Acted, DataRequest, DataRequestKind, HeldItem, RequestError, Section, confirm_request,
-        download_file, open_request,
+        download_file, open_request, resend_request_code,
     };
     use crate::homeowner_portal::OnFile;
 
     const CODE: &str = "123456";
+
+    /// One shared Verify service: any code it sent to her number passes, whatever it was sent
+    /// for (the sign-in code included); counts what reaches it, or hangs (TD-SEC-60).
+    #[derive(Default)]
+    struct Counting {
+        reached: AtomicUsize,
+        hang: bool,
+    }
+
+    impl VerifyAdapter for Counting {
+        async fn send_code(
+            &self,
+            _: &IdempotencyKey,
+            _: &str,
+            _: CodeChannel,
+        ) -> Result<String, AdapterError> {
+            self.reached.fetch_add(1, Ordering::SeqCst);
+            if self.hang {
+                std::future::pending::<()>().await;
+            }
+            Ok("VEfake".to_owned())
+        }
+        async fn check_code(&self, _: &str, code: &str) -> Result<bool, AdapterError> {
+            self.reached.fetch_add(1, Ordering::SeqCst);
+            if self.hang {
+                std::future::pending::<()>().await;
+            }
+            Ok(code == CODE)
+        }
+    }
 
     struct FakeVerify;
 
@@ -521,10 +643,10 @@ mod tests {
             .collect()
     }
 
-    async fn open(db: &mut PgConnection, kind: DataRequestKind) -> DataRequest {
+    async fn open(pool: &PgPool, kind: DataRequestKind) -> DataRequest {
         let key = SecretString::from("fake-key-for-tests".to_owned());
         let now = Timestamp::now();
-        let opened = open_request(db, (&FakeVerify, &key), &her(), (kind, now)).await;
+        let opened = open_request(pool, (&FakeVerify, &key), &her(), (kind, now)).await;
         opened.expect("open")
     }
 
@@ -562,25 +684,25 @@ mod tests {
         assert!(!format!("{:?}", items[0]).contains("Plumbing"));
     }
 
-    /// TD-PRIV-15: received as stored and due 30 days later; a wrong code acts on nothing, the
-    /// right one acts once.
+    /// TD-PRIV-15, SEC-055: received as stored and due 30 days later; a wrong code acts on
+    /// nothing, the right one acts once and uses the request's code.
     #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
     async fn a_request_waits_for_the_right_code(pool: PgPool) {
         let mut db = pool.acquire().await.expect("db");
-        let request = open(&mut db, DataRequestKind::Delete).await;
+        let request = open(&pool, DataRequestKind::Delete).await;
         let due = request.received_at + SignedDuration::from_hours(30 * 24);
         assert_eq!(request.due_at(), due);
         let now = request.received_at;
         for wrong in ["654321", "12", "abcdef"] {
             let try_wrong = (request.id, wrong, now);
-            let refused = confirm_request(&mut db, &FakeVerify, &her(), try_wrong).await;
+            let refused = confirm_request(&pool, &FakeVerify, &her(), try_wrong).await;
             assert_eq!(refused, Err(RequestError::WrongCode));
         }
         assert_eq!(actions(&mut db).await, ["portals.data_delete_requested"]);
-        let done = confirm_request(&mut db, &FakeVerify, &her(), (request.id, CODE, now)).await;
+        let done = confirm_request(&pool, &FakeVerify, &her(), (request.id, CODE, now)).await;
         assert!(matches!(done, Ok(Acted::Deleted(_))));
-        let again = confirm_request(&mut db, &FakeVerify, &her(), (request.id, CODE, now)).await;
-        assert_eq!(again, Err(RequestError::NoRequest));
+        let again = confirm_request(&pool, &FakeVerify, &her(), (request.id, CODE, now)).await;
+        assert_eq!(again, Err(RequestError::NoLiveCode));
         let last = actions(&mut db).await;
         assert_eq!(
             last,
@@ -596,7 +718,7 @@ mod tests {
     #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
     async fn a_code_without_her_open_request_acts_on_nothing(pool: PgPool) {
         let mut db = pool.acquire().await.expect("db");
-        let request = open(&mut db, DataRequestKind::Copy).await;
+        let request = open(&pool, DataRequestKind::Copy).await;
         let now = request.received_at;
         let other = OnFile::new(Uuid::from_u128(8), "+19285550101");
         let late = request.due_at() + SignedDuration::from_secs(1);
@@ -606,11 +728,141 @@ mod tests {
             (&her(), request.id, late),
         ];
         for (who, id, when) in cases {
-            let refused = confirm_request(&mut db, &FakeVerify, who, (id, CODE, when)).await;
+            let refused = confirm_request(&pool, &FakeVerify, who, (id, CODE, when)).await;
             assert_eq!(refused, Err(RequestError::NoRequest));
         }
         assert_eq!(actions(&mut db).await, ["portals.data_copy_requested"]);
-        let copy = confirm_request(&mut db, &FakeVerify, &her(), (request.id, CODE, now)).await;
+        let copy = confirm_request(&pool, &FakeVerify, &her(), (request.id, CODE, now)).await;
         assert_eq!(copy, Ok(Acted::Copy));
+    }
+
+    async fn challenges(pool: &PgPool) -> Vec<(String, i32, bool)> {
+        let rows = sqlx::query!(
+            r#"SELECT purpose, tries, used_at IS NOT NULL AS "used!" FROM portals.code_challenge ORDER BY id"#
+        )
+        .fetch_all(pool)
+        .await
+        .expect("challenges");
+        rows.into_iter()
+            .map(|r| (r.purpose, r.tries, r.used))
+            .collect()
+    }
+
+    /// TD-SEC-60 (SEC-055, PRIV-031): a code that passes Verify for her number (a sign-in code)
+    /// confirms no request whose own challenge expired or was used; each is refused before
+    /// Verify is called.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn td_sec_60_a_request_needs_its_own_live_challenge(pool: PgPool) {
+        let (verify, key) = (Counting::default(), SecretString::from("k".to_owned()));
+        let t0 = Timestamp::now();
+        let delete = (DataRequestKind::Delete, t0);
+        let request = open_request(&pool, (&verify, &key), &her(), delete).await;
+        let late = (
+            request.expect("open").id,
+            CODE,
+            t0 + SignedDuration::from_secs(600),
+        );
+        let refused = confirm_request(&pool, &verify, &her(), late).await;
+        assert_eq!(refused, Err(RequestError::NoLiveCode));
+        let copy = (DataRequestKind::Copy, t0);
+        let request = open_request(&pool, (&verify, &key), &her(), copy).await;
+        let right = (request.expect("open").id, CODE, t0);
+        let copied = confirm_request(&pool, &verify, &her(), right).await;
+        assert_eq!(copied, Ok(Acted::Copy));
+        let used = confirm_request(&pool, &verify, &her(), right).await;
+        assert_eq!(used, Err(RequestError::NoLiveCode));
+        assert_eq!(verify.reached.load(Ordering::SeqCst), 3);
+        let rows = [
+            ("data_delete".to_owned(), 0, false),
+            ("data_copy".to_owned(), 1, true),
+        ];
+        assert_eq!(challenges(&pool).await, rows);
+    }
+
+    /// TD-SEC-60 (SEC-055): a re-send inside the code's life reuses the request's challenge and
+    /// gives no more tries; the sixth check is refused before Verify; a re-send after expiry
+    /// opens a new challenge, whose right code acts.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn td_sec_60_a_request_resend_gives_no_more_tries(pool: PgPool) {
+        let (verify, key) = (Counting::default(), SecretString::from("k".to_owned()));
+        let t0 = Timestamp::now();
+        let delete = (DataRequestKind::Delete, t0);
+        let id = open_request(&pool, (&verify, &key), &her(), delete)
+            .await
+            .expect("open")
+            .id;
+        for n in 0..6 {
+            let when = t0 + SignedDuration::from_secs(n * 60);
+            let again = resend_request_code(&pool, (&verify, &key), &her(), (id, when)).await;
+            assert!(again.is_ok());
+            let wrong = confirm_request(&pool, &verify, &her(), (id, "654321", t0)).await;
+            let refused = [RequestError::WrongCode, RequestError::NoLiveCode][usize::from(n == 5)];
+            assert_eq!(wrong, Err(refused));
+        }
+        assert_eq!(verify.reached.load(Ordering::SeqCst), 1 + 6 + 5);
+        let fresh = t0 + SignedDuration::from_secs(600);
+        assert!(
+            resend_request_code(&pool, (&verify, &key), &her(), (id, fresh))
+                .await
+                .is_ok()
+        );
+        let done = confirm_request(&pool, &verify, &her(), (id, CODE, fresh)).await;
+        assert!(matches!(done, Ok(Acted::Deleted(_))));
+        let rows = [
+            ("data_delete".to_owned(), 5, false),
+            ("data_delete".to_owned(), 1, true),
+        ];
+        assert_eq!(challenges(&pool).await, rows);
+    }
+
+    /// TD-SEC-60 (AVAIL-01, D-2349): with Verify hanging, an open, a re-send and a check of a
+    /// request leave a pool of one connection free.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn td_sec_60_request_steps_hold_no_connection_across_verify(pool: PgPool) {
+        let one = PgPoolOptions::new()
+            .max_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(2));
+        let one = one
+            .connect_with((*pool.connect_options()).clone())
+            .await
+            .expect("pool");
+        let (key, t0, she) = (SecretString::from("k".to_owned()), Timestamp::now(), her());
+        let id = open(&one, DataRequestKind::Copy).await.id;
+        let hung = Counting {
+            hang: true,
+            ..Counting::default()
+        };
+        let delete = (DataRequestKind::Delete, t0);
+        let mut steps: [Pin<Box<dyn Future<Output = bool> + '_>>; 3] = [
+            Box::pin(async {
+                open_request(&one, (&hung, &key), &she, delete)
+                    .await
+                    .is_ok()
+            }),
+            Box::pin(async {
+                let resent = resend_request_code(&one, (&hung, &key), &she, (id, t0));
+                resent.await.is_ok()
+            }),
+            Box::pin(async {
+                confirm_request(&one, &hung, &she, (id, CODE, t0))
+                    .await
+                    .is_ok()
+            }),
+        ];
+        std::future::poll_fn(|cx| {
+            for step in &mut steps {
+                assert!(step.as_mut().poll(cx).is_pending(), "a step ended");
+            }
+            match hung.reached.load(Ordering::SeqCst) {
+                3 => Poll::Ready(()),
+                _ => Poll::Pending,
+            }
+        })
+        .await;
+        let mut db = one
+            .acquire()
+            .await
+            .expect("no connection is held across Verify");
+        assert_eq!(actions(&mut db).await.len(), 2);
     }
 }
