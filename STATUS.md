@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T05:07:47Z by runner 3aa549cf9ed3 (actions).
+Updated 2026-11-12T05:16:33Z by runner 3aa549cf9ed3 (actions).
 
 **Building: T356 in progress since 04:05Z; 224 of 391 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 224 of 391 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
-- **Week:** 87% used, 15.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:07Z, 0 min before this update
+- **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z; lane 3: T405 claimed 05:14Z, lease until 08:14Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
+- **Week:** 87% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 05:13Z, 2 min before this update
 - **Keeper:** last ran 05:07Z, next wake 07:07Z
 
 ## Needs attention
@@ -79,7 +79,6 @@ Updated 2026-11-12T05:07:47Z by runner 3aa549cf9ed3 (actions).
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z |  |
 | T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z |  |
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
-| T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z |  |
 
 ### Plan and harness merges on main
 - 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
@@ -115,7 +114,6 @@ Updated 2026-11-12T05:07:47Z by runner 3aa549cf9ed3 (actions).
 - 06:32Z Harness: a worker's plan-gap report blocks the task instead of a retry on the same prompt (D-2859) (#458)
 - 06:12Z Harness: the state schema accepts the hand-in update merge — runner stopped with state_invalid (D-2870) (#459)
 - 05:26Z Plan: T337 owns its confirm_and_pay fixture rows; paid-pick guard keeps a test (D-2832) (#453)
-- 05:08Z Plan: new T383 removes the brand words left in the text templates and homeowner page; T295 waits for it (D-2843) (#455)
 
 ## Progress (requirements verified)
 
@@ -148,7 +146,7 @@ Updated 2026-11-12T05:07:47Z by runner 3aa549cf9ed3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T04:36:17Z (week)): week: 178.8M used, 15.2M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-06T21:38:01Z.
+- Pacing (session_reading 2026-11-12T05:07:32Z (week)): week: 181.0M used, 13.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-06T21:57:29Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -164,6 +162,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T356 (lease until 2026-11-12T07:05:41Z)
+- lane 3: T405 (lease until 2026-11-12T08:14:00Z)
 - lane 5: T336 (lease until 2026-11-12T07:54:33Z)
 
 ## Last usage reading
