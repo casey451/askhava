@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T22:35:40Z by runner 543620a30635 (actions).
+Updated 2026-11-12T22:35:58Z by runner 543620a30635 (actions).
 
 **Building: T419 in progress since 22:12Z; 257 of 403 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 257 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T419 claimed 22:12Z, lease until 01:12Z; lane 2: T347 claimed 22:32Z, lease until 01:32Z; lane 3: T385 claimed 22:26Z, lease until 01:26Z; lane 4: T162 claimed 22:25Z, lease until 01:25Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
+- **Lane:** lane 1: T419 claimed 22:12Z, lease until 01:12Z; lane 2: T347 claimed 22:32Z, lease until 01:32Z; lane 3: T385 claimed 22:26Z, lease until 01:26Z; lane 4: T162 claimed 22:25Z, lease until 01:25Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z
 - **Week:** 6% used, 164.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:34Z, 0 min before this update
+- **Last run:** 22:34Z, 1 min before this update
 - **Keeper:** last ran 22:23Z, next wake 00:39Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-12T22:35:40Z by runner 543620a30635 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T351 | privacy and quotes: spaced gate codes, lower-case street add | MERGE_PENDING | 1 | 58 min | 22:35Z |  |
 | T417 | Performance: seeded fake-data route benchmark and the first  | done | 1 | 36 min | 22:22Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 3 | 40 min | 22:16Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T162 | intake: the one intake order for the five paths and the Span | resync | 1 | 22 min | 21:57Z | merging main into the reviewed head conflicts in app/intake/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -118,7 +119,6 @@ Updated 2026-11-12T22:35:40Z by runner 543620a30635 (actions).
 - 23:50Z Plan: Gate C preconditions, vendor-leak check, quote cards, AI writing calls (D-3080) (#518)
 - 23:07Z Plan: IC-74 owners T390/T391, migration renumber, budget refresh, IC-95 logged (D-3079) (#517)
 - 23:02Z Plan: pre-flight fixes for T317, T323, T313, T315, T347 and the T345 gap (D-3083) (#524)
-- 22:35Z Harness: smoke ancestry reuse across DONE task merges and a running duplicate smoke yields (D-3058) (#516)
 
 ## Progress (requirements verified)
 
@@ -172,7 +172,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T162 (lease until 2026-11-13T01:25:32Z)
 - lane 5: T215 (lease until 2026-11-13T01:29:12Z)
 - lane 6: T418 (lease until 2026-11-13T01:34:16Z)
-- lane 7: T351 (lease until 2026-11-13T00:36:46Z)
 
 ## Last usage reading
-- {"task": "T417", "at": "2026-11-12T22:22:39Z", "cache_creation_input_tokens": 495759, "output_tokens": 135630, "cache_read_input_tokens": 25649222, "input_tokens": 429}
+- {"task": "T351", "at": "2026-11-12T22:35:39Z", "cache_creation_input_tokens": 476243, "cache_read_input_tokens": 10192782, "input_tokens": 331, "output_tokens": 125150}
