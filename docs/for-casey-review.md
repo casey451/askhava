@@ -2468,4 +2468,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What happened.** Late on November 11 lane 4 sat empty for about 15 minutes with 20 tasks ready: the runs that noticed it were not hand-offs, and only a hand-off started a run for a free lane. For most of the rest of that hour lanes 1, 3 and 5 had no worker but each still held a finished task waiting for its merge, which by design keeps the lane busy; one merged task waited 26 minutes for the runner to notice, behind the start-of-run smoke test.
 - **What changed.** Every run that ends now starts a run for each free lane with a task ready, except a run that itself found nothing to claim, so it cannot loop. Nothing starts while main is red or the usage pacer waits, and never more lanes than are in use.
 - **Still open.** Noticing a merged task sooner (before the smoke test) would save about 25 minutes per merge; that is a separate runner change for later.
+
+## Ci: the slow Rust steps now run side by side (D-3142)
+
+- **What changed.** The longest part of `Ci`, the "Checks" job, ran everything one after another. Its lint step (fmt and clippy), the database query check and the slowest tests (the compile-fail tests and the prompt-injection property tests) now run in a second job, "Lint and slow tests", at the same time. Measured on today's 12 task runs, `Ci` took about 17 minutes (median 1022 s); it should take about 12 (about 710 s).
+- **What did not change.** Every test, lint and check still runs on every task head, with the same commands, and `Ci` is green only when all of them pass. The check names you see (Ci, Twin, Ally, Governance) are the same.
+- **Worth knowing.** The measurement found that none of the build caches were being reused: what the nightly saves is pushed out of GitHub's 10 GB cache within hours, so every run builds from scratch. That is a separate fix, to be measured first. The new job uses about 6 more runner-minutes per run; the repository is public, so this costs nothing.
 - **Nothing needs you now.**
