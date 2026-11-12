@@ -10,6 +10,7 @@ pub mod api;
 mod brand;
 mod clock;
 mod db;
+mod db_metrics;
 mod ids;
 mod logging;
 mod rate_limit;
