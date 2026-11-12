@@ -10,10 +10,10 @@ use std::io;
 use std::sync::{Arc, OnceLock};
 
 use askhava_adapters::api::{
-    LocalStorage, StorageAdapter, TwilioConfig, TwilioVerify, twilio_clients,
+    LocalStorage, StorageAdapter, TwilioConfig, TwilioMessageReader, TwilioVerify, twilio_clients,
 };
 use askhava_core::api::{
-    Brand, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging,
+    Brand, Clock, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging,
     install_brand, request_span,
 };
 use askhava_intake::api::JobTextKeys;
@@ -33,6 +33,7 @@ use tower_http::trace::TraceLayer;
 
 pub mod catalog_start;
 pub mod checkin;
+pub mod inbound_retry;
 pub mod inbound_text;
 pub mod inbound_voice;
 pub mod no_handler_alert;
@@ -491,6 +492,12 @@ where
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
     let pairs: Vec<(String, String)> = pairs.into_iter().collect();
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {
+        register_inbound_retry(
+            &mut registry,
+            settings,
+            (&twilio, &id_secret, &clock),
+            pairs.clone(),
+        )?;
         let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
         if let Some(vault) = vault_from(settings, pairs.clone())? {
             let keys = (id_secret.clone(), vault);
@@ -505,6 +512,36 @@ where
         });
     }
     Ok(registry)
+}
+
+/// T336 (D-2307, D-3137, D-3173): registers `messaging.inbound_retry` over the Twilio Messages
+/// reader and the vault from both vault keys in `pairs`, with the worker's `ID_SECRET` and clock.
+/// Without both vault keys it registers nothing in dev and CI (as before T336) and is an error in
+/// test and live.
+fn register_inbound_retry(
+    registry: &mut Registry,
+    settings: &Settings,
+    (twilio, id_secret, clock): (&TwilioConfig, &SecretString, &Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let (Some(seal), Some(index)) = vault_keys(pairs) else {
+        return match settings.environment() {
+            Environment::Dev | Environment::Ci => Ok(()),
+            Environment::Test | Environment::Live => Err(io::Error::other(
+                "the inbound retry needs VAULT_KEY and VAULT_INDEX_KEY",
+            )),
+        };
+    };
+    let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
+    let reader = TwilioMessageReader::new(twilio).map_err(io::Error::other)?;
+    let keys = inbound_retry::RetryKeys {
+        id_secret: id_secret.clone(),
+        vault,
+        intake: askhava_intake::api::rules::Settings::default(),
+        clock: Arc::clone(clock),
+    };
+    inbound_retry::register(registry, Arc::new(reader), Arc::new(keys));
+    Ok(())
 }
 
 /// The homeowner line's configured number, `ASKHAVA_HOMEOWNER_NUMBER` (TXT-022, D-2628).
