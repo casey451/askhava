@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:35:39Z by runner ef5a3860ab5e (actions).
+Updated 2026-11-12T18:35:54Z by runner e1725284acf9 (actions).
 
 **Building: T251 in progress since 17:19Z; 249 of 400 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 249 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 5: T350 claimed 17:26Z, lease until 20:26Z; lane 6: T376 claimed 18:05Z, lease until 21:05Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
+- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 6: T376 claimed 18:05Z, lease until 21:05Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
 - **Week:** 2% used, 177.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:29Z, 6 min before this update
 - **Keeper:** last ran 18:27Z, next wake 20:21Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+121 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,9 +86,6 @@ Updated 2026-11-12T18:35:39Z by runner ef5a3860ab5e (actions).
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 1 | 8 min | 18:44Z |  |
 
 ### Plan and harness merges on main
-- 18:11Z Plan: pre-flight fixes round 11 — T346 context gap, T162 template key, T372 cite, T255/T347 budgets (D-3286) (#605)
-- 18:06Z Plan: T362 takes the keyboard test's load wait (D-3270) (#601)
-- 17:59Z Harness: seven lanes without merge collisions — crate exclusion, add-only conflict resolution, lanes 5→7 (D-3269) (#603)
 - 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
 - 15:45Z Plan: new T412/T415 store business sign-in addresses and phones in the vault for T280, T397, T302 and T364 (D-3262) (#596)
 - 14:48Z Plan: trim T251 to its context limit (D-3256) (#590)
@@ -165,7 +162,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T251 (lease until 2026-11-12T20:19:06Z)
-- lane 5: T350 (lease until 2026-11-12T20:26:39Z)
+- lane 5: T350 (lease until 2026-11-12T21:35:54Z)
 - lane 6: T376 (lease until 2026-11-12T21:05:05Z)
 - lane 7: T346 (lease until 2026-11-12T21:16:45Z)
 
