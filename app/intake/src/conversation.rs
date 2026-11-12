@@ -10,7 +10,8 @@
 //! (INT-027, D-146): nothing in this file touches an AI. A new job's no-reply wait and each
 //! reply's restart of it are `handlers`' (INT-019).
 //!
-//! T212 places the photo and design steps in INT-043's order ([`after_questions`]): after the
+//! T212 places the photo and design steps in INT-043's order ([`after_questions`], which T162
+//! reads from `order.rs`, the one order): after the
 //! trade questions come the photos (INT-044, `photos.rs`), then in a `design: true` category the
 //! look pictures or, before the AI may read photos, a few words on the look, then the concept image
 //! while its switch is on (INT-045, INT-046, `design.rs`), then the name and address (INT-027).
@@ -27,6 +28,7 @@ use sqlx::{Connection, PgConnection};
 
 use crate::handlers::{restart_no_reply, schedule_no_reply};
 use crate::models::{self, IntakeError};
+use crate::order::{Path, Step, order};
 use crate::rules::{
     AgeStop, NAME_ADDRESS_TEMPLATE, UNDER_18_TEMPLATE, accepts_word_answer, age_stop,
     joins_open_job, opens_job, pick_option, split_name_address, wanted_language,
@@ -69,8 +71,9 @@ pub enum AfterQuestions {
 }
 
 /// INT-043, INT-044 to INT-046, D-433, D-446: the steps after the trade questions for a job in
-/// `category`. No photo ask and no look-pictures ask while a 911 text waits for SAFE
-/// (`safe_hold`, INT-044): the steps start again once she answers SAFE. The look steps come only in a `design: true` range category; the look
+/// `category`, read from [`crate::order::order`]'s steps 9 to 11. No photo ask and no
+/// look-pictures ask while a 911 text waits for SAFE (`safe_hold`, INT-044): the steps start again
+/// once she answers SAFE. The look steps come only in a `design: true` range category; the look
 /// in a few words only until the AI may read photos (`ai_reads_photos`, AI-016); the concept image
 /// only while `concept_on`.
 #[must_use]
@@ -79,22 +82,25 @@ pub fn after_questions(
     safe_hold: bool,
     (ai_reads_photos, concept_on): (bool, bool),
 ) -> Vec<AfterQuestions> {
+    let design = crate::design::is_design_category(category);
     let mut steps = Vec::new();
-    if !safe_hold {
-        steps.push(AfterQuestions::Photos);
+    for step in order(Path::Regular, false) {
+        if step == Step::Photos && !safe_hold {
+            steps.push(AfterQuestions::Photos);
+        } else if step == Step::Design && design {
+            if !safe_hold {
+                steps.push(AfterQuestions::LookPictures);
+            }
+            if !ai_reads_photos {
+                steps.push(AfterQuestions::DescribeLook);
+            }
+            if concept_on {
+                steps.push(AfterQuestions::ConceptImage);
+            }
+        } else if step == Step::NameAddress {
+            steps.push(AfterQuestions::NameAddress);
+        }
     }
-    if crate::design::is_design_category(category) {
-        if !safe_hold {
-            steps.push(AfterQuestions::LookPictures);
-        }
-        if !ai_reads_photos {
-            steps.push(AfterQuestions::DescribeLook);
-        }
-        if concept_on {
-            steps.push(AfterQuestions::ConceptImage);
-        }
-    }
-    steps.push(AfterQuestions::NameAddress);
     steps
 }
 
@@ -417,7 +423,7 @@ pub async fn take_name_address(
 }
 
 /// Renders and queues one text to `recipient` under `subject` (TXT-011).
-async fn queue_text(
+pub(crate) async fn queue_text(
     db: &mut PgConnection,
     secret: &SecretString,
     recipient: Uuid,
