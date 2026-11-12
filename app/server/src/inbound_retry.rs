@@ -1,5 +1,5 @@
 //! The bounded retry of an inbound text a module error stopped (TXT-012, TXT-020, CON-008,
-//! CON-018, QH-001; D-801, D-2307, D-3135 to D-3142; T336).
+//! CON-018, QH-001; D-801, D-2307, D-3135 to D-3141; T336).
 //!
 //! The route (`inbound_text`) answers such a text 200, raises T325's alert and queues one
 //! `messaging.inbound_retry` task (`inbound_text::RETRY_KIND`) whose payload is the inbox row ID
@@ -18,7 +18,7 @@
 //! (QH-001) it runs only (a) now (an emergency text runs every step, its INT-004 911 text being an
 //! any-hour text, QH-004) and queues the rest once for the next open instant, so nothing but the
 //! any-hour texts goes out at night. A message Twilio no longer has (redacted on day 31 or by
-//! `Delete my data`, or unknown; a photo-only MMS also reads as no words, D-3142) closes the task
+//! `Delete my data`, or unknown; a photo-only MMS also reads as no words, D-3141) closes the task
 //! with no error. A module error queues the next try (30 minutes, then 2 hours); the third adds
 //! nothing, and T325's alert stays open. A listed sender's error is not retried. A database error
 //! or a failed read of its own message fails the claim, which `core` retries.

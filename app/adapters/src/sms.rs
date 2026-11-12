@@ -279,7 +279,7 @@ fn error_answer(status: u16, bytes: &[u8]) -> Option<Result<(), AdapterError>> {
 }
 
 /// Sorts Twilio's answer to the read: 404 with 20404 is `Gone`, any other error status is
-/// `Vendor`, an empty body is `Gone` (also a photo-only MMS, which has no words to retry, D-3142),
+/// `Vendor`, an empty body is `Gone` (also a photo-only MMS, which has no words to retry, D-3141),
 /// and a resource without its numbers is `Decode`.
 fn read_answer(status: u16, bytes: &[u8]) -> Result<MessageBody, AdapterError> {
     if let Some(gone) = error_answer(status, bytes) {

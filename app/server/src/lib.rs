@@ -507,7 +507,7 @@ where
     Ok(registry)
 }
 
-/// T336 (D-2307, D-3137, D-3142): registers `messaging.inbound_retry` over the Twilio Messages
+/// T336 (D-2307, D-3137, D-3141): registers `messaging.inbound_retry` over the Twilio Messages
 /// reader and the vault from both vault keys in `pairs`, with the worker's `ID_SECRET` and clock.
 /// Without both vault keys it registers nothing in dev and CI (as before T336) and is an error in
 /// test and live.
