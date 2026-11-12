@@ -37,6 +37,16 @@
 //! intake's safety call is asked for only where the plan keeps it; intake's own step then runs as
 //! usual and nothing here texts. Nothing here logs a phone, a body or a URL (PRIV-016). This file is also compiled into
 //! `tests/integration/tests/inbound_text_route.rs` with `#[path]`, so it names no `crate::` item.
+//!
+//! T336 (D-2307, D-3135 to D-3139): a text stopped by `Halt::Failed` also queues one
+//! [`RETRY_KIND`] task (payload its inbox row ID only, deduped per row) for `inbound_retry`, which
+//! reads the body back from Twilio and runs [`rerun`]: the same steps after the inbox insert. A
+//! listed sender's failure (`Halt::Settled`) and a `BadWebhook` delivery are not retried. Each
+//! step is safe to run again: the sender lookup and store are keyed by phone, the reads write
+//! audit rows only, `on_inbound_text` is retried only when it listed nothing (an `Open` or
+//! `Resubscribed` repeat writes nothing), the HELP reply, the business auto reply, the paused
+//! emergency claim and the safety call are keyed per inbox row, and SEC-014's count and
+//! `receive_reply` share one savepoint, so a failed `receive_reply` keeps no count.
 
 use std::sync::Arc;
 
@@ -44,7 +54,7 @@ use askhava_adapters::api::{Delivery, VerifiedWebhook, WebhookVendor, refuse, ve
 use askhava_businesses::api::{
     AUTO_REPLY_TEMPLATE, BusinessesError, ConsentError, auto_reply_due, phone_stopped, public_names,
 };
-use askhava_core::api::{Clock, Environment};
+use askhava_core::api::{Clock, Environment, NewTask, enqueue as enqueue_task};
 use askhava_intake::api::rules::{
     Check, Inbound, Settings as IntakeSettings, check, safety_call_trigger, wanted_language,
 };
@@ -73,8 +83,9 @@ use axum::body::Bytes;
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode, Uri};
 use axum::routing::post;
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
+use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
@@ -88,6 +99,19 @@ pub const FAILED_ALERT: &str = "messaging.inbound_text_failed";
 const HELP_TIMES: (u32, u32) = (2, 24);
 /// The sole-word HELP words the reader flags (CON-018).
 const HELP_WORDS: [&str; 3] = ["help", "info", "ayuda"];
+/// The `core.task` kind that retries a text a module error stopped, payload `{"inbox"}` only
+/// (TXT-012, D-801, D-2307).
+pub const RETRY_KIND: &str = "messaging.inbound_retry";
+/// The wait before each of the three tries: 5 minutes, 30 minutes, 2 hours (D-2307).
+pub const RETRY_WAITS: [SignedDuration; 3] = [
+    SignedDuration::from_mins(5),
+    SignedDuration::from_mins(30),
+    SignedDuration::from_hours(2),
+];
+/// Claims of one try before `core` dead-letters it on a database or provider error.
+const RETRY_CLAIMS: i32 = 5;
+/// The end of a run its [`Reach`] stopped after the opt-out and HELP steps.
+const STOPPED: &str = "reach";
 
 /// What the two routes need. Secrets are `SecretString`; no `Debug`, so none can be printed.
 pub struct Webhooks {
@@ -114,6 +138,69 @@ pub struct Webhooks {
     pub intake: IntakeSettings,
 }
 
+/// The keys and settings the steps after the inbox insert need, borrowed from [`Webhooks`] by the
+/// route or built by the retry's handler (D-2307).
+pub struct Ctx<'a> {
+    /// The `ID_SECRET` for outbox keys (SEC-018).
+    pub id_secret: &'a SecretString,
+    /// The vault (PRIV-002).
+    pub vault: &'a Vault,
+    /// The owner settings `intake` reads.
+    pub intake: IntakeSettings,
+}
+
+impl Webhooks {
+    fn ctx(&self) -> Ctx<'_> {
+        Ctx {
+            id_secret: &self.id_secret,
+            vault: &self.vault,
+            intake: self.intake,
+        }
+    }
+}
+
+/// One inbound text's fields, from the delivery or, for a retry, from Twilio's copy (D-2307).
+/// `Debug` is not derived: it holds a phone and the body (PRIV-016).
+pub struct Fields<'a> {
+    /// The sender's number.
+    pub from: Option<&'a str>,
+    /// The Ask Hava number she texted.
+    pub to: Option<&'a str>,
+    /// The raw body; read once by the scrubbing reader and never kept (D-801).
+    pub body: &'a str,
+    /// What the provider's Advanced Opt-Out matched (CON-030).
+    pub provider: ProviderKeyword,
+}
+
+/// How far a run goes after the opt-out and HELP steps (D-2307).
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Reach {
+    /// Every step, as the route runs them.
+    All,
+    /// Opt-out and HELP only (CON-008, CON-018): a stale retry.
+    Screen,
+    /// Outside quiet hours (QH-001): opt-out and HELP only, except that an emergency text runs
+    /// every step, its INT-004 911 text being an any-hour text (QH-004).
+    Night,
+}
+
+/// How a [`rerun`] ended (D-2307).
+#[allow(
+    dead_code,
+    reason = "only inbound_retry reads it; the test crates that compile this file by #[path] do not (D-3136)"
+)]
+pub enum Rerun {
+    /// The steps ran, or ended normally (a repeat-safe end such as `opted_out`, `help`).
+    Done,
+    /// Stopped after the opt-out and HELP steps by its [`Reach`].
+    Stopped,
+    /// A module error: the step's code name and the error's variant name; `retry` is false for a
+    /// listed sender (not retried).
+    Failed(&'static str, String, bool),
+    /// A database error: nothing of this run is kept.
+    Database,
+}
+
 /// The two POST routes over `hooks`, for `build_router` to merge (SEC-016, SEC-039).
 pub fn routes(hooks: Arc<Webhooks>) -> Router {
     Router::new()
@@ -129,6 +216,8 @@ enum Halt {
     Database,
     Ends(&'static str),
     Failed(&'static str, String),
+    /// A module error for a sender on the suppression list: alerted, never retried (D-2307).
+    Settled(&'static str, String),
 }
 
 type Step<T> = Result<T, Halt>;
@@ -188,7 +277,7 @@ fn answer(done: Step<()>) -> StatusCode {
             tracing::info!(step, "twilio webhook ended");
             StatusCode::OK
         }
-        Err(Halt::Failed(step, error)) => {
+        Err(Halt::Failed(step, error) | Halt::Settled(step, error)) => {
             tracing::warn!(
                 step,
                 error,
@@ -241,11 +330,130 @@ async fn text(
         .await
         .map_err(inbox_halt)?
         .ok_or(Halt::Ends("repeat"))?;
-    let done = handle(h, db, hook, (inbox_id, now)).await;
-    if let Err(Halt::Failed(step, _)) = &done {
-        failure_alert(db, inbox_id, step).await?;
+    let fields = Fields {
+        from: field(hook, "From"),
+        to: field(hook, "To"),
+        body: field(hook, "Body").unwrap_or_default(),
+        provider: ProviderKeyword::from_opt_out_type(field(hook, "OptOutType")),
+    };
+    let done = handle(&h.ctx(), db, &fields, (inbox_id, now), Reach::All).await;
+    match &done {
+        Err(Halt::Failed(step, _)) => {
+            failure_alert(db, inbox_id, step).await?;
+            queue_retry(db, inbox_id, now).await?;
+        }
+        Err(Halt::Settled(step, _)) => failure_alert(db, inbox_id, step).await?,
+        _ => {}
     }
     done
+}
+
+/// TXT-012, D-801, D-2307: one [`RETRY_KIND`] task for inbox row `inbox_id`, due after the first
+/// wait, in the delivery's transaction; its payload is the row ID only and its dedupe key
+/// [`retry_key`] `(inbox_id, 1)`, so a row is queued once. An insert error is `Halt::Database`.
+async fn queue_retry(db: &mut PgConnection, inbox_id: Uuid, now: Timestamp) -> Step<()> {
+    queue_try(db, inbox_id, (1, now + RETRY_WAITS[0]))
+        .await
+        .map(|_| ())
+}
+
+/// Queues try `n` of inbox row `inbox_id` at `at`; true when it was new (D-2307).
+async fn queue_try(
+    db: &mut PgConnection,
+    inbox_id: Uuid,
+    (n, at): (usize, Timestamp),
+) -> Step<bool> {
+    let mut task = NewTask::new(RETRY_KIND, json!({ "inbox": inbox_id }), at);
+    task.max_attempts = RETRY_CLAIMS;
+    task.dedupe_key = Some(retry_key(inbox_id, n));
+    enqueue_task(db, &task)
+        .await
+        .map(|id| id.is_some())
+        .map_err(|_| Halt::Database)
+}
+
+/// The dedupe key of try `n` (1 to 3) of inbox row `inbox_id`; try 1 is the route's (D-2307).
+#[must_use]
+pub fn retry_key(inbox_id: Uuid, n: usize) -> String {
+    if n == 1 {
+        format!("{RETRY_KIND}:{inbox_id}")
+    } else {
+        format!("{RETRY_KIND}:{inbox_id}:{n}")
+    }
+}
+
+/// D-2307: after a failed try, queues the next one (try 2 after 30 minutes, try 3 after 2 hours
+/// from `now`), the first whose dedupe key is free; false when try 3 already exists, so the last
+/// failure adds nothing and T325's alert stays the record.
+///
+/// # Errors
+///
+/// [`Rerun::Database`] on an insert error.
+#[allow(
+    dead_code,
+    reason = "only inbound_retry calls it; the test crates that compile this file by #[path] do not (D-3136)"
+)]
+pub async fn queue_next_try(
+    db: &mut PgConnection,
+    inbox_id: Uuid,
+    now: Timestamp,
+) -> Result<bool, Rerun> {
+    for n in 2..=RETRY_WAITS.len() {
+        let queued = queue_try(db, inbox_id, (n, now + RETRY_WAITS[n - 1])).await;
+        match queued {
+            Ok(true) => return Ok(true),
+            Ok(false) => {}
+            Err(_) => return Err(Rerun::Database),
+        }
+    }
+    Ok(false)
+}
+
+/// D-2307: queues the night-held run of inbox row `inbox_id` at `until`, the next instant QH-001
+/// opens, once per row; false when it was queued before.
+///
+/// # Errors
+///
+/// [`Rerun::Database`] on an insert error.
+#[allow(
+    dead_code,
+    reason = "only inbound_retry calls it; the test crates that compile this file by #[path] do not (D-3136)"
+)]
+pub async fn queue_held(
+    db: &mut PgConnection,
+    inbox_id: Uuid,
+    until: Timestamp,
+) -> Result<bool, Rerun> {
+    let mut task = NewTask::new(RETRY_KIND, json!({ "inbox": inbox_id }), until);
+    task.max_attempts = RETRY_CLAIMS;
+    task.dedupe_key = Some(format!("{RETRY_KIND}:{inbox_id}:held"));
+    enqueue_task(db, &task)
+        .await
+        .map(|id| id.is_some())
+        .map_err(|_| Rerun::Database)
+}
+
+/// TXT-012, CON-008, CON-018, D-801, D-2307: the steps after the inbox insert for inbox row
+/// `inbox_id`, run again by the retry from Twilio's copy of the body in the caller's transaction;
+/// `reach` other than [`Reach::All`] stops after the opt-out and HELP steps. Nothing here stores or logs
+/// the body; no alert is raised (T325's stays the record).
+#[allow(
+    dead_code,
+    reason = "only inbound_retry calls it; the test crates that compile this file by #[path] do not (D-3136)"
+)]
+pub async fn rerun(
+    ctx: &Ctx<'_>,
+    db: &mut PgConnection,
+    fields: &Fields<'_>,
+    (inbox_id, now, reach): (Uuid, Timestamp, Reach),
+) -> Rerun {
+    match handle(ctx, db, fields, (inbox_id, now), reach).await {
+        Err(Halt::Ends(STOPPED)) => Rerun::Stopped,
+        Ok(()) | Err(Halt::Ends(_)) => Rerun::Done,
+        Err(Halt::Failed(step, error)) => Rerun::Failed(step, error, true),
+        Err(Halt::Settled(step, error)) => Rerun::Failed(step, error, false),
+        Err(Halt::Database) => Rerun::Database,
+    }
 }
 
 /// TXT-012, D-801, D-1311, D-2207 (fourth audit F25): a text stopped by a module error after the
@@ -275,18 +483,18 @@ async fn failure_alert(db: &mut PgConnection, inbox_id: Uuid, step: &'static str
 
 /// The steps after the repeat check for inbox row `inbox_id`, in order.
 async fn handle(
-    h: &Webhooks,
+    h: &Ctx<'_>,
     db: &mut PgConnection,
-    hook: &VerifiedWebhook,
+    fields: &Fields<'_>,
     (inbox_id, now): (Uuid, Timestamp),
+    reach: Reach,
 ) -> Step<()> {
-    let (from, to) = match (field(hook, "From"), field(hook, "To")) {
+    let (from, to) = match (fields.from, fields.to) {
         (Some(from), Some(to)) => (from, to),
         _ => return Err(Halt::Ends("no_number")),
     };
-    let (contact, relation) = sender(db, &h.vault, from).await?;
-    let raw = field(hook, "Body").unwrap_or_default();
-    let (read, unread) = read(h, db, raw, (contact, relation)).await?;
+    let (contact, relation) = sender(db, h.vault, from).await?;
+    let (read, unread) = read(h, db, fields.body, (contact, relation)).await?;
     let words = read.text.as_str();
     let emergency = matches!(check(words, false), Check::Match(_));
     let msg = InboundText {
@@ -295,10 +503,13 @@ async fn handle(
         relation,
         phone: from,
         text: words,
-        provider: ProviderKeyword::from_opt_out_type(field(hook, "OptOutType")),
+        provider: fields.provider,
         emergency,
     };
     let resubscribed = screen(h, db, &msg, (to, now)).await?;
+    if reach == Reach::Screen || (reach == Reach::Night && !emergency) {
+        return Err(Halt::Ends(STOPPED));
+    }
     if relation == Relation::Business {
         return auto_reply(h, db, &msg).await;
     }
@@ -318,7 +529,7 @@ async fn handle(
 /// follow-up, and intake's safety call only when the plan keeps it. An open line or no 911-list
 /// match changes nothing here.
 async fn paused_emergency(
-    h: &Webhooks,
+    h: &Ctx<'_>,
     db: &mut PgConnection,
     msg: &InboundText<'_>,
     (to, now): (&str, Timestamp),
@@ -389,9 +600,30 @@ async fn owner_paused(db: &mut PgConnection) -> Step<bool> {
 /// ([`list_names`]); with none, SEC-014's new-request limit is counted first ([`admitted`]),
 /// except for a START that just took her number off the opt-out list (`resubscribed`, CON-015)
 /// and a 911-list text, which is never counted or refused, so the INT-002 safety text always
-/// runs (INT-002, INT-003, D-2206, D-3083, D-3087).
+/// runs (INT-002, INT-003, D-2206, D-3083, D-3087). The count and `receive_reply` share one
+/// savepoint, rolled back on a module error, so a text that fails here and is retried is counted
+/// once (SEC-014, D-2307).
 async fn intake(
-    h: &Webhooks,
+    h: &Ctx<'_>,
+    db: &mut PgConnection,
+    text: (&InboundText<'_>, &Read),
+    at: (bool, Timestamp),
+) -> Step<()> {
+    let mut savepoint = db.begin().await.map_err(|_| Halt::Database)?;
+    let done = intake_steps(h, &mut savepoint, text, at).await;
+    match done {
+        Err(Halt::Failed(..) | Halt::Settled(..)) => {
+            savepoint.rollback().await.map_err(|_| Halt::Database)?
+        }
+        Err(Halt::Database) => {}
+        Ok(()) | Err(Halt::Ends(_)) => savepoint.commit().await.map_err(|_| Halt::Database)?,
+    }
+    done
+}
+
+/// The read of her open request, the count and `receive_reply`, inside [`intake`]'s savepoint.
+async fn intake_steps(
+    h: &Ctx<'_>,
     db: &mut PgConnection,
     (msg, read): (&InboundText<'_>, &Read),
     (resubscribed, now): (bool, Timestamp),
@@ -421,7 +653,7 @@ async fn intake(
         inbound,
         received_at: now,
     };
-    receive_reply(db, &h.id_secret, &reply, (h.intake, names.as_slice()))
+    receive_reply(db, h.id_secret, &reply, (h.intake, names.as_slice()))
         .await
         .map(|_| ())
         .map_err(intake_halt)
@@ -463,12 +695,12 @@ async fn list_names(db: &mut PgConnection, jobs: &[Uuid]) -> Step<Vec<(Uuid, Str
 /// never stops any other text (D-1311). A text that carries on answers whether it was the
 /// provider's START that just took the number off the list (`Outcome::Resubscribed`, D-3087).
 async fn screen(
-    h: &Webhooks,
+    h: &Ctx<'_>,
     db: &mut PgConnection,
     msg: &InboundText<'_>,
     (to, now): (&str, Timestamp),
 ) -> Step<bool> {
-    let keys = (&h.id_secret, &h.vault);
+    let keys = (h.id_secret, h.vault);
     let outcome = on_inbound_text(db, keys, msg, now)
         .await
         .map_err(outbox_halt)?;
@@ -477,30 +709,55 @@ async fn screen(
             if msg.relation == Relation::Business {
                 phone_stopped(db, msg.contact, msg.inbox_id, now)
                     .await
-                    .map_err(consent_halt)?;
+                    .map_err(|e| settled(consent_halt(e)))?;
             }
-            paused_emergency(h, db, msg, (to, now), true).await?;
+            paused_emergency(h, db, msg, (to, now), true)
+                .await
+                .map_err(settled)?;
             return Err(Halt::Ends("opted_out"));
         }
         Outcome::Suppressed { .. } => {
-            paused_emergency(h, db, msg, (to, now), true).await?;
+            paused_emergency(h, db, msg, (to, now), true)
+                .await
+                .map_err(settled)?;
             true
         }
         Outcome::Resubscribed | Outcome::Open => false,
     };
+    help(h, db, msg, (to, listed)).await?;
+    Ok(outcome == Outcome::Resubscribed)
+}
+
+/// The HELP reply (CON-018, D-131) and the listed number's end (CON-016); a module error for a
+/// listed sender is `Halt::Settled`, never retried (D-2307).
+async fn help(
+    h: &Ctx<'_>,
+    db: &mut PgConnection,
+    msg: &InboundText<'_>,
+    (to, listed): (&str, bool),
+) -> Step<()> {
+    let keep = |e: Halt| if listed { settled(e) } else { e };
     let replied = if keyword(msg.text).is_some() {
         let help = HelpSettings::new(HELP_TIMES, None, (None, to))
-            .map_err(|e| Halt::Failed("help_settings", variant(&e)))?;
-        reply_to_help(db, &h.id_secret, msg, &help)
+            .map_err(|e| keep(Halt::Failed("help_settings", variant(&e))))?;
+        reply_to_help(db, h.id_secret, msg, &help)
             .await
-            .map_err(outbox_halt)?
+            .map_err(|e| keep(outbox_halt(e)))?
     } else {
         None
     };
     match (replied, listed) {
         (Some(_), _) => Err(Halt::Ends("help")),
         (None, true) => Err(Halt::Ends("suppressed")),
-        (None, false) => Ok(outcome == Outcome::Resubscribed),
+        (None, false) => Ok(()),
+    }
+}
+
+/// A module error for a listed sender: alerted, not retried (D-2307).
+fn settled(e: Halt) -> Halt {
+    match e {
+        Halt::Failed(step, error) => Halt::Settled(step, error),
+        other => other,
     }
 }
 
@@ -515,7 +772,7 @@ async fn screen(
 /// the empty-context read, so an opt-out or HELP still runs (CON-008, CON-018), and returns the
 /// error's variant name so the text stops before `intake` and the AI (AI-003, D-2088).
 async fn read(
-    h: &Webhooks,
+    h: &Ctx<'_>,
     db: &mut PgConnection,
     raw: &str,
     (contact, relation): (Uuid, Relation),
@@ -534,7 +791,7 @@ async fn read(
     if relation == Relation::Business {
         return Ok((plain_read(raw, &words), None));
     }
-    match read_inbound_for(db, &h.vault, contact, raw, &words).await {
+    match read_inbound_for(db, h.vault, contact, raw, &words).await {
         Ok(read) => Ok((read, None)),
         Err(e @ (VaultError::Database | VaultError::Audit)) => Err(vault_halt(e)),
         Err(e) => Ok((plain_read(raw, &words), Some(variant(&e)))),
@@ -570,7 +827,7 @@ async fn sender(db: &mut PgConnection, vault: &Vault, from: &str) -> Step<(Uuid,
 /// `businesses::api::may_text` takes: `sender_business` answers only the business, so no sender
 /// can check `may_text` for this row or resolve its phone until `messaging` also returns the line
 /// ID (open item, D-2042).
-async fn auto_reply(h: &Webhooks, db: &mut PgConnection, msg: &InboundText<'_>) -> Step<()> {
+async fn auto_reply(h: &Ctx<'_>, db: &mut PgConnection, msg: &InboundText<'_>) -> Step<()> {
     if !auto_reply_due(msg.text, false) {
         return Err(Halt::Ends("business"));
     }
@@ -583,9 +840,7 @@ async fn auto_reply(h: &Webhooks, db: &mut PgConnection, msg: &InboundText<'_>) 
         relation: Relation::Business,
         body: &body.body,
     };
-    enqueue(db, &h.id_secret, &text)
-        .await
-        .map_err(outbox_halt)?;
+    enqueue(db, h.id_secret, &text).await.map_err(outbox_halt)?;
     Err(Halt::Ends("business_auto_reply"))
 }
 

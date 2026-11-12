@@ -24,7 +24,10 @@ pub use crate::signatures::{
     Delivery, REJECTED_STATUS, SignatureError, VerifiedWebhook, WEBHOOK_TOLERANCE_SECS,
     WebhookVendor, check_webhook_source, refuse, verify_webhook, webhook_source_list,
 };
-pub use crate::sms::{SentText, SmsAdapter, SmsBodyDelete, TwilioSms};
+pub use crate::sms::{
+    MessageBody, ReadMessage, SentText, SmsAdapter, SmsBodyDelete, SmsBodyRead,
+    TwilioMessageReader, TwilioSms,
+};
 pub use crate::storage::{LocalStorage, StorageAdapter, StorageDelete};
 pub use crate::verify::{CodeChannel, TwilioVerify, VerifyAdapter};
 pub use crate::voice::{CallState, TwilioVoice, VoiceAdapter};

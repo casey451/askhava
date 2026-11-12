@@ -10,10 +10,10 @@ use std::io;
 use std::sync::{Arc, OnceLock};
 
 use askhava_adapters::api::{
-    LocalStorage, StorageAdapter, TwilioConfig, TwilioVerify, twilio_clients,
+    LocalStorage, StorageAdapter, TwilioConfig, TwilioMessageReader, TwilioVerify, twilio_clients,
 };
 use askhava_core::api::{
-    Brand, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging,
+    Brand, Clock, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging,
     install_brand, request_span,
 };
 use askhava_intake::api::JobTextKeys;
@@ -32,6 +32,7 @@ use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetReques
 use tower_http::trace::TraceLayer;
 
 pub mod checkin;
+pub mod inbound_retry;
 pub mod inbound_text;
 pub mod inbound_voice;
 pub mod no_handler_alert;
@@ -487,7 +488,14 @@ where
         },
     );
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
-    if let Some(twilio) = twilio_config(settings, pairs)? {
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    if let Some(twilio) = twilio_config(settings, pairs.clone())? {
+        register_inbound_retry(
+            &mut registry,
+            settings,
+            (&twilio, &id_secret, &clock),
+            pairs,
+        )?;
         let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
         let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
         askhava_messaging::api::register_body_deletes(&mut registry, sms, id_secret, scan_clock);
@@ -497,6 +505,32 @@ where
         });
     }
     Ok(registry)
+}
+
+/// T336 (D-2307, D-3137): registers `messaging.inbound_retry` over the Twilio Messages reader
+/// and the vault from both vault keys in `pairs` (required with the Twilio settings, as for the
+/// webhooks), with the worker's `ID_SECRET` and clock.
+fn register_inbound_retry(
+    registry: &mut Registry,
+    settings: &Settings,
+    (twilio, id_secret, clock): (&TwilioConfig, &SecretString, &Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let (Some(seal), Some(index)) = vault_keys(pairs) else {
+        return Err(io::Error::other(
+            "the inbound retry needs VAULT_KEY and VAULT_INDEX_KEY",
+        ));
+    };
+    let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
+    let reader = TwilioMessageReader::new(twilio).map_err(io::Error::other)?;
+    let keys = inbound_retry::RetryKeys {
+        id_secret: id_secret.clone(),
+        vault,
+        intake: askhava_intake::api::rules::Settings::default(),
+        clock: Arc::clone(clock),
+    };
+    inbound_retry::register(registry, Arc::new(reader), Arc::new(keys));
+    Ok(())
 }
 
 /// The Twilio settings the masked-line retry (its pool, CALL-001, CALL-017, D-1688) and the day-31

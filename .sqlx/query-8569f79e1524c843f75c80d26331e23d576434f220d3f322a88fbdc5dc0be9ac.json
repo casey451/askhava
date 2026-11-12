@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT message_sid, received_at FROM messaging.inbox WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "message_sid",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.inbox",
+            "name": "message_sid"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "received_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "messaging.inbox",
+            "name": "received_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "8569f79e1524c843f75c80d26331e23d576434f220d3f322a88fbdc5dc0be9ac"
+}

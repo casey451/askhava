@@ -122,3 +122,47 @@ pub fn render(
 pub fn template_ids() -> Result<Vec<String>, TemplateError> {
     Ok(Registry::embedded()?.ids())
 }
+
+/// TXT-012, D-2307 (T336): the MessageSid and arrival time of inbox row `id`, if it exists, for
+/// the bounded retry of a text a module error stopped. The inbox holds no words (PRIV-002).
+///
+/// # Errors
+///
+/// [`InboxError::Database`].
+pub async fn inbox_message(
+    db: &mut sqlx::PgConnection,
+    id: sqlx::types::Uuid,
+) -> Result<Option<(String, jiff::Timestamp)>, InboxError> {
+    let row = sqlx::query!(
+        "SELECT message_sid, received_at FROM messaging.inbox WHERE id = $1",
+        id
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| InboxError::Database)?;
+    Ok(row.map(|r| (r.message_sid, r.received_at.to_jiff())))
+}
+
+/// TXT-012, D-2307 (T336): the ID and MessageSid of every inbox row that arrived after `after`,
+/// newest first, at most `limit`, so the retry can ask whether its sender wrote again since.
+///
+/// # Errors
+///
+/// [`InboxError::Database`].
+pub async fn inbox_after(
+    db: &mut sqlx::PgConnection,
+    after: jiff::Timestamp,
+    limit: i64,
+) -> Result<Vec<(sqlx::types::Uuid, String)>, InboxError> {
+    use jiff_sqlx::ToSqlx as _;
+    let rows = sqlx::query!(
+        "SELECT id, message_sid FROM messaging.inbox WHERE received_at > $1 \
+         ORDER BY received_at DESC, id LIMIT $2",
+        after.to_sqlx() as _,
+        limit
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| InboxError::Database)?;
+    Ok(rows.into_iter().map(|r| (r.id, r.message_sid)).collect())
+}
