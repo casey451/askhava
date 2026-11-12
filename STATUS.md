@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T21:19:04Z by runner dee8a64123a9 (actions).
+Updated 2026-11-12T21:24:16Z by runner dee8a64123a9 (actions).
 
-**Idle since 21:11Z; 254 of 403 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 21:23Z; 255 of 403 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 254 of 403 build tasks (owner gates not counted)
+- **Tasks done:** 255 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 21:11Z (no task in progress)
+- **Lane:** idle since 21:23Z (no task in progress)
 - **Week:** 4% used, 186.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:18Z, 0 min before this update
+- **Last run:** 21:19Z, 5 min before this update
 - **Keeper:** last ran 21:19Z, next wake 21:39Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-12T21:19:04Z by runner dee8a64123a9 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T414 | Stand-ins (harness): end-to-end specs can read the emails th | MERGE_PENDING | 3 | 28 min | 20:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T414 | Stand-ins (harness): end-to-end specs can read the emails th | done | 3 | 28 min | 20:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | done | 2 | 82 min | 20:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T416 | Performance: database pool and query measurements (PERF-004) | MERGE_PENDING | 1 | 54 min | 19:59Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 2 | 15 min | 19:11Z |  |
@@ -87,7 +87,6 @@ Updated 2026-11-12T21:19:04Z by runner dee8a64123a9 (actions).
 | T232 | portals and businesses: the Confirm step's "Can't take it" l | done | 1 | 51 min | 22:02Z |  |
 | T387 | payments (harness): the branch that flaps payments coverage  | done | 1 | 90 min | 21:49Z |  |
 | T388 | picks, intake, messaging and portals: after a Confirm the ho | done | 1 | 34 min | 21:46Z |  |
-| T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z |  |
 
 ### Plan and harness merges on main
 - 20:49Z Harness: worker output discipline and per-role usage recording (D-3305) (#618)
@@ -124,7 +123,7 @@ Updated 2026-11-12T21:19:04Z by runner dee8a64123a9 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 337 · unstarted 166
-**Tasks merged (throughput only):** 254 of 403
+**Tasks merged (throughput only):** 255 of 403
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -159,7 +158,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 134 of 185 done
+- stage 4: 135 of 185 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
