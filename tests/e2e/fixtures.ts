@@ -19,6 +19,19 @@ export interface SentText {
   direction: string;
 }
 
+/** One email the Resend stand-in accepted (TXT-034); `to` lists every recipient address. */
+export interface SentEmail {
+  id: string;
+  from: string;
+  to: string[];
+  subject: string;
+  text: string;
+  html: string;
+}
+
+/** The Python stand-in's origin: the port tests/e2e/webserver.ts starts it on (STAND_IN_PORT). */
+const STAND_IN_ORIGIN = "http://127.0.0.1:4010";
+
 /** Filters for the sent log: the recipient and the app's derived message key (OPS-017). */
 export interface SentFilter {
   to?: string;
@@ -33,6 +46,8 @@ export interface Control {
   advanceClock(seconds: number): Promise<string>;
   /** The texts the stand-in carrier received, oldest first. */
   sentTexts(filter?: SentFilter): Promise<SentText[]>;
+  /** The emails the stand-in Resend accepted, oldest first; `to` keeps one address's emails. */
+  sentEmails(filter?: { to?: string }): Promise<SentEmail[]>;
 }
 
 interface Now {
@@ -41,6 +56,10 @@ interface Now {
 
 interface SentLog {
   messages: SentText[];
+}
+
+interface EmailLog {
+  emails: SentEmail[];
 }
 
 /** Fixtures each test gets. */
@@ -80,6 +99,12 @@ function makeControl(request: APIRequestContext, secret: string): Control {
       if (filter.key !== undefined) params.key = filter.key;
       const reply = await request.get("/__test/messages", { headers, params });
       return (await readJson<SentLog>(reply, "messages")).messages;
+    },
+    async sentEmails(filter: { to?: string } = {}) {
+      const params: Record<string, string> = {};
+      if (filter.to !== undefined) params.to = filter.to;
+      const reply = await request.get(`${STAND_IN_ORIGIN}/_stand_in/resend/emails`, { params });
+      return (await readJson<EmailLog>(reply, "stand-in emails")).emails;
     },
   };
 }
