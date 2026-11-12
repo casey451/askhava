@@ -2442,3 +2442,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What did not change.** Resyncs, your "claim first" list and the longest-chain order still come first, and every lane still fills: if every waiting task overlaps, the runner claims as before.
 - **To turn it off.** Set `prefer_disjoint_crates` to `false` in `kit/runner.json`.
 - **Nothing needs you now.**
+
+## Ci: the slow Rust steps now run side by side (D-3142)
+
+- **What changed.** The longest part of `Ci`, the "Checks" job, ran everything one after another. Its lint step (fmt and clippy), the database query check and the slowest tests (the compile-fail tests and the prompt-injection property tests) now run in a second job, "Lint and slow tests", at the same time. Measured on today's 12 task runs, `Ci` took about 17 minutes (median 1022 s); it should take about 12 (about 710 s).
+- **What did not change.** Every test, lint and check still runs on every task head, with the same commands, and `Ci` is green only when all of them pass. The check names you see (Ci, Twin, Ally, Governance) are the same.
+- **Worth knowing.** The measurement found that none of the build caches were being reused: what the nightly saves is pushed out of GitHub's 10 GB cache within hours, so every run builds from scratch. That is a separate fix, to be measured first. The new job uses about 6 more runner-minutes per run; the repository is public, so this costs nothing.
+- **Nothing needs you now.**
