@@ -9,12 +9,22 @@
 //! not one-time) before storing. The towns, the after-hours tick and the two answers matching
 //! reads, the largest job ([`LargestJob`]) and recurring work, are stored in the same transaction
 //! (`businesses.capability`, migration 0150); `quotes::capability_match` skips a card by them.
+//!
+//! T368 (D-2701, D-3101): [`holder_offer`] and [`offer_for`] build the checklist from everything
+//! the business holds (ROC classes, agency licenses, pest attestation, handyman and city-list
+//! standing) through `licensing::api::eligibility_for_request`, over the stored category switch
+//! ([`stored_enabled`]), so the checklist and matching cannot disagree; [`reapply_license`] offers
+//! only stored-on categories. [`checklist_offer`] (classes only, the file's flag) is kept for the
+//! ROC-only callers and tests.
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use askhava_catalog::api::Catalog;
+use askhava_catalog::api::{Catalog, enabled_categories};
 use askhava_core::api::{NewTask, brand, enqueue};
-use askhava_licensing::api::ClassMap;
+use askhava_licensing::api::{
+    CityListStanding, ClassMap, Eligibility, HolderParts, Job, JobRequest, LicenseKind,
+    eligibility_for_request,
+};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use jiff::Timestamp;
 use jiff::civil::Date;
@@ -24,6 +34,7 @@ use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
+use crate::holding::{Known, holding};
 use crate::models::{self, BusinessesError, db};
 use crate::rules::JobTypeChoice;
 use crate::service::{Ticks, pause_for_rule, set_job_types, set_ticks, set_towns};
@@ -167,16 +178,129 @@ pub fn is_recurring(catalog: &Catalog, category: &str, job_type: &str) -> bool {
 #[must_use]
 pub fn checklist_offer(map: &ClassMap, catalog: &Catalog, classes: &[&str]) -> Vec<TradeOffer> {
     let covered = map.job_types(classes);
+    let on: BTreeSet<&str> = catalog
+        .categories
+        .iter()
+        .filter(|c| c.enabled)
+        .map(|c| c.id.as_str())
+        .collect();
+    build_offer(
+        catalog,
+        |id| on.contains(id),
+        |def, t| {
+            let licensed = covered.contains(&(def.id.to_owned(), t.to_owned()));
+            (licensed || def.kind == "none").then_some(licensed)
+        },
+    )
+}
+
+/// BIZ-049, BIZ-004, BIZ-021, LIC-002, LIC-003, LIC-012, LIC-014, LIC-015, LIC-016, LIC-019,
+/// LIC-021, LIC-022, LIC-027, LIC-047 (D-2701, D-3101): the checklist for everything `parts`
+/// holds (ROC classes, agency licenses, pest attestation, handyman and city-list standing), over
+/// the categories in the stored switch's `enabled` set. A job type of a licensed category (kind
+/// not `none`) is pre-ticked exactly when `licensing::api::eligibility` gives a `Card`; any job
+/// type is an unticked extra when it gives a `HandymanCard` and the job type is not gas,
+/// smoke-alarm, sprinkler or permit work; a no-license job type is an unticked extra unless it is
+/// refused or needs a handyman the business is not (`NotHandyman`), read as if the city list had
+/// matched, so a pending match neither hides nor adds a trade. Licensed trades come first.
+#[must_use]
+pub fn holder_offer(
+    map: &ClassMap,
+    catalog: &Catalog,
+    parts: &HolderParts,
+    enabled: &BTreeSet<String>,
+) -> Vec<TradeOffer> {
+    let on = |id: &str| enabled.contains(id);
+    build_offer(catalog, on, |def, t| holder_row(map, parts, def, t))
+}
+
+/// One row of [`holder_offer`]: `Some(true)` pre-ticked, `Some(false)` an unticked extra, `None`
+/// left out (an unknown license kind is left out too).
+fn holder_row(map: &ClassMap, parts: &HolderParts, def: &Trade<'_>, t: &str) -> Option<bool> {
+    let license = LicenseKind::parse(def.kind).ok()?;
+    let job = Job {
+        category: def.id.to_owned(),
+        job_type: t.to_owned(),
+        license,
+        handyman_allowed: def.handyman_allowed,
+        listed: true,
+    };
+    let mut holder = parts.for_job(map, def.id, t);
+    let no_license = license == LicenseKind::None;
+    if no_license {
+        holder.city_list = CityListStanding::Matched;
+    }
+    let own: &[String] = &[];
+    let request = JobRequest {
+        text: "",
+        candidates: own,
+    };
+    match eligibility_for_request(&job, &holder, &request) {
+        Eligibility::Card => Some(!no_license),
+        Eligibility::HandymanCard => Some(false),
+        Eligibility::NoCard(_) => None,
+    }
+}
+
+/// LIC-002, LIC-003, D-3101: the codes of the categories switched on in the stored catalog; a
+/// category with no stored row is off (the rule intake's `catalog::api::is_enabled` follows).
+///
+/// # Errors
+///
+/// [`BusinessesError::Database`].
+pub async fn stored_enabled(conn: &mut PgConnection) -> Result<BTreeSet<String>, BusinessesError> {
+    let codes = enabled_categories(conn).await;
+    Ok(codes
+        .map_err(|_| BusinessesError::Database)?
+        .into_iter()
+        .collect())
+}
+
+/// BIZ-049, BIZ-004, LIC-027, D-3101: [`holder_offer`] for business `id`, its holder read once
+/// through [`holding`] (with what the caller `known`s) and the categories through
+/// [`stored_enabled`]; what the served sign-up and the portal show and pass to [`save_capability`].
+///
+/// # Errors
+///
+/// [`BusinessesError::UnknownBusiness`] or [`BusinessesError::Database`].
+pub async fn offer_for(
+    conn: &mut PgConnection,
+    id: Uuid,
+    known: Known<'_>,
+    (map, catalog): (&ClassMap, &Catalog),
+) -> Result<Vec<TradeOffer>, BusinessesError> {
+    let parts = holding(conn, id, known).await?;
+    let enabled = stored_enabled(conn).await?;
+    Ok(holder_offer(map, catalog, &parts, &enabled))
+}
+
+/// What a checklist row needs of its category: the code, the license kind and the handyman flag.
+struct Trade<'a> {
+    id: &'a str,
+    kind: &'a str,
+    handyman_allowed: bool,
+}
+
+/// The trades of a checklist: per category `on` says is switched on, the job types `row` offers
+/// (`Some(licensed)`), a trade with none left out, licensed trades first (BIZ-049).
+fn build_offer(
+    catalog: &Catalog,
+    on: impl Fn(&str) -> bool,
+    row: impl Fn(&Trade<'_>, &str) -> Option<bool>,
+) -> Vec<TradeOffer> {
     let mut offer = Vec::new();
-    for def in catalog.categories.iter().filter(|c| c.enabled) {
+    for def in catalog.categories.iter().filter(|c| on(&c.id)) {
         let rule = (def.recurring, def.one_time_job_types.as_slice());
-        let extra = def.license.kind == "none";
+        let trade = Trade {
+            id: &def.id,
+            kind: &def.license.kind,
+            handyman_allowed: def.handyman_allowed,
+        };
         let rows: Vec<OfferRow> = def
             .job_types
             .iter()
             .filter_map(|t| {
-                let licensed = covered.contains(&(def.id.clone(), t.clone()));
-                (licensed || extra).then(|| OfferRow {
+                row(&trade, t).map(|licensed| OfferRow {
                     choice: JobTypeChoice::new(&def.id, t),
                     licensed,
                     recurring: recurring_in(rule, t),
@@ -358,6 +482,18 @@ pub fn license_change(
     map: &ClassMap,
     catalog: &Catalog,
     ticks: &[JobTypeChoice],
+    classes: (&[&str], &[&str]),
+) -> Reapplied {
+    let on = |c: &str| catalog.categories.iter().any(|d| d.id == c && d.enabled);
+    change_in(map, on, ticks, classes)
+}
+
+/// [`license_change`] with the switched-on test `on` (the file's flag, or the stored switch in
+/// [`reapply_license`], LIC-002, D-3101).
+fn change_in(
+    map: &ClassMap,
+    on: impl Fn(&str) -> bool,
+    ticks: &[JobTypeChoice],
     (old, new): (&[&str], &[&str]),
 ) -> Reapplied {
     let key = |c: &JobTypeChoice| (c.category.clone(), c.job_type.clone());
@@ -365,7 +501,6 @@ pub fn license_change(
     let lost: BTreeSet<_> = was.difference(&now).collect();
     let removed = ticks.iter().filter(|c| lost.contains(&key(c)));
     let ticked: BTreeSet<_> = ticks.iter().map(key).collect();
-    let on = |c: &str| catalog.categories.iter().any(|d| d.id == c && d.enabled);
     let offered = now
         .difference(&was)
         .filter(|k| !ticked.contains(*k) && on(&k.0));
@@ -381,7 +516,8 @@ pub fn license_change(
 /// row, removes the [`license_change`] job types with an audit row, pauses the business through
 /// `pause_for_rule` (`NoCoveredJobType`) when a removal leaves nothing ticked and it was taking
 /// cards, and queues one [`LICENSE_CHANGE_KIND`] email when anything was removed or offered (one
-/// per business, class change and list date, D-2596). Nothing is ever ticked here.
+/// per business, class change and list date, D-2596). Nothing is ever ticked here. Only categories
+/// of `catalog` switched on in the stored catalog are offered (LIC-002, D-3101).
 ///
 /// # Errors
 ///
@@ -400,7 +536,9 @@ pub async fn reapply_license(
     );
     db(lock.fetch_optional(&mut *tx).await)?.ok_or(BusinessesError::UnknownBusiness)?;
     let ticks = models::job_types(&mut tx, id).await?;
-    let mut change = license_change(map, catalog, &ticks, classes);
+    let stored = stored_enabled(&mut tx).await?;
+    let on = |c: &str| stored.contains(c) && catalog.categories.iter().any(|d| d.id == c);
+    let mut change = change_in(map, on, &ticks, classes);
     if !change.removed.is_empty() {
         let kept: Vec<JobTypeChoice> = ticks
             .into_iter()

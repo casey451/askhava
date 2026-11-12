@@ -15,6 +15,8 @@
 //! the trade count of the done screen ([`trade_count`]) and the one launch notice's sent-once
 //! claim ([`claim_launch_notice`], BIZ-031). The screens themselves are `portals`'.
 
+use std::collections::BTreeSet;
+
 use askhava_adapters::api::PaymentsAdapter;
 use askhava_core::api::{SettingsError, brand};
 use askhava_licensing::api::{ClassMap, Opening};
@@ -107,20 +109,51 @@ impl HeardFrom {
 /// item like any other (LIC-012 limits who may tick it later). A repeated code is listed once.
 #[must_use]
 pub fn category_list(map: &ClassMap, codes: &[&str]) -> Vec<(String, &'static str)> {
-    let label = |o: Opening| match o {
-        Opening::OpenNow => Some("Open now"),
-        Opening::ComingLater => Some("Coming later"),
+    labelled(codes, |c| match map.opening(c) {
+        Opening::OpenNow => Some(OPEN_NOW),
+        Opening::ComingLater => Some(COMING_LATER),
         Opening::Off => None,
-    };
+    })
+}
+
+/// BIZ-021, LIC-002, LIC-003, LIC-046, D-3101: [`category_list`] by the stored switch: a category
+/// is listed only when `enabled` (the stored switched-on codes, `capability::stored_enabled`) has
+/// it, labelled "Open now" when the file marks it launch-open and "Coming later" otherwise; a
+/// category with no stored row is off. What the served sign-up calls.
+#[must_use]
+pub fn stored_category_list(
+    map: &ClassMap,
+    enabled: &BTreeSet<String>,
+    codes: &[&str],
+) -> Vec<(String, &'static str)> {
+    labelled(codes, |c| {
+        enabled.contains(c).then(|| match map.opening(c) {
+            Opening::OpenNow => OPEN_NOW,
+            Opening::ComingLater | Opening::Off => COMING_LATER,
+        })
+    })
+}
+
+/// The "Open now" label (BIZ-021).
+const OPEN_NOW: &str = "Open now";
+/// The "Coming later" label (BIZ-021).
+const COMING_LATER: &str = "Coming later";
+
+/// Each of `codes` once, in order, with its `label`; a code labelled `None` is left out.
+fn labelled(
+    codes: &[&str],
+    label: impl Fn(&str) -> Option<&'static str>,
+) -> Vec<(String, &'static str)> {
     let mut seen: Vec<&str> = Vec::new();
-    let labelled = codes.iter().filter_map(|c| {
-        let first = !seen.contains(c);
+    let mut out = Vec::new();
+    for c in codes {
+        if seen.contains(c) {
+            continue;
+        }
         seen.push(c);
-        first.then(|| (*c, label(map.opening(c))))
-    });
-    labelled
-        .filter_map(|(c, l)| Some((c.to_owned(), l?)))
-        .collect()
+        out.extend(label(c).map(|l| ((*c).to_owned(), l)));
+    }
+    out
 }
 
 /// What the person entered on the first sign-up screens (BIZ-019, BIZ-021, BIZ-053).
