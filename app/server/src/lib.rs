@@ -31,6 +31,7 @@ use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
 
+pub mod catalog_start;
 pub mod checkin;
 pub mod inbound_text;
 pub mod inbound_voice;
