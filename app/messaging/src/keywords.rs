@@ -12,23 +12,46 @@
 use askhava_privacy::api::normalize_phone;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
+use std::sync::LazyLock;
 use thiserror::Error;
 
 use crate::models::OutboxError;
 use crate::optout::InboundText;
-use crate::rules::HELP_TEMPLATE;
+use crate::rules::{AreaCodes, HELP_TEMPLATE};
 use crate::service::{self, NewText};
 use crate::templates::{Language, Registry};
 use secrecy::SecretString;
 
-/// Canadian area codes: a reply to one of these numbers adds the roaming line (CON-018).
-const CANADIAN_AREA_CODES: [&str; 54] = [
-    "204", "226", "236", "249", "250", "263", "289", "306", "343", "354", "365", "367", "368",
-    "382", "403", "416", "418", "428", "431", "437", "438", "450", "468", "474", "506", "514",
-    "519", "548", "579", "581", "584", "587", "604", "613", "639", "647", "672", "683", "705",
-    "709", "742", "753", "778", "780", "782", "807", "819", "825", "867", "873", "879", "902",
-    "905", "942",
+/// The time zones of Canada in `area_codes.json`: a code listed under one of these is Canadian,
+/// so the roaming line and the quiet-hours table read one source (CON-018, QH-002, D-2630).
+const CANADIAN_ZONES: [&str; 12] = [
+    "America/St_Johns",
+    "America/Halifax",
+    "America/Toronto",
+    "America/Winnipeg",
+    "America/Regina",
+    "America/Edmonton",
+    "America/Vancouver",
+    "America/Iqaluit",
+    "America/Rankin_Inlet",
+    "America/Whitehorse",
+    "America/Dawson_Creek",
+    "America/Goose_Bay",
 ];
+
+/// The compiled-in zone table, read once; `None` if the file is broken (then no number is Canadian).
+static TABLE: LazyLock<Option<AreaCodes>> = LazyLock::new(|| AreaCodes::embedded().ok());
+
+/// Every area code the zone table lists under a Canadian zone (CON-018, D-2630).
+#[cfg(test)]
+pub(crate) fn canadian_codes() -> Vec<&'static str> {
+    TABLE
+        .iter()
+        .flat_map(AreaCodes::entries)
+        .filter(|(_, z)| CANADIAN_ZONES.contains(z))
+        .map(|(c, _)| c)
+        .collect()
+}
 
 /// A text that is only a help keyword, with the language of its reply (D-066, D-131).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -126,13 +149,15 @@ pub fn keyword(text: &str) -> Option<Keyword> {
     }
 }
 
-/// Whether `phone` is a +1 number in a Canadian area code (roaming line, CON-018).
+/// Whether `phone` is a +1 number whose area code the zone table lists under a Canadian zone
+/// (roaming line, CON-018, D-2630).
 fn is_canadian(phone: &str) -> bool {
-    normalize_phone(phone).is_ok_and(|p| {
-        let digits: String = p.chars().filter(char::is_ascii_digit).collect();
-        let ten = digits.strip_prefix('1').unwrap_or(&digits);
-        CANADIAN_AREA_CODES.contains(&ten.get(..3).unwrap_or(""))
-    })
+    let (Some(table), Ok(number)) = (TABLE.as_ref(), normalize_phone(phone)) else {
+        return false;
+    };
+    table
+        .zones_for(&number)
+        .is_ok_and(|zones| zones.iter().any(|z| CANADIAN_ZONES.contains(&z.as_str())))
 }
 
 /// The HELP reply for a number `phone` in `language` (CON-018): the registry text for the away
