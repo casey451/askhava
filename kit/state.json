@@ -36093,11 +36093,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "444bf638ec0221367cb2ae3ebfe457f206cd9b27",
+   "reviewed_sha": "7337664534551229e087cb37edbf0a79d40f5f23",
    "review_lease": {
     "task": "T370",
-    "session": "actions-43233383448",
-    "expires": "2026-11-12T17:07:25Z",
+    "session": "actions-43243621539",
+    "expires": "2026-11-12T18:07:53Z",
     "lane": "4"
    },
    "branch": "claude/task/T370-night-count-counts-covered",
@@ -36106,22 +36106,22 @@
     "why": "auto-merge on #589 (gh pr merge)",
     "head": "cf538681c3140446f28b50bd072531865b3c826b"
    },
-   "update_merges": [
-    {
-     "from": "cf538681c3140446f28b50bd072531865b3c826b",
-     "to": "444bf638ec0221367cb2ae3ebfe457f206cd9b27",
-     "main": "f2ec2c57dae946b04470c9acd41dd2da385a7e50",
-     "how": "runner",
-     "checks": {},
-     "at": "2026-11-12T14:31:43Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_call_23_a_failed_link_step_still_answers_the_dial ... ok\ntest td_call_23_a_second_unlinked_phone_on_the_line_stores_nothing ... ok\ntest td_call_23_a_wrong_pin_hang_up_queues_and_stores_nothing ... ok\nfailures:\n---- td_call_23_a_blocked_call_that_connects_queues_one_notice_and_one_pending_link stdout ----\nthread 'td_call_23_a_blocked_call_that_connects_queues_one_notice_and_one_pending_link' (24322) panicked at tests/integration/tests/link_request.rs:324:13:\nassertion `left == right` failed: ops.audit_log holds a value\n  left: 1\n right: 0\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_call_23_a_blocked_call_that_connects_queues_one_notice_and_one_pending_link\ntest result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.51s\nerror: test failed, to rerun pass `-p askhava-integration --test link_request`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     589
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "a530d4cfa9cb71b41275fa204f47c383f64290cf",
+     "to": "7337664534551229e087cb37edbf0a79d40f5f23",
+     "main": "75233a01be7d7811534abde3ba0a20ce6883389f",
+     "how": "hand-in",
+     "at": "2026-11-12T15:30:27Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T371",
@@ -41277,7 +41277,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T15:19:49Z",
+ "updated_at": "2026-11-12T15:30:27Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -41375,7 +41375,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e2c37a7d0cadd117b412f6c0c3aa24dc1d5808fd",
+ "runner_sha": "a530d4cfa9cb71b41275fa204f47c383f64290cf",
  "starter": "actions",
  "smoke_runs": [
   {
