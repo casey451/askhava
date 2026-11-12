@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T12:34:27Z by runner a21fa22ef464 (actions).
+Updated 2026-11-12T12:34:41Z by runner a21fa22ef464 (actions).
 
 **Building: T369 in progress since 11:51Z; 243 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 243 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T369 claimed 11:51Z, lease until 14:51Z; lane 3: T378 claimed 11:49Z, lease until 14:49Z
+- **Lane:** lane 2: T369 claimed 11:51Z, lease until 14:51Z
 - **Week:** 93% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:32Z, 1 min before this update
+- **Last run:** 12:32Z, 2 min before this update
 - **Keeper:** last ran 12:32Z, next wake 14:51Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-12T12:34:27Z by runner a21fa22ef464 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T378 | adapters, calls and stand-in (harness): every outbound call  | MERGE_PENDING | 1 | 45 min | 12:34Z |  |
 | T323 | ai: a new capitalized name at the start of a sentence counts | done | 1 | 24 min | 11:47Z |  |
 | T404 | harness: the door probe's fixtures hold a charged pick and t | done | 1 | 27 min | 11:46Z |  |
 | T345 | harness: every external GitHub Actions `uses:` in every work | done | 3 | 27 min | 11:16Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
@@ -173,7 +174,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T369 (lease until 2026-11-12T14:51:12Z)
-- lane 3: T378 (lease until 2026-11-12T14:49:19Z)
 
 ## Last usage reading
-- {"task": "T323", "at": "2026-11-12T11:47:59Z", "input_tokens": 197, "cache_read_input_tokens": 6117753, "output_tokens": 66466, "cache_creation_input_tokens": 238985}
+- {"task": "T378", "at": "2026-11-12T12:34:26Z", "cache_creation_input_tokens": 541731, "output_tokens": 151980, "input_tokens": 348, "cache_read_input_tokens": 20030993}
