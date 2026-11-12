@@ -92,7 +92,7 @@ pub use crate::confirm_pay::{
 pub use crate::data_download::{
     ANSWER_WITHIN, Acted, DATA_CODE_ROUTE, DATA_REQUEST_ROUTE, DOWNLOAD_ROUTE, DataRequest,
     DataRequestKind, DeleteError, HeldItem, RequestError, Section, confirm_request,
-    delete_her_data, download_file, open_request,
+    delete_her_data, download_file, open_request, resend_request_code,
 };
 pub use crate::email_check::{
     ARRIVED_QUESTION, LAST_STEP_LINE, MailApp, NO_EMAIL_LINE, PICK_ALERT_QUESTION, PICK_DND_LINE,

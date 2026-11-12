@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE portals.code_challenge SET tries = tries + 1\n           WHERE id = (SELECT max(id) FROM portals.code_challenge WHERE purpose = $1 AND subject_id = $2)\n             AND used_at IS NULL AND sent_at > $3 AND tries < $4\n           RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "portals.code_challenge",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Timestamptz",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "a8411ef149cc5769c73558afaa9c44548517a69b342bfdadfc10c244ef4b0a16"
+}
