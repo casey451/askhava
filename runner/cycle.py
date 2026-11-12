@@ -264,6 +264,10 @@ class Config:
     # the ones whose `app/` crates no task in flight shares (`lanes.crowded`). Ordering only; False keeps
     # the order without it.
     prefer_disjoint_crates: bool = False
+    # kit/runner.json "exclusive_crates" (D-3269): a task that writes an `app/` crate a task in flight also
+    # writes is not claimed (`lanes.crate_clash`), so two lanes never edit one crate's CLAUDE.md or api.rs
+    # at once. False claims as before (the D-3082 preference still orders).
+    exclusive_crates: bool = False
     # kit/runner.json "smoke_ancestry_reuse" (D-3058): how many first-parent commits back the start routine may
     # stand on a real green smoke when every commit since is a DONE task's squash merge or a merge whose identical
     # tree passed Ci, Twin and Ally (D-3156; `st.ancestry_smoke`); 0 off.
@@ -1422,6 +1426,9 @@ def refill_lanes(cfg: Config, state: State, now: datetime, own: str | None = Non
         return []
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ready = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
+    if cfg.exclusive_crates:  # the claim's own exclusion, then two candidates of one crate fill one lane, not two (D-3269)
+        ready = lanes.exclusive_ids(_claim_ordered(cfg, state, ready, now), state, now, lambda tid: _task_def(cfg, state, tid))
+        ready = lanes.crate_disjoint(ready, lambda tid: _task_def(cfg, state, tid))
     if own in free:
         free, ready = [lane for lane in free if lane != own], ready[1:]
     return free[: len(ready)]
@@ -1469,6 +1476,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ids = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
     ids = _claim_ordered(cfg, state, ids, now)  # resync, `claim_first`, chain, disjoint crates (D-3082)
+    ids = _exclusive(cfg, state, ids, now)  # with exclusive crates, none whose crate a task in flight writes (D-3269)
     ids, state = plan_health_pass(cfg, state, ids, now)
     if not ids:
         if state != base and not env.push_state(state, base):
@@ -1509,6 +1517,15 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     # A handed-off FIX-MAIN must reach the session as `handed_off`, or the session stops and the claimed
     # revert is never worked (D-501); only a finished FIX-MAIN cycle reports `fix_main`.
     return "fix_main" if task["id"] == st.FIX_MAIN and done not in ("lost_race", "handed_off") else done
+
+
+def _exclusive(cfg: Config, state: State, ids: list[str], now: datetime) -> list[str]:
+    """With kit/runner.json "exclusive_crates", `lanes.exclusive_ids` over the ordered ids (D-3269); else the ids.
+    When every candidate collides the list is empty and the cycle ends as with nothing eligible (`idle`): no
+    strike, the lane stays, and no refill run is started."""
+    if not cfg.exclusive_crates:
+        return ids
+    return lanes.exclusive_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid))
 
 
 def _claim_ordered(cfg: Config, state: State, ids: list[str], now: datetime) -> list[str]:
