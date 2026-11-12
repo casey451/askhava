@@ -61,7 +61,7 @@ jobs:
       run: ${{ steps.tick.outputs.run || steps.check.outputs.run }}
       lane: ${{ steps.lane.outputs.lane || '1' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Read the flag on claude/kit-state
         id: check
         env:
@@ -228,7 +228,7 @@ jobs:
     steps:
       # persist-credentials: false so pushes go out as the Claude GitHub App,
       # not as GITHUB_TOKEN.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: main
           fetch-depth: 0
@@ -240,7 +240,7 @@ jobs:
         run: |
           echo "JOB_START=$(date -u +%Y-%m-%dT%H:%M:%S)" >> "$GITHUB_ENV"
           git worktree add -q --detach "$RUNNER_TEMP/keeper" HEAD
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
       - name: Close merged tasks before the smoke (D-3141)
@@ -268,7 +268,7 @@ jobs:
         # Restore only (D-3143): "Rust build cache, save" near the end of the job saves it with `target/debug` empty.
         id: rust-cache
         if: hashFiles('Cargo.lock') != ''
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/.cargo/registry/index
@@ -293,7 +293,7 @@ jobs:
         # with the run id, so a job that never ran the smoke cannot take the commit's key first (D-1911).
         id: smoke-cache
         if: hashFiles('Cargo.lock') != ''
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: target/smoke
           key: rust-smoke-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -447,7 +447,7 @@ jobs:
           gh api "repos/${GITHUB_REPOSITORY}/contents/kit/state.json?ref=claude/kit-state" -H 'Accept: application/vnd.github.raw' \
             > "$RUNNER_TEMP/session_model_state.json" 2>/dev/null || rm -f "$RUNNER_TEMP/session_model_state.json"
           python3 -m runner --session-model "$RUNNER_TEMP/session_model_state.json" | tee -a "$GITHUB_OUTPUT"
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@4fa93a88de49bbef68b10eb15aabedf28ca0e1ed # v1.0.271
         id: claude
         env:
           RUNNER_STARTER: actions
@@ -532,7 +532,7 @@ jobs:
         # timed-out smoke leaves a target dir that matches it. Only from main's ref (D-3143): a run started by a
         # pull_request event saves under refs/pull/<n>/merge, which no later run can restore.
         if: always() && github.ref == 'refs/heads/main' && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != '' && steps.smoke-drop.outputs.save != 'no' && steps.bg-smoke.outputs.stopped != 'stopped'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: target/smoke
           key: ${{ steps.smoke-cache.outputs.cache-primary-key }}
@@ -563,7 +563,7 @@ jobs:
           cd "$RUNNER_TEMP/keeper" && python3 -m runner.cache drop --repo "$GITHUB_REPOSITORY" --prefix "$PREFIX" --before "${JOB_START:-}" | tee -a "$GITHUB_OUTPUT"
       - name: Rust build cache, save (D-514, D-3143)
         if: always() && steps.rust-prune.outputs.pruned == 'yes' && steps.rust-drop.outputs.save != 'no'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/.cargo/registry/index
@@ -753,7 +753,7 @@ jobs:
       contents: read
       actions: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: main
           persist-credentials: false

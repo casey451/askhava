@@ -10,7 +10,8 @@ use std::io;
 use std::sync::{Arc, OnceLock};
 
 use askhava_adapters::api::{
-    LocalStorage, StorageAdapter, TwilioConfig, TwilioMessageReader, TwilioVerify, twilio_clients,
+    LocalStorage, StorageAdapter, TwilioConfig, TwilioMessageReader, TwilioSms, TwilioVerify,
+    twilio_clients,
 };
 use askhava_core::api::{
     Brand, Clock, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging,
@@ -499,6 +500,7 @@ where
             pairs.clone(),
         )?;
         let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
+        let sms = with_status_url(settings, sms);
         if let Some(vault) = vault_from(settings, pairs.clone())? {
             let keys = (id_secret.clone(), vault);
             let sender = outbox_sender(settings, keys, sms.clone(), (&pairs, Arc::clone(&clock)))?;
@@ -512,6 +514,17 @@ where
         });
     }
     Ok(registry)
+}
+
+/// T377 (D-2761; TXT-013, SEC-016): the texting client asking Twilio for status callbacks at
+/// `ASKHAVA_PUBLIC_BASE_URL` plus [`inbound_text::STATUS_PATH`], the URL the status route
+/// rebuilds to check the signature; without a public base URL (dev and CI without webhooks) it
+/// asks for none.
+fn with_status_url(settings: &Settings, sms: TwilioSms) -> TwilioSms {
+    match settings.public_base_url() {
+        Some(base) => sms.with_status_callback(format!("{base}{}", inbound_text::STATUS_PATH)),
+        None => sms,
+    }
 }
 
 /// T336 (D-2307, D-3137, D-3173): registers `messaging.inbound_retry` over the Twilio Messages
@@ -1240,5 +1253,24 @@ mod tests {
             message,
             "setting ASKHAVA_POSTAL_ADDRESS has an invalid value"
         );
+    }
+
+    /// T377 (D-2761; TXT-013, SEC-016): with a public base URL the texting client asks for status
+    /// callbacks at it plus the status route's path; without one it asks for none.
+    #[test]
+    fn the_texting_client_asks_for_status_callbacks_only_with_a_public_base_url() {
+        let client = |extra: &[(&str, &str)]| {
+            let all = pairs("dev", &[TWILIO.as_slice(), &[TOKEN], extra].concat());
+            let settings = Settings::from_pairs(all.clone()).expect("settings");
+            let twilio = askhava_adapters::api::TwilioConfig::from_settings(&settings, all);
+            let (sms, _, _) = super::twilio_clients(&twilio.expect("config")).expect("clients");
+            format!("{:?}", super::with_status_url(&settings, sms))
+        };
+        let with = client(&[BASE]);
+        assert!(
+            with.contains("Some(\"https://hooks.example.test/webhooks/twilio/status\")"),
+            "{with}"
+        );
+        assert!(client(&[]).contains("status_callback: None"));
     }
 }

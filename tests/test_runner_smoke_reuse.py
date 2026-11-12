@@ -399,7 +399,7 @@ def test_the_workflow_reads_the_state_for_the_step_and_lets_the_session_collect_
     assert read["continue-on-error"] is True and "secrets." not in json.dumps(read)
     assert "ref=claude/kit-state" in read["run"] and "pre_smoke_state.json" in read["run"] and "git push" not in read["run"]
     assert pre["env"][ge.PRE_SMOKE_STATE] == "${{ runner.temp }}/pre_smoke_state.json"
-    session = steps[order.index("anthropics/claude-code-action@v1")]
+    session = steps[[n.split("@")[0] for n in order].index("anthropics/claude-code-action")]
     assert session["env"][ge.SMOKE_BACKGROUND] == "1"
     assert "If the result is `smoke_pending`" in session["with"]["prompt"] and "run step 1 again" in session["with"]["prompt"]
 
@@ -502,7 +502,7 @@ def test_the_cache_save_is_skipped_when_a_background_smoke_had_to_be_stopped() -
     order = [step.get("name") or step.get("uses") for step in steps]
     stop = steps[order.index("Stop a background smoke before the cache save (D-2560)")]
     save = steps[order.index("Smoke build cache, save (D-1911)")]
-    assert order.index("anthropics/claude-code-action@v1") < order.index(stop["name"]) < order.index(save["name"])
+    assert [n.split("@")[0] for n in order].index("anthropics/claude-code-action") < order.index(stop["name"]) < order.index(save["name"])
     assert stop["id"] == "bg-smoke" and stop["if"].startswith("always()") and stop["continue-on-error"] is True
     assert "stop_background_smoke" in stop["run"] and "stopped=" in stop["run"]
     assert save["if"].endswith("&& steps.bg-smoke.outputs.stopped != 'stopped'")

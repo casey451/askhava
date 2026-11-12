@@ -204,14 +204,14 @@ def test_the_worker_cache_is_restored_seeded_from_the_smoke_and_saved_empty_from
     clear = _named(steps, "Empty the worker build before the save (D-3143)")
     drop = _named(steps, "Drop the superseded worker build entries (D-3143)")
     save = _named(steps, "Rust build cache, save (D-514, D-3143)")
-    assert restore["uses"] == "actions/cache/restore@v4" and save["uses"] == "actions/cache/save@v4"
+    assert restore["uses"].split("@")[0] == "actions/cache/restore" and save["uses"].split("@")[0] == "actions/cache/save"
     assert restore["with"]["path"] == save["with"]["path"] and save["with"]["key"] == "${{ steps.rust-cache.outputs.cache-primary-key }}"
     assert restore["id"] == "rust-cache" and clear["id"] == "rust-prune" and drop["id"] == "rust-drop"
     assert MAIN in clear["if"] and "steps.rust-cache.outputs.cache-hit != 'true'" in clear["if"] and clear["if"].startswith("always()")
     assert drop["if"] == "always() && steps.rust-prune.outputs.pruned == 'yes'"
     assert save["if"] == drop["if"] + " && steps.rust-drop.outputs.save != 'no'"
     assert order.index("Run the start-routine smoke before the session (D-2028)") < order.index(seed["name"])
-    assert order.index(seed["name"]) < order.index("anthropics/claude-code-action@v1") < order.index(clear["name"])
+    assert order.index(seed["name"]) < [n.split("@")[0] for n in order].index("anthropics/claude-code-action") < order.index(clear["name"])
     assert order.index(clear["name"]) < order.index(drop["name"]) < order.index(save["name"])
     assert order.index("Smoke build cache, save (D-1911)") < order.index(clear["name"])
     assert "python3 -m runner.cache seed" in seed["run"] and seed["continue-on-error"] is True

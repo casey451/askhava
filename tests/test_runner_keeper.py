@@ -414,7 +414,7 @@ def test_the_smoke_build_has_its_own_cache_entry() -> None:
     restore = steps["Smoke build cache, restore (D-1890, D-1911)"]
     save = steps["Smoke build cache, save (D-1911)"]
     assert "target/debug" in rust["path"].split() and "target" not in rust["path"].split()
-    assert restore["uses"] == "actions/cache/restore@v4" and save["uses"] == "actions/cache/save@v4"
+    assert restore["uses"].split("@")[0] == "actions/cache/restore" and save["uses"].split("@")[0] == "actions/cache/save"
     assert restore["with"]["path"] == save["with"]["path"] == "target/smoke"
     assert restore["with"]["key"].endswith("-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}")
     assert save["with"]["key"] == "${{ steps.%s.outputs.cache-primary-key }}" % restore["id"]
@@ -423,7 +423,7 @@ def test_the_smoke_build_has_its_own_cache_entry() -> None:
     assert keys[0].endswith("-${{ github.sha }}-") and all(k.startswith("rust-smoke-") for k in keys)
     assert rust["key"].startswith("rust-${{ runner.os }}-"), "so the worker's restore keys never pick a smoke entry"
     order = [step.get("name") or step.get("uses") for step in _flow()["jobs"]["backup"]["steps"]]
-    assert order.index("Smoke build cache, save (D-1911)") > order.index("anthropics/claude-code-action@v1"), "after the session"
+    assert order.index("Smoke build cache, save (D-1911)") > [n.split("@")[0] for n in order].index("anthropics/claude-code-action"), "after the session"
 
 
 def test_actions_minutes_states_the_public_repository() -> None:
@@ -649,7 +649,7 @@ def test_the_warm_up_step_runs_after_the_cache_restore_and_before_the_session() 
     warm = steps[order.index(name)]
     assert order.index("Smoke build cache, restore (D-1890, D-1911)") < order.index(name)
     assert order.index("Smoke-test prerequisites (what Ci installs for itself)") < order.index(name)
-    assert order.index(name) < order.index("anthropics/claude-code-action@v1") < order.index("Smoke build cache, save (D-1911)")
+    assert order.index(name) < [n.split("@")[0] for n in order].index("anthropics/claude-code-action") < order.index("Smoke build cache, save (D-1911)")
     assert warm["continue-on-error"] is True and warm["run"].strip() == "python3 -m runner --warm-smoke"
     assert ge.WARM_TIMEOUT / 60 < warm["timeout-minutes"] <= 30
     assert warm["if"] == "hashFiles('Cargo.lock') != ''" and "secrets." not in json.dumps(warm)

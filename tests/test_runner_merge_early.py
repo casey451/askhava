@@ -209,8 +209,8 @@ def test_the_workflow_closes_merges_first_with_the_tokens_the_writes_need() -> N
     names = [str(s.get("name", s.get("uses", ""))) for s in _workflow()["jobs"]["backup"]["steps"]]
     first = names.index("Close merged tasks before the smoke (D-3141)")
     later = [i for i, n in enumerate(names) if n.startswith(("Rust build cache", "Warm the smoke", "Run the start-routine smoke"))
-             or n == "anthropics/claude-code-action@v1"]
-    assert len(later) >= 4 and first < min(later) and names[first - 1] == "actions/setup-python@v5"
+             or n.split("@")[0] == "anthropics/claude-code-action"]
+    assert len(later) >= 4 and first < min(later) and names[first - 1].split("@")[0] == "actions/setup-python"
     step = _step("backup", "Close merged tasks")
     assert "python3 -m runner --resolve-merges" in step["run"] and step["continue-on-error"] is True
     assert {"RUNNER_STARTER", "RUNNER_LANE", "GH_TOKEN", "RUNNER_CHECKS_TOKEN", "RUNNER_PUSH_TOKEN"} <= set(step["env"])

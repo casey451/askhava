@@ -260,7 +260,7 @@ def test_the_pre_smoke_step_runs_after_the_warm_up_and_before_the_session() -> N
     name = "Run the start-routine smoke before the session (D-2028)"
     pre = steps[order.index(name)]
     assert order.index("Warm the smoke build before the session (D-2007)") < order.index(name)
-    assert order.index(name) < order.index("anthropics/claude-code-action@v1") < order.index("Smoke build cache, save (D-1911)")
+    assert order.index(name) < [n.split("@")[0] for n in order].index("anthropics/claude-code-action") < order.index("Smoke build cache, save (D-1911)")
     assert pre["continue-on-error"] is True and pre["run"].strip() == "python3 -m runner --pre-smoke"
     assert ge.PRE_SMOKE_TIMEOUT / 60 + 5 <= pre["timeout-minutes"] <= 40
     assert pre["if"] == "hashFiles('Cargo.lock') != ''" and "secrets." not in json.dumps(pre)
