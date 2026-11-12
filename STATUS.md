@@ -1,20 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:13:11Z by runner dcd485b408b2 (actions).
+Updated 2026-11-12T08:13:52Z by runner 3926dabcc377 (actions).
 
 **Building: T336 in progress since 08:04Z; 231 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 231 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 4: T322 claimed 08:00Z, lease until 11:00Z
-- **Week:** 90% used, 11.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 3: T251 claimed 08:13Z, lease until 11:13Z; lane 4: T322 claimed 08:00Z, lease until 11:00Z
+- **Week:** 90% used, 7.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:13Z, 0 min before this update
 - **Keeper:** last ran 08:13Z, next wake 11:03Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T404 (since 2026-11-12T07:50:16Z, no attempt used; a plan change fixes it): T404: dependency T401 is DONE but its owned file app/server/tests/door_matrix/released_pick.rs is not on main
-- Strict plan check red: 12 problem(s) on tasks still to run (+92 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
+- Strict plan check red: 14 problem(s) on tasks still to run (+94 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -151,7 +150,7 @@ Updated 2026-11-12T08:13:11Z by runner dcd485b408b2 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T08:03:04Z (week)): week: 183.0M used, 11.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T01:52:36Z.
+- Pacing (session_reading 2026-11-12T08:12:55Z (week)): week: 186.5M used, 7.5M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T03:35:10Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -168,6 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T336 (lease until 2026-11-12T11:04:06Z)
+- lane 3: T251 (lease until 2026-11-12T11:13:43Z)
 - lane 4: T322 (lease until 2026-11-12T11:00:31Z)
 
 ## Last usage reading

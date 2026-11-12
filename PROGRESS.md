@@ -2587,3 +2587,4 @@
 - 2026-11-12T08:04:34Z runner dcd485b408b2 (actions): {"T336": "QUEUED -> IN_PROGRESS"}; T336 estimated 3.5M tokens (calibrated); week has 11.0M left (no five-hour budget, D-3056) after 3.0M still running in another lane (session_reading 2026-11-12T08:03:04Z (week)); claimed
 - 2026-11-12T08:12:55Z runner dcd485b408b2 (actions): {}
 - 2026-11-12T08:13:11Z runner dcd485b408b2 (actions): {}
+- 2026-11-12T08:13:52Z runner 3926dabcc377 (actions): {"T251": "QUEUED -> IN_PROGRESS"}; T251 estimated 3.6M tokens (calibrated); week has 7.5M left (no five-hour budget, D-3056) after 6.5M still running in another lane (session_reading 2026-11-12T08:12:55Z (week)); claimed
