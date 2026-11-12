@@ -37472,7 +37472,7 @@
      "result": "MERGE_PENDING"
     }
    ],
-   "reviewed_sha": "7721cfb8b5d1c43d30a4d79ccb117dbcd690ff7c",
+   "reviewed_sha": "292e7886bcdf47a2ac045a617c6a2f7324046ffc",
    "review_lease": {
     "task": "T385",
     "session": "actions-43268211353",
@@ -37507,6 +37507,17 @@
      "main": "0e36bfe8ac65173273d57ed1f11345f5d1c04f92",
      "how": "hand-in",
      "at": "2026-11-12T18:26:51Z"
+    },
+    {
+     "from": "7721cfb8b5d1c43d30a4d79ccb117dbcd690ff7c",
+     "to": "292e7886bcdf47a2ac045a617c6a2f7324046ffc",
+     "main": "ef5a3860ab5e7ec8a777d83d5d0f0d7cc3fb8184",
+     "how": "runner",
+     "checks": {
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-12T18:35:26Z"
     }
    ],
    "update_waiting_since": null,
@@ -39493,7 +39504,7 @@
      "result": "MERGE_PENDING"
     }
    ],
-   "reviewed_sha": "4db3eb89ba35cad7c8e36a2923abadec1e9c34ca",
+   "reviewed_sha": "0ef4016f093eea3768a3f4d8fff64cffd502d486",
    "review_lease": {
     "task": "T414",
     "session": "actions-43266871612",
@@ -39540,6 +39551,18 @@
       "Twin": "success"
      },
      "at": "2026-11-12T18:16:45Z"
+    },
+    {
+     "from": "4db3eb89ba35cad7c8e36a2923abadec1e9c34ca",
+     "to": "0ef4016f093eea3768a3f4d8fff64cffd502d486",
+     "main": "ef5a3860ab5e7ec8a777d83d5d0f0d7cc3fb8184",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-12T18:35:26Z"
     }
    ],
    "update_waiting_since": null,
@@ -41937,7 +41960,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T18:28:51Z",
+ "updated_at": "2026-11-12T18:35:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
