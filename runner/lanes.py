@@ -27,14 +27,17 @@ Occupancy lives in runner/state.py (`in_flight`: a live lease, or MERGE_PENDING 
   kit/runner.json "prefer_disjoint_crates" true, `cycle.claim_order` tries them after the others of the
   same priority (ordering only), since both tasks would edit that crate's `CLAUDE.md` and the second
   needs a resync.
-- `crate_clash` (D-3269): with kit/runner.json "exclusive_crates" true, `exclusive_ids` drops a task
-  that writes an `app/` crate (`task_crates`: its owned paths under `app/<crate>/` and its `module`) a
-  task in flight (IN_PROGRESS under a live lease or MERGE_PENDING, any lane) also writes; a task is
-  never checked against itself, so a resync of the task holding the crate is not blocked by it, and
-  FIX-MAIN is exempt; when the highest-ranked id is refused only for that, its crates are reserved for it,
-  so narrower tasks cannot keep taking them (review round 1). The run then claims something else or ends `idle` (no strike, the lane stays),
-  and `cycle.refill_lanes` counts only tasks that could be claimed together (`crate_disjoint`), so it
-  starts no run that could only collide.
+- `crate_clash` (D-3269, D-3303): with kit/runner.json "exclusive_crates" true, `exclusive_ids` drops a
+  task that writes an `app/` crate (`task_crates`: its owned paths under `app/<crate>/` and its `module`)
+  already written by as many tasks in flight (IN_PROGRESS under a live lease or MERGE_PENDING, any lane)
+  as the crate's limit (`crate_limit`: kit/runner.json "crate_cap", 1 unless set, and always 1 for a crate
+  whose `CLAUDE.md` is at its line limit, D-3303); a task is never checked against itself, so a resync of
+  the task holding the crate is not blocked by it, and FIX-MAIN is exempt. When the highest-ranked id is
+  refused only for that, its crates are reserved for it: no later id may take the last free slot in one
+  of them, so narrower tasks cannot keep overtaking it (review round 1). The run then claims something
+  else or ends `idle` (no strike, the lane stays), and `cycle.refill_lanes` counts only tasks that could
+  be claimed one after another under the same rule (`claimable_together`), so it starts no run that
+  could only collide.
 """
 
 from __future__ import annotations
@@ -51,6 +54,12 @@ STRIKES_TO_FALL_BACK = 2  # consecutive harness-type failures on a lane above 1 
 STRIKES_KEPT = 5  # the last strikes kept per lane as evidence
 PLAN_LOCK = "kit/plan.lock"
 Locked = Callable[[str], bool]
+Limit = Callable[[str, int], int]  # a crate's most tasks in flight, given how many it holds now (D-3303)
+
+
+def hard(_crate: str, _held: int = 0) -> int:
+    """D-3269's limit: one task in flight per crate."""
+    return 1
 
 
 def effective_lanes(lanes: int, state: State) -> int:
@@ -150,22 +159,53 @@ def compatible_ids(
     return [i for i in ids if not refusal(task_def(i), [t for t in flying if t["id"] != i], done, locked, early)]
 
 
-def exclusive_ids(ids: list[str], state: State, now: datetime, task_def: Callable[[str], dict[str, Any]]) -> list[str]:
-    """kit/runner.json "exclusive_crates" (D-3269) over `ids`, compatible and in claim order: none that writes a crate
-    a task in flight writes (`crate_clash`). When the first, highest-ranked id is refused only for that, its crates
-    are reserved for it: no later id that writes one of them is kept either, so a wide task high on the critical
-    path claims as soon as the holders finish instead of narrower tasks taking its crates one after another for
-    ever (review round 1). Other lanes still claim ids in other crates."""
-    flying = [task_def(tid) for tid in st.in_flight(state, now)]
+def exclusive_ids(ids: list[str], state: State, now: datetime, task_def: Callable[[str], dict[str, Any]],
+                  limit: Limit = hard) -> list[str]:
+    """kit/runner.json "exclusive_crates" (D-3269, D-3303) over `ids`, compatible and in claim order: none that
+    writes a crate already at its limit of tasks in flight (`crate_clash`). When the first, highest-ranked id is
+    refused only for that, its crates are reserved for it: no later id may take the last free slot in one of
+    them, so a wide task high on the critical path claims as soon as a holder finishes instead of narrower
+    tasks filling its crates one after another for ever (review round 1). Other ids still claim."""
+    return within_limits(ids, [task_def(tid) for tid in st.in_flight(state, now)], task_def, limit)
+
+
+def within_limits(ids: list[str], flying: list[dict[str, Any]], task_def: Callable[[str], dict[str, Any]],
+                  limit: Limit = hard) -> list[str]:
+    """`exclusive_ids` beside the given tasks in flight (`flying`), so `claimable_together` can add its own."""
     out: list[str] = []
     reserved: frozenset[str] = frozenset()
     for n, tid in enumerate(ids):
         task = task_def(tid)
-        if crate_clash(task, [t for t in flying if t["id"] != tid]):
+        others = [t for t in flying if t["id"] != tid]
+        if crate_clash(task, others, limit):
             reserved = task_crates(task) if n == 0 else reserved
-        elif not (reserved & task_crates(task)):
+        elif not takes_last_slot(task, others, reserved, limit):
             out.append(tid)
     return out
+
+
+def takes_last_slot(task: dict[str, Any], others: list[dict[str, Any]], reserved: frozenset[str], limit: Limit) -> bool:
+    """Whether claiming `task` beside `others` would leave a `reserved` crate no free slot for the blocked
+    highest-ranked id (D-3303): the crate would then hold its tasks in flight, this one and that one over its
+    limit. The limit is read with this one counted among the holders (review round 2): a crate whose `CLAUDE.md`
+    this claim would fill has no slot left for the reserved one. With a limit of 1 every reserved crate counts,
+    as under D-3269's reservation."""
+    return any(len(held) + 2 > limit(crate, len(held) + 1) for crate in reserved & task_crates(task)
+               for held in [holders(crate, others)])
+
+
+def crate_limit(cap: int, full: Callable[[str, int], bool] | None) -> Limit:
+    """How many tasks in flight a crate may hold, given how many it holds now (D-3303): kit/runner.json
+    "crate_cap" (at least 1), but 1 in a crate `full(crate, held)` says has no room left under its `CLAUDE.md`
+    line limit, where a second task's line could not fit and both tasks would edit the same lines. `full` None
+    counts no crate as full."""
+    top = max(int(cap), 1)
+    return lambda crate, held=0: 1 if top == 1 or (full is not None and full(crate, held)) else top
+
+
+def holders(crate: str, others: list[dict[str, Any]]) -> list[str]:
+    """The ids among `others` that write `crate` (`task_crates`)."""
+    return [str(o["id"]) for o in others if crate in task_crates(o)]
 
 
 def crates(paths: Iterable[str]) -> frozenset[str]:
@@ -183,29 +223,33 @@ def task_crates(task: dict[str, Any]) -> frozenset[str]:
     return crates(task.get("owns") or []) | extra
 
 
-def crate_clash(task: dict[str, Any], others: list[dict[str, Any]]) -> str:
-    """Why `task` must wait for a task in flight `others` that writes one of its crates (D-3269); '' when none
-    does, or for FIX-MAIN, which must never wait."""
+def crate_clash(task: dict[str, Any], others: list[dict[str, Any]], limit: Limit = hard) -> str:
+    """Why `task` must wait: one of its crates is already written by `limit(crate)` tasks in flight `others`
+    (D-3269, D-3303); '' when every crate has a free slot, or for FIX-MAIN, which must never wait."""
     if task.get("id") == st.FIX_MAIN:
         return ""
-    mine = task_crates(task)
-    for other in others:
-        shared = sorted(mine & task_crates(other))
-        if shared:
-            return f"writes app/{shared[0]}/, which {other['id']} in flight also writes (D-3269)"
+    for crate in sorted(task_crates(task)):
+        held = holders(crate, others)
+        most = limit(crate, len(held))
+        if len(held) >= most:
+            verb = "writes" if len(held) == 1 else "write"
+            return f"writes app/{crate}/, which {', '.join(held)} in flight also {verb} (at most {most} there; D-3269, D-3303)"
     return ""
 
 
-def crate_disjoint(ids: list[str], task_def: Callable[[str], dict[str, Any]]) -> list[str]:
-    """The ids, in order, that could all be claimed together with exclusive crates (D-3269): each one kept
-    shares no crate with one kept before it. `cycle.refill_lanes` counts these, so it starts no run for a
-    lane whose only candidates share a crate with another candidate a run is already started for."""
-    kept: list[dict[str, Any]] = []
-    for tid in ids:
-        task = task_def(tid)
-        if not crate_clash(task, kept):
-            kept.append(task)
-    return [str(t["id"]) for t in kept]
+def claimable_together(ids: list[str], state: State, now: datetime, task_def: Callable[[str], dict[str, Any]],
+                       limit: Limit = hard) -> list[str]:
+    """The ids, in claim order, that runs started now could claim one after another (D-3269, D-3303): each
+    is the first `within_limits` allows beside the tasks in flight and the ones taken before it, reservation
+    included. `cycle.refill_lanes` counts these, so refill and the claim apply one rule and no run is
+    started for a lane whose only candidates would be over a crate's limit."""
+    flying = [task_def(tid) for tid in st.in_flight(state, now)]
+    taken: list[str] = []
+    left = list(ids)
+    while nxt := within_limits(left, flying + [task_def(t) for t in taken], task_def, limit):
+        taken.append(nxt[0])
+        left.remove(nxt[0])
+    return taken
 
 
 def crowded(ids: list[str], state: State, now: datetime, task_def: Callable[[str], dict[str, Any]]) -> frozenset[str]:
