@@ -8,6 +8,10 @@
 //! a marker (R6). Sentry runs with `send_default_pii` off and every event and
 //! breadcrumb passes [`scrub_event`] first; Sentry's own log forwarding is
 //! switched off, since the JSON log on stdout is the only log store (PRIV-017).
+//! The JSON layer has its own filter, which drops sqlx's `sqlx::query` target at every level
+//! (a slow statement arrives at WARN with the full SQL text) and lets through only sqlx's
+//! slow-acquire WARN line, whose fields are numbers; the database metrics layer gets a separate
+//! filter (`db_metrics`, D-3298).
 
 use std::fmt;
 use std::sync::Arc;
@@ -17,14 +21,15 @@ use axum::http::Request;
 use sentry::protocol::{Breadcrumb, Context, Event, Stacktrace};
 use serde::{Deserialize, Deserializer};
 use thiserror::Error;
-use tracing::Subscriber;
+use tracing::{Level, Subscriber};
 use tracing_subscriber::Layer;
-use tracing_subscriber::filter::LevelFilter;
+use tracing_subscriber::filter::{LevelFilter, Targets};
 use tracing_subscriber::fmt::MakeWriter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::registry::LookupSpan;
 use tracing_subscriber::util::SubscriberInitExt;
 
+use crate::db_metrics::{ACQUIRE_TARGET, DbMetrics, STATEMENT_TARGET};
 use crate::settings::{Environment, Settings, expose};
 
 /// What a [`Redacted`] value and a scrubbed piece of text print instead.
@@ -108,9 +113,8 @@ pub fn init(settings: &Settings) -> Result<LogGuard, LoggingError> {
     let sentry_layer = sentry
         .as_ref()
         .map(|_| sentry::integrations::tracing::ErrorLayer::new().with_filter(LevelFilter::ERROR));
-    tracing_subscriber::registry()
-        .with(LevelFilter::from_level(settings.log_level()))
-        .with(json_layer(std::io::stdout))
+    let metrics = crate::db_metrics::global();
+    subscriber(settings.log_level(), std::io::stdout, &metrics)
         .with(sentry_layer)
         .try_init()
         .map_err(|_| LoggingError::AlreadyInstalled)?;
@@ -130,6 +134,43 @@ where
         .with_current_span(false)
         .with_span_list(true)
         .with_writer(writer)
+}
+
+/// The JSON log at `level` with its own filter, plus the database metrics layer feeding
+/// `metrics` (PRIV-016, D-3298): what `init` installs, before Sentry. A test passes its own
+/// writer and counters to see exactly what the app would log and count.
+pub fn subscriber<W>(
+    level: Level,
+    writer: W,
+    metrics: &Arc<DbMetrics>,
+) -> impl Subscriber + for<'a> LookupSpan<'a> + Send + Sync
+where
+    W: for<'w> MakeWriter<'w> + Send + Sync + 'static,
+{
+    tracing_subscriber::registry()
+        .with(json_layer(writer).with_filter(json_filter(level)))
+        .with(metrics.layer().with_filter(metrics_filter()))
+}
+
+/// The JSON layer's filter: `level` everywhere, no `sqlx::query` event at any level (its
+/// fields hold SQL text), and from `sqlx::pool::acquire` only the slow-acquire WARN line,
+/// whose fields are the wait and the threshold in seconds (SEC-001, PRIV-016, D-3298).
+#[must_use]
+pub fn json_filter(level: Level) -> Targets {
+    let level = LevelFilter::from_level(level);
+    Targets::new()
+        .with_default(level)
+        .with_target(STATEMENT_TARGET, LevelFilter::OFF)
+        .with_target(ACQUIRE_TARGET, level.min(LevelFilter::WARN))
+}
+
+/// The metrics layer's filter: sqlx's statement and acquire events at every level and nothing
+/// else (D-3298).
+#[must_use]
+pub fn metrics_filter() -> Targets {
+    Targets::new()
+        .with_target(STATEMENT_TARGET, LevelFilter::TRACE)
+        .with_target(ACQUIRE_TARGET, LevelFilter::TRACE)
 }
 
 /// Sentry's options: default PII off, no request bodies, the scrubber on every
