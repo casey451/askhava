@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-12T00:09:28Z by runner ce92afb8a8ca (actions).
+Updated 2026-11-12T00:16:55Z by runner a8ea584ed302 (actions).
 
-**Building: T317 in progress since 23:23Z; 216 of 382 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T317 in progress since 23:23Z; 216 of 378 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 216 of 382 build tasks (owner gates not counted)
+- **Tasks done:** 216 of 378 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T317 claimed 23:23Z, lease until 02:23Z
 - **Week:** 79% used, 27.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:09Z, 0 min before this update
+- **Last run:** 00:09Z, 7 min before this update
 - **Keeper:** last ran 00:09Z, next wake 02:26Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+64 on DONE tasks); first: T348: stored context_pct 36% but it measures 41%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+61 on DONE tasks); first: T348: stored context_pct 36% but it measures 41%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -116,8 +116,8 @@ Updated 2026-11-12T00:09:28Z by runner ce92afb8a8ca (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 214 of 733 (29.2%) · partial 345 · unstarted 174
-**Tasks merged (throughput only):** 216 of 382
+**Requirements verified:** 220 of 733 (30.0%) · partial 339 · unstarted 174
+**Tasks merged (throughput only):** 216 of 378
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -127,15 +127,15 @@ Updated 2026-11-12T00:09:28Z by runner ce92afb8a8ca (actions).
 | calls | 9 | 15 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
-| intake | 21 | 16 | 6 | 43 |
-| job-cards | 12 | 10 | 2 | 24 |
-| licensing | 22 | 26 | 0 | 48 |
+| intake | 22 | 15 | 6 | 43 |
+| job-cards | 13 | 9 | 2 | 24 |
+| licensing | 25 | 23 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 18 | 24 | 3 | 45 |
 | ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 7 | 22 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 31 | 24 | 1 | 56 |
+| quotes-pick | 32 | 23 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
