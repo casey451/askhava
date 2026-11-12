@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T10:06:18Z by runner e0aae0369e90 (actions).
+Updated 2026-11-12T10:06:38Z by runner e0aae0369e90 (actions).
 
 **Building: T343 in progress since 09:58Z; 234 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-12T10:06:18Z by runner e0aae0369e90 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T343 claimed 09:58Z, lease until 12:58Z
 - **Week:** 92% used, 6.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:05Z, 1 min before this update
-- **Keeper:** last ran 10:01Z, next wake 13:00Z
+- **Last run:** 10:06Z, 0 min before this update
+- **Keeper:** last ran 10:06Z, next wake 13:00Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -87,7 +87,6 @@ Updated 2026-11-12T10:06:18Z by runner e0aae0369e90 (actions).
 | T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z |  |
 | T278 | quotes, intake and picks: the check-in, feedback and unreach | done | 1 | 29 min | 10:56Z |  |
-| T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z |  |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
