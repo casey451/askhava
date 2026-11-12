@@ -15,7 +15,7 @@ use askhava_core::api::{Settings, SettingsError};
 use secrecy::SecretString;
 
 use crate::api::{
-    AdapterError, AdapterMode, CodeChannel, IdempotencyKey, SmsAdapter, TwilioConfig,
+    AdapterError, AdapterMode, CallPlan, CodeChannel, IdempotencyKey, SmsAdapter, TwilioConfig,
     VerifyAdapter, VoiceAdapter, twilio_clients,
 };
 
@@ -393,8 +393,10 @@ async fn voice_client_dials_from_the_pool_over_http() {
     let config = stand_in_config(server.1);
     let (_, voice, _) = twilio_clients(&config).unwrap();
     let number = &config.pool().numbers()[0];
+    let script = SecretString::from("<Response><Hangup/></Response>");
+    let plan = CallPlan::new(script, "https://hooks.example.test/status".to_owned()).unwrap();
     let call = voice
-        .open_call(&key("call.open", "session-1"), TO, number)
+        .open_call(&key("call.open", "session-1"), TO, number, &plan)
         .await
         .unwrap();
     let calls = format!(

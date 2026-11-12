@@ -19,7 +19,9 @@ inclusive), which recovery matches on (OPS-017, D-2764), and the test-only `Mess
 Twilio cannot store: only `core::test_control` uses it, never app code. The provider's own opt-out
 replies are listed only with `Direction=outbound-reply`. A create's `StatusCallback` is kept, and
 `/_stand_in/twilio/status` answers 409 (nothing recorded) for a message created without one, else
-the URL, params and signature Twilio would post there (D-2761). It binds to 127.0.0.1 only and holds fake data only.
+the URL, params and signature Twilio would post there (D-2761). A call create keeps its script and
+callback fields, and `/_stand_in/twilio/call-progress` gives the script and the signed callbacks
+Twilio would post as the call ends, only to the URLs the create gave (D-2762). It binds to 127.0.0.1 only and holds fake data only.
 
 Usage: python3 -m stand_ins.server [--port 4010]; `--port 0` binds a free port, and the
 "listening" line names the port actually bound, so a test can start it without a port race.
@@ -172,7 +174,10 @@ def twilio_calls(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     f = req.form()
     if m.group("call"):
         return (*s.twilio.update_call(m.group("call"), f.get("Status", "")), {})
-    return (*s.twilio.create_call(f.get("To", ""), f.get("From", "")), {})
+    plan: dict[str, Any] = {k: v for k, v in f.items() if k not in ("To", "From")}
+    pairs = parse_qsl(req.raw.decode(), keep_blank_values=True)
+    plan["StatusCallbackEvent"] = [v for k, v in pairs if k == "StatusCallbackEvent"]
+    return (*s.twilio.create_call(f.get("To", ""), f.get("From", ""), plan), {})
 
 
 def twilio_verify(s: StandIns, req: Request, m: re.Match[str]) -> Out:
@@ -206,6 +211,18 @@ def control_status(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     url, params = found
     signature = twilio.compute_signature(s.twilio.auth_token, url, params)
     return 200, {"url": url, "params": params, "signature": signature}, {}
+
+
+def control_call_progress(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """Twilio runs call `sid` to `outcome`: the script its create gave and each callback Twilio would
+    post (URL, params, X-Twilio-Signature), only to the URLs the create gave (D-2762, D-2771)."""
+    b = req.json()
+    posts = s.twilio.progress(b["sid"], b["outcome"])
+    signed = [
+        {"url": url, "params": params, "signature": twilio.compute_signature(s.twilio.auth_token, url, params)}
+        for url, params in posts
+    ]
+    return 200, {"twiml": s.twilio.call_plans[b["sid"]].get("Twiml"), "callbacks": signed}, {}
 
 
 def _stamp(body: dict[str, Any]) -> int:
@@ -326,6 +343,7 @@ ROUTES: list[tuple[str, re.Pattern[str], Handler]] = [
         ("POST", r"/_stand_in/twilio/inbound", control_inbound),
         ("GET", r"/_stand_in/twilio/code", control_code),
         ("POST", r"/_stand_in/twilio/status", control_status),
+        ("POST", r"/_stand_in/twilio/call-progress", control_call_progress),
         ("POST", r"/_stand_in/stripe/disputes", control_dispute),
         ("POST", r"/_stand_in/stripe/webhook", control_stripe_webhook),
         ("POST", r"/_stand_in/resend/webhooks", control_resend_webhooks),
