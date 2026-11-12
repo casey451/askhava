@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T07:05:57Z by runner 912ecf71b550 (actions).
+Updated 2026-11-12T07:13:38Z by runner 8bb13e22b51d (actions).
 
 **Building: T360 in progress since 06:59Z; 228 of 394 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T07:05:57Z by runner 912ecf71b550 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T360 claimed 06:59Z, lease until 09:59Z; lane 2: T401 claimed 06:56Z, lease until 09:56Z; lane 3: T390 claimed 07:05Z, lease until 10:05Z; lane 4: T339 claimed 06:55Z, lease until 09:55Z; lane 5: T336 claimed 06:48Z, lease until 09:48Z
 - **Week:** 88% used, 5.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:59Z, 6 min before this update
+- **Last run:** 07:06Z, 7 min before this update
 - **Keeper:** last ran 06:37Z, next wake 06:57Z
 
 ## Needs attention
@@ -83,6 +83,7 @@ Updated 2026-11-12T07:05:57Z by runner 912ecf71b550 (actions).
 | T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z |  |
 
 ### Plan and harness merges on main
+- 07:12Z Harness: close merged tasks before the smoke so their lanes free ~20 min sooner (D-3141) (#552)
 - 06:05Z Plan: pre-flight fixes round 8 — stage 5: T101, T102, T105, T202, T320, T106, T364; new T408 (D-3144) (#551)
 - 05:28Z Harness: stop backup-runner caches evicting CI's Rust caches (D-3143) (#553)
 - 05:16Z Harness: run lint and the slow compile-fail/prompt-injection tests in a parallel CI job (D-3142) (#550)
