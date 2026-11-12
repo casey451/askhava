@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T05:43:41Z by runner 72993ab86164 (actions).
+Updated 2026-11-12T05:55:57Z by runner 72993ab86164 (actions).
 
-**Building: T405 in progress since 05:14Z; 224 of 393 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T405 in progress since 05:14Z; 225 of 393 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 224 of 393 build tasks (owner gates not counted)
+- **Tasks done:** 225 of 393 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T405 claimed 05:14Z, lease until 08:14Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
 - **Week:** 87% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:43Z, 0 min before this update
+- **Last run:** 05:43Z, 12 min before this update
 - **Keeper:** last ran 05:43Z, next wake 07:56Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-12T05:43:41Z by runner 72993ab86164 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T356 | messaging and server (harness): the worker sends queued text | MERGE_PENDING | 1 | 86 min | 05:31Z |  |
+| T356 | messaging and server (harness): the worker sends queued text | done | 1 | 86 min | 05:31Z |  |
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | resync | 1 | 33 min | 04:56Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z | Worker stopped before building with a PLAN GAP claim (messaging.inbox has no sender/handled columns; T336 owns no migrat |
@@ -119,7 +119,7 @@ Updated 2026-11-12T05:43:41Z by runner 72993ab86164 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 210 of 733 (28.6%) · partial 351 · unstarted 172
-**Tasks merged (throughput only):** 224 of 393
+**Tasks merged (throughput only):** 225 of 393
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -154,7 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 104 of 178 done
+- stage 4: 105 of 178 done
 - stage 5: 0 of 61 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
