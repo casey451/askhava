@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The test machines keep their saved builds again (D-3143, November 12)
+
+- **What happened.** GitHub keeps 10 GB of saved builds for the project. The runner saved about 7 GB more after every merge, which pushed out the builds the checks reuse, so every check run since last night built from scratch (0 of 36 reuses hit today).
+- **What changed.** The runner now keeps just one copy of each of its two saved builds, stops saving the part of one that its other build already holds, and saves only from the main line. The browser download the page tests use is saved the same way. Nothing about what is tested changed.
+- **Expected.** The check runs reuse their builds again, which saves several minutes per run (about 7 on the longest job).
+
 ## Nine more waiting steps fixed before they start, and two new steps (plan change, D-3134, November 12)
 
 - **What happened.** A seventh check of steps still waiting in line found nine that would have stopped partway: some would have broken older tests they may not touch, the Stripe stand-in step could not add the pages it was asked to serve, the won-dispute step relied on a Stripe read nobody builds, the charge-ID step only wrote the ID on a path that usually runs second, and two needs had no storage at all.
