@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-12T05:33:48Z by runner fe14fd0d43a4 (actions).
+Updated 2026-11-12T05:43:10Z by runner 72993ab86164 (actions).
 
-**Building: T405 in progress since 05:14Z; 224 of 390 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T405 in progress since 05:14Z; 224 of 393 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 224 of 390 build tasks (owner gates not counted)
+- **Tasks done:** 224 of 393 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T405 claimed 05:14Z, lease until 08:14Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
 - **Week:** 87% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:33Z, 0 min before this update
+- **Last run:** 05:33Z, 9 min before this update
 - **Keeper:** last ran 05:33Z, next wake 07:56Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 8 problem(s) on tasks still to run (+80 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+84 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T356 | messaging and server (harness): the worker sends queued text | MERGE_PENDING | 1 | 86 min | 05:31Z |  |
-| T405 |  | resync | 1 | 33 min | 04:56Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T405 | payments and adapters (harness): each charged pick's 3-D Sec | resync | 1 | 33 min | 04:56Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z | Worker stopped before building with a PLAN GAP claim (messaging.inbox has no sender/handled columns; T336 owns no migrat |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | MERGE_PENDING | 1 | 12 min | 03:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -79,7 +79,6 @@ Updated 2026-11-12T05:33:48Z by runner fe14fd0d43a4 (actions).
 | T212 | intake: photo asks with on-server checks and preview, inspir | done | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z |  |
 | T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z |  |
-| T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
 
 ### Plan and harness merges on main
 - 05:28Z Harness: stop backup-runner caches evicting CI's Rust caches (D-3143) (#553)
@@ -119,8 +118,8 @@ Updated 2026-11-12T05:33:48Z by runner fe14fd0d43a4 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
-**Tasks merged (throughput only):** 224 of 390
+**Requirements verified:** 210 of 733 (28.6%) · partial 351 · unstarted 172
+**Tasks merged (throughput only):** 224 of 393
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -134,11 +133,11 @@ Updated 2026-11-12T05:33:48Z by runner fe14fd0d43a4 (actions).
 | job-cards | 12 | 10 | 2 | 24 |
 | licensing | 20 | 28 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 18 | 24 | 3 | 45 |
+| messaging | 17 | 25 | 3 | 45 |
 | ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 7 | 22 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 31 | 24 | 1 | 56 |
+| quotes-pick | 30 | 25 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
