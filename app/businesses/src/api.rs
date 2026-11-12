@@ -32,6 +32,10 @@ use sqlx::{Connection, PgConnection};
 pub use crate::about_us::{
     ABOUT_US_MAX, AboutUsRefusal, screen as screen_about_us, screen_public_name, set_about_us,
 };
+pub use crate::account_emails::{
+    AccountDirectory, AccountMailer, NO_ACCOUNT_SENDER, PHONE_STOPPED_EMAIL, WELCOME_EMAIL,
+    run_phone_stopped, run_welcome,
+};
 pub use crate::backup_address::{
     BACKUP_CHANGED_KIND, backup_changed_words, confirm_backup, notice_addresses, remove_backup,
     request_backup,

@@ -10,7 +10,9 @@
     links; a refused one shows again with its reason and a focused summary (A11Y-030). T248
     (BIZ-058, BIZ-049, A11Y-010 to A11Y-013, D-3116): the service-area screen asks the base ZIP and
     the radius beside towns served; a refusal keeps both values, opens the title with "Error: ",
-    focuses a summary of links and repeats each message by its field. -#}
+    focuses a summary of links and repeats each message by its field. T268 (CON-019, PICK-049,
+    D-1715): the E-SIGN consent box before the Terms link, never rendered checked; a post without
+    the tick comes back with the `consent` problem in the summary and by the box. -#}
 {% block title %}{{ title }}{% endblock %}
 {% block main %}
 <h1>{{ title }}</h1>
@@ -86,6 +88,11 @@
 {% for line in fee_lines %}<li>{{ line }}</li>
 {% endfor %}</ul>
 </section>
+<fieldset id="consent-box"><legend>Getting job requests and notices</legend>
+{% if let Some(reason) = error_for("consent") %}<p id="consent-error" class="error">Error: {{ reason }}</p>{% endif %}
+<p><input type="checkbox" id="consent" name="consent" value="yes"{% if error_for("consent").is_some() %} aria-invalid="true" aria-describedby="consent-error"{% endif %}>
+<label for="consent">{{ consent }}</label></p>
+</fieldset>
 <p id="terms-link"><a href="/terms/business">Read the business terms</a></p>
 <button type="submit">Next: get your code</button>
 </form>

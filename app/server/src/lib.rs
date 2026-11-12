@@ -663,9 +663,15 @@ fn register_notice_senders(
     });
 }
 
-/// The business-account handlers: the complaint box's close (BIZ-029, T083) and a removed
-/// member's sessions and links ended (SEC-004, SEC-024, T084).
+/// The business-account handlers: the complaint box's close (BIZ-029, T083), a removed
+/// member's sessions and links ended (SEC-004, SEC-024, T084), and the welcome and phone-stopped
+/// emails (CON-020, BIZ-017, T268), which have no sender yet: no Resend client is built and no
+/// business mailbox address or phone number can be read (the sender directory keeps digests
+/// only), so each such task fails with `NO_ACCOUNT_SENDER` and is tried again, and a welcome is
+/// never marked sent without its email (D-3186).
 fn register_business_handlers(registry: &mut Registry) {
+    use askhava_adapters::api::ResendEmail;
+    use askhava_businesses::api::{run_phone_stopped, run_welcome};
     registry.register(
         askhava_businesses::api::BOX_CLOSED_KIND,
         askhava_businesses::api::run_box_closed,
@@ -674,6 +680,33 @@ fn register_business_handlers(registry: &mut Registry) {
         askhava_businesses::api::MEMBER_REMOVED_KIND,
         askhava_portals::api::run_member_removed,
     );
+    registry.register(askhava_businesses::api::WELCOME_KIND, |pool, task| {
+        run_welcome::<ResendEmail, NoAccountDirectory>(pool, None, task)
+    });
+    registry.register(askhava_businesses::api::PHONE_STOPPED_KIND, |pool, task| {
+        run_phone_stopped::<ResendEmail, NoAccountDirectory>(pool, None, task)
+    });
+}
+
+/// The account emails' directory until business addresses and phone numbers are readable
+/// (D-3186): nothing is on file.
+struct NoAccountDirectory;
+
+impl askhava_businesses::api::AccountDirectory for NoAccountDirectory {
+    async fn address(
+        &self,
+        _: &mut sqlx::PgConnection,
+        _: Uuid,
+    ) -> Result<Option<SecretString>, askhava_core::api::HandlerError> {
+        Ok(None)
+    }
+    async fn last4(
+        &self,
+        _: &mut sqlx::PgConnection,
+        _: (Uuid, Uuid),
+    ) -> Result<Option<String>, askhava_core::api::HandlerError> {
+        Ok(None)
+    }
 }
 
 /// `intake`'s accepted-quote email after a Confirm (PICK-042, T388), with no sender until the

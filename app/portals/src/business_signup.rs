@@ -32,10 +32,22 @@
 //! `businesses::api::ServiceArea::parse` checks them. [`CapabilityValues`] carries both as hidden
 //! fields, so the check screen reads them back ([`service_area_lines`], BIZ-030), and
 //! [`signup_can_finish`] is false until a business has towns and a service area.
+//!
+//! T268 added the E-SIGN consent box (CON-019, PICK-049; D-1715, D-3187): the form shows
+//! `businesses::api::consent_box` for [`signup_channels`] (email, and texts when the business chose
+//! them), never ticked; [`submit_signup`] refuses a form without the tick before anything is stored
+//! ([`SignupRefusal::NoConsent`], shown as [`CONSENT_MISSING`] by the box through
+//! [`Entered::problem`] on the `consent` field), then signs up and, in one transaction, records the
+//! owner, links a chosen text phone and stores one consent row per channel.
 
 use std::collections::BTreeSet;
 
 use askama::Template;
+use askhava_adapters::api::PaymentsAdapter;
+use askhava_businesses::api::{
+    Acting, ConsentChannel, ConsentError, SenderLink, SignUpForm, SignedUp, SignupError, TeamError,
+    add_owner, consent_box, link_phone, record_consent, sign_up,
+};
 use askhava_businesses::api::{
     BusinessesError, ServiceArea, ServiceAreaProblem, service_area, towns as stored_towns,
 };
@@ -46,10 +58,13 @@ use askhava_businesses::api::{
     FeeNumbers, MaskedContact, NUMBER_OLD_BUTTON, SOMEONE_ELSE_LINE, STOP_FIX_BUTTON, fee_summary,
     fix_record_lines, trade_count,
 };
+use askhava_licensing::api::ClassMap;
 use askhava_payments::api::Tier;
 use askhava_picks::api::{ConfirmSettings, WindowRules};
-use sqlx::PgConnection;
+use jiff::Timestamp;
+use secrecy::SecretString;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
 use crate::pick_flow::PageLanguage;
 
@@ -321,8 +336,96 @@ pub struct Entered<'a> {
     /// The Yelp page link (BIZ-052).
     pub yelp_link: &'a str,
     /// The refused field's form name and the reason, from `businesses::api::NameRefusal` or
-    /// `LinkRefusal`.
+    /// `LinkRefusal`, or `consent` with [`CONSENT_MISSING`] (CON-019).
     pub problem: Option<(&'static str, &'a str)>,
+    /// The business chose texts (BIZ-036), so the consent box names texts too.
+    pub text_chosen: bool,
+}
+
+/// CON-019, A11Y-030: the error beside the consent box when the form came without its tick.
+pub const CONSENT_MISSING: &str = "Tick the box to agree to get notices. We send job requests by email, so we can't sign you up without it.";
+
+/// CON-019, BIZ-036, TXT-035: the channels the sign-up's consent box covers: email, plus texts
+/// when the business chose them while business texting is on.
+#[must_use]
+pub fn signup_channels(text_chosen: bool, texting_on: bool) -> Vec<ConsentChannel> {
+    let mut channels = vec![ConsentChannel::Email];
+    if text_chosen && texting_on {
+        channels.push(ConsentChannel::Text);
+    }
+    channels
+}
+
+/// The consent box as posted: its tick and, when texts were chosen, the phone to link as the
+/// main phone with the composition's sender directory (CALL-012).
+pub struct SignupConsent<'a, L> {
+    /// Whether the box was ticked.
+    pub ticked: bool,
+    /// The channels the box covered ([`signup_channels`]).
+    pub channels: &'a [ConsentChannel],
+    /// The directory and the number for a text box.
+    pub text_phone: Option<(&'a L, &'a SecretString)>,
+}
+
+/// Why [`submit_signup`] stored nothing, or stopped after the sign-up.
+#[derive(Debug)]
+pub enum SignupRefusal {
+    /// The box was not ticked: nothing is stored ([`CONSENT_MISSING`]).
+    NoConsent,
+    /// The sign-up itself was refused (nothing stored) or failed.
+    Signup(SignupError),
+    /// The owner or the phone could not be stored.
+    Team(TeamError),
+    /// The consent could not be stored.
+    Consent(ConsentError),
+}
+
+/// CON-019, BIZ-001, CALL-012, D-1715: the form's post. Without the tick it stores nothing; else
+/// `businesses::api::sign_up` (its own transaction, the Stripe customer after it, R11), then one
+/// transaction holding the owner, the text phone when chosen and one consent row per channel with
+/// its version and time. A text box with no phone is refused before anything is stored.
+///
+/// # Errors
+/// [`SignupRefusal`].
+pub async fn submit_signup<L: SenderLink>(
+    pool: &PgPool,
+    (stripe, id_secret, map): (&impl PaymentsAdapter, &SecretString, &ClassMap),
+    form: &SignUpForm,
+    consent: SignupConsent<'_, L>,
+    now: Timestamp,
+) -> Result<SignedUp, SignupRefusal> {
+    let text = consent.channels.contains(&ConsentChannel::Text);
+    if !consent.ticked || consent.channels.is_empty() || (text && consent.text_phone.is_none()) {
+        return Err(SignupRefusal::NoConsent);
+    }
+    let up = sign_up(pool, (stripe, id_secret), map, form, now)
+        .await
+        .map_err(SignupRefusal::Signup)?;
+    let mailbox = form
+        .mailbox_id
+        .ok_or(SignupRefusal::Signup(SignupError::NoEmail))?;
+    let db = |_| SignupRefusal::Team(TeamError::Database);
+    let mut tx = pool.begin().await.map_err(db)?;
+    let owner = add_owner(&mut tx, up.business, mailbox, now)
+        .await
+        .map_err(SignupRefusal::Team)?;
+    let phone = match consent.text_phone.filter(|_| text) {
+        Some((dir, number)) => {
+            let by = Acting {
+                business: up.business,
+                member: owner,
+            };
+            let line = link_phone(&mut tx, dir, (by, true), number, now).await;
+            Some(line.map_err(SignupRefusal::Team)?)
+        }
+        None => None,
+    };
+    let who = (up.business, owner, phone);
+    record_consent(&mut tx, who, consent.channels, true, now)
+        .await
+        .map_err(SignupRefusal::Consent)?;
+    tx.commit().await.map_err(db)?;
+    Ok(up)
 }
 
 /// What every screen needs besides the screen itself.
@@ -355,6 +458,7 @@ struct SignupView<'a> {
     csrf: &'a str,
     entered: Entered<'a>,
     area: Option<AreaEntered<'a>>,
+    consent: String,
 }
 
 impl SignupView<'_> {
@@ -381,6 +485,8 @@ fn fill_form<'a>(v: &mut SignupView<'a>, categories: &[(String, &'static str)], 
         .collect();
     v.pest = categories.iter().any(|(c, _)| c == "pest_control");
     v.fee_lines = fee_summary(&parts.fees);
+    let channels = signup_channels(v.entered.text_chosen, parts.texting_on);
+    v.consent = consent_box(&channels).wording;
 }
 
 /// BIZ-058, A11Y-030: the service-area screen's title, opening with "Error: " after a refusal.

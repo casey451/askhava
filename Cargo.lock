@@ -629,6 +629,7 @@ dependencies = [
  "askhava-core",
  "askhava-intake",
  "askhava-jobs",
+ "askhava-licensing",
  "askhava-messaging",
  "askhava-ops",
  "askhava-payments",

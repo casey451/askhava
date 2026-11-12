@@ -31,6 +31,7 @@
 //! Other crates reach it only through [`api`].
 
 mod about_us;
+mod account_emails;
 pub mod api;
 mod backup_address;
 mod capability;
