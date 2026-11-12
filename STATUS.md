@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T02:56:46Z by runner d485480df891 (actions).
+Updated 2026-11-12T02:57:01Z by runner d485480df891 (actions).
 
 **Building: T401 in progress since 02:54Z; 221 of 383 done; week 82% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 221 of 383 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T401 claimed 02:54Z, lease until 05:54Z; lane 2: T248 claimed 01:49Z, lease until 04:49Z; lane 4: T400 claimed 02:45Z, lease until 05:45Z
+- **Lane:** lane 1: T401 claimed 02:54Z, lease until 05:54Z; lane 4: T400 claimed 02:45Z, lease until 05:45Z
 - **Week:** 82% used, 25.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:55Z, 1 min before this update
 - **Keeper:** last ran 02:53Z, next wake 04:52Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T02:56:46Z by runner d485480df891 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T248 | catalog and businesses: markets as reviewed data, Arizona ZI | MERGE_PENDING | 1 | 67 min | 02:56Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | MERGE_PENDING | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T313 | messaging and server: an EMERGENCY card notice goes at night | done | 1 | 19 min | 02:07Z |  |
 | T368 | businesses (harness): the capability checklist offers every  | MERGE_PENDING | 1 | 17 min | 02:06Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -165,8 +166,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T401 (lease until 2026-11-12T05:54:52Z)
-- lane 2: T248 (lease until 2026-11-12T04:49:36Z)
 - lane 4: T400 (lease until 2026-11-12T05:45:10Z)
 
 ## Last usage reading
-- {"task": "T334", "at": "2026-11-12T02:25:03Z", "output_tokens": 18430, "cache_creation_input_tokens": 78177, "input_tokens": 106, "cache_read_input_tokens": 1405523}
+- {"task": "T248", "at": "2026-11-12T02:56:44Z", "cache_read_input_tokens": 35698311, "cache_creation_input_tokens": 677363, "output_tokens": 213693, "input_tokens": 612}
