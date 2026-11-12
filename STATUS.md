@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:44:22Z by runner ef5a3860ab5e (actions).
+Updated 2026-11-12T18:45:34Z by runner ef5a3860ab5e (actions).
 
 **Building: T251 in progress since 17:19Z; 249 of 400 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T18:44:22Z by runner ef5a3860ab5e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 2: T362 claimed 18:36Z, lease until 21:36Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
 - **Week:** 3% used, 177.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:44Z, 0 min before this update
+- **Last run:** 18:44Z, 1 min before this update
 - **Keeper:** last ran 18:44Z, next wake 20:21Z
 
 ## Needs attention
@@ -86,6 +86,7 @@ Updated 2026-11-12T18:44:22Z by runner ef5a3860ab5e (actions).
 | T332 | payments (harness): a late success has its own refund trigge | done | 4 | 25 min | 18:53Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
+- 18:44Z Plan: performance track — measurement harness T416–T418, goals as non-blocking (D-3292) (#607)
 - 18:11Z Plan: pre-flight fixes round 11 — T346 context gap, T162 template key, T372 cite, T255/T347 budgets (D-3286) (#605)
 - 18:06Z Plan: T362 takes the keyboard test's load wait (D-3270) (#601)
 - 17:59Z Harness: seven lanes without merge collisions — crate exclusion, add-only conflict resolution, lanes 5→7 (D-3269) (#603)
