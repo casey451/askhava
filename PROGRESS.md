@@ -2603,3 +2603,4 @@
 - 2026-11-12T08:36:54Z runner 3aa1c4c2c870 (actions): {}
 - 2026-11-12T08:37:10Z runner 5cbddc23fd8c (actions): {}
 - 2026-11-12T08:44:49Z runner d9515904bc86 (actions): {"T345": "QUEUED -> IN_PROGRESS"}; T345 estimated 1.6M tokens (calibrated); week has 1.8M left (no five-hour budget, D-3056) after 10.2M still running in another lane (session_reading 2026-11-12T08:36:53Z (week)); claimed
+- 2026-11-12T08:47:02Z runner a070309d52e6 (actions): {"T345": "IN_PROGRESS -> BLOCKED"}

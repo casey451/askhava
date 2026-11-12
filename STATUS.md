@@ -1,24 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:44:49Z by runner d9515904bc86 (actions).
+Updated 2026-11-12T08:47:02Z by runner a070309d52e6 (actions).
 
 **Building: T406 in progress since 08:23Z; 232 of 394 done; week 91% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 232 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 3: T345 claimed 08:42Z, lease until 11:42Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
+- **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
 - **Week:** 91% used, 1.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:42Z, 2 min before this update
+- **Last run:** 08:44Z, 2 min before this update
 - **Keeper:** last ran 08:37Z, next wake 11:06Z
 
 ## Needs attention
 - BLOCKED T251: plan gap reported: PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_fac; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T251 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/restore@v4, actions/cache/save@v4, anthropics/claude-code-action@v1 and actions/setup-python@v5; no task owns them (added after D-3083 in harness PRs #553 (D-3143) and #552 (D-3141)). Reviewer confirmed: lines exist on main, T345 owns list excludes both files, and with the pins applied the two tests fail (2 failed, 35 passed). Smallest fix: add both files to T345 owns under the D-3083 rule (only action-ref matches change, comparing the name before @); owns and files budget 10 -> ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 18 problem(s) on tasks still to run (+96 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 18 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 2 | 4 min | 08:47Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
 | T322 | businesses: a backup notice address is checked again at conf | MERGE_PENDING | 1 | 35 min | 08:36Z |  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | BLOCKED | 1 | 3 min | 08:17Z | PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card s |
 | T360 | messaging: the opt-out confirmation email while texting is o | done | 1 | 43 min | 07:42Z |  |
@@ -56,7 +58,7 @@ Updated 2026-11-12T08:44:49Z by runner d9515904bc86 (actions).
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 1 | 77 min | 19:09Z |  |
 | T316 | businesses: one read of each business's public name for the  | done | 2 | 26 min | 19:02Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T332 | payments (harness): a late success has its own refund trigge | done | 4 | 25 min | 18:53Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 1 | 8 min | 18:44Z | PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.p |
+| T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 1 | 8 min | 18:44Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | resync | 4 | 46 min | 18:10Z |  |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | done | 1 | 20 min | 18:05Z |  |
 | T333 | payments (harness): a succeeded refund is recorded at the am | done | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
@@ -170,8 +172,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T406 (lease until 2026-11-12T11:23:34Z)
 - lane 2: T336 (lease until 2026-11-12T11:04:06Z)
-- lane 3: T345 (lease until 2026-11-12T11:42:50Z)
 - lane 5: T268 (lease until 2026-11-12T11:14:04Z)
 
 ## Last usage reading
-- {"task": "T322", "at": "2026-11-12T08:36:17Z", "cache_read_input_tokens": 6199142, "output_tokens": 64570, "cache_creation_input_tokens": 284250, "input_tokens": 230}
+- {"task": "T345", "at": "2026-11-12T08:47:01Z", "cache_read_input_tokens": 1201334, "output_tokens": 20526, "cache_creation_input_tokens": 95601, "input_tokens": 80}

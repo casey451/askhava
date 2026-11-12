@@ -33414,8 +33414,8 @@
     "T074",
     "T172"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "BLOCKED",
+   "attempts": 2,
    "slug": "pin-every-workflow-action",
    "type": "harness",
    "stage": "4",
@@ -33428,8 +33428,8 @@
     3053,
     3054
    ],
-   "reason": null,
-   "last_failure": "PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.\nre-queued after plan fix D-3083: Plan fixed by D-3083 (#524): T345 owns the three runner test files, may change only action-ref matches (name before @)",
+   "reason": "plan gap reported: PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/restore@v4, actions/cache/save@v4, anthropics/claude-code-action@v1 and actions/setup-python@v5; no task owns them (added after D-3083 in harness PRs #553 (D-3143) and #552 (D-3141)). Reviewer confirmed: lines exist on main, T345 owns list excludes both files, and with the pins applied the two tests fail (2 failed, 35 passed). Smallest fix: add both files to T345 owns under the D-3083 rule (only action-ref matches change, comparing the name before @); owns and files budget 10 -> ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/restore@v4, actions/cache/save@v4, anthropics/claude-code-action@v1 and actions/setup-python@v5; no task owns them (added after D-3083 in harness PRs #553 (D-3143) and #552 (D-3141)). Reviewer confirmed: lines exist on main, T345 owns list excludes both files, and with the pins applied the two tests fail (2 failed, 35 passed). Smallest fix: add both files to T345 owns under the D-3083 rule (only action-ref matches change, comparing the name before @); owns and files budget 10 -> 12.",
    "history": [
     {
      "attempt": 1,
@@ -33442,6 +33442,19 @@
      "path_check_ok": null,
      "started_at": "2026-11-11T18:36:12Z",
      "ended_at": "2026-11-11T18:44:13Z",
+     "result": "BLOCKED"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 33,
+     "head_sha": "a070309d52e682e05c22f068361bf788ad764afc",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-12T08:42:50Z",
+     "ended_at": "2026-11-12T08:47:01Z",
      "result": "BLOCKED"
     }
    ],
@@ -36576,12 +36589,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T322",
-   "at": "2026-11-12T08:36:17Z",
-   "cache_read_input_tokens": 6199142,
-   "output_tokens": 64570,
-   "cache_creation_input_tokens": 284250,
-   "input_tokens": 230
+   "task": "T345",
+   "at": "2026-11-12T08:47:01Z",
+   "cache_read_input_tokens": 1201334,
+   "output_tokens": 20526,
+   "cache_creation_input_tokens": 95601,
+   "input_tokens": 80
   },
   "source": "session_reading 2026-11-12T08:36:53Z (week)",
   "by_task": {
@@ -38523,10 +38536,10 @@
    "T345": {
     "estimated_bytes": 284325,
     "estimated_tokens": 1558206,
-    "cache_creation_input_tokens": 90565,
-    "input_tokens": 80,
-    "output_tokens": 25924,
-    "cache_read_input_tokens": 1226830,
+    "cache_creation_input_tokens": 186166,
+    "input_tokens": 160,
+    "output_tokens": 46450,
+    "cache_read_input_tokens": 2428164,
     "last_model": "claude-opus-5-5"
    },
    "T387": {
@@ -38734,11 +38747,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-12T07:33:26Z",
-    "tokens": 7294353
+    "tokens": 7530693
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 400445378
+    "tokens": 400681718
    }
   },
   "session_reading": {
@@ -38749,7 +38762,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T08:44:49Z",
+ "updated_at": "2026-11-12T08:47:02Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -38847,7 +38860,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d9515904bc86f183525932a268b43ab7d9c3b9c9",
+ "runner_sha": "a070309d52e682e05c22f068361bf788ad764afc",
  "starter": "actions",
  "smoke_runs": [
   {
