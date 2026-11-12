@@ -1,8 +1,9 @@
 # Required check "Ci" (ruleset protect-main). Job name must stay exactly "Ci".
-# Five jobs: "Checks" (everything except pytest and coverage), "Python" (the pytest suite, D-2782),
-# "Coverage" (branch coverage against tests/coverage_floor.json, D-694) and "E2e" (the Playwright journeys
-# in tests/e2e against the app with stand-ins, T173) run in parallel; "Ci" is the gate, green only when all
-# four are. Build caches are restored on every run and saved only on main (the nightly calls this workflow
+# Six jobs: "Checks" (the scans, the build, the Rust tests outside SPLIT_TESTS, mutants, audit, npm), "Lint and
+# slow tests" (fmt, clippy, the offline query check and the SPLIT_TESTS tests, D-3142), "Python" (the pytest
+# suite, D-2782), "Coverage" (branch coverage against tests/coverage_floor.json, D-694) and "E2e" (the
+# Playwright journeys in tests/e2e against the app with stand-ins, T173) run in parallel; "Ci" is the gate,
+# green only when all five are. Build caches are restored on every run and saved only on main (the nightly calls this workflow
 # there), so branch runs no longer evict main's entries from the 10 GB cache (D-2782).
 name: ci
 on:
@@ -22,6 +23,12 @@ env:
   # debug = "line-tables-only" to keep the cached target small (D-693).
   CARGO_INCREMENTAL: "0"
   CARGO_TERM_COLOR: always
+  # The Rust test names (libtest substring filters) that run in "Lint and slow tests" instead of Checks (D-3142):
+  # the three trybuild compile-fail drivers (about 160 s, the cold trybuild project) and the TD-AI-03 property
+  # tests (about 65 s). Both jobs run the same `cargo test --workspace --locked` (same feature unification);
+  # Checks passes `--skip` for each filter and the other job passes the filters, so every test runs in exactly
+  # one of them (tests/test_ci_workflow.py).
+  SPLIT_TESTS: "_cannot_be_forged_outside_ td_ai_03_"
 jobs:
   checks:
     name: "Checks"
@@ -179,23 +186,16 @@ jobs:
 
       - name: Rust build cache (registry, git deps and target/, D-693)
         id: rust-cache
-        # Keyed by the action on Cargo.lock, rust-toolchain.toml and the rustc version. target/tests/trybuild
-        # (the compile-fail scratch project, 1.7 GB, 400 s cold; D-488) is named so it is kept with target/.
+        # Keyed by the action on Cargo.lock, rust-toolchain.toml and the rustc version. The trybuild scratch
+        # project (target/tests/trybuild) is cached by "Lint and slow tests", which runs those tests (D-3142).
         # Cargo's own fingerprints decide what rebuilds, so a cache can only save time, never change a result.
         if: steps.changes.outputs.rust == 'true' && hashFiles('Cargo.lock') != ''
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           shared-key: checks
-          cache-directories: target/tests/trybuild
           # Restored on every run, saved only on main (D-2782): a branch's entry is readable by that branch
           # alone, and each one (about 1.5 GB) pushed main's entries out of the 10 GB cache.
           save-if: ${{ github.ref == 'refs/heads/main' }}
-
-      - name: The cache keeps target/tests/trybuild (a cold pass costs 400 s more without it, D-488)
-        if: steps.rust-cache.outputs.cache-hit == 'true' && hashFiles('tests/security/ui/*.rs') != ''
-        run: |
-          # Checked straight after the restore, before any build or test recreates the directory.
-          test -d target/tests/trybuild || { echo "the cache lost target/tests/trybuild"; exit 1; }
 
       - name: Prebuilt tools (cargo-audit, cargo-deny) from pinned musl release tarballs (D-693)
         if: steps.changes.outputs.rust == 'true'
@@ -263,31 +263,24 @@ jobs:
         run: |
           echo "$HOME/.cargo/sqlx-cli/bin" >> "$GITHUB_PATH"
 
-      - name: Rust format and lint (clippy once, before the build, D-488)
-        if: steps.changes.outputs.rust == 'true'
-        run: |
-          if [ -f Cargo.toml ]; then
-            cargo fmt --all --check
-            cargo clippy --workspace --all-targets --locked -- -D warnings -F clippy::allow_attributes_without_reason
-          else
-            echo "rust checks skipped: no Cargo workspace yet"
-          fi
-
-      - name: Migrations and offline query data (stale .sqlx fails, D-488)
+      - name: Migrations (the tests below run against the migrated database, as before D-3142)
         if: steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
         run: |
-          # Apply the migrations to the pinned Postgres, then compare the committed .sqlx entries with what
-          # the query macros produce now; a stale or missing entry fails here and not at the build.
+          # fmt, clippy and the offline query check run in "Lint and slow tests" (D-3142).
           sqlx migrate run
-          cargo sqlx prepare --workspace --check -- --all-targets --all-features
 
-      - name: Rust build (the one boundary build) and tests
+      - name: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)
         if: steps.changes.outputs.rust == 'true'
         run: |
           if [ -f Cargo.toml ]; then
             # The binaries' own dependency graph builds with the lockfile (D-481, D-488).
             cargo build -p askhava-server --locked
-            cargo test --workspace --locked
+            # Every test binary is still built here (the named mutants below reuse them); the SPLIT_TESTS
+            # tests are skipped here and run in "Lint and slow tests".
+            read -ra filters <<< "$SPLIT_TESTS"
+            skip=()
+            for filter in "${filters[@]}"; do skip+=(--skip "$filter"); done
+            cargo test --workspace --locked -- "${skip[@]}"
           fi
 
       - name: Named mutants of the files this change touches (scripts/run_named_mutants.py, D-481)
@@ -319,6 +312,122 @@ jobs:
             npm audit --audit-level=low
           else
             echo "npm checks skipped: no package-lock.json yet"
+          fi
+
+  lint:
+    # fmt, clippy, the offline query check and the SPLIT_TESTS tests, on their own runner in parallel with Checks
+    # (D-3142). Measured on twelve task runs (November 12, 2026, every Rust cache cold): Checks took 703 to 1099 s,
+    # of which fmt and clippy about 105 s, the query check about 30 s and the trybuild and TD-AI-03 tests about
+    # 225 s, all in sequence. The same commands as before; the test command is Checks' with the filters.
+    name: "Lint and slow tests"
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c
+        env:
+          POSTGRES_USER: askhava_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: askhava_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U askhava_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
+      SQLX_OFFLINE: "true"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 200
+
+      - name: Does this change touch Rust? (Checks' rule, kept equal by tests/test_ci_workflow.py)
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main
+          if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "rust=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          base="$(git merge-base origin/main HEAD)"
+          rust=false
+          git diff --no-renames --name-only "$base" HEAD \
+            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          echo "rust=$rust" >> "$GITHUB_OUTPUT"; echo "rust=$rust"
+
+      - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          for role in askhava_app askhava_migrator; do
+            psql "$DATABASE_URL" -qtc "SELECT 1 FROM pg_roles WHERE rolname = '${role}'" | grep -q 1 \
+              || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
+            psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
+          done
+
+      - name: Rust toolchain (the pinned release from rust-toolchain.toml)
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal -c clippy -c rustfmt
+
+      - name: Rust build cache (registry, git deps, target/ and the trybuild project, D-693)
+        id: rust-cache
+        # target/tests/trybuild (the compile-fail scratch project, 1.7 GB, 400 s cold; D-488) is named so it is
+        # kept with target/. Its own key: this job builds what Checks builds plus clippy's check artifacts.
+        if: steps.changes.outputs.rust == 'true' && hashFiles('Cargo.lock') != ''
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: lint
+          cache-directories: target/tests/trybuild
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: The cache keeps target/tests/trybuild (a cold pass costs 400 s more without it, D-488)
+        if: steps.rust-cache.outputs.cache-hit == 'true' && hashFiles('tests/security/ui/*.rs') != ''
+        run: |
+          # Checked straight after the restore, before any build or test recreates the directory.
+          test -d target/tests/trybuild || { echo "the cache lost target/tests/trybuild"; exit 1; }
+
+      - name: Rust format and lint (clippy once, before the build, D-488)
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          if [ -f Cargo.toml ]; then
+            cargo fmt --all --check
+            cargo clippy --workspace --all-targets --locked -- -D warnings -F clippy::allow_attributes_without_reason
+          else
+            echo "rust checks skipped: no Cargo workspace yet"
+          fi
+
+      - name: sqlx-cli (restored from the cache Checks saves on main, D-693, D-2782)
+        id: sqlx-cli-cache
+        if: steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cargo/sqlx-cli
+          key: sqlx-cli-0.9.0-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}
+
+      - name: Install sqlx-cli 0.9.0 on a cache miss
+        if: steps.sqlx-cli-cache.outputs.cache-hit != 'true' && steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
+        run: |
+          cargo install sqlx-cli --version 0.9.0 --locked --no-default-features --features postgres,rustls,sqlx-toml --root ~/.cargo/sqlx-cli
+
+      - name: Migrations and offline query data (stale .sqlx fails, D-488)
+        if: steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
+        run: |
+          # Apply the migrations to the pinned Postgres, then compare the committed .sqlx entries with what
+          # the query macros produce now; a stale or missing entry fails here and not at the build.
+          export PATH="$HOME/.cargo/sqlx-cli/bin:$PATH"
+          sqlx migrate run
+          cargo sqlx prepare --workspace --check -- --all-targets --all-features
+
+      - name: The SPLIT_TESTS tests (Checks' test command, with the filters instead of --skip, D-3142)
+        if: steps.changes.outputs.rust == 'true'
+        run: |
+          if [ -f Cargo.toml ]; then
+            read -ra filters <<< "$SPLIT_TESTS"
+            cargo test --workspace --locked -- "${filters[@]}"
           fi
 
   python:
@@ -565,7 +674,9 @@ jobs:
       - name: Playwright browser cache (keyed by package-lock.json, which pins @playwright/test)
         id: browsers
         if: steps.changes.outputs.run == 'true'
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        # Restored on every run; saved by the step after the install, on main only (D-3143, as D-2782 did for the
+        # Rust caches): a branch's entry is readable by that branch alone.
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -609,25 +720,33 @@ jobs:
             echo "::warning title=Chromium system libraries::apt could not reach the Ubuntu mirrors; Chromium launched with the runner image's libraries, without the optional fonts Playwright lists (D-3030)"
           fi
 
+      - name: Save the Playwright browsers to the cache (main only, D-3143)
+        if: github.ref == 'refs/heads/main' && steps.browsers.outputs.cache-hit != 'true' && steps.changes.outputs.run == 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ steps.browsers.outputs.cache-primary-key }}
+
       - name: The journeys (npx playwright test tests/e2e)
         if: steps.changes.outputs.run == 'true'
         run: |
           npx playwright test --config tests/e2e/playwright.config.ts tests/e2e
 
   ci:
-    # The required check. Green only when Checks, Python, Coverage and E2e all are (a skipped step inside them is
-    # green; a skipped, cancelled or failed job is not).
+    # The required check. Green only when Checks, Lint and slow tests, Python, Coverage and E2e all are (a skipped
+    # step inside them is green; a skipped, cancelled or failed job is not).
     name: "Ci"
-    needs: [checks, python, coverage, e2e]
+    needs: [checks, lint, python, coverage, e2e]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: All four jobs passed
+      - name: All five jobs passed
         env:
           CHECKS: ${{ needs.checks.result }}
+          LINT: ${{ needs.lint.result }}
           PYTHON: ${{ needs.python.result }}
           COVERAGE: ${{ needs.coverage.result }}
           E2E: ${{ needs.e2e.result }}
         run: |
-          echo "Checks: $CHECKS, Python: $PYTHON, Coverage: $COVERAGE, E2e: $E2E"
-          [ "$CHECKS" = "success" ] && [ "$PYTHON" = "success" ] && [ "$COVERAGE" = "success" ] && [ "$E2E" = "success" ]
+          echo "Checks: $CHECKS, Lint and slow tests: $LINT, Python: $PYTHON, Coverage: $COVERAGE, E2e: $E2E"
+          [ "$CHECKS" = "success" ] && [ "$LINT" = "success" ] && [ "$PYTHON" = "success" ] && [ "$COVERAGE" = "success" ] && [ "$E2E" = "success" ]

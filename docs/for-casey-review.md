@@ -2,6 +2,19 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The test machines keep their saved builds again (D-3143, November 12)
+
+- **What happened.** GitHub keeps 10 GB of saved builds for the project. The runner saved about 7 GB more after every merge, which pushed out the builds the checks reuse, so every check run since last night built from scratch (0 of 36 reuses hit today).
+- **What changed.** The runner now keeps just one copy of each of its two saved builds, stops saving the part of one that its other build already holds, and saves only from the main line. The browser download the page tests use is saved the same way. Nothing about what is tested changed.
+- **Expected.** The check runs reuse their builds again, which saves several minutes per run (about 7 on the longest job).
+
+## Nine more waiting steps fixed before they start, and two new steps (plan change, D-3134, November 12)
+
+- **What happened.** A seventh check of steps still waiting in line found nine that would have stopped partway: some would have broken older tests they may not touch, the Stripe stand-in step could not add the pages it was asked to serve, the won-dispute step relied on a Stripe read nobody builds, the charge-ID step only wrote the ID on a path that usually runs second, and two needs had no storage at all.
+- **What changed.** Each step's instructions now name the right files and an approach that leaves every older test as it is. Two new steps fill the storage gaps. T406 stores the quote facts a business fills in on the quote form (trip fee, parts, permit, "price may change", Spanish), so every quote card can show them as the rules require and "Same as last time" can pre-fill them; until then nothing kept those answers. T407 stores the owner-portal "safety voice call" switch with the attorney approval date and reference, and adds the switch to your settings page.
+- **Decided for you.** The safety voice call stays off at launch, exactly as before: T407 only builds the place to turn it on later, and it refuses unless every CALL-022 safeguard is built and tested, you have entered the attorney's approval, and you have just re-entered your second factor. The consent text's call sentence appears only while the switch is on. A quote stored before T406 (or a text quote confirmed without facts) shows in the list without a card rather than with made-up facts.
+- **Nothing needs you now.**
+
 ## Nine more waiting steps fixed before they start, and one new step (plan change, D-3118, November 12)
 
 - **What happened.** A sixth check of steps still waiting in line found nine that would have stopped partway, mostly because their change would have broken an older test they may not touch, or because they named code that does not exist where they said. One more older test (the emailed pick code) also needed its job's facts once the fee reads them.
@@ -2448,6 +2461,13 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** When several tasks are equally urgent, the runner now starts first one that works in a part of the app no other lane is working in. Two lanes in the same part both edit its notes file, and the second then needs an extra session to merge; that happened 6 times today (3 in portals, 2 in payments, 1 in quotes).
 - **What did not change.** Resyncs, your "claim first" list and the longest-chain order still come first, and every lane still fills: if every waiting task overlaps, the runner claims as before.
 - **To turn it off.** Set `prefer_disjoint_crates` to `false` in `kit/runner.json`.
+- **Nothing needs you now.**
+
+## Ci: the slow Rust steps now run side by side (D-3142)
+
+- **What changed.** The longest part of `Ci`, the "Checks" job, ran everything one after another. Its lint step (fmt and clippy), the database query check and the slowest tests (the compile-fail tests and the prompt-injection property tests) now run in a second job, "Lint and slow tests", at the same time. Measured on today's 12 task runs, `Ci` took about 17 minutes (median 1022 s); it should take about 12 (about 710 s).
+- **What did not change.** Every test, lint and check still runs on every task head, with the same commands, and `Ci` is green only when all of them pass. The check names you see (Ci, Twin, Ally, Governance) are the same.
+- **Worth knowing.** The measurement found that none of the build caches were being reused: what the nightly saves is pushed out of GitHub's 10 GB cache within hours, so every run builds from scratch. That is a separate fix, to be measured first. The new job uses about 6 more runner-minutes per run; the repository is public, so this costs nothing.
 - **Nothing needs you now.**
 
 ## Texts now actually go out, once, and never at night by mistake (T356, D-3145 to D-3149)
