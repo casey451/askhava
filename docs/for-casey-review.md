@@ -7,6 +7,13 @@ These are decisions Claude made on its own and logged so the build never waits (
 - **What happened.** When a task's change merged, the runner only marked it done after warming up and running the start-up smoke test, about 25 minutes later (T388: merged 22:53, marked done 23:19 UTC on November 11). Meanwhile its lane and every task waiting on it sat idle.
 - **What changed.** The runner now marks merged tasks done in its first minute, by exactly the same rule as before (all three checks green on the merged code, and the merged code identical to what was tested and reviewed; otherwise main is marked broken and reverted as before), and starts the freed lanes at once.
 - **Not done, and why.** The GitHub merge queue first planned under this number cannot work here: GitHub ignores the setting that lets two changes both add to the decisions log, so every pair would conflict. Updating only the oldest waiting change first is noted as a later improvement.
+- **Nothing needs you now.**
+
+## Lanes stop waiting for a fresh 10-minute check after plan and notes merges (D-3156, November 12)
+
+- **What happened.** Before taking new work, a lane checks that the main line is healthy (about 10 minutes). Since yesterday it could skip that when only finished tasks had merged since the last check, but a plan change, a runner fix or a hand-off note merging still made every lane run the full check again. This morning that left lanes idle for about 35 minutes while 20 tasks were ready.
+- **What changed.** Those merges now count too, but only when GitHub shows that the exact same code already passed all three checks (Ci, Twin, Ally) before it merged. If the code differs at all, a check failed or is missing, or GitHub can't be read, the lane runs the full check as before. A full check still runs at least every 6 merges and every 6 hours, and nothing about how a broken main line is caught or fixed changed.
+- **Nothing needs you now.**
 
 ## The test machines keep their saved builds again (D-3143, November 12)
 
