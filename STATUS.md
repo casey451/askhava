@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-12T02:16:36Z by runner be4ca34c8eb1 (actions).
+Updated 2026-11-12T02:24:44Z by runner 00d214c9e37e (actions).
 
-**Building: T248 in progress since 01:49Z; 219 of 387 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T248 in progress since 01:49Z; 219 of 389 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 219 of 387 build tasks (owner gates not counted)
+- **Tasks done:** 219 of 389 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T248 claimed 01:49Z, lease until 04:49Z; lane 5: T334 claimed 01:43Z, lease until 04:43Z
 - **Week:** 81% used, 24.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:16Z, 0 min before this update
+- **Last run:** 02:16Z, 7 min before this update
 - **Keeper:** last ran 02:16Z, next wake 04:45Z
 
 ## Needs attention
-- Strict plan check red: 8 problem(s) on tasks still to run (+71 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+71 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -120,7 +120,7 @@ Updated 2026-11-12T02:16:36Z by runner be4ca34c8eb1 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 211 of 733 (28.8%) · partial 350 · unstarted 172
-**Tasks merged (throughput only):** 219 of 387
+**Tasks merged (throughput only):** 219 of 389
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -155,9 +155,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 99 of 174 done
+- stage 4: 99 of 175 done
 - stage 5: 0 of 60 done
-- stage 6: 0 of 37 done
+- stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
 - stage kit: 14 of 15 done
