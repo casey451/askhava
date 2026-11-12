@@ -19622,7 +19622,8 @@
     "T373",
     "T375",
     "T397",
-    "T399"
+    "T399",
+    "T407"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -29786,7 +29787,8 @@
     "T198",
     "T199",
     "T155",
-    "T348"
+    "T348",
+    "T406"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32453,7 +32455,8 @@
    "deps": [
     "T334",
     "T314",
-    "T260"
+    "T260",
+    "T378"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -34791,7 +34794,8 @@
    "deps": [
     "T316",
     "T341",
-    "T374"
+    "T374",
+    "T406"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -35219,6 +35223,38 @@
    "last_failure": "merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891)",
    "update_waiting_since": null,
    "update_push_failures": null
+  },
+  {
+   "id": "T406",
+   "deps": [
+    "T272",
+    "T148",
+    "T186",
+    "T164",
+    "T384"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quote-facts-stored",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T407",
+   "deps": [
+    "T330",
+    "T378",
+    "T108",
+    "T205",
+    "T310",
+    "T398",
+    "T361"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "safety-call-switch-stored",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -37352,7 +37388,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T05:16:33Z",
+ "updated_at": "2026-11-12T05:23:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -37450,7 +37486,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3aa549cf9ed32fd05ed756ed88bb0fc3e7f45bdf",
+ "runner_sha": "eff652fbdcdb58fb671c2ace7f72d3c5393199db",
  "starter": "actions",
  "smoke_runs": [
   {

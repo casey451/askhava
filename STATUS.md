@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T05:16:33Z by runner 3aa549cf9ed3 (actions).
+Updated 2026-11-12T05:23:08Z by runner eff652fbdcdb (actions).
 
-**Building: T356 in progress since 04:05Z; 224 of 391 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T356 in progress since 04:05Z; 224 of 393 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 224 of 391 build tasks (owner gates not counted)
+- **Tasks done:** 224 of 393 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z; lane 3: T405 claimed 05:14Z, lease until 08:14Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
 - **Week:** 87% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:13Z, 2 min before this update
+- **Last run:** 05:16Z, 6 min before this update
 - **Keeper:** last ran 05:07Z, next wake 07:07Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 7 problem(s) on tasks still to run (+82 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+83 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -81,6 +81,7 @@ Updated 2026-11-12T05:16:33Z by runner 3aa549cf9ed3 (actions).
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
 
 ### Plan and harness merges on main
+- 05:16Z Harness: run lint and the slow compile-fail/prompt-injection tests in a parallel CI job (D-3142) (#550)
 - 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
 - 03:50Z Plan: pre-flight fixes round 6 — T355, T340, T341, T249, T273, T271, T277, T357, T314; new T405 (D-3118) (#542)
 - 03:24Z Harness: claim order prefers tasks in crates no other lane is writing (D-3082) (#523)
@@ -117,8 +118,8 @@ Updated 2026-11-12T05:16:33Z by runner 3aa549cf9ed3 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
-**Tasks merged (throughput only):** 224 of 391
+**Requirements verified:** 210 of 733 (28.6%) · partial 351 · unstarted 172
+**Tasks merged (throughput only):** 224 of 393
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -132,11 +133,11 @@ Updated 2026-11-12T05:16:33Z by runner 3aa549cf9ed3 (actions).
 | job-cards | 12 | 10 | 2 | 24 |
 | licensing | 20 | 28 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 18 | 24 | 3 | 45 |
+| messaging | 17 | 25 | 3 | 45 |
 | ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 7 | 22 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 31 | 24 | 1 | 56 |
+| quotes-pick | 30 | 25 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
@@ -153,8 +154,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 104 of 177 done
-- stage 5: 0 of 60 done
+- stage 4: 104 of 178 done
+- stage 5: 0 of 61 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
