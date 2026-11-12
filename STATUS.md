@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:32:13Z by runner 0b4b84f93392 (actions).
+Updated 2026-11-12T23:32:17Z by runner 0b4b84f93392 (actions).
 
 **Building: T215 in progress since 22:29Z; 260 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -12,6 +12,7 @@ Updated 2026-11-12T23:32:13Z by runner 0b4b84f93392 (actions).
 - **Keeper:** last ran 23:25Z, next wake 01:31Z
 
 ## Needs attention
+- PLAN GAP T255 (since 2026-11-12T23:31:56Z, no attempt used; a plan change fixes it): T255: dependency T162 is DONE but its owned file app/intake/src/order.rs is not on main; T255: dependency T162 is DONE but its owned file tests/integration/tests/intake_order.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T371 (since 2026-11-12T23:24:01Z, no attempt used; a plan change fixes it): T371: dependency T385 is DONE but its owned file app/licensing/src/own_record.rs is not on main; T371: dependency T385 is DONE but its owned file app/businesses/src/signup_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/integration/tests/signup_own_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/record/roc/ROC100001 is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/roc is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/city is not on main
 - Strict plan check red: 21 problem(s) on tasks still to run (+134 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
