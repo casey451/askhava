@@ -9,6 +9,12 @@ These are decisions Claude made on its own and logged so the build never waits (
 - **Not done, and why.** The GitHub merge queue first planned under this number cannot work here: GitHub ignores the setting that lets two changes both add to the decisions log, so every pair would conflict. Updating only the oldest waiting change first is noted as a later improvement.
 - **Nothing needs you now.**
 
+## Lanes stop waiting for a fresh 10-minute check after plan and notes merges (D-3156, November 12)
+
+- **What happened.** Before taking new work, a lane checks that the main line is healthy (about 10 minutes). Since yesterday it could skip that when only finished tasks had merged since the last check, but a plan change, a runner fix or a hand-off note merging still made every lane run the full check again. This morning that left lanes idle for about 35 minutes while 20 tasks were ready.
+- **What changed.** Those merges now count too, but only when GitHub shows that the exact same code already passed all three checks (Ci, Twin, Ally) before it merged. If the code differs at all, a check failed or is missing, or GitHub can't be read, the lane runs the full check as before. A full check still runs at least every 6 merges and every 6 hours, and nothing about how a broken main line is caught or fixed changed.
+- **Nothing needs you now.**
+
 ## Twenty-two waiting steps fixed before they start, and two new steps (plan change, D-3155, November 12)
 
 - **What changed.** A ninth read-only check of queued steps (mostly owner-portal, help, backup and website steps) found plans a worker could not have finished as written; they were corrected before any started. Two small steps were added: T409 lets the automatic door check sign in as you the real way, so your owner pages can be checked at all, and T410 puts the "Get help" link on the business pages.
