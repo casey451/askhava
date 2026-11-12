@@ -263,7 +263,7 @@ pub async fn send(
 
 /// [`send`], recording the claim at `at` (the caller's clock) when given, else the database's now;
 /// `phone` is the recipient's number when the caller already read it from the vault for this row
-/// (the outbox sender, D-3149), else it is read here after the claim.
+/// (`optout::send_checked`, D-3149), else it is read here after the claim.
 pub(crate) async fn send_at(
     db: &mut PgConnection,
     (secret, carrier): (&SecretString, &impl SmsAdapter),

@@ -32,7 +32,7 @@ use sqlx::{Connection, PgConnection, PgPool};
 use crate::email::{
     EmailClass, NewEmail, Notice, PostalAddress, Recipient, homeowner_email, queue_email,
 };
-use crate::mode::{LineSendError, Lines, SendingNumber, send_on_line_as};
+use crate::mode::{LineSendError, Lines, SendingNumber, send_on_line};
 use crate::mode_state::load_lines;
 use crate::models::{self, Due, OutboxError};
 use crate::retries::{
@@ -168,7 +168,8 @@ pub async fn run_send_due<C: SmsAdapter + Sync>(
 }
 
 /// One due row (D-2188, CON-030, QH-001, QH-008, TXT-021): expired, held, or sent on its line.
-/// Her phone is read from the vault once, here, and handed to the send (D-3149).
+/// Her phone is read here for the expiry and window checks; the send reads it once more, in
+/// `send_checked`, which hands it on to the claim (D-3149).
 async fn send_one<C: SmsAdapter + Sync>(
     db: &mut PgConnection,
     s: &OutboxSender<C>,
@@ -193,8 +194,7 @@ async fn send_one<C: SmsAdapter + Sync>(
         relation: Relation::OpenRequest,
     };
     let keys = (&s.secret, &s.carrier, &s.vault);
-    let sent = send_on_line_as(db, keys, lines, (row.id, to), (now, Some(&phone))).await;
-    match sent {
+    match send_on_line(db, keys, lines, (row.id, to), now).await {
         Ok(_) | Err(LineSendError::Paused) => Ok(()),
         Err(LineSendError::Outbox(e)) => after_error(db, s, row, e, now).await,
     }

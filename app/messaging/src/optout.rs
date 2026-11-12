@@ -303,8 +303,9 @@ async fn record(
 /// listing within 5 minutes of it (`rules::may_send_to`), whatever the provider has blocked. A
 /// carrier refusal with 21610 lists the number and blocks the row, which is never retried
 /// (CON-014). The claim is stamped at `now`, so `outbox_sender`'s 5-minute sweep counts from the
-/// sender's clock (D-2628). It applies no quiet-hours rule: the sender, its only production
-/// caller, re-checks the window first (QH-001, QH-008, D-3055).
+/// sender's clock (D-2628). The number read for the list check is handed on to the claim, so the
+/// vault is read once here (D-3149). It applies no quiet-hours rule: the sender, its only
+/// production caller, re-checks the window first (QH-001, QH-008, D-3055).
 ///
 /// # Errors
 ///
@@ -312,30 +313,15 @@ async fn record(
 /// [`OutboxError::BadPhone`], [`OutboxError::Recipient`] or any error of `service::send`.
 pub async fn send_checked(
     db: &mut PgConnection,
-    keys: (&SecretString, &(impl SmsAdapter + Sync), &Vault),
-    id: Uuid,
-    dest: (To<'_>, &str),
-    now: Timestamp,
-) -> Result<Option<SentText>, OutboxError> {
-    send_checked_as(db, keys, id, dest, (now, None)).await
-}
-
-/// [`send_checked`] with the recipient's number when the caller already read it from the vault
-/// for row `id` (the outbox sender, D-3149), so the vault is read once per send.
-pub(crate) async fn send_checked_as(
-    db: &mut PgConnection,
     (secret, carrier, vault): (&SecretString, &(impl SmsAdapter + Sync), &Vault),
     id: Uuid,
     (to, from): (To<'_>, &str),
-    (now, phone): (Timestamp, Option<&SecretString>),
+    now: Timestamp,
 ) -> Result<Option<SentText>, OutboxError> {
     let (recipient, template, subject) = models::outbox_target(db, id)
         .await?
         .ok_or(OutboxError::NotFound)?;
-    let number = match phone {
-        Some(phone) => phone.clone(),
-        None => service::recipient_phone(db, to, recipient).await?,
-    };
+    let number = service::recipient_phone(db, to, recipient).await?;
     let digests = digests(vault, number.expose_secret())?;
     let listing = models::listing(db, &digests).await?;
     if !rules::may_send_to(listing, &template, &subject, now) {
