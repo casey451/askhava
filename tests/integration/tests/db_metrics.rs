@@ -22,6 +22,7 @@ use askhava_core::api::{
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::PgPool;
 use tracing::Level;
+use tracing::subscriber::DefaultGuard;
 
 /// A fake value bound into every statement; it must never reach a log line.
 const PLANTED: &str = "fake-planted-value-t416";
@@ -96,6 +97,21 @@ async fn marked_statement(pool: &PgPool) {
     assert_eq!(usize::try_from(length).ok(), Some(PLANTED.len()));
 }
 
+/// Installs the app's log and metrics layers for this thread with a captured writer, runs one
+/// warm-up statement and rebuilds tracing's callsite interest. The rebuild matters only in a test
+/// binary: another test's thread can register sqlx's callsite while this thread's subscriber is
+/// being registered, and tracing-core then caches "never" for it (the app installs its one
+/// global subscriber before any query, so it never meets this).
+async fn install(metrics: &Arc<DbMetrics>, pool: &PgPool) -> (Capture, DefaultGuard) {
+    let capture = Capture::default();
+    let writer = capture.clone();
+    let subscriber = log_subscriber(Level::INFO, move || writer.clone(), metrics);
+    let guard = tracing::subscriber::set_default(subscriber);
+    marked_statement(pool).await;
+    tracing::callsite::rebuild_interest_cache();
+    (capture, guard)
+}
+
 /// Every log line holds none of the SQL text, the URL, the database name or the planted value.
 fn assert_logs_clean(logs: &str, url: &SecretString, database: &str) {
     for secret in [
@@ -132,14 +148,7 @@ async fn td_ops_41_statements_move_the_counter_by_exactly_that_many(test_pool: P
         .unwrap_or_default()
         .to_owned();
     let metrics = Arc::new(DbMetrics::new());
-    let capture = Capture::default();
-    let writer = capture.clone();
-    let _guard = tracing::subscriber::set_default(log_subscriber(
-        Level::INFO,
-        move || writer.clone(),
-        &metrics,
-    ));
-    marked_statement(&pool).await;
+    let (capture, _guard) = install(&metrics, &pool).await;
     let before = metrics.snapshot();
     for _ in 0..4 {
         marked_statement(&pool).await;
@@ -173,14 +182,7 @@ async fn td_ops_41_a_held_connection_makes_the_second_acquire_wait(test_pool: Pg
         .to_owned();
     let metrics = Arc::new(DbMetrics::new());
     metrics.register_pool(&pool);
-    let capture = Capture::default();
-    let writer = capture.clone();
-    let _guard = tracing::subscriber::set_default(log_subscriber(
-        Level::INFO,
-        move || writer.clone(),
-        &metrics,
-    ));
-    marked_statement(&pool).await;
+    let (capture, _guard) = install(&metrics, &pool).await;
     let before = metrics.snapshot();
     let held = pool.acquire().await.expect("first acquire");
     let waiter = tokio::spawn({
