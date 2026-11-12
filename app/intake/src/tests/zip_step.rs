@@ -7,7 +7,7 @@
 
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use askhava_jobs::api::{JobStatus, current};
+use askhava_jobs::api::current;
 use askhava_messaging::api::Language;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
@@ -233,7 +233,7 @@ async fn td_int_38_an_arizona_zip_outside_the_area_closes_early(mut db: Db) {
     let row = conversation(&mut db, id).await.expect("read").expect("row");
     assert!(row.closed_at.is_some(), "closed early");
     let status = current(&mut db, job).await.expect("job").status;
-    assert_eq!(status, JobStatus::ClosedEarly);
+    assert!(status.code() == "closed_early");
     assert!(properties(&mut db, contact).await.is_empty());
 }
 
