@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:21:50Z by runner b513c7d4ca37 (actions).
+Updated 2026-11-12T11:22:06Z by runner b513c7d4ca37 (actions).
 
 **Building: T404 in progress since 11:19Z; 239 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-12T11:21:50Z by runner b513c7d4ca37 (actions).
 - **Lane:** lane 5: T404 claimed 11:19Z, lease until 14:19Z
 - **Week:** 93% used, 8.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:21Z, 0 min before this update
-- **Keeper:** last ran 11:17Z, next wake 16:57Z
+- **Keeper:** last ran 11:22Z, next wake 14:22Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
