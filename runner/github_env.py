@@ -1126,6 +1126,19 @@ class GitHubEnv:
                 return
             self.state_head = self._fetch(self.state_ref)
 
+    def read_cycle_log(self) -> list[dict[str, Any]]:
+        """kit/runner_log.jsonl's rows at the state head this run last read or wrote; a line that is not a
+        JSON object is skipped. `runner/__main__.py` `job_row` reads this job's rows from it (D-3140)."""
+        rows = []
+        for line in (self._show(self.state_head, RUNNER_LOG) or "").splitlines():
+            try:
+                row = json.loads(line)
+            except ValueError:
+                continue
+            if isinstance(row, dict):
+                rows.append(row)
+        return rows
+
     def write_cycle_log(self, report: dict[str, Any]) -> None:
         """Append the cycle's report (result, log lines, changes) to kit/runner_log.jsonl on
         claude/kit-state, keeping the last 200 lines, so a cycle run where nobody watches the
