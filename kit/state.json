@@ -29719,7 +29719,8 @@
     "T214",
     "T249",
     "T348",
-    "T369"
+    "T369",
+    "T404"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -31185,7 +31186,8 @@
     "T293",
     "T322",
     "T268",
-    "T327"
+    "T327",
+    "T398"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32040,7 +32042,9 @@
    "deps": [
     "T339",
     "T337",
-    "T214"
+    "T214",
+    "T400",
+    "T388"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32056,7 +32060,8 @@
     "T343",
     "T295",
     "T318",
-    "T287"
+    "T287",
+    "T404"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -33313,7 +33318,9 @@
    "id": "T378",
    "deps": [
     "T377",
-    "T292"
+    "T292",
+    "T338",
+    "T383"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -34236,6 +34243,22 @@
    "slug": "quiet-exempt-call-texts",
    "type": "build",
    "stage": "6"
+  },
+  {
+   "id": "T404",
+   "deps": [
+    "T348",
+    "T339",
+    "T337",
+    "T214",
+    "T068",
+    "T401"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "door-matrix-charged-pick-and-facts",
+   "type": "harness",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -36320,7 +36343,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T02:27:04Z",
+ "updated_at": "2026-11-12T02:32:17Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -36418,7 +36441,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "8bc6d03cfc3c72267e7813bc8bc51b41c5995902",
+ "runner_sha": "25014a67ca157050e1b264fb7e7b257bbd172766",
  "starter": "actions",
  "smoke_runs": [
   {

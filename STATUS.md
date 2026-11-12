@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-12T02:27:04Z by runner 8bc6d03cfc3c (actions).
+Updated 2026-11-12T02:32:17Z by runner 25014a67ca15 (actions).
 
-**Building: T248 in progress since 01:49Z; 219 of 383 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T248 in progress since 01:49Z; 219 of 390 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 219 of 383 build tasks (owner gates not counted)
+- **Tasks done:** 219 of 390 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T248 claimed 01:49Z, lease until 04:49Z
 - **Week:** 81% used, 24.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:26Z, 0 min before this update
+- **Last run:** 02:27Z, 5 min before this update
 - **Keeper:** last ran 02:27Z, next wake 04:52Z
 
 ## Needs attention
-- Strict plan check red: 7 problem(s) on tasks still to run (+71 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+71 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -120,14 +120,14 @@ Updated 2026-11-12T02:27:04Z by runner 8bc6d03cfc3c (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
-**Tasks merged (throughput only):** 219 of 383
+**Requirements verified:** 211 of 733 (28.8%) · partial 350 · unstarted 172
+**Tasks merged (throughput only):** 219 of 390
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
-| businesses | 16 | 38 | 4 | 58 |
+| businesses | 15 | 39 | 4 | 58 |
 | calls | 9 | 15 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
@@ -156,7 +156,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 99 of 175 done
+- stage 4: 99 of 176 done
 - stage 5: 0 of 60 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
