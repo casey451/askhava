@@ -1082,6 +1082,12 @@ class GitHubEnv:
             self.log.append(f"push rejected: {err.strip()[:200]}")
         return code == 0
 
+    def state_refs(self) -> tuple[str | None, str | None]:
+        """origin's claude/kit-state and claude/lease heads, fetched now (None for one that cannot be fetched).
+        `cycle_with_retries` compares them across a lost-race storm: refs that never moved mean the pushes
+        failed for another reason (a token, a rule, the network), which is a strike, not contention (D-3269)."""
+        return self._fetch(self.state_ref), self._fetch(self.lease_ref)
+
     def _only_side_files_moved(self) -> bool:
         """After a rejected push: True (rebase and retry) only if the lease ref and kit/state.json held still."""
         old_lease = self.lease_head
