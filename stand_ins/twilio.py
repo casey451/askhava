@@ -19,7 +19,12 @@ per message: Twilio posts a message's status only to that URL, so `status_callba
 message created without one and returns the URL to post to with the params (D-2761). GET on one Message gives its resource; POST on it with an empty Body
 is Twilio's documented body redaction (D-1841): 200 with the resource, its body "" from then on,
 a repeat answering the same, an unknown sid 404 (20404). Calls stand in for the masked voice
-session (D-491). Webhooks carry
+session (D-491). A call create needs one of `Url`, `Twiml` or `ApplicationSid`, as Twilio's Calls
+API does (else 400, code 21205); its `StatusCallback`, `StatusCallbackEvent` list and
+`AsyncAmdStatusCallback` (with `MachineDetection`) are kept apart from the Call resource, and
+`progress` gives the callbacks Twilio would post for an outcome, only to those URLs: `answered`
+without `AnsweredBy`, the detection result as its own post, then `completed` (D-2762, D-2771).
+Webhooks carry
 X-Twilio-Signature: base64(HMAC-SHA1(auth token, URL + sorted key+value pairs)). Verify: POST
 /v2/Services/{sid}/Verifications and /VerificationCheck.
 """
@@ -66,6 +71,7 @@ GSM_BASIC = (
 GSM_EXTENDED = "^{}\\[~]|€"
 MAX_BODY = 1600
 MAX_CHECK_ATTEMPTS = 5
+FINAL_CALL_STATUSES = ("no-answer", "busy", "failed", "canceled")
 
 
 def error(code: int, message: str, status: int = 400) -> Reply:
@@ -112,6 +118,7 @@ class FakeTwilio:
         self.calls: list[dict[str, Any]] = []
         self.received: dict[str, dict[str, Any]] = {}
         self.status_urls: dict[str, str] = {}
+        self.call_plans: dict[str, dict[str, Any]] = {}
         self.clock: Callable[[], datetime] = lambda: datetime.now(UTC)
 
     def create_message(
@@ -296,14 +303,53 @@ class FakeTwilio:
             "uri": path + ".json",
         }
 
-    def create_call(self, to: str, frm: str) -> Reply:
-        """Open a voice session (the masked call line stand-in, D-491)."""
+    def create_call(self, to: str, frm: str, plan: dict[str, Any] | None = None) -> Reply:
+        """Open a voice session (the masked call line stand-in, D-491). `plan` holds the create's
+        other form fields: one of `Url`, `Twiml`, `ApplicationSid` is required (D-2762); the
+        callback fields are kept for `progress`, never shown in the Call resource."""
+        plan = plan or {}
         if not E164.match(to) or not E164.match(frm):
             return error(21211, f"The 'To' number {to} is not a valid phone number.")
+        if not any(plan.get(k) for k in ("Url", "Twiml", "ApplicationSid")):
+            return error(21205, "Url parameter is required. Provide a Url, Twiml or ApplicationSid.")
         sid = fake_id("CA", len(self.calls) + 1, 32)
         call = {"sid": sid, "account_sid": self.account_sid, "to": to, "from": frm, "status": "queued"}
         self.calls.append(call)
+        self.call_plans[sid] = dict(plan)
         return 201, dict(call)
+
+    def progress(self, sid: str, outcome: str) -> list[tuple[str, dict[str, str]]]:
+        """The callbacks Twilio would post as call `sid` ends with `outcome` (an `AnsweredBy` value
+        such as `human` or `machine_end_beep` for an answered call, or a final status such as
+        `no-answer`), each `(url, params)`, only to the URLs its create gave and only for the events
+        it asked (`completed` by default): `answered` without `AnsweredBy`, then, when detection was
+        asked, the result to `AsyncAmdStatusCallback`, then `completed` (D-2762, D-2771)."""
+        call = next(c for c in self.calls if c["sid"] == sid)
+        plan = self.call_plans[sid]
+        final = outcome if outcome in FINAL_CALL_STATUSES else "completed"
+        steps = [("initiated", "initiated"), ("ringing", "ringing")]
+        steps += [("answered", "in-progress")] if final == "completed" else []
+        posts = self._status_posts(call, plan, steps)
+        if final == "completed" and plan.get("MachineDetection") and plan.get("AsyncAmdStatusCallback"):
+            detected = {"CallSid": sid, "AccountSid": self.account_sid, "AnsweredBy": outcome}
+            posts.append((plan["AsyncAmdStatusCallback"], detected))
+        posts += self._status_posts(call, plan, [("completed", final)])
+        call["status"] = final
+        return posts
+
+    def _status_posts(
+        self, call: dict[str, Any], plan: dict[str, Any], steps: list[tuple[str, str]]
+    ) -> list[tuple[str, dict[str, str]]]:
+        """The status callback posts for `steps` (event, CallStatus) the create asked for."""
+        url, events = plan.get("StatusCallback"), plan.get("StatusCallbackEvent") or ["completed"]
+        if not url:
+            return []
+        base = {"CallSid": call["sid"], "AccountSid": self.account_sid, "To": call["to"], "From": call["from"]}
+        return [
+            (url, {**base, "CallStatus": status, "Direction": "outbound-api"})
+            for event, status in steps
+            if event in events
+        ]
 
     def update_call(self, sid: str, status: str) -> Reply:
         """POST Status=completed ends a call; an open call stays reusable until then (OPS-017)."""
