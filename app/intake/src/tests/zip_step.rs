@@ -93,23 +93,31 @@ async fn reply(db: &mut Db, (contact, id): (Uuid, Uuid), minute: i64, words: &st
 
 /// Every property row of the homeowner of `contact`: (contact ID, town, ZIP).
 async fn properties(db: &mut Db, contact: Uuid) -> Vec<(Uuid, String, Option<String>)> {
-    sqlx::query_as("SELECT contact_id, town, zip FROM intake.property WHERE contact_id = $1")
-        .bind(contact)
-        .fetch_all(&mut **db)
-        .await
-        .expect("properties")
+    sqlx::query!(
+        "SELECT contact_id, town, zip FROM intake.property WHERE contact_id = $1",
+        contact
+    )
+    .fetch_all(&mut **db)
+    .await
+    .expect("properties")
+    .into_iter()
+    .map(|r| (r.contact_id, r.town, r.zip))
+    .collect()
 }
 
 /// The (template, body) texts queued to `contact`, oldest first.
 async fn texts(db: &mut Db, contact: Uuid) -> Vec<(String, String)> {
-    sqlx::query_as(
+    sqlx::query!(
         "SELECT template_id, body FROM messaging.outbox WHERE recipient_id = $1 \
          AND template_id <> 'consent' ORDER BY created_at, id",
+        contact
     )
-    .bind(contact)
     .fetch_all(&mut **db)
     .await
     .expect("outbox")
+    .into_iter()
+    .map(|r| (r.template_id, r.body.unwrap_or_default()))
+    .collect()
 }
 
 fn body(template: &str, language: Language) -> String {
@@ -290,11 +298,11 @@ async fn td_int_38_spanish_question_and_re_ask(mut db: Db) {
 async fn td_int_38_the_zip_goes_nowhere_but_the_property(mut db: Db) {
     let (contact, id, _) = asked(&mut db, "my sink is leaking", Settings::default()).await;
     reply(&mut db, (contact, id), 3, "86404").await;
-    let found: i64 = sqlx::query_scalar(
-        "SELECT (SELECT count(*) FROM intake.intake_answer a WHERE a::text LIKE '%86404%') + \
-         (SELECT count(*) FROM ops.audit_log l WHERE l::text LIKE '%86404%') + \
-         (SELECT count(*) FROM messaging.outbox o WHERE o::text LIKE '%86404%') + \
-         (SELECT count(*) FROM core.task t WHERE t::text LIKE '%86404%')",
+    let found = sqlx::query_scalar!(
+        r#"SELECT (SELECT count(*) FROM intake.intake_answer a WHERE a::text LIKE '%86404%') +
+           (SELECT count(*) FROM ops.audit_log l WHERE l::text LIKE '%86404%') +
+           (SELECT count(*) FROM messaging.outbox o WHERE o::text LIKE '%86404%') +
+           (SELECT count(*) FROM core.task t WHERE t::text LIKE '%86404%') AS "n!""#
     )
     .fetch_one(&mut *db)
     .await
@@ -317,9 +325,9 @@ async fn td_int_38_the_zip_goes_nowhere_but_the_property(mut db: Db) {
 /// contact ID, the town, the 5-digit ZIP and the time; no address column.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_priv_13_the_property_holds_only_contact_town_and_zip(mut db: Db) {
-    let columns: Vec<String> = sqlx::query_scalar(
-        "SELECT column_name::text FROM information_schema.columns \
-         WHERE table_schema = 'intake' AND table_name = 'property' ORDER BY column_name",
+    let columns = sqlx::query_scalar!(
+        r#"SELECT column_name::text AS "name!" FROM information_schema.columns
+           WHERE table_schema = 'intake' AND table_name = 'property' ORDER BY 1"#
     )
     .fetch_all(&mut *db)
     .await
@@ -333,9 +341,9 @@ async fn td_priv_13_the_property_holds_only_contact_town_and_zip(mut db: Db) {
         "zip",
     ];
     assert_eq!(columns, expected);
-    let bad = sqlx::query(
+    let bad = sqlx::query!(
         "INSERT INTO intake.property (homeowner_id, contact_id, town, zip, created_at) \
-         VALUES (gen_random_uuid(), gen_random_uuid(), 'lake_havasu_city', '8640', now())",
+         VALUES (gen_random_uuid(), gen_random_uuid(), 'lake_havasu_city', '8640', now())"
     )
     .execute(&mut *db)
     .await;

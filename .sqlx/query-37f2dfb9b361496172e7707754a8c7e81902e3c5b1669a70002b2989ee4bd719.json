@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO intake.property (homeowner_id, contact_id, town, zip, created_at) VALUES (gen_random_uuid(), gen_random_uuid(), 'lake_havasu_city', '8640', now())",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "37f2dfb9b361496172e7707754a8c7e81902e3c5b1669a70002b2989ee4bd719"
+}

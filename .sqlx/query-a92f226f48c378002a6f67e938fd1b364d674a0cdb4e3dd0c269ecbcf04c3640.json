@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT (SELECT count(*) FROM intake.intake_answer a WHERE a::text LIKE '%86404%') +\n           (SELECT count(*) FROM ops.audit_log l WHERE l::text LIKE '%86404%') +\n           (SELECT count(*) FROM messaging.outbox o WHERE o::text LIKE '%86404%') +\n           (SELECT count(*) FROM core.task t WHERE t::text LIKE '%86404%') AS \"n!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "a92f226f48c378002a6f67e938fd1b364d674a0cdb4e3dd0c269ecbcf04c3640"
+}
