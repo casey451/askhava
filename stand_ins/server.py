@@ -248,10 +248,15 @@ def stripe_intent_step(s: StandIns, req: Request, m: re.Match[str]) -> Out:
 
 
 def stripe_fetch(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """One stored object; `expand[]=latest_charge` swaps the charge ID for the charge (D-3118)."""
     obj = s.stripe.objects.get(m.group("id"))
     if obj is None:
         return (*stripe.error("invalid_request_error", "resource_missing", "No such object", 404, "id"), {})
-    return 200, dict(obj), {}
+    found = dict(obj)
+    charge = s.stripe.objects.get(str(found.get("latest_charge")))
+    if req.query.get("expand[]") == "latest_charge" and charge is not None:
+        found["latest_charge"] = dict(charge)
+    return 200, found, {}
 
 
 def stripe_events(s: StandIns, req: Request, m: re.Match[str]) -> Out:

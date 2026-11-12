@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT e.stripe_intent_id,\n                  EXISTS (SELECT 1 FROM payments.charge_three_ds t WHERE t.pick_id = e.pick_id)\n                    AS \"recorded!\"\n           FROM payments.charge_evidence e WHERE e.pick_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stripe_intent_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "stripe_intent_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "recorded!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "897b84d364786a86fc18916cce5866fe4c7c934566cd65266af11b32d0ea9800"
+}
