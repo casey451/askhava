@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:48:00Z by runner 507412dca6ea (actions).
+Updated 2026-11-12T11:48:15Z by runner 507412dca6ea (actions).
 
-**Building: T323 in progress since 11:23Z; 241 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 17:00Z; 241 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 241 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T323 claimed 11:23Z, lease until 14:23Z
+- **Lane:** idle since 11:47Z (no task in progress)
 - **Week:** 93% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:47Z, 0 min before this update
 - **Keeper:** last ran 11:47Z, next wake 14:26Z
@@ -20,6 +20,7 @@ Updated 2026-11-12T11:48:00Z by runner 507412dca6ea (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T323 | ai: a new capitalized name at the start of a sentence counts | MERGE_PENDING | 1 | 24 min | 11:47Z |  |
 | T404 | harness: the door probe's fixtures hold a charged pick and t | MERGE_PENDING | 1 | 27 min | 11:46Z |  |
 | T345 | harness: every external GitHub Actions `uses:` in every work | done | 3 | 27 min | 11:16Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
 | T377 | adapters and stand-in (harness): every text asks Twilio for  | done | 1 | 28 min | 11:15Z |  |
@@ -173,7 +174,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T323 (lease until 2026-11-12T14:23:18Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T404", "at": "2026-11-12T11:46:11Z", "output_tokens": 50258, "cache_read_input_tokens": 7424114, "input_tokens": 211, "cache_creation_input_tokens": 373853}
+- {"task": "T323", "at": "2026-11-12T11:47:59Z", "input_tokens": 197, "cache_read_input_tokens": 6117753, "output_tokens": 66466, "cache_creation_input_tokens": 238985}
