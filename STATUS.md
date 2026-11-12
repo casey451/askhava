@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T16:57:05Z by runner 2a3903cde744 (actions).
+Updated 2026-11-12T17:08:12Z by runner eccfd35b9e3a (manual).
 
-**Waiting for tokens until 17:00Z; 247 of 400 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 16:33Z; 247 of 400 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 247 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:33Z (no task in progress)
 - **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:56Z, 0 min before this update
+- **Last run:** 16:57Z, 10 min before this update
 - **Keeper:** last ran 16:57Z, next wake 17:07Z
 
 ## Needs attention
@@ -86,65 +86,37 @@ Updated 2026-11-12T16:57:05Z by runner 2a3903cde744 (actions).
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | done | 1 | 20 min | 18:05Z |  |
 | T333 | payments (harness): a succeeded refund is recorded at the am | done | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | resync | 1 | 27 min | 17:17Z |  |
-| T165 | businesses: business name, Google and Yelp links and license | done | 1 | 18 min | 17:05Z |  |
 
 ### Plan and harness merges on main
-- 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
-- 15:45Z Plan: new T412/T415 store business sign-in addresses and phones in the vault for T280, T397, T302 and T364 (D-3262) (#596)
-- 14:48Z Plan: trim T251 to its context limit (D-3256) (#590)
-- 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
-- 09:22Z Plan: T345 owns the runner tests that hard-code action tags (D-3200) (#572)
-- 09:13Z Plan: store the scrubbed job description and shown card so T251 can send approved cards (D-3189) (#568)
-- 08:32Z Harness: smoke ancestry reuse accepts squash commits whose identical tree passed Ci, Twin and Ally (D-3156) (#560)
-- 07:12Z Harness: close merged tasks before the smoke so their lanes free ~20 min sooner (D-3141) (#552)
-- 06:05Z Plan: pre-flight fixes round 8 — stage 5: T101, T102, T105, T202, T320, T106, T364; new T408 (D-3144) (#551)
-- 05:28Z Harness: stop backup-runner caches evicting CI's Rust caches (D-3143) (#553)
-- 05:16Z Harness: run lint and the slow compile-fail/prompt-injection tests in a parallel CI job (D-3142) (#550)
-- 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
-- 03:50Z Plan: pre-flight fixes round 6 — T355, T340, T341, T249, T273, T271, T277, T357, T314; new T405 (D-3118) (#542)
-- 03:24Z Harness: claim order prefers tasks in crates no other lane is writing (D-3082) (#523)
-- 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
-- 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
-- 01:55Z Plan: owner approval before a team-linked phone works (BIZ-033, IC-95) — T396–T399 (D-3081) (#531)
-- 00:38Z Plan: T261 pre-flight fix and catalog loaded at start-up (T400, IC-96) (D-3100) (#534)
-- 00:00Z Plan: pre-flight fixes round 3 — T360, T368, T350, T358, T366, T385 (D-3094) (#528)
-- 23:50Z Plan: Gate C preconditions, vendor-leak check, quote cards, AI writing calls (D-3080) (#518)
-- 23:07Z Plan: IC-74 owners T390/T391, migration renumber, budget refresh, IC-95 logged (D-3079) (#517)
-- 23:02Z Plan: pre-flight fixes for T317, T323, T313, T315, T347 and the T345 gap (D-3083) (#524)
-- 22:35Z Harness: smoke ancestry reuse across DONE task merges and a running duplicate smoke yields (D-3058) (#516)
-- 21:48Z Harness: no five-hour pacing budget (D-3056) (#513)
-- 20:03Z Harness: the critical-path test checks what the runner can claim, not live in-flight work (D-3057) (#514)
-- 19:58Z Plan: pre-flight fixes for five queued tasks before they're claimed (D-3055) (#512)
-- 18:49Z Plan: five lanes (D-3043) (#504)
-- 18:37Z Plan: T387 steadies payments branch coverage and adds margin, claimed first (D-3049) (#507)
+- none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 208 of 733 (28.4%) · partial 356 · unstarted 169
+**Requirements verified:** 7 of 733 (1.0%) · partial 557 · unstarted 169
 **Tasks merged (throughput only):** 247 of 400
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 16 | 6 | 35 |
-| ai | 7 | 17 | 5 | 29 |
-| businesses | 15 | 40 | 3 | 58 |
-| calls | 10 | 14 | 1 | 25 |
-| consent | 8 | 23 | 4 | 35 |
-| fees | 12 | 39 | 1 | 52 |
-| intake | 21 | 17 | 5 | 43 |
-| job-cards | 11 | 11 | 2 | 24 |
-| licensing | 20 | 28 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 17 | 25 | 3 | 45 |
-| ops-recovery | 2 | 7 | 45 | 54 |
-| privacy | 6 | 23 | 2 | 31 |
-| quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 30 | 25 | 1 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 6 | 43 | 6 | 55 |
+| accessibility | 0 | 29 | 6 | 35 |
+| ai | 0 | 24 | 5 | 29 |
+| businesses | 0 | 55 | 3 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 31 | 4 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 2 | 36 | 5 | 43 |
+| job-cards | 0 | 22 | 2 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 42 | 3 | 45 |
+| ops-recovery | 0 | 9 | 45 | 54 |
+| privacy | 1 | 28 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 4 | 51 | 1 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 0 | 49 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 5 | 25 | 32 |
+| wording | 0 | 7 | 25 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -165,7 +137,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- one lane only since 2026-11-12T15:19:18Z (lane fall back; `python3 -m runner --restore-lanes`)
 
 ## Last usage reading
 - {"task": "T315", "at": "2026-11-12T16:18:35Z", "cache_creation_input_tokens": 835690, "input_tokens": 438, "cache_read_input_tokens": 25610747, "output_tokens": 139875}

@@ -41571,7 +41571,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T16:57:05Z",
+ "updated_at": "2026-11-12T17:08:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -41669,8 +41669,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "2a3903cde744ee2c069c6e1a9cf8a60ab2f0f4a4",
- "starter": "actions",
+ "runner_sha": "eccfd35b9e3afdbb5218cac61564c3468831bb4e",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
@@ -41958,51 +41958,6 @@
    "at": "2026-11-06T12:00:21Z"
   }
  },
- "lane_strikes": {
-  "2": {
-   "count": 0,
-   "last": [
-    {
-     "at": "2026-10-30T21:17:19Z",
-     "why": "T024 update_conflict: merging main into the task branch conflicts in Cargo.toml: the runner resolves only docs/decisions.md and a plan lock both sides kept true, so this attempt fails and the next one starts from the branc"
-    },
-    {
-     "at": "2026-10-30T23:48:18Z",
-     "why": "T034 update_conflict: merging main into the task branch conflicts in Cargo.toml: the runner resolves only docs/decisions.md and a plan lock both sides kept true, so this attempt fails and the next one starts from the branc"
-    },
-    {
-     "at": "2026-10-31T03:10:49Z",
-     "why": "lane 2: 3 lost races in a row in one run"
-    }
-   ]
-  },
-  "4": {
-   "count": 1,
-   "last": [
-    {
-     "at": "2026-11-12T09:01:13Z",
-     "why": "lane 4: 3 lost races in a row in one run"
-    },
-    {
-     "at": "2026-11-12T14:44:33Z",
-     "why": "T370 check_failed: Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_call_23_a_failed_link_step_still_answers_the_dial ... ok\ntest td"
-    }
-   ]
-  },
-  "5": {
-   "count": 2,
-   "last": [
-    {
-     "at": "2026-11-12T14:43:02Z",
-     "why": "lane 5: 3 lost races in a row in one run"
-    },
-    {
-     "at": "2026-11-12T15:19:18Z",
-     "why": "lane 5: 3 lost races in a row in one run"
-    }
-   ]
-  }
- },
  "keeper": {
   "last_run_at": "2026-11-12T16:57:04Z",
   "next_wake_at": "2026-11-12T17:07:04Z"
@@ -42219,13 +42174,15 @@
    "session": "manual-a580407cd669"
   }
  ],
- "lanes_fallback": {
-  "at": "2026-11-12T15:19:18Z",
-  "lane": "5",
-  "why": [
-   "lane 5: 3 lost races in a row in one run",
-   "lane 5: 3 lost races in a row in one run"
-  ]
- },
+ "lanes_fallback_history": [
+  {
+   "at": "2026-11-12T15:19:18Z",
+   "lane": "5",
+   "why": [
+    "lane 5: 3 lost races in a row in one run",
+    "lane 5: 3 lost races in a row in one run"
+   ]
+  }
+ ],
  "lease_on": "claude/lease"
 }
