@@ -21121,18 +21121,7 @@
    "attempts": 0,
    "slug": "intake-photos-design",
    "type": "build",
-   "stage": "4",
-   "plan_gap": {
-    "at": "2026-11-12T21:24:09Z",
-    "problems": [
-     "T162: dependency T251 is DONE but its owned file app/intake/src/zip_step.rs is not on main",
-     "T162: dependency T251 is DONE but its owned file app/intake/src/cards_out.rs is not on main",
-     "T162: dependency T251 is DONE but its owned file app/quotes/src/card_pool.rs is not on main",
-     "T162: dependency T251 is DONE but its owned file migrations/0165_intake_property_zip.sql is not on main",
-     "T162: dependency T251 is DONE but its owned file app/intake/src/tests/zip_step.rs is not on main",
-     "T162: dependency T251 is DONE but its owned file tests/integration/tests/cards_out.rs is not on main"
-    ]
-   }
+   "stage": "4"
   },
   {
    "id": "T212",
@@ -25252,18 +25241,7 @@
    "attempts": 0,
    "slug": "quotes-radius-matching",
    "type": "build",
-   "stage": "4",
-   "plan_gap": {
-    "at": "2026-11-12T21:24:09Z",
-    "problems": [
-     "T249: dependency T251 is DONE but its owned file app/intake/src/zip_step.rs is not on main",
-     "T249: dependency T251 is DONE but its owned file app/intake/src/cards_out.rs is not on main",
-     "T249: dependency T251 is DONE but its owned file app/quotes/src/card_pool.rs is not on main",
-     "T249: dependency T251 is DONE but its owned file migrations/0165_intake_property_zip.sql is not on main",
-     "T249: dependency T251 is DONE but its owned file app/intake/src/tests/zip_step.rs is not on main",
-     "T249: dependency T251 is DONE but its owned file tests/integration/tests/cards_out.rs is not on main"
-    ]
-   }
+   "stage": "4"
   },
   {
    "id": "T252",
@@ -43031,7 +43009,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T21:24:35Z",
+ "updated_at": "2026-11-12T21:35:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -43129,7 +43107,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "dee8a64123a95b1a045286e3a571579ad1bc8225",
+ "runner_sha": "cb0cac64657927f5f4b1cf28c86c21c8970ced8b",
  "starter": "actions",
  "smoke_runs": [
   {

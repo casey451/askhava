@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T21:24:35Z by runner dee8a64123a9 (actions).
+Updated 2026-11-12T21:35:08Z by runner cb0cac646579 (actions).
 
 **Idle since 21:23Z; 255 of 403 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,12 @@ Updated 2026-11-12T21:24:35Z by runner dee8a64123a9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 21:23Z (no task in progress)
 - **Week:** 4% used, 186.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:19Z, 5 min before this update
+- **Last run:** 21:34Z, 0 min before this update
 - **Keeper:** last ran 21:19Z, next wake 21:39Z
 
 ## Needs attention
-- PLAN GAP T162 (since 2026-11-12T21:24:09Z, no attempt used; a plan change fixes it): T162: dependency T251 is DONE but its owned file app/intake/src/zip_step.rs is not on main; T162: dependency T251 is DONE but its owned file app/intake/src/cards_out.rs is not on main; T162: dependency T251 is DONE but its owned file app/quotes/src/card_pool.rs is not on main; T162: dependency T251 is DONE but its owned file migrations/0165_intake_property_zip.sql is not on main; T162: dependency T251 is DONE but its owned file app/intake/src/tests/zip_step.rs is not on main; T162: dependency T251 is DONE but its owned file tests/integration/tests/cards_out.rs is not on main
-- PLAN GAP T249 (since 2026-11-12T21:24:09Z, no attempt used; a plan change fixes it): T249: dependency T251 is DONE but its owned file app/intake/src/zip_step.rs is not on main; T249: dependency T251 is DONE but its owned file app/intake/src/cards_out.rs is not on main; T249: dependency T251 is DONE but its owned file app/quotes/src/card_pool.rs is not on main; T249: dependency T251 is DONE but its owned file migrations/0165_intake_property_zip.sql is not on main; T249: dependency T251 is DONE but its owned file app/intake/src/tests/zip_step.rs is not on main; T249: dependency T251 is DONE but its owned file tests/integration/tests/cards_out.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 22 problem(s) on tasks still to run (+126 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+129 on DONE tasks); first: T340: measures 46% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
