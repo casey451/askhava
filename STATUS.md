@@ -1,25 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:17:04Z by runner b6463cba40ab (actions).
+Updated 2026-11-12T11:17:12Z by runner 30934ba0081d (actions).
 
-**Building: T345 in progress since 10:49Z; 238 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 17:00Z; 238 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 238 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T345 claimed 10:49Z, lease until 13:49Z
+- **Lane:** idle since 11:16Z (no task in progress)
 - **Week:** 93% used, 1.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:16Z, 0 min before this update
+- **Last run:** 11:17Z, 0 min before this update
 - **Keeper:** last ran 11:16Z, next wake 13:51Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 20 problem(s) on tasks still to run (+101 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+102 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T345 | harness: every external GitHub Actions `uses:` in every work | MERGE_PENDING | 3 | 27 min | 11:16Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
 | T377 | adapters and stand-in (harness): every text asks Twilio for  | MERGE_PENDING | 1 | 28 min | 11:15Z |  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 1 | 8 min | 11:14Z | PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to l |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | MERGE_PENDING | 1 | 24 min | 11:05Z | merging main into the reviewed head conflicts in app/messaging/src/api.rs; a resync merges it in on this attempt (D-891) |
@@ -31,7 +32,7 @@ Updated 2026-11-12T11:17:04Z by runner b6463cba40ab (actions).
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z |  |
 | T406 | quotes: a quote's PICK-040 facts are stored with it and read | done | 1 | 41 min | 09:05Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | done | 2 | 56 min | 09:00Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 2 | 4 min | 08:47Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
+| T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 2 | 4 min | 08:47Z |  |
 | T322 | businesses: a backup notice address is checked again at conf | done | 1 | 35 min | 08:36Z |  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | BLOCKED | 1 | 3 min | 08:17Z | PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card s |
 | T360 | messaging: the opt-out confirmation email while texting is o | done | 1 | 43 min | 07:42Z |  |
@@ -174,7 +175,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T345 (lease until 2026-11-12T13:49:13Z)
 
 ## Last usage reading
-- {"task": "T377", "at": "2026-11-12T11:15:37Z", "cache_read_input_tokens": 12911051, "cache_creation_input_tokens": 400605, "output_tokens": 87493, "input_tokens": 289}
+- {"task": "T345", "at": "2026-11-12T11:16:49Z", "cache_read_input_tokens": 2015972, "input_tokens": 111, "output_tokens": 26172, "cache_creation_input_tokens": 128461}
