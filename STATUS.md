@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T15:11:58Z by runner 1ee0fd56a376 (actions).
+Updated 2026-11-12T15:12:18Z by runner 87abedec7b6e (actions).
 
 **Building: T370 in progress since 15:07Z; 245 of 397 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-12T15:11:58Z by runner 1ee0fd56a376 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T370 claimed 15:07Z, lease until 18:07Z
 - **Week:** 95% used, 1.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:11Z, 0 min before this update
-- **Keeper:** last ran 15:07Z, next wake 17:41Z
+- **Last run:** 15:12Z, 0 min before this update
+- **Keeper:** last ran 15:12Z, next wake 18:10Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T362: plan gap reported: PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): "Tab from "" ... Expected: 3, Received: 0" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState("load") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_serve; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T362 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+116 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+115 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
