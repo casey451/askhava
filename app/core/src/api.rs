@@ -3,7 +3,7 @@
 //! Settings (SEC-001, SEC-002, SEC-003, SEC-036), the clock and business clock
 //! (JOB-007), the database pool, migrations and the guarded-update outcome
 //! (JOB-004, D-092), and logging with `Redacted` contact values and the Sentry
-//! scrubber (PRIV-016, PRIV-017, PRIV-028), the task queue and its `unfinished` read (JOB-006, PRIV-007), its dead-letter reads and one-row revive (OPS-004, JOB-006, T327, T366) and the rate-limit counters with
+//! scrubber (PRIV-016, PRIV-017, PRIV-028), the numbers-only database metrics (D-3292), the task queue and its `unfinished` read (JOB-006, PRIV-007), its dead-letter reads and one-row revive (OPS-004, JOB-006, T327, T366) and the rate-limit counters with
 //! the client IP they are keyed on (SEC-014, SEC-040), and the test-control router and clock,
 //! whose routes exist only under the `test-control` feature (SEC-035), derived IDs and link tokens
 //! (CARD-017, PICK-028, SEC-037) and the webhook dedupe outcome and event key (SEC-017, SEC-039), and
@@ -15,13 +15,18 @@ pub use crate::clock::{
     add_business_minutes, arizona, arizona_time, is_business_hours, local_time, zone,
 };
 pub use crate::db::{DbError, Guarded, MIGRATOR, app_pool, migrate};
+pub use crate::db_metrics::{
+    DbMetrics, DbSnapshot, MetricsLayer, PoolSnapshot, WAIT_BUCKETS_US, WaitBucket,
+    global as db_metrics,
+};
 pub use crate::ids::{
     IdError, IdKind, IdSecret, LinkKind, LinkSalt, LinkToken, card_id, derive_id, link_token,
     pick_id, quote_id,
 };
 pub use crate::logging::{
-    LogGuard, LoggingError, REDACTED, Redacted, init as init_logging, json_layer, request_span,
-    scrub_breadcrumb, scrub_event, scrub_text, sentry_options,
+    LogGuard, LoggingError, REDACTED, Redacted, init as init_logging, json_filter, json_layer,
+    metrics_filter, request_span, scrub_breadcrumb, scrub_event, scrub_text, sentry_options,
+    subscriber as log_subscriber,
 };
 pub use crate::rate_limit::{
     CF_CONNECTING_IP, CLOUDFLARE_RANGES, ClientIpPolicy, DEFAULT_CLIENT_IP_HEADER, RateDecision,
