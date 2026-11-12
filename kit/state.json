@@ -41041,7 +41041,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T14:24:19Z",
+ "updated_at": "2026-11-12T14:26:11Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -41140,7 +41140,7 @@
   ]
  },
  "runner_sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "54ea2ca4035a3699174ce306701879a84231cb43",
@@ -41411,7 +41411,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3256,
+ "next_decision": 3257,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -41654,6 +41654,12 @@
    "at": "2026-11-12T09:06:09Z",
    "reason": "T345 plan gap: own the two runner tests from D-3141/D-3143 that hard-code action tags",
    "session": "manual-d192f25b5d82"
+  },
+  {
+   "number": 3256,
+   "at": "2026-11-12T14:26:11Z",
+   "reason": "T251 context gap 47% vs 45%: trim its goal (no requirement change)",
+   "session": "manual-6882ff86e870"
   }
  ],
  "lease_on": "claude/lease"
