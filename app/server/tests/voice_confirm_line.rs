@@ -11,7 +11,7 @@ use askhava_calls::api::{
     CloseReason, Connected, PinWait, VoiceKeys, assign_number, call_start, close_line,
     pin_tries_today, stored_pin,
 };
-use askhava_core::api::{MIGRATOR, ManualClock, Settings};
+use askhava_core::api::{Environment, MIGRATOR, ManualClock, Settings};
 use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_messaging::api::sender_add;
 use askhava_privacy::api::{NewContact, Vault, store_contact};
@@ -99,7 +99,7 @@ fn hooks(db: &PgPool, now: Timestamp) -> Arc<VoiceHooks> {
         auth_token: SecretString::from(TOKEN),
         id_secret: SecretString::from(ID_SECRET.to_owned()),
         vault: vault(),
-        names: Vec::new(),
+        environment: Environment::Test,
         intake: IntakeSettings::default(),
     };
     Arc::new(VoiceHooks {

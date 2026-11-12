@@ -14,7 +14,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use askhava_businesses::api::PHONE_STOPPED_KIND;
-use askhava_core::api::ManualClock;
+use askhava_core::api::{Environment, ManualClock};
 use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_messaging::api::sender_add;
 use askhava_privacy::api::{IndexPurpose, Vault, normalize_phone};
@@ -53,7 +53,7 @@ fn hooks(pool: &PgPool) -> Arc<Webhooks> {
         auth_token: SecretString::from(TOKEN),
         id_secret: SecretString::from("test-only-id-secret-not-a-real-key".to_owned()),
         vault: Vault::new(&key(0x53), &key(0x63), &url).expect("vault"),
-        names: Vec::new(),
+        environment: Environment::Test,
         intake: IntakeSettings::default(),
     })
 }

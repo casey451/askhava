@@ -14,7 +14,7 @@
 
 use std::sync::Arc;
 
-use askhava_core::api::{ManualClock, Settings, SettingsError};
+use askhava_core::api::{Environment, ManualClock, Settings, SettingsError};
 use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_jobs::api::{JobStatus, move_to};
 use askhava_licensing::api::LicenseKind;
@@ -58,7 +58,7 @@ fn vault() -> Vault {
     Vault::new(&key(0x53), &key(0x63), &url).expect("vault")
 }
 
-fn hooks(pool: &PgPool, names: Vec<(Uuid, String)>) -> Arc<Webhooks> {
+fn hooks(pool: &PgPool) -> Arc<Webhooks> {
     Arc::new(Webhooks {
         pool: pool.clone(),
         clock: Arc::new(ManualClock::new(at())),
@@ -66,7 +66,7 @@ fn hooks(pool: &PgPool, names: Vec<(Uuid, String)>) -> Arc<Webhooks> {
         auth_token: SecretString::from(TOKEN),
         id_secret: SecretString::from("test-only-id-secret-not-a-real-key".to_owned()),
         vault: vault(),
-        names,
+        environment: Environment::Test,
         intake: IntakeSettings::default(),
     })
 }
@@ -143,7 +143,7 @@ async fn templates(pool: &PgPool) -> Vec<String> {
 /// nothing; a signed URL includes its query string.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_txt_04_only_a_signed_delivery_reaches_the_app(pool: PgPool) {
-    let h = hooks(&pool, Vec::new());
+    let h = hooks(&pool);
     let fields = [
         ("MessageSid", "SM00000000000000000000000000000001"),
         ("From", HOME),
@@ -179,7 +179,7 @@ async fn td_txt_04_only_a_signed_delivery_reaches_the_app(pool: PgPool) {
 /// one consent text; a status callback three times is recorded once.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_txt_04_the_same_message_id_three_times_is_handled_once(pool: PgPool) {
-    let h = hooks(&pool, Vec::new());
+    let h = hooks(&pool);
     for _ in 0..3 {
         assert_eq!(
             text(&h, 1, HOME, "my kitchen sink is leaking").await,
@@ -213,7 +213,7 @@ async fn td_txt_04_the_same_message_id_three_times_is_handled_once(pool: PgPool)
 /// the provider's START opens a new request from the consent text (CON-015).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_con_05_an_opt_out_ends_the_text_at_messaging(pool: PgPool) {
-    let h = hooks(&pool, Vec::new());
+    let h = hooks(&pool);
     assert_eq!(text(&h, 1, HOME, "STOP").await, StatusCode::OK);
     assert_eq!(
         text(&h, 2, HOME, "my sink is leaking").await,
@@ -247,7 +247,7 @@ async fn td_con_05_an_opt_out_ends_the_text_at_messaging(pool: PgPool) {
 /// wait; a linked business phone's text is recorded and opens no request.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_08_a_reply_restarts_the_wait_and_a_business_text_opens_nothing(pool: PgPool) {
-    let h = hooks(&pool, Vec::new());
+    let h = hooks(&pool);
     let mut db = pool.acquire().await.expect("connection");
     sender_add(
         &mut db,
@@ -356,11 +356,33 @@ async fn quoted_job(pool: &PgPool, h: &Arc<Webhooks>) -> Uuid {
     job
 }
 
+/// Business `id`'s records with `name` as its business name, so `businesses::api::public_names`
+/// reads it at the time of a LIST (TXT-031, D-2206).
+async fn named(pool: &PgPool, id: Uuid, name: &str) {
+    sqlx::query(
+        "INSERT INTO businesses.business (id, status, created_at, status_changed_at) \
+         VALUES ($1, 'active', now(), now())",
+    )
+    .bind(id)
+    .execute(pool)
+    .await
+    .expect("business");
+    sqlx::query(
+        "INSERT INTO businesses.business_name (business_id, business_name, changed_at) \
+         VALUES ($1, $2, now())",
+    )
+    .bind(id)
+    .bind(name)
+    .execute(pool)
+    .await
+    .expect("business name");
+}
+
 /// TD-TXT-11 (TXT-031): LIST through the route gets the LIST text naming the quoting business.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_txt_11_list_through_the_route_gets_the_list_text(pool: PgPool) {
-    let names = vec![(Uuid::from_u128(1), "Sample Business 1".to_owned())];
-    let h = hooks(&pool, names);
+    named(&pool, Uuid::from_u128(1), "Sample Business 1").await;
+    let h = hooks(&pool);
     quoted_job(&pool, &h).await;
     assert_eq!(text(&h, 4, HOME, "LIST").await, StatusCode::OK);
     let body: String =
@@ -376,7 +398,7 @@ async fn td_txt_11_list_through_the_route_gets_the_list_text(pool: PgPool) {
 /// heard as a reply, so the request's Intake job's 72-hour wait restarts at it.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_txt_11_list_whose_list_cannot_be_built_is_heard_as_a_reply(pool: PgPool) {
-    let h = hooks(&pool, Vec::new());
+    let h = hooks(&pool);
     quoted_job(&pool, &h).await;
     let mut db = pool.acquire().await.expect("connection");
     let request: Uuid = sqlx::query_scalar("SELECT id FROM intake.conversation")
