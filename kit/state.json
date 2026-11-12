@@ -22475,7 +22475,7 @@
     "T164",
     "T157"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "businesses-leaving",
    "type": "build",
@@ -22641,13 +22641,66 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 14,
      "head_sha": "a39551d64ef1df449b3ed3849c784ea3fab1c69c",
-     "pr": null,
-     "checks": null,
+     "pr": 529,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-11T23:21:29Z",
      "ended_at": "2026-11-11T23:45:22Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "resync": true
     }
    ],
@@ -22766,7 +22819,44 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "8bc6d03cfc3c72267e7813bc8bc51b41c5995902",
+   "merged_at": "2026-11-12T01:26:03Z",
+   "files": [
+    ".sqlx/query-292217d1d16fcd5e4c08e89147e27a5e6aeacefd3e8504c272d93b293672ce2b.json",
+    ".sqlx/query-52bd947bff7b7a84c50808892fb9e8954c7b3de9f886b6a76e8a358fefdc03ff.json",
+    ".sqlx/query-6abda51f35053c81b39ca2382ac25e6fbb1b6608b8b1a5805fe297840f2afe0e.json",
+    ".sqlx/query-7e1c53169fa586bbbbaa69f4bda2e87788ce31b6f0eb7ce3a215b4cdf148d436.json",
+    ".sqlx/query-ace6230cc6bd52bb05ac3b2a772816183dcb9983744b21c0981b0778f1a8ee10.json",
+    ".sqlx/query-c7f16b57179e8efaac972f4eee55b7141fe43ea8997e2e8d61aad6c9f243ceb4.json",
+    ".sqlx/query-f6a5f1d5b6b93a9ef70459873f5a579d032f470e17a23993667de69e3d08f484.json",
+    ".sqlx/query-f71ec9766170f9cffb431c2fa93cd29f6d9731ed020cca03d74fe97b798c13d0.json",
+    "app/businesses/CLAUDE.md",
+    "app/businesses/src/api.rs",
+    "app/businesses/src/leaving.rs",
+    "app/businesses/src/lib.rs",
+    "app/businesses/src/status.rs",
+    "app/payments/CLAUDE.md",
+    "app/payments/src/api.rs",
+    "app/picks/CLAUDE.md",
+    "app/picks/src/api.rs",
+    "app/picks/src/business_left.rs",
+    "app/picks/src/lib.rs",
+    "app/portals/CLAUDE.md",
+    "app/portals/src/api.rs",
+    "app/portals/src/business_left.rs",
+    "app/portals/src/lib.rs",
+    "app/portals/templates/business_leave.html",
+    "app/quotes/CLAUDE.md",
+    "app/quotes/src/api.rs",
+    "app/quotes/src/business_left.rs",
+    "app/quotes/src/lib.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "migrations/0161_businesses_leaving.sql",
+    "tests/integration/tests/business_leaving.rs"
+   ]
   },
   {
    "id": "T215",
@@ -29896,7 +29986,7 @@
     "T292",
     "T279"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 0,
    "slug": "emergency-business-notices",
    "type": "build",
@@ -29916,13 +30006,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 133,
      "head_sha": "556add75d836b8d3e3f07e6ae506f692bb0bfcd1",
-     "pr": null,
-     "checks": null,
+     "pr": 532,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-11T23:27:47Z",
      "ended_at": "2026-11-12T00:03:06Z",
-     "result": "MERGE_PENDING"
+     "result": "resync"
     }
    ],
    "reviewed_sha": "8ba1ed2d724a7499a428c2255ed75d1bd0cb7313",
@@ -29991,7 +30122,31 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "runner_closed_prs": [
+    532
+   ],
+   "resync": {
+    "attempt": 1,
+    "from": "8ba1ed2d724a7499a428c2255ed75d1bd0cb7313",
+    "main": "8bc6d03cfc3c72267e7813bc8bc51b41c5995902",
+    "paths": [
+     "app/quotes/CLAUDE.md"
+    ],
+    "at": "2026-11-12T01:43:13Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 1,
+     "from": "8ba1ed2d724a7499a428c2255ed75d1bd0cb7313",
+     "main": "8bc6d03cfc3c72267e7813bc8bc51b41c5995902",
+     "paths": [
+      "app/quotes/CLAUDE.md"
+     ],
+     "at": "2026-11-12T01:43:13Z"
+    }
+   ],
+   "last_failure": "merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891)"
   },
   {
    "id": "T314",
@@ -31578,7 +31733,7 @@
     "T288",
     "T333"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "reconcile-catch-up-and-paging",
    "type": "build",
@@ -31592,7 +31747,7 @@
     3067,
     3068
    ],
-   "last_failure": "Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads back to checkpoint minus 1 day. Reviewer did NOT confirm the gap: T334 can meet its spec inside reconcile.rs alone. A listed charge that has an unsettled payments.reconcile_open row with first_seen before now minus LOOKBACK is left out of the listed set and not counted in seen, so retry_open picks it up via fetch_charge and settles it with the same keys (a charge is created before it is first seen, so first_seen older than 7 days means it is only in the catch-up range; charges listed for the first time have no open row and take the normal path). That gives (0,2,0) at :343 and open==1 at :423. The night-8 gap alert is not counted by those tests. Nothing was committed; no work done on the branch. Retry: implement T334 with that approach, log it in docs/decisions.md, do not edit reconcile_open.rs.",
+   "last_failure": "merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891)",
    "history": [
     {
      "attempt": 1,
@@ -31612,13 +31767,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 222,
      "head_sha": "618f102553dd22f3e82a2c346c10dce358b3352d",
-     "pr": null,
-     "checks": null,
+     "pr": 527,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-11T22:00:14Z",
      "ended_at": "2026-11-11T23:36:27Z",
-     "result": "MERGE_PENDING"
+     "result": "resync"
     }
    ],
    "reviewed_sha": "f5c24117141d98aea1087609fbfd58235b988559",
@@ -31710,7 +31906,30 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "runner_closed_prs": [
+    527
+   ],
+   "resync": {
+    "attempt": 2,
+    "from": "f5c24117141d98aea1087609fbfd58235b988559",
+    "main": "8bc6d03cfc3c72267e7813bc8bc51b41c5995902",
+    "paths": [
+     "app/payments/CLAUDE.md"
+    ],
+    "at": "2026-11-12T01:43:13Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 2,
+     "from": "f5c24117141d98aea1087609fbfd58235b988559",
+     "main": "8bc6d03cfc3c72267e7813bc8bc51b41c5995902",
+     "paths": [
+      "app/payments/CLAUDE.md"
+     ],
+     "at": "2026-11-12T01:43:13Z"
+    }
+   ]
   },
   {
    "id": "T335",
@@ -32902,7 +33121,7 @@
    "deps": [
     "T207"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 0,
    "slug": "capability-offer-all-licenses",
    "type": "build",
@@ -32922,13 +33141,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 91,
      "head_sha": "7eda8c087e52fc6e3d3e07befc327501525cacd5",
-     "pr": null,
-     "checks": null,
+     "pr": 535,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-12T00:48:23Z",
      "ended_at": "2026-11-12T01:13:31Z",
-     "result": "MERGE_PENDING"
+     "result": "resync"
     }
    ],
    "reviewed_sha": "4f8a3fff7263453e1b8a20c08a67aac169febc7a",
@@ -32954,7 +33214,31 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "runner_closed_prs": [
+    535
+   ],
+   "resync": {
+    "attempt": 1,
+    "from": "4f8a3fff7263453e1b8a20c08a67aac169febc7a",
+    "main": "8bc6d03cfc3c72267e7813bc8bc51b41c5995902",
+    "paths": [
+     "app/businesses/CLAUDE.md"
+    ],
+    "at": "2026-11-12T01:43:13Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 1,
+     "from": "4f8a3fff7263453e1b8a20c08a67aac169febc7a",
+     "main": "8bc6d03cfc3c72267e7813bc8bc51b41c5995902",
+     "paths": [
+      "app/businesses/CLAUDE.md"
+     ],
+     "at": "2026-11-12T01:43:13Z"
+    }
+   ],
+   "last_failure": "merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891)"
   },
   {
    "id": "T369",
@@ -35964,7 +36248,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T01:42:39Z",
+ "updated_at": "2026-11-12T01:43:30Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -36062,7 +36346,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "18bfe8a6c0fd52cdf62b0ce7affbac4c4e748e27",
+ "runner_sha": "8bc6d03cfc3c72267e7813bc8bc51b41c5995902",
  "starter": "actions",
  "smoke_runs": [
   {

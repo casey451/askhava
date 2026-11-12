@@ -1,28 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-12T01:42:39Z by runner 18bfe8a6c0fd (actions).
+Updated 2026-11-12T01:43:30Z by runner 8bc6d03cfc3c (actions).
 
-**Idle since 01:42Z; 218 of 383 done; week 80% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 01:42Z; 219 of 383 done; week 80% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 218 of 383 build tasks (owner gates not counted)
+- **Tasks done:** 219 of 383 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 01:42Z (no task in progress)
 - **Week:** 80% used, 32.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:37Z, 5 min before this update
+- **Last run:** 01:42Z, 0 min before this update
 - **Keeper:** last ran 01:24Z, next wake 04:14Z
 
 ## Needs attention
-- Strict plan check red: 7 problem(s) on tasks still to run (+70 on DONE tasks); first: T100: stored context_pct 45% but it measures 49%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+71 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T325 | server: an inbound text stopped by a module error raises a b | MERGE_PENDING | 1 | 30 min | 01:42Z |  |
-| T368 | businesses (harness): the capability checklist offers every  | MERGE_PENDING | 1 | 25 min | 01:13Z |  |
+| T368 | businesses (harness): the capability checklist offers every  | resync | 1 | 25 min | 01:13Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T317 | server and intake: the inbound text route applies SEC-014's  | done | 2 | 53 min | 00:16Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
-| T313 | messaging and server: an EMERGENCY card notice goes at night | MERGE_PENDING | 1 | 35 min | 00:03Z |  |
-| T228 | businesses: leaving Ask Hava, the optional reason and what h | MERGE_PENDING | 2 | 23 min | 23:45Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md, app/quotes/src/api.rs; a resync merges it in on th |
-| T334 | payments: the nightly reconcile catches up after an outage f | MERGE_PENDING | 2 | 96 min | 23:36Z | Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads  |
+| T313 | messaging and server: an EMERGENCY card notice goes at night | resync | 1 | 35 min | 00:03Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T228 | businesses: leaving Ask Hava, the optional reason and what h | done | 2 | 23 min | 23:45Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md, app/quotes/src/api.rs; a resync merges it in on th |
+| T334 | payments: the nightly reconcile catches up after an outage f | resync | 2 | 96 min | 23:36Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T348 | harness: the authorization matrix gets public, owner and act | done | 1 | 43 min | 23:32Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 2 | 41 min | 23:04Z |  |
 | T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z |  |
@@ -118,14 +118,14 @@ Updated 2026-11-12T01:42:39Z by runner 18bfe8a6c0fd (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 212 of 733 (28.9%) · partial 347 · unstarted 174
-**Tasks merged (throughput only):** 218 of 383
+**Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
+**Tasks merged (throughput only):** 219 of 383
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
-| businesses | 16 | 36 | 6 | 58 |
+| businesses | 16 | 38 | 4 | 58 |
 | calls | 9 | 15 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
@@ -154,7 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 98 of 172 done
+- stage 4: 99 of 172 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 37 done
 - stage 7: 0 of 2 done
