@@ -36320,7 +36320,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T02:26:00Z",
+ "updated_at": "2026-11-12T02:26:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -36418,8 +36418,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "00d214c9e37e1d160047b8f2682ddc89d6287972",
- "starter": "actions",
+ "runner_sha": "25014a67ca157050e1b264fb7e7b257bbd172766",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "74e1f303a72d1efd315b7065e91b7174b04aa4ab",
@@ -36675,7 +36675,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3118,
+ "next_decision": 3119,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -36831,6 +36831,12 @@
    "at": "2026-11-12T01:37:30Z",
    "reason": "plan-preflight-5: T378 T343 T268 T329 T306 gaps (+T339 T377 T251 tidies) from pre-flight round 5",
    "session": "manual-92202bd9680a"
+  },
+  {
+   "number": 3118,
+   "at": "2026-11-12T02:26:15Z",
+   "reason": "plan-preflight-6: T355 T340 T341 T249 T273 T271 T277 T357 T314 gaps from pre-flight round 6",
+   "session": "manual-0dfa4ba0fef0"
   }
  ],
  "lease_on": "claude/lease"
