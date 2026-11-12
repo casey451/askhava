@@ -608,7 +608,7 @@ async fn offer_choice(
     trade: &Trade<'_>,
 ) -> Result<Vec<Queued>, IntakeError> {
     let at = step.msg.received_at;
-    let n = emergency_count::count(tx, trade.category, trade.town).await?;
+    let n = emergency_count::count(tx, (trade.category, trade.town), at).await?;
     let offer = emergency_count::offer(at, n);
     let language = request_language(tx, conversation).await?;
     let n_text = n.to_string();

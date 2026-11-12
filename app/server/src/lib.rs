@@ -474,12 +474,22 @@ where
     registry
 }
 
+/// Registers `jobs`' daily timer backstop (`jobs.timer_backstop`) on the worker clock: it revives
+/// a non-final job's dead or missing timer (JOB-003, JOB-006, OPS-004, PRIV-007, T366, D-2640).
+fn register_timer_backstop(registry: &mut Registry, clock: Arc<dyn Clock>) {
+    registry.register(askhava_jobs::api::BACKSTOP_KIND, move |pool, _task| {
+        let now = clock.now();
+        async move { askhava_jobs::api::run_backstop(&pool, now).await }
+    });
+}
+
 /// The production worker's whole registry (T327, D-2285): [`register_handlers`], then what only
 /// the worker adds: `privacy`'s sealed photo delete over the stream's store (PRIV-009, T276),
 /// `messaging`'s paused-emergency follow-up on the call list (TXT-023, T279), with the footer
 /// postal setting (required in test and live) `messaging`'s business notices and charge receipts
 /// ([`register_notice_senders`], T313), the hourly
-/// no-handler check ([`no_handler_alert`], OPS-004) and, with the Twilio settings in `pairs`
+/// dead-letter check ([`no_handler_alert`], OPS-004), `jobs`' daily timer backstop
+/// ([`register_timer_backstop`], T366) and, with the Twilio settings in `pairs`
 /// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027), `picks`'
 /// masked-line retry (CALL-001) and, with the vault keys too, `messaging`'s outbox sender
 /// (`messaging.send_due`, [`outbox_sender`], T356, D-2628). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
@@ -523,6 +533,7 @@ where
         },
     );
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
+    register_timer_backstop(&mut registry, Arc::clone(&clock));
     let pairs: Vec<(String, String)> = pairs.into_iter().collect();
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {
         register_inbound_retry(
@@ -805,7 +816,7 @@ fn register_accepted_quote(registry: &mut Registry) {
 /// `privacy`'s re-check, `businesses` queues its complaint hold events and `payments` places its
 /// dispute holds before `privacy` decides (a re-check that queued new events waits for them,
 /// D-1799); `privacy` applies the complaint events and hands the contact and text stages to
-/// `intake`. Each purge task's last failed attempt raises an alert ([`alert_if_last`]).
+/// `intake`, `quotes` and, on the text stage, the feedback words' step ([`feedback_step`], T315). Each purge task's last failed attempt raises an alert ([`alert_if_last`]).
 fn register_purge_handlers(registry: &mut Registry) {
     registry.register(
         askhava_messaging::api::CUT_KIND,
@@ -837,10 +848,15 @@ fn register_purge_handlers(registry: &mut Registry) {
     registry.register(askhava_privacy::api::PURGE_KIND, |pool, task| async move {
         let outcome = async {
             askhava_intake::api::run_purge(pool.clone(), task.clone()).await?;
-            askhava_quotes::api::run_text_purge(pool.clone(), task.clone()).await
+            askhava_quotes::api::run_text_purge(pool.clone(), task.clone()).await?;
+            match askhava_privacy::api::purge_target(&task)? {
+                (job, askhava_privacy::api::PurgeStage::Text) => feedback_step(&pool, job).await,
+                _ => Ok(()),
+            }
         };
         alert_if_last(&pool, &task, outcome.await).await
     });
+    register_feedback_purge(registry);
     registry.register(
         askhava_intake::api::REQUEST_PURGE_KIND,
         |pool, task| async move {
@@ -848,6 +864,42 @@ fn register_purge_handlers(registry: &mut Registry) {
             alert_if_last(&pool, &task, outcome).await
         },
     );
+}
+
+/// PRIV-009, D-3264: the held feedback's daily ask-again task runs [`feedback_step`].
+fn register_feedback_purge(registry: &mut Registry) {
+    registry.register(
+        askhava_jobs::api::FEEDBACK_PURGE_KIND,
+        |pool, task| async move {
+            let job = task.payload["job"]
+                .as_str()
+                .and_then(|s| Uuid::parse_str(s).ok())
+                .ok_or(askhava_core::api::HandlerError(
+                    "feedback purge payload is not a job",
+                ));
+            let outcome = match job {
+                Ok(job) => feedback_step(&pool, job).await,
+                Err(e) => Err(e),
+            };
+            alert_if_last(&pool, &task, outcome).await
+        },
+    );
+}
+
+/// PRIV-009, PRIV-007, JOB-017 (T315, D-2205, D-3264): the text stage's feedback step: `privacy`
+/// says whether job `job` is held (an open dispute or complaint), and `jobs` blanks its feedback
+/// words when not, or keeps them and asks again in a day.
+async fn feedback_step(pool: &PgPool, job: Uuid) -> Result<(), askhava_core::api::HandlerError> {
+    let failed = askhava_core::api::HandlerError("feedback purge database call failed");
+    let mut conn = pool.acquire().await.map_err(|_| failed)?;
+    let held = askhava_privacy::api::is_held(&mut conn, job)
+        .await
+        .map_err(|_| failed)?;
+    let now = jiff::Timestamp::now();
+    askhava_jobs::api::feedback_text_stage(&mut conn, (job, held), now)
+        .await
+        .map(|_| ())
+        .map_err(|_| failed)
 }
 
 /// PRIV-007, OPS-001, D-1799: a purge task that failed on its last attempt is dead-lettered and

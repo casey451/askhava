@@ -9,7 +9,10 @@
 //! first-quote move to Quotes ready that `quotes` calls in the quote's transaction (JOB-009,
 //! JOB-011, TXT-016, D-1517); the day-3 and day-14 check-ins, their answers, the PROBLEM listing
 //! and the feedback request after Done (JOB-015, JOB-016, JOB-028, TXT-029, T097); a job's category
-//! and candidate job type codes as append-only narrowing rows (INT-018, FEE-005, T339).
+//! and candidate job type codes as append-only narrowing rows (INT-018, FEE-005, T339); blanking
+//! a job's feedback words at the 3-year purge and on "Delete my data" (PRIV-009, PRIV-011, T315);
+//! the daily timer backstop that revives a dead or missing job timer (JOB-003, JOB-006, OPS-004,
+//! PRIV-007, T366).
 
 use askhava_core::api::Guarded;
 use askhava_ops::api::Actor;
@@ -17,6 +20,9 @@ use jiff::Timestamp;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
+pub use crate::feedback_purge::{
+    FEEDBACK_PURGE_KIND, FEEDBACK_PURGED, FeedbackStage, feedback_text_stage, purge_feedback,
+};
 pub use crate::followups::{
     Answer, CHECK_IN_DAY3, CHECK_IN_DAY14, CHECK_IN_KIND, FEEDBACK_REQUEST, Inbound, Next,
     PROBLEM_ALERT, PROBLEM_REPLY, PROBLEM_SAFETY_ALERT, after_answer, answer_check_in,
@@ -33,6 +39,10 @@ pub use crate::service::{
     TIMER_KIND, create, job_number, move_to, raise_number_floor, restart_timer, run_timer,
 };
 pub use crate::status::JobStatus;
+pub use crate::timer_backstop::{
+    BACKSTOP_KIND, BATCH, Backstop, MOST_REVIVALS, TIMER_DEAD_ALERT, TIMER_REVIVED, revive_timers,
+    run_backstop, schedule_backstop,
+};
 
 /// Quote-page link tokens (SEC-037, PICK-028, D-491).
 pub mod quote_token {
@@ -294,7 +304,8 @@ pub mod feedback {
     }
 
     /// JOB-017: every feedback that may appear on askhava.com, newest first: ticked, not removed
-    /// and not from the owner, a relative of the owner or a business. Nothing else filters it.
+    /// and not from the owner, a relative of the owner or a business; words blanked by the purge
+    /// or "Delete my data" are gone (PRIV-009, PRIV-011, T315). Nothing else filters it.
     ///
     /// # Errors
     /// [`JobsError::Database`].
@@ -302,6 +313,7 @@ pub mod feedback {
         let rows = sqlx::query!(
             "SELECT id, job_id, body FROM jobs.feedback \
              WHERE share AND removed_reason IS NULL AND author_kind IS NULL \
+             AND body_purged_at IS NULL \
              ORDER BY received_at DESC, id"
         )
         .fetch_all(db)

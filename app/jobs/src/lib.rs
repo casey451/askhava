@@ -6,6 +6,7 @@
 //! transaction. Other crates reach it only through [`api`].
 
 pub mod api;
+mod feedback_purge;
 mod followups;
 mod handlers;
 mod job_facts;
@@ -15,6 +16,7 @@ mod quote_token;
 mod rules;
 mod service;
 mod status;
+mod timer_backstop;
 
 #[cfg(test)]
 mod tests;

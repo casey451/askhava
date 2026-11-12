@@ -2,6 +2,16 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Runner: seven lanes, and two lanes never work in the same part of the app at once (D-3269, November 12)
+
+- **What you asked.** "Okay, so go ahead and do whatever we need to do to make that all work properly", for running seven tasks at once without the merge collisions.
+- **What changed.** The runner now works up to seven tasks at a time (it was five). It no longer starts a task in a part of the app (a crate) that another running or merging task is already changing; it picks a task elsewhere, or that lane simply waits. The most urgent waiting task keeps its parts of the app reserved, so smaller tasks cannot keep jumping ahead of it. Before, it only preferred another part, and about 1 task in 5 still needed an extra session to merge, nearly always over the same two shared files: each crate's notes file and its list of public names.
+- **Also.** When two tasks each only added lines at the same spot of one of those shared files, the runner now keeps both additions itself instead of sending the task back for an extra session, but only if the notes file stays within its 120-line limit and, for the list of public names, only for plain re-export lines that Rust's formatter leaves as they are. Anything else goes to the extra session as before.
+- **And.** Seven lanes writing the runner's shared record at the same moment collide more often. A run that keeps losing that race while other runs are writing now just ends and lets the lane be refilled; it no longer counts as a fault, so busy moments alone can't drop the runner back to one lane (that happened at 15:19 UTC today). If nothing else wrote meanwhile (so the writes are failing for some other reason), it still counts as a fault, as before.
+- **Worth knowing.** Because tasks in the same part of the app now wait for each other, seven lanes will sometimes run as fewer when most ready work is in one or two parts (payments and portals have the most). The usage limits still apply as before.
+- **To undo.** Set `exclusive_crates` to `false` or `lanes` back to 5 in `kit/runner.json`.
+- **Nothing needs you now.**
+
 ## Job cards had nowhere to keep the card she approved; it is now stored for 3 years (plan change, D-3189, November 12)
 
 - **What happened.** The step that sends job cards to businesses (T251) stopped and reported a planning gap: once a homeowner approves her card, or the 30-minute wait ends, nothing in the app still holds the card text or her description (Ask Hava deliberately never stores the raw texts). The business job page and the quote form had the same problem.
@@ -2539,3 +2549,24 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Worth a look.** The welcome and "texts to your phone are off" emails cannot go out yet. Nothing in the app can send through Resend or look up a business's email address yet. Until a later task adds that, these emails keep retrying and an activated business gets no job cards (D-3186).
 - **Two follow-up tasks are needed (D-3186, D-3187).** One must build the email sender and send again any welcome that never went out. The other must store the owner and the agreement in the same step as the sign-up, or stop activation when no agreement is stored.
 - **Draft wording to approve.** Box heading: "Getting job requests and notices". Error: "Tick the box to agree to get notices. We send job requests by email, so we can't sign you up without it." Second error, when texts were chosen but no phone was given: "Add the phone number for job texts, or choose email only." Welcome subject: "Ask Hava: Welcome, you're signed up for job requests". Stop subject: "Ask Hava: Texts to your phone ending 0142 are off" (the last 4 digits change for each phone).
+
+## T412 and T415: business sign-in addresses and phones are kept, sealed, in the vault (D-3262)
+
+- **What changed.** Business sign-in could not be finished: nothing in the app keeps a business person's email address or texting phone in a form it can look up, so there was nowhere to send the sign-in link or the new-device code. A new task, T412, keeps each person's sign-in address and texting phone encrypted in the vault and finds the right people when someone types their address. Only the server can read a value, for sign-in, account emails and the phone approval page, and every read is logged. A second task, T415, connects it: a phone a business links is stored there too, and a daily sweep deletes what is no longer needed.
+- **How long an old address is kept.** 30 days after a person is removed, changes their address or the business leaves, and as long as an email to it is still waiting to go. That covers the "your address was changed" notice and the bounce checks, which look 14 days apart. A phone number is deleted the day after it is unlinked.
+- **For the business data page and the data list.** This is a new place where business contact details are kept: each team member's sign-in email and texting phone, encrypted, kept 30 days after last use. The business data page and the data inventory should list it (PRIV-016); the privacy policy's business records line is still blank (`docs/legal/privacy-policy.md:95`).
+- **What waits on it.** The business sign-in pages (T280), the phone approval page (T397), the served business sign-up (T302) and the step-up pages for address changes (T364) now wait for these tasks. T412 also waits for two earlier vault tasks (T266, T273), which must change the same file first. Fourteen queued database changes were renumbered by one so they still run in order; none had started.
+
+## Pre-flight fixes, round 10 (D-3263)
+
+- **What changed.** Five queued tasks would have failed an existing check or could not be built from what came before them. The phone-approval database change is split into two files, so 14 queued database changes move up one number (none had started). Calls and texts from a team member's phone that is waiting for your approval are still refused. The two new legal drafts (the Spanish business terms summary and the Twilio campaign description) now also add themselves to the legal-document check. The safe-mode release hold checks again every 15 minutes in a way the task system supports.
+- **One new task.** T414 lets the end-to-end tests read the emails the fake email service received. The journey test with texts turned off (web and email only) now runs inside T222 and checks that no text is sent; its checks of the emails themselves wait (see below).
+- **Worth a look: no task sends email yet.** No task in the plan yet wires the app to send its emails through Resend (job-card, quote, safety and account emails, D-3186). A future task must build that sender; until then those emails are not sent and the tests that read them wait.
+
+## T362: one test waits for the quote page to finish loading (D-3270)
+
+- **What changed.** Once the quote page's live-update script is served, one keyboard test pressed Tab before the page finished loading; T362 may now add a single "wait for the page to load" line to that test, with every check in it unchanged.
+
+## Pre-flight fixes, round 11 (D-3286)
+
+- **What changed.** Five queued tasks got small wording fixes so they can run as written: two no longer load a large document they only add one line to, one uses the existing Spanish "we continue in English" text instead of adding a second copy, one has a corrected line reference, and two have their size estimates refreshed; no product rule changed.
