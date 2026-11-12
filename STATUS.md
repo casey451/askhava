@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T05:04:30Z by runner 3aa549cf9ed3 (actions).
+Updated 2026-11-12T05:07:32Z by runner 3aa549cf9ed3 (actions).
 
 **Building: T356 in progress since 04:05Z; 224 of 391 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T05:04:30Z by runner 3aa549cf9ed3 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
 - **Week:** 87% used, 15.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:04Z, 0 min before this update
+- **Last run:** 05:05Z, 1 min before this update
 - **Keeper:** last ran 05:04Z, next wake 07:08Z
 
 ## Needs attention
@@ -80,7 +80,6 @@ Updated 2026-11-12T05:04:30Z by runner 3aa549cf9ed3 (actions).
 | T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z |  |
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z |  |
-| T209 | picks and payments: the optional auto-confirm-and-pay box wi | done | 1 | 115 min | 05:06Z |  |
 
 ### Plan and harness merges on main
 - 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
