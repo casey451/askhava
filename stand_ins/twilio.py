@@ -11,8 +11,12 @@ CON-009 reply (Spanish for the Spanish words) until START or UNSTOP (no YES); th
 carries OptOutType. Those provider replies are kept apart in `replies`, so `sent_log` counts only
 the app's own sends. Inbound picture texts carry NumMedia and MediaUrl{n}; GET on a media URL gives
 the bytes (served with their content type), with `.json` the Media resource, and DELETE
-removes it; every picture gets its own Media sid. Each sent message keeps the app's derived key, and `sent_log` finds it, for OPS-017's
-"nothing sent twice" check. GET on one Message gives its resource; POST on it with an empty Body
+removes it; every picture gets its own Media sid. Each sent message keeps the app's derived key
+(a stand-in-only marker; Twilio stores no such key, D-2764), and `sent_log` filters by it only for
+`core::test_control`, and by Twilio's own list filters `To`, `From` and the `DateSent` day window
+(UTC, `date_sent` from `clock`), which recovery uses (OPS-017). A create's `StatusCallback` is kept
+per message: Twilio posts a message's status only to that URL, so `status_callback` refuses a
+message created without one and returns the URL to post to with the params (D-2761). GET on one Message gives its resource; POST on it with an empty Body
 is Twilio's documented body redaction (D-1841): 200 with the resource, its body "" from then on,
 a repeat answering the same, an unknown sid 404 (20404). Calls stand in for the masked voice
 session (D-491). Webhooks carry
@@ -28,6 +32,9 @@ import hmac
 import json
 import math
 import re
+from collections.abc import Callable
+from datetime import UTC, date, datetime
+from email.utils import format_datetime, parsedate_to_datetime
 from pathlib import Path
 from typing import Any
 
@@ -104,8 +111,12 @@ class FakeTwilio:
         self.replies: list[dict[str, Any]] = []
         self.calls: list[dict[str, Any]] = []
         self.received: dict[str, dict[str, Any]] = {}
+        self.status_urls: dict[str, str] = {}
+        self.clock: Callable[[], datetime] = lambda: datetime.now(UTC)
 
-    def create_message(self, to: str, frm: str, body: str, key: str | None = None) -> Reply:
+    def create_message(
+        self, to: str, frm: str, body: str, key: str | None = None, status_callback: str | None = None
+    ) -> Reply:
         if not body:
             return error(21602, "Message body is required.")
         if len(body) > MAX_BODY:
@@ -123,15 +134,29 @@ class FakeTwilio:
         self.messages.append(msg)
         if key is not None:
             self.keys[msg["sid"]] = key
+        if status_callback:
+            self.status_urls[msg["sid"]] = status_callback
         return 201, dict(msg)
 
-    def sent_log(self, key: str | None = None, to: str | None = None, replies: bool = False) -> list[dict[str, Any]]:
-        """The app's sends (or, with `replies`, the provider's own opt-out replies), filtered by the
-        app's derived key and/or To (OPS-017, D-491, D-561)."""
+    def sent_log(
+        self,
+        key: str | None = None,
+        to: str | None = None,
+        replies: bool = False,
+        frm: str | None = None,
+        sent: tuple[date | None, date | None] = (None, None),
+    ) -> list[dict[str, Any]]:
+        """The app's sends (or, with `replies`, the provider's own opt-out replies), filtered by
+        Twilio's `To`, `From` and `DateSent` window (`sent`: first and last UTC day, inclusive) and,
+        for `core::test_control` only, the app's derived key (OPS-017, D-491, D-561, D-2764)."""
+        first, last = sent
         return [
             dict(m)
             for m in (self.replies if replies else self.messages)
-            if key in (None, self.keys.get(m["sid"])) and to in (None, m["to"])
+            if key in (None, self.keys.get(m["sid"]))
+            and to in (None, m["to"])
+            and frm in (None, m["from"])
+            and (first or date.min) <= parsedate_to_datetime(m["date_sent"]).date() <= (last or date.max)
         ]
 
     def _auto_reply(self, word: str, to: str, frm: str) -> str | None:
@@ -149,6 +174,7 @@ class FakeTwilio:
 
     def _resource(self, to: str, frm: str, body: str) -> dict[str, Any]:
         sid = fake_id("SM", len(self.messages) + len(self.replies) + 1, 32)
+        stamp = format_datetime(self.clock().astimezone(UTC))
         return {
             "sid": sid,
             "account_sid": self.account_sid,
@@ -156,6 +182,8 @@ class FakeTwilio:
             "from": frm,
             "body": body,
             "status": "queued",
+            "date_created": stamp,
+            "date_sent": stamp,
             "num_segments": str(segment_count(body)),
             "num_media": "0",
             "direction": "outbound-api",
@@ -164,16 +192,23 @@ class FakeTwilio:
             "uri": f"/2010-04-01/Accounts/{self.account_sid}/Messages/{sid}.json",
         }
 
-    def status_callback(self, sid: str, status: str, error_code: int | None = None) -> dict[str, str]:
-        """Move a message to sent, delivered, undelivered or failed; returns the webhook params."""
+    def status_callback(
+        self, sid: str, status: str, error_code: int | None = None
+    ) -> tuple[str, dict[str, str]] | None:
+        """Move a message to sent, delivered, undelivered or failed; returns the `StatusCallback` URL
+        its create gave and the webhook params, or None (nothing moved or recorded) for a message
+        created without one, which Twilio never calls back about (D-2761)."""
         msg = next(m for m in self.messages if m["sid"] == sid)
+        url = self.status_urls.get(sid)
+        if url is None:
+            return None
         msg["status"] = status
         params = {"MessageSid": sid, "MessageStatus": status, "To": msg["to"], "From": msg["from"]}
         if error_code is not None:
             msg["error_code"] = error_code
             params["ErrorCode"] = str(error_code)
         self.callbacks.append(params)
-        return params
+        return url, params
 
     def receive(self, frm: str, to: str, body: str, media: list[str] | None = None) -> dict[str, str]:
         """A homeowner texts us (media: content types of attached pictures); returns the webhook
