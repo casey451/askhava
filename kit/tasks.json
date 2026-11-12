@@ -12601,7 +12601,8 @@
     "T386",
     "T387",
     "T390",
-    "T391"
+    "T391",
+    "T393"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16212,7 +16213,7 @@
    "id": "T139",
    "slug": "restore-drill-railway",
    "title": "Restore drill on Railway, including the switch to the restored database",
-   "goal": "Phase 2 step 7: restore drill with replay and the switch to the restored database; a step that needs Casey's hands becomes a hands-on stop (BUILD_BRIEF.md:548). The drill follows OPS-051: role bootstrap first, `pg_restore --single-transaction`, the ownership check (OPS-014, D-492).",
+   "goal": "Phase 2 step 7: restore drill with replay and the switch to the restored database; a step that needs Casey's hands becomes a hands-on stop (BUILD_BRIEF.md:548). The drill follows OPS-051: role bootstrap first, `pg_restore --single-transaction`, the ownership check (OPS-014, D-492). Its record in `docs/phase2/restore-drill.md` states, measured on this drill (amendment A-01, D-3080; `docs/compliance/reconciliation.md` TECH-05 and F-03): the snapshot or point in time restored (its time, never its contents); the restore time, from the start of the restore to the app serving from the restored database; the data-loss window, measured with fake marker rows written up to the cutover (the newest committed marker missing from the restored database); and that the replay after the switch sent no text twice and charged nothing twice (by outbox and Stripe test-mode IDs). Each figure is set against Casey's recovery targets (RTO and RPO, owner action 3 in `docs/compliance/owner-actions.md`) once they are recorded in `docs/compliance/evidence-register.md`, and marked met or missed; with no targets recorded the record says \"targets not set\" and the task lists that for Casey in `docs/for-casey-review.md`, never inventing a target. A missed target is a finding for Casey, not a failed task, and Gate C (T145) refuses until it is met or Casey accepts it in writing. `tests/recovery/tests/railway_drill.rs` checks that the record holds every measured field.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -16237,7 +16238,9 @@
     "docs/spec/ops-recovery.md",
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md",
-    "docs/brains/deploy-operations.md"
+    "docs/brains/deploy-operations.md",
+    "docs/compliance/owner-actions.md",
+    "docs/compliance/evidence-register.md"
    ],
    "requirements": [
     "OPS-012",
@@ -16250,7 +16253,8 @@
     "TD-OPS-05"
    ],
    "decisions": [
-    "D-492"
+    "D-492",
+    "D-3080"
    ],
    "cites": [
     "BUILD_BRIEF.md:196"
@@ -16266,7 +16270,8 @@
     "Ally"
    ],
    "branch": "claude/task/T139-restore-drill-railway",
-   "prompt": "kit/prompts/T139.md"
+   "prompt": "kit/prompts/T139.md",
+   "acceptance": "TD-OPS-05 passes on the Railway test project; `docs/phase2/restore-drill.md` records the snapshot time, the measured restore time and data-loss window, the no-double-send and no-double-charge result, and each figure met, missed or \"targets not set\" against Casey's RTO and RPO (A-01, D-3080)."
   },
   {
    "id": "T242",
@@ -17568,7 +17573,8 @@
     "T380",
     "T381",
     "T382",
-    "T235"
+    "T235",
+    "T394"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17616,7 +17622,8 @@
     "D-1154",
     "D-2038",
     "D-2054",
-    "D-2350"
+    "D-2350",
+    "D-3080"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -17802,7 +17809,8 @@
    "stage": "6",
    "module": null,
    "deps": [
-    "T239"
+    "T239",
+    "T392"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17830,7 +17838,8 @@
     "TD-SEC-28"
    ],
    "decisions": [
-    "D-473"
+    "D-473",
+    "D-3080"
    ],
    "cites": [
     "BUILD_BRIEF.md:197",
@@ -17853,7 +17862,7 @@
    "id": "T141",
    "slug": "handover-pack",
    "title": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist",
-   "goal": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist `docs/README.md` is the start-here map for a session that has never seen the code: one line per folder and document, and the common changes (fees, categories and job types, text templates, settings and switches, legal pages) with the files, spec lines and tests each one touches (docs/code-docs.md, D-473). The Gate C key checklist (`docs/account-checklist.md` Part 2) gets one item before the live AI key is entered: the live Claude API key is created in the Console under the same Anthropic account as Casey's Claude subscription, so production AI usage draws on the subscription's included API credit ($200 a month, Casey, October 31) instead of a separately billed account, and Casey confirms on the Console's billing page that usage is drawn from that credit (D-1154). The item names where the key goes: the live project's secret variable `ASKHAVA_AI_API_KEY`, with `ASKHAVA_ADAPTER_MODE_AI` left at its live default `api` (T298), and says that without it the live app starts with the AI off and raises a high alert naming the missing setting (D-2065).",
+   "goal": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist `docs/README.md` is the start-here map for a session that has never seen the code: one line per folder and document, and the common changes (fees, categories and job types, text templates, settings and switches, legal pages) with the files, spec lines and tests each one touches (docs/code-docs.md, D-473). The Gate C key checklist (`docs/account-checklist.md` Part 2) gets one item before the live AI key is entered: the live Claude API key is created in the Console under the same Anthropic account as Casey's Claude subscription, so production AI usage draws on the subscription's included API credit ($200 a month, Casey, October 31) instead of a separately billed account, and Casey confirms on the Console's billing page that usage is drawn from that credit (D-1154). The item names where the key goes: the live project's secret variable `ASKHAVA_AI_API_KEY`, with `ASKHAVA_ADAPTER_MODE_AI` left at its live default `api` (T298), and says that without it the live app starts with the AI off and raises a high alert naming the missing setting (D-2065). Amendment A-02 (D-3080; `docs/compliance/reconciliation.md` TECH-14 and TECH-16; OPS-043): `docs/release-record.md` is the one-page release record template OPS-043 names, one field per line: the source SHA; the `Ci`, `Twin` and `Ally` run IDs on that SHA; the migrations it applies; the rollback or no-rollback decision with its reason; open vulnerabilities (the cargo-audit, cargo-deny and npm audit results on that SHA, each open one with its exception owner); the secret scope (the secrets the release needs, by setting name only, never a value or fingerprint); the health check after deploy; the link to the independent Opus security review of the release diff; and Casey's sign-off line (his name, the date and \"go for this SHA\"). A filled copy is `docs/releases/<date>-<sha12>.md`, written only by Casey or from his owner answer, never by a task; the handover pack links the template. `docs/account-checklist.md` Part 2 also lists, one line each, the Gate C preconditions that `scripts/gate_c_ready.py` (T395) checks, with the command that prints what is still missing (D-3080).",
    "type": "docs",
    "phase": 2,
    "stage": "6",
@@ -17873,7 +17882,8 @@
     "docs/runbook.md",
     "docs/account-checklist.md",
     "docs/handover.md",
-    "docs/README.md"
+    "docs/README.md",
+    "docs/release-record.md"
    ],
    "reads": [
     "docs/code-docs.md",
@@ -17894,15 +17904,16 @@
     "D-492",
     "D-1143",
     "D-1154",
-    "D-2065"
+    "D-2065",
+    "D-3080"
    ],
    "cites": [
     "BUILD_BRIEF.md:523",
     "BUILD_BRIEF.md:529"
    ],
    "budget": {
-    "files": 5,
-    "lines": 550,
+    "files": 6,
+    "lines": 600,
     "context_pct": 3
    },
    "checks": [
@@ -17989,7 +18000,10 @@
     "T236",
     "T237",
     "T238",
-    "T239"
+    "T239",
+    "T392",
+    "T394",
+    "T395"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -18114,13 +18128,14 @@
    "id": "T145",
    "slug": "gate-c",
    "title": "Gate C: live keys and 'go live', real-phone rehearsal",
-   "goal": "After the business accounts; a real-phone rehearsal runs on Casey's phone.",
+   "goal": "Gate C (BUILD_BRIEF.md:203, BUILD_BRIEF.md:551): after the business accounts, Casey enters the live keys, presses Deploy for the signed release (OPS-022, OPS-043), runs the real-phone rehearsal on his own phone and says 'go live'; the first live charge is its own go (T146). This stop stays Casey's: nothing does any of it for him and Claude never holds or enters a live key. D-3080 adds preconditions, checked by `scripts/gate_c_ready.py` (T395): the runner opens this ask only when `--ask` passes on `main`, else it writes a `blocked` note listing what is missing; and it accepts 'go live' only when `--go-live` passes, else it keeps the reply and says what is missing; a kept reply never clears the gate, so Casey says 'go live' again once `--go-live` passes. Casey sends each evidence fact (`OA-<n>`, `GC-ALERT`, his release sign-off) in his owner-issue reply and a plan-change session records it (as T141's release records); no task or runner records it, and recording it never goes live for him. `--ask`: every owner action P0 item 1 to 14 (`docs/compliance/owner-actions.md`) has its `operating` row `OA-<n>` in `docs/compliance/evidence-register.md`; `docs/integration-closure.md` has no open or tracked row in money, privacy or security, and IC-53 (the AI writing calls) is closed or Casey's dated written acceptance of launching without them is recorded; the vendor-side leak check (T392) reads \"Verdict: clean\"; the restore drill (T139) met Casey's recovery targets or he accepted the miss in writing; the newest release record (`docs/releases/`, template `docs/release-record.md`, T141) is complete and signed by Casey; `docs/build-readiness.md` is re-issued for Gate C (`docs/governance.md` section 10). `--go-live` also needs the `GC-ALERT` row: in the rehearsal a real alert reached a real person (Casey's phone, OPS-029, OPS-035). Casey's checklist is `docs/account-checklist.md` Part 2 (OPS-042).",
    "type": "gate",
    "phase": 2,
    "stage": "7",
    "module": null,
    "deps": [
-    "T144"
+    "T144",
+    "T395"
    ],
    "model": null,
    "effort": null,
@@ -18128,11 +18143,16 @@
    "review_areas": [],
    "owns": [],
    "reads": [
-    "docs/brains/deploy-operations.md"
+    "docs/brains/deploy-operations.md",
+    "docs/account-checklist.md",
+    "docs/compliance/owner-actions.md",
+    "docs/compliance/evidence-register.md"
    ],
    "requirements": [],
    "tests": [],
-   "decisions": [],
+   "decisions": [
+    "D-3080"
+   ],
    "cites": [
     "BUILD_BRIEF.md:203",
     "BUILD_BRIEF.md:552"
@@ -18148,7 +18168,13 @@
    "gate": {
     "kind": "gate-c",
     "waits_on_owner": true,
-    "resume": "Casey enters live keys and says 'go live'"
+    "resume": "Casey enters live keys and says 'go live'",
+    "steps": [
+     "This ask opened only because `scripts/gate_c_ready.py --ask` passed on main: your P0 owner actions are recorded, no money, privacy or security handoff is open, the vendor leak check is clean, the restore drill met your recovery targets, your release record is signed and the readiness verdict is re-issued (D-3080).",
+     "Enter the live keys in the live project yourself, following `docs/account-checklist.md` Part 2, and press Deploy for the release SHA you signed (OPS-022, OPS-043).",
+     "Run the real-phone rehearsal on your own phone, including one test alert raised on the live project that must reach your phone; send its date and alert ID (nothing else) in your reply on this owner issue, and a plan-change session records it as evidence row GC-ALERT in `docs/compliance/evidence-register.md`.",
+     "Then reply 'go live'. A 'go live' sent before the GC-ALERT row is on main is kept and answered with what is still missing; a kept reply never clears this gate, so say 'go live' again once the row is on main."
+    ]
    }
   },
   {
@@ -25022,7 +25048,7 @@
    "id": "T350",
    "slug": "optout-words-never-names",
    "title": "privacy: an opt-out, HELP or START word is never taken or removed as a stated name, so a phrase opt-out after a name is still heard",
-   "goal": "Nov 10 code review, messaging F1 (D-2621; CON-010, CON-013, CON-035, AI-020, D-146): the inbound route classifies opt-outs on the scrubbed text (`app/server/src/inbound_text.rs:233`, `messaging::rules::detect_opt_out`, `app/messaging/src/rules.rs:503`), and `mark_stated` (`app/privacy/src/scrub.rs:657`) removes up to two words after \"this is\", \"I'm\", \"I am\", \"it's\" or \"soy\" (the first not a common word), so the second word is often the first word of the opt-out phrase: \"This is Bob stop texting me\" scrubs to \"This is [removed] texting me\" and is answered as an intake reply, never listed (the same for \"I am Bob unsubscribe me\", \"It's Maria remove me\", \"Soy Ana dejen de escribirme\"). `read_inbound_for` (`app/privacy/src/scrub_context.rs:58`) then remembers \"stop\" as one of her names, and `mark_known` (`scrub.rs:704`) deletes it from every later text, so \"Stop texting me please\" is missed too. Fix in `privacy` only: no word of messaging's opt-out phrases (`OPT_OUT_PHRASES`, folded) or of the sole opt-out, HELP and START words, English and Spanish, is ever cut as a stated or sign-off name, stored as a remembered name, or removed as one (a remembered name already stored that is such a word is ignored, so numbers that sent one before this fix are covered); the word list lives in `privacy` (it may not depend on `messaging`), and the test below proves it holds every word of messaging's lists, so a phrase added there fails the build until it is added here. No field is added to a struct done tests build by name (`InboundWords`, `Flags`). Tests in `tests/integration/tests/optout_after_name.rs` (TD-CON-32), each failing on today's `main`: for every phrase in `messaging::api::OPT_OUT_PHRASES`, prefixed with \"This is Bob \", \"I'm Bob \", \"I am Bob \", \"It's Maria \" and \"Soy Ana \", `privacy::api::scrub` with an empty context then `detect_opt_out` still finds it; \"Bob here\" then \"stop texting me\" from the same number through `read_inbound_for` finds the opt-out; the coverage check over messaging's lists; \"This is Bob, sink leaking\" still removes \"Bob\" (the AI-020 name cut is unchanged). Every TD-AI case and the 99% recall corpus (`app/privacy/src/tests/scrub.rs`) pass unchanged. Update the `privacy` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, messaging F1 (D-2621; CON-010, CON-013, CON-035, AI-020, D-146): the inbound route classifies opt-outs on the scrubbed text (`app/server/src/inbound_text.rs:233`, `messaging::rules::detect_opt_out`, `app/messaging/src/rules.rs:503`), and `mark_stated` (`app/privacy/src/scrub.rs:657`) removes up to two words after \"this is\", \"I'm\", \"I am\", \"it's\" or \"soy\" (the first not a common word), so the second word is often the first word of the opt-out phrase: \"This is Bob stop texting me\" scrubs to \"This is [removed] texting me\" and is answered as an intake reply, never listed (the same for \"I am Bob unsubscribe me\", \"It's Maria remove me\", \"Soy Ana dejen de escribirme\"). `read_inbound_for` (`app/privacy/src/scrub_context.rs:58`) then remembers \"stop\" as one of her names, and `mark_known` (`scrub.rs:704`) deletes it from every later text, so \"Stop texting me please\" is missed too. Fix in `privacy` only: no word of messaging's opt-out phrases (`OPT_OUT_PHRASES`, folded) or of the sole opt-out, HELP and START words, English and Spanish, is ever cut as a stated or sign-off name, stored as a remembered name, or removed as one (a remembered name already stored that is such a word is ignored, so numbers that sent one before this fix are covered); the word list lives in `privacy` (it may not depend on `messaging`), and the test below proves it holds every word of messaging's lists, so a phrase added there fails the build until it is added here. No field is added to a struct done tests build by name (`InboundWords`, `Flags`). Tests in `tests/integration/tests/optout_after_name.rs` (TD-CON-32), each failing on today's `main`: for every phrase in `messaging::api::OPT_OUT_PHRASES`, prefixed with \"This is Bob \", \"I'm Bob \", \"I am Bob \", \"It's Maria \" and \"Soy Ana \", `privacy::api::scrub` with an empty context then `detect_opt_out` still finds it; \"This is Bob stop texting me\" then \"Stop texting me please\" from the same number through `read_inbound_for`: the second is found as an opt-out (on today's `main` the first stores \"stop\" as a name and the second scrubs to \"[removed] texting me please\"; \"Bob here\" states no name, \"here\" being no trigger, `TRIGGERS`, `scrub.rs:197`, so it already passes and is not the case, D-3094); the coverage check over messaging's lists; \"This is Bob, sink leaking\" still removes \"Bob\" (the AI-020 name cut is unchanged). Every TD-AI case and the 99% recall corpus (`app/privacy/src/tests/scrub.rs`) pass unchanged. Update the `privacy` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -25063,7 +25089,8 @@
    "decisions": [
     "D-2621",
     "D-2620",
-    "D-146"
+    "D-146",
+    "D-3094"
    ],
    "cites": [],
    "budget": {
@@ -25614,7 +25641,7 @@
    "id": "T358",
    "slug": "one-area-code-table",
    "title": "messaging: the Canadian area codes for the HELP roaming line come from the quiet-hours table, which gains the four new Ontario codes",
-   "goal": "Nov 10 code review, messaging F6 (D-2630; CON-018, QH-002, D-100): the two area-code tables disagree. `CANADIAN_AREA_CODES` (`app/messaging/src/keywords.rs:25`) lists 382, 683, 753 and 942, which `app/messaging/area_codes.json` (the quiet-hours zone table) lacks, so a homeowner on one of those numbers gets the HELP reply and nothing else (`NotTextable`); and 257 (British Columbia) is in the zone table but not in the Canadian list, so its HELP reply misses the roaming line. Fix: the four Ontario codes join `area_codes.json` under their zone (each checked against the North American numbering plan's published assignment, cited in the decision), and the Canadian set is derived from the zone table's Canadian entries (one source; a code's country is read from its zone or a tag in the same file), so the two cannot drift. Tests in `app/messaging/src/tests/area_codes.rs` (TD-QH-06), each failing on today's `main`: every code of the Canadian set has a zone in the table; 257 gets the roaming line; 382, 683, 753 and 942 are textable inside 8 a.m. to 8 p.m. in both Arizona and Toronto time; a US code never gets the roaming line. Every TD-QH and TD-CON case passes unchanged. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, messaging F6 (D-2630; CON-018, QH-002, D-100): the two area-code tables disagree. `CANADIAN_AREA_CODES` (`app/messaging/src/keywords.rs:25`) lists 382, 683, 753 and 942, which `app/messaging/area_codes.json` (the quiet-hours zone table) lacks, so a homeowner on one of those numbers gets the HELP reply and nothing else (`NotTextable`); and 257 (British Columbia) is in the zone table but not in the Canadian list, so its HELP reply misses the roaming line. Fix: the four Ontario codes join `area_codes.json` under their zone (each checked against the North American numbering plan's published assignment, cited in the decision), and the Canadian set is derived from the zone table's Canadian entries (one source; a code's country is read from its zone, the table's Canadian zones such as `America/Toronto` and `America/Vancouver`; no tag or other key is added to the file, since `AreaCodes::parse` (`app/messaging/src/rules.rs:70`, not owned) reads only `{zone: [codes]}` and refuses a key that is not a known time zone (`:74`), D-3094), so the two cannot drift. Tests in `app/messaging/src/tests/area_codes.rs` (TD-QH-06), each failing on today's `main`: every code of the Canadian set has a zone in the table; 257 gets the roaming line; 382, 683, 753 and 942 are textable inside 8 a.m. to 8 p.m. in both Arizona and Toronto time; a US code never gets the roaming line. Every TD-QH and TD-CON case passes unchanged. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -25654,7 +25681,8 @@
    "decisions": [
     "D-2630",
     "D-2620",
-    "D-100"
+    "D-100",
+    "D-3094"
    ],
    "cites": [],
    "budget": {
@@ -25745,7 +25773,7 @@
    "id": "T360",
    "slug": "optout-emails",
    "title": "messaging: the opt-out confirmation email while texting is off, and CON-016's email or owner count for a listed homeowner who writes again",
-   "goal": "Nov 10 code review, messaging F3 and CON-016, the email half (D-2629; CON-016, CON-030, CON-009, D-226). (1) CON-030: while texting is off or suspended an opt-out is confirmed by email if one is on file, never by a later text; no code sends that email. `app/messaging/src/optout_email.rs` adds `messaging::api::queue_optout_confirmation_email(db, vault, contact, language, event)`: it reads her email through the vault (never logged), and when one is on file queues one email under the opt-out event as its subject through T094's email outbox (`send_email`), with the CON-009 wording as an email (English and Spanish), once per event. (2) CON-016: a listed homeowner who writes without START is emailed if an email is on file, and otherwise is listed in Casey's weekly digest; `queue_optout_wrote_again(db, vault, contact, inbox, now)` queues at most one such email a day per homeowner (\"You opted out of texts from Ask Hava…\": how to text again with START, and that her open requests continue on the quote page and by email, CON-012), and with no email on file writes one `ops` audit row, action `messaging.optout_wrote_again`, subject the inbox row, IDs only, which T204's weekly digest counts (no new table, no migration). The new email templates go in `app/messaging/templates/en.json` and `es.json` through the cold read and the copy panel (WORD-028, WORD-029); their brand words are tokens, never literals (`{brand_short}:` to open, `{brand}`, `{domain}`; filled by the registry, D-1932, D-2843), since the brand-literal guard refuses a new literal line in either file. The route that calls both is T357's. Tests in `tests/integration/tests/optout_emails.rs` (TD-CON-34): with an email on file one confirmation email per event and none on a repeat; none without an email; a listed homeowner's message gives one email, a second the same day gives none, the next day one; without an email one audit row per message and no email; no body, phone or email address in any audit row or log line. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, messaging F3 and CON-016, the email half (D-2629; CON-016, CON-030, CON-009, D-226). (1) CON-030: while texting is off or suspended an opt-out is confirmed by email if one is on file, never by a later text; no code sends that email. `app/messaging/src/optout_email.rs` adds `messaging::api::queue_optout_confirmation_email(db, vault, contact, language, event)`: it reads her email through the vault (never logged), and when one is on file queues one email under the opt-out event as its subject, once per event, through T094's email outbox: `messaging::api::queue_email` (`app/messaging/src/email.rs:343`, unowned) with `Notice::OptedOut` (`:153`), which already renders the CON-009 text in her language (`:245`), so no template is added for it; `queue_email` takes the key secret and the footer postal address, `(secret, postal)`, so the signature may take them too. (2) CON-016: a listed homeowner who writes without START is emailed if an email is on file, and otherwise is listed in Casey's weekly digest; `queue_optout_wrote_again(db, vault, contact, inbox, now)` queues at most one such email a day per homeowner (\"You opted out of texts from Ask Hava…\": how to text again with START, and that her open requests continue on the quote page and by email, CON-012), and with no email on file writes one `ops` audit row, action `messaging.optout_wrote_again`, subject the inbox row, IDs only, which T204's weekly digest counts (no new table, no migration). `queue_email` renders only its fixed `Notice` list (`email.rs:149`) and `email.rs` is not T360's, so the wrote-again email renders and stores itself in `optout_email.rs`, as `queue_check_in_email` does (`app/messaging/src/checkin_email.rs:208`): its English and Spanish words (drafts through the cold read and the copy panel, WORD-028, WORD-029) are built in Rust with the crate's `short_name` and `legal_name` (no brand literal, D-1932, D-2843), rendered in the shared email layout, and inserted through `models::insert_email` (`app/messaging/src/models.rs:525`) under an `email.send` key over the template, contact and Arizona day; T094's `send_email` sends it. Nothing is added to `en.json` or `es.json`, so the registry tests and TD-TXT-25's homeowner-template scan (`app/quotes/src/tests/update_texts.rs:133`) are untouched (D-3094). The route that calls both is T357's. Tests in `tests/integration/tests/optout_emails.rs` (TD-CON-34): with an email on file one confirmation email per event and none on a repeat; none without an email; a listed homeowner's message gives one email, a second the same day gives none, the next day one; without an email one audit row per message and no email; no body, phone or email address in any audit row or log line. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -25763,8 +25791,6 @@
    ],
    "owns": [
     "app/messaging/src/optout_email.rs",
-    "app/messaging/templates/en.json",
-    "app/messaging/templates/es.json",
     "tests/integration/tests/optout_emails.rs"
    ],
    "reads": [
@@ -25790,11 +25816,12 @@
     "D-2629",
     "D-2620",
     "D-226",
-    "D-2843"
+    "D-2843",
+    "D-3094"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 2,
     "lines": 350,
     "context_pct": 20
    },
@@ -26204,7 +26231,7 @@
    "id": "T366",
    "slug": "dead-letters-and-timer-backstop",
    "title": "jobs and server: every dead-lettered task alerts, and a daily backstop revives job timers that died so no job is stuck",
-   "goal": "Nov 10 code review batch 2, jobs F2 (D-2640; JOB-003, JOB-006, OPS-004, PRIV-007): a job timer that runs out of attempts leaves its job stuck for good, with no alert and its contact never purged. `fail` (`app/core/src/tasks.rs:262`) dead-letters after `DEFAULT_MAX_ATTEMPTS` (5, about 7.5 minutes of backoff) and `reap_expired` (`:318`) on a last-attempt lease expiry; `run_timer` (`app/jobs/src/service.rs:236`) turns every error into a retry; the dedupe key `jobs.timeout.<job>.<version>.<timer>` (`:226`) stays on the dead row, so the timer can never be queued again; a job left in Quotes ready never closes, and `sweep_closed` never purges it; `jobs.homeowner_text` and `jobs.check_in` dead letters drop silently; T327 alerts only on `NO_HANDLER` dead letters. Fix: (1) after T327, its dead-letter alert (`app/server/src/no_handler_alert.rs`) covers every dead-lettered task: one High alert per kind and day with the kind and count, no payload; (2) `app/jobs/src/timer_backstop.rs`: a daily `jobs.timer_backstop` task (registered in the shared worker, queued once a day) finds each non-final job whose current timer task is dead-lettered or missing and revives it (clears `dead_at`, resets attempts, `run_at` now, in one statement on that row, or re-queues under a revival counter in the key), at most a bounded batch per run, with one `ops` audit row of IDs per revival; a timer that dies 3 times raises a High alert and is left for Casey. Tests in `tests/integration/tests/timer_backstop.rs` (TD-OPS-38), clock advanced: `run_timer` failing 5 times on a Quotes ready job dead-letters it and raises one alert; the backstop revives it; with the fault gone the job reaches Closed and its purge stages are queued; a final job's dead timer is not revived; TD-OPS-36 and TD-OPS-37 pass unchanged. Update the `jobs` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 10 code review batch 2, jobs F2 (D-2640; JOB-003, JOB-006, OPS-004, PRIV-007): a job timer that runs out of attempts leaves its job stuck for good, with no alert and its contact never purged. `fail` (`app/core/src/tasks.rs:262`) dead-letters after `DEFAULT_MAX_ATTEMPTS` (5, about 7.5 minutes of backoff) and `reap_expired` (`:318`) on a last-attempt lease expiry; `run_timer` (`app/jobs/src/service.rs:236`) turns every error into a retry; the dedupe key `jobs.timeout.<job>.<version>.<timer>` (`:226`) stays on the dead row, so the timer can never be queued again; a job left in Quotes ready never closes, and `sweep_closed` never purges it; `jobs.homeowner_text` and `jobs.check_in` dead letters drop silently; T327 alerts only on `NO_HANDLER` dead letters. Fix: (1) after T327, its dead-letter alert (`app/server/src/no_handler_alert.rs`) covers every dead-lettered task: one High alert per kind and day with the kind and count, no payload; (2) `app/jobs/src/timer_backstop.rs`: a daily `jobs.timer_backstop` task (registered in the shared worker, queued once a day) finds each non-final job whose current timer task is dead-lettered or missing and revives it (clears `dead_at`, resets attempts, `run_at` now, in one statement on that row, or re-queues under a revival counter in the key), at most a bounded batch per run, with one `ops` audit row of IDs per revival; a timer that dies 3 times raises a High alert and is left for Casey. The per-kind dead-letter count (1) and the one-row revive (2) are new public functions in the shared `app/core/src/api.rs`, next to T327's `dead_without_handler` (`:46`), because `jobs` and `server` may name no other module's schema, `core.` included, in SQL (`tests/integration/tests/architecture_migrations.rs:44`, `:250`); `app/core/src/tasks.rs` is not needed and stays unchanged (D-3094). Tests in `tests/integration/tests/timer_backstop.rs` (TD-OPS-38), clock advanced: `run_timer` failing 5 times on a Quotes ready job dead-letters it and raises one alert; the backstop revives it; with the fault gone the job reaches Closed and its purge stages are queued; a final job's dead timer is not revived; TD-OPS-36 and TD-OPS-37 pass unchanged. Update the `jobs` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26246,7 +26273,8 @@
    "decisions": [
     "D-2640",
     "D-2631",
-    "D-2285"
+    "D-2285",
+    "D-3094"
    ],
    "cites": [],
    "budget": {
@@ -26333,7 +26361,7 @@
    "id": "T368",
    "slug": "capability-offer-all-licenses",
    "title": "businesses: the capability checklist offers every job type the business's licenses or handyman standing allow, and follows the stored category switch",
-   "goal": "Nov 11 code review batch 3, F1 and F5 (D-2701; BIZ-049, BIZ-004, BIZ-021, LIC-002, LIC-012, LIC-014, LIC-015, LIC-016, LIC-019, LIC-027, LIC-046, LIC-047). (F1) `checklist_offer` (`app/businesses/src/capability.rs:168`) offers only the job types `ClassMap::job_types` gives the ROC classes, plus the no-license categories, so a pest-management attester, a Board-certified home inspector or an ADEQ septage hauler is offered none of its own job types, and a handyman on the city list is never offered a handyman-allowed job type (faucet replacement, camera install), against `docs/catalog/matching_examples.yaml` M05 and M09; `save_capability` then refuses those ticks as `NotCovered` and stores nothing. (F5) sign-up's `category_list` (`app/businesses/src/signup.rs:109`) reads `ClassMap::opening` from the compiled categories file (`app/licensing/src/class_map.rs:373`, `:378`), and `checklist_offer` (`capability.rs:171`) and `license_change` (`:368`) read the file's `enabled` flag, while intake reads the stored switch (`catalog::api::is_enabled`, `app/intake/src/routing.rs:252`), so a category switched off in settings is still offered at sign-up, in the checklist and in a license-change email. Fix: (1) the checklist is built from everything the business holds (its ROC classes, its non-pest agency licenses, its pest attestation with its record categories, whether it signed up as a handyman, and its city-list standing): a job type of a category whose license kind is not `none` is offered licensed and pre-ticked exactly when `licensing::api::eligibility` gives that holder a card for it (eligibility gives `Card` for every no-license job type of a city-list business, `app/licensing/src/rules.rs:80`, so a no-license row is never pre-ticked); a job type is offered unticked as a handyman extra when eligibility gives a handyman card and the job type itself is not gas, smoke-alarm, sprinkler or permit-type work (LIC-021, LIC-022); the no-license extras stay unticked as today, except that any row for which eligibility gives `NotHandyman` or `RefusedJobType` is left out (the handyman category is license kind `none` and `handyman_allowed`, `docs/catalog/categories.yaml:165`, so only a handyman sees it); so the checklist and the matching cannot disagree; the holder comes from T374's `businesses::api` holding read; (2) the enabled set is the stored switch (`catalog::api::enabled_categories`): a switched-off category leaves the sign-up list, the checklist and `reapply_license`'s offered job types; a stored-on category keeps the file's `launch_open` label. The existing pure functions keep their signatures and give the same answer for an ROC-only holder, so every TD-BIZ case passes unchanged; the new entry points (holder and stored set in, offer out) are what the served sign-up (T302) calls. Tests in `tests/integration/tests/capability_offer.rs` (TD-BIZ-46, TD-LIC-27), each failing on today's `main`: a septage hauler, a certified inspector and a pest attester (general pest service and scorpions; termites only with the wood-destroying organism record category) get their job types pre-ticked and `save_capability` stores them; a city-list handyman gets faucet replacement and camera install unticked, never gas line work or a gas pool heater, and saving them stores them; an R-37 business's offer is unchanged; an R-11 business is not offered the handyman category; a city-list business with no license gets no pre-ticked row; a category switched off through `catalog::api::set_category_enabled` leaves `category_list`, the checklist and `reapply_license`'s offer, and switching it on brings it back. Update the `businesses` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F1 and F5 (D-2701; BIZ-049, BIZ-004, BIZ-021, LIC-002, LIC-012, LIC-014, LIC-015, LIC-016, LIC-019, LIC-027, LIC-046, LIC-047). (F1) `checklist_offer` (`app/businesses/src/capability.rs:168`) offers only the job types `ClassMap::job_types` gives the ROC classes, plus the no-license categories, so a pest-management attester, a Board-certified home inspector or an ADEQ septage hauler is offered none of its own job types, and a handyman on the city list is never offered a handyman-allowed job type (faucet replacement, camera install), against `docs/catalog/matching_examples.yaml` M05 and M09; `save_capability` then refuses those ticks as `NotCovered` and stores nothing. (F5) sign-up's `category_list` (`app/businesses/src/signup.rs:109`) reads `ClassMap::opening` from the compiled categories file (`app/licensing/src/class_map.rs:373`, `:378`), and `checklist_offer` (`capability.rs:171`) and `license_change` (`:368`) read the file's `enabled` flag, while intake reads the stored switch (`catalog::api::is_enabled`, `app/intake/src/routing.rs:252`), so a category switched off in settings is still offered at sign-up, in the checklist and in a license-change email. Fix: (1) the checklist is built from everything the business holds (its ROC classes, its non-pest agency licenses, its pest attestation with its record categories, whether it signed up as a handyman, and its city-list standing): a job type of a category whose license kind is not `none` is offered licensed and pre-ticked exactly when `licensing::api::eligibility` gives that holder a card for it (eligibility gives `Card` for every no-license job type of a city-list business, `app/licensing/src/rules.rs:80`, so a no-license row is never pre-ticked); a job type is offered unticked as a handyman extra when eligibility gives a handyman card and the job type itself is not gas, smoke-alarm, sprinkler or permit-type work (LIC-021, LIC-022); the no-license extras stay unticked as today, except that any row for which eligibility gives `NotHandyman` or `RefusedJobType` is left out (the handyman category is license kind `none` and `handyman_allowed`, `docs/catalog/categories.yaml:165`, so only a handyman sees it); so the checklist and the matching cannot disagree; the holder comes from T374's `businesses::api` holding read; (2) the enabled set is the stored switch (`catalog::api::enabled_categories`): a switched-off category leaves the sign-up list, the checklist and `reapply_license`'s offered job types; a stored-on category keeps the file's `launch_open` label; a category with no stored row (a catalog never stored, as in T207's done `tests/integration/tests/license_change_reapply.rs`, which builds the catalog from the file, never calls `catalog::api::load` and asserts a non-empty offer at `:99`) falls back to the file's `enabled` flag, the value `load` gives a new category (`app/catalog/src/service.rs:20`), while a stored row, on or off, always wins, so that test passes unchanged and `reapply_license` keeps its signature (D-3094). The existing pure functions keep their signatures and give the same answer for an ROC-only holder, so every TD-BIZ case passes unchanged; the new entry points (holder and stored set in, offer out) are what the served sign-up (T302) calls. Tests in `tests/integration/tests/capability_offer.rs` (TD-BIZ-46, TD-LIC-27), each failing on today's `main`: a septage hauler, a certified inspector and a pest attester (general pest service and scorpions; termites only with the wood-destroying organism record category) get their job types pre-ticked and `save_capability` stores them; a city-list handyman gets faucet replacement and camera install unticked, never gas line work or a gas pool heater, and saving them stores them; an R-37 business's offer is unchanged; an R-11 business is not offered the handyman category; a city-list business with no license gets no pre-ticked row; a category switched off through `catalog::api::set_category_enabled` leaves `category_list`, the checklist and `reapply_license`'s offer, and switching it on brings it back. Update the `businesses` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26383,13 +26411,14 @@
     "D-2701",
     "D-2700",
     "D-2507",
-    "D-2711"
+    "D-2711",
+    "D-3094"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -26776,7 +26805,7 @@
    "id": "T385",
    "slug": "signup-own-record-read",
    "title": "adapters, licensing and businesses (harness): the sign-up read of the business's own state or city record, its names for the BIZ-016 name check and its contacts for the identity code, nothing kept",
-   "goal": "Plan change D-2954 (BIZ-002, BIZ-016, LIC-006, LIC-008, LIC-010, LIC-011, LIC-048; D-059, D-366, D-493, D-1699, D-1712, D-2943): nothing reads a business's own public record at sign-up, so BIZ-016's name check has no record name for an ROC business and the identity chain's `RecordContacts` (`app/businesses/src/identity.rs:44`, read by the caller \"from `licensing`\") have no source: the daily imports keep no name, phone, email or address from the ROC list and no contact from the city list (`app/licensing/src/imports.rs:9`, `migrations/0050_licensing_imports.sql:6`), the live lookup answers only Active or Inactive (`app/licensing/src/handlers.rs:203`), and `LicenseSource` (`app/adapters/src/license_sources.rs:17`) has no record call. The blueprint already looks the license up at sign-up (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:194`). (1) `app/adapters/src/license_sources.rs`: a second read-only trait, `LicenseRecords`, with `lookup_record(list, number)` (the raw answer for one license on list `roc` or `city`; a `lookup_` read, no idempotency key, D-596), implemented by `LicenseLists` at `<dir>/record/<list>/<number>` for `file://` fixtures and the same path over HTTP, unsafe names refused as today (SEC-032), exported from `adapters::api`; `LicenseSource` is unchanged, so its test fakes need no edit. (2) The setting (D-493, the shared `app/core/src/settings.rs`): `ASKHAVA_LICENSE_BASE_URL` joins `KEYS` with a typed optional field, so the parser no longer refuses it; `Settings::from_pairs` does not require it (a global requirement would break the done settings and adapter-config tests that build `test` and `live` settings without it); the composition that builds the license source (T302, T371) requires it in `test` and `live`, stopping start-up with the key's name, and in `ci` and `dev` an absent key makes every record read `Unreadable`. (3) `app/licensing/src/own_record.rs`, exported from `licensing::api`: `RECORD_HEADER` (`license_number,business_name,trade_name,phone,phone_kind,email,address,town,zip`, one row; `phone_kind` is `mobile`, `landline` or empty, empty read as able to get texts; any field but the number and business name may be empty, since the public ROC detail shows no email or DBA and may show no street address); `read_own_record(source, list, number)` makes one `lookup_record` call for the number, normalised as the lists normalise it, never retried, and gives `RecordRead::Found(OwnRecord)`, `RecordRead::NotFound` only for `AdapterError::Vendor { status: 404, .. }` (the fixture reader maps a missing file to 404), or `RecordRead::Unreadable` for every other error, a wrong header, not exactly one row or a row for another number (a misread never counts, LIC-008); on `Unreadable` it raises one Normal alert of kind `licensing.record_unreadable` with no subject, at most one per Arizona day (checked in the same transaction against that day's alerts of the kind), holding no number, name or contact, as LIC-008 treats an unreadable page; `OwnRecord` has no `Debug` and holds every contact as a `SecretString`; `OwnRecord::texting_phone` leaves out a phone marked `landline` (D-366) and `OwnRecord::landline` gives that phone for the masked kind (BIZ-026); `names_agree(record, business_name, trade_name)` is true when either name the business gave equals the record's business name or trade name (DBA) under LIC-011's comparison (`compared`, `app/licensing/src/rules.rs:211`: case, spacing and punctuation ignored, but \"LLC\" or \"Inc\" not dropped, so such a difference goes to review); no qualifying-party or owner name is read; `city_match_number(conn, names, entered)` gives, among the latest city-list rows LIC-011 matches for those names, the entered city license number when one was entered and a matching row's number agrees with it (`numbers_agree`, `rules.rs:201`), else the one distinct number the matching rows carry, and `None` when nothing matches, a matching row has no number, the entered number agrees with none, or the matching rows carry more than one distinct number (no record contact, so needs review); `bound_roc_number(conn, business)` gives the number of the business's latest `licensing.license_check` row (written by `check_license`, `app/licensing/src/service.rs:288`), the number bound at the license match. Nothing is written but the alert: no table, column, audit row or log line gets a record name or contact, and no error carries one (LIC-010, PRIV-016, D-1699). (4) `app/businesses/src/signup_record.rs`, exported from `businesses::api`: one composite, `signup_record(conn, source, business)`, that T302 calls and that takes no number from the request: for an ROC business it reads `bound_roc_number` (none bound is `Unbound`), for a city-list or pest business the stored names and the stored city license number (`businesses.business_name`, T165) through `city_match_number`; it makes one `read_own_record`; and it gives `SignupRecord::Read` holding the BIZ-016 name flag (for ROC, `Flag::NameMismatch` when `names_agree` fails with the stored names or no name is stored; for the city list, none, LIC-011 being the name match), the `RecordContacts`, the full record address for `RecordSeen` and the masked contact for the step reached (`MaskedContact::for_step` with the record's town and ZIP), or `NoContact` (not found, no matching number, or no usable contact: `Flag::NoRecordContact`), or `Unreadable`, or `Unbound`. Each call is one read; T302 calls it only on the screens that need the name check or a contact, inside T089's sign-up limits (`admit_sign_up`, `admit_code_send`), so reads per sign-up are bounded. (5) Fixtures for T302's e2e and T371, fake data only: `tests/fixtures/license_source/record/roc/ROC100001` (a business name, a mobile phone in the fictional 555-0100 to 555-0199 block, an `example.test` email, a fake address, no DBA), `tests/fixtures/license_source/roc` (the daily ROC list in `ROC_HEADER` form, ROC100001 Active R-37) and `tests/fixtures/license_source/city` (the daily city list in `CITY_HEADER` form, fake rows), so list and record agree; `tests/e2e/webserver.ts` (T227's) sets `ASKHAVA_LICENSE_BASE_URL` for both binaries to `file://` that `tests/fixtures/license_source` directory. Tests in `tests/integration/tests/signup_own_record.rs` (TD-LIC-30), fake data only, fixture records written to a temporary `file://` directory. Update the `adapters`, `licensing`, `businesses` and `core` `CLAUDE.md` files and `docs/decisions.md`. A harness task because it edits T227's e2e start-up file; Opus review.",
+   "goal": "Plan change D-2954 (BIZ-002, BIZ-016, LIC-006, LIC-008, LIC-010, LIC-011, LIC-048; D-059, D-366, D-493, D-1699, D-1712, D-2943): nothing reads a business's own public record at sign-up, so BIZ-016's name check has no record name for an ROC business and the identity chain's `RecordContacts` (`app/businesses/src/identity.rs:44`, read by the caller \"from `licensing`\") have no source: the daily imports keep no name, phone, email or address from the ROC list and no contact from the city list (`app/licensing/src/imports.rs:9`, `migrations/0050_licensing_imports.sql:6`), the live lookup answers only Active or Inactive (`app/licensing/src/handlers.rs:203`), and `LicenseSource` (`app/adapters/src/license_sources.rs:17`) has no record call. The blueprint already looks the license up at sign-up (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:194`). (1) `app/adapters/src/license_sources.rs`: a second read-only trait, `LicenseRecords`, with `lookup_record(list, number)` (the raw answer for one license on list `roc` or `city`; a `lookup_` read, no idempotency key, D-596), implemented by `LicenseLists` at `<dir>/record/<list>/<number>` for `file://` fixtures and the same path over HTTP, unsafe names refused as today (SEC-032), exported from `adapters::api`; `LicenseSource` is unchanged, so its test fakes need no edit. (2) The setting (D-493, the shared `app/core/src/settings.rs`): `ASKHAVA_LICENSE_BASE_URL` joins `KEYS` with a typed optional field, so the parser no longer refuses it; `Settings::from_pairs` does not require it (a global requirement would break the done settings and adapter-config tests that build `test` and `live` settings without it); the composition that builds the license source (T302, T371) requires it in `test` and `live`, stopping start-up with the key's name, and in `ci` and `dev` an absent key makes every record read `Unreadable`. (3) `app/licensing/src/own_record.rs`, exported from `licensing::api`: `RECORD_HEADER` (`license_number,business_name,trade_name,phone,phone_kind,email,address,town,zip`, one row; `phone_kind` is `mobile`, `landline` or empty, empty read as able to get texts; any field but the number and business name may be empty, since the public ROC detail shows no email or DBA and may show no street address); `read_own_record(source, list, number)` makes one `lookup_record` call for the number, normalised as the lists normalise it, never retried, and gives `RecordRead::Found(OwnRecord)`, `RecordRead::NotFound` only for `AdapterError::Vendor { status: 404, .. }` (the fixture reader maps a missing file to 404), or `RecordRead::Unreadable` for every other error, a wrong header, not exactly one row or a row for another number (a misread never counts, LIC-008); on `Unreadable` it raises one Normal alert of kind `licensing.record_unreadable` with no subject, at most one per Arizona day (checked in the same transaction against that day's alerts of the kind), holding no number, name or contact, as LIC-008 treats an unreadable page; `OwnRecord` has no `Debug` and holds every contact as a `SecretString`; `OwnRecord::texting_phone` leaves out a phone marked `landline` (D-366) and `OwnRecord::landline` gives that phone for the masked kind (BIZ-026); `names_agree(record, business_name, trade_name)` is true when either name the business gave equals the record's business name or trade name (DBA) under LIC-011's comparison (as `compared` does, `app/licensing/src/rules.rs:211`: case, spacing and punctuation ignored, but \"LLC\" or \"Inc\" not dropped, so such a difference goes to review); no qualifying-party or owner name is read; `city_match_number(conn, names, entered)` gives, among the latest city-list rows LIC-011 matches for those names, the entered city license number when one was entered and a matching row's number agrees with it (as `numbers_agree`, `rules.rs:203`, decides), else the one distinct number the matching rows carry, and `None` when nothing matches, a matching row has no number, the entered number agrees with none, or the matching rows carry more than one distinct number (no record contact, so needs review); `bound_roc_number(conn, business)` gives the number of the business's latest `licensing.license_check` row (written by `check_license`, `app/licensing/src/service.rs:288`), the number bound at the license match. `compared` and `numbers_agree` are private and `rules.rs` is T347's (QUEUED), so `own_record.rs` copies the comparison locally (or matches through the public `licensing::api::city_list_standing`) and never edits `rules.rs` (D-3094). Nothing is written but the alert: no table, column, audit row or log line gets a record name or contact, and no error carries one (LIC-010, PRIV-016, D-1699). (4) `app/businesses/src/signup_record.rs`, exported from `businesses::api`: one composite, `signup_record(conn, source, business)`, that T302 calls and that takes no number from the request: for an ROC business it reads `bound_roc_number` (none bound is `Unbound`), for a city-list or pest business the stored names and the stored city license number (`businesses.business_name`, T165) through `city_match_number`; it makes one `read_own_record`; and it gives `SignupRecord::Read` holding the BIZ-016 name flag (for ROC, `Flag::NameMismatch` when `names_agree` fails with the stored names or no name is stored; for the city list, none, LIC-011 being the name match), the `RecordContacts`, the full record address for `RecordSeen` and the masked contact for the step reached (`MaskedContact::for_step` with the record's town and ZIP), or `NoContact` (not found, no matching number, or no usable contact: `Flag::NoRecordContact`), or `Unreadable`, or `Unbound`. Each call is one read; T302 calls it only on the screens that need the name check or a contact, inside T089's sign-up limits (`admit_sign_up`, `admit_code_send`), so reads per sign-up are bounded. (5) Fixtures for T302's e2e and T371, fake data only: `tests/fixtures/license_source/record/roc/ROC100001` (a business name, a mobile phone in the fictional 555-0100 to 555-0199 block, an `example.test` email, a fake address, no DBA), `tests/fixtures/license_source/roc` (the daily ROC list in `ROC_HEADER` form, ROC100001 Active R-37) and `tests/fixtures/license_source/city` (the daily city list in `CITY_HEADER` form, fake rows), so list and record agree; `tests/e2e/webserver.ts` (T227's) sets `ASKHAVA_LICENSE_BASE_URL` for both binaries to `file://` that `tests/fixtures/license_source` directory. Tests in `tests/integration/tests/signup_own_record.rs` (TD-LIC-30), fake data only, fixture records written to a temporary `file://` directory. Update the `adapters`, `licensing`, `businesses` and `core` `CLAUDE.md` files and `docs/decisions.md`. A harness task because it edits T227's e2e start-up file; Opus review.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -26835,7 +26864,8 @@
     "D-1699",
     "D-1712",
     "D-2943",
-    "D-2954"
+    "D-2954",
+    "D-3094"
    ],
    "cites": [],
    "budget": {
@@ -27106,6 +27136,278 @@
    "branch": "claude/task/T391-link-reply",
    "prompt": "kit/prompts/T391.md",
    "acceptance": "TD-CALL-24 passes against PostgreSQL through the served routes; each of its cases fails on `main` with T390 merged; every TD-CALL-23, TD-BIZ-39 and other existing inbound text and voice case passes unchanged; no table, log line, task payload or audit row holds a blocked number or a PIN."
+  },
+  {
+   "id": "T392",
+   "slug": "vendor-leak-check",
+   "title": "Vendor-side leak check on the test site: fake markers through J1, then every vendor's records searched",
+   "goal": "Proposal N-02 (D-2740, D-3080; `docs/compliance/reconciliation.md` TECH-12, TECH-07, TECH-13 and F-04): the code's privacy rules are proved in `Ci` (T217's `sentinel_db_logs.rs`, T120's local sentinel), but no test looks at what the vendors keep. On the Railway test project, after T136's journeys and T137's real AI run, with every vendor in its sandbox and fake data only (PRIV-019), `tests/sandbox_sentinel/sentinel_trace.py` (standard library only) makes one set of unique fake markers (a fixture name, a 555-01xx phone, an example.com email, a street number and a marker written into a test photo's metadata), runs J1 once with them, then reads each sink through its sandbox API or export and records every marker as present-and-protected, absent or deleted: the app's logs (web, worker, migrate), Sentry events (PRIV-017), Twilio message records after the T276 body-redaction job, Resend's logs, the photo bucket (only sealed objects, PRIV-023), the off-database audit stream, and the AI request inputs as the adapter sent them (only scrubbed text, AI-004); a sink the sandbox gives no way to read is recorded as \"not observable\" with the reason, never as absent. The allowed places are a table in the script (the vault's ciphertext, a Twilio body before its redaction ran, and so on), each with its requirement. Any marker found outside its allowed place is a High finding: it goes at the top of `docs/for-casey-review.md`, is filed for a plan change and is not fixed here (as T136, D-491), and it blocks Gate C (T145, D-3080) until a later run of this script is clean: the plan change filed for a finding also adds the task that re-runs this script after the fix, and only that run's \"Verdict: clean\" in `docs/phase2/sentinel-trace.md` unblocks Gate C. `docs/phase2/sentinel-trace.md` records the run (commit, date, each sink's query and result, by marker kind and never the value) and ends with one line, \"Verdict: clean\" or \"Verdict: blocked\" with the finding count. The live run needs the test project's sandbox credentials, which Claude never holds, so a step that needs one is a hands-on stop (BUILD_BRIEF.md:548); it never runs in `Ci` and never touches the live project or a live key (BUILD_BRIEF.md:68). `tests/sandbox_sentinel/test_sentinel_trace.py` (TD-PRIV-26) runs in `Ci` offline over fake sink exports.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": null,
+   "deps": [
+    "T136",
+    "T137"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "tests/sandbox_sentinel/sentinel_trace.py",
+    "tests/sandbox_sentinel/test_sentinel_trace.py",
+    "docs/phase2/sentinel-trace.md"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/spec/privacy.md",
+    "docs/spec/ai.md",
+    "docs/compliance/reconciliation.md",
+    "docs/brains/deploy-operations.md",
+    "docs/brains/sms-compliance.md"
+   ],
+   "requirements": [
+    "PRIV-006",
+    "PRIV-016",
+    "PRIV-017",
+    "PRIV-027",
+    "AI-004"
+   ],
+   "tests": [
+    "TD-PRIV-26"
+   ],
+   "decisions": [
+    "D-2740",
+    "D-491",
+    "D-3080"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T392-vendor-leak-check",
+   "prompt": "kit/prompts/T392.md",
+   "acceptance": "TD-PRIV-26 passes in `Ci`; `docs/phase2/sentinel-trace.md` records one live run on the Railway test project with every listed sink read or marked not observable, and ends with its verdict line; any High finding is at the top of `docs/for-casey-review.md`."
+  },
+  {
+   "id": "T393",
+   "slug": "quote-page-cards",
+   "title": "portals and licensing: the served quote page's cards show each business's public name, license lines and review links",
+   "goal": "Register row IC-71, the quote-card half of the fourth audit's F17 (D-2206, D-3080; PICK-041, LIC-024, LIC-026, LIC-034, LIC-038, LIC-047, BIZ-052): the served quote page (`/q/{token}`, `app/portals/src/quote_page.rs`) lists each quote's number and Pick button and the page's two fixed sentences, but no card: nothing outside tests builds a `quotes::api::CardSource` or calls `quotes::api::quote_card`, so no homeowner sees a business's public name, license lines or Google and Yelp links (T316 left this to IC-71). (1) `app/licensing/src/card_facts.rs`, through `licensing::api`: for one business and one job type, the `LicenseFacts` of the license that makes it eligible (issuer, the number as the record writes it, the day of the check that showed it Active, the original-issue year when the record has one) or the `NoLicenseFacts` of a no-license card, read from the rows `holder_for` (T374) reads; read only, adding no table, column or writer. (2) `app/portals/src/quote_cards.rs`: for the page's shown quotes, one read of the public names (`businesses::api::public_names`, T316), the card facts turned into lines by `licensing::api::licensed_lines` or `no_license_lines` in the page's language, and `quotes::api::quote_card` with that `CardSource` (which adds the review links, BIZ-052, and the after-hours line); a business that `public_names` leaves out gets a fixed fallback the task chooses and logs in `docs/decisions.md`, never a name from anywhere else. (3) The page renders each card's lines (`ShownCard::lines`), review and record links as plain links with no stars, counts or excerpts, the top sentence once and \"doesn't rank businesses; check it yourself\" once per card (today's template line goes once the card carries it); it still shows no homeowner detail and no business phone or address (PICK-010). Tests in `tests/integration/tests/quote_page_cards.rs` (TD-PICK-62), fake businesses and records only. Update the `portals` and `licensing` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`, and name in the hand-in the commit and tests that close IC-71.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "portals",
+   "deps": [
+    "T316",
+    "T341",
+    "T374"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "licensing",
+    "privacy"
+   ],
+   "owns": [
+    "app/licensing/src/card_facts.rs",
+    "app/portals/src/quote_cards.rs",
+    "app/portals/src/quote_page.rs",
+    "app/portals/templates/quote_page.html",
+    "tests/integration/tests/quote_page_cards.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/licensing.md",
+    "docs/spec/businesses.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-041",
+    "LIC-026",
+    "LIC-034",
+    "LIC-047",
+    "LIC-024",
+    "LIC-038",
+    "BIZ-052",
+    "PICK-010"
+   ],
+   "tests": [
+    "TD-PICK-62"
+   ],
+   "decisions": [
+    "D-2206",
+    "D-2943",
+    "D-3080"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 550,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T393-quote-page-cards",
+   "prompt": "kit/prompts/T393.md",
+   "acceptance": "TD-PICK-62 passes against PostgreSQL; every existing quote-page, pick and `quote_card` test passes unchanged; the served page for a job with quotes shows each card's name, license lines and given review links; the hand-in names the commit and tests that close IC-71."
+  },
+  {
+   "id": "T394",
+   "slug": "ai-writing-calls",
+   "title": "ai and intake (harness): the AI writing calls (reword, follow-up, job card, project file) wired through the scrub, check and budget rules",
+   "goal": "Register row IC-53 (D-990, D-2065, D-3080; AI-010, AI-019, AI-021, AI-028, AI-029, INT-039, CARD-010): T163 built the pure last step (`ai::api::accept_question` and `accept_document`, `app/ai/src/writer.rs`) and the question bank already passes a reworded question through `accept_question` (`app/intake/src/question_bank.rs:325`), but `INSTRUCTIONS` holds only the intake reading (`app/ai/src/models.rs:95`), so with the AI on nothing ever asks for a reword, the follow-up, the job card or the project file and the homeowner always gets the AI-off text. AI-010 and AI-019 put them in launch scope, so this task wires them after T299's turn and before the war games (T237). (1) `app/ai/src/writing.rs`: four versioned `Instruction`s added to `INSTRUCTIONS` (reword the next bank question, the one follow-up the set's brief allows, the job card, the project file), each with a request builder beside `intake_request`: only `ScrubbedText` goes in (AI-004), inside the AI-025 tag with its name escaped and the instruction saying the tag's content is data; no tools (AI-006); the reply schema-validated (AI-005, AI-010) as the task decides against AI-022's one committed schema and logs in `docs/decisions.md` (`schemas/intake_reading.json` is owned here for that), anything failing it discarded; then `accept_question` or `accept_document` (AI-019 and AI-021's checks, the CARD-010 screen, the URL ban, the length cap), falling back to the template or her own scrubbed words on any hit. Each call goes through the gated, budgeted entry T236 built for the reading: the AI-008 switch, the AI-021 admission and its AI-028 step budget (1 reword per bank question and at most 8, 1 follow-up, card and project file 1 each plus 1 per EDIT and at most 3, the card call reserved), no database connection held across the provider await (AI-029), inside AI-023's reply budget, and the AI-off path at once when any of them refuses. (2) `intake`: T299's turn (`app/intake/src/ai_turn.rs`) asks for the reword before a bank question and the follow-up where the brief allows one (INT-039), and the card step (`app/intake/src/summary_step.rs`) asks for the card and the project file before the card is shown; a step past its budget, timed out or refused takes the AI-off path with nothing said (INT-021). (3) The stand-in AI (`stand_ins/ai.py`) answers a writing request deterministically under its schema, and its plants give an added fact, a link and a screened word for the fallback cases. Photo descriptions (AI-016, only after zero retention) and the INT-046 concept prompt are not this task's. Tests in `app/ai/src/tests/writing.rs` and `tests/integration/tests/ai_writing.rs` (TD-AI-29), fake data only; every existing `ai`, `intake`, `ai_budget` and `ai_wiring` test passes unchanged. Update `app/ai/CLAUDE.md`, `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`, and name in the hand-in the commit and tests that close IC-53.",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": "ai",
+   "deps": [
+    "T299",
+    "T236"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/ai/src/writing.rs",
+    "app/ai/src/models.rs",
+    "app/ai/src/tests/writing.rs",
+    "app/intake/src/ai_turn.rs",
+    "app/intake/src/summary_step.rs",
+    "app/intake/src/question_bank.rs",
+    "stand_ins/ai.py",
+    "schemas/intake_reading.json",
+    "tests/integration/tests/ai_writing.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ai.md",
+    "docs/spec/intake.md",
+    "docs/spec/job-cards.md",
+    "docs/brains/ai-intake.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "AI-010",
+    "AI-019",
+    "AI-021",
+    "AI-028",
+    "AI-029",
+    "AI-004",
+    "AI-005",
+    "AI-025",
+    "INT-039",
+    "CARD-010"
+   ],
+   "tests": [
+    "TD-AI-29"
+   ],
+   "decisions": [
+    "D-990",
+    "D-2065",
+    "D-3080"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 9,
+    "lines": 600,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T394-ai-writing-calls",
+   "prompt": "kit/prompts/T394.md",
+   "acceptance": "TD-AI-29 passes against PostgreSQL and the stand-ins; every existing `ai`, `intake`, `ai_budget` and `ai_wiring` test passes unchanged; with the AI-008 switch on, a conversation through the stand-in gets an AI-written reword, follow-up, card and project file, and each fallback case gets the AI-off text; the hand-in names the commit and tests that close IC-53."
+  },
+  {
+   "id": "T395",
+   "slug": "gate-c-preconditions",
+   "title": "Gate C preconditions (harness): the runner opens Gate C and accepts 'go live' only when scripts/gate_c_ready.py passes",
+   "goal": "D-3080 (the external 80-point audit's items 11, 70, 71 and 80; owner actions P0; reconciliation N-02, A-01, A-02): Gate C (T145) had a one-line goal and nothing checked what must be true before real customer data, live texts and live charges. (1) `scripts/gate_c_ready.py` (standard library only, no network, reading only files on `main` and `kit/state.json`, never a secret, an account ID or a vendor API) checks T145's preconditions and prints one line per unmet one, exiting 1 when any is unmet: with `--ask`, (a) each owner action P0 item 1 to 14 in `docs/compliance/owner-actions.md` has an `operating` row in `docs/compliance/evidence-register.md` naming it `OA-<n>` with a date, who recorded it and a pointer; (b) `docs/integration-closure.md` has no row whose area is `money`, `privacy` or `security` with status `open` or `tracked`, and row IC-53 is closed or its Evidence cell names a `docs/decisions.md` entry recording Casey's dated written acceptance of going live without AI-written text; (c) `docs/phase2/sentinel-trace.md` (T392) ends \"Verdict: clean\"; (d) `docs/phase2/restore-drill.md` (T139) records the measured restore time and data-loss window, each met against Casey's targets or accepted by him in writing; (e) the newest record in `docs/releases/` follows `docs/release-record.md` (T141, A-02) with every field filled, a source SHA on `main` and Casey's dated sign-off (OPS-043); (f) `docs/build-readiness.md` records a verdict re-issued for Gate C, dated after the stage 6 exit proof in `kit/state.json` and not before that release record (`docs/governance.md` section 10). With `--go-live`, also (g) an `operating` row `GC-ALERT` records that in the real-phone rehearsal a real alert reached a real person: one High test alert raised on the live project pushed to Casey's alert address and was seen on his phone (OPS-029, OPS-035), by date and alert ID only. (2) In `runner/cycle.py` the runner opens the `gate-c` ask only when `--ask` passes on its `main` checkout; otherwise it opens nothing and writes one `blocked` outbox note listing the unmet lines, rewritten only when the list changes; and it applies a 'go live' answer only when `--go-live` passes, otherwise it keeps the reply in the gate's answers, leaves the gate waiting and writes one `info` note naming what is missing; a kept reply never clears the gate: Casey must say 'go live' again after `--go-live` passes. No task owns `docs/compliance/evidence-register.md` or `docs/releases/`, and Casey's answers come only through owner issues: Casey sends each `OA-<n>` fact, the `GC-ALERT` date and alert ID and his release sign-off in his owner-issue reply, and a plan-change session records the row or the release record from that answer (as T141's release records), never a task and never the runner; recording a row never says 'go live' for him. Casey's own stop is unchanged: he enters the keys, runs the rehearsal and says 'go live'; this adds preconditions and never clears the gate for him. No other gate changes. Tests in `tests/test_gate_c_ready.py` and `tests/test_runner_gate_c.py` (TD-OPS-39); every existing runner test passes unchanged. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": null,
+   "deps": [
+    "T141",
+    "T392",
+    "T139"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    "scripts/gate_c_ready.py",
+    "tests/test_gate_c_ready.py",
+    "runner/cycle.py",
+    "tests/test_runner_gate_c.py"
+   ],
+   "reads": [
+    "docs/governance.md",
+    "docs/compliance/owner-actions.md",
+    "docs/compliance/evidence-register.md",
+    "docs/integration-closure.md",
+    "docs/build-readiness.md",
+    "docs/spec/ops-recovery.md"
+   ],
+   "requirements": [
+    "OPS-042",
+    "OPS-043"
+   ],
+   "tests": [
+    "TD-OPS-39"
+   ],
+   "decisions": [
+    "D-2740",
+    "D-1760",
+    "D-3080"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 500,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T395-gate-c-preconditions",
+   "prompt": "kit/prompts/T395.md",
+   "acceptance": "TD-OPS-39 passes; on today's `main` `scripts/gate_c_ready.py --ask` exits 1 listing every unmet precondition; every existing runner test passes unchanged."
   }
  ]
 }
