@@ -1,20 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T21:42:09Z by runner dee8a64123a9 (actions).
+Updated 2026-11-12T21:46:41Z by runner 46f5fc54dbd7 (actions).
 
 **Building: T162 in progress since 21:35Z; 256 of 403 done; week 5% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 256 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T162 claimed 21:35Z, lease until 00:35Z; lane 3: T385 claimed 21:36Z, lease until 00:36Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
-- **Week:** 5% used, 179.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:41Z, 0 min before this update
+- **Lane:** lane 2: T162 claimed 21:35Z, lease until 00:35Z; lane 3: T385 claimed 21:36Z, lease until 00:36Z; lane 6: T417 claimed 21:46Z, lease until 00:46Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
+- **Week:** 5% used, 174.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 21:42Z, 4 min before this update
 - **Keeper:** last ran 21:42Z, next wake 00:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T417 (since 2026-11-12T21:38:14Z, no attempt used; a plan change fixes it): T417: dependency T416 is DONE but its owned file app/core/src/db_metrics.rs is not on main; T417: dependency T416 is DONE but its owned file tests/integration/tests/db_metrics.rs is not on main; T417: dependency T416 is DONE but its owned file tests/integration/tests/perf_zip_scale.rs is not on main; T417: dependency T416 is DONE but its owned file tests/security/tests/perf_db_route.rs is not on main
-- Strict plan check red: 22 problem(s) on tasks still to run (+126 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+133 on DONE tasks); first: T340: measures 46% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -152,7 +151,7 @@ Updated 2026-11-12T21:42:09Z by runner dee8a64123a9 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T21:18:44Z (week)): week: 15.0M used, 179.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-05T06:37:19Z.
+- Pacing (session_reading 2026-11-12T21:41:48Z (week)): week: 20.0M used, 174.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-05T17:05:56Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -170,6 +169,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T162 (lease until 2026-11-13T00:35:14Z)
 - lane 3: T385 (lease until 2026-11-13T00:36:10Z)
+- lane 6: T417 (lease until 2026-11-13T00:46:33Z)
 - lane 7: T351 (lease until 2026-11-13T00:36:46Z)
 
 ## Last usage reading

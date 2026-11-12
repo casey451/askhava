@@ -3109,3 +3109,4 @@
 - 2026-11-12T21:41:28Z runner dee8a64123a9 (actions): {}
 - 2026-11-12T21:41:48Z runner dee8a64123a9 (actions): {}
 - 2026-11-12T21:42:09Z runner dee8a64123a9 (actions): {}
+- 2026-11-12T21:46:41Z runner 46f5fc54dbd7 (actions): {"T417": "QUEUED -> IN_PROGRESS"}; T417 estimated 273k tokens (calibrated); week has 174.0M left (no five-hour budget, D-3056) after 10.0M still running in another lane (session_reading 2026-11-12T21:41:48Z (week)); claimed
