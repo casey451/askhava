@@ -2,6 +2,13 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Nine more waiting steps fixed before they start, and two new steps (plan change, D-3134, November 12)
+
+- **What happened.** A seventh check of steps still waiting in line found nine that would have stopped partway: some would have broken older tests they may not touch, the Stripe stand-in step could not add the pages it was asked to serve, the won-dispute step relied on a Stripe read nobody builds, the charge-ID step only wrote the ID on a path that usually runs second, and two needs had no storage at all.
+- **What changed.** Each step's instructions now name the right files and an approach that leaves every older test as it is. Two new steps fill the storage gaps. T406 stores the quote facts a business fills in on the quote form (trip fee, parts, permit, "price may change", Spanish), so every quote card can show them as the rules require and "Same as last time" can pre-fill them; until then nothing kept those answers. T407 stores the owner-portal "safety voice call" switch with the attorney approval date and reference, and adds the switch to your settings page.
+- **Decided for you.** The safety voice call stays off at launch, exactly as before: T407 only builds the place to turn it on later, and it refuses unless every CALL-022 safeguard is built and tested, you have entered the attorney's approval, and you have just re-entered your second factor. The consent text's call sentence appears only while the switch is on. A quote stored before T406 (or a text quote confirmed without facts) shows in the list without a card rather than with made-up facts.
+- **Nothing needs you now.**
+
 ## Nine more waiting steps fixed before they start, and one new step (plan change, D-3118, November 12)
 
 - **What happened.** A sixth check of steps still waiting in line found nine that would have stopped partway, mostly because their change would have broken an older test they may not touch, or because they named code that does not exist where they said. One more older test (the emailed pick code) also needed its job's facts once the fee reads them.
