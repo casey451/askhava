@@ -133,6 +133,81 @@ pub fn template_ids() -> Result<Vec<String>, TemplateError> {
     Ok(Registry::embedded()?.ids())
 }
 
+/// `email_layout.html` with one paragraph per line: a business account email (T268).
+#[derive(askama::Template)]
+#[template(
+    ext = "html",
+    source = r#"{% extends "email_layout.html" %}{% block content %}
+{% for line in lines %}<p>{{ line }}</p>
+{% endfor %}{% endblock %}"#
+)]
+struct AccountView<'a> {
+    lang: &'a str,
+    subject: &'a str,
+    lines: &'a [String],
+    why: &'a str,
+    manage_url: &'a str,
+    manage_label: &'a str,
+    legal: &'a str,
+    postal: &'a str,
+}
+
+/// CON-020, BIZ-017, SEC-018, SEC-028 (T268, D-3184): queues one business account email, `lines`
+/// as paragraphs under `subject` in the shared layout with the business footer and the checked
+/// `postal` line, keyed by `template_id`, the `mailbox` ID and the sorted `subject_ids`; a repeat
+/// stores nothing. Returns the row ID and whether this call created it; [`send_email`] sends it.
+///
+/// # Errors
+///
+/// [`EmailError::PostalAddress`], [`EmailError::Template`] or [`EmailError::Database`].
+pub async fn queue_account_email(
+    db: &mut sqlx::PgConnection,
+    (secret, (postal, kind)): (&secrecy::SecretString, (&str, MailboxKind)),
+    (template_id, mailbox, subject_ids): (&str, sqlx::types::Uuid, &[sqlx::types::Uuid]),
+    (subject, lines): (&str, &[String]),
+    now: jiff::Timestamp,
+) -> Result<(sqlx::types::Uuid, bool), EmailError> {
+    use askama::Template;
+    PostalAddress::new(postal, kind)?;
+    let (why, manage_label) = crate::email::footer_lines(Audience::Business, Language::En);
+    let (portal, legal) = (
+        OnDomain("/b").to_string(),
+        crate::email::legal_name(Language::En),
+    );
+    let view = AccountView {
+        lang: "en",
+        subject,
+        lines,
+        why: &why,
+        manage_url: &portal,
+        manage_label,
+        legal,
+        postal: postal.trim(),
+    };
+    let html = view.render().map_err(|_| EmailError::Template)?;
+    let plain = format!(
+        "{}\n\n--\n{why}\n{manage_label}: {portal}\n{legal}, {}\n",
+        lines.join("\n"),
+        postal.trim()
+    );
+    let rendered = Rendered {
+        subject: subject.to_owned(),
+        html,
+        plain,
+    };
+    let mut sorted = subject_ids.to_vec();
+    sorted.sort_unstable();
+    let parts: Vec<String> = [template_id.to_owned(), mailbox.to_string()]
+        .into_iter()
+        .chain(sorted.iter().map(ToString::to_string))
+        .collect();
+    let parts: Vec<&str> = parts.iter().map(String::as_str).collect();
+    let key = askhava_adapters::api::IdempotencyKey::derive(secret, EMAIL_ACTION, &parts);
+    let ids = (template_id, mailbox, subject_ids);
+    let kind = crate::email::audience_kind(Audience::Business);
+    crate::models::insert_email(db, (key.as_str(), ids, kind, false), &rendered, now).await
+}
+
 /// TXT-012, D-2307 (T336): the MessageSid and arrival time of inbox row `id`, if it exists, for
 /// the bounded retry of a text a module error stopped. The inbox holds no words (PRIV-002).
 ///
