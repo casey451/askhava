@@ -10220,7 +10220,7 @@
    "id": "T396",
    "slug": "phone-approval-hold",
    "title": "businesses and messaging (harness): a phone a member links or changes is held out of the sender directory until the owner approves it",
-   "goal": "Register row IC-95, the hold (D-3081; BIZ-033, CALL-012; D-311, D-288, D-963, D-1695, D-3079). BIZ-033 and CALL-012 say a phone linked by a team member other than the owner works only after the owner approves it, but nothing holds it back: `team::link_phone` (`app/businesses/src/team.rs:439`) and `team::change_phone` (`:503`) put the number's digests in `messaging.sender_directory` at once, so `messaging::api::sender_business` (the inbound text route's lookup) and `calls::routing::party_of` treat the phone as the business; `businesses.staff_phone` (`migrations/0056_businesses_team_members.sql:32`) has no approval column; and two DONE tests, `td_biz_34_a_staff_phone_follows_into_the_directory` in `tests/integration/tests/sender_directory_sync.rs` and the member-link case in `tests/integration/tests/team_members.rs`, assert the opposite of BIZ-033. After T391 (the last earlier owner of `app/businesses/src/reply_link.rs`, which adds the blocked phone on the main phone's LINK reply) and T322 (of `team.rs`). (1) `migrations/0186_businesses_phone_approval.sql` (new): `businesses.staff_phone.approved_at timestamptz` `number_set_at timestamptz` and `number_set_by uuid` (when and by which member the current number was set; every link and number change writes both, so an approval can name the exact number it approves), and `number_end char(4)` (the number's last 4 digits, staff data the owner needs to know which phone to approve, as the LINK notice already names them, D-078; never the whole number); every row that exists when it runs gets `approved_at = linked_at`, `number_set_at = linked_at` and `number_set_by = linked_by` (those phones were linked under the earlier rule, and no row exists outside a test database before Gate C); and `messaging.sender_held` (line ID, index version, digest, business; unique on index version and digest; no number) with the app role's SELECT, INSERT and DELETE and nothing more. A phone's standing is `approved_at IS NOT NULL` alone. (2) `app/messaging/src/sender_held.rs` (new), through `messaging::api`: `sender_hold(db, line)` moves that line's directory digests into `sender_held` (a digest another waiting phone already holds is `SenderTaken`); `sender_release(db, line)` moves them back (a digest another phone now holds in the directory is `SenderTaken` and nothing moves); `sender_drop_held(db, line)`; and `sender_line(db, vault, phone)`, the directory's business and line for a number by the same `sender-dir` digests `sender_business` uses (for T398). Nothing logs a digest. (3) `app/businesses/src/team.rs`: every link and number change stores `number_end`, `number_set_at` (`now`; `change_phone` takes `now`) and `number_set_by`. The owner's link (the main phone always) stores `approved_at = now` and works at once. A link by any other member (`team_member.is_owner` false, even one holding both roles) stores `approved_at` NULL and, after `SenderLink::link`, calls `sender_hold` in the same transaction (`SenderTaken` is `PhoneTaken`), so the phone is in no directory lookup until approved. `change_phone` first calls `sender_drop_held` (so no old number stays held), then relinks: by the owner it sets `approved_at = now` and the new number works; by any other member it sets `approved_at` NULL and holds the new number, whether the phone was waiting, approved or linked by the owner, so a member can never put a working number in place by changing one. `unlink_phone` and `remove_member` also call `sender_drop_held`. `app/businesses/src/reply_link.rs`: the phone the main phone's LINK reply adds stores `approved_at = now` (the main phone's reply is the owner's act, CALL-012) and its `number_end` if it inserts the row itself; TD-CALL-24 passes unchanged. (4) `app/businesses/src/phone_approval.rs` (new), through `businesses::api`: `approve_phone(conn, by, (line, number_set_at), now)` and `reject_phone(conn, by, (line, number_set_at), now)`, where `number_set_at` is the value the owner was shown (a mismatch, because a member changed the number since, is a new `TeamError::NumberChanged` and nothing changes, so the owner never approves a number they did not see), owner only (any other member, a \"Confirm and billing\" member holding both roles included, is `NotAllowed`), each only on a waiting phone of the owner's own business (another business's line, an unknown line and a declined one are `UnknownPhone`; an approved one is a new `TeamError::NotWaiting`), in one transaction with one audit row of IDs only (`businesses.phone_approved`, `businesses.phone_rejected`). Approve sets `approved_at` and calls `sender_release` (`SenderTaken` is `PhoneTaken`: nothing changes and the phone stays waiting); reject deletes the staff phone row and its held digests, so it can never work, and a later link of the same number is a new waiting phone. Also `phone_standing(conn, line) -> Option<bool>` (whether `approved_at` is set; `None` for no such phone) for T398, and `waiting_phones(conn, business)` (line, the member who set the number, `number_end`, `number_set_at`) for T397's page. The SEC-038 step-up is the route's (T397, T399); the owner's email for a member's number change and the notice-recipient filter are T398's. (5) Tests in `tests/integration/tests/phone_approval.rs` (TD-BIZ-52) through `businesses::api` and `messaging::api::sender_business`, fake numbers only (555-01xx); the call and text routes are T398's. (6) The two DONE tests change only where BIZ-033 decides (TD-BIZ-34 as D-3081 rewords it): each phone a member links is first asserted absent from `sender_business`, then the owner approves it with `approve_phone`; in `td_biz_34_a_staff_phone_follows_into_the_directory` the member's `change_phone` leaves the new number absent too (and the old one absent) until the owner approves again, after which the existing assertions follow; every other input, expected value and assertion is unchanged. `app/businesses/src/tests/team.rs` changes only by the `now` argument `change_phone` gains. This is a harness task only because those three files belong to T220 (DONE). Update the `businesses` and `messaging` `CLAUDE.md` files, one line in `docs/architecture.md` section 10 found by grep (never the section whole), and `docs/decisions.md`. The owner's YES text (BIZ-033's text path) is not this task's (D-3081).",
+   "goal": "Register row IC-95, the hold (D-3081; BIZ-033, CALL-012; D-311, D-288, D-963, D-1695, D-3079). BIZ-033 and CALL-012 say a phone linked by a team member other than the owner works only after the owner approves it, but nothing holds it back: `team::link_phone` (`app/businesses/src/team.rs:439`) and `team::change_phone` (`:503`) put the number's digests in `messaging.sender_directory` at once, so `messaging::api::sender_business` (the inbound text route's lookup) and `calls::routing::party_of` treat the phone as the business; `businesses.staff_phone` (`migrations/0056_businesses_team_members.sql:32`) has no approval column; and two DONE tests, `td_biz_34_a_staff_phone_follows_into_the_directory` in `tests/integration/tests/sender_directory_sync.rs` and the member-link case in `tests/integration/tests/team_members.rs`, assert the opposite of BIZ-033. After T391 (the last earlier owner of `app/businesses/src/reply_link.rs`, which adds the blocked phone on the main phone's LINK reply) and T322 (of `team.rs`). (1) `migrations/0186_businesses_phone_approval.sql` (new, headed `-- businesses (T396)`): `businesses.staff_phone.approved_at timestamptz DEFAULT now()` (a row inserted without naming it is approved, so the DONE tests that insert a staff phone row directly, `tests/integration/tests/business_notices.rs:135` and `business_consent.rs:62`, keep today's answer; every link by a member who is not the owner writes NULL explicitly, and TD-BIZ-52 asserts it, D-3263), `number_set_at timestamptz` and `number_set_by uuid` (when and by which member the current number was set; every link and number change writes both, so an approval can name the exact number it approves), and `number_end char(4)` (the number's last 4 digits, staff data the owner needs to know which phone to approve, as the LINK notice already names them, D-078; never the whole number); every row that exists when it runs gets `approved_at = linked_at`, `number_set_at = linked_at` and `number_set_by = linked_by` (those phones were linked under the earlier rule, and no row exists outside a test database before Gate C); and `migrations/0187_messaging_sender_held.sql` (new, headed `-- messaging (T396)`, a file of its own because a migration may name only its own module's schema, `tests/integration/tests/architecture_migrations.rs`, D-3263): `messaging.sender_held` (line ID, index version, digest, business; unique on index version and digest; no number) with the app role's SELECT, INSERT and DELETE and nothing more. A phone's standing is `approved_at IS NOT NULL` alone. (2) `app/messaging/src/sender_held.rs` (new), through `messaging::api`: `sender_hold(db, line)` moves that line's directory digests into `sender_held` (a digest another waiting phone already holds is `SenderTaken`); `sender_release(db, line)` moves them back (a digest another phone now holds in the directory is `SenderTaken` and nothing moves); `sender_drop_held(db, line)`; and `sender_line(db, vault, phone)`, the directory's business and line for a number by the same `sender-dir` digests `sender_business` uses (for T398). Nothing logs a digest. (3) `app/businesses/src/team.rs`: every link and number change stores `number_end`, `number_set_at` (`now`; `change_phone` takes `now`) and `number_set_by`. The owner's link (the main phone always) stores `approved_at = now` and works at once. A link by any other member (`team_member.is_owner` false, even one holding both roles) stores `approved_at` NULL and, after `SenderLink::link`, calls `sender_hold` in the same transaction (`SenderTaken` is `PhoneTaken`), so the phone is in no directory lookup until approved. `change_phone` first calls `sender_drop_held` (so no old number stays held), then relinks: by the owner it sets `approved_at = now` and the new number works; by any other member it sets `approved_at` NULL and holds the new number, whether the phone was waiting, approved or linked by the owner, so a member can never put a working number in place by changing one. `unlink_phone` and `remove_member` also call `sender_drop_held`. `app/businesses/src/reply_link.rs`: the phone the main phone's LINK reply adds stores `approved_at = now` (the main phone's reply is the owner's act, CALL-012) and its `number_end` if it inserts the row itself; TD-CALL-24 passes unchanged. (4) `app/businesses/src/phone_approval.rs` (new), through `businesses::api`: `approve_phone(conn, by, (line, number_set_at), now)` and `reject_phone(conn, by, (line, number_set_at), now)`, where `number_set_at` is the value the owner was shown (a mismatch, because a member changed the number since, is a new `TeamError::NumberChanged` and nothing changes, so the owner never approves a number they did not see), owner only (any other member, a \"Confirm and billing\" member holding both roles included, is `NotAllowed`), each only on a waiting phone of the owner's own business (another business's line, an unknown line and a declined one are `UnknownPhone`; an approved one is a new `TeamError::NotWaiting`), in one transaction with one audit row of IDs only (`businesses.phone_approved`, `businesses.phone_rejected`). Approve sets `approved_at` and calls `sender_release` (`SenderTaken` is `PhoneTaken`: nothing changes and the phone stays waiting); reject deletes the staff phone row and its held digests, so it can never work, and a later link of the same number is a new waiting phone. Also `phone_standing(conn, line) -> Option<bool>` (whether `approved_at` is set; `None` for no such phone) for T398, and `waiting_phones(conn, business)` (line, the member who set the number, `number_end`, `number_set_at`) for T397's page. The SEC-038 step-up is the route's (T397, T399); the owner's email for a member's number change and the notice-recipient filter are T398's. (5) Tests in `tests/integration/tests/phone_approval.rs` (TD-BIZ-52) through `businesses::api` and `messaging::api::sender_business`, fake numbers only (555-01xx); the call and text routes are T398's. (6) The two DONE tests change only where BIZ-033 decides (TD-BIZ-34 as D-3081 rewords it): each phone a member links is first asserted absent from `sender_business`, then the owner approves it with `approve_phone`; in `td_biz_34_a_staff_phone_follows_into_the_directory` the member's `change_phone` leaves the new number absent too (and the old one absent) until the owner approves again, after which the existing assertions follow; every other input, expected value and assertion is unchanged. `app/businesses/src/tests/team.rs` changes only by the `now` argument `change_phone` gains. This is a harness task only because those three files belong to T220 (DONE). Update the `businesses` and `messaging` `CLAUDE.md` files, one line in `docs/architecture.md` section 10 found by grep (never the section whole), and `docs/decisions.md`. The owner's YES text (BIZ-033's text path) is not this task's (D-3081).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -10239,6 +10239,7 @@
    ],
    "owns": [
     "migrations/0186_businesses_phone_approval.sql",
+    "migrations/0187_messaging_sender_held.sql",
     "app/messaging/src/sender_held.rs",
     "app/businesses/src/team.rs",
     "app/businesses/src/phone_approval.rs",
@@ -10268,13 +10269,14 @@
     "D-3079",
     "D-311",
     "D-963",
-    "D-078"
+    "D-078",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
+    "files": 10,
     "lines": 800,
-    "context_pct": 39
+    "context_pct": 46
    },
    "checks": [
     "Ci",
@@ -10289,7 +10291,7 @@
    "id": "T398",
    "slug": "phone-approval-gate",
    "title": "calls, server and businesses: calls, texts and notice texts act for the business only through an approved phone, and a member's number change emails the owner again",
-   "goal": "Register row IC-95, the gate behind the hold (D-3081; BIZ-033, CALL-012; D-1695, D-3079). After T396 (`messaging::api::sender_line`, `businesses::api::phone_standing`, `staff_phone.approved_at` and `number_set_at`), T326 (the last earlier owner of `app/calls/src/routing.rs`; T365 left the graph, D-3106), T391 (of `app/server/src/inbound_text.rs`), T147 (of `app/businesses/src/channel_preference.rs`) and T293 (of `app/businesses/src/complaints.rs`). T396 keeps a waiting phone's digests out of the sender directory; this task makes both routes check the phone's standing as well, so a digest left in the directory by any path still cannot act as the business, and gives the pure `calls::lifecycle::phone_works` and `gate` (`app/calls/src/lifecycle.rs:241`, `:248`, today called only by tests) their production caller. (1) `app/calls/src/routing.rs`: `party_of` (`:419`, the one party lookup of routing and both PIN paths) resolves a directory hit through `sender_line`, reads `phone_standing` and applies `gate` with `PhoneStanding { linked_by_owner: false, owner_approved }` (`owner_approved` is that standing; the owner's links are stored approved, so one fact decides): a phone with no staff phone row or not approved is `Party::Unlinked` and hears the PIN prompt. (2) `app/server/src/inbound_text.rs`: a text whose sender the directory names is the business's (`Relation::Business`: `phone_stopped`, the auto-reply, T391's LINK reply) only when `phone_standing` is `Some(true)`; otherwise it takes the path of an unknown number, so a waiting phone's STOP, LINK or other text never acts for the business. Read in the delivery's transaction; a database error is 500 and the delivery rolls back, as today. (3) `app/businesses/src/channel_preference.rs`: `notice_recipients` (`:142`, the one list every business notice text reads its phones from, `quotes::card_notices` and `quotes::emergency_card_notice` among them) lists only phones with `approved_at` set, so a waiting phone gets no job card or other notice text and a member whose only phones are waiting gets the email instead (its `email` flag follows the filtered list). (4) `app/businesses/src/complaints.rs`: `phone_link_notice` (`:502`) keys its task by phone and `number_set_at` (`businesses.phone_linked.<line>.<number_set_at in microseconds>`, was the phone alone, `:521`) and adds `number_set_at` to the payload, and `businesses::api::change_phone` (the shared `api.rs`) wraps `team::change_phone` as `api::link_phone` wraps the link: a number change by a member who is not the owner queues a fresh owner email in the same transaction, so the owner is told of every number they are asked to approve. (5) Tests: `tests/integration/tests/phone_approval_routes.rs` (TD-CALL-25), signed fake Twilio voice and text requests through the served routes and `calls::api::answer_call`, and `tests/integration/tests/phone_approval_notices.rs` (TD-BIZ-53) through `businesses::api` and `quotes`' card notice step, fake numbers only. Update the `calls`, `server` and `businesses` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Register row IC-95, the gate behind the hold (D-3081; BIZ-033, CALL-012; D-1695, D-3079). After T396 (`messaging::api::sender_line`, `businesses::api::phone_standing`, `staff_phone.approved_at` and `number_set_at`), T326 (the last earlier owner of `app/calls/src/routing.rs`; T365 left the graph, D-3106), T391 (of `app/server/src/inbound_text.rs`), T147 (of `app/businesses/src/channel_preference.rs`) and T293 (of `app/businesses/src/complaints.rs`). T396 keeps a waiting phone's digests out of the sender directory; this task makes both routes check the phone's standing as well, so a waiting phone's digest left in the directory by any path still cannot act as the business, and gives the pure `calls::lifecycle::phone_works` and `gate` (`app/calls/src/lifecycle.rs:241`, `:248`, today called only by tests) their production caller. (1) `app/calls/src/routing.rs`: `party_of` (`:419`, the one party lookup of routing and both PIN paths) resolves a directory hit through `sender_line`, reads `phone_standing` and, for a staff phone row, applies `gate` with `PhoneStanding { linked_by_owner: false, owner_approved }` (`owner_approved` is that standing; the owner's links are stored approved, so one fact decides): a phone whose row is not approved (`Some(false)`) is `Party::Unlinked` and hears the PIN prompt. A directory line with no staff phone row (`None`) keeps today's answer: no production path makes one (every link writes the row whose ID is the line, and unlink, reject and member removal drop the digests with it), and the DONE route tests link a phone with `messaging::api::sender_add` alone (`app/server/tests/inbound_voice.rs:103`, `voice_confirm_line.rs:158`, `:339`, `tests/integration/tests/pin_routing.rs:273`, `link_request.rs:125`), so the waiting phone is refused and those tests pass unchanged (D-3263). (2) `app/server/src/inbound_text.rs`: a text whose sender the directory names is the business's (`Relation::Business`: `phone_stopped`, the auto-reply, T391's LINK reply) unless `phone_standing` is `Some(false)`, which takes the path of an unknown number, so a waiting phone's STOP, LINK or other text never acts for the business; `None` (a directory line with no staff phone row, as in `tests/integration/tests/inbound_first_contact.rs:234` and `inbound_text_route.rs:252`) keeps today's answer, as in (1) (D-3263). Read in the delivery's transaction; a database error is 500 and the delivery rolls back, as today. (3) `app/businesses/src/channel_preference.rs`: `notice_recipients` (`:142`, the one list every business notice text reads its phones from, `quotes::card_notices` and `quotes::emergency_card_notice` among them) lists only phones with `approved_at` set (T396's column defaults to the insert time, so `tests/integration/tests/business_notices.rs`, which inserts rows without it, passes unchanged), so a waiting phone gets no job card or other notice text and a member whose only phones are waiting gets the email instead (its `email` flag follows the filtered list). (4) `app/businesses/src/complaints.rs`: `phone_link_notice` (`:502`) keys its task by phone and `number_set_at` (`businesses.phone_linked.<line>.<number_set_at in microseconds>`, was the phone alone, `:521`) and adds `number_set_at` to the payload, and `businesses::api::change_phone` (the shared `api.rs`) wraps `team::change_phone` as `api::link_phone` wraps the link: a number change by a member who is not the owner queues a fresh owner email in the same transaction, so the owner is told of every number they are asked to approve. (5) Tests: `tests/integration/tests/phone_approval_routes.rs` (TD-CALL-25), signed fake Twilio voice and text requests through the served routes and `calls::api::answer_call`, and `tests/integration/tests/phone_approval_notices.rs` (TD-BIZ-53) through `businesses::api` and `quotes`' card notice step, fake numbers only. Update the `calls`, `server` and `businesses` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -10336,7 +10338,8 @@
     "D-3081",
     "D-1695",
     "D-3079",
-    "D-3106"
+    "D-3106",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -10351,7 +10354,7 @@
    ],
    "branch": "claude/task/T398-phone-approval-gate",
    "prompt": "kit/prompts/T398.md",
-   "acceptance": "TD-CALL-25 and TD-BIZ-53 pass through the served routes and `businesses::api`, each case failing on `main` with T396 merged and the matching check removed; TD-CALL-07, TD-CALL-08, TD-CALL-14, TD-CALL-24, TD-BIZ-39, TD-BIZ-03 and every other voice, inbound text, notice and complaint case passes unchanged."
+   "acceptance": "TD-CALL-25 and TD-BIZ-53 pass through the served routes and `businesses::api`, each case failing on `main` with T396 merged and the matching check removed; TD-CALL-07, TD-CALL-08, TD-CALL-14, TD-CALL-24, TD-BIZ-39, TD-BIZ-03 and every other voice, inbound text, notice and complaint case passes unchanged, `app/server/tests/inbound_voice.rs`, `voice_confirm_line.rs`, `tests/integration/tests/inbound_first_contact.rs`, `inbound_text_route.rs`, `link_request.rs`, `pin_routing.rs` and `business_notices.rs` among them."
   },
   {
    "id": "T397",
@@ -12854,7 +12857,7 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0191_help_requests.sql",
+    "migrations/0192_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
     "app/ops/src/help_requests.rs",
     "app/portals/src/digest_flags.rs",
@@ -12903,7 +12906,8 @@
     "D-1215",
     "D-2206",
     "D-3155",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -13808,7 +13812,7 @@
     "app/intake/src/web_chat.rs",
     "app/intake/src/conversation.rs",
     "tests/integration/tests/web_chat.rs",
-    "migrations/0188_intake_request_source.sql",
+    "migrations/0189_intake_request_source.sql",
     "app/server/src/chat_codes.rs"
    ],
    "reads": [
@@ -13863,7 +13867,8 @@
     "D-3144",
     "D-963",
     "D-3189",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -13884,7 +13889,7 @@
    "id": "T222",
    "slug": "journeys-full-variants",
    "title": "Journeys J1 and J2, the full variants: web chat, photos, question order, quote formats, share box, review links",
-   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence; J1 and J2 also run with the launch channel set to web-and-email while the fake carrier records zero texts (TD-TXT-15, shared with J3 and J4 in T118 and T119, D-491). J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492).",
+   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15) are T413's, after T310 serves the launch-channel switch and T414 lets a spec read sent emails (D-3263). J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13935,13 +13940,13 @@
    "tests": [
     "J1",
     "J2",
-    "TD-TXT-15",
     "TD-BIZ-22",
     "TD-BIZ-25"
    ],
    "decisions": [
     "D-491",
-    "D-492"
+    "D-492",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -14147,7 +14152,7 @@
     "app/ops/src/alerts.rs",
     "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
-    "migrations/0189_ops_alerts_safe_mode.sql",
+    "migrations/0190_ops_alerts_safe_mode.sql",
     "tests/integration/tests/safe_mode.rs",
     "app/messaging/src/handlers.rs",
     "app/businesses/src/service.rs",
@@ -14200,7 +14205,8 @@
     "D-351",
     "D-3144",
     "D-1427",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -14221,7 +14227,7 @@
    "id": "T408",
    "slug": "safe-mode-release-hold",
    "title": "payments and server: a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends",
-   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:61`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T105) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (the pick ID only, deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:456`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) reschedules its own row 15 minutes later while safe mode lasts (`core.task.dedupe_key` stays unique after a task is done, so it never queues a new task under the same key) and, once safe mode has ended, clears the pick again through a new `payments::api::held_release(pool, stripe, account, pick)` in `app/payments/src/release_proof.rs`. A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (`store_success`, `app/payments/src/charge.rs:232` and `app/payments/src/reconcile.rs:236`, `:612` all write through the same `handlers::record`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:212` to `:216`), and for a $0 pick keeps `no_fee_release`'s ledger check; nothing else makes a `Releasable` (SEC-030). Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Update the `server` and `payments` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:61`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T105) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (the pick ID only, deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:456`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) while safe mode lasts enqueues the next run 15 minutes later and finishes: a handler cannot move its own `core.task` row (`core::api` exports no defer, and `server` may not write `core` tables), so the payload carries the pick ID and the run's due time, and the next run is `core::api::enqueue`d due 15 minutes after that time under the dedupe key `<kind>.<pick>.<run_at in microseconds>` (`core.task.dedupe_key` stays unique after a task is done, so the first held-release task's per-pick key is never reused, and a rerun of the same run enqueues the same key, which is refused, D-3263) and, once safe mode has ended, clears the pick again through a new `payments::api::held_release(pool, stripe, account, pick)` in `app/payments/src/release_proof.rs`. A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (`store_success`, `app/payments/src/charge.rs:232` and `app/payments/src/reconcile.rs:236`, `:612` all write through the same `handlers::record`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:212` to `:216`), and for a $0 pick keeps `no_fee_release`'s ledger check; nothing else makes a `Releasable` (SEC-030). Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Update the `server` and `payments` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14266,7 +14272,8 @@
     "D-133",
     "D-1427",
     "D-1478",
-    "D-2290"
+    "D-2290",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -14342,7 +14349,7 @@
    "id": "T204",
    "slug": "ops-pushes-digest-security-alerts",
    "title": "ops: phone pushes by alert email, the weekly digest, owner flags, the away setting and security-event alerts",
-   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840). T300 serves the business portal home before this task (D-2128): this task owns `app/server/src/business_portal.rs` too and keeps the served home working with what it adds. Fourth external audit F28 and SEC-051 (D-2207): the alert email sender is registered in `server::worker_registry` (the shared `app/server/src/lib.rs:456`, which has the `Settings` its configuration, the alert address (OPS-035), comes from; `register_handlers`, `:382`, takes none) on every path (D-3144), so a raised pushing alert reaches the email provider through the worker, and `tests/integration/tests/alert_routing.rs` proves it through the worker, never by calling the sender; and `messaging::api::check_webhook_silence` (SEC-051, `app/messaging/src/email.rs:762`), which nothing runs today, is run hourly by a worker task this task queues, after T320 made it raise through `ops::api::raise_kind_once`, so it keeps one open alert; this task's own daily volume check raises through `raise_alert_once` or `raise_kind_once` as well (D-3144). The weekly digest also counts the `ops` audit rows with action `messaging.optout_wrote_again` that T360 writes for CON-016 (a listed homeowner who wrote again without START and has no email on file), as a count with job numbers only (D-2629, TD-OPS-09); and the business statement shows a won dispute's `dispute-reversal` and `countering-fee-return` rows (T353) as a won dispute, in plain words (D-2625). Plan change D-3155: its migration is numbered 0190 (moved up one by D-3262), so T151 and T321 fit before T109's 0194 (V9).",
+   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840). T300 serves the business portal home before this task (D-2128): this task owns `app/server/src/business_portal.rs` too and keeps the served home working with what it adds. Fourth external audit F28 and SEC-051 (D-2207): the alert email sender is registered in `server::worker_registry` (the shared `app/server/src/lib.rs:456`, which has the `Settings` its configuration, the alert address (OPS-035), comes from; `register_handlers`, `:382`, takes none) on every path (D-3144), so a raised pushing alert reaches the email provider through the worker, and `tests/integration/tests/alert_routing.rs` proves it through the worker, never by calling the sender; and `messaging::api::check_webhook_silence` (SEC-051, `app/messaging/src/email.rs:762`), which nothing runs today, is run hourly by a worker task this task queues, after T320 made it raise through `ops::api::raise_kind_once`, so it keeps one open alert; this task's own daily volume check raises through `raise_alert_once` or `raise_kind_once` as well (D-3144). The weekly digest also counts the `ops` audit rows with action `messaging.optout_wrote_again` that T360 writes for CON-016 (a listed homeowner who wrote again without START and has no email on file), as a count with job numbers only (D-2629, TD-OPS-09); and the business statement shows a won dispute's `dispute-reversal` and `countering-fee-return` rows (T353) as a won dispute, in plain words (D-2625). Plan change D-3155: its migration is numbered 0191 (moved up one by D-3262 and one more by D-3263), so T151 and T321 fit before T109's 0195 (V9).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14369,7 +14376,7 @@
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
     "app/portals/src/digest_flags.rs",
-    "migrations/0190_ops_owner_digest.sql",
+    "migrations/0191_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
     "app/portals/templates/business_home.html",
@@ -14437,7 +14444,8 @@
     "D-2629",
     "D-3144",
     "D-3155",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -14586,7 +14594,7 @@
    "id": "T321",
    "slug": "consent-five-year-purge",
    "title": "messaging, intake and privacy: consent records, keyword events and message logs go 5 years after a number's last message",
-   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` opt-out-event and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0192_messaging_consent_purge.sql` (headed `-- messaging (T321)`) and `migrations/0193_intake_consent_purge.sql` (headed `-- intake (T321)`, the `intake.consent_record` grant only; `tests/integration/tests/architecture_migrations.rs` fails a migration naming another module's schema) grant the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`. Plan change D-3155: (a) the clock: nothing records which number an inbound text came from (`messaging.inbox` holds only `message_sid` and `received_at`, `migrations/0043_messaging_inbox_delivery.sql:22` to `:26`), so the messaging migration adds `messaging.inbox_contact` (`inbox_id` primary key referencing `messaging.inbox`, `contact_id` (no `REFERENCES privacy.*`: a cross-schema foreign key fails `tests/integration/tests/architecture_migrations.rs`), `received_at`; SELECT and INSERT for the app role, DELETE with the rest), written once per inbound text by `messaging::api::on_inbound_text` (`app/messaging/src/optout.rs`, owned here after T357; `ON CONFLICT DO NOTHING`, so a resent delivery adds nothing); a number's last message is the later of its newest `inbox_contact.received_at` and its newest `messaging.outbox` row for that `recipient_id`; texts received before this task have no row and count from the outbox only (no live data exists before Gate C); architecture section 3 lists the table. (b) STOP, HELP and START: there is no keyword-event table; STOP and START (every channel) are `messaging.optout_event` rows, and a HELP is its inbox row and the HELP reply's outbox row, so it goes with the message logs; no table is added for them. (c) The numbers are 0192 and 0193 (T151 at 0191, T204 at 0190, each moved up one by D-3262), both before T109's 0194 (V9).",
+   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` opt-out-event and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0193_messaging_consent_purge.sql` (headed `-- messaging (T321)`) and `migrations/0194_intake_consent_purge.sql` (headed `-- intake (T321)`, the `intake.consent_record` grant only; `tests/integration/tests/architecture_migrations.rs` fails a migration naming another module's schema) grant the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`. Plan change D-3155: (a) the clock: nothing records which number an inbound text came from (`messaging.inbox` holds only `message_sid` and `received_at`, `migrations/0043_messaging_inbox_delivery.sql:22` to `:26`), so the messaging migration adds `messaging.inbox_contact` (`inbox_id` primary key referencing `messaging.inbox`, `contact_id` (no `REFERENCES privacy.*`: a cross-schema foreign key fails `tests/integration/tests/architecture_migrations.rs`), `received_at`; SELECT and INSERT for the app role, DELETE with the rest), written once per inbound text by `messaging::api::on_inbound_text` (`app/messaging/src/optout.rs`, owned here after T357; `ON CONFLICT DO NOTHING`, so a resent delivery adds nothing); a number's last message is the later of its newest `inbox_contact.received_at` and its newest `messaging.outbox` row for that `recipient_id`; texts received before this task have no row and count from the outbox only (no live data exists before Gate C); architecture section 3 lists the table. (b) STOP, HELP and START: there is no keyword-event table; STOP and START (every channel) are `messaging.optout_event` rows, and a HELP is its inbox row and the HELP reply's outbox row, so it goes with the message logs; no table is added for them. (c) The numbers are 0193 and 0194 (T151 at 0192, T204 at 0191, each moved up one by D-3262 and one more by D-3263), both before T109's 0195 (V9).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14604,12 +14612,12 @@
     "compliance"
    ],
    "owns": [
-    "migrations/0192_messaging_consent_purge.sql",
+    "migrations/0193_messaging_consent_purge.sql",
     "app/messaging/src/consent_purge.rs",
     "app/intake/src/consent_purge.rs",
     "app/privacy/src/consent_phone.rs",
     "tests/integration/tests/consent_purge.rs",
-    "migrations/0193_intake_consent_purge.sql",
+    "migrations/0194_intake_consent_purge.sql",
     "app/messaging/src/optout.rs"
    ],
    "reads": [
@@ -14632,7 +14640,8 @@
     "D-2208",
     "D-079",
     "D-3155",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -14832,7 +14841,7 @@
     "app/recovery/src/api.rs",
     "app/recovery/src/models.rs",
     "app/recovery/src/backup.rs",
-    "migrations/0194_recovery_backup_export.sql",
+    "migrations/0195_recovery_backup_export.sql",
     "tests/recovery/tests/export_restores.rs",
     "app/portals/src/digest_flags.rs",
     "app/portals/src/health_page.rs",
@@ -14869,7 +14878,8 @@
     "D-492",
     "D-1520",
     "D-3155",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -14909,7 +14919,7 @@
    "owns": [
     "app/recovery/src/replay.rs",
     "app/recovery/src/models.rs",
-    "migrations/0195_recovery_replay.sql",
+    "migrations/0196_recovery_replay.sql",
     "app/recovery/src/tests/replay_ids.rs",
     "app/adapters/src/sms_list.rs",
     "app/adapters/src/base.rs"
@@ -14934,7 +14944,8 @@
     "D-156",
     "D-2764",
     "D-3155",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -15013,8 +15024,8 @@
    "id": "T111",
    "slug": "terms-homeowner-business",
    "title": "Draft homeowner and business terms with every required clause",
-   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030). The homeowner terms describe both ways of picking (the quote page and a \"<number> YES\" text pick, TERMS-001); both terms end with the TERMS-035 General section (severability, entire agreement, no waiver, transfer, notices, the 14-day business change notice and the homeowner rule that a change applies only to later requests), and the business terms add the 30-day write-first step and the TERMS-036 account-ending clause and no-promise sentence (D-492).",
-   "type": "docs",
+   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030). The homeowner terms describe both ways of picking (the quote page and a \"<number> YES\" text pick, TERMS-001); both terms end with the TERMS-035 General section (severability, entire agreement, no waiver, transfer, notices, the 14-day business change notice and the homeowner rule that a change applies only to later requests), and the business terms add the 30-day write-first step and the TERMS-036 account-ending clause and no-promise sentence (D-492). The new summary file fails `scripts/check_legal_docs.py` until it is listed (`DOCUMENTS`, `:45`; any other `.md` under `docs/legal/` is an error, `:460`), so this task adds `business-terms-summary-es.md` to `DOCUMENTS` and to `BUSINESS_DOCUMENTS`, and moves `tests/test_check_legal_docs.py:53`'s count from 9 to 10; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) and DONE T291's, and the test belongs to no task (D-3263).",
+   "type": "harness",
    "phase": 1,
    "stage": "5",
    "module": null,
@@ -15032,7 +15043,9 @@
     "docs/legal/homeowner-terms.md",
     "docs/legal/business-terms.md",
     "tests/docs/test_terms_clauses.py",
-    "docs/legal/business-terms-summary-es.md"
+    "docs/legal/business-terms-summary-es.md",
+    "scripts/check_legal_docs.py",
+    "tests/test_check_legal_docs.py"
    ],
    "reads": [
     "docs/spec/terms.md",
@@ -15104,13 +15117,14 @@
     "D-427",
     "D-465",
     "D-490",
-    "D-492"
+    "D-492",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 650,
-    "context_pct": 12
+    "files": 6,
+    "lines": 660,
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -15118,7 +15132,8 @@
     "Ally"
    ],
    "branch": "claude/task/T111-terms-homeowner-business",
-   "prompt": "kit/prompts/T111.md"
+   "prompt": "kit/prompts/T111.md",
+   "acceptance": "`tests/docs/test_terms_clauses.py` passes with each clause found; `scripts/check_legal_docs.py` passes and prints 10 documents checked; `tests/test_check_legal_docs.py` passes with only its count changed; the plan lock is rewritten with the decision entry."
   },
   {
    "id": "T112",
@@ -15227,8 +15242,8 @@
    "id": "T113",
    "slug": "twilio-campaign",
    "title": "Draft the Twilio campaign description from the real templates",
-   "goal": "`docs/legal/twilio-campaign.md` drafts the homeowner texting campaign from the real templates (sample messages that are exact templates, the consent text, no business traffic, the toll-free fallback only with Casey's go), and a docs test fails when a sample differs from its template (TERMS-002 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-015, TERMS-018, CON-033).",
-   "type": "docs",
+   "goal": "`docs/legal/twilio-campaign.md` drafts the homeowner texting campaign from the real templates (sample messages that are exact templates, the consent text, no business traffic, the toll-free fallback only with Casey's go), and a docs test fails when a sample differs from its template (TERMS-002 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-015, TERMS-018, CON-033). After T111 (through T112), which listed the Spanish summary: this task adds `twilio-campaign.md` to `scripts/check_legal_docs.py`'s `DOCUMENTS` (an unlisted `.md` under `docs/legal/` fails it, `:460`) and moves `tests/test_check_legal_docs.py`'s count from 10 to 11; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) (D-3263).",
+   "type": "harness",
    "phase": 1,
    "stage": "5",
    "module": null,
@@ -15243,7 +15258,9 @@
    ],
    "owns": [
     "docs/legal/twilio-campaign.md",
-    "tests/docs/test_campaign.py"
+    "tests/docs/test_campaign.py",
+    "scripts/check_legal_docs.py",
+    "tests/test_check_legal_docs.py"
    ],
    "reads": [
     "docs/spec/terms.md",
@@ -15289,13 +15306,14 @@
     "D-419",
     "D-490",
     "D-492",
-    "D-1143"
+    "D-1143",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
-    "lines": 250,
-    "context_pct": 5
+    "files": 4,
+    "lines": 260,
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -15303,7 +15321,8 @@
     "Ally"
    ],
    "branch": "claude/task/T113-twilio-campaign",
-   "prompt": "kit/prompts/T113.md"
+   "prompt": "kit/prompts/T113.md",
+   "acceptance": "`tests/docs/test_campaign.py` passes and fails on a planted sample that differs from its template; `scripts/check_legal_docs.py` passes and prints 11 documents checked; `tests/test_check_legal_docs.py` passes with only its count changed; the plan lock is rewritten with the decision entry."
   },
   {
    "id": "T229",
@@ -15645,7 +15664,8 @@
     "T205",
     "T303",
     "T304",
-    "T310"
+    "T310",
+    "T414"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -15674,7 +15694,8 @@
     "TD-TXT-15"
    ],
    "decisions": [
-    "D-1143"
+    "D-1143",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -16139,7 +16160,8 @@
     "T375",
     "T397",
     "T399",
-    "T407"
+    "T407",
+    "T413"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16171,7 +16193,8 @@
    "decisions": [
     "D-1678",
     "D-2290",
-    "D-3134"
+    "D-3134",
+    "D-3263"
    ],
    "cites": [
     "BUILD_BRIEF.md:488",
@@ -16402,7 +16425,8 @@
     "T130",
     "T275",
     "T336",
-    "T378"
+    "T378",
+    "T414"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16445,7 +16469,8 @@
     "D-160",
     "D-1841",
     "D-2762",
-    "D-2769"
+    "D-2769",
+    "D-3263"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
@@ -17425,7 +17450,7 @@
     "app/ai/src/service.rs",
     "app/ai/src/models.rs",
     "app/ai/src/switch.rs",
-    "migrations/0201_ai_call_budget.sql",
+    "migrations/0202_ai_call_budget.sql",
     "tests/integration/tests/ai_budget.rs",
     "app/intake/src/service.rs"
    ],
@@ -17456,7 +17481,8 @@
     "D-2038",
     "D-2703",
     "D-2707",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -20371,7 +20397,7 @@
    "id": "T158",
    "slug": "owner-scorecard-money",
    "title": "ops: the owner's pilot scorecard page with go and stop lines, and the masked-call answered share",
-   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); the \"Not a fit for us\" choice (PICK-057) is offered on the business job page, rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). The scorecard also shows OPS-046's first-six-weeks email panel and deferral alert and OPS-047's figures, including the median minutes a business spends on a quote from the optional quote-form field T148 stores (D-492). This task's migration adds `ops.not_a_fit_answer` (job, business, trade, reason, time) for PICK-057's monthly count and `ops.minutes_entry` for OPS-039's weekly minutes entry (architecture section 3) (D-493). T301 serves the action links and the job page before this task (D-2128): keep the signatures `app/server/src/action_links.rs` calls, add the \"Not a fit for us\" choice through new functions, and T306 serves it. T305 serves the scorecard (D-2128): the page function and route constant only, no `.route` in `server`; the browser half of TD-OPS-15 runs in T305's spec, and `tests/e2e/scorecard.spec.ts` checks what an unserved page allows. Plan change D-3155: its migration holds only `ops` tables, so it is `migrations/0196_ops_scorecard_inputs.sql` headed `-- ops (T158)` (`tests/integration/tests/architecture_migrations.rs`).",
+   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); the \"Not a fit for us\" choice (PICK-057) is offered on the business job page, rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). The scorecard also shows OPS-046's first-six-weeks email panel and deferral alert and OPS-047's figures, including the median minutes a business spends on a quote from the optional quote-form field T148 stores (D-492). This task's migration adds `ops.not_a_fit_answer` (job, business, trade, reason, time) for PICK-057's monthly count and `ops.minutes_entry` for OPS-039's weekly minutes entry (architecture section 3) (D-493). T301 serves the action links and the job page before this task (D-2128): keep the signatures `app/server/src/action_links.rs` calls, add the \"Not a fit for us\" choice through new functions, and T306 serves it. T305 serves the scorecard (D-2128): the page function and route constant only, no `.route` in `server`; the browser half of TD-OPS-15 runs in T305's spec, and `tests/e2e/scorecard.spec.ts` checks what an unserved page allows. Plan change D-3155: its migration holds only `ops` tables, so it is `migrations/0197_ops_scorecard_inputs.sql` headed `-- ops (T158)` (`tests/integration/tests/architecture_migrations.rs`).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -20400,7 +20426,7 @@
     "app/quotes/src/job_page.rs",
     "app/portals/src/business_actions.rs",
     "app/portals/templates/business_actions.html",
-    "migrations/0196_ops_scorecard_inputs.sql"
+    "migrations/0197_ops_scorecard_inputs.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -20433,7 +20459,8 @@
     "D-468",
     "D-490",
     "D-3155",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -20478,7 +20505,7 @@
     "tests/integration/tests/intake_report.rs",
     "app/payments/src/tests/money_view.rs",
     "app/portals/templates/money_view.html",
-    "migrations/0197_payments_expenses.sql",
+    "migrations/0198_payments_expenses.sql",
     "app/portals/src/money_view.rs",
     "app/portals/templates/intake_report.html"
    ],
@@ -20508,7 +20535,8 @@
     "D-492",
     "D-1495",
     "D-3155",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -24849,7 +24877,8 @@
     "T334",
     "T314",
     "T260",
-    "T378"
+    "T378",
+    "T414"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24887,7 +24916,8 @@
     "D-2305",
     "D-1424",
     "D-1754",
-    "D-3134"
+    "D-3134",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -25116,6 +25146,60 @@
    ],
    "branch": "claude/task/T378-voice-calls-carry-twiml-and-callbacks",
    "prompt": "kit/prompts/T378.md"
+  },
+  {
+   "id": "T414",
+   "slug": "stand-in-sent-emails",
+   "title": "Stand-ins (harness): end-to-end specs can read the emails the fake Resend accepted",
+   "goal": "Plan change D-3263 (TXT-021, TXT-034; D-491, D-2821). An end-to-end spec can read the texts the fake carrier accepted (`control.sentTexts`, `tests/e2e/fixtures.ts`) but no email: the stand-in serves only `POST /resend/emails` (`stand_ins/server.py:356`), though `FakeResend` keeps every accepted send in `sent` (`stand_ins/resend.py:55`), so TD-TXT-15's web-and-email journeys (T413, T118, T119) cannot check a quote email, the pick code by email or a job-card email. (1) `stand_ins/server.py`: a control route `GET /_stand_in/resend/emails` (no credentials, like the other `/_stand_in/` paths) answering `{\"emails\": [...]}` from `FakeResend.sent`, oldest first, each with `id`, `from`, `to`, `subject`, `text` and `html`, filtered by an optional `to` query (an address in the list); `stand_ins/resend.py` is not changed. The route goes in the `ROUTES` table, owned here before T131 and T335, which also add routes there (D-2821). (2) `tests/e2e/fixtures.ts`: `control.sentEmails({ to? })`, reading that route at the stand-in's origin (`http://127.0.0.1:4010`, the port `tests/e2e/webserver.ts` starts it on, named once as a constant with that note), typed as `SentEmail`; `sentTexts` and the clock calls are unchanged. (3) `tests/contract/test_stand_in_sent_emails.py`: a send through the stand-in is listed once with its fields, a replayed idempotent send is not listed twice, the `to` filter keeps only that address's emails, and an empty log answers an empty list. Fake addresses only (`example.com`). A harness task because `stand_ins/` is protected and `tests/e2e/fixtures.ts` is DONE T020's. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T378"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "stand_ins/server.py",
+    "tests/e2e/fixtures.ts",
+    "tests/contract/test_stand_in_sent_emails.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/test-design.md",
+    "docs/spec/messaging.md",
+    "stand_ins/resend.py"
+   ],
+   "requirements": [
+    "TXT-021",
+    "TXT-034"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-3263",
+    "D-491",
+    "D-2821"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 180,
+    "context_pct": 6
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T414-stand-in-sent-emails",
+   "prompt": "kit/prompts/T414.md",
+   "acceptance": "`tests/contract/test_stand_in_sent_emails.py` passes against the stand-in server; `tests/contract/test_stand_in_server.py` and every other stand-in and e2e test passes unchanged; `control.sentEmails` is typed and lint-clean."
   },
   {
    "id": "T328",
@@ -27009,7 +27093,7 @@
    "id": "T361",
    "slug": "pick-bound-to-business",
    "title": "quotes, picks and portals: a quote keeps its number once shown, and a pick names the business it was reviewed for",
-   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business. `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; the forms post only `quote=<n>` (`quote_page.html`, `pick_review.html`, `pick_code.html`); text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering. An AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`, so: A AI-read at 10:00 (hidden), B by form at 10:05 shows as #1; she reviews \"Pick #1\" and starts the code step; at 10:07 A is confirmed and becomes #1; her code then picks A, notifies A and fixes A's fee. An AI-read edit (the upsert sets `confirmed = false`) and a withdrawal (dropped from the list) shift later numbers the same way. Fix: (1) `migrations/0198_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; `page_quotes` and `list_rows` order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes only the order both share); a withdrawn quote keeps its place and number (shown as \"Withdrawn by the business\") (T384 already keeps it in place in `page_quotes` and the LIST reply, marked unavailable, D-2912) and an unconfirmed edit keeps its number while it waits; (2) the review, pick and code forms carry the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret), and `page_pick` and the text pick answer `Taken` when the number no longer maps to that business, so nothing is stored, notified or charged for another business. (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60), each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912): A AI-read at t0, B by form at t0+5m; review #1; confirm A; finish #1: the pick is B's (or refused), never A's; the same with an AI-read edit of an earlier quote, and with a withdrawal of #1 (B stays #2); a text \"2 YES\" after a reorder picks the business shown as #2. Every TD-PICK case passes unchanged. Update the `quotes`, `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3144: `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests): the business-bound pick is a new entry point beside it, which the page's forms use; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches the page through a new `quotes::api` read beside `page_quotes` and a new numbering function beside `portals`' `number_quotes`, which keeps its signature for that test.",
+   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business. `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; the forms post only `quote=<n>` (`quote_page.html`, `pick_review.html`, `pick_code.html`); text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering. An AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`, so: A AI-read at 10:00 (hidden), B by form at 10:05 shows as #1; she reviews \"Pick #1\" and starts the code step; at 10:07 A is confirmed and becomes #1; her code then picks A, notifies A and fixes A's fee. An AI-read edit (the upsert sets `confirmed = false`) and a withdrawal (dropped from the list) shift later numbers the same way. Fix: (1) `migrations/0199_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; `page_quotes` and `list_rows` order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes only the order both share); a withdrawn quote keeps its place and number (shown as \"Withdrawn by the business\") (T384 already keeps it in place in `page_quotes` and the LIST reply, marked unavailable, D-2912) and an unconfirmed edit keeps its number while it waits; (2) the review, pick and code forms carry the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret), and `page_pick` and the text pick answer `Taken` when the number no longer maps to that business, so nothing is stored, notified or charged for another business. (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60), each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912): A AI-read at t0, B by form at t0+5m; review #1; confirm A; finish #1: the pick is B's (or refused), never A's; the same with an AI-read edit of an earlier quote, and with a withdrawal of #1 (B stays #2); a text \"2 YES\" after a reorder picks the business shown as #2. Every TD-PICK case passes unchanged. Update the `quotes`, `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3144: `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests): the business-bound pick is a new entry point beside it, which the page's forms use; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches the page through a new `quotes::api` read beside `page_quotes` and a new numbering function beside `portals`' `number_quotes`, which keeps its signature for that test.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -27043,7 +27127,7 @@
     "app/quotes/src/api.rs",
     "app/quotes/src/models.rs",
     "app/quotes/src/intake.rs",
-    "migrations/0198_quotes_shown_number.sql",
+    "migrations/0199_quotes_shown_number.sql",
     "app/picks/src/service.rs",
     "app/portals/src/pick_flow.rs",
     "app/portals/templates/quote_page.html",
@@ -27075,7 +27159,8 @@
     "D-084",
     "D-2912",
     "D-3144",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -27095,7 +27180,7 @@
    "id": "T407",
    "slug": "safety-call-switch-stored",
    "title": "calls, portals and server: the owner-portal safety voice call switch and its attorney approval are stored and read by the worker and the inbound text route",
-   "goal": "Plan change D-3134 (CALL-019, CALL-022, SEC-043, CON-031, TXT-024; D-275, D-384, D-491). CALL-019 places the safety voice call only while the owner-portal setting \"safety voice call\" is on, which needs Casey's recorded TCPA attorney approval (date and reference); but no table holds the switch or the approval (`SafetySwitch` is in memory only, `app/calls/src/voice.rs:183` to `:206`), the inbound text route passes `intake::api::rules::Settings::default()` (`app/server/src/lib.rs:319`), so `safety_call_on` and CON-031's call sentence are always off, and no owner page offers the switch. T330 registers the handler with a switch read that answers off. (1) `migrations/0199_calls_safety_switch.sql`: `calls.safety_switch`, append-only (each change a new row; the latest is in force): on or off, the approval date and reference (required when on), the owner who changed it and when; app role SELECT and INSERT only. The number is the free 0199 (moved up one by D-3262): this task depends on T361 (0198) and sits just after it in `kit/tasks.json`, before T373 (0200), so its number rises in the runner's serial order (V9). (2) `app/calls/src/safety_switch.rs`, through `calls::api`: `safety_switch(conn)` gives the stored `SafetySwitch` (off with no row), and the turn-on write stores a row only when `SafetySwitch::turn_on` gives on for the approval and a compiled-in `Conditions` value in `calls` whose items this task sets true only where a test on `main` covers that CALL-022 item (each cited in its doc comment; T378's answered and key routes for `logged`); an item it cannot cite stays false and the switch cannot go on; each change writes an audit row (IDs and code names only). (3) The worker: the switch read T330 left in the shared `app/server/src/lib.rs` now reads `calls::api::safety_switch` on every run, so a change after start is honoured by the next task. (4) `app/server/src/inbound_text.rs` reads the stored switch per message and passes it as `safety_call_on`, so the consent text carries CALL-022's sentence from the moment the switch is on and never before (CON-031), and the safety call is queued only then. (5) The owner settings page (`app/portals/src/owner_portal.rs`, `app/portals/templates/owner_settings.html`, T108's; served by `app/server/src/owner_portal.rs`, T310's) shows the switch, off at launch (D-384): turning it on takes the approval date and reference and a fresh second factor (SEC-043), and a refusal names the CALL-022 items not yet met; turning it off needs the same step-up. Tests in `tests/integration/tests/safety_switch.rs` (TD-CALL-26), fake data and the stand-in Twilio only. Update the `calls`, `portals` and `server` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged (D-2440). Plan change D-3155: it runs after T151, which also owns `app/server/src/inbound_text.rs`.",
+   "goal": "Plan change D-3134 (CALL-019, CALL-022, SEC-043, CON-031, TXT-024; D-275, D-384, D-491). CALL-019 places the safety voice call only while the owner-portal setting \"safety voice call\" is on, which needs Casey's recorded TCPA attorney approval (date and reference); but no table holds the switch or the approval (`SafetySwitch` is in memory only, `app/calls/src/voice.rs:183` to `:206`), the inbound text route passes `intake::api::rules::Settings::default()` (`app/server/src/lib.rs:319`), so `safety_call_on` and CON-031's call sentence are always off, and no owner page offers the switch. T330 registers the handler with a switch read that answers off. (1) `migrations/0200_calls_safety_switch.sql`: `calls.safety_switch`, append-only (each change a new row; the latest is in force): on or off, the approval date and reference (required when on), the owner who changed it and when; app role SELECT and INSERT only. The number is the free 0200 (moved up one by D-3262 and one more by D-3263): this task depends on T361 (0199) and sits just after it in `kit/tasks.json`, before T373 (0201), so its number rises in the runner's serial order (V9). (2) `app/calls/src/safety_switch.rs`, through `calls::api`: `safety_switch(conn)` gives the stored `SafetySwitch` (off with no row), and the turn-on write stores a row only when `SafetySwitch::turn_on` gives on for the approval and a compiled-in `Conditions` value in `calls` whose items this task sets true only where a test on `main` covers that CALL-022 item (each cited in its doc comment; T378's answered and key routes for `logged`); an item it cannot cite stays false and the switch cannot go on; each change writes an audit row (IDs and code names only). (3) The worker: the switch read T330 left in the shared `app/server/src/lib.rs` now reads `calls::api::safety_switch` on every run, so a change after start is honoured by the next task. (4) `app/server/src/inbound_text.rs` reads the stored switch per message and passes it as `safety_call_on`, so the consent text carries CALL-022's sentence from the moment the switch is on and never before (CON-031), and the safety call is queued only then. (5) The owner settings page (`app/portals/src/owner_portal.rs`, `app/portals/templates/owner_settings.html`, T108's; served by `app/server/src/owner_portal.rs`, T310's) shows the switch, off at launch (D-384): turning it on takes the approval date and reference and a fresh second factor (SEC-043), and a refusal names the CALL-022 items not yet met; turning it off needs the same step-up. Tests in `tests/integration/tests/safety_switch.rs` (TD-CALL-26), fake data and the stand-in Twilio only. Update the `calls`, `portals` and `server` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged (D-2440). Plan change D-3155: it runs after T151, which also owns `app/server/src/inbound_text.rs`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -27119,7 +27204,7 @@
     "compliance"
    ],
    "owns": [
-    "migrations/0199_calls_safety_switch.sql",
+    "migrations/0200_calls_safety_switch.sql",
     "app/calls/src/safety_switch.rs",
     "app/server/src/inbound_text.rs",
     "app/portals/src/owner_portal.rs",
@@ -27152,7 +27237,8 @@
     "D-384",
     "D-2288",
     "D-3155",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -27889,7 +27975,7 @@
    "id": "T373",
    "slug": "phone-change-ends-consent",
    "title": "businesses: changing a phone's number ends that phone's texting consent until the box is ticked again for the new number",
-   "goal": "Nov 11 code review batch 3, F2 (D-2707; CON-019, BIZ-036, D-191): business texting consent is per number, but `change_phone` (`app/businesses/src/team.rs:503`) keeps the line's ID and `may_text` (`app/businesses/src/consent.rs:243`) looks consent up by line ID only, so after a number change job-card texts go to a number nobody consented for (the reviewer's probe: `may_text` true after `change_phone`); and the consent index (`migrations/0121_businesses_consent.sql`, one row per business, member, channel, line and wording version) would refuse a second box for the same line, so the new number could not consent either. Fix: the line keeps its ID (done tests link, change and unlink by it), and `migrations/0200_businesses_consent_per_number.sql` records which number setting a consent row was given for (a per-line number version, raised by `change_phone` in its transaction, and the same version on each text consent row, the unique index including it; existing rows keep version 1; the app role still cannot update or delete consent rows); `may_text` counts only a box ticked for the line's current version; `record_consent` gains a form that takes the phone version the box was shown for and refuses a mismatch (the number changed while the page was open), while the existing form, used by done tests, records against the current version; `change_phone` and `record_consent` both lock the `staff_phone` row (`FOR UPDATE`) before reading or raising the version; after a number change a business whose channel preference is text only gets its job cards and notices by email until the new number consents (BIZ-036's email default); nothing else about consent changes, and the old rows stay as history. Tests in `tests/integration/tests/phone_change_consent.rs` (TD-CON-35), each failing on today's `main`, fake numbers in the 555-01xx block: a consented line gives `may_text` true; after `change_phone` false; after `record_consent` for the new number true again; a box shown for the old version and posted after the change is refused; `change_phone` and `record_consent` racing on one line leave either the old consent ended or the new one recorded for the new version, never a consent for the old number counted on the new one; a text-only business's job card after the change goes by email; a change by a member without the right is refused and leaves consent as it was; the email channel is untouched. Every TD-BIZ and TD-CON case passes unchanged. Stage 5: it runs after T361 only so its migration number follows the serial order (V9, R-42). Update the `businesses` `CLAUDE.md`, `docs/architecture.md` (schema) and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F2 (D-2707; CON-019, BIZ-036, D-191): business texting consent is per number, but `change_phone` (`app/businesses/src/team.rs:503`) keeps the line's ID and `may_text` (`app/businesses/src/consent.rs:243`) looks consent up by line ID only, so after a number change job-card texts go to a number nobody consented for (the reviewer's probe: `may_text` true after `change_phone`); and the consent index (`migrations/0121_businesses_consent.sql`, one row per business, member, channel, line and wording version) would refuse a second box for the same line, so the new number could not consent either. Fix: the line keeps its ID (done tests link, change and unlink by it), and `migrations/0201_businesses_consent_per_number.sql` records which number setting a consent row was given for (a per-line number version, raised by `change_phone` in its transaction, and the same version on each text consent row, the unique index including it; existing rows keep version 1; the app role still cannot update or delete consent rows); `may_text` counts only a box ticked for the line's current version; `record_consent` gains a form that takes the phone version the box was shown for and refuses a mismatch (the number changed while the page was open), while the existing form, used by done tests, records against the current version; `change_phone` and `record_consent` both lock the `staff_phone` row (`FOR UPDATE`) before reading or raising the version; after a number change a business whose channel preference is text only gets its job cards and notices by email until the new number consents (BIZ-036's email default); nothing else about consent changes, and the old rows stay as history. Tests in `tests/integration/tests/phone_change_consent.rs` (TD-CON-35), each failing on today's `main`, fake numbers in the 555-01xx block: a consented line gives `may_text` true; after `change_phone` false; after `record_consent` for the new number true again; a box shown for the old version and posted after the change is refused; `change_phone` and `record_consent` racing on one line leave either the old consent ended or the new one recorded for the new version, never a consent for the old number counted on the new one; a text-only business's job card after the change goes by email; a change by a member without the right is refused and leaves consent as it was; the email channel is untouched. Every TD-BIZ and TD-CON case passes unchanged. Stage 5: it runs after T361 only so its migration number follows the serial order (V9, R-42). Update the `businesses` `CLAUDE.md`, `docs/architecture.md` (schema) and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -27909,7 +27995,7 @@
    "owns": [
     "app/businesses/src/team.rs",
     "app/businesses/src/consent.rs",
-    "migrations/0200_businesses_consent_per_number.sql",
+    "migrations/0201_businesses_consent_per_number.sql",
     "tests/integration/tests/phone_change_consent.rs"
    ],
    "reads": [
@@ -27933,7 +28019,8 @@
     "D-2700",
     "D-191",
     "D-2711",
-    "D-3262"
+    "D-3262",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -28628,7 +28715,7 @@
    "id": "T412",
    "slug": "business-contact-store",
    "title": "privacy, businesses and server: each business member's sign-in address and texting phone are sealed in the vault by mailbox and line ID, with an address-to-mailbox lookup and audited reads for sign-in, account email and the phone approval page",
-   "goal": "Plan change D-3262 (SEC-004, BIZ-037, BIZ-051, PRIV-002, PRIV-003, PRIV-016, PRIV-024, PRIV-026, SEC-047; D-1724, D-1848, D-3186, D-752), the plan fix for BLOCKED T280's reported gap (D-2859). No module stores a business member's sign-in email or texting phone in a form that can be read or looked up: `businesses.team_member` keeps only an opaque `mailbox_id` (`migrations/0056_businesses_team_members.sql:5`), the sender directory keeps only digests of a linked phone (`app/messaging/src/service.rs:386`), `privacy.contact_index` holds homeowner phones only (`app/privacy/src/vault.rs:398`) and `privacy::api::email_index` (`app/privacy/src/reader.rs:321`) has no caller; so `portals`' `SignInMail::addresses` and `CodeAddress::code_to` (`app/portals/src/business_auth.rs:130`, `:176`), T397's member address and D-3186's account mailer have nothing to read. This task is that store. A business member's contacts are not homeowner contact fields (PRIV-001): they stay out of `privacy.contact` and its `GRANTS` (`app/privacy/src/models.rs` is not touched) and are sealed the same way. (1) `migrations/0187_privacy_business_contacts.sql` (the next number after T396's 0186 in the runner's serial order; the queued block from T103's 0187 to T236's 0200 moves up one, V9): `privacy.business_mailbox` (`id` uuid, the mailbox ID every `businesses` table stores; `address` sealed as a `privacy.contact` column is, associated data `privacy.business_mailbox|address|<id>|v<version>`; `created_at`), `privacy.business_mailbox_index` (purpose, key version, 32-byte digest, mailbox ID `ON DELETE CASCADE`; unique on purpose, version and digest, so an address has one mailbox) and `privacy.staff_phone` (`line_id`, the `businesses.staff_phone` ID, which is also the sender directory's line ID; the number sealed with associated data `privacy.staff_phone|number|<line>|v<version>`; `set_at`); no plaintext column; app role SELECT, INSERT, UPDATE (re-seal, a changed number) and DELETE (the sweep) on the three. (2) `app/privacy/src/business_contacts.rs`, through the shared `privacy::api`: `mailbox_for(conn, vault, address)` uses exactly `email_index(vault, address, true)`'s normalization and digest (so `read_inbound_email`'s business sender index finds the same mailbox, PRIV-026), returns the existing mailbox found under any readable key version or seals and indexes a new one under the active version, race-safe by `ON CONFLICT`, refuses a value with no `@` or over 254 characters, may run in the caller's transaction and returns only the ID; `mailboxes_of(conn, vault, address)` gives the mailbox IDs whose digest matches under every readable version and reads no plaintext; `store_staff_phone(conn, vault, line, number)` normalizes with `normalize_phone` and seals or replaces the line's number; `read_business_mailbox(conn, vault, purpose, mailbox)` and `read_staff_phone(conn, vault, purpose, line)` open one value on a bare connection only (`VaultError::InTransaction` otherwise, D-752), each writing one `ops` audit row (action `vault_read.business.<purpose>`, the mailbox or line as subject, never the value) and counting in `privacy.read_count` so `check_read_rates` covers them (SEC-047). `BusinessPurpose` is a closed enum, each purpose with the values it may open: `SignInLink` (address: T280's link email), `SignInCode` (address and phone: the person's own new-device code, SEC-004), `AccountEmail` (address and phone: D-3186's account mailer, the phone for its last 4 digits) and `PhoneApproval` (address: T397's owner page); a phone read under a purpose that opens only the address is `VaultError::UnregisteredPurpose` with the SEC-047 High alert. `forget_unused(conn, (mailboxes, lines), before)` deletes every mailbox and staff phone not in the in-use lists and created or set before `before`; `rotate_business_batch(conn, vault, limit)` re-seals and re-indexes rows under older key versions, returning the count, and the rotation drill in `app/privacy/CLAUDE.md` runs it beside `rotate_batch` (PRIV-024). No value is logged, put in an error or shown by `Debug` (PRIV-016). (3) `app/businesses/src/contact_ids.rs`, through the shared `businesses::api`: `contact_ids_in_use(conn)` returns the mailbox IDs of every current member (`removed_at` null), every backup address not removed and every open `businesses.mailbox_check` row, each of a business whose status is not `removed` (it left, BIZ-051), and the ID of every `businesses.staff_phone` of such a business. (4) `app/server/src/business_contacts.rs`: `ContactDirectory`, the production `businesses::api::SenderLink` (`app/businesses/src/team.rs:223`), which calls `messaging::api::sender_add` then `store_staff_phone` for the same line, so the digest and the sealed number move together; and `sweep_business_contacts(pool, now)`, run on `jobs`' daily `SWEEP_KIND` task in the shared `app/server/src/lib.rs` after the request sweep: it reads `contact_ids_in_use` and calls `forget_unused` with `before` 2 days earlier, so a removed member's or a left business's address and phones go at the next sweep after that, while a mailbox minted for a sign-up still in progress is kept. No read is wired here. The callers: T302's sign-up route mints the owner's mailbox with `mailbox_for` and links the text phone through `ContactDirectory`; T280 composes `SignInMail` and `CodeAddress` from `mailboxes_of`, `businesses::api::businesses_of_mailbox` and the two reads; T397 reads the member's address under `PhoneApproval`; any later page that takes a typed address (team invite, notice-address change, backup address) mints through `mailbox_for` and links phones through `ContactDirectory`. (5) Tests, fake data only: `app/server/tests/business_contacts.rs` (TD-PRIV-28) and `tests/security/tests/business_contact_readers.rs`, a source scan (comments and string literals removed) that only `privacy` and `server` name `read_business_mailbox` or `read_staff_phone`, never `portals`, which gets values only through the composition's traits. `business_contacts.rs` is privacy code at or above 95% branch coverage (`BUILD_BRIEF.md:481`); every existing vault, sender-directory and team test passes unchanged. Update the `privacy`, `businesses` and `server` `CLAUDE.md` files, add this task's line to the contact vault notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079), and `docs/decisions.md`.",
+   "goal": "Plan change D-3262 (SEC-004, BIZ-037, BIZ-051, PRIV-002, PRIV-003, PRIV-016, PRIV-024, PRIV-026, SEC-047; D-1724, D-1848, D-3186, D-752), the plan fix for BLOCKED T280's reported gap (D-2859). No module stores a business member's sign-in email or texting phone in a form that can be read or looked up: `businesses.team_member` keeps only an opaque `mailbox_id` (`migrations/0056_businesses_team_members.sql:5`), the sender directory keeps only digests of a linked phone (`app/messaging/src/service.rs:386`), `privacy.contact_index` holds homeowner phones only (`app/privacy/src/vault.rs:398`) and `privacy::api::email_index` (`app/privacy/src/reader.rs:321`) has no caller; so `portals`' `SignInMail::addresses` and `CodeAddress::code_to` (`app/portals/src/business_auth.rs:130`, `:176`), T397's member address and D-3186's account mailer have nothing to read. This task is that store. A business member's contacts are not homeowner contact fields (PRIV-001): they stay out of `privacy.contact` and its `GRANTS` (`app/privacy/src/models.rs` is not touched) and are sealed the same way. (1) `migrations/0188_privacy_business_contacts.sql` (the next number after T396's 0186 and 0187 in the runner's serial order; the queued block from T103's 0189 to T236's 0202 follows it, V9; moved from 0187 by D-3263): `privacy.business_mailbox` (`id` uuid, the mailbox ID every `businesses` table stores; `address` sealed as a `privacy.contact` column is, associated data `privacy.business_mailbox|address|<id>|v<version>`; `created_at`), `privacy.business_mailbox_index` (purpose, key version, 32-byte digest, mailbox ID `ON DELETE CASCADE`; unique on purpose, version and digest, so an address has one mailbox) and `privacy.staff_phone` (`line_id`, the `businesses.staff_phone` ID, which is also the sender directory's line ID; the number sealed with associated data `privacy.staff_phone|number|<line>|v<version>`; `set_at`); no plaintext column; app role SELECT, INSERT, UPDATE (re-seal, a changed number) and DELETE (the sweep) on the three. (2) `app/privacy/src/business_contacts.rs`, through the shared `privacy::api`: `mailbox_for(conn, vault, address)` uses exactly `email_index(vault, address, true)`'s normalization and digest (so `read_inbound_email`'s business sender index finds the same mailbox, PRIV-026), returns the existing mailbox found under any readable key version or seals and indexes a new one under the active version, race-safe by `ON CONFLICT`, refuses a value with no `@` or over 254 characters, may run in the caller's transaction and returns only the ID; `mailboxes_of(conn, vault, address)` gives the mailbox IDs whose digest matches under every readable version and reads no plaintext; `store_staff_phone(conn, vault, line, number)` normalizes with `normalize_phone` and seals or replaces the line's number; `read_business_mailbox(conn, vault, purpose, mailbox)` and `read_staff_phone(conn, vault, purpose, line)` open one value on a bare connection only (`VaultError::InTransaction` otherwise, D-752), each writing one `ops` audit row (action `vault_read.business.<purpose>`, the mailbox or line as subject, never the value) and counting in `privacy.read_count` so `check_read_rates` covers them (SEC-047). `BusinessPurpose` is a closed enum, each purpose with the values it may open: `SignInLink` (address: T280's link email), `SignInCode` (address and phone: the person's own new-device code, SEC-004), `AccountEmail` (address and phone: D-3186's account mailer, the phone for its last 4 digits) and `PhoneApproval` (address: T397's owner page); a phone read under a purpose that opens only the address is `VaultError::UnregisteredPurpose` with the SEC-047 High alert. `forget_unused(conn, (mailboxes, lines), before)` deletes every mailbox and staff phone not in the in-use lists and created or set before `before`; `rotate_business_batch(conn, vault, limit)` re-seals and re-indexes rows under older key versions, returning the count, and the rotation drill in `app/privacy/CLAUDE.md` runs it beside `rotate_batch` (PRIV-024). No value is logged, put in an error or shown by `Debug` (PRIV-016). (3) `app/businesses/src/contact_ids.rs`, through the shared `businesses::api`: `contact_ids_in_use(conn)` returns the mailbox IDs of every current member (`removed_at` null), every backup address not removed and every open `businesses.mailbox_check` row, each of a business whose status is not `removed` (it left, BIZ-051), and the ID of every `businesses.staff_phone` of such a business. (4) `app/server/src/business_contacts.rs`: `ContactDirectory`, the production `businesses::api::SenderLink` (`app/businesses/src/team.rs:223`), which calls `messaging::api::sender_add` then `store_staff_phone` for the same line, so the digest and the sealed number move together; and `sweep_business_contacts(pool, now)`, run on `jobs`' daily `SWEEP_KIND` task in the shared `app/server/src/lib.rs` after the request sweep: it reads `contact_ids_in_use` and calls `forget_unused` with `before` 2 days earlier, so a removed member's or a left business's address and phones go at the next sweep after that, while a mailbox minted for a sign-up still in progress is kept. No read is wired here. The callers: T302's sign-up route mints the owner's mailbox with `mailbox_for` and links the text phone through `ContactDirectory`; T280 composes `SignInMail` and `CodeAddress` from `mailboxes_of`, `businesses::api::businesses_of_mailbox` and the two reads; T397 reads the member's address under `PhoneApproval`; any later page that takes a typed address (team invite, notice-address change, backup address) mints through `mailbox_for` and links phones through `ContactDirectory`. (5) Tests, fake data only: `app/server/tests/business_contacts.rs` (TD-PRIV-28) and `tests/security/tests/business_contact_readers.rs`, a source scan (comments and string literals removed) that only `privacy` and `server` name `read_business_mailbox` or `read_staff_phone`, never `portals`, which gets values only through the composition's traits. `business_contacts.rs` is privacy code at or above 95% branch coverage (`BUILD_BRIEF.md:481`); every existing vault, sender-directory and team test passes unchanged. Update the `privacy`, `businesses` and `server` `CLAUDE.md` files, add this task's line to the contact vault notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079), and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -28652,7 +28739,7 @@
     "security"
    ],
    "owns": [
-    "migrations/0187_privacy_business_contacts.sql",
+    "migrations/0188_privacy_business_contacts.sql",
     "app/privacy/src/business_contacts.rs",
     "app/businesses/src/contact_ids.rs",
     "app/server/src/business_contacts.rs",
@@ -28687,7 +28774,8 @@
     "D-1724",
     "D-1848",
     "D-3186",
-    "D-752"
+    "D-752",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
@@ -28703,6 +28791,68 @@
    "branch": "claude/task/T412-business-contact-store",
    "prompt": "kit/prompts/T412.md",
    "acceptance": "TD-PRIV-28 passes against PostgreSQL (the same address from two businesses giving one mailbox, a read inside a transaction refused, a phone read under a purpose that opens only the address refused and alerted, the sweep keeping an in-progress sign-up's mailbox and dropping a removed member's and a left business's contacts, and a key rotation leaving every value readable and findable); `business_contacts.rs` at or above 95% branch coverage; every existing vault, sender-directory and team test passes unchanged."
+  },
+  {
+   "id": "T413",
+   "slug": "journeys-web-email",
+   "title": "Journeys J1 and J2 in web-and-email mode: zero texts, every message by email or on screen",
+   "goal": "Plan change D-3263 (TXT-021, TXT-034, WEB-009; D-440, D-491, D-493): TD-TXT-15's J1 and J2 half, moved out of T222 because the launch channel is set only through `messaging::api::set_launch_channel` (`app/messaging/src/mode_state.rs:198`), whose callers are the owner settings page T108 builds and T310 serves, neither in T222's dependencies, and no spec could read a sent email before T414. `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page, then runs J1 and J2 end to end on the stand-ins: web-chat consent and intake, the safety text on screen and by email, quote emails, the pick code by email to the address given in the chat, no call-window or who-lets-in question anywhere (D-440), check-in buttons by email (TD-TXT-31's link, T231), job-card emails and a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal; each email is read with T414's `control.sentEmails`, and `control.sentTexts` lists zero texts at the end of each journey. The J3 and J4 halves stay T118's and T119's. Fake data only. Update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T222",
+    "T310",
+    "T414"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "tests/e2e/j1_j2_web_email.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/test-design.md",
+    "docs/spec/messaging.md",
+    "docs/spec/website.md",
+    "docs/spec/intake.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "TXT-021",
+    "TXT-034",
+    "WEB-009"
+   ],
+   "tests": [
+    "TD-TXT-15"
+   ],
+   "decisions": [
+    "D-3263",
+    "D-440",
+    "D-491",
+    "D-493"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 300,
+    "context_pct": 6
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T413-journeys-web-email",
+   "prompt": "kit/prompts/T413.md",
+   "acceptance": "J1 and J2 complete in web-and-email mode on the stand-ins with zero texts recorded and each named email read through `control.sentEmails`; T222's J1 and J2 specs and every other e2e and Ally spec pass unchanged."
   }
  ]
 }
