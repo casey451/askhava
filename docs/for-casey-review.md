@@ -2457,6 +2457,13 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **To turn it off.** Set `prefer_disjoint_crates` to `false` in `kit/runner.json`.
 - **Nothing needs you now.**
 
+## Ci: the slow Rust steps now run side by side (D-3142)
+
+- **What changed.** The longest part of `Ci`, the "Checks" job, ran everything one after another. Its lint step (fmt and clippy), the database query check and the slowest tests (the compile-fail tests and the prompt-injection property tests) now run in a second job, "Lint and slow tests", at the same time. Measured on today's 12 task runs, `Ci` took about 17 minutes (median 1022 s); it should take about 12 (about 710 s).
+- **What did not change.** Every test, lint and check still runs on every task head, with the same commands, and `Ci` is green only when all of them pass. The check names you see (Ci, Twin, Ally, Governance) are the same.
+- **Worth knowing.** The measurement found that none of the build caches were being reused: what the nightly saves is pushed out of GitHub's 10 GB cache within hours, so every run builds from scratch. That is a separate fix, to be measured first. The new job uses about 6 more runner-minutes per run; the repository is public, so this costs nothing.
+- **Nothing needs you now.**
+
 ## T248: markets as data, ZIP locations, and each business's travel radius (D-3113 to D-3116)
 
 - **What changed.** The towns Ask Hava covers now live in one reviewed file, `docs/catalog/markets.yaml`, with one market today: Lake Havasu City (ZIPs 86403, 86404 and 86406 from the Census, plus 86405, the PO-box ZIP). No market has a launch date; recording one is your later action. Each ZIP's location is the Census point for that ZIP, never a street address. Sign-up now asks a business for its base ZIP and how many miles it will travel (1 to 100), and sign-up can't finish without them. Matching by distance comes later (T249).
