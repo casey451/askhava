@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:05:21Z by runner 15f027539e25 (actions).
+Updated 2026-11-12T18:06:03Z by runner 15f027539e25 (actions).
 
 **Building: T251 in progress since 17:19Z; 248 of 400 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T18:05:21Z by runner 15f027539e25 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 3: T385 claimed 17:26Z, lease until 20:26Z; lane 5: T350 claimed 17:26Z, lease until 20:26Z; lane 6: T376 claimed 18:05Z, lease until 21:05Z
 - **Week:** 2% used, 180.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:01Z, 4 min before this update
+- **Last run:** 18:05Z, 0 min before this update
 - **Keeper:** last ran 18:01Z, next wake 20:22Z
 
 ## Needs attention
@@ -86,7 +86,6 @@ Updated 2026-11-12T18:05:21Z by runner 15f027539e25 (actions).
 | T332 | payments (harness): a late success has its own refund trigge | done | 4 | 25 min | 18:53Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 1 | 8 min | 18:44Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | resync | 4 | 46 min | 18:10Z |  |
-| T272 | portals: the sign-in link cap and the code-try cap are atomi | done | 1 | 20 min | 18:05Z |  |
 
 ### Plan and harness merges on main
 - 17:59Z Harness: seven lanes without merge collisions — crate exclusion, add-only conflict resolution, lanes 5→7 (D-3269) (#603)
