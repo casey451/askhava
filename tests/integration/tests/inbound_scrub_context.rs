@@ -78,7 +78,7 @@ fn hooks(pool: &PgPool, vault: Vault) -> Arc<Webhooks> {
         auth_token: SecretString::from(TOKEN),
         id_secret: SecretString::from("test-only-id-secret-not-a-real-key".to_owned()),
         vault,
-        names: Vec::new(),
+        environment: Environment::Test,
         intake: IntakeSettings::default(),
     })
 }
