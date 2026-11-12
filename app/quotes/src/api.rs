@@ -60,6 +60,8 @@
 //! T406: [`submit_quote_with_facts`] stores a quote and its PICK-040 facts in one transaction;
 //! [`stored_facts`] reads them back with the earliest visit for the card and [`last_facts`] gives
 //! the business's last answers on a job type for the form's pre-fill (PICK-040, PICK-051).
+//! T251: [`card_pool`] builds a job's [`CardPool`] (its `CardJob`, the businesses that may get the
+//! card now after the capability skips, the owner pauses) for `intake`'s card sender (CARD-001).
 
 use sqlx::types::Uuid;
 
@@ -74,6 +76,7 @@ pub use crate::capability_match::{
 pub use crate::card_notices::{
     CardNotice, QUOTE_HOURS, card_payload, job_page_prefix, queue_card_notice, sent_count,
 };
+pub use crate::card_pool::{CardPool, card_pool};
 pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
 pub use crate::edit_withdraw::{Saved, Withdrawal, save_quote, withdraw_quote};
 pub use crate::emergency_card_notice::{
