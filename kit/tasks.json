@@ -12826,7 +12826,7 @@
    "id": "T151",
    "slug": "help-requests",
    "title": "ops and messaging: HELP requests with one owner notification each and the plain-word auto-answers",
-   "goal": "Each HELP request produces one owner notification by alert email within the hourly and daily limits, its body scrubbed of contact details, inbound help emails arrive only through the signed webhook into `privacy`, and plain-word questions after HELP get the fixed auto-answers (CON-034, OPS-036, PRIV-026, PRIV-030). The `ops.help_request` and `ops.help_message` tables of architecture section 3 are created by this task's migration in the `ops` schema and written only through `app/ops/src/help_requests.rs` and `ops::api`; the owner's reply box and its link are T200's (TD-OPS-23); the HELP lines with their due dates are added to the digest's `digest_flags.rs` (T204's, extended here) (D-491). `messaging` cannot read `jobs`, `quotes` or `intake`, so `intake`'s inbound handler (`app/intake/src/handlers.rs`, T048's, extended here) puts the job fields the help texts and notification need (status, the LIST line from `quotes::api`, the quote-page link, trade, town, urgency) into the HELP event, and `messaging` composes from the event only. A business's \"Ask about a charge\" (T148) arrives as the `core.task` event `help_request_opened`, which this task's handler turns into one help request (D-492). It also corrects the module doc of `app/intake/src/handlers.rs` (lines 13 to 20), which says `answer_list` has no caller although T241's `receive_reply` calls it, and names `queue_call_back`'s callers as they now stand (fourth external audit F17, D-2206).",
+   "goal": "Each HELP request produces one owner notification by alert email within the hourly and daily limits, its body scrubbed of contact details, inbound help emails arrive only through the signed webhook into `privacy`, and plain-word questions after HELP get the fixed auto-answers (CON-034, OPS-036, PRIV-026, PRIV-030). The `ops.help_request` and `ops.help_message` tables of architecture section 3 are created by this task's migration in the `ops` schema and written only through `app/ops/src/help_requests.rs` and `ops::api`; the owner's reply box and its link are T200's (TD-OPS-23); the HELP lines with their due dates are added to the digest's `digest_flags.rs` (T204's, extended here) (D-491). `messaging` cannot read `jobs`, `quotes` or `intake`, so `intake`'s inbound handler (`app/intake/src/handlers.rs`, T048's, extended here) puts the job fields the help texts and notification need (status, the LIST line from `quotes::api`, the quote-page link, trade, town, urgency) into the HELP event, and `messaging` composes from the event only. A business's \"Ask about a charge\" (T148) arrives as the `core.task` event `help_request_opened`, which this task's handler turns into one help request (D-492). It also corrects the module doc of `app/intake/src/handlers.rs` (lines 13 to 20), which says `answer_list` has no caller although T241's `receive_reply` calls it, and names `queue_call_back`'s callers as they now stand (fourth external audit F17, D-2206). Plan change D-3155: (a) no file this task owned saw a HELP text: `app/server/src/inbound_text.rs` answers HELP with `messaging::api::reply_to_help` and then halts (`Halt::Ends(\"help\")`, `:492` to `:501`) before intake, and plain follow-ups reach `intake::api::receive_reply` (`app/intake/src/replies.rs:43` to `:66`), never `handlers.rs`. So it also owns those two files (after T241, T277, T336, T357, T391 and T398, before T402 and T407): after `reply_to_help` answers, `inbound_text.rs` calls one new `intake::api` function in `handlers.rs` that gathers the job fields and opens or joins the help request (`ops::api`, notification by `messaging`, as above); a business text (\"why was I charged?\") takes the same call; and `receive_reply` first asks a new `handlers.rs` function whether the number's HELP was answered in the last 24 hours and, for a plain-word question (TD-CON-17), sends the fixed auto-answer and returns, the rest following today's path. (b) The opt-out half of TD-CON-17 (help email, quote-email reply, help-form \"no more texts\", owner-recorded request) is tested at `messaging::api::suppress` with `RevokeChannel::Email`, `EmailReply`, `HelpForm` and `Owner`: listed at once, channel and time logged, no text queued; the help form's detector and on-screen confirmation are T200's, the owner's record T108's, and the inbound-email route T133's (stage 6), which hands each email `privacy` has read to this task's entry point; until then the email cases (TD-OPS-11's automatic reply, TD-PRIV-11's sentinel body) run on `privacy::api::read_inbound_email`'s output, not over HTTP. (c) TD-OPS-20's notification half is this task's; its docs half (the Gate C checklist) is T122's. (d) The migration is `0190_help_requests.sql` (T321 needs two numbers before T109's 0193).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -12849,11 +12849,13 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0191_help_requests.sql",
+    "migrations/0190_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
     "app/ops/src/help_requests.rs",
     "app/portals/src/digest_flags.rs",
-    "app/intake/src/handlers.rs"
+    "app/intake/src/handlers.rs",
+    "app/server/src/inbound_text.rs",
+    "app/intake/src/replies.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12894,13 +12896,14 @@
     "D-480",
     "D-492",
     "D-1215",
-    "D-2206"
+    "D-2206",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 9,
     "lines": 400,
-    "context_pct": 24
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -12915,7 +12918,7 @@
    "id": "T200",
    "slug": "help-page-get-help-form",
    "title": "ops and portals: the owner help page with its screened reply box, and the business Get help form",
-   "goal": "The owner help page lists open help requests with a 300-character reply box screened like a quote, and businesses send help through the portal's Get help form, which opens one request (BIZ-047, CON-034, OPS-036). The \"Get help\" link goes in the shared layout (`app/site/templates/base.html`) every portal page extends, and the site help page's owner-message form (`help.html`) is wired to the same help-request endpoint here (D-491). A delete or copy request that arrives by email or the help form is acted on only after a Verify code to the number on file and answered within 30 days (PRIV-031, D-493). T305 serves the owner help page and T309 the Get help form and the site help form's endpoint (D-2128): page functions and route constants only, no `.route` in `server`; the browser halves of TD-BIZ-23 and TD-PRIV-16 run in T309's spec, and `tests/e2e/get_help.spec.ts` checks what an unserved page allows.",
+   "goal": "The owner help page lists open help requests with a 300-character reply box screened like a quote, and businesses send help through the portal's Get help form, which opens one request (BIZ-047, CON-034, OPS-036). The \"Get help\" link is business-only (plan change D-3155, owner call put to a Fable agent under Casey's Nov 11 standing rule): the shared layout `app/site/templates/base.html` (after T101's banner block) gets an empty `get_help` block, and the new `app/portals/templates/business_layout.html` extends it and fills that block with the link; `get_help.html`, `business_home.html` and `business_billing.html` extend `business_layout.html` here, the other signed-in business pages in T410; no homeowner, owner or public page fills it, and the site help page's owner-message form (`help.html`) is wired to the same help-request endpoint here (D-491). A delete or copy request that arrives by email or the help form is acted on only after a Verify code to the number on file and answered within 30 days (PRIV-031, D-493). T305 serves the owner help page and T309 the Get help form and the site help form's endpoint (D-2128): page functions and route constants only, no `.route` in `server`; the browser halves of TD-BIZ-23 and TD-PRIV-16 run in T309's spec, and `tests/e2e/get_help.spec.ts` checks what an unserved page allows. Plan change D-3155: the help page's form runs the opt-out detector (CON-035) on its message; an opt-out (\"no more texts\") calls `messaging::api::suppress` with `RevokeChannel::HelpForm` and is confirmed on screen, never by text (TD-CON-17's help-form half). The link goes only on pages a signed-in business sees, because the Get help form is behind the business session (T309).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -12945,7 +12948,10 @@
     "app/portals/src/help.rs",
     "tests/e2e/get_help.spec.ts",
     "app/site/templates/base.html",
-    "app/site/templates/help.html"
+    "app/site/templates/help.html",
+    "app/portals/templates/business_layout.html",
+    "app/portals/templates/business_home.html",
+    "app/portals/templates/business_billing.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12980,11 +12986,12 @@
     "D-359",
     "D-371",
     "D-384",
-    "D-1933"
+    "D-1933",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 10,
     "lines": 300,
     "context_pct": 24
    },
@@ -12996,6 +13003,69 @@
    "branch": "claude/task/T200-help-page-get-help-form",
    "prompt": "kit/prompts/T200.md",
    "copy": true
+  },
+  {
+   "id": "T410",
+   "slug": "business-get-help-link",
+   "title": "portals: every signed-in business page shows the Get help link, and no other page does",
+   "goal": "Plan change D-3155 (BIZ-047; owner call put to a Fable agent under Casey's Nov 11 standing rule): BIZ-047 puts \"Get help\" on every business portal page, but the shared `app/site/templates/base.html` is extended by homeowner, owner and public pages too, so T200 gives it an empty `get_help` block and adds `app/portals/templates/business_layout.html`, which fills it. (1) The other signed-in business pages (`business_complaints.html`, `business_actions.html`, `job_release.html`, `confirm_pay.html`, `notice_log.html`, `notice_settings.html`, `why_charged.html`, `emergency_test_email.html`, `business_leave.html`) change only their `extends` line to `business_layout.html`; nothing else in them changes and no page struct gains a field. The sign-in and sign-up pages (`business_signin.html`, `business_signup.html`, `capability_setup.html`, `email_check.html`) keep `base.html`: the form is behind the business session (T309). (2) `app/portals/src/tests/get_help_link.rs` (registered in the shared `app/portals/src/tests/mod.rs`) reads every template under `app/portals/templates/` and `app/site/templates/`: exactly the listed business pages, `business_home.html`, `business_billing.html` and `get_help.html` extend `business_layout.html`; `base.html`'s `get_help` block is empty; no other template fills it or links the Get help form; and one rendered business page holds the link while a rendered quote page, the owner sign-in page and a site page do not (TD-BIZ-23). Update the `portals` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T200",
+    "T158"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/portals/templates/business_complaints.html",
+    "app/portals/templates/business_actions.html",
+    "app/portals/templates/job_release.html",
+    "app/portals/templates/confirm_pay.html",
+    "app/portals/templates/notice_log.html",
+    "app/portals/templates/notice_settings.html",
+    "app/portals/templates/why_charged.html",
+    "app/portals/templates/emergency_test_email.html",
+    "app/portals/templates/business_leave.html",
+    "app/portals/src/tests/get_help_link.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-047"
+   ],
+   "tests": [
+    "TD-BIZ-23"
+   ],
+   "decisions": [
+    "D-3155",
+    "D-3144"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 10,
+    "lines": 150,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T410-business-get-help-link",
+   "prompt": "kit/prompts/T410.md",
+   "acceptance": "`get_help_link.rs` passes; every existing portals, e2e and `Ally` check passes unchanged; the nine templates differ from `main` only in their `extends` line."
   },
   {
    "id": "T152",
@@ -13349,7 +13419,7 @@
    "id": "T221",
    "slug": "site-legal-pages",
    "title": "site: the terms, privacy policy, SMS terms, homeowner data and business data pages",
-   "goal": "askhava.com serves /terms, /privacy, /sms-terms, /your-data and /business-data in English from the drafted legal documents in `docs/legal/`, rendered at build time by `app/site/build.rs` with `pulldown-cmark` (allowed by D-491) into Askama pages, the build failing if a document is missing; the two data pages also exist in Spanish (TERMS-021, TERMS-023; the terms, privacy policy and SMS terms have no Spanish source yet); each page carries the WORD-002 footer statement, the data pages and the help-page link hold the AI-018 switched-off sentence while the AI switch is off, and the consent text's links resolve (WEB-014, TERMS-021, TERMS-023, AI-018). The Stage 0.5 static set is T116's (D-491). Each published version of the four documents is kept once in `docs/legal/published/versions.json` with its full text and SHA-256, and a docs test fails if a published version's text no longer matches its hash (TERMS-034, D-492). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: (1) `/terms` (one section 13 row) serves both terms documents on one page, the homeowner terms first and then the business terms, each its own section with its own heading, anchor (`#homeowner-terms`, `#business-terms`) and version line. (2) A version counts as published only after Casey's publishing go (WEB-013, WEB-017; `docs/legal/README.md`: none is published yet), so `versions.json` starts as an empty list and the docs test checks its shape and every entry's hash; the publishing change adds each document's entry. (3) `site` may not call `ai` (`kit/layers.json`), so the AI-018 switch is read through a new `intake::api::ai_on(db, env)`, true when `ai::api::ai_mode` (`app/ai/src/switch.rs:129`) is `AiMode::Ai`, a one-line wrapper this task adds to the shared `app/intake/src/api.rs`; T201 and T103 read it too. (4) The pages extend T101's `site_layout.html` and fill `banner_shown`.",
+   "goal": "askhava.com serves /terms, /privacy, /sms-terms, /your-data and /business-data in English from the drafted legal documents in `docs/legal/`, rendered at build time by `app/site/build.rs` with `pulldown-cmark` (allowed by D-491) into Askama pages, the build failing if a document is missing; the two data pages also exist in Spanish (TERMS-021, TERMS-023; the terms, privacy policy and SMS terms have no Spanish source yet); each page carries the WORD-002 footer statement, the data pages and the help-page link hold the AI-018 switched-off sentence while the AI switch is off, and the consent text's links resolve (WEB-014, TERMS-021, TERMS-023, AI-018). The Stage 0.5 static set is T116's (D-491). Each published version of the four documents is kept once in `docs/legal/published/versions.json` with its full text and SHA-256, and a docs test fails if a published version's text no longer matches its hash (TERMS-034, D-492). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: (1) `/terms` (one section 13 row) serves both terms documents on one page, the homeowner terms first and then the business terms, each its own section with its own heading, anchor (`#homeowner-terms`, `#business-terms`) and version line. (2) A version counts as published only after Casey's publishing go (WEB-013, WEB-017; `docs/legal/README.md`: none is published yet), so `versions.json` starts as an empty list and the docs test checks its shape and every entry's hash; the publishing change adds each document's entry. (3) `site` may not call `ai` (`kit/layers.json`), so the AI-018 switch is read through a new `intake::api::ai_on(db, env)`, true when `ai::api::ai_mode` (`app/ai/src/switch.rs:129`) is `AiMode::Ai`, a one-line wrapper this task adds to the shared `app/intake/src/api.rs`; T201 and T103 read it too. (4) The pages extend T101's `site_layout.html` and fill `banner_shown`. Plan change D-3155: `build.rs` also renders `docs/legal/accessibility-statement.md` for T115's `/accessibility` page (no route here).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13405,7 +13475,8 @@
     "D-492",
     "D-1143",
     "D-2440",
-    "D-3144"
+    "D-3144",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -13880,7 +13951,7 @@
    "id": "T104",
    "slug": "wording-scan",
    "title": "Wording scan: brand, banned words and the not-a-contractor phrases in every template, page and document",
-   "goal": "A docs test scans every template, page, email, text and drafted document and fails on a wrong brand or entity name, \"vetted\", \"best\" or rankings, \"commission\", \"lead\", \"concierge\", judging refusals, any not-a-contractor phrase from `scripts/trace_spec.py`, uncited cost comparisons, and policy text that says numbers are shared or sold (TERMS-010, TERMS-012, WORD-001, WORD-003, WORD-004, WORD-010 to WORD-012, WORD-015, WORD-019, WORD-020, WORD-022).",
+   "goal": "A docs test scans every template, page, email, text and drafted document and fails on a wrong brand or entity name, \"vetted\", \"best\" or rankings, \"commission\", \"lead\", \"concierge\", judging refusals, any not-a-contractor phrase from `scripts/trace_spec.py`, uncited cost comparisons, and policy text that says numbers are shared or sold (TERMS-010, TERMS-012, WORD-001, WORD-003, WORD-004, WORD-010 to WORD-012, WORD-015, WORD-019, WORD-020, WORD-022). Plan change D-3155: the scan reads what a reader sees: Askama comments (`{# ... #}`, e.g. `app/portals/templates/business_complaints.html:2` to `:6`) are skipped, and the ranking check allows the required \"not a ranking\" (`docs/legal/homeowner-terms.md:28`) and its negated forms.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13943,7 +14014,8 @@
     "D-368",
     "D-358",
     "D-377",
-    "D-1143"
+    "D-1143",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -13963,7 +14035,7 @@
    "id": "T203",
    "slug": "wording-statements-scan",
    "title": "Wording scan: the required statements, business copy lines and no pest advertising",
-   "goal": "A docs test finds the long not-a-contractor statement and its short form wherever WORD-002 and TERMS-004 put them, the job-card and pick lines, the business copy lines, the fee summary and the Hava-name answer, no owner's name anywhere, no page, ad or banner advertising pest control, and no business copy that calls the fee anything but an introduction fee (`tests/docs/test_introduction_fee_wording.py`, WORD-026; the exact consent text is T161's CON-031 check, D-491) (WEB-010, WEB-015, WORD-006, WORD-007, WORD-014, WORD-021, WORD-026, CARD-020, PICK-017, TERMS-004); the business-page lines it scans (WEB-018, WEB-025, WORD-002, WORD-017, BIZ-030) are written by T202, and it adds the insurance, privacy and independent-business line cases of TD-WORD-02 (D-493).",
+   "goal": "A docs test finds the long not-a-contractor statement and its short form wherever WORD-002 and TERMS-004 put them, the job-card and pick lines, the business copy lines, the fee summary and the Hava-name answer, no owner's name anywhere, no page, ad or banner advertising pest control, and no business copy that calls the fee anything but an introduction fee (`tests/docs/test_introduction_fee_wording.py`, WORD-026; the exact consent text is T161's CON-031 check, D-491) (WEB-010, WEB-015, WORD-006, WORD-007, WORD-014, WORD-021, WORD-026, CARD-020, PICK-017, TERMS-004); the business-page lines it scans (WEB-018, WEB-025, WORD-002, WORD-017, BIZ-030) are written by T202, and it adds the insurance, privacy and independent-business line cases of TD-WORD-02 (D-493). Plan change D-3155: the no-owner's-name scan skips Askama comments (`{# ... #}`; `app/portals/templates/business_complaints.html:4` names Casey in a comment no page shows).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14024,7 +14096,8 @@
     "D-366",
     "D-363",
     "D-357",
-    "D-1143"
+    "D-1143",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -14258,7 +14331,7 @@
    "id": "T204",
    "slug": "ops-pushes-digest-security-alerts",
    "title": "ops: phone pushes by alert email, the weekly digest, owner flags, the away setting and security-event alerts",
-   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840). T300 serves the business portal home before this task (D-2128): this task owns `app/server/src/business_portal.rs` too and keeps the served home working with what it adds. Fourth external audit F28 and SEC-051 (D-2207): the alert email sender is registered in `server::worker_registry` (the shared `app/server/src/lib.rs:456`, which has the `Settings` its configuration, the alert address (OPS-035), comes from; `register_handlers`, `:382`, takes none) on every path (D-3144), so a raised pushing alert reaches the email provider through the worker, and `tests/integration/tests/alert_routing.rs` proves it through the worker, never by calling the sender; and `messaging::api::check_webhook_silence` (SEC-051, `app/messaging/src/email.rs:762`), which nothing runs today, is run hourly by a worker task this task queues, after T320 made it raise through `ops::api::raise_kind_once`, so it keeps one open alert; this task's own daily volume check raises through `raise_alert_once` or `raise_kind_once` as well (D-3144). The weekly digest also counts the `ops` audit rows with action `messaging.optout_wrote_again` that T360 writes for CON-016 (a listed homeowner who wrote again without START and has no email on file), as a count with job numbers only (D-2629, TD-OPS-09); and the business statement shows a won dispute's `dispute-reversal` and `countering-fee-return` rows (T353) as a won dispute, in plain words (D-2625).",
+   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840). T300 serves the business portal home before this task (D-2128): this task owns `app/server/src/business_portal.rs` too and keeps the served home working with what it adds. Fourth external audit F28 and SEC-051 (D-2207): the alert email sender is registered in `server::worker_registry` (the shared `app/server/src/lib.rs:456`, which has the `Settings` its configuration, the alert address (OPS-035), comes from; `register_handlers`, `:382`, takes none) on every path (D-3144), so a raised pushing alert reaches the email provider through the worker, and `tests/integration/tests/alert_routing.rs` proves it through the worker, never by calling the sender; and `messaging::api::check_webhook_silence` (SEC-051, `app/messaging/src/email.rs:762`), which nothing runs today, is run hourly by a worker task this task queues, after T320 made it raise through `ops::api::raise_kind_once`, so it keeps one open alert; this task's own daily volume check raises through `raise_alert_once` or `raise_kind_once` as well (D-3144). The weekly digest also counts the `ops` audit rows with action `messaging.optout_wrote_again` that T360 writes for CON-016 (a listed homeowner who wrote again without START and has no email on file), as a count with job numbers only (D-2629, TD-OPS-09); and the business statement shows a won dispute's `dispute-reversal` and `countering-fee-return` rows (T353) as a won dispute, in plain words (D-2625). Plan change D-3155: its migration is numbered 0189 (free), so T151 and T321 fit before T109's 0193 (V9).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14285,7 +14358,7 @@
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
     "app/portals/src/digest_flags.rs",
-    "migrations/0190_ops_owner_digest.sql",
+    "migrations/0189_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
     "app/portals/templates/business_home.html",
@@ -14351,7 +14424,8 @@
     "D-1840",
     "D-2207",
     "D-2629",
-    "D-3144"
+    "D-3144",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -14500,14 +14574,15 @@
    "id": "T321",
    "slug": "consent-five-year-purge",
    "title": "messaging, intake and privacy: consent records, keyword events and message logs go 5 years after a number's last message",
-   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0192_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` opt-out-event and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0191_messaging_consent_purge.sql` (headed `-- messaging (T321)`) and `migrations/0192_intake_consent_purge.sql` (headed `-- intake (T321)`, the `intake.consent_record` grant only; `tests/integration/tests/architecture_migrations.rs` fails a migration naming another module's schema) grant the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`. Plan change D-3155: (a) the clock: nothing records which number an inbound text came from (`messaging.inbox` holds only `message_sid` and `received_at`, `migrations/0043_messaging_inbox_delivery.sql:22` to `:26`), so the messaging migration adds `messaging.inbox_contact` (`inbox_id` primary key referencing `messaging.inbox`, `contact_id`, `received_at`; SELECT and INSERT for the app role, DELETE with the rest), written once per inbound text by `messaging::api::on_inbound_text` (`app/messaging/src/optout.rs`, owned here after T357; `ON CONFLICT DO NOTHING`, so a resent delivery adds nothing); a number's last message is the later of its newest `inbox_contact.received_at` and its newest `messaging.outbox` row for that `recipient_id`; texts received before this task have no row and count from the outbox only (no live data exists before Gate C); architecture section 3 lists the table. (b) STOP, HELP and START: there is no keyword-event table; STOP and START (every channel) are `messaging.optout_event` rows, and a HELP is its inbox row and the HELP reply's outbox row, so it goes with the message logs; no table is added for them. (c) The numbers are 0191 and 0192 (T151 moves to 0190, T204 to 0189), both before T109's 0193 (V9).",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "messaging",
    "deps": [
     "T107",
-    "T276"
+    "T276",
+    "T357"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14517,11 +14592,13 @@
     "compliance"
    ],
    "owns": [
-    "migrations/0192_consent_five_year_purge.sql",
+    "migrations/0191_messaging_consent_purge.sql",
     "app/messaging/src/consent_purge.rs",
     "app/intake/src/consent_purge.rs",
     "app/privacy/src/consent_phone.rs",
-    "tests/integration/tests/consent_purge.rs"
+    "tests/integration/tests/consent_purge.rs",
+    "migrations/0192_intake_consent_purge.sql",
+    "app/messaging/src/optout.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14541,13 +14618,14 @@
    ],
    "decisions": [
     "D-2208",
-    "D-079"
+    "D-079",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 7,
     "lines": 500,
-    "context_pct": 36
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -14561,7 +14639,7 @@
    "id": "T108",
    "slug": "owner-portal-tools",
    "title": "portals: owner tools for pauses, fee mode, categories and settings",
-   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043); the owner home also shows each week's opt-out rate by audience from T107's counts (CON-024), offers \"Call from the Ask Hava number\" for a pushed critical safety alert through T080's `calls::api` bridge (OPS-028), records Stripe's written answer for the PICK-048 auto-confirm box (date, reference, answer) as the `catalog` setting T209 reads through `catalog::api`, and shows each needs-review sign-up with its 4-day decision target (BIZ-027, TD-BIZ-07) (D-491). The owner home also holds the homeowner-texting switch, the launch channel and the record of a Twilio number suspension and its restore, through T279's `messaging::api` store, and the status banner's off switch through `ops::api` (D-1843). The fee-mode switch calls `payments::api::switch_fee_mode`, which stores the terms in force in `payments.fee_terms` (T287, D-1871); the owner portal keeps no copy of its own. T310 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser halves of TD-SEC-22 run in T303's spec and of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 in T310's, and `tests/e2e/owner_tools.spec.ts` checks what an unserved page allows (a signed-out request gets no owner detail). `ring_owner` takes the homeowner's number and the safety words and sends `owner_bridge_twiml` itself (T378, D-2762); this task calls that form.",
+   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043); the owner home also shows each week's opt-out rate by audience from T107's counts (CON-024), offers \"Call from the Ask Hava number\" for a pushed critical safety alert through T080's `calls::api` bridge (OPS-028), records Stripe's written answer for the PICK-048 auto-confirm box (date, reference, answer) as the `catalog` setting T209 reads through `catalog::api`, and shows each needs-review sign-up with its 4-day decision target (BIZ-027, TD-BIZ-07) (D-491). The owner home also holds the homeowner-texting switch, the launch channel and the record of a Twilio number suspension and its restore, through T279's `messaging::api` store, and the status banner's off switch through `ops::api` (D-1843). The fee-mode switch calls `payments::api::switch_fee_mode`, which stores the terms in force in `payments.fee_terms` (T287, D-1871); the owner portal keeps no copy of its own. T310 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser halves of TD-SEC-22 run in T303's spec and of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 in T310's, and `tests/e2e/owner_tools.spec.ts` checks what an unserved page allows (a signed-out request gets no owner detail). `ring_owner` takes the homeowner's number and the safety words and sends `owner_bridge_twiml` itself (T378, D-2762); this task calls that form. Plan change D-3155: (a) `ring_owner` needs a voice client, the owner's phone and a pool number, which no page or router state holds (`app/server/src/lib.rs:77` to `:82`), so the \"Call from the Ask Hava number\" press (fresh second factor) only queues one `core.task` of a new kind (the alert and press IDs, deduplicated per press); its handler registers in `worker_registry` (the shared `app/server/src/lib.rs`, which has the Twilio settings) and calls `calls::api::ring_owner` in T378's form, the owner's phone a new required-in-test-and-live `Settings` value in the shared `app/core/src/settings.rs`; the kind is registered, as `tests/integration/tests/task_registry.rs` requires. (b) CON-035's owner-recorded opt-out: the settings page takes a phone number the owner was asked by any other contact to stop texting (fresh second factor) and calls `messaging::api::suppress` with `RevokeChannel::Owner`, confirmed on screen, never by text (TD-CON-17's owner half).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14625,13 +14703,14 @@
     "D-480",
     "D-1843",
     "D-1871",
-    "D-2762"
+    "D-2762",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 16
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -14694,13 +14773,14 @@
    "decisions": [
     "D-074",
     "D-2204",
-    "D-229"
+    "D-229",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 15
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -14714,7 +14794,7 @@
    "id": "T109",
    "slug": "recovery-backup-export",
    "title": "recovery: backup checks and the nightly encrypted export",
-   "goal": "`recovery` makes the nightly encrypted export to separate storage under its own key, kept 30 days with versioning and object lock, runs the monthly test restore with a High alert on failure, and leaves the key inventory to T117; `recovery` records each backup and restore result through `ops::api` (a function added here), and `portals` reads them from `ops`: the restore result line in `digest_flags.rs` (T204's) and the last-backup figure in `health_page.rs` (T106's), both extended here (D-491, D-493) (OPS-013, PRIV-018, PRIV-024, PRIV-029). The export is `pg_dump -Fc`; every restore runs `scripts/bootstrap_roles.sql` first, then `pg_restore --single-transaction`, with the ownership and append-only grant check (OPS-051), and the storage provider is Backblaze B2 (PRIV-029) (D-492). The new `recovery` schema's default privileges give `askhava_app` SELECT and INSERT only, and a table that needs UPDATE or DELETE gets an explicit GRANT in its migration; T250's `schema_grants.rs` checks every schema's default (D-1520).",
+   "goal": "`recovery` makes the nightly encrypted export to separate storage under its own key, kept 30 days with versioning and object lock, runs the monthly test restore with a High alert on failure, and leaves the key inventory to T117; `recovery` records each backup and restore result in `recovery.backup_check` and as one `ops` audit entry (`ops::api::audit`), and `portals` reads the newest such entry through a new `ops::api::latest_audit(conn, action)` added to the shared `app/ops/src/api.rs` (`portals` may not call `recovery`, `kit/layers.json`): the restore result line in `digest_flags.rs` (T204's) and the last-backup figure in `health_page.rs` (T106's), both extended here (D-491, D-493) (OPS-013, PRIV-018, PRIV-024, PRIV-029). The export is `pg_dump -Fc`; every restore runs `scripts/bootstrap_roles.sql` first, then `pg_restore --single-transaction`, with the ownership and append-only grant check (OPS-051), and the storage provider is Backblaze B2 (PRIV-029) (D-492). The new `recovery` schema's default privileges give `askhava_app` SELECT and INSERT only, and a table that needs UPDATE or DELETE gets an explicit GRANT in its migration; T250's `schema_grants.rs` checks every schema's default (D-1520). Plan change D-3155: (a) TD-OPS-26's empty cluster: CI's one PostgreSQL already has `askhava_app` and `askhava_migrator` (`.github/workflows/ci.yml:76` to `:80`), so `tests/recovery/tests/export_restores.rs` makes a throwaway cluster with PostgreSQL 16's own `initdb` and `pg_ctl` (the GitHub runner image has them under `/usr/lib/postgresql/16/bin`) in a temporary folder on a free local port, restores into it without and then with `scripts/bootstrap_roles.sql`, and stops and removes it; missing binaries fail the test with a message (never a skip). (b) The runtime image has no `pg_dump` (`Dockerfile:44` to `:47`): this task adds PostgreSQL 16's client tools (`pg_dump`, `pg_restore`) to the runtime stage (Debian trixie ships only 17, so from the PostgreSQL apt repository with its signing key pinned by fingerprint), and the export refuses a `pg_dump` whose major version is not the server's. (c) The nightly export and monthly restore handlers need the storage and backup-key settings, so they register in `worker_registry` (the shared `app/server/src/lib.rs`), and each `*_KIND` is registered, as `tests/integration/tests/task_registry.rs` requires.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14742,7 +14822,8 @@
     "migrations/0193_recovery_backup_export.sql",
     "tests/recovery/tests/export_restores.rs",
     "app/portals/src/digest_flags.rs",
-    "app/portals/src/health_page.rs"
+    "app/portals/src/health_page.rs",
+    "Dockerfile"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14773,11 +14854,12 @@
     "D-278",
     "D-480",
     "D-492",
-    "D-1520"
+    "D-1520",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
+    "files": 10,
     "lines": 450,
     "context_pct": 8
    },
@@ -14793,7 +14875,7 @@
    "id": "T110",
    "slug": "recovery-replay",
    "title": "recovery: replay with derived IDs",
-   "goal": "After a restore, replay rebuilds messages, charges and events from the off-database records and the vendors' records with IDs derived from what each identifies, so nothing replayed sends or charges twice (OPS-015 to OPS-017). Nov 11 vendor-double review batch 4, F5 (D-2764): Twilio stores no custom key on a message and its Messages list filters only by `To`, `From` and `DateSent`, so OPS-017's \"nothing sent twice\" check never asks the sent log for the app's derived key (the stand-in's `MessageKey` filter is test-only, T377): it lists the messages sent from Ask Hava's numbers to the row's recipient over the row's send window (`To`, `From`, `DateSent>`/`DateSent<`) and matches an outbox row to a listed message by recipient, sender, a SHA-256 digest of the body (a body Twilio already redacted matches on recipient, sender and send time within the window, and an ambiguous match is not resent but listed for Casey) and send time; a matched row is marked sent with that SID, never resent. A test shows a message whose outbox row was lost in the restore is found and not resent without any key filter.",
+   "goal": "After a restore, replay rebuilds messages, charges and events from the off-database records and the vendors' records with IDs derived from what each identifies, so nothing replayed sends or charges twice (OPS-015 to OPS-017). Nov 11 vendor-double review batch 4, F5 (D-2764): Twilio stores no custom key on a message and its Messages list filters only by `To`, `From` and `DateSent`, so OPS-017's \"nothing sent twice\" check never asks the sent log for the app's derived key (the stand-in's `MessageKey` filter is test-only, T377): it lists the messages sent from Ask Hava's numbers to the row's recipient over the row's send window (`To`, `From`, `DateSent>`/`DateSent<`) and matches an outbox row to a listed message by recipient, sender, a SHA-256 digest of the body (a body Twilio already redacted matches on recipient, sender and send time within the window, and an ambiguous match is not resent but listed for Casey) and send time; a matched row is marked sent with that SID, never resent. A test shows a message whose outbox row was lost in the restore is found and not resent without any key filter. Plan change D-3155: no adapter can list Twilio's messages (`SmsAdapter` only sends, `SmsBodyDelete` only redacts, `app/adapters/src/sms.rs:23` to `:49`) and `TwilioHttp` has no `GET` (`app/adapters/src/base.rs:148`, its client and token private). New `app/adapters/src/sms_list.rs`: a separate trait `SmsSentLog: SmsAdapter` (the `SmsBodyDelete` pattern, D-1753, so no existing fake changes) with one method listing the messages from one sender to one recipient over a `DateSent` window (Twilio's `To`, `From`, `DateSent>`, `DateSent<` filters, following `next_page_uri`), implemented for `TwilioSms` through a new Basic-auth `GET` helper on `TwilioHttp` in `base.rs` (after T377); `sms_list` is declared in the shared `lib.rs` and exported through the shared `api.rs`. The stand-in's Messages list already honours those filters (T377), so no stand-in file changes; the replay test runs against the served stand-in.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14807,13 +14889,16 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "money",
-    "recovery"
+    "recovery",
+    "security"
    ],
    "owns": [
     "app/recovery/src/replay.rs",
     "app/recovery/src/models.rs",
     "migrations/0194_recovery_replay.sql",
-    "app/recovery/src/tests/replay_ids.rs"
+    "app/recovery/src/tests/replay_ids.rs",
+    "app/adapters/src/sms_list.rs",
+    "app/adapters/src/base.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14833,13 +14918,14 @@
    ],
    "decisions": [
     "D-156",
-    "D-2764"
+    "D-2764",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 6,
     "lines": 350,
-    "context_pct": 7
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -14891,7 +14977,8 @@
    "decisions": [
     "D-156",
     "D-278",
-    "D-492"
+    "D-492",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -15331,7 +15418,7 @@
    "id": "T115",
    "slug": "a11y-docs-statement",
    "title": "docs/a11y.md (plan, statement, VoiceOver script), statement page, email checks",
-   "goal": "`docs/a11y.md` holds the accessibility plan, the statement and the Gate B VoiceOver script; the statement page gives the conformance target, known limits and the text, email or form contact with the relay line and no phone line; and a docs test proves every email has real text, a plain-text part and meaningful link text (A11Y-019, A11Y-020, A11Y-022).",
+   "goal": "`docs/a11y.md` holds the accessibility plan, the statement and the Gate B VoiceOver script; the statement page gives the conformance target, known limits and the text, email or form contact with the relay line and no phone line; and a docs test proves every email has real text, a plain-text part and meaningful link text (A11Y-019, A11Y-020, A11Y-022). Plan change D-3155: the statement page is `GET /accessibility` (module `site`), a route in `pages.rs`'s router that `build_router` already merges (T102), added to `docs/architecture.md` section 13 as `yes` by this task; its text is `docs/legal/accessibility-statement.md`, rendered at build time by T221's `app/site/build.rs`, not a third copy: `docs/a11y.md` holds the plan and the VoiceOver script and links the statement, and TD-WEB-08's checks run on that document and the rendered page.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15371,7 +15458,8 @@
    "decisions": [
     "D-317",
     "D-379",
-    "D-1143"
+    "D-1143",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -15391,7 +15479,7 @@
    "id": "T116",
    "slug": "site-stage05-dns",
    "title": "Stage 0.5 static page set and the DNS records file",
-   "goal": "`scripts/build_stage05.py` builds the Stage 0.5 static page set (every public page of the final site, the request page with the full consent text, no texting number, no requests taken), published only on Casey's separate go, and `docs/dns-records.md` keeps any existing Search Console verification (WEB-013, WEB-016, WEB-017). The DNS records file marks every askhava.com web hostname, including `hooks.askhava.com` for vendor webhooks, DNS-only (SEC-053), and holds CAA records allowing only `letsencrypt.org`, with Cloudflare's HSTS off and no preload submission before the pilot ends (SEC-054) (D-492).",
+   "goal": "`scripts/build_stage05.py` builds the Stage 0.5 static page set (every public page of the final site, the request page with the full consent text, no texting number, no requests taken), published only on Casey's separate go, and `docs/dns-records.md` keeps any existing Search Console verification (WEB-013, WEB-016, WEB-017). The DNS records file marks every askhava.com web hostname, including `hooks.askhava.com` for vendor webhooks, DNS-only (SEC-053), and holds CAA records allowing only `letsencrypt.org`, with Cloudflare's HSTS off and no preload submission before the pilot ends (SEC-054) (D-492). Plan change D-3155: the site's pages are Askama-rendered by the `web` process and `tests/docs/test_stage05.py` runs in CI's Python job (no Rust build, no server, no database, `.github/workflows/ci.yml:433` to `:458`). So `scripts/build_stage05.py --base-url <url> --out <folder>` fetches each public page (the `site` rows of `docs/architecture.md` section 13, `GET` only) and `/static/site/` assets from a running server (a local `cargo run` against the stand-ins, run by hand on Casey's go) and applies the Stage 0.5 filters as pure functions (the texting number removed, every `POST` form removed, the request page reduced to the full consent text and an \"opening soon\" line), failing when a filtered page still holds the texting number or a `POST` form; the docs test runs those filters on planted fake HTML and checks the DNS file.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15442,7 +15530,8 @@
     "D-087",
     "D-490",
     "D-492",
-    "D-1143"
+    "D-1143",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -16035,7 +16124,8 @@
     "T375",
     "T397",
     "T399",
-    "T407"
+    "T407",
+    "T410"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16067,7 +16157,8 @@
    "decisions": [
     "D-1678",
     "D-2290",
-    "D-3134"
+    "D-3134",
+    "D-3155"
    ],
    "cites": [
     "BUILD_BRIEF.md:488",
@@ -16450,7 +16541,7 @@
    "id": "T133",
    "slug": "sandbox-resend-lob",
    "title": "Resend and Lob test mode behind the adapters",
-   "goal": "The Resend and Lob test-mode clients sit behind their adapters with signed webhooks (Svix for Resend) and the signed inbound-email route into `privacy`, and the identity chain's email and letter steps and the email fallback for failed texts pass against them (BIZ-001 to BIZ-003, BIZ-016, TXT-014, TXT-015, SEC-039, PRIV-026). The fake Resend gains the suppression-list endpoints (list, and delete for one address), routed with this task's controls in `stand_ins/server.py`'s `ROUTES` table (owned here, after T131 and before T134, which also add routes there, D-2821), and the BIZ-056 re-verification calls the adapter's suppression removal (T176's) before writing its audit row; BIZ-056 moved here from T149 because the fake endpoint must exist first and T149 runs before this task (TD-BIZ-36, D-492). The call is added to `app/businesses/src/email_verification.rs` (T196's, extended here) and tested in `tests/integration/tests/email_reverify.rs` (D-493). Nov 11 vendor-double review batch 4, F6 and the Lob note (D-2765, D-2770): (1) the fake Resend keeps a team-wide suppression list (`stand_ins/resend.py:110` has none): a send to a listed address is accepted (an ID returned) and emits `email.suppressed`, never `email.delivered`; a hard bounce lists the address; a control lists one; and a control makes a send emit `email.failed`; (2) in sandbox mode `tests/contract/test_sandbox_t133.py` records whether Resend's API offers removing one suppressed address, which BIZ-056's `DELETE /suppressions/{address}` (`app/adapters/src/email.rs:197`) assumes; if it does not, the adapter's removal returns a typed unsupported error, BIZ-056's re-verification raises one High alert asking Casey to remove the address in Resend's dashboard and writes no removal audit row it did not make, and the gap goes to `docs/for-casey-review.md`; (3) it records the unit of Lob's `Lob-Signature-Timestamp` (`app/adapters/src/signatures.rs` reads unix seconds) and, if Lob sends another unit, fixes the reader and the fake Lob together with a test that fails before the fix. T379 counts suppressed and failed emails as not reached.",
+   "goal": "The Resend and Lob test-mode clients sit behind their adapters with signed webhooks (Svix for Resend) and the signed inbound-email route into `privacy`, and the identity chain's email and letter steps and the email fallback for failed texts pass against them (BIZ-001 to BIZ-003, BIZ-016, TXT-014, TXT-015, SEC-039, PRIV-026). The fake Resend gains the suppression-list endpoints (list, and delete for one address), routed with this task's controls in `stand_ins/server.py`'s `ROUTES` table (owned here, after T131 and before T134, which also add routes there, D-2821), and the BIZ-056 re-verification calls the adapter's suppression removal (T176's) before writing its audit row; BIZ-056 moved here from T149 because the fake endpoint must exist first and T149 runs before this task (TD-BIZ-36, D-492). The call is added to `app/businesses/src/email_verification.rs` (T196's, extended here) and tested in `tests/integration/tests/email_reverify.rs` (D-493). Nov 11 vendor-double review batch 4, F6 and the Lob note (D-2765, D-2770): (1) the fake Resend keeps a team-wide suppression list (`stand_ins/resend.py:110` has none): a send to a listed address is accepted (an ID returned) and emits `email.suppressed`, never `email.delivered`; a hard bounce lists the address; a control lists one; and a control makes a send emit `email.failed`; (2) in sandbox mode `tests/contract/test_sandbox_t133.py` records whether Resend's API offers removing one suppressed address, which BIZ-056's `DELETE /suppressions/{address}` (`app/adapters/src/email.rs:197`) assumes; if it does not, the adapter's removal returns a typed unsupported error, BIZ-056's re-verification raises one High alert asking Casey to remove the address in Resend's dashboard and writes no removal audit row it did not make, and the gap goes to `docs/for-casey-review.md`; (3) it records the unit of Lob's `Lob-Signature-Timestamp` (`app/adapters/src/signatures.rs` reads unix seconds) and, if Lob sends another unit, fixes the reader and the fake Lob together with a test that fails before the fix. T379 counts suppressed and failed emails as not reached. Plan change D-3155: its inbound-email route hands each email `privacy` has read to T151's help-request and opt-out entry point (CON-035's detector, `RevokeChannel::Email` or `EmailReply`, confirmed by email).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -16517,7 +16608,8 @@
     "D-1143",
     "D-1933",
     "D-2765",
-    "D-2770"
+    "D-2770",
+    "D-3155"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
@@ -17707,10 +17799,62 @@
    "acceptance": "TD-SEC-45 passes against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T193, T149, T196 and T268 case still passes."
   },
   {
+   "id": "T409",
+   "slug": "door-probe-owner-session",
+   "title": "server (harness): the door probe's owner actor signs in through owner sign-in, so owner pages can be probed",
+   "goal": "Plan change D-3155 (SEC-005, SEC-019, SEC-034; D-2440, D-1917): `app/server/tests/door_matrix.rs` (T348's, then T401's and T404's) signs the `Owner` actor in with a plain `start_session(Realm::Owner, <random id>)` (`signed_in`, `:873` to `:876`), which writes no `portals.owner_session` row, but `portals::api::owner_principal` reads the owner session through a join on `portals.owner_session` (`app/portals/src/models.rs:541` to `:549`), so every owner-gated route answers the owner's refusal and the probe's own-record check fails (`judge`, `:403` to `:409`) for the first `/owner/...` row a task marks `yes` (T303's sign-out and step-up, then T304, T305 and T310), whose goals say they edit neither matrix file. (1) The fixture bootstraps the one owner with `portals::api::bootstrap_owner` (a fake 32-character token and a fake pass phrase), reads the first authenticator secret from `portals.owner_factor` and signs the `Owner` actor in with `portals::api::owner_sign_in` and a TOTP code computed as `tests/security/tests/owner_auth.rs` does (`totp_code`, `bootstrapped`, `sign_in`, `:35` to `:66`; RFC 6238, SHA-1, 30-second steps), at the probe's clock, so the session is a real owner session with a fresh second factor (a step-up challenge still passes the owner's `POST` judgement as today). (2) One new case asserts `owner_principal` gives the fixture's owner session an owner and that a plain owner-realm `start_session` without the row gives `None`, so the fixture is proved before any owner route is served. Every other case, judgement, actor and assertion stays byte-identical, nothing is loosened, `tests/security/door_cases.txt` and `tests/security/tests/auth_matrix.rs` are unchanged (auth_matrix probes the `Owner` door nowhere: `:694`), and `door_matrix.rs` still names no `payments` item (TD-FEE-07). Fake data only. A harness task only because the file is a done task's test. Update `app/server/CLAUDE.md` (the door probe line) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T404",
+    "T086",
+    "T100"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    "app/server/tests/door_matrix.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-2440",
+    "D-1917",
+    "D-3155"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 150,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T409-door-probe-owner-session",
+   "prompt": "kit/prompts/T409.md",
+   "acceptance": "`app/server/tests/door_matrix.rs` passes against PostgreSQL with the owner actor signed in through `owner_sign_in`; the new `owner_principal` case passes; every other case is byte-identical, `tests/security/door_cases.txt` and `tests/security/tests/auth_matrix.rs` unchanged, and `no_homeowner_charge.rs` (TD-FEE-07) passes unchanged."
+  },
+  {
    "id": "T303",
    "slug": "owner-signin-served",
    "title": "server and portals: owner sign-in, sign-out and step-up are served",
-   "goal": "No task serves owner sign-in (D-2128): `portals::api` has `owner_signin_page`, `owner_sign_in`, `owner_principal`, `owner_step_up`, `owner_sign_out`, `sign_out_everywhere`, the passkey calls and the route constants `OWNER_SIGNIN_ROUTE` and `OWNER_PASSKEY_ROUTE` (T086), but `server::build_router` merges none of them, so J3 (T118) cannot sign in. (1) `app/server/src/owner_signin.rs` builds the owner sign-in page and its `POST` (password plus TOTP, or passkey, SEC-005), the passkey routes with `portals`' `static/passkey.ts` served beside the sign-in page, sign-out, \"Sign out everywhere\" and the step-up form, and exports the owner-session check (`owner_principal`: 12-hour session, 30 minutes idle) that T310, T304 and T305 use; none, a business or a homeowner session gets a 4xx with a link to `/owner/sign-in` and nothing else; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_signin_route.rs` (TD-SEC-46) and `tests/e2e/owner_signin_served.spec.ts`, which takes the browser half of TD-SEC-22: the TOTP path is the browser path (a passkey is checked in the route test); the spec creates the one owner by running the server binary's `bootstrap-owner` command (`app/server/src/main.rs`: `ASKHAVA_OWNER_BOOTSTRAP_TOKEN` of 32 or more characters in its environment, the password on standard input, the migration database URL) once per database, reads the authenticator secret it prints and computes the TOTP code in the spec. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. The password `POST` calls `portals::api::admit_owner_password` first, on the password step only and before the password is checked (D-1951; fourth external audit F12, D-2206).",
+   "goal": "No task serves owner sign-in (D-2128): `portals::api` has `owner_signin_page`, `owner_sign_in`, `owner_principal`, `owner_step_up`, `owner_sign_out`, `sign_out_everywhere`, the passkey calls and the route constants `OWNER_SIGNIN_ROUTE` and `OWNER_PASSKEY_ROUTE` (T086), but `server::build_router` merges none of them, so J3 (T118) cannot sign in. (1) `app/server/src/owner_signin.rs` builds the owner sign-in page and its `POST` (password plus TOTP, or passkey, SEC-005), the passkey routes with `portals`' `static/passkey.ts` served beside the sign-in page, sign-out, \"Sign out everywhere\" and the step-up form, and exports the owner-session check (`owner_principal`: 12-hour session, 30 minutes idle) that T310, T304 and T305 use; none, a business or a homeowner session gets a 4xx with a link to `/owner/sign-in` and nothing else; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_signin_route.rs` (TD-SEC-46) and `tests/e2e/owner_signin_served.spec.ts`, which takes the browser half of TD-SEC-22: the TOTP path is the browser path (a passkey is checked in the route test); the spec creates the one owner by running the server binary's `bootstrap-owner` command (`app/server/src/main.rs`: `ASKHAVA_OWNER_BOOTSTRAP_TOKEN` of 32 or more characters in its environment, the password on standard input, the migration database URL) once per database, reads the authenticator secret it prints and computes the TOTP code in the spec. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. The password `POST` calls `portals::api::admit_owner_password` first, on the password step only and before the password is checked (D-1951; fourth external audit F12, D-2206). Plan change D-3155: the door probe's owner actor had no `portals.owner_session` row, so this task's owner-door rows (sign-out, \"Sign out everywhere\", step-up) would have been refused to the owner; T409 (a dependency) signs it in through `owner_sign_in`, and this task edits neither matrix file.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17719,7 +17863,8 @@
     "T100",
     "T086",
     "T294",
-    "T362"
+    "T362",
+    "T409"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17762,7 +17907,8 @@
     "D-2128",
     "D-2206",
     "D-1951",
-    "D-2633"
+    "D-2633",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -17783,7 +17929,7 @@
    "id": "T304",
    "slug": "owner-tools-served",
    "title": "server and portals: the owner refund review, the audit log viewer and the health page are served",
-   "goal": "T205 builds the owner refund review step and the audit log viewer and T106 and T109 the health page, as portals pages no route serves (D-2128); J3 (T118) refunds a charge and reads the audit log. (1) `app/server/src/owner_tools.rs` builds those pages and the refund `POST` behind T303's owner session (T304 uses T303's owner-session check): the refund needs a fresh second factor (SEC-043), issues one Stripe refund and one ledger row, and is blocked on a disputed charge (FEE-026, SEC-006); no other realm reaches them (a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_tools_route.rs` (TD-SEC-47) and `tests/e2e/owner_tools_served.spec.ts`, which takes the browser half of J3's refund and audit-log steps that T205's spec cannot reach while the pages are unserved, signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It also serves T205's \"I submitted the evidence myself\" `POST` (fresh second factor, CSRF, `no_store`), which calls `payments::api::record_owner_submission` once (fourth external audit F44, D-2204). It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
+   "goal": "T205 builds the owner refund review step and the audit log viewer and T106 and T109 the health page, as portals pages no route serves (D-2128); J3 (T118) refunds a charge and reads the audit log. (1) `app/server/src/owner_tools.rs` builds those pages and the refund `POST` behind T303's owner session (T304 uses T303's owner-session check): the refund needs a fresh second factor (SEC-043), issues one Stripe refund and one ledger row, and is blocked on a disputed charge (FEE-026, SEC-006); no other realm reaches them (a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_tools_route.rs` (TD-SEC-47) and `tests/e2e/owner_tools_served.spec.ts`, which takes the browser half of J3's refund and audit-log steps that T205's spec cannot reach while the pages are unserved, signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It also serves T205's \"I submitted the evidence myself\" `POST` (fresh second factor, CSRF, `no_store`), which calls `payments::api::record_owner_submission` once (fourth external audit F44, D-2204). It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3155: (a) the door probe's owner signs in through `owner_sign_in` from T409 (through T303), so the owner rows are reached; (b) the health page shows each required secret as present, parsed and environment-matched (T106, OPS-008), which needs `Settings`, and `build_router` gets none (`app/server/src/lib.rs:130`): `main` (shared) computes a `SecretReport` from `Settings` (booleans per secret name, never a value, length or hash) and passes it through a new `From<(Hooks, RequestTimeout, SecretReport)> for RouterParts` in the shared `app/server/src/lib.rs`; the two existing `From` impls stay and give a report that says \"not checked\", so no done caller (`app/server/tests/route_wiring.rs`, `door_matrix.rs`) changes.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17834,7 +17980,8 @@
    "decisions": [
     "D-2128",
     "D-2204",
-    "D-2440"
+    "D-2440",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -18217,7 +18364,7 @@
    "id": "T310",
    "slug": "owner-portal-served",
    "title": "server and portals: the owner home and settings pages and their switches are served",
-   "goal": "T108 builds the owner home and settings pages (pause, fee mode, category and texting switches, the safe-mode acknowledgement, the needs-review sign-ups, the Stripe-answer record) as portals pages no route serves (D-2128); J3 (T118) pauses a trade and switches fee mode. (1) `app/server/src/owner_portal.rs` builds those pages and their `POST`s behind T303's owner session, each change needing the fresh second factor SEC-043 names; none or another realm gets a 4xx with a link to `/owner/sign-in`; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_portal_route.rs` (TD-SEC-50) and `tests/e2e/owner_portal_served.spec.ts`, which takes the browser halves of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 (T108's rows), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
+   "goal": "T108 builds the owner home and settings pages (pause, fee mode, category and texting switches, the safe-mode acknowledgement, the needs-review sign-ups, the Stripe-answer record) as portals pages no route serves (D-2128); J3 (T118) pauses a trade and switches fee mode. (1) `app/server/src/owner_portal.rs` builds those pages and their `POST`s behind T303's owner session, each change needing the fresh second factor SEC-043 names; none or another realm gets a 4xx with a link to `/owner/sign-in`; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_portal_route.rs` (TD-SEC-50) and `tests/e2e/owner_portal_served.spec.ts`, which takes the browser halves of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 (T108's rows), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3155: the door probe's owner signs in through `owner_sign_in` from T409 (through T303), so the owner rows are reached; it also serves T108's \"Call from the Ask Hava number\" `POST` (fresh second factor, CSRF, `no_store`), which only queues T108's bridge task, and T108's owner-recorded opt-out `POST` (fresh second factor).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -18261,7 +18408,8 @@
    ],
    "decisions": [
     "D-2128",
-    "D-2440"
+    "D-2440",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -20128,7 +20276,7 @@
    "id": "T158",
    "slug": "owner-scorecard-money",
    "title": "ops: the owner's pilot scorecard page with go and stop lines, and the masked-call answered share",
-   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); the \"Not a fit for us\" choice (PICK-057) is offered on the business job page, rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). The scorecard also shows OPS-046's first-six-weeks email panel and deferral alert and OPS-047's figures, including the median minutes a business spends on a quote from the optional quote-form field T148 stores (D-492). This task's migration adds `ops.not_a_fit_answer` (job, business, trade, reason, time) for PICK-057's monthly count and `ops.minutes_entry` for OPS-039's weekly minutes entry (architecture section 3) (D-493). T301 serves the action links and the job page before this task (D-2128): keep the signatures `app/server/src/action_links.rs` calls, add the \"Not a fit for us\" choice through new functions, and T306 serves it. T305 serves the scorecard (D-2128): the page function and route constant only, no `.route` in `server`; the browser half of TD-OPS-15 runs in T305's spec, and `tests/e2e/scorecard.spec.ts` checks what an unserved page allows.",
+   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); the \"Not a fit for us\" choice (PICK-057) is offered on the business job page, rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). The scorecard also shows OPS-046's first-six-weeks email panel and deferral alert and OPS-047's figures, including the median minutes a business spends on a quote from the optional quote-form field T148 stores (D-492). This task's migration adds `ops.not_a_fit_answer` (job, business, trade, reason, time) for PICK-057's monthly count and `ops.minutes_entry` for OPS-039's weekly minutes entry (architecture section 3) (D-493). T301 serves the action links and the job page before this task (D-2128): keep the signatures `app/server/src/action_links.rs` calls, add the \"Not a fit for us\" choice through new functions, and T306 serves it. T305 serves the scorecard (D-2128): the page function and route constant only, no `.route` in `server`; the browser half of TD-OPS-15 runs in T305's spec, and `tests/e2e/scorecard.spec.ts` checks what an unserved page allows. Plan change D-3155: its migration holds only `ops` tables, so it is `migrations/0195_ops_scorecard_inputs.sql` headed `-- ops (T158)` (`tests/integration/tests/architecture_migrations.rs`).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -20157,7 +20305,7 @@
     "app/quotes/src/job_page.rs",
     "app/portals/src/business_actions.rs",
     "app/portals/templates/business_actions.html",
-    "migrations/0195_portals_scorecard_inputs.sql"
+    "migrations/0195_ops_scorecard_inputs.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -20188,7 +20336,8 @@
     "D-413",
     "D-458",
     "D-468",
-    "D-490"
+    "D-490",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -20209,7 +20358,7 @@
    "id": "T210",
    "slug": "intake-report-money-view",
    "title": "ops and payments: the monthly intake accuracy report and the money view's sales-tax set-aside and expenses",
-   "goal": "The monthly report lists no-quote cards and \"need more info\" quotes by category and question set with the golden-set share; and the money view shows the 8.6% sales-tax set-aside and Casey's manual expenses beside the ledger totals, never entering the ledger (OPS-040, FEE-046). The manual expenses list is its own table `payments.expense` (this task's migration; architecture section 3 names it, D-491). The money view's page and the expense-entry POST are the portals route `app/portals/src/money_view.rs` rendering `money_view.html` from `payments::api` (`app/payments/src/money_view.rs` computes the figures); the intake report's words sit in `intake_report.html` (D-492). The golden-set share comes from the stored runs T156 makes (`intake::api`) (D-493). A new `payments` table gets SELECT and INSERT only from the schema default (D-1495, T245): any wider privilege this task's code needs is an explicit `GRANT ... ON payments.<table> TO askhava_app` in its own migration, which T245's `tests/integration/tests/payments_grants.rs` reads and checks (TD-SEC-33). T305 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`.",
+   "goal": "The monthly report lists no-quote cards and \"need more info\" quotes by category and question set with the golden-set share; and the money view shows the 8.6% sales-tax set-aside and Casey's manual expenses beside the ledger totals, never entering the ledger (OPS-040, FEE-046). The manual expenses list is its own table `payments.expense` (this task's migration; architecture section 3 names it, D-491). The money view's page and the expense-entry POST are the portals route `app/portals/src/money_view.rs` rendering `money_view.html` from `payments::api` (`app/payments/src/money_view.rs` computes the figures); the intake report's words sit in `intake_report.html` (D-492). The golden-set share comes from the stored runs T156 makes (`intake::api`) (D-493). A new `payments` table gets SELECT and INSERT only from the schema default (D-1495, T245): any wider privilege this task's code needs is an explicit `GRANT ... ON payments.<table> TO askhava_app` in its own migration, which T245's `tests/integration/tests/payments_grants.rs` reads and checks (TD-SEC-33). T305 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`. Plan change D-3155 (owner call put to a Fable agent under Casey's Nov 11 standing rule): OPS-040's quotes that \"said the business needed more information\" are derived, not stored: a quote counts when `quotes.quote.confirm_on_site` is true or its `format` is `diagnostic_visit` (`migrations/0070_quotes_quote.sql:19`, `:30`); free-text notes are never parsed; a withdrawn quote (`withdrawn_at` set) is treated as in the no-quote list: only quotes not withdrawn count in either list. No column or table is added for it.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -20261,7 +20410,8 @@
     "D-410",
     "D-444",
     "D-492",
-    "D-1495"
+    "D-1495",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
@@ -26837,7 +26987,7 @@
    "id": "T407",
    "slug": "safety-call-switch-stored",
    "title": "calls, portals and server: the owner-portal safety voice call switch and its attorney approval are stored and read by the worker and the inbound text route",
-   "goal": "Plan change D-3134 (CALL-019, CALL-022, SEC-043, CON-031, TXT-024; D-275, D-384, D-491). CALL-019 places the safety voice call only while the owner-portal setting \"safety voice call\" is on, which needs Casey's recorded TCPA attorney approval (date and reference); but no table holds the switch or the approval (`SafetySwitch` is in memory only, `app/calls/src/voice.rs:183` to `:206`), the inbound text route passes `intake::api::rules::Settings::default()` (`app/server/src/lib.rs:319`), so `safety_call_on` and CON-031's call sentence are always off, and no owner page offers the switch. T330 registers the handler with a switch read that answers off. (1) `migrations/0198_calls_safety_switch.sql`: `calls.safety_switch`, append-only (each change a new row; the latest is in force): on or off, the approval date and reference (required when on), the owner who changed it and when; app role SELECT and INSERT only. The number is the free 0198: this task depends on T361 (0197) and sits just after it in `kit/tasks.json`, before T373 (0199), so its number rises in the runner's serial order (V9). (2) `app/calls/src/safety_switch.rs`, through `calls::api`: `safety_switch(conn)` gives the stored `SafetySwitch` (off with no row), and the turn-on write stores a row only when `SafetySwitch::turn_on` gives on for the approval and a compiled-in `Conditions` value in `calls` whose items this task sets true only where a test on `main` covers that CALL-022 item (each cited in its doc comment; T378's answered and key routes for `logged`); an item it cannot cite stays false and the switch cannot go on; each change writes an audit row (IDs and code names only). (3) The worker: the switch read T330 left in the shared `app/server/src/lib.rs` now reads `calls::api::safety_switch` on every run, so a change after start is honoured by the next task. (4) `app/server/src/inbound_text.rs` reads the stored switch per message and passes it as `safety_call_on`, so the consent text carries CALL-022's sentence from the moment the switch is on and never before (CON-031), and the safety call is queued only then. (5) The owner settings page (`app/portals/src/owner_portal.rs`, `app/portals/templates/owner_settings.html`, T108's; served by `app/server/src/owner_portal.rs`, T310's) shows the switch, off at launch (D-384): turning it on takes the approval date and reference and a fresh second factor (SEC-043), and a refusal names the CALL-022 items not yet met; turning it off needs the same step-up. Tests in `tests/integration/tests/safety_switch.rs` (TD-CALL-26), fake data and the stand-in Twilio only. Update the `calls`, `portals` and `server` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged (D-2440).",
+   "goal": "Plan change D-3134 (CALL-019, CALL-022, SEC-043, CON-031, TXT-024; D-275, D-384, D-491). CALL-019 places the safety voice call only while the owner-portal setting \"safety voice call\" is on, which needs Casey's recorded TCPA attorney approval (date and reference); but no table holds the switch or the approval (`SafetySwitch` is in memory only, `app/calls/src/voice.rs:183` to `:206`), the inbound text route passes `intake::api::rules::Settings::default()` (`app/server/src/lib.rs:319`), so `safety_call_on` and CON-031's call sentence are always off, and no owner page offers the switch. T330 registers the handler with a switch read that answers off. (1) `migrations/0198_calls_safety_switch.sql`: `calls.safety_switch`, append-only (each change a new row; the latest is in force): on or off, the approval date and reference (required when on), the owner who changed it and when; app role SELECT and INSERT only. The number is the free 0198: this task depends on T361 (0197) and sits just after it in `kit/tasks.json`, before T373 (0199), so its number rises in the runner's serial order (V9). (2) `app/calls/src/safety_switch.rs`, through `calls::api`: `safety_switch(conn)` gives the stored `SafetySwitch` (off with no row), and the turn-on write stores a row only when `SafetySwitch::turn_on` gives on for the approval and a compiled-in `Conditions` value in `calls` whose items this task sets true only where a test on `main` covers that CALL-022 item (each cited in its doc comment; T378's answered and key routes for `logged`); an item it cannot cite stays false and the switch cannot go on; each change writes an audit row (IDs and code names only). (3) The worker: the switch read T330 left in the shared `app/server/src/lib.rs` now reads `calls::api::safety_switch` on every run, so a change after start is honoured by the next task. (4) `app/server/src/inbound_text.rs` reads the stored switch per message and passes it as `safety_call_on`, so the consent text carries CALL-022's sentence from the moment the switch is on and never before (CON-031), and the safety call is queued only then. (5) The owner settings page (`app/portals/src/owner_portal.rs`, `app/portals/templates/owner_settings.html`, T108's; served by `app/server/src/owner_portal.rs`, T310's) shows the switch, off at launch (D-384): turning it on takes the approval date and reference and a fresh second factor (SEC-043), and a refusal names the CALL-022 items not yet met; turning it off needs the same step-up. Tests in `tests/integration/tests/safety_switch.rs` (TD-CALL-26), fake data and the stand-in Twilio only. Update the `calls`, `portals` and `server` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged (D-2440). Plan change D-3155: it runs after T151, which also owns `app/server/src/inbound_text.rs`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -26849,7 +26999,8 @@
     "T205",
     "T310",
     "T398",
-    "T361"
+    "T361",
+    "T151"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -26891,7 +27042,8 @@
     "D-3134",
     "D-275",
     "D-384",
-    "D-2288"
+    "D-2288",
+    "D-3155"
    ],
    "cites": [],
    "budget": {
