@@ -2487,3 +2487,4 @@
 - 2026-11-12T04:36:18Z runner 47a83212b95f (actions): {}
 - 2026-11-12T04:36:35Z runner 47a83212b95f (actions): {}
 - 2026-11-12T04:54:44Z runner 3aa549cf9ed3 (actions): {"T334": "MERGE_PENDING -> DONE"}
+- 2026-11-12T04:54:58Z runner 3aa549cf9ed3 (actions): {"T336": "QUEUED -> IN_PROGRESS"}; T336 estimated 3.4M tokens (calibrated); week has 15.2M left (no five-hour budget, D-3056) after 6.8M still running in another lane (session_reading 2026-11-12T04:36:17Z (week)); claimed
