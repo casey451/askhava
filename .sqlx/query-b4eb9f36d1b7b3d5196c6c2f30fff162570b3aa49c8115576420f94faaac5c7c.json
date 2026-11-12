@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.reconcile_checkpoint (id, run_started_at) VALUES (true, $1)\n         ON CONFLICT (id) DO UPDATE SET run_started_at =\n           GREATEST(reconcile_checkpoint.run_started_at, EXCLUDED.run_started_at)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b4eb9f36d1b7b3d5196c6c2f30fff162570b3aa49c8115576420f94faaac5c7c"
+}
