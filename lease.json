@@ -5,9 +5,14 @@
   "2": null,
   "3": null,
   "4": null,
-  "5": null
+  "5": {
+   "task": "T336",
+   "session": "actions-43155983815",
+   "expires": "2026-11-12T09:48:38Z",
+   "lane": "5"
+  }
  },
- "seq": 2491,
- "runner_sha": "643b878dd6dec3102ac824cc53ba683b576f0984",
- "starter": "manual"
+ "seq": 2492,
+ "runner_sha": "3b8cd1274abe27e5bfe7444290077de53dffb6fc",
+ "starter": "actions"
 }
