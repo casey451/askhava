@@ -15,7 +15,7 @@ pub use crate::base::{
 pub use crate::config::{AdapterMode, DEFAULT_POOL_SIZE, MaskedPool, PoolNumber, TwilioConfig};
 pub use crate::email::{Email, EmailAdapter, ResendEmail};
 pub use crate::letters::{LettersAdapter, LobLetters, SentLetter};
-pub use crate::license_sources::{LicenseLists, LicenseSource};
+pub use crate::license_sources::{LicenseLists, LicenseRecords, LicenseSource};
 pub use crate::payments::{
     Charge, ConfirmedIntent, IntentMetadata, PaymentIntent, PaymentsAdapter, StripePayments,
     StripeRefund, ThreeDs, UnconfirmedIntent,
