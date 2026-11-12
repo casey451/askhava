@@ -38,9 +38,9 @@ pub use crate::backup_address::{
 };
 pub use crate::capability::{
     Capability, CapabilityAnswers, LARGEST_JOB_MAX_CENTS, LICENSE_CHANGE_KIND, LargestJob,
-    OfferRow, Reapplied, TradeOffer, capabilities, checklist_offer, is_recurring, kept_ticks,
-    license_change, license_change_words, pre_ticked, reapply_license, save_capability,
-    whole_dollars,
+    OfferRow, Reapplied, TradeOffer, capabilities, checklist_offer, holder_offer, is_recurring,
+    kept_ticks, license_change, license_change_words, offer_for, pre_ticked, reapply_license,
+    save_capability, stored_enabled, whole_dollars,
 };
 pub use crate::channel_preference::{
     ChannelError, NoticeChannel, NoticeRecipient, notice_channel, notice_recipients,
@@ -114,8 +114,8 @@ pub use crate::signup::{
     SOMEONE_ELSE_LINE, STOP_FIX_BUTTON, SignUpForm, SignedUp, SignupError, SignupSettings,
     TermsShown, accept_terms, business_statement, category_list, claim_launch_notice, fee_summary,
     fix_record_lines, hand_entity_keys, number_is_old, resume_on_new_record, review_due,
-    review_target, review_target_line, review_told, sign_up, trade_count, waiting_on_record,
-    waitlist_line, waitlisted,
+    review_target, review_target_line, review_told, sign_up, stored_category_list, trade_count,
+    waiting_on_record, waitlist_line, waitlisted,
 };
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{
