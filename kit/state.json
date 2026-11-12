@@ -21194,12 +21194,12 @@
      }
     }
    ],
-   "reviewed_sha": "d30787ba62b79301770231b7b137e0775c7501f1",
+   "reviewed_sha": "509b96bc91a9cce408bc0336b430349f99b51dee",
    "review_lease": {
     "task": "T162",
-    "session": "actions-43306513678",
-    "expires": "2026-11-13T00:35:14Z",
-    "lane": "2"
+    "session": "actions-43318890766",
+    "expires": "2026-11-13T01:25:32Z",
+    "lane": "4"
    },
    "branch": "claude/task/T162-intake-photos-design",
    "auto_merge": {
@@ -21207,39 +21207,6 @@
     "why": "auto-merge on #624 (gh pr merge)",
     "head": "ac1837f6700ace21690c78a70d73eff70b5f8740"
    },
-   "update_merges": [
-    {
-     "from": "387bb4ca82636468bd807a97c1017fcd299e5e1d",
-     "to": "ac1837f6700ace21690c78a70d73eff70b5f8740",
-     "main": "46f5fc54dbd7d222593288d643f1993a69dbc88c",
-     "how": "hand-in",
-     "at": "2026-11-12T21:57:38Z"
-    },
-    {
-     "from": "ac1837f6700ace21690c78a70d73eff70b5f8740",
-     "to": "2db59b0ab5f5a90586f152ae699bb00c33105e7f",
-     "main": "be513076a5252ff222c8778e3eaeb9a134e6b457",
-     "how": "runner",
-     "checks": {
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-12T22:05:42Z"
-    },
-    {
-     "from": "2db59b0ab5f5a90586f152ae699bb00c33105e7f",
-     "to": "d30787ba62b79301770231b7b137e0775c7501f1",
-     "main": "3982b891e7e5472ce96e596ad6f680e7aba8a458",
-     "how": "runner",
-     "checks": {
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-12T22:12:59Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "runner_closed_prs": [
     624
    ],
@@ -21263,7 +21230,19 @@
      "at": "2026-11-12T22:25:32Z"
     }
    ],
-   "last_failure": "merging main into the reviewed head conflicts in app/intake/CLAUDE.md; a resync merges it in on this attempt (D-891)"
+   "last_failure": "merging main into the reviewed head conflicts in app/intake/CLAUDE.md; a resync merges it in on this attempt (D-891)",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "309c3404e3c1fa75d0ffc4d3d57a39e124c230a4",
+     "to": "509b96bc91a9cce408bc0336b430349f99b51dee",
+     "main": "0b4b84f933928b54b26ed374e5e8310eee009180",
+     "how": "hand-in",
+     "at": "2026-11-12T23:01:50Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T212",
@@ -43726,7 +43705,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T22:58:03Z",
+ "updated_at": "2026-11-12T23:01:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -43824,7 +43803,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3982b891e7e5472ce96e596ad6f680e7aba8a458",
+ "runner_sha": "309c3404e3c1fa75d0ffc4d3d57a39e124c230a4",
  "starter": "actions",
  "smoke_runs": [
   {
