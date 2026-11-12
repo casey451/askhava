@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T13:19:48Z by runner 87abedec7b6e (actions).
+Updated 2026-11-12T13:20:16Z by runner 87abedec7b6e (actions).
 
 **Building: T362 in progress since 12:56Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -154,7 +154,7 @@ Updated 2026-11-12T13:19:48Z by runner 87abedec7b6e (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T13:13:34Z (week)): week: 194.5M used, -494k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T19:57:01Z; waiting until 2026-11-12T17:00:00Z.
+- Pacing (session_reading 2026-11-12T13:13:34Z (week)): week: 194.5M used, -494k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T19:57:25Z; waiting until 2026-11-12T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
