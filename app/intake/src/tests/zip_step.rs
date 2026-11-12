@@ -39,13 +39,6 @@ fn at(minute: i64) -> Timestamp {
     start + SignedDuration::from_mins(minute)
 }
 
-fn spanish() -> Settings {
-    Settings {
-        spanish_conversations_on: true,
-        safety_call_on: false,
-    }
-}
-
 fn text_in(contact: Uuid, minute: i64, words: &str) -> TextIn<'_> {
     TextIn {
         inbox_id: fresh(),
@@ -103,25 +96,6 @@ async fn properties(db: &mut Db, contact: Uuid) -> Vec<(Uuid, String, Option<Str
     .into_iter()
     .map(|r| (r.contact_id, r.town, r.zip))
     .collect()
-}
-
-/// The (template, body) texts queued to `contact`, oldest first.
-async fn texts(db: &mut Db, contact: Uuid) -> Vec<(String, String)> {
-    sqlx::query!(
-        "SELECT template_id, body FROM messaging.outbox WHERE recipient_id = $1 \
-         AND template_id <> 'consent' ORDER BY created_at, id",
-        contact
-    )
-    .fetch_all(&mut **db)
-    .await
-    .expect("outbox")
-    .into_iter()
-    .map(|r| (r.template_id, r.body.unwrap_or_default()))
-    .collect()
-}
-
-fn body(template: &str, language: Language) -> String {
-    zip_body(template, language, true)
 }
 
 /// TD-INT-38 (INT-049): one 5-digit ZIP is read from the reply; none, two different ones or a
@@ -202,8 +176,7 @@ fn td_int_38_zips_are_placed_by_the_market_data() {
 }
 
 /// TD-INT-38 (INT-049, PRIV-028): a service-area ZIP stores exactly the contact, the town and the
-/// ZIP, and the step moves on; the PO-box ZIP stores the town with no location; the question is
-/// the English template.
+/// ZIP, and the step moves on; the PO-box ZIP stores the town with no location.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_38_a_town_zip_is_stored_on_the_property(mut db: Db) {
     for (zip, located) in [("86404", true), ("86405", false)] {
@@ -219,12 +192,6 @@ async fn td_int_38_a_town_zip_is_stored_on_the_property(mut db: Db) {
             stored,
             vec![(contact, TOWN.to_owned(), Some(zip.to_owned()))]
         );
-        let sent = texts(&mut db, contact).await;
-        let question = (
-            ZIP_QUESTION_TEMPLATE.to_owned(),
-            body(ZIP_QUESTION_TEMPLATE, Language::En),
-        );
-        assert_eq!(sent, vec![question]);
     }
 }
 
@@ -252,7 +219,10 @@ async fn td_int_38_an_unusable_reply_is_asked_once_more_then_waited_on(mut db: D
     for words in ["I'm not sure", "86403 or 86404", "99999"] {
         let (contact, id, _) = asked(&mut db, "my sink is leaking", Settings::default()).await;
         let step = reply(&mut db, (contact, id), 3, words).await;
-        assert!(matches!(step, ZipStep::AskedAgain(_)), "{words}: {step:?}");
+        let ZipStep::AskedAgain(again) = step else {
+            panic!("{words}: {step:?}");
+        };
+        assert_eq!(again.template, ZIP_AGAIN_TEMPLATE);
         assert_eq!(
             reply(&mut db, (contact, id), 4, words).await,
             ZipStep::Waiting
@@ -263,12 +233,6 @@ async fn td_int_38_an_unusable_reply_is_asked_once_more_then_waited_on(mut db: D
         );
         let row = conversation(&mut db, id).await.expect("read").expect("row");
         assert!(row.closed_at.is_none(), "nothing closes");
-        let sent: Vec<String> = texts(&mut db, contact)
-            .await
-            .into_iter()
-            .map(|t| t.0)
-            .collect();
-        assert_eq!(sent, [ZIP_QUESTION_TEMPLATE, ZIP_AGAIN_TEMPLATE]);
         assert!(matches!(
             reply(&mut db, (contact, id), 6, "86403").await,
             ZipStep::Stored(_)
@@ -276,33 +240,14 @@ async fn td_int_38_an_unusable_reply_is_asked_once_more_then_waited_on(mut db: D
     }
 }
 
-/// TD-INT-38 (INT-049, TXT-039): a Spanish request gets the Spanish question and re-ask.
-#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_int_38_spanish_question_and_re_ask(mut db: Db) {
-    let (contact, id, _) = asked(&mut db, "Hola, mi lavabo gotea mucho", spanish()).await;
-    let msg = text_in(contact, 3, "no sé");
-    let step = answer_zip(&mut db, &secret(), (&msg, id), spanish()).await;
-    assert!(matches!(step.expect("answered"), ZipStep::AskedAgain(_)));
-    let sent: Vec<String> = texts(&mut db, contact)
-        .await
-        .into_iter()
-        .map(|t| t.1)
-        .collect();
-    let expected = [ZIP_QUESTION_TEMPLATE, ZIP_AGAIN_TEMPLATE].map(|t| body(t, Language::Es));
-    assert_eq!(sent, expected);
-}
-
-/// TD-INT-38 (INT-049, PRIV-016): the stored ZIP is in no answer row, audit value or outbox text,
-/// and the step's file writes no log line.
+/// TD-INT-38 (INT-049, PRIV-016): the stored ZIP is in no answer row and the step's file writes no
+/// log line (the audit, outbox and task cases are in `tests/integration/tests/cards_out.rs`).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_38_the_zip_goes_nowhere_but_the_property(mut db: Db) {
     let (contact, id, _) = asked(&mut db, "my sink is leaking", Settings::default()).await;
     reply(&mut db, (contact, id), 3, "86404").await;
     let found = sqlx::query_scalar!(
-        r#"SELECT (SELECT count(*) FROM intake.intake_answer a WHERE a::text LIKE '%86404%') +
-           (SELECT count(*) FROM ops.audit_log l WHERE l::text LIKE '%86404%') +
-           (SELECT count(*) FROM messaging.outbox o WHERE o::text LIKE '%86404%') +
-           (SELECT count(*) FROM core.task t WHERE t::text LIKE '%86404%') AS "n!""#
+        r#"SELECT count(*) AS "n!" FROM intake.intake_answer a WHERE a::text LIKE '%86404%'"#
     )
     .fetch_one(&mut *db)
     .await

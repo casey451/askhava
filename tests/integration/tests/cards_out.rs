@@ -6,7 +6,8 @@
 //! (so `intake.property` holds her town), and `quotes`' store keeps her scrubbed words and the card
 //! shown. Businesses are made active, welcomed, matched on a fake city list, serving the town and
 //! ticking the job type. Each case runs `send_approved` or `send_emergency` and reads the card,
-//! notice, facts and outbox rows.
+//! notice, facts and outbox rows. The ZIP step's Spanish texts and its privacy case across other
+//! modules' tables are TD-INT-38's database half (the unit half is `app/intake/src/tests/zip_step.rs`).
 
 use std::collections::BTreeSet;
 
@@ -18,13 +19,14 @@ use askhava_catalog::api::{category, load_embedded};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     AUTO_SEND_AFTER, CardStep, CardTimer, CardsOutKeys, CardsSent, IntakeError, JobStart, Opened,
-    Preview, Shown, TextIn, ZipStep, answer_card, answer_zip, ask_zip, begin_job, card_timer_step,
-    receive_text, send_approved, send_emergency, show_card,
+    Preview, Shown, TextIn, ZIP_AGAIN_TEMPLATE, ZIP_QUESTION_TEMPLATE, ZipStep, answer_card,
+    answer_zip, ask_zip, begin_job, card_timer_step, receive_text, send_approved, send_emergency,
+    show_card, zip_body,
 };
 use askhava_integration::set_app_role;
 use askhava_jobs::api::job_facts;
 use askhava_licensing::api::import_city_list;
-use askhava_messaging::api::held_until;
+use askhava_messaging::api::{Language, held_until};
 use askhava_ops::api::{Actor, Switch, set_switch};
 use askhava_privacy::api::{
     CommonWords, Known, NameMemory, NewContact, Vault, scrub, store_contact,
@@ -614,4 +616,67 @@ async fn td_card_14_night_cards_wait_for_8_am(pool: PgPool) {
         "{}",
         texts[0]
     );
+}
+
+/// TD-INT-38 (INT-049, TXT-039, PRIV-016): a Spanish request gets the Spanish ZIP question and
+/// re-ask; the ZIP she sends is stored on the property and is in no answer, audit value, outbox
+/// text or task payload.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_38_spanish_zip_texts_and_the_zip_goes_nowhere_else(pool: PgPool) {
+    let mut db = setup(&pool).await;
+    let spanish = Settings {
+        spanish_conversations_on: true,
+        safety_call_on: false,
+    };
+    let new = NewContact {
+        name: None,
+        phone: Some(SecretString::from("+19285550160".to_owned())),
+        email: None,
+        address: None,
+        onsite_contact: None,
+    };
+    let her = store_contact(&mut db, &vault(), &new)
+        .await
+        .expect("contact");
+    let first = text(her, "Hola, mi lavabo gotea mucho", ts(DAY));
+    let handled = receive_text(&mut db, &secret(), &first, spanish).await;
+    let id = handled.expect("open").conversation.expect("request");
+    for (words, minute) in [("", 1), ("no sé", 2), ("es 86404", 3)] {
+        let msg = text(her, words, later(DAY, minute));
+        let step = if words.is_empty() {
+            ask_zip(&mut db, &secret(), (&msg, id), spanish)
+                .await
+                .map(|_| ZipStep::Waiting)
+        } else {
+            answer_zip(&mut db, &secret(), (&msg, id), spanish).await
+        };
+        step.expect("step");
+    }
+    let bodies: Vec<String> = sqlx::query_scalar(
+        "SELECT body FROM messaging.outbox WHERE recipient_id = $1 \
+         AND template_id LIKE 'zip_%' ORDER BY created_at, id",
+    )
+    .bind(her)
+    .fetch_all(&mut db)
+    .await
+    .expect("outbox");
+    let expected =
+        [ZIP_QUESTION_TEMPLATE, ZIP_AGAIN_TEMPLATE].map(|t| zip_body(t, Language::Es, true));
+    assert_eq!(bodies, expected);
+    let found: i64 = sqlx::query_scalar(
+        "SELECT (SELECT count(*) FROM intake.intake_answer a WHERE a::text LIKE '%86404%') + \
+         (SELECT count(*) FROM ops.audit_log l WHERE l::text LIKE '%86404%') + \
+         (SELECT count(*) FROM messaging.outbox o WHERE o::text LIKE '%86404%') + \
+         (SELECT count(*) FROM core.task t WHERE t::text LIKE '%86404%')",
+    )
+    .fetch_one(&mut db)
+    .await
+    .expect("count");
+    assert_eq!(found, 0);
+    let stored: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM intake.property WHERE zip = '86404'")
+            .fetch_one(&mut db)
+            .await
+            .expect("property");
+    assert_eq!(stored, 1);
 }
