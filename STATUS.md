@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T13:13:51Z by runner 919ab4941c81 (actions).
+Updated 2026-11-12T13:19:24Z by runner 87abedec7b6e (actions).
 
 **Building: T362 in progress since 12:56Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,16 +8,14 @@ Updated 2026-11-12T13:13:51Z by runner 919ab4941c81 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T362 claimed 12:56Z, lease until 15:56Z; lane 3: T385 claimed 12:57Z, lease until 15:57Z
 - **Week:** 94% used, -0.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:13Z, 0 min before this update
+- **Last run:** 13:14Z, 5 min before this update
 - **Keeper:** last ran 13:13Z, next wake 15:58Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 46% of the context window, over its 45% limit
+- PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 47% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T370 (since 2026-11-12T13:13:06Z, no attempt used; a plan change fixes it): T370: dependency T369 is DONE but its owned file tests/integration/tests/after_hours_cover.rs is not on main; T370: dependency T369 is DONE but its owned file tests/e2e/emergency_switch_after_hours.spec.ts is not on main
-- PLAN GAP T372 (since 2026-11-12T13:13:06Z, no attempt used; a plan change fixes it): T372: dependency T369 is DONE but its owned file tests/integration/tests/after_hours_cover.rs is not on main; T372: dependency T369 is DONE but its owned file tests/e2e/emergency_switch_after_hours.spec.ts is not on main
-- Strict plan check red: 25 problem(s) on tasks still to run (+114 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+115 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -93,7 +91,6 @@ Updated 2026-11-12T13:13:51Z by runner 919ab4941c81 (actions).
 | T269 | portals: a business notice's signed link opens sign-in for t | check_failed | 1 | 20 min | 14:19Z |  |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | check_failed | 1 | 40 min | 13:40Z |  |
 | T214 | picks (harness): the homeowner's share box at the pick and t | BLOCKED | 1 | 15 min | 13:19Z |  |
-| T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z |  |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
@@ -126,7 +123,6 @@ Updated 2026-11-12T13:13:51Z by runner 919ab4941c81 (actions).
 - 14:48Z Plan: T214 builds the pick notice's "Can't take it" value; new T386 adds the line to both languages (D-3024) (#489)
 - 14:34Z Harness: browser setup survives an Ubuntu mirror outage (D-3030) (#492)
 - 13:45Z Plan: four lanes (D-2986) (#483)
-- 13:14Z Plan: T332 updates the ended-pick test — success stored, one refund queued, still never cleared (D-3007) (#484)
 
 ## Progress (requirements verified)
 
@@ -159,7 +155,7 @@ Updated 2026-11-12T13:13:51Z by runner 919ab4941c81 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T13:11:08Z (week)): week: 194.5M used, -494k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T18:31:25Z; waiting until 2026-11-12T17:00:00Z.
+- Pacing (session_reading 2026-11-12T13:13:34Z (week)): week: 194.5M used, -494k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T19:56:37Z; waiting until 2026-11-12T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
