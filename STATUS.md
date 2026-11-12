@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T02:06:43Z by runner 96a816a9edaa (actions).
+Updated 2026-11-12T02:07:39Z by runner d091b4c9925d (actions).
 
 **Building: T248 in progress since 01:49Z; 219 of 383 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-12T02:06:43Z by runner 96a816a9edaa (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T248 claimed 01:49Z, lease until 04:49Z; lane 4: T313 claimed 01:48Z, lease until 04:48Z; lane 5: T334 claimed 01:43Z, lease until 04:43Z
 - **Week:** 81% used, 24.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:52Z, 13 min before this update
+- **Last run:** 02:06Z, 0 min before this update
 - **Keeper:** last ran 01:52Z, next wake 04:45Z
 
 ## Needs attention
-- Strict plan check red: 7 problem(s) on tasks still to run (+71 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+75 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -78,7 +78,6 @@ Updated 2026-11-12T02:06:43Z by runner 96a816a9edaa (actions).
 | T374 | licensing and businesses: one read of everything a business  | done | 1 | 45 min | 03:08Z |  |
 | T157 | picks: the homeowner's backup choice at the pick | done | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
 | T157 | picks: the homeowner's backup choice at the pick | check_failed | 1 | 66 min | 02:10Z |  |
-| T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 1 | 31 min | 02:07Z |  |
 
 ### Plan and harness merges on main
 - 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
