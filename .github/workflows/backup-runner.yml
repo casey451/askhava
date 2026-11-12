@@ -268,7 +268,7 @@ jobs:
         # Restore only (D-3143): "Rust build cache, save" near the end of the job saves it with `target/debug` empty.
         id: rust-cache
         if: hashFiles('Cargo.lock') != ''
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.cargo/registry/index
@@ -293,7 +293,7 @@ jobs:
         # with the run id, so a job that never ran the smoke cannot take the commit's key first (D-1911).
         id: smoke-cache
         if: hashFiles('Cargo.lock') != ''
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: target/smoke
           key: rust-smoke-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -532,7 +532,7 @@ jobs:
         # timed-out smoke leaves a target dir that matches it. Only from main's ref (D-3143): a run started by a
         # pull_request event saves under refs/pull/<n>/merge, which no later run can restore.
         if: always() && github.ref == 'refs/heads/main' && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != '' && steps.smoke-drop.outputs.save != 'no' && steps.bg-smoke.outputs.stopped != 'stopped'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: target/smoke
           key: ${{ steps.smoke-cache.outputs.cache-primary-key }}
@@ -563,7 +563,7 @@ jobs:
           cd "$RUNNER_TEMP/keeper" && python3 -m runner.cache drop --repo "$GITHUB_REPOSITORY" --prefix "$PREFIX" --before "${JOB_START:-}" | tee -a "$GITHUB_OUTPUT"
       - name: Rust build cache, save (D-514, D-3143)
         if: always() && steps.rust-prune.outputs.pruned == 'yes' && steps.rust-drop.outputs.save != 'no'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: |
             ~/.cargo/registry/index
