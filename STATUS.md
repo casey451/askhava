@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T10:00:23Z by runner e89d80d761ca (actions).
+Updated 2026-11-12T10:00:40Z by runner e89d80d761ca (actions).
 
 **Building: T343 in progress since 09:58Z; 234 of 395 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 234 of 395 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T343 claimed 09:58Z, lease until 12:58Z; lane 5: T411 claimed 09:29Z, lease until 12:29Z
+- **Lane:** lane 1: T343 claimed 09:58Z, lease until 12:58Z
 - **Week:** 92% used, 6.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:58Z, 1 min before this update
 - **Keeper:** last ran 09:44Z, next wake 12:32Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T10:00:23Z by runner e89d80d761ca (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T411 | quotes: the scrubbed job description and the shown and appro | MERGE_PENDING | 1 | 30 min | 10:00Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | MERGE_PENDING | 1 | 21 min | 09:38Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md, app/messaging/CLAUDE.md; a resync merges it i |
 | T358 | messaging: the Canadian area codes for the HELP roaming line | MERGE_PENDING | 1 | 40 min | 09:32Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z |  |
@@ -171,7 +172,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T343 (lease until 2026-11-12T12:58:11Z)
-- lane 5: T411 (lease until 2026-11-12T12:29:44Z)
 
 ## Last usage reading
-- {"task": "T268", "at": "2026-11-12T09:38:14Z", "cache_read_input_tokens": 1030979, "input_tokens": 79, "cache_creation_input_tokens": 71228, "output_tokens": 16299}
+- {"task": "T411", "at": "2026-11-12T10:00:23Z", "input_tokens": 286, "output_tokens": 105351, "cache_read_input_tokens": 18169228, "cache_creation_input_tokens": 555093}
