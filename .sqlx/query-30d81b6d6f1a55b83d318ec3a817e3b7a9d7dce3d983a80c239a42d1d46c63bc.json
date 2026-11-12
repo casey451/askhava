@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.charge_three_ds (pick_id, authenticated) VALUES ($1, $2) ON CONFLICT (pick_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "30d81b6d6f1a55b83d318ec3a817e3b7a9d7dce3d983a80c239a42d1d46c63bc"
+}
