@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T20:00:08Z by runner bae443e54064 (actions).
+Updated 2026-11-12T20:00:38Z by runner b2a7162807db (actions).
 
 **Building: T251 in progress since 19:00Z; 253 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -13,13 +13,13 @@ Updated 2026-11-12T20:00:08Z by runner bae443e54064 (actions).
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 20 problem(s) on tasks still to run (+122 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 22 problem(s) on tasks still to run (+126 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T416 | Performance: database pool and query measurements (PERF-004) | MERGE_PENDING | 1 | 54 min | 19:59Z |  |
-| T414 | Stand-ins (harness): end-to-end specs can read the emails th | MERGE_PENDING | 2 | 15 min | 19:11Z | Twin: failure / Twin failed at step: Build rules_bridge from this commit (T074) / ##[error]Command failed: rustc -vV |
+| T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 2 | 15 min | 19:11Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T350 | privacy: an opt-out, HELP or START word is never taken or re | done | 1 | 103 min | 19:09Z |  |
 | T362 | server: the built static files are served at /static/<crate> | done | 3 | 26 min | 19:03Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T346 | portals: every homeowner Verify code is bound to its purpose | done | 1 | 40 min | 18:57Z |  |
@@ -165,6 +165,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T251 (lease until 2026-11-12T22:00:53Z)
+- one lane only since 2026-11-12T20:00:22Z (lane fall back; `python3 -m runner --restore-lanes`)
 
 ## Last usage reading
 - {"task": "T416", "at": "2026-11-12T19:59:05Z", "cache_read_input_tokens": 19336811, "output_tokens": 151466, "input_tokens": 348, "cache_creation_input_tokens": 430819}
