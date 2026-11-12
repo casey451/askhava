@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T00:38:11Z by runner 4f3341fd59e7 (actions).
+Updated 2026-11-12T00:39:06Z by runner 162c61d4f51a (actions).
 
 **Idle since 00:21Z; 217 of 382 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -12,7 +12,7 @@ Updated 2026-11-12T00:38:11Z by runner 4f3341fd59e7 (actions).
 - **Keeper:** last ran 00:38Z, next wake 00:58Z
 
 ## Needs attention
-- Strict plan check red: 4 problem(s) on tasks still to run (+65 on DONE tasks); first: T106: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+67 on DONE tasks); first: T106: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -79,6 +79,7 @@ Updated 2026-11-12T00:38:11Z by runner 4f3341fd59e7 (actions).
 | T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 
 ### Plan and harness merges on main
+- 00:38Z Plan: T261 pre-flight fix and catalog loaded at start-up (T400, IC-96) (D-3100) (#534)
 - 00:00Z Plan: pre-flight fixes round 3 — T360, T368, T350, T358, T366, T385 (D-3094) (#528)
 - 23:50Z Plan: Gate C preconditions, vendor-leak check, quote cards, AI writing calls (D-3080) (#518)
 - 23:07Z Plan: IC-74 owners T390/T391, migration renumber, budget refresh, IC-95 logged (D-3079) (#517)
