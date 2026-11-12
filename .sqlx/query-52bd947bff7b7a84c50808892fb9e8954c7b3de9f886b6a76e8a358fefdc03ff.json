@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.payment_method SET removed_at = now() WHERE business_id = $1 AND removed_at IS NULL RETURNING stripe_payment_method_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stripe_payment_method_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.payment_method",
+            "name": "stripe_payment_method_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "52bd947bff7b7a84c50808892fb9e8954c7b3de9f886b6a76e8a358fefdc03ff"
+}
