@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T06:20:27Z by runner 34fb4c03a8fb (actions).
+Updated 2026-11-12T06:25:03Z by runner 3b8cd1274abe (actions).
 
-**Idle since 06:06Z; 225 of 393 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 06:06Z; 225 of 394 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 225 of 393 build tasks (owner gates not counted)
+- **Tasks done:** 225 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 06:06Z (no task in progress)
 - **Week:** 88% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:20Z, 0 min before this update
+- **Last run:** 06:20Z, 4 min before this update
 - **Keeper:** last ran 06:20Z, next wake 06:40Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 9 problem(s) on tasks still to run (+89 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+89 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -121,7 +121,7 @@ Updated 2026-11-12T06:20:27Z by runner 34fb4c03a8fb (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 210 of 733 (28.6%) · partial 351 · unstarted 172
-**Tasks merged (throughput only):** 225 of 393
+**Tasks merged (throughput only):** 225 of 394
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -157,7 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 105 of 178 done
-- stage 5: 0 of 61 done
+- stage 5: 0 of 62 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
