@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-12T01:11:54Z by runner fe7a56647b29 (actions).
+Updated 2026-11-12T01:12:15Z by runner fe7a56647b29 (actions).
 
-**Building: T368 in progress since 00:48Z; 217 of 383 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T368 in progress since 00:48Z; 218 of 383 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 217 of 383 build tasks (owner gates not counted)
+- **Tasks done:** 218 of 383 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T368 claimed 00:48Z, lease until 03:48Z
 - **Week:** 79% used, 36.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
@@ -17,7 +17,7 @@ Updated 2026-11-12T01:11:54Z by runner fe7a56647b29 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T317 | server and intake: the inbound text route applies SEC-014's  | MERGE_PENDING | 2 | 53 min | 00:16Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
+| T317 | server and intake: the inbound text route applies SEC-014's  | done | 2 | 53 min | 00:16Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
 | T313 | messaging and server: an EMERGENCY card notice goes at night | MERGE_PENDING | 1 | 35 min | 00:03Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | MERGE_PENDING | 2 | 23 min | 23:45Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md, app/quotes/src/api.rs; a resync merges it in on th |
 | T334 | payments: the nightly reconcile catches up after an outage f | MERGE_PENDING | 2 | 96 min | 23:36Z | Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads  |
@@ -117,7 +117,7 @@ Updated 2026-11-12T01:11:54Z by runner fe7a56647b29 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 212 of 733 (28.9%) · partial 347 · unstarted 174
-**Tasks merged (throughput only):** 217 of 383
+**Tasks merged (throughput only):** 218 of 383
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -152,7 +152,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 97 of 172 done
+- stage 4: 98 of 172 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 37 done
 - stage 7: 0 of 2 done
