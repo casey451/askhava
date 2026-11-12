@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT words FROM quotes.job_description WHERE job_id = $1 ORDER BY recorded_at, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "words",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.job_description",
+            "name": "words"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "4fe1a7b26f262b15344f960b5e526960868f7213f6e93273ff2688a71e6368b3"
+}

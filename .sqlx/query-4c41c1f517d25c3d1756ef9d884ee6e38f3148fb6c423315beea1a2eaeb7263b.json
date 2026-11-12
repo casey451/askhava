@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM quotes.job_description WHERE job_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4c41c1f517d25c3d1756ef9d884ee6e38f3148fb6c423315beea1a2eaeb7263b"
+}
