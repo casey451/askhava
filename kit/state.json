@@ -38275,11 +38275,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "730eab717db56a9124784a7476e15f880582e2b9",
+   "reviewed_sha": "bcb3bd9db02fab4b7124ece49bb9e4c3a8f96d3f",
    "review_lease": {
     "task": "T385",
-    "session": "actions-43268211353",
-    "expires": "2026-11-12T20:26:04Z",
+    "session": "actions-43305683363",
+    "expires": "2026-11-13T00:36:10Z",
     "lane": "3"
    },
    "branch": "claude/task/T385-signup-own-record-read-a3",
@@ -38303,35 +38303,14 @@
     }
    ],
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)\napp/licensing: 94.96402877697842\napp/messaging: 88.46153846153847\napp/ops: 94.11764705882354\napp/payments: 95.5719557195572\napp/picks: 87.18446601941747\napp/portals: 59.479553903345725\napp/privacy: 96.34146341463415\napp/quotes: 90.1453957996769\napp/server: 21.666666666666668\ntotal: 84.27978829924189 (floor 82.0)\napp/payments/: 95.5719557195572 (floor 95.0)\napp/privacy/: 96.34146341463415 (floor 95.0)\napp/licensing/: 94.96402877697842 (floor 95.0)\nFAIL: app/licensing/ 94.96 is below the floor 95.0\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
+   "head_check_since": null,
    "update_merges": [
     {
-     "from": "33560091de3263f8a4af693a6599d18db3207194",
-     "to": "7721cfb8b5d1c43d30a4d79ccb117dbcd690ff7c",
-     "main": "0e36bfe8ac65173273d57ed1f11345f5d1c04f92",
+     "from": "98235571b291fac596a2d4614859689d01b046d6",
+     "to": "bcb3bd9db02fab4b7124ece49bb9e4c3a8f96d3f",
+     "main": "3982b891e7e5472ce96e596ad6f680e7aba8a458",
      "how": "hand-in",
-     "at": "2026-11-12T18:26:51Z"
-    },
-    {
-     "from": "7721cfb8b5d1c43d30a4d79ccb117dbcd690ff7c",
-     "to": "292e7886bcdf47a2ac045a617c6a2f7324046ffc",
-     "main": "ef5a3860ab5e7ec8a777d83d5d0f0d7cc3fb8184",
-     "how": "runner",
-     "checks": {
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-12T18:35:26Z"
-    },
-    {
-     "from": "292e7886bcdf47a2ac045a617c6a2f7324046ffc",
-     "to": "730eab717db56a9124784a7476e15f880582e2b9",
-     "main": "c5c20728e51e1a83051f2633584ec1ad69ab8e30",
-     "how": "runner",
-     "checks": {
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-12T18:45:23Z"
+     "at": "2026-11-12T22:17:49Z"
     }
    ],
    "update_waiting_since": null,
@@ -43227,7 +43206,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T22:16:08Z",
+ "updated_at": "2026-11-12T22:17:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -43325,8 +43304,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3982b891e7e5472ce96e596ad6f680e7aba8a458",
- "starter": "manual",
+ "runner_sha": "98235571b291fac596a2d4614859689d01b046d6",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "e2c37a7d0cadd117b412f6c0c3aa24dc1d5808fd",
