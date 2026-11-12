@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:29:03Z by runner 9a0cfc9ec6a1 (actions).
+Updated 2026-11-12T11:31:36Z by runner 9a0cfc9ec6a1 (actions).
 
 **Building: T323 in progress since 11:23Z; 240 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T11:29:03Z by runner 9a0cfc9ec6a1 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T323 claimed 11:23Z, lease until 14:23Z; lane 5: T404 claimed 11:19Z, lease until 14:19Z
 - **Week:** 93% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:28Z, 0 min before this update
+- **Last run:** 11:29Z, 2 min before this update
 - **Keeper:** last ran 11:23Z, next wake 14:21Z
 
 ## Needs attention
@@ -92,7 +92,6 @@ Updated 2026-11-12T11:29:03Z by runner 9a0cfc9ec6a1 (actions).
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 1 | 11 min | 12:10Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | done | 3 | 19 min | 12:02Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T331 | payments (harness): a payment success with no readable pick  | done | 1 | 49 min | 11:35Z |  |
-| T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z |  |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
