@@ -737,12 +737,15 @@ mod tests {
     }
 
     async fn challenges(pool: &PgPool) -> Vec<(String, i32, bool)> {
-        let sql =
-            "SELECT purpose, tries, used_at IS NOT NULL FROM portals.code_challenge ORDER BY id";
-        sqlx::query_as(sql)
-            .fetch_all(pool)
-            .await
-            .expect("challenges")
+        let rows = sqlx::query!(
+            r#"SELECT purpose, tries, used_at IS NOT NULL AS "used!" FROM portals.code_challenge ORDER BY id"#
+        )
+        .fetch_all(pool)
+        .await
+        .expect("challenges");
+        rows.into_iter()
+            .map(|r| (r.purpose, r.tries, r.used))
+            .collect()
     }
 
     /// TD-SEC-60 (SEC-055, PRIV-031): a code that passes Verify for her number (a sign-in code)
