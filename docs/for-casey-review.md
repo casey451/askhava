@@ -2,6 +2,13 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Runner: a finished task frees its lane about 25 minutes sooner (D-3141, November 12)
+
+- **What happened.** When a task's change merged, the runner only marked it done after warming up and running the start-up smoke test, about 25 minutes later (T388: merged 22:53, marked done 23:19 UTC on November 11). Meanwhile its lane and every task waiting on it sat idle.
+- **What changed.** The runner now marks merged tasks done in its first minute, by exactly the same rule as before (all three checks green on the merged code, and the merged code identical to what was tested and reviewed; otherwise main is marked broken and reverted as before), and starts the freed lanes at once.
+- **Not done, and why.** The GitHub merge queue first planned under this number cannot work here: GitHub ignores the setting that lets two changes both add to the decisions log, so every pair would conflict. Updating only the oldest waiting change first is noted as a later improvement.
+- **Nothing needs you now.**
+
 ## Twenty-two waiting steps fixed before they start, and two new steps (plan change, D-3155, November 12)
 
 - **What changed.** A ninth read-only check of queued steps (mostly owner-portal, help, backup and website steps) found plans a worker could not have finished as written; they were corrected before any started. Two small steps were added: T409 lets the automatic door check sign in as you the real way, so your owner pages can be checked at all, and T410 puts the "Get help" link on the business pages.
@@ -2482,6 +2489,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What did not change.** Resyncs, your "claim first" list and the longest-chain order still come first, and every lane still fills: if every waiting task overlaps, the runner claims as before.
 - **To turn it off.** Set `prefer_disjoint_crates` to `false` in `kit/runner.json`.
 - **Nothing needs you now.**
+
+## Runner: a free lane is filled after every run, not only after a claim (D-3140)
+
+- **What happened.** Late on November 11 lane 4 sat empty for about 15 minutes with 20 tasks ready: the runs that noticed it were not hand-offs, and only a hand-off started a run for a free lane. For most of the rest of that hour lanes 1, 3 and 5 had no worker but each still held a finished task waiting for its merge, which by design keeps the lane busy; one merged task waited 26 minutes for the runner to notice, behind the start-of-run smoke test.
+- **What changed.** Every run that ends now starts a run for each free lane with a task ready, except a run that itself found nothing to claim, so it cannot loop. Nothing starts while main is red or the usage pacer waits, and never more lanes than are in use.
+- **Still open.** Noticing a merged task sooner (before the smoke test) would save about 25 minutes per merge; that is a separate runner change for later.
 
 ## Ci: the slow Rust steps now run side by side (D-3142)
 
