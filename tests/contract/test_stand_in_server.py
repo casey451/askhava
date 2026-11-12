@@ -163,7 +163,7 @@ def test_verify_and_voice_session_over_http(base: str) -> None:
     checked = tw(base, "POST", VERIFY + "/VerificationCheck", {"To": HOMEOWNER, "Code": code})[1]
     assert checked["status"] == "approved"
     calls = f"/twilio/2010-04-01/Accounts/{AC}/Calls"
-    status, opened, _ = tw(base, "POST", calls + ".json", {"To": HOMEOWNER, "From": OURS})
+    status, opened, _ = tw(base, "POST", calls + ".json", {"To": HOMEOWNER, "From": OURS, "Twiml": "<Response/>"})
     assert status == 201 and tw(base, "GET", calls + ".json?Status=queued")[1]["calls"] == [opened]
     assert tw(base, "POST", f"{calls}/{opened['sid']}.json", {"Status": "completed"})[1]["status"] == "completed"
     assert tw(base, "GET", calls + ".json?Status=queued")[1]["calls"] == []
