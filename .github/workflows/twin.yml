@@ -26,7 +26,7 @@ jobs:
       SQLX_OFFLINE: "true"
       ASKHAVA_RULES_BRIDGE: target/debug/rules_bridge
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
       - name: Rust toolchain (the pinned release from rust-toolchain.toml)
@@ -52,7 +52,7 @@ jobs:
         run: PYTHONHASHSEED=0 python3 twin/gate.py --bridge "$ASKHAVA_RULES_BRIDGE" --report "$RUNNER_TEMP/twin-report.json"
       - name: Upload the gate report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: twin-report
           path: ${{ runner.temp }}/twin-report.json
