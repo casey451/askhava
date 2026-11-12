@@ -19,7 +19,7 @@ use askhava_core::api::Guarded;
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{JobStart, Opened, PublishedTerms, TextIn, answer_text_pick};
 use askhava_intake::api::{begin_job, receive_text};
-use askhava_jobs::api::{JobStatus, move_to};
+use askhava_jobs::api::{JobStatus, move_to, record_job_facts};
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
     AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, Appended, BusinessId, ChargeError, ChargeOutcome,
@@ -205,6 +205,13 @@ async fn job_ready(db: &mut PgConnection, her: Uuid, cents: &[i64]) -> Uuid {
     let Ok(Opened::Created(job)) = begin_job(db, &start).await else {
         panic!("a new job");
     };
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["leak repair".to_owned()];
+    record_job_facts(db, job, "plumbing_repair", &types)
+        .await
+        .expect("job facts");
     for step in [
         (JobStatus::Intake, JobStatus::Open),
         (JobStatus::Open, JobStatus::QuotesReady),

@@ -91,7 +91,8 @@ pub use crate::confirm_pay::{
 };
 pub use crate::data_download::{
     ANSWER_WITHIN, Acted, DATA_CODE_ROUTE, DATA_REQUEST_ROUTE, DOWNLOAD_ROUTE, DataRequest,
-    DataRequestKind, HeldItem, RequestError, Section, confirm_request, download_file, open_request,
+    DataRequestKind, DeleteError, HeldItem, RequestError, Section, confirm_request,
+    delete_her_data, download_file, open_request,
 };
 pub use crate::email_check::{
     ARRIVED_QUESTION, LAST_STEP_LINE, MailApp, NO_EMAIL_LINE, PICK_ALERT_QUESTION, PICK_DND_LINE,

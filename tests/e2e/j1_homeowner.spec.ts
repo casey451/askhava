@@ -135,6 +135,8 @@ function seedQuotes(conversation: string): { path: string; job: string } {
       VALUES ('quotes_ready', false, now(), now(), now()) RETURNING id),
     n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
     num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    f AS (INSERT INTO jobs.job_facts (job_id, seq, category, job_types, set_at)
+      SELECT id, 1, 'hvac_repair', ARRAY['AC not cooling'], now() FROM j),
     a AS (INSERT INTO intake.intake_answer (conversation_id, question_id, choice, answered_at)
       SELECT '${conversation}', 'job.hvac.home', replace(j.id::text, '-', ''), now() FROM j),
     t AS (INSERT INTO jobs.quote_token (job_id, salt, key_version, token_hash, issued_at)

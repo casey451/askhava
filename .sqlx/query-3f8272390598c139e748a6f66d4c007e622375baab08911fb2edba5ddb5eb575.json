@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE quotes.shown_card SET sent_at = $3 WHERE id = (SELECT id FROM quotes.shown_card\n           WHERE job_id = $1 AND digest = $2 AND recorded_at <= $3 ORDER BY recorded_at DESC, id\n           LIMIT 1)\n           AND NOT EXISTS (SELECT 1 FROM quotes.shown_card WHERE job_id = $1 AND sent_at IS NOT NULL)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3f8272390598c139e748a6f66d4c007e622375baab08911fb2edba5ddb5eb575"
+}

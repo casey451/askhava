@@ -9,8 +9,10 @@
 //! row whose ID is the request's and whose time is its received time) and texts a code;
 //! [`confirm_request`] acts only on a stored, unanswered request of hers younger than
 //! [`ANSWER_WITHIN`] and a correct code, so a code alone (the sign-in one included) acts on
-//! nothing. A delete clears only her own jobs' photos (`intake::api::jobs_of_contact`), in one
-//! transaction with its confirmed audit row (R11). Each request is due [`ANSWER_WITHIN`] (30 days)
+//! nothing. A delete ([`delete_her_data`]) clears only her own jobs' photos
+//! (`intake::api::jobs_of_contact`) and the job text and cards stored under every request of hers
+//! (`quotes::api::forget_requests`, T411, PRIV-008, PRIV-011), in one transaction with its
+//! confirmed audit row (R11). Each request is due [`ANSWER_WITHIN`] (30 days)
 //! after its stored received time ([`DataRequest::due_at`]). The number on file comes only from a
 //! realm-checked vault read ([`OnFile`], SEC-046). Requests by email or the help form are T200's
 //! (D-493). The routes wait on homeowner sign-in being served (D-1934).
@@ -18,10 +20,11 @@
 use std::fmt;
 
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
-use askhava_intake::api::jobs_of_contact;
+use askhava_intake::api::{conversations_of_contact, jobs_of_contact};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit, audit_once, export_audit};
 use askhava_picks::api::rules::parse_code;
 use askhava_privacy::api::delete_my_data;
+use askhava_quotes::api::forget_requests;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
 use serde_json::{Map, Value, json};
@@ -236,15 +239,54 @@ pub async fn confirm_request<V: VerifyAdapter>(
     let acted = match request.kind {
         DataRequestKind::Copy => Acted::Copy,
         DataRequestKind::Delete => {
-            let jobs = jobs_of_contact(&mut tx, on_file.contact())
-                .await
-                .map_err(database)?;
-            let deleted = delete_my_data(&mut tx, on_file.contact(), &jobs).await;
+            let deleted = delete_her_data(&mut tx, on_file.contact()).await;
             Acted::Deleted(deleted.map_err(database)?)
         }
     };
     tx.commit().await.map_err(database)?;
     Ok(acted)
+}
+
+/// PRIV-011, PRIV-008, D-3189: "Delete my data" on the caller's transaction: the stored job text
+/// and cards of every request of hers (open or closed, `intake::api::conversations_of_contact`;
+/// T411), then `privacy::api::delete_my_data` over her jobs (`intake::api::jobs_of_contact`) and
+/// every job those rows named, so a later job's photos go too. Returns the confirmation sentence.
+///
+/// # Errors
+/// [`DeleteError`] naming the step that failed.
+pub async fn delete_her_data(
+    db: &mut PgConnection,
+    contact: Uuid,
+) -> Result<&'static str, DeleteError> {
+    let requests = conversations_of_contact(db, contact)
+        .await
+        .map_err(|_| DeleteError::Intake)?;
+    let mut jobs = jobs_of_contact(db, contact)
+        .await
+        .map_err(|_| DeleteError::Intake)?;
+    let named = forget_requests(db, &requests)
+        .await
+        .map_err(|_| DeleteError::Quotes)?;
+    jobs.extend(named);
+    jobs.sort_unstable();
+    jobs.dedup();
+    delete_my_data(db, contact, &jobs)
+        .await
+        .map_err(|_| DeleteError::Privacy)
+}
+
+/// Which step of [`delete_her_data`] failed; the transaction then commits nothing.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+pub enum DeleteError {
+    /// Reading her requests or jobs failed.
+    #[error("reading her requests failed")]
+    Intake,
+    /// Deleting the stored job text failed.
+    #[error("deleting the job text failed")]
+    Quotes,
+    /// The vault and photo delete failed.
+    #[error("the vault delete failed")]
+    Privacy,
 }
 
 /// The four parts of the download (PRIV-031).

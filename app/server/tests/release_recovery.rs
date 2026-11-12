@@ -27,7 +27,7 @@ use askhava_core::api::{
 };
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer, TextIn, receive_text, record_answer};
-use askhava_jobs::api::{JobStatus, create, job_number, move_to};
+use askhava_jobs::api::{JobStatus, create, job_number, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
@@ -257,6 +257,13 @@ async fn quoted_job_of(pool: &PgPool, quoters: &[Uuid], emergency: bool) -> Uuid
     let job = create(&mut db, now(), emergency, Actor::System)
         .await
         .expect("job");
+    askhava_catalog::api::load_embedded(&mut db)
+        .await
+        .expect("catalog");
+    let types = ["AC not cooling".to_owned()];
+    record_job_facts(&mut db, job, "hvac_repair", &types)
+        .await
+        .expect("job facts");
     let open = (JobStatus::Intake, JobStatus::Open);
     let moved = move_to(&mut db, job, open, now(), Actor::System).await;
     assert_eq!(moved.expect("open"), Guarded::Applied(()));

@@ -696,6 +696,7 @@ dependencies = [
  "serde",
  "serde-saphyr",
  "serde_json",
+ "sha2 0.11.1",
  "sqlx",
  "thiserror 2.0.21",
  "tokio",
@@ -713,6 +714,7 @@ version = "0.1.0"
 dependencies = [
  "askhava-adapters",
  "askhava-businesses",
+ "askhava-catalog",
  "askhava-core",
  "askhava-fixtures",
  "askhava-intake",
