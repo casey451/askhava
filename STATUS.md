@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:15:51Z by runner f31e21d25745 (actions).
+Updated 2026-11-12T11:16:01Z by runner f31e21d25745 (actions).
 
-**Building: T377 in progress since 10:47Z; 238 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T345 in progress since 10:49Z; 238 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 238 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T377 claimed 10:47Z, lease until 13:47Z; lane 3: T345 claimed 10:49Z, lease until 13:49Z
+- **Lane:** lane 3: T345 claimed 10:49Z, lease until 13:49Z
 - **Week:** 93% used, 1.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:15Z, 0 min before this update
 - **Keeper:** last ran 11:15Z, next wake 13:49Z
@@ -20,6 +20,7 @@ Updated 2026-11-12T11:15:51Z by runner f31e21d25745 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T377 | adapters and stand-in (harness): every text asks Twilio for  | MERGE_PENDING | 1 | 28 min | 11:15Z |  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 1 | 8 min | 11:14Z | PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to l |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | MERGE_PENDING | 1 | 24 min | 11:05Z | merging main into the reviewed head conflicts in app/messaging/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T411 | quotes: the scrubbed job description and the shown and appro | done | 1 | 28 min | 10:36Z |  |
@@ -173,8 +174,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T377 (lease until 2026-11-12T13:47:28Z)
 - lane 3: T345 (lease until 2026-11-12T13:49:13Z)
 
 ## Last usage reading
-- {"task": "T280", "at": "2026-11-12T11:14:18Z", "input_tokens": 221, "cache_creation_input_tokens": 357451, "cache_read_input_tokens": 8701450, "output_tokens": 41493}
+- {"task": "T377", "at": "2026-11-12T11:15:37Z", "cache_read_input_tokens": 12911051, "cache_creation_input_tokens": 400605, "output_tokens": 87493, "input_tokens": 289}
