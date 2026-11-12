@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT run_started_at FROM payments.reconcile_checkpoint",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "run_started_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.reconcile_checkpoint",
+            "name": "run_started_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "cf8d4a3fc89702dabe8449d1a7c57c5b545eeded2ca75854182b5453edfa51ef"
+}
