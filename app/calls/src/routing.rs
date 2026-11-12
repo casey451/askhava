@@ -1,19 +1,21 @@
 //! PIN routing on a masked line and the paid-business read-back (CALL-003, CALL-004, CALL-005,
 //! CALL-025; D-026, D-480, D-1684 to D-1686).
 //!
-//! [`route`] is the pure rule for one turn of an incoming call to a pool number. A caller whose
-//! linked business, or whose own vault number, holds exactly one open line on that number is
-//! connected; anyone else, and a caller with two or more lines on it, must enter that job's
-//! 4-digit PIN, and a wrong PIN never connects (CALL-003, CALL-004). Since T262 a stored line's PIN
-//! is its `calls.number_pool.pin`, drawn at random when the line was assigned (`crate::pins`), and
-//! [`answer_call`] routes only on it, never on the line ID (D-1755, D-2091). At most 3 tries per call and 6 per calling number per pool number per day:
-//! the third wrong try, or the sixth of the day, hangs up and raises one High [`PIN_ALERT`], and a
-//! number that used its 6 is refused before the prompt (CALL-025). The day's count is stored by
-//! `crate::pins::voice_turn` and passed in here (`CallTurn::tries_today`, D-1685, D-1755). After the second wrong try, a
-//! phone linked to the business holding a line on the number hears that line's first name and
-//! street, but only on an A-attested call, and is connected only when it confirms (CALL-005,
-//! D-026); lines open only at the release of a paid or $0 pick, so that business is the paid one
-//! (D-1686). [`answer_call`] reads the caller, the lines and, for a read-back, the vault.
+//! [`route_with`] is the pure rule for one turn of an incoming call to a pool number. A caller
+//! whose linked business, or whose own vault number, holds exactly one open line on that number is
+//! connected; anyone else, and a caller with two or more lines on it, must enter that job's 4-digit
+//! PIN, and a wrong PIN never connects (CALL-003, CALL-004). Since T262 a stored line's PIN is its
+//! `calls.number_pool.pin`, drawn at random when the line was assigned (`crate::pins`), and
+//! [`answer_call`] routes only on it, never on the line ID; the ID-derived `job_pin` is gone
+//! (D-1755, D-2091, D-2247). At most 3 tries per call and 6 per calling number per pool number per
+//! day: the third wrong try, or the sixth of the day, hangs up and raises one High [`PIN_ALERT`],
+//! and a number that used its 6 is refused before the prompt (CALL-025). The day's count is stored
+//! by `crate::pins::voice_turn` and passed in here (`CallTurn::tries_today`, D-1685, D-1755). After
+//! the second wrong try, a phone linked to the business holding a line on the number hears that
+//! line's first name and street, but only on an A-attested call, and is connected only when it
+//! confirms (CALL-005, D-026); lines open only at the release of a paid or $0 pick, so that
+//! business is the paid one (D-1686). [`answer_call`] reads the caller, the lines and, for a
+//! read-back, the vault.
 //!
 //! T080 (CALL-013, CALL-023, D-485, D-1704): every PIN prompt is spoken words in a `Gather` that
 //! waits [`PinWait`] (the `ASKHAVA_PIN_WAIT_SECONDS` setting, at least and by default 10 seconds)
@@ -90,16 +92,6 @@ impl JobPin {
     }
 }
 
-/// The ID-derived PIN of D-1684 (the ID modulo 10,000), which is NOT a stored line's PIN since
-/// T262: [`answer_call`] and `pins::voice_turn` route only on `calls.number_pool.pin` and
-/// `pins::stored_pin` reads it (D-1755). Kept only for [`route`] over caller-built
-/// [`RoutedLine`]s and for `request_link`, whose files T262 does not own; a later task moves them
-/// to the stored PIN and removes this (D-2091).
-#[must_use]
-pub fn job_pin(line: Uuid) -> JobPin {
-    JobPin(u16::try_from(line.as_u128() % 10_000).unwrap_or_default())
-}
-
 /// Who is calling, as the sender directory and the vault know the number.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Party {
@@ -162,16 +154,12 @@ fn own_lines(party: Party, lines: &[RoutedLine]) -> Vec<RoutedLine> {
     lines.iter().filter(mine).copied().collect()
 }
 
-/// The pure routing rule for one turn (CALL-003, CALL-004, CALL-005, CALL-025, D-026); `lines`
-/// in assignment order, each line's PIN taken as [`job_pin`] (D-2091). See the module docs.
+/// The pure routing rule for one turn, `lines` in assignment order, each line's PIN from `pin_of`
+/// (`None`: the line has no PIN, so no PIN reaches it) (CALL-003, CALL-004, CALL-005, CALL-025,
+/// D-026). [`answer_call`] and `pins::voice_turn` pass each line's stored `calls.number_pool.pin`;
+/// there is no ID-derived PIN (D-2091, D-2247). See the module docs.
 #[must_use]
-pub fn route(party: Party, lines: &[RoutedLine], turn: CallTurn) -> Step {
-    route_with(party, lines, turn, |l| Some(job_pin(l.line)))
-}
-
-/// The routing rule with each line's PIN from `pin_of` (`None`: the line has no PIN, so no PIN
-/// reaches it) (CALL-003, CALL-004, CALL-005, CALL-025).
-pub(crate) fn route_with(
+pub fn route_with(
     party: Party,
     lines: &[RoutedLine],
     turn: CallTurn,
