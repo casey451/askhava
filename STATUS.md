@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:48:51Z by runner 9a870b31c911 (actions).
+Updated 2026-11-12T23:49:22Z by runner 9a870b31c911 (actions).
 
 **Building: T215 in progress since 23:45Z; 260 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-12T23:48:51Z by runner 9a870b31c911 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z
 - **Week:** 8% used, 167.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:48Z, 0 min before this update
-- **Keeper:** last ran 23:48Z, next wake 02:48Z
+- **Last run:** 23:49Z, 0 min before this update
+- **Keeper:** last ran 23:49Z, next wake 02:48Z
 
 ## Needs attention
 - BLOCKED T255: plan gap reported: PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclear.rs cannot build one (lib.rs declares mod release_proof as a sibling; CLAUDE.md of payments forbids a public constructor). release_proof.rs is owned by T189, T337, T408, T332, T359, not T255. paid_release needs a VerifiedStripeEvent and an adapter, so it cannot serve a (conn, pick) re-clear without a new event (SEC-030). Smallest fix: give T255 release_proof.rs to add a pub(crate) constructor from the stored success, or declare reclear as a child module inside release_proof.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T255 --plan-fix D-### --reason "..."` (D-2859)
