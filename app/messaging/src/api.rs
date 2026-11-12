@@ -36,7 +36,7 @@ pub use crate::checkin_email::{
 };
 pub use crate::coverage_email::{
     COVERAGE_EMAIL_TEMPLATE, CoverageFacts, OWNER_INBOX, coverage_lines, queue_coverage_email,
-    town_words,
+    town_words, trade_subject,
 };
 pub use crate::email::{
     COMPLAINT_ALERT, DailyLimit, EMAIL_ACTION, EmailClass, EmailEvent, EmailSent, EmailTo, FROM,

@@ -1,12 +1,12 @@
 //! The owner-inbox email for each request no business covers (OPS-041; T215, D-435, D-3332,
-//! D-3334).
+//! D-3334, D-3336).
 //!
 //! `intake::routing` queues one `intake.not_covered` task (one per request and trade) in the
 //! transaction that logs the request as recruiting demand. [`run_coverage_notice`] handles it:
 //! it reads the payload's trade, town, request number and month count (no homeowner detail is in
-//! it), has `messaging::api::queue_coverage_email` store the email once for the owner inbox and
-//! sends it through `messaging::api::send_email` to the address in [`CoverageMailer`]. The
-//! handler lives here, beside the other recruiting rules (BIZ-048), as architecture section 12
+//! it), has `messaging::api::queue_coverage_email` store the email once per request and trade
+//! for the owner inbox and sends it through `messaging::api::send_email` to the address in
+//! [`CoverageMailer`]. The handler lives here, beside the other recruiting rules (BIZ-048), as architecture section 12
 //! says; `businesses` may not name `intake`, so the composition registers it under
 //! `intake::api::NOT_COVERED_KIND`. A rerun stores and sends nothing more (SEC-018). Recruiting
 //! from the count follows BIZ-048 and is not done here.
@@ -103,9 +103,9 @@ fn payload(task: &Claimed) -> Result<Payload, HandlerError> {
     })
 }
 
-/// OPS-041, D-435: emails the owner inbox once about one not-covered request: trade, town,
-/// request number and the month's count, no homeowner detail; `Ok` once the provider took it,
-/// now or on an earlier run.
+/// OPS-041, D-435, D-3336: emails the owner inbox once per not-covered request and trade:
+/// trade, town, request number and the month's count, no homeowner detail; `Ok` once the
+/// provider took it, now or on an earlier run.
 ///
 /// # Errors
 ///

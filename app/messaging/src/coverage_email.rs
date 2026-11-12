@@ -1,11 +1,11 @@
 //! The owner-inbox email of one request no business covers (OPS-041; T215, D-435, D-3332,
-//! D-3334).
+//! D-3334, D-3336).
 //!
-//! `intake` queues one `intake.not_covered` task when it logs a request as recruiting demand;
-//! `businesses`' `coverage_notice` handler reads it and calls [`queue_coverage_email`], which
-//! stores one email in T094's email outbox for the owner inbox: the trade, the town, the request
-//! number and the count of requests not covered so far that Arizona month, in the shared layout
-//! (`queue_account_email`). [`CoverageFacts`] has no field for a homeowner's name, phone, email,
+//! `intake` queues one `intake.not_covered` task per request and trade when it logs recruiting
+//! demand; `businesses`' `coverage_notice` handler reads it and calls [`queue_coverage_email`],
+//! which stores one email per request and trade in T094's email outbox for the owner inbox: the
+//! trade, the town, the request number and the count of requests not covered so far that
+//! Arizona month, in the shared layout (`queue_account_email`). [`CoverageFacts`] has no field for a homeowner's name, phone, email,
 //! address or words, so none can reach the email (SEC-034, PRIV-001). The owner inbox is one fixed
 //! recipient ID, [`OWNER_INBOX`]; its address is given at send time by the composition, never
 //! stored. The weekly digest's roll-up by trade is T204's.
@@ -19,13 +19,29 @@ use crate::email::{MailboxKind, short_name};
 use crate::models::EmailError;
 use crate::templates::Language;
 
-/// The email template ID of the not-covered email; with [`OWNER_INBOX`] and the request it makes
-/// the email's key, so one request and trade gets one email (SEC-018).
+/// The email template ID of the not-covered email; with [`OWNER_INBOX`], the request and the
+/// trade's [`trade_subject`] it makes the email's key, so one request and trade gets one email
+/// (SEC-018, D-3336).
 pub const COVERAGE_EMAIL_TEMPLATE: &str = "owner_not_covered";
 
 /// The owner inbox's recipient ID in the email outbox: not a business mailbox, so no business
 /// address directory resolves it; the composition sends it to the owner-inbox address.
 pub const OWNER_INBOX: Uuid = Uuid::from_u128(0x0a5c_4a7a_0000_4000_8000_0000_0000_0041);
+
+/// The key action that turns a trade label into the opaque subject ID [`trade_subject`] gives.
+const TRADE_ACTION: &str = "email.owner_not_covered.trade";
+
+/// OPS-041, SEC-018 (D-3336): the trade's subject ID in the email's key: the first 128 bits of
+/// the keyed HMAC over the label, so the same trade always gives the same ID, two trades of one
+/// request give two IDs, and the stored ID holds no words.
+#[must_use]
+pub fn trade_subject(secret: &SecretString, trade: &str) -> Uuid {
+    let key = askhava_adapters::api::IdempotencyKey::derive(secret, TRADE_ACTION, &[trade]);
+    let bits = key.as_str().chars().take(32).fold(0u128, |acc, c| {
+        acc << 4 | u128::from(c.to_digit(16).unwrap_or(0))
+    });
+    Uuid::from_u128(bits)
+}
 
 /// What one not-covered email says (OPS-041): codes and counts only, no homeowner detail.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -81,8 +97,8 @@ pub fn coverage_lines(facts: &CoverageFacts<'_>) -> (String, Vec<String>) {
 }
 
 /// OPS-041, SEC-018: stores the not-covered email for `facts` once for the owner inbox at `now`
-/// (key over [`COVERAGE_EMAIL_TEMPLATE`], [`OWNER_INBOX`] and the request); returns the row ID
-/// and whether this call created it. `send_email` sends it to the owner-inbox address.
+/// (key over [`COVERAGE_EMAIL_TEMPLATE`], [`OWNER_INBOX`], the request and the trade's
+/// [`trade_subject`], D-3336); returns the row ID and whether this call created it. `send_email` sends it to the owner-inbox address.
 ///
 /// # Errors
 ///
@@ -95,6 +111,7 @@ pub async fn queue_coverage_email(
     now: Timestamp,
 ) -> Result<(Uuid, bool), EmailError> {
     let (subject, lines) = coverage_lines(facts);
-    let ids = (COVERAGE_EMAIL_TEMPLATE, OWNER_INBOX, [facts.request]);
+    let subjects = [facts.request, trade_subject(keys.0, facts.trade)];
+    let ids = (COVERAGE_EMAIL_TEMPLATE, OWNER_INBOX, subjects);
     crate::api::queue_account_email(db, keys, (ids.0, ids.1, &ids.2), (&subject, &lines), now).await
 }

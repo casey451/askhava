@@ -1,12 +1,13 @@
 //! The owner-inbox email for each request no business covers (TD-OPS-18, TD-INT-07; T215,
-//! D-435, D-3332, D-3334; OPS-041, INT-016, INT-017, INT-018).
+//! D-435, D-3332, D-3334, D-3336; OPS-041, INT-016, INT-017, INT-018).
 //!
 //! A boat-lift request (a trade not open) closes as Not covered with the INT-017 reply, one
 //! demand row and one `intake.not_covered` task holding the trade, town, request number and the
 //! month's count, never the homeowner's contact or words; a second run queues nothing more; a
 //! second request that month counts 2. `businesses`' handler emails the owner inbox once through a
 //! fake provider, however often it runs, and the email holds no homeowner detail. A town off the
-//! list closes early with no task. The digest's roll-up is TD-OPS-09's; the count line TD-INT-29's.
+//! list closes early with no task. Nobody covering one job of a two-job request queues the task
+//! for that job alone; two uncovered trades of one request get one email each (D-3336). The digest's roll-up is TD-OPS-09's; the count line TD-INT-29's.
 //! Fake IDs, addresses and texts only.
 
 use std::sync::{Arc, Mutex};
@@ -19,10 +20,12 @@ use askhava_core::api::{Claimed, HandlerError, SystemClock};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     JobStart, NOT_COVERED_KIND, NOT_COVERED_TEMPLATE, Opened, Outcome, Request, Routing, TextIn,
-    Why, apply_routing, begin_job, receive_text, recruiting_demand, route, trade_is_open,
+    Why, apply_routing, begin_job, receive_text, recruiting_demand, route, split_request,
+    tell_coverage, trade_is_open,
 };
 use askhava_jobs::api::{current, job_number};
 use askhava_messaging::api::{COVERAGE_EMAIL_TEMPLATE, DailyLimit, Language, MailboxKind};
+use askhava_quotes::api::Coverage;
 use jiff::Timestamp;
 use secrecy::SecretString;
 use serde_json::{Value, json};
@@ -305,4 +308,111 @@ async fn td_ops_18_no_sender_or_a_bad_payload_sends_nothing(pool: PgPool) {
         !sent[0].2.contains("Request number"),
         "no job, no number line"
     );
+}
+
+/// TD-INT-07 (INT-017, OPS-041, D-1020): when nobody covers one job of a request whose other job
+/// is still live, only that job goes Not covered and one owner-email task is queued for its trade
+/// with its own number; telling it again queues nothing more.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_07_one_uncovered_job_queues_its_owner_email_task(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    askhava_catalog::api::load_embedded(&mut db)
+        .await
+        .expect("catalog");
+    let msg = text(Uuid::from_u128(0x7206));
+    let key = secret();
+    let handled = receive_text(&mut db, &key, &msg, Settings::default());
+    let conversation = handled.await.expect("open").conversation.expect("request");
+    let mut start = JobStart {
+        conversation,
+        words: WORDS,
+        emergency: false,
+        trade: "boat_lift",
+        at: at(),
+    };
+    let Opened::Created(job) = begin_job(&mut db, &start).await.expect("job") else {
+        panic!("a new job");
+    };
+    start.trade = "plumbing_repair";
+    let Opened::Created(other) = split_request(&mut db, "SPLIT", &start)
+        .await
+        .expect("split")
+    else {
+        panic!("a second job");
+    };
+    let req = Request {
+        town: TOWN,
+        area: &AREA,
+        trade: "boat_lift",
+        trade_open: true,
+        words: WORDS,
+        move_states: None,
+        job_types: &[],
+    };
+    let routing = Routing {
+        conversation,
+        msg: &msg,
+        language: Language::En,
+        spanish_on: false,
+        label: "boat lift",
+        job_type: None,
+    };
+    for _ in 0..2 {
+        tell_coverage(
+            &mut db,
+            &secret(),
+            (&req, Coverage::NotCovered, job),
+            &routing,
+        )
+        .await
+        .expect("tell");
+    }
+    let number = job_number(&mut db, job).await.expect("number");
+    let want = json!({"conversation": conversation, "trade": "boat_lift", "label": "boat lift",
+        "town": TOWN, "number": number, "month_count": 1});
+    assert_eq!(
+        tasks(&mut db).await,
+        vec![want],
+        "one task, for the told job"
+    );
+    let told = current(&mut db, job).await.expect("job").status;
+    assert_eq!(told.code(), "not_covered");
+    let live = current(&mut db, other).await.expect("other").status;
+    assert_eq!(live.code(), "intake", "the other job is left as it was");
+}
+
+/// TD-OPS-18 (OPS-041, SEC-018, D-3336): one request with two uncovered trades gets one owner
+/// email for each trade, and running both tasks again stores and sends nothing more.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_18_two_uncovered_trades_of_one_request_get_one_email_each(pool: PgPool) {
+    let request = Uuid::from_u128(0x7207);
+    let boat = json!({"conversation": request, "trade": "boat_lift", "label": "boat lift",
+        "town": TOWN, "number": 41, "month_count": 1});
+    let mut pool_trade = boat.clone();
+    pool_trade["trade"] = json!("pool_service");
+    pool_trade["label"] = json!("pool service");
+    let mail = mailer();
+    for _ in 0..2 {
+        for payload in [&boat, &pool_trade] {
+            run_coverage_notice(
+                pool.clone(),
+                Some(Arc::clone(&mail)),
+                claimed(payload.clone()),
+            )
+            .await
+            .expect("emailed");
+        }
+    }
+    let sent = mail.provider.sent.lock().expect("lock").clone();
+    assert_eq!(sent.len(), 2, "one email per trade, none on the rerun");
+    assert!(sent[0].2.contains("Trade: boat lift"));
+    assert!(sent[1].2.contains("Trade: pool service"));
+    let mut db = pool.acquire().await.expect("conn");
+    let rows: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM messaging.email_outbox WHERE template_id = $1")
+            .bind(COVERAGE_EMAIL_TEMPLATE)
+            .fetch_one(&mut *db)
+            .await
+            .expect("rows");
+    assert_eq!(rows, 2);
 }
