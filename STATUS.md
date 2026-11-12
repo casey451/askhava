@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T20:57:16Z by runner fc3bfd90d17c (actions).
+Updated 2026-11-12T20:57:30Z by runner fc3bfd90d17c (actions).
 
-**Building: T414 in progress since 20:28Z; 253 of 403 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 20:57Z; 253 of 403 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 253 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T414 claimed 20:28Z, lease until 23:28Z
+- **Lane:** idle since 20:57Z (no task in progress)
 - **Week:** 4% used, 186.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:53Z, 4 min before this update
 - **Keeper:** last ran 20:48Z, next wake 23:31Z
@@ -18,9 +18,10 @@ Updated 2026-11-12T20:57:16Z by runner fc3bfd90d17c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T414 | Stand-ins (harness): end-to-end specs can read the emails th | MERGE_PENDING | 3 | 28 min | 20:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | MERGE_PENDING | 2 | 82 min | 20:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T416 | Performance: database pool and query measurements (PERF-004) | MERGE_PENDING | 1 | 54 min | 19:59Z |  |
-| T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 2 | 15 min | 19:11Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 2 | 15 min | 19:11Z |  |
 | T350 | privacy: an opt-out, HELP or START word is never taken or re | done | 1 | 103 min | 19:09Z |  |
 | T362 | server: the built static files are served at /static/<crate> | done | 3 | 26 min | 19:03Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T346 | portals: every homeowner Verify code is bound to its purpose | done | 1 | 40 min | 18:57Z |  |
@@ -167,7 +168,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T414 (lease until 2026-11-12T23:28:29Z)
 
 ## Last usage reading
-- {"task": "T251", "at": "2026-11-12T20:23:37Z", "cache_creation_input_tokens": 78254, "cache_read_input_tokens": 591199, "output_tokens": 7191, "input_tokens": 50}
+- {"task": "T414", "at": "2026-11-12T20:57:15Z", "cache_creation_input_tokens": 157110, "output_tokens": 26149, "input_tokens": 106, "cache_read_input_tokens": 1578856}
