@@ -23,7 +23,7 @@ use subtle::ConstantTimeEq;
 use crate::email_verification::{
     CHECK_TRIES, CODE_LIFE, EmailCheckError, STEP_UP_LIFE, log_notice_change,
 };
-use crate::team::{Acting, NoticePurpose, TeamError, members};
+use crate::team::{Acting, NoticePurpose, TeamError, lock_mailbox, members};
 
 /// The task whose sender emails [`backup_changed_words`] to a person's main address (SEC-024).
 pub const BACKUP_CHANGED_KIND: &str = "businesses.backup_changed";
@@ -189,13 +189,51 @@ pub async fn request_backup(
     Ok(code_of(secret, id, now))
 }
 
+/// BIZ-040: counts one wrong or late try on the request `id` and commits it.
+async fn count_try(
+    mut tx: sqlx::Transaction<'_, sqlx::Postgres>,
+    id: Uuid,
+) -> Result<bool, EmailCheckError> {
+    let q = sqlx::query!(
+        "UPDATE businesses.backup_address SET tries = tries + 1 WHERE id = $1",
+        id
+    );
+    db(q.execute(&mut *tx).await)?;
+    db(tx.commit().await)?;
+    Ok(false)
+}
+
+/// BIZ-043: makes request `id` `member`'s verified backup, removing an earlier verified one.
+async fn verify(
+    tx: &mut PgConnection,
+    (business, member, id): (Uuid, Uuid, Uuid),
+    now: Timestamp,
+) -> Result<(), EmailCheckError> {
+    let q = sqlx::query!(
+        "UPDATE businesses.backup_address SET removed_at = $3 WHERE business_id = $1 \
+         AND member_id = $2 AND verified_at IS NOT NULL AND removed_at IS NULL",
+        business,
+        member,
+        now.to_sqlx() as _
+    );
+    db(q.execute(&mut *tx).await)?;
+    let q = sqlx::query!(
+        "UPDATE businesses.backup_address SET verified_at = $2 WHERE id = $1",
+        id,
+        now.to_sqlx() as _
+    );
+    db(q.execute(&mut *tx).await).map(|_| ())
+}
+
 /// BIZ-043, BIZ-040: takes the code emailed to `member`'s newest backup request. Right, within
 /// [`CODE_LIFE`] and [`CHECK_TRIES`], while the member is current: the backup is verified, an
 /// earlier verified one is removed, the change is audit-logged and the main address told, in one
-/// transaction. Returns whether the code was taken.
+/// transaction. Returns whether the code was taken. A right code is refused, nothing written,
+/// when the mailbox has meanwhile become the main address of a current member (checked again
+/// under `team::lock_mailbox`, so a racing `add_member` waits; D-3175).
 ///
 /// # Errors
-/// [`EmailCheckError::Database`].
+/// [`EmailCheckError::NotAllowed`] or `Database`.
 pub async fn confirm_backup(
     conn: &mut PgConnection,
     secret: &SecretString,
@@ -205,7 +243,8 @@ pub async fn confirm_backup(
 ) -> Result<bool, EmailCheckError> {
     let mut tx = db(conn.begin().await)?;
     let q = sqlx::query!(
-        "SELECT b.id, b.requested_by, b.sent_at, b.tries FROM businesses.backup_address b \
+        "SELECT b.id, b.mailbox_id, b.requested_by, b.sent_at, b.tries \
+         FROM businesses.backup_address b \
          JOIN businesses.team_member m ON m.id = b.member_id AND m.removed_at IS NULL \
          WHERE b.business_id = $1 AND b.member_id = $2 AND b.verified_at IS NULL \
          AND b.removed_at IS NULL FOR UPDATE OF b",
@@ -219,28 +258,13 @@ pub async fn confirm_backup(
     let live = row.tries < CHECK_TRIES && now.duration_since(sent) <= CODE_LIFE;
     let want = code_of(secret, row.id, sent);
     if !(live && bool::from(want.as_bytes().ct_eq(code.as_bytes()))) {
-        let q = sqlx::query!(
-            "UPDATE businesses.backup_address SET tries = tries + 1 WHERE id = $1",
-            row.id
-        );
-        db(q.execute(&mut *tx).await)?;
-        db(tx.commit().await)?;
-        return Ok(false);
+        return count_try(tx, row.id).await;
     }
-    let q = sqlx::query!(
-        "UPDATE businesses.backup_address SET removed_at = $3 WHERE business_id = $1 \
-         AND member_id = $2 AND verified_at IS NOT NULL AND removed_at IS NULL",
-        business,
-        member,
-        now.to_sqlx() as _
-    );
-    db(q.execute(&mut *tx).await)?;
-    let q = sqlx::query!(
-        "UPDATE businesses.backup_address SET verified_at = $2 WHERE id = $1",
-        row.id,
-        now.to_sqlx() as _
-    );
-    db(q.execute(&mut *tx).await)?;
+    db(lock_mailbox(&mut tx, business, row.mailbox_id).await)?;
+    if is_main_address(&mut tx, business, row.mailbox_id).await? {
+        return Err(EmailCheckError::NotAllowed);
+    }
+    verify(&mut tx, (business, member, row.id), now).await?;
     let action = ("businesses.backup_changed", FIELD);
     log_notice_change(&mut tx, business, (row.requested_by, member), action).await?;
     tell_main(&mut tx, (business, member, row.id), now).await?;
@@ -281,7 +305,8 @@ pub async fn remove_backup(
 /// The opaque email IDs a notice of `purpose` goes to (D-492): the owner plus every current
 /// member whose roles fit it, the owner first, each followed by that person's verified backup
 /// (BIZ-043) except for account notices. The release (`PicksAndRelease`) therefore reaches a
-/// backup only for the owner or a "Confirm and billing" member (D-329). `quotes`, `picks` and
+/// backup only for the owner or a "Confirm and billing" member (D-329). Each mailbox is listed
+/// once, where it first comes (BIZ-043, D-3176). `quotes`, `picks` and
 /// `businesses` call it before enqueuing a notice.
 ///
 /// # Errors
@@ -308,8 +333,14 @@ pub async fn notice_addresses(
         let mine = backups.iter().filter(move |b| Some(b.member_id) == member);
         mine.filter(move |_| with_backup).map(|b| b.mailbox_id)
     };
-    Ok(main
+    let mut out: Vec<Uuid> = Vec::new();
+    for id in main
         .iter()
         .flat_map(|&m| std::iter::once(m).chain(backup_of(m)))
-        .collect())
+    {
+        if !out.contains(&id) {
+            out.push(id);
+        }
+    }
+    Ok(out)
 }
