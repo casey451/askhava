@@ -2,6 +2,10 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Runner: two tasks may now share a part of the app, unless its notes file is full (D-3303, November 12)
+
+- **What changed.** At 19:31 UTC only 4 of 7 lanes were busy because every waiting task touched a part of the app (a crate) another task was already changing. The runner now lets two tasks work in one crate at a time instead of one, except in a crate whose notes file is already at its 120-line limit, which still takes one at a time (today that is businesses, intake, messaging, payments, picks, portals and quotes, so the gain is mostly in the other crates). The most urgent waiting task still keeps a place in its crates. If more than 1 merge in 5 needs an extra session over the next 10 merges, or the checks start queueing, the overseer sets it back to one (`crate_cap` to 1 in `kit/runner.json`). Nothing needs you now.
+
 ## Runner: seven lanes, and two lanes never work in the same part of the app at once (D-3269, November 12)
 
 - **What you asked.** "Okay, so go ahead and do whatever we need to do to make that all work properly", for running seven tasks at once without the merge collisions.
