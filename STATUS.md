@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:10:48Z by runner b513c7d4ca37 (actions).
+Updated 2026-11-12T11:14:19Z by runner b513c7d4ca37 (actions).
 
-**Building: T280 in progress since 11:06Z; 238 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T377 in progress since 10:47Z; 238 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 238 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T280 claimed 11:06Z, lease until 14:06Z; lane 2: T377 claimed 10:47Z, lease until 13:47Z; lane 3: T345 claimed 10:49Z, lease until 13:49Z
+- **Lane:** lane 2: T377 claimed 10:47Z, lease until 13:47Z; lane 3: T345 claimed 10:49Z, lease until 13:49Z
 - **Week:** 93% used, 1.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:10Z, 0 min before this update
+- **Last run:** 11:13Z, 1 min before this update
 - **Keeper:** last ran 11:10Z, next wake 13:49Z
 
 ## Needs attention
+- BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 25 problem(s) on tasks still to run (+103 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
@@ -19,6 +20,7 @@ Updated 2026-11-12T11:10:48Z by runner b513c7d4ca37 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 1 | 8 min | 11:14Z | PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to l |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | MERGE_PENDING | 1 | 24 min | 11:05Z | merging main into the reviewed head conflicts in app/messaging/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T411 | quotes: the scrubbed job description and the shown and appro | done | 1 | 28 min | 10:36Z |  |
 | T343 | harness: the DONE pick tests' fixtures record each job's fac | done | 1 | 24 min | 10:23Z |  |
@@ -170,9 +172,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T280 (lease until 2026-11-12T14:06:16Z)
+- nothing
 - lane 2: T377 (lease until 2026-11-12T13:47:28Z)
 - lane 3: T345 (lease until 2026-11-12T13:49:13Z)
 
 ## Last usage reading
-- {"task": "T268", "at": "2026-11-12T11:05:07Z", "output_tokens": 17145, "cache_creation_input_tokens": 133864, "input_tokens": 98, "cache_read_input_tokens": 1587326}
+- {"task": "T280", "at": "2026-11-12T11:14:18Z", "input_tokens": 221, "cache_creation_input_tokens": 357451, "cache_read_input_tokens": 8701450, "output_tokens": 41493}

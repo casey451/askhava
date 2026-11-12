@@ -2705,3 +2705,4 @@
 - 2026-11-12T11:08:40Z runner b513c7d4ca37 (actions): {}; T404 estimated 5.3M tokens (calibrated); week has 1.4M left (no five-hour budget, D-3056) after 8.6M still running in another lane (session_reading 2026-11-12T11:05:43Z (week)); waiting until 2026-11-12T17:00:00Z
 - 2026-11-12T11:10:32Z runner b513c7d4ca37 (actions): {}
 - 2026-11-12T11:10:48Z runner b513c7d4ca37 (actions): {}
+- 2026-11-12T11:14:19Z runner b513c7d4ca37 (actions): {"T280": "IN_PROGRESS -> BLOCKED"}
