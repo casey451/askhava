@@ -126,8 +126,10 @@ def _keys(node: Any) -> list[str]:
 
 
 def test_schema_with_an_unsupported_keyword_gets_the_api_400() -> None:
-    """TD-AI-28: `minimum` anywhere, every other unsupported keyword, `minItems` above 1 and an
-    object without `additionalProperties: false` are refused as the API does."""
+    """TD-AI-28: `minimum` anywhere (under `properties`, `items`, `anyOf` or `$defs`), every other
+    unsupported keyword, `minItems` above 1 and an object without `additionalProperties: false`
+    (`type` "object", a type list holding "object", or `properties` with no `type`) are refused
+    as the API does."""
     planted = sent_schema()
     planted["properties"] = {**planted["properties"], "trade_confidence": {"type": "number", "minimum": 0}}
     cases = [planted, {**sent_schema(), "additionalProperties": True}]
@@ -135,6 +137,12 @@ def test_schema_with_an_unsupported_keyword_gets_the_api_400() -> None:
         cases.append({**sent_schema(), "properties": {"x": {"type": "string", key: 1}}})
     cases.append({**sent_schema(), "properties": {"x": {"type": "array", "minItems": 2}}})
     cases.append({**sent_schema(), "properties": {"x": {"type": "object", "properties": {}}}})
+    cases.append({**sent_schema(), "properties": {"x": {"type": ["object", "null"], "properties": {}}}})
+    cases.append({**sent_schema(), "properties": {"x": {"properties": {"y": {"type": "string"}}}}})
+    deep = {"type": "string", "minimum": 0}
+    cases.append({**sent_schema(), "properties": {"x": {"type": "array", "items": deep}}})
+    cases.append({**sent_schema(), "properties": {"x": {"anyOf": [{"type": "null"}, deep]}}})
+    cases.append({**sent_schema(), "$defs": {"d": deep}, "properties": {"x": {"$ref": "#/$defs/d"}}})
     for schema in cases:
         status, body, _ = ai.messages(structured(schema))
         assert status == 400, schema
@@ -143,12 +151,14 @@ def test_schema_with_an_unsupported_keyword_gets_the_api_400() -> None:
 
 def test_committed_schema_as_sent_is_accepted() -> None:
     """TD-AI-28: the committed schema, as `intake_schema` sends it, gets a reading; `minItems` 0
-    or 1 and a property named like a keyword are allowed."""
+    or 1, a property named like a keyword and a keyword inside a `default` value are allowed."""
     status, body, _ = ai.messages(structured(sent_schema()))
     assert status == 200 and body["stop_reason"] == "end_turn"
     assert ai.validate(json.loads(body["content"][0]["text"]))["trade"] == "plumbing"
     named = {**sent_schema(), "properties": {"minimum": {"type": "array", "minItems": 1}}}
     assert ai.messages(structured(named))[0] == 200
+    valued = {**sent_schema(), "properties": {"x": {"type": "string", "default": {"minimum": 1}}}}
+    assert ai.messages(structured(valued))[0] == 200
 
 
 def test_committed_schema_holds_no_unsupported_keyword() -> None:

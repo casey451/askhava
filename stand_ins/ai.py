@@ -115,6 +115,18 @@ def read_request(text: ScrubbedText, tools: list[Any] | None = None) -> dict[str
     return validate(reading)
 
 
+VALUE_KEYS = ("enum", "const", "description", "title", "default", "examples")
+
+
+def _is_object(schema: dict[str, Any]) -> bool:
+    """True when the schema describes an object: `type` is "object" or a list holding it, or it
+    has `properties` with no `type` at all (D-2760)."""
+    kind = schema.get("type")
+    if kind is None:
+        return "properties" in schema
+    return kind == "object" or (isinstance(kind, list) and "object" in kind)
+
+
 def unsupported_keyword(schema: Any) -> str | None:
     """The first keyword in `schema`, at any depth, that the Claude API refuses with a 400, or an
     object without `additionalProperties: false`; None when the schema is accepted (D-2760)."""
@@ -127,10 +139,10 @@ def unsupported_keyword(schema: Any) -> str | None:
             return key
     if schema.get("minItems", 0) not in (0, 1):
         return "minItems"
-    if schema.get("type") == "object" and schema.get("additionalProperties") is not False:
+    if _is_object(schema) and schema.get("additionalProperties") is not False:
         return "additionalProperties"
     nested = [list(v.values()) if k in ("properties", "$defs") and isinstance(v, dict) else v
-              for k, v in schema.items() if k not in ("enum", "const", "description", "title")]
+              for k, v in schema.items() if k not in VALUE_KEYS]
     return next((k for k in map(unsupported_keyword, nested) if k), None)
 
 
