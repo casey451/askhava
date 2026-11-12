@@ -2372,6 +2372,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Worth a look.** A business whose stored name fails that check, or that has no name stored, is left out of the list and you get one digest alert naming only the business, not the name. A business can't edit its name in the portal yet.
 - **Nothing needs you now.**
 
+## T317: a limit on new requests by text, and LIST names each business (D-3084 to D-3087)
+
+- **What changed.** A phone can open at most 5 new requests by text in an hour (and all phones together have an hourly cap); a 6th is not answered and you get one alert with no phone or words in it. Replies inside an open request, HELP, STOP and START after a STOP are never limited. A LIST reply now names each business that quoted.
+- **One thing you may want changed.** A text that matches the 911 list (for example "I smell gas") is never limited, so the homeowner always gets the 911 safety text, even at her limit. The cost: someone sending many such texts from many phones would get past the hourly cap. If you want a separate cap on emergency texts, say so; it needs a spec change.
+- **Nothing needs you now.**
+
 ## Runner: lanes now prefer different parts of the app (D-3082)
 
 - **What changed.** When several tasks are equally urgent, the runner now starts first one that works in a part of the app no other lane is working in. Two lanes in the same part both edit its notes file, and the second then needs an extra session to merge; that happened 6 times today (3 in portals, 2 in payments, 1 in quotes).
