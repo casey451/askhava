@@ -24,7 +24,7 @@ use secrecy::SecretString;
 
 /// The time zones of Canada in `area_codes.json`: a code listed under one of these is Canadian,
 /// so the roaming line and the quiet-hours table read one source (CON-018, QH-002, D-2630).
-const CANADIAN_ZONES: [&str; 12] = [
+pub(crate) const CANADIAN_ZONES: [&str; 12] = [
     "America/St_Johns",
     "America/Halifax",
     "America/Toronto",
