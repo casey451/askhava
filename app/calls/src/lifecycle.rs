@@ -35,7 +35,8 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::models::CallsError;
-use crate::routing::{Party, job_pin};
+use crate::pins::stored_pin;
+use crate::routing::Party;
 
 /// CALL-009: a line closes this many days after it opened.
 pub const LINE_DAYS: i64 = 30;
@@ -267,11 +268,14 @@ pub fn last4(phone: &SecretString) -> Option<String> {
 /// Queues the LINK notice for a blocked call from the unlinked phone `blocked` on line `line` at
 /// `now`: emailed to the owner and every "Confirm and billing" member, and texted ("Reply LINK
 /// <PIN>") only to the business's signed-up main phone when the business chose text
-/// ([`LINK_TEXT_TO`]); it names the last 4 digits and the line's PIN (CALL-011, D-078, D-311,
-/// D-1696). Once per line: a later blocked call on the same line, from any phone, queues nothing,
-/// as the business already holds the line's PIN. The full number is never stored or sent.
-/// Returns whether a notice was queued now: `false` when the line is not open, the number has
-/// fewer than 4 digits, or the line's notice was already queued.
+/// ([`LINK_TEXT_TO`]); it names the last 4 digits and the line's stored PIN
+/// (`calls.number_pool.pin`, read with [`stored_pin`] in this transaction), the PIN the voice
+/// route accepts (CALL-011, CALL-003, D-078, D-311, D-1696, D-2247). Once per line: a later
+/// blocked call on the same line, from any phone, queues nothing, as the business already holds
+/// the line's PIN. The full number is never stored or sent.
+/// Returns whether a notice was queued now: `false` when the line is not open, the line has no
+/// stored PIN (opened before migration 0151), the number has fewer than 4 digits, or the line's
+/// notice was already queued.
 ///
 /// # Errors
 ///
@@ -296,9 +300,12 @@ pub async fn request_link(
     let Some(business) = business else {
         return Ok(false);
     };
+    let Some(pin) = stored_pin(&mut tx, line).await? else {
+        return Ok(false);
+    };
     let notice = (
         LINK_TEMPLATE,
-        json!({ "number": last4, "job": job_pin(line).digits() }),
+        json!({ "number": last4, "job": pin.digits() }),
     );
     let mut fields = serde_json::Map::new();
     fields.insert("text_to".to_owned(), json!(LINK_TEXT_TO));

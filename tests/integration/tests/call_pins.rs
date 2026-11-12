@@ -5,7 +5,7 @@
 use askhava_adapters::api::{MaskedPool, TwilioConfig};
 use askhava_calls::api::{
     Attestation, CallsError, Connected, IncomingCall, JobPin, PIN_ALERT, POOL_ALERT, VoiceCall,
-    VoiceKeys, VoiceReply, assign_number, job_pin, stored_pin, voice_turn,
+    VoiceKeys, VoiceReply, assign_number, stored_pin, voice_turn,
 };
 use askhava_core::api::Settings;
 use askhava_privacy::api::Vault;
@@ -139,7 +139,8 @@ async fn td_call_13_five_hundred_lines_get_unique_stored_pins(db: PgPool) {
     for _ in 0..500 {
         let line = new_line(&mut db, &pool).await.expect("line");
         let pin = stored_pin(&mut db, line).await.expect("read").expect("pin");
-        derived += usize::from(pin == job_pin(line));
+        let id_digits = format!("{:04}", line.as_u128() % 10_000);
+        derived += usize::from(pin.digits() == id_digits);
         pins.push(pin.digits());
     }
     let mut unique = pins.clone();
