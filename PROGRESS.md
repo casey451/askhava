@@ -2795,3 +2795,4 @@
 - 2026-11-12T13:06:42Z runner 919ab4941c81 (actions): {}
 - 2026-11-12T13:08:15Z runner 919ab4941c81 (actions): {}
 - 2026-11-12T13:08:34Z runner 919ab4941c81 (actions): {}
+- 2026-11-12T13:10:50Z runner 919ab4941c81 (actions): {}; T350 estimated 3.2M tokens (calibrated); week has -494k left (no five-hour budget, D-3056) after 6.5M still running in another lane (session_reading 2026-11-12T13:08:14Z (week)); waiting until 2026-11-12T17:00:00Z
