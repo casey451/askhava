@@ -41,9 +41,11 @@ pub mod no_handler_alert;
 pub mod offdb_stream;
 pub mod release_sink;
 pub mod request_timeout;
+pub mod static_files;
 pub mod voice_status;
 
 use request_timeout::RequestTimeout;
+use static_files::StaticRoot;
 
 /// Installs rustls' aws-lc-rs provider as the process default, so sqlx and
 /// reqwest share one TLS provider (D-481, D-488). Call it first in `main`.
@@ -85,12 +87,14 @@ pub type Hooks = (
     Option<release_sink::StripeHooks>,
 );
 
-/// `build_router`'s third argument: the optional [`Hooks`] and the whole-request time limit
-/// (D-1870). `main` passes `(hooks, RequestTimeout::from_settings(&settings))`; bare [`Hooks`]
-/// take [`RequestTimeout::DEFAULT`].
+/// `build_router`'s third argument: the optional [`Hooks`], the whole-request time limit
+/// (D-1870) and the built files' folder (D-2633). `main` passes `(hooks,
+/// RequestTimeout::from_settings(&settings), StaticRoot::from_settings(&settings))`; bare
+/// [`Hooks`] take [`RequestTimeout::DEFAULT`], and both shorter forms the image's folder.
 pub struct RouterParts {
     hooks: Hooks,
     limit: RequestTimeout,
+    statics: StaticRoot,
 }
 
 impl From<Hooks> for RouterParts {
@@ -98,13 +102,29 @@ impl From<Hooks> for RouterParts {
         Self {
             hooks,
             limit: RequestTimeout::DEFAULT,
+            statics: StaticRoot::default(),
         }
     }
 }
 
 impl From<(Hooks, RequestTimeout)> for RouterParts {
     fn from((hooks, limit): (Hooks, RequestTimeout)) -> Self {
-        Self { hooks, limit }
+        let statics = StaticRoot::default();
+        Self {
+            hooks,
+            limit,
+            statics,
+        }
+    }
+}
+
+impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
+    fn from((hooks, limit, statics): (Hooks, RequestTimeout, StaticRoot)) -> Self {
+        Self {
+            hooks,
+            limit,
+            statics,
+        }
     }
 }
 
@@ -119,7 +139,8 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
 /// headers on every response, a 404 included (T051). The homeowner's quote page is `portals`'
 /// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055); the
 /// private feedback page after Done is `/f/{token}` (`feedback`, T230); the check-in answer page
-/// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231).
+/// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231). The built
+/// browser files are served at `/static/<crate>/` from the parts' folder ([`static_files`], T362).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241) and the placed calls' status and safety-key routes
 /// (`voice_status`, CALL-022, OPS-028, T378); `None` adds none. `voice` ([`voice_hooks`]) adds the
@@ -133,7 +154,11 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
 /// runs under the whole-request time limit (`request_timeout`, 503 with `Retry-After`, D-1870)
 /// and, innermost, the panic layer (500 naming no panic message, D-2208).
 pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterParts>) -> Router {
-    let RouterParts { hooks, limit } = parts.into();
+    let RouterParts {
+        hooks,
+        limit,
+        statics,
+    } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
@@ -156,6 +181,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(voice)
         .merge(calls)
         .merge(stripe)
+        .merge(static_files::router(&statics))
         .layer(request_timeout::catch_panic())
         .layer(axum::middleware::from_fn_with_state(
             limit,
