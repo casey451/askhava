@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-12T01:15:23Z by runner 162c61d4f51a (actions).
+Updated 2026-11-12T01:15:50Z by runner fe7a56647b29 (actions).
 
-**Building: T325 in progress since 01:11Z; 218 of 382 done; week 80% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T325 in progress since 01:11Z; 218 of 383 done; week 80% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 218 of 382 build tasks (owner gates not counted)
+- **Tasks done:** 218 of 383 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T325 claimed 01:11Z, lease until 04:11Z
 - **Week:** 80% used, 32.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
@@ -12,12 +12,12 @@ Updated 2026-11-12T01:15:23Z by runner 162c61d4f51a (actions).
 - **Keeper:** last ran 01:15Z, next wake 04:14Z
 
 ## Needs attention
-- Strict plan check red: 5 problem(s) on tasks still to run (+67 on DONE tasks); first: T106: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+67 on DONE tasks); first: T100: stored context_pct 45% but it measures 49%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T368 | businesses: the capability checklist offers every job type t | MERGE_PENDING | 1 | 25 min | 01:13Z |  |
+| T368 | businesses (harness): the capability checklist offers every  | MERGE_PENDING | 1 | 25 min | 01:13Z |  |
 | T317 | server and intake: the inbound text route applies SEC-014's  | done | 2 | 53 min | 00:16Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
 | T313 | messaging and server: an EMERGENCY card notice goes at night | MERGE_PENDING | 1 | 35 min | 00:03Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | MERGE_PENDING | 2 | 23 min | 23:45Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md, app/quotes/src/api.rs; a resync merges it in on th |
@@ -117,8 +117,8 @@ Updated 2026-11-12T01:15:23Z by runner 162c61d4f51a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 214 of 733 (29.2%) · partial 345 · unstarted 174
-**Tasks merged (throughput only):** 218 of 382
+**Requirements verified:** 212 of 733 (28.9%) · partial 347 · unstarted 174
+**Tasks merged (throughput only):** 218 of 383
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -130,7 +130,7 @@ Updated 2026-11-12T01:15:23Z by runner 162c61d4f51a (actions).
 | fees | 12 | 39 | 1 | 52 |
 | intake | 21 | 16 | 6 | 43 |
 | job-cards | 12 | 10 | 2 | 24 |
-| licensing | 22 | 26 | 0 | 48 |
+| licensing | 20 | 28 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 18 | 24 | 3 | 45 |
 | ops-recovery | 2 | 6 | 46 | 54 |
