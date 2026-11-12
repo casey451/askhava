@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T13:35:27Z by runner 9bb0f409340c (actions).
+Updated 2026-11-12T13:35:43Z by runner 9bb0f409340c (actions).
 
-**Building: T362 in progress since 12:56Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T385 in progress since 12:57Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 245 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T362 claimed 12:56Z, lease until 15:56Z; lane 3: T385 claimed 12:57Z, lease until 15:57Z
+- **Lane:** lane 3: T385 claimed 12:57Z, lease until 15:57Z
 - **Week:** 94% used, -0.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:27Z, 7 min before this update
+- **Last run:** 13:27Z, 8 min before this update
 - **Keeper:** last ran 13:27Z, next wake 15:59Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-12T13:35:27Z by runner 9bb0f409340c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T362 | server: the built static files are served at /static/<crate> | MERGE_PENDING | 1 | 38 min | 13:35Z |  |
 | T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
 | T378 | adapters, calls and stand-in (harness): every outbound call  | done | 1 | 45 min | 12:34Z |  |
 | T323 | ai: a new capitalized name at the start of a sentence counts | done | 1 | 24 min | 11:47Z |  |
@@ -169,8 +170,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T362 (lease until 2026-11-12T15:56:41Z)
+- nothing
 - lane 3: T385 (lease until 2026-11-12T15:57:41Z)
 
 ## Last usage reading
-- {"task": "T369", "at": "2026-11-12T12:41:55Z", "cache_read_input_tokens": 20521304, "output_tokens": 125817, "cache_creation_input_tokens": 629909, "input_tokens": 381}
+- {"task": "T362", "at": "2026-11-12T13:35:26Z", "output_tokens": 99770, "cache_creation_input_tokens": 498939, "input_tokens": 302, "cache_read_input_tokens": 12313104}
