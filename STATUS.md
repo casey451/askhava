@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T00:26:36Z by runner 4f3341fd59e7 (actions).
+Updated 2026-11-12T00:26:53Z by runner 4f3341fd59e7 (actions).
 
 **Idle since 00:21Z; 217 of 382 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-12T00:26:36Z by runner 4f3341fd59e7 (actions).
 - **Lane:** idle since 00:21Z (no task in progress)
 - **Week:** 79% used, 27.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:26Z, 0 min before this update
-- **Keeper:** last ran 00:23Z, next wake 00:43Z
+- **Keeper:** last ran 00:26Z, next wake 00:46Z
 
 ## Needs attention
 - Strict plan check red: 4 problem(s) on tasks still to run (+65 on DONE tasks); first: T106: stored context_pct 15% but it measures 19%; regenerate
