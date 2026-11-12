@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:46:12Z by runner 893cbc7c03db (actions).
+Updated 2026-11-12T11:46:29Z by runner 893cbc7c03db (actions).
 
 **Building: T323 in progress since 11:23Z; 241 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 241 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T323 claimed 11:23Z, lease until 14:23Z; lane 5: T404 claimed 11:19Z, lease until 14:19Z
+- **Lane:** lane 1: T323 claimed 11:23Z, lease until 14:23Z
 - **Week:** 93% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:43Z, 2 min before this update
 - **Keeper:** last ran 11:40Z, next wake 14:21Z
@@ -20,6 +20,7 @@ Updated 2026-11-12T11:46:12Z by runner 893cbc7c03db (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T404 | harness: the door probe's fixtures hold a charged pick and t | MERGE_PENDING | 1 | 27 min | 11:46Z |  |
 | T345 | harness: every external GitHub Actions `uses:` in every work | done | 3 | 27 min | 11:16Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
 | T377 | adapters and stand-in (harness): every text asks Twilio for  | done | 1 | 28 min | 11:15Z |  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 1 | 8 min | 11:14Z | PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to l |
@@ -173,7 +174,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T323 (lease until 2026-11-12T14:23:18Z)
-- lane 5: T404 (lease until 2026-11-12T14:19:06Z)
 
 ## Last usage reading
-- {"task": "T345", "at": "2026-11-12T11:16:49Z", "cache_read_input_tokens": 2015972, "input_tokens": 111, "output_tokens": 26172, "cache_creation_input_tokens": 128461}
+- {"task": "T404", "at": "2026-11-12T11:46:11Z", "output_tokens": 50258, "cache_read_input_tokens": 7424114, "input_tokens": 211, "cache_creation_input_tokens": 373853}
