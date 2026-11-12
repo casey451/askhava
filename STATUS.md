@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-12T06:45:35Z by runner 643b878dd6de (manual).
+Updated 2026-11-12T06:51:41Z by runner 3b8cd1274abe (actions).
 
-**Idle since 06:39Z; 227 of 394 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T336 in progress since 06:48Z; 227 of 394 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 227 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 06:39Z (no task in progress)
-- **Week:** 88% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:40Z, 4 min before this update
+- **Lane:** lane 5: T336 claimed 06:48Z, lease until 09:48Z
+- **Week:** 88% used, 18.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 06:48Z, 3 min before this update
 - **Keeper:** last ran 06:37Z, next wake 06:57Z
 
 ## Needs attention
 - PLAN GAP T268 (since 2026-11-12T06:40:33Z, no attempt used; a plan change fixes it): T268: dependency T248 is DONE but its owned file docs/catalog/markets.yaml is not on main; T268: dependency T248 is DONE but its owned file app/catalog/src/markets.rs is not on main; T268: dependency T248 is DONE but its owned file app/catalog/data/zcta_centroids_az.csv is not on main; T268: dependency T248 is DONE but its owned file migrations/0162_catalog_markets.sql is not on main; T268: dependency T248 is DONE but its owned file app/catalog/src/tests/markets.rs is not on main; T268: dependency T248 is DONE but its owned file migrations/0163_businesses_service_area.sql is not on main; T268: dependency T248 is DONE but its owned file app/businesses/src/service_area.rs is not on main; T268: dependency T248 is DONE but its owned file tests/integration/tests/service_area.rs is not on main
 - PLAN GAP T339 (since 2026-11-12T06:40:33Z, no attempt used; a plan change fixes it): T339: dependency T248 is DONE but its owned file docs/catalog/markets.yaml is not on main; T339: dependency T248 is DONE but its owned file app/catalog/src/markets.rs is not on main; T339: dependency T248 is DONE but its owned file app/catalog/data/zcta_centroids_az.csv is not on main; T339: dependency T248 is DONE but its owned file migrations/0162_catalog_markets.sql is not on main; T339: dependency T248 is DONE but its owned file app/catalog/src/tests/markets.rs is not on main; T339: dependency T248 is DONE but its owned file migrations/0163_businesses_service_area.sql is not on main; T339: dependency T248 is DONE but its owned file app/businesses/src/service_area.rs is not on main; T339: dependency T248 is DONE but its owned file tests/integration/tests/service_area.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 10 problem(s) on tasks still to run (+91 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+89 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -150,7 +150,7 @@ Updated 2026-11-12T06:45:35Z by runner 643b878dd6de (manual).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T05:07:32Z (week)): week: 181.0M used, 13.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-06T21:57:29Z.
+- Pacing (session_reading 2026-11-12T06:37:22Z (week)): week: 176.0M used, 18.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T05:20:48Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -166,6 +166,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 5: T336 (lease until 2026-11-12T09:48:38Z)
 
 ## Last usage reading
 - {"task": "T336", "at": "2026-11-12T06:06:02Z", "cache_creation_input_tokens": 966182, "input_tokens": 589, "output_tokens": 317719, "cache_read_input_tokens": 40111799}
