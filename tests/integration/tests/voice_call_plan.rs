@@ -307,8 +307,16 @@ async fn resolved(pool: &PgPool, alert: Uuid) -> bool {
         .expect("alert")
 }
 
+/// The `Gather` action URL in `twiml`, its `&amp;` read back as `&`, as Twilio would post to it.
+fn key_action(twiml: &str) -> String {
+    let (_, rest) = twiml.split_once("<Gather").expect("a Gather");
+    let (_, rest) = rest.split_once("action=\"").expect("an action");
+    let (url, _) = rest.split_once('"').expect("a closing quote");
+    url.replace("&amp;", "&")
+}
+
 /// TD-CALL-22 (CALL-022, OPS-028, SEC-016, D-2762): the safety call carries `safety_twiml` inline
-/// with its absolute key action and asks for status and detection callbacks on the public base; a
+/// with its absolute key action (a 9 posted to the very URL it names is taken) and asks for status and detection callbacks on the public base; a
 /// `human` result acknowledges the alert once and a repeat of every callback changes nothing; an
 /// unsigned callback is refused.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -322,15 +330,8 @@ async fn td_call_22_a_safety_call_carries_its_twiml_and_a_person_acknowledges_on
     let call = emergency(&mut db, "+19285550171").await;
     let sid = place(&mut db, fake.1, &call).await;
     let given = progress(fake.1, &sid, "human").await;
-    let twiml = given["twiml"].as_str().expect("the create carried Twiml");
-    let action = format!(
-        "action=\"{BASE}/webhooks/twilio/voice/safety-key?alert={}&amp;",
-        call.alert
-    );
-    assert!(
-        twiml.contains("<Gather") && twiml.contains(&action),
-        "{twiml}"
-    );
+    let key_url = key_action(given["twiml"].as_str().expect("the create carried Twiml"));
+    assert_eq!(key_url, format!("{BASE}{SAFETY_KEY_PATH}?{}", call.query()));
     let status_url = format!("{BASE}/webhooks/twilio/voice/status?{}", call.query());
     let urls: Vec<&str> = given["callbacks"]
         .as_array()
@@ -345,6 +346,9 @@ async fn td_call_22_a_safety_call_carries_its_twiml_and_a_person_acknowledges_on
     assert!(resolved(&pool, call.alert).await);
     assert_eq!(count(&pool, ALERT_ACKNOWLEDGED_ACTION, None).await, 1);
     assert_eq!(count(&pool, SAFETY_RESULT_ACTION, Some("person")).await, 1);
+    let taken = press_at(&h, &key_url, "9").await;
+    assert_eq!(taken, (StatusCode::OK, hangup_twiml()), "{key_url}");
+    assert_eq!(count(&pool, "calls.safety_call_press_9", None).await, 1);
     let forged = [
         ("CallSid".to_owned(), sid),
         ("AnsweredBy".to_owned(), "human".to_owned()),
@@ -381,21 +385,31 @@ async fn td_call_22_a_machine_or_nobody_never_acknowledges(pool: PgPool) {
     assert_eq!(count(&pool, ALERT_ACKNOWLEDGED_ACTION, None).await, 0);
 }
 
-/// Posts the key `digits` for `call` to the safety-key route, signed as Twilio would.
-async fn press(h: &Arc<Webhooks>, call: &SafetyCall, digits: &str) -> (StatusCode, String) {
-    let url = format!("{BASE}/webhooks/twilio/voice/safety-key?{}", call.query());
-    let params = [
+/// The key press `digits` as Twilio posts it to a `Gather` action.
+fn key_params(digits: &str) -> [(String, String); 2] {
+    [
         (
             "CallSid".to_owned(),
             "CA0000000000000000000000000000009a".to_owned(),
         ),
         ("Digits".to_owned(), digits.to_owned()),
-    ];
-    post(h, &url, &params, &sign(&url, &params)).await
+    ]
+}
+
+/// Posts the key `digits` to the key action `url`, signed as Twilio would.
+async fn press_at(h: &Arc<Webhooks>, url: &str, digits: &str) -> (StatusCode, String) {
+    let params = key_params(digits);
+    post(h, url, &params, &sign(url, &params)).await
+}
+
+/// Posts the key `digits` for `call` to the safety-key route, signed as Twilio would.
+async fn press(h: &Arc<Webhooks>, call: &SafetyCall, digits: &str) -> (StatusCode, String) {
+    let url = format!("{BASE}/webhooks/twilio/voice/safety-key?{}", call.query());
+    press_at(h, &url, digits).await
 }
 
 /// TD-CALL-22 (CALL-022, CON-035, D-2771): a 9 on the safety-key route lists her number and answers
-/// hang-up TwiML, a repeat changes nothing; another key lists nothing.
+/// hang-up TwiML, a repeat changes nothing; another key lists nothing; a forged 9 is refused.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_call_22_a_9_on_the_safety_key_route_lists_her_number(pool: PgPool) {
     let h = hooks(&pool);
@@ -417,6 +431,16 @@ async fn td_call_22_a_9_on_the_safety_key_route_lists_her_number(pool: PgPool) {
     );
     let listed = automated_call_gate(&mut db, &vault(), gate(other.contact), now).await;
     assert_eq!(listed.expect("gate"), CallGate::Dial);
+    let url = format!("{BASE}{}?{}", voice_status::KEY_PATH, stopped.query());
+    let forged = post(&h, &url, &key_params("9"), "bm90LWEtc2lnbmF0dXJl").await;
+    assert_eq!(forged.0, StatusCode::FORBIDDEN);
+    let listed = automated_call_gate(&mut db, &vault(), gate(stopped.contact), now).await;
+    assert_eq!(
+        listed.expect("gate"),
+        CallGate::Dial,
+        "a forged 9 lists nothing"
+    );
+    assert_eq!(count(&pool, "calls.safety_call_press_9", None).await, 0);
     assert_eq!(
         press(&h, &stopped, "9").await,
         (StatusCode::OK, hangup_twiml())
