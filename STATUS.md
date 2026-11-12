@@ -1,21 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:04:20Z by runner dcd485b408b2 (actions).
+Updated 2026-11-12T08:04:34Z by runner dcd485b408b2 (actions).
 
-**Building: T322 in progress since 08:00Z; 231 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T336 in progress since 08:04Z; 231 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 231 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T322 claimed 08:00Z, lease until 11:00Z
-- **Week:** 90% used, 14.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 4: T322 claimed 08:00Z, lease until 11:00Z
+- **Week:** 90% used, 11.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:03Z, 0 min before this update
 - **Keeper:** last ran 08:03Z, next wake 11:03Z
 
 ## Needs attention
-- PLAN GAP T251 (since 2026-11-12T07:44:00Z, no attempt used; a plan change fixes it): T251: dependency T339 is DONE but its owned file migrations/0164_jobs_job_facts.sql is not on main; T251: dependency T339 is DONE but its owned file app/jobs/src/job_facts.rs is not on main; T251: dependency T339 is DONE but its owned file tests/integration/tests/job_facts.rs is not on main
-- PLAN GAP T343 (since 2026-11-12T07:44:00Z, no attempt used; a plan change fixes it): T343: dependency T339 is DONE but its owned file migrations/0164_jobs_job_facts.sql is not on main; T343: dependency T339 is DONE but its owned file app/jobs/src/job_facts.rs is not on main; T343: dependency T339 is DONE but its owned file tests/integration/tests/job_facts.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T404 (since 2026-11-12T07:50:16Z, no attempt used; a plan change fixes it): T404: dependency T339 is DONE but its owned file migrations/0164_jobs_job_facts.sql is not on main; T404: dependency T339 is DONE but its owned file app/jobs/src/job_facts.rs is not on main; T404: dependency T339 is DONE but its owned file tests/integration/tests/job_facts.rs is not on main; T404: dependency T401 is DONE but its owned file app/server/tests/door_matrix/released_pick.rs is not on main
+- PLAN GAP T404 (since 2026-11-12T07:50:16Z, no attempt used; a plan change fixes it): T404: dependency T401 is DONE but its owned file app/server/tests/door_matrix/released_pick.rs is not on main
 - Strict plan check red: 12 problem(s) on tasks still to run (+92 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
 
 ## Last 24 hours
@@ -155,7 +153,7 @@ Updated 2026-11-12T08:04:20Z by runner dcd485b408b2 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T07:59:57Z (week)): week: 180.0M used, 14.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T04:22:27Z.
+- Pacing (session_reading 2026-11-12T08:03:04Z (week)): week: 183.0M used, 11.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T01:52:36Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -171,6 +169,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T336 (lease until 2026-11-12T11:04:06Z)
 - lane 4: T322 (lease until 2026-11-12T11:00:31Z)
 
 ## Last usage reading
