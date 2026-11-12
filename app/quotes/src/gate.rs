@@ -6,7 +6,8 @@
 //! "talk to", "I'm", "this is" or a contact verb; a contact phrase ("text me", "my number"); an
 //! email, link, domain or spelled email; a street number; three number words in a row; 7 or
 //! more digits, however spaced; or a code cue ("gate code", "pin") with a run of 3 or more digits
-//! within three words after it, however spaced ("Gate code is 4 4 1 2", D-2622). Lines stay lines, so each card field is gated on its own line.
+//! within three words after it, however spaced ("Gate code is 4 4 1 2", D-2622). Lines stay
+//! lines, so each card field is gated on its own line.
 //! The gate repeats until nothing changes, so running it twice changes nothing (TD-CARD-11).
 //!
 //! Each pass then removes every phrase on `catalog`'s carrier-restricted list (whole words, any

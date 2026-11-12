@@ -205,13 +205,16 @@ const TRIGGERS: &[&[&str]] = &[
     &["im"],
     &["i", "am"],
     &["it's"],
-    &["it", "is"],
-    &["its"],
     &["call", "me"],
     &["soy"],
     &["me", "llamo"],
     &["mi", "nombre", "es"],
 ];
+/// Name phrases that are also everyday job words ("its compressor died", "it is rusty"): a
+/// trigger only right after a greeting ("Hey its steve", "Hi, it is Steve", D-3317).
+const LOOSE_TRIGGERS: &[&[&str]] = &[&["it", "is"], &["its"]];
+/// Greetings that make a loose trigger or a one-word "<name> here" a name phrase (D-3317).
+const GREETINGS: &[&str] = &["hi", "hey", "hello", "hiya", "howdy", "hola", "buenas"];
 /// Words never cut as a stated or sign-off name, remembered as one or removed as one, a vault name
 /// word included (CON-010, CON-013, CON-035, AI-020, D-2621): every word of `messaging`'s opt-out
 /// phrases and of its sole opt-out, HELP and START words, English and Spanish, folded (lower case,
@@ -380,6 +383,9 @@ const MEASURES: &[&str] = &[
     "square", "sq", "sqft", "feet", "foot", "ft", "inch", "inches", "gallon", "gallons", "gal",
     "dollars", "bucks", "watts", "volts", "amps", "btu", "pounds", "lbs", "miles", "years",
     "degrees", "psi", "cfm", "tons", "yards", "meters", "metros", "pies", "pesos", "dolares",
+    "dollar", "usd", "watt", "volt", "amp", "kw", "kwh", "kva", "hp", "sf", "sqm", "gpm", "gph",
+    "mph", "pound", "lb", "mile", "year", "yrs", "degree", "ton", "yard", "meter", "metro", "pie",
+    "mm", "cm",
 ];
 /// How many words after a code cue its digits may start, and how far a spaced run may reach.
 const CODE_REACH: usize = 3;
@@ -760,7 +766,7 @@ fn mark_stated(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) -> Vec<
     for i in 0..tokens.len() {
         let after = trigger_end(tokens, i)
             .or_else(|| sign_off(tokens, i, cut))
-            .or_else(|| here_start(tokens, i));
+            .or_else(|| here_start(tokens, i, common));
         let Some(n) = after.filter(|&n| n < tokens.len()) else {
             continue;
         };
@@ -781,17 +787,28 @@ fn mark_stated(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) -> Vec<
     names
 }
 
-/// The index after an AI-002 phrase starting at word `i` ("it is", "its" and "call me" too, D-2622).
+/// The index after an AI-002 phrase starting at word `i` ("call me" too, D-2622); "it is" and
+/// "its" only right after a greeting (D-3317).
 fn trigger_end(tokens: &[Token], i: usize) -> Option<usize> {
-    TRIGGERS.iter().find_map(|phrase| {
+    let phrase_end = |phrase: &[&str]| {
         let end = i + phrase.len();
         let hit = tokens
             .get(i..end)?
             .iter()
-            .zip(*phrase)
+            .zip(phrase)
             .all(|(t, w)| t.key == *w);
         hit.then_some(end)
+    };
+    TRIGGERS.iter().find_map(|p| phrase_end(p)).or_else(|| {
+        greeted(tokens, i)
+            .then(|| LOOSE_TRIGGERS.iter().find_map(|p| phrase_end(p)))
+            .flatten()
     })
+}
+
+/// Whether the word before word `i` is a greeting ("Hi," "hey") (D-3317).
+fn greeted(tokens: &[Token], i: usize) -> bool {
+    i > 0 && GREETINGS.contains(&tokens[i - 1].key.as_str())
 }
 
 /// The index after a sign-off ("Thanks, Steve", "thank you - Ana Test", "— Steve", "Best, Steve")
@@ -811,13 +828,19 @@ fn sign_off(tokens: &[Token], i: usize, cut: &[bool]) -> Option<usize> {
     (cue && (1..=2).contains(&left)).then_some(i + 1)
 }
 
-/// Word `i` when one or two words starting there, at the message's or a sentence's start, come
-/// before "here" ("Steve Smith here", "Hi, Steve here") (AI-020, D-2622).
-fn here_start(tokens: &[Token], i: usize) -> Option<usize> {
-    let starts = i == 0 || tokens[i - 1].text.ends_with(['.', '!', '?', ',']);
+/// Word `i` when one or two words starting there, at the message's or a sentence's start or
+/// after a greeting, come before "here" (AI-020, D-2622): one word only after a greeting ("Hi,
+/// Steve here"), two only after a greeting or when both are capitalised ("Steve Smith here"), so
+/// "Mold here too" and "Water here." keep their words (D-3317).
+fn here_start(tokens: &[Token], i: usize, common: &CommonWords) -> Option<usize> {
+    let greet = greeted(tokens, i);
+    let starts = greet || i == 0 || tokens[i - 1].text.ends_with(['.', '!', '?', ',']);
     let here = |j: usize| tokens.get(j).is_some_and(|t| t.key == "here");
     let joined = !tokens[i].text.ends_with(|c: char| !c.is_alphanumeric());
-    (starts && (here(i + 1) || (joined && here(i + 2)))).then_some(i)
+    let named = |j: usize| tokens.get(j).is_some_and(|t| titled(t, common));
+    let one = greet && here(i + 1);
+    let two = joined && here(i + 2) && (greet || (named(i) && named(i + 1)));
+    (starts && (one || two)).then_some(i)
 }
 
 /// Whether `key` (a scrubber key or a remembered name), folded like `messaging`'s detector (lower

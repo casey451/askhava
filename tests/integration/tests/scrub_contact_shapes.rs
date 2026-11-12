@@ -20,6 +20,7 @@ const SHAPES: &[(&str, &[&str])] = &[
     ("Steve Smith here", &["steve", "smith"]),
     ("Hi, it is Steve", &["steve"]),
     ("Hey its steve", &["steve"]),
+    ("Hi, Steve here", &["steve"]),
     ("Sink is leaking. Best, Steve", &["steve"]),
     (
         "Thanks, Steve Smith 928-555-0134",
@@ -40,6 +41,14 @@ const KEPT: &[&str] = &[
     "code E4",
     "is 1500 square feet",
     "its leaking",
+    "its compressor died",
+    "it is rusty",
+    "it is Tuesday",
+    "Mold here too",
+    "Water here.",
+    "Damage here, under the sink",
+    "The dryer outlet is 240 volt",
+    "it is 1200 sf",
 ];
 
 /// The same everyday words the CARD-008 code-cue cut must not touch on a card.
@@ -112,4 +121,26 @@ fn td_ai_27_the_gate_cuts_a_spaced_code() {
     for text in CARD_KEPT {
         assert_eq!(final_gate(text), *text);
     }
+}
+
+/// TD-AI-27 (D-3317): a job word after a loose name phrase is neither cut nor remembered, so a
+/// later message keeps it, while a greeted name is still cut and remembered.
+#[test]
+fn td_ai_27_job_words_are_not_remembered_as_names() {
+    let common = CommonWords::default();
+    let known = Known {
+        common: &common,
+        vault_name: None,
+    };
+    let mut memory = NameMemory::default();
+    for first in ["its compressor died", "Mold here too", "it is rusty"] {
+        assert_eq!(scrub(first, &known, &mut memory).as_str(), first);
+    }
+    let later = "Can you replace the compressor? The mold is rusty";
+    assert_eq!(scrub(later, &known, &mut memory).as_str(), later);
+    scrub("Hey its zebulon", &known, &mut memory);
+    assert_eq!(
+        scrub("zebulon again", &known, &mut memory).as_str(),
+        "[removed] again"
+    );
 }
