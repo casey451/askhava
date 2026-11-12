@@ -33037,7 +33037,7 @@
     }
    ],
    "lane": "2",
-   "reviewed_sha": "50be10fb632d1b5a6b5f8deddbc9258b3b1d2d97",
+   "reviewed_sha": "9535f517e9b79064076b682c716bb5ba9a346dd2",
    "review_lease": {
     "task": "T336",
     "session": "actions-43171532689",
@@ -33093,6 +33093,18 @@
       "Twin": "success"
      },
      "at": "2026-11-12T09:15:55Z"
+    },
+    {
+     "from": "50be10fb632d1b5a6b5f8deddbc9258b3b1d2d97",
+     "to": "9535f517e9b79064076b682c716bb5ba9a346dd2",
+     "main": "e0a2ab2aa1b46137e579efba50282c175c9189f3",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-12T09:29:44Z"
     }
    ],
    "update_waiting_since": null,
@@ -36754,7 +36766,7 @@
      "result": "MERGE_PENDING"
     }
    ],
-   "reviewed_sha": "8b226b021681b8bc01995e9365e164e768339b97",
+   "reviewed_sha": "5a47beed428074b7471890db9cdc0364d1eff3fa",
    "review_lease": {
     "task": "T406",
     "session": "actions-43181385390",
@@ -36784,6 +36796,18 @@
       "Ally": "success"
      },
      "at": "2026-11-12T09:15:55Z"
+    },
+    {
+     "from": "8b226b021681b8bc01995e9365e164e768339b97",
+     "to": "5a47beed428074b7471890db9cdc0364d1eff3fa",
+     "main": "e0a2ab2aa1b46137e579efba50282c175c9189f3",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-12T09:29:44Z"
     }
    ],
    "update_waiting_since": null,
@@ -39052,7 +39076,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T09:22:48Z",
+ "updated_at": "2026-11-12T09:29:55Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -39150,8 +39174,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e0a2ab2aa1b46137e579efba50282c175c9189f3",
- "starter": "manual",
+ "runner_sha": "fbe1e137ffb38adf6ef63968b9f931f116e02cb1",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "ec8a9684671f2d718b79acae014df8181c8c2abc",
