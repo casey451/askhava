@@ -3164,3 +3164,4 @@
 - 2026-11-12T22:44:23Z runner 4aa3c92a5fa0 (actions): {"T351": "MERGE_PENDING -> QUEUED"}
 - 2026-11-12T22:44:45Z runner 4aa3c92a5fa0 (actions): {}
 - 2026-11-12T22:45:01Z runner 4aa3c92a5fa0 (actions): {}
+- 2026-11-12T22:49:55Z runner 4aa3c92a5fa0 (actions): {"T351": "QUEUED -> IN_PROGRESS"}; T351 estimated 3.1M tokens (calibrated); week has 165.6M left (no five-hour budget, D-3056) after 14.4M still running in another lane (session_reading 2026-11-12T22:44:44Z (week)); claimed
