@@ -1,23 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-12T03:24:36Z by runner 976906dd37c9 (actions).
+Updated 2026-11-12T03:27:16Z by runner ec8a9684671f (actions).
 
-**Building: T336 in progress since 03:22Z; 222 of 390 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T326 in progress since 03:12Z; 222 of 390 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 222 of 390 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T336 claimed 03:22Z, lease until 06:22Z; lane 3: T326 claimed 03:12Z, lease until 06:12Z
+- **Lane:** lane 3: T326 claimed 03:12Z, lease until 06:12Z
 - **Week:** 83% used, 21.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:24Z, 0 min before this update
+- **Last run:** 03:24Z, 2 min before this update
 - **Keeper:** last ran 03:24Z, next wake 06:14Z
 
 ## Needs attention
 - BLOCKED T401: plan gap reported: PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a homeowner mark (door_matrix.rs already names Realm::Homeowner at ~969/979) plus askhava_payments/payments::api; T401 needs payments::api::no_fee_release in door_matrix.rs (kit/prompts/T401.md:9). Evidence: cargo test -p askhava-security --test no_homeowner_charge -> td_fee_07_no_homeowner_route_reaches_payments FAILED: door_matrix.rs: homeowner-realm code reaches payments. Reviewer confirmed; no legitimate workaround. Smallest plan change: give T401 a second owned file (e.g. app; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T401 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 8 problem(s) on tasks still to run (+78 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+79 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z | Worker stopped before building with a PLAN GAP claim (messaging.inbox has no sender/handled columns; T336 owns no migrat |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | MERGE_PENDING | 1 | 12 min | 03:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
 | T400 | server: the web process stores the catalog file at start-up, | MERGE_PENDING | 1 | 21 min | 03:07Z |  |
@@ -84,6 +85,7 @@ Updated 2026-11-12T03:24:36Z by runner 976906dd37c9 (actions).
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 1 | 1 min | 04:44Z |  |
 
 ### Plan and harness merges on main
+- 03:24Z Harness: claim order prefers tasks in crates no other lane is writing (D-3082) (#523)
 - 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
 - 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
 - 01:55Z Plan: owner approval before a team-linked phone works (BIZ-033, IC-95) — T396–T399 (D-3081) (#531)
@@ -119,7 +121,6 @@ Updated 2026-11-12T03:24:36Z by runner 976906dd37c9 (actions).
 - 04:04Z Plan: shorten the stage-6 critical path by removing ordering-only dependencies (D-2821) (#452)
 - 03:53Z Harness: merge main before the hand-in push when the head is behind (D-2798) (#450)
 - 03:41Z Plan: fix tasks from the Nov 11 vendor-double review (D-2760–D-2770) (#446)
-- 03:25Z Harness: CI speed — cache saves on main only, pytest in its own job, C YAML loader (D-2782) (#449)
 
 ## Progress (requirements verified)
 
@@ -167,8 +168,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T336 (lease until 2026-11-12T06:22:15Z)
+- nothing
 - lane 3: T326 (lease until 2026-11-12T06:12:28Z)
 
 ## Last usage reading
-- {"task": "T248", "at": "2026-11-12T03:22:48Z", "cache_read_input_tokens": 894530, "output_tokens": 12100, "input_tokens": 75, "cache_creation_input_tokens": 58343}
+- {"task": "T336", "at": "2026-11-12T03:27:15Z", "input_tokens": 147, "cache_creation_input_tokens": 249232, "output_tokens": 48677, "cache_read_input_tokens": 4342780}
