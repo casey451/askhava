@@ -2664,3 +2664,4 @@
 - 2026-11-12T10:05:01Z runner e0aae0369e90 (actions): {"T411": "MERGE_PENDING -> QUEUED"}
 - 2026-11-12T10:06:18Z runner e0aae0369e90 (actions): {}
 - 2026-11-12T10:06:38Z runner e0aae0369e90 (actions): {}
+- 2026-11-12T10:08:37Z runner e0aae0369e90 (actions): {"T411": "QUEUED -> IN_PROGRESS"}; T411 estimated 3.2M tokens (calibrated); week has 3.8M left (no five-hour budget, D-3056) after 6.2M still running in another lane (session_reading 2026-11-12T10:06:18Z (week)); claimed
