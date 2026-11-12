@@ -11508,7 +11508,7 @@
    "id": "T426",
    "slug": "brand-tests-security-e2e-docs",
    "title": "Brand rename prep: notice-address and sign-in security tests, three journeys, the template scan, the brand guard and the stand-in contract test take the brand from the brand file",
-   "goal": "Brand rename (D-3347): Casey renamed the product Laftly on Nov 12, 2026 (legal entity Laftly LLC, domain laftly.com, Spanish \"Laftly\" too). The switch itself is T428's edit of `app/core/data/brand.json`; before it, every test that compares customer-visible text with a literal \"Ask Hava\", \"Ask Hava LLC\", \"Ask Hava L L C\", `askhava.com` or `ASKHAVA` must stop depending on the name, or the switch turns `Ci` red. In each owned file, every expected customer-visible brand word that an assertion compares with what the app produces (a text, an email's sender, subject, body or footer, a page, a voice line, a descriptor) takes its value from the brand file instead of a literal: in Rust `core::api::brand()`'s getters or `Brand::fill` with the `{brand}`, `{brand_short}`, `{brand_legal}` and `{domain}` tokens the templates use (`app/core/src/brand.rs`); in Python `scripts/brand.py` (`load()`, `fill()`); in TypeScript the parsed `app/core/data/brand.json`. Every other byte of each expected string, every input and every assertion stays as it is, so each test still pins today's wording under the embedded brand; no assertion is dropped or loosened (BUILD_BRIEF.md:69). Left alone: internal identifiers (`askhava-*` crates, `askhava_*` roles and schemas, `ASKHAVA_*` settings, `X-Askhava-*` headers, `askhava.*` database settings and cookie names), comments, and a self-contained fake payload that never meets the app's brand (a planted body posted straight to a stand-in and read back). Here: `tests/security/tests/notice_addresses.rs` (TD-WORD-35 keeps comparing today's texts byte for byte through the brand file), `signin_admission.rs`; the Playwright journeys `tests/e2e/feedback.spec.ts`, `j1_homeowner.spec.ts` and `pick_flow.spec.ts` (expected strings built from the brand file's names); `tests/docs/test_template_scan.py` (each planted case and its expected message built from `scripts/brand.py` values, so the four planted-link cases and `test_the_scan_accepts_plain_links_and_times` hold under any brand); `tests/docs/test_brand_literals.py` (its planted literals and the WORD-021 legal-check cases built from the loaded brand rather than \"Ask Hava\", `askhava.com` and `ASKHAVA`, every case kept; the internal-identifier cases keep `askhava-`, `askhava_`, `ASKHAVA_` and `X-Askhava-`, which never change); and `tests/contract/test_stand_in_server.py`'s opt-out-reply check, which reads the opening `<short_name>:` from the brand file (the stand-in's planted message bodies stay). A local run of the switched brand already fails these seven brand-guard cases and five template-scan cases under the current files. Done means the owned tests pass under the embedded brand and also pass with `app/core/data/brand.json` switched locally, never committed, to the D-3347 values (`display_name` \"Laftly\", `business_name` \"Laftly for Business\", `short_name` \"Laftly\", `legal_name` \"Laftly LLC\", `spoken_legal_name` \"Laftly L L C\", `domain` \"laftly.com\", `email_from_name` \"Laftly\", `email_from_address` \"jobs@notify.laftly.com\", `statement_prefix` \"LAFTLY\", `forbidden_alone` [\"Hava\"], and `es` with the same four names); the PR records both runs. A test outside the owned files that fails under the switched brand is listed in the task report for T428, not edited. A harness task because it changes protected tests owned by DONE tasks. Update `docs/decisions.md`.",
+   "goal": "Brand rename (D-3347): Casey renamed the product Laftly on Nov 12, 2026 (legal entity Laftly LLC, domain laftly.com, Spanish \"Laftly\" too). The switch itself is T428's edit of `app/core/data/brand.json`; before it, every test that compares customer-visible text with a literal \"Ask Hava\", \"Ask Hava LLC\", \"Ask Hava L L C\", `askhava.com` or `ASKHAVA` must stop depending on the name, or the switch turns `Ci` red. In each owned file, every expected customer-visible brand word that an assertion compares with what the app produces (a text, an email's sender, subject, body or footer, a page, a voice line, a descriptor) takes its value from the brand file instead of a literal: in Rust `core::api::brand()`'s getters or `Brand::fill` with the `{brand}`, `{brand_short}`, `{brand_legal}` and `{domain}` tokens the templates use (`app/core/src/brand.rs`); in Python `scripts/brand.py` (`load()`, `fill()`); in TypeScript the parsed `app/core/data/brand.json`. Every other byte of each expected string, every input and every assertion stays as it is, so each test still pins today's wording under the embedded brand; no assertion is dropped or loosened (BUILD_BRIEF.md:69). Left alone: internal identifiers (`askhava-*` crates, `askhava_*` roles and schemas, `ASKHAVA_*` settings, `X-Askhava-*` headers, `askhava.*` database settings and cookie names), comments, and a self-contained fake payload that never meets the app's brand (a planted body posted straight to a stand-in and read back). Here: `tests/security/tests/notice_addresses.rs` (TD-WORD-35 keeps comparing today's texts byte for byte through the brand file), `signin_admission.rs`; the Playwright journeys `tests/e2e/feedback.spec.ts`, `j1_homeowner.spec.ts` and `pick_flow.spec.ts` (expected strings built from the brand file's names); `tests/docs/test_template_scan.py` (each planted case and its expected message built from `scripts/brand.py` values, so the four planted-link cases and `test_the_scan_accepts_plain_links_and_times` hold under any brand); `tests/docs/test_brand_literals.py` (its planted literals and the WORD-021 legal-check cases built from the loaded brand rather than \"Ask Hava\", `askhava.com` and `ASKHAVA`, every case kept; the internal-identifier cases keep `askhava-`, `askhava_`, `ASKHAVA_` and `X-Askhava-`, which never change); and `tests/contract/test_stand_in_server.py`'s opt-out-reply check, which reads the opening `<short_name>:` from the brand file (the stand-in's planted message bodies stay). `tests/test_pii_scan.py` gains, beside its own-domain case (line 128), an allowed role address at `laftly.com` and at its `notify.` subdomain, and refused role addresses at the look-alike domains `laftly.co`, `notlaftly.com` and `laftly.com.evil.net`, every existing case kept (`scripts/pii_scan.py` `RENAME_DOMAINS`, D-3347). One assertion is exempt from the switched-brand run only: `test_brand_literals.py`'s `check_legal_docs.run(ROOT).errors == []` (about line 387) checks the real drafts, which name the new brand only once T428 re-issues them, so it must pass under the embedded brand here and is part of T428's acceptance; it is not changed or weakened. A local run of the switched brand already fails these seven brand-guard cases and five template-scan cases under the current files. Done means the owned tests pass under the embedded brand and also pass with `app/core/data/brand.json` switched locally, never committed, to the D-3347 values (`display_name` \"Laftly\", `business_name` \"Laftly for Business\", `short_name` \"Laftly\", `legal_name` \"Laftly LLC\", `spoken_legal_name` \"Laftly L L C\", `domain` \"laftly.com\", `email_from_name` \"Laftly\", `email_from_address` \"jobs@notify.laftly.com\", `statement_prefix` \"LAFTLY\", `forbidden_alone` [\"Hava\"], and `es` with the same four names); the PR records both runs. A test outside the owned files that fails under the switched brand is listed in the task report for T428, not edited. A harness task because it changes protected tests owned by DONE tasks. Update `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -11527,7 +11527,8 @@
     "T295",
     "T377",
     "T378",
-    "T167"
+    "T167",
+    "T172"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -11543,7 +11544,8 @@
     "tests/e2e/pick_flow.spec.ts",
     "tests/docs/test_template_scan.py",
     "tests/docs/test_brand_literals.py",
-    "tests/contract/test_stand_in_server.py"
+    "tests/contract/test_stand_in_server.py",
+    "tests/test_pii_scan.py"
    ],
    "reads": [
     "docs/spec/wording.md",
@@ -11567,7 +11569,7 @@
     "BUILD_BRIEF.md:69"
    ],
    "budget": {
-    "files": 8,
+    "files": 9,
     "lines": 400,
     "context_pct": 24
    },
@@ -11578,7 +11580,7 @@
    ],
    "branch": "claude/task/T426-brand-tests-security-e2e-docs",
    "prompt": "kit/prompts/T426.md",
-   "acceptance": "Every owned test passes under the embedded brand and under the locally switched D-3347 brand file (both runs in the PR); no expected string, input or assertion changes other than the brand words now read from the brand file; no file outside the owned list changes except `docs/decisions.md`."
+   "acceptance": "Every owned test passes under the embedded brand, and under the locally switched D-3347 brand file except `test_brand_literals.py`'s real-drafts legal-check assertion (T428's acceptance), both runs in the PR; the new `tests/test_pii_scan.py` cases pass; no expected string, input or assertion changes other than the brand words now read from the brand file; no file outside the owned list changes except `docs/decisions.md`."
   },
   {
    "id": "T427",
@@ -11640,10 +11642,73 @@
    "acceptance": "`python3 scripts/trace_spec.py` and `python3 scripts/check_catalog.py` pass on the repository; `python3 -m pytest tests/test_trace_spec.py tests/test_check_catalog.py tests/docs/test_word_022_phrases.py` passes; a planted \"hire through Laftly\" is refused by the spec trace, the catalog check and the AI screen's list, and every existing planted case still fails as before."
   },
   {
+   "id": "T430",
+   "slug": "authorization-version-floor",
+   "title": "payments: the authorization version a Confirm needs is never below the card-authorization wording's version",
+   "goal": "Brand rename prep (D-3347; FEE-007, FEE-015, D-072). A Confirm is allowed only when the business's highest accepted `payments.card_authorization.version` is at least `payments.fee_terms.authorization_version` (`service.rs` `may_confirm`, about line 363), and a fee-mode switch raises that stored number by one (`rules.rs` `FeeTerms::switched`, `service.rs` `switch_fee_mode`). An acceptance stores `AUTHORIZATION_VERSION` (`models.rs`), so the two numbers are one sequence that today happens to start equal (1 and 1; `tests/integration/tests/fee_fixed_at_pick.rs` relies on it). T428 raises `AUTHORIZATION_VERSION` to 2 for the \"Laftly LLC\" wording; without this task a version-1 acceptance would still pass and a later switch would compute 2, a number the new wording already uses, so no business would be asked again. A migration raising the stored row cannot be numbered at T428's serial position (V9: migrations 0179 to 0202 are all planned, D-3347), so the rule goes in code: (1) `pick_fee.rs` gains `pub const fn required_version(stored: i32) -> i32`, the larger of `stored` and `AUTHORIZATION_VERSION`, with its FEE-007 comment; `fee_terms_in_force` and its `FOR SHARE` twin build `FeeTerms` with `required_version(row.authorization_version)`, and `switch_fee_mode` (`service.rs`) does the same before `switched`, so a switch after T428 writes 3, never 2. (2) Nothing else changes: the stored row, the acceptance insert, `may_confirm`'s comparison and every error stay as they are; under today's constants (both 1) every result is identical, so every existing test passes unchanged, `fee_fixed_at_pick.rs` included (after T428 its `AUTHORIZATION_VERSION + 1` is again the switched version). (3) `app/payments/src/tests/authorization_floor.rs` (unit, no database): `required_version` of a stored number below, equal to and above `AUTHORIZATION_VERSION` returns the larger; `FeeTerms::new(mode, required_version(stored)).switched(other)` is strictly above `AUTHORIZATION_VERSION` for every stored number from 1 to `AUTHORIZATION_VERSION`; and `i32::MAX` gives `i32::MAX` with `switched` returning none, as today. Money code: branch coverage stays at or above 95% (BUILD_BRIEF.md:481). Update `app/payments/CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T057",
+    "T075",
+    "T287",
+    "T059",
+    "T060",
+    "T058",
+    "T225",
+    "T169",
+    "T056",
+    "T073",
+    "T264"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money"
+   ],
+   "owns": [
+    "app/payments/src/pick_fee.rs",
+    "app/payments/src/service.rs",
+    "app/payments/src/tests/authorization_floor.rs"
+   ],
+   "reads": [
+    "docs/spec/fees.md",
+    "app/payments/src/models.rs",
+    "app/payments/src/rules.rs",
+    "tests/integration/tests/fee_fixed_at_pick.rs"
+   ],
+   "requirements": [
+    "FEE-007",
+    "FEE-015"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-3347",
+    "D-072"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 200,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T430-authorization-version-floor",
+   "prompt": "kit/prompts/T430.md",
+   "acceptance": "`cargo test -p askhava-payments` and `cargo test -p askhava-integration --test fee_fixed_at_pick` pass unchanged; `authorization_floor.rs` holds the cases in the goal; with `AUTHORIZATION_VERSION` at 1 every existing result is identical; payments branch coverage stays at or above 95%; no file outside the owned list changes except `app/payments/CLAUDE.md`, `app/payments/src/tests/mod.rs`, `app/payments/src/api.rs` and `docs/decisions.md`."
+  },
+  {
    "id": "T428",
    "slug": "brand-switch-laftly",
    "title": "Switch the brand file to Laftly and re-issue the legal records that name it",
-   "goal": "Brand rename (D-3347; WORD-001, WORD-008, WORD-021, FEE-015, FEE-049, TERMS-016): Casey, Nov 12, 2026: \"Laftly is the new name\", \"Laftly llc and we own laftly.com\", and the sender `jobs@notify.laftly.com`; Spanish uses \"Laftly\" too. After T420 to T427 (D-1932's one edit). First, run the whole suite (cargo tests, pytest, the Playwright journeys) with the brand file switched locally; if a file this task does not own fails, stop and report it, so a plan change gives it an owner. Then: (1) `app/core/data/brand.json` takes `display_name` \"Laftly\", `business_name` \"Laftly for Business\", `short_name` \"Laftly\", `legal_name` \"Laftly LLC\", `spoken_legal_name` \"Laftly L L C\", `domain` \"laftly.com\", `email_from_name` \"Laftly\", `email_from_address` \"jobs@notify.laftly.com\", `statement_prefix` \"LAFTLY\", `forbidden_alone` [\"Hava\"], and `es` with the same four names (`LAFTLY* JOB ` plus a 7-digit job number is 19 characters, within FEE-049's 22; `forbidden_alone` stays [\"Hava\"], so with the display name Laftly any \"Hava\" left in a scanned file, \"Ask Hava\" included, fails the brand guard and the legal check, WORD-021). (2) `payments`' `AUTHORIZATION_TEXT` names \"Laftly LLC\" exactly as FEE-015 now words it, `AUTHORIZATION_VERSION` becomes 2, and `tests/integration/tests/brand_setting.rs`'s SHA-256 table keeps version 1's row and gains version 2's (TD-WORD-38); if a stored version (`payments.fee_terms`) must follow, stop and report rather than add an unowned migration. (3) The drafts in `docs/legal/` are re-issued naming Laftly, Laftly LLC and laftly.com (TERMS-016): each changed draft's version line goes up one minor version with today's date, and nothing else in a draft changes; `python3 scripts/check_legal_docs.py` passes, and the compiled-in homeowner Terms name the new brand. (4) `stand_ins/provider_optout.json`'s replies say \"Laftly\" as the app's CON-009 and re-subscribe texts do, since the live provider's Advanced Opt-Out text is set to match (Casey's console step, `docs/for-casey-review.md`). Then the whole suite passes on the switched brand, `tests/docs/test_brand_literals.py` finds no literal of either name, and the vendor settings that hold the name (Twilio brand and campaign, Verify friendly name, Resend domain, Stripe account name and descriptor prefix) stay Casey's hands-on steps, never done here. A harness task because it changes the protected brand file and stand-in, and tests owned by DONE tasks. Update `app/core/CLAUDE.md`, `app/payments/CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Brand rename (D-3347; WORD-001, WORD-008, WORD-021, FEE-015, FEE-049, TERMS-016): Casey, Nov 12, 2026: \"Laftly is the new name\", \"Laftly llc and we own laftly.com\", and the sender `jobs@notify.laftly.com`; Spanish uses \"Laftly\" too. After T420 to T427 and T430 (D-1932's one edit). First, run the whole suite (cargo tests, pytest, the Playwright journeys) with the brand file switched locally; if a file this task does not own fails, stop and report it, so a plan change gives it an owner. Then: (1) `app/core/data/brand.json` takes `display_name` \"Laftly\", `business_name` \"Laftly for Business\", `short_name` \"Laftly\", `legal_name` \"Laftly LLC\", `spoken_legal_name` \"Laftly L L C\", `domain` \"laftly.com\", `email_from_name` \"Laftly\", `email_from_address` \"jobs@notify.laftly.com\", `statement_prefix` \"LAFTLY\", `forbidden_alone` [\"Hava\"], and `es` with the same four names (`LAFTLY* JOB ` plus a 7-digit job number is 19 characters, within FEE-049's 22; `forbidden_alone` stays [\"Hava\"], so with the display name Laftly any \"Hava\" left in a scanned file, \"Ask Hava\" included, fails the brand guard and the legal check, WORD-021). (2) `payments`' `AUTHORIZATION_TEXT` names \"Laftly LLC\" exactly as FEE-015 now words it and `AUTHORIZATION_VERSION` becomes 2; through T430's `required_version` floor a Confirm then needs an acceptance of version 2 or more, so every business accepts the Laftly LLC wording again before its next charge (FEE-007, D-072; no live business exists before Gate C), and a later fee-mode switch writes 3; `tests/integration/tests/brand_setting.rs`'s SHA-256 table keeps version 1's row and gains version 2's (TD-WORD-38). No migration: the stored `payments.fee_terms` row keeps 1 until a switch, and the floor is the rule (D-3347). (2a) `quotes`' `AUTO_CONFIRM_VERSION` becomes 2, because the PICK-048 auto-confirm wording it versions names `brand().legal_name()` and so changes with the switch; a tick stored under version 1 then never fires (PICK-056), and the business ticks again under the Laftly LLC wording (FEE-042 evidence). (3) The drafts in `docs/legal/` are re-issued naming Laftly, Laftly LLC and laftly.com (TERMS-016): each changed draft's version line goes up one minor version with today's date, and nothing else in a draft changes; `python3 scripts/check_legal_docs.py` passes, and the compiled-in homeowner Terms name the new brand. (4) `stand_ins/provider_optout.json`'s replies say \"Laftly\" as the app's CON-009 and re-subscribe texts do, since the live provider's Advanced Opt-Out text is set to match (Casey's console step, `docs/for-casey-review.md`). Then the whole suite passes on the switched brand, `tests/docs/test_brand_literals.py` finds no literal of either name, and the vendor settings that hold the name (Twilio brand and campaign, Verify friendly name, Resend domain, Stripe account name and descriptor prefix) stay Casey's hands-on steps, never done here. A harness task because it changes the protected brand file and stand-in, and tests owned by DONE tasks. Update `app/core/CLAUDE.md`, `app/payments/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -11657,6 +11722,7 @@
     "T425",
     "T426",
     "T427",
+    "T430",
     "T057",
     "T075",
     "T291",
@@ -11670,7 +11736,8 @@
     "T295",
     "T287",
     "T332",
-    "T167"
+    "T167",
+    "T209"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -11678,6 +11745,7 @@
    "review_areas": [
     "harness",
     "money",
+    "privacy",
     "security"
    ],
    "owns": [
@@ -11693,7 +11761,8 @@
     "docs/legal/information-security-program.md",
     "docs/legal/privacy-policy.md",
     "docs/legal/sms-terms.md",
-    "stand_ins/provider_optout.json"
+    "stand_ins/provider_optout.json",
+    "app/quotes/src/auto_confirm_box.rs"
    ],
    "reads": [
     "docs/spec/wording.md",
@@ -11701,7 +11770,9 @@
     "docs/spec/terms.md",
     "scripts/brand.py",
     "scripts/check_legal_docs.py",
-    "app/core/src/brand.rs"
+    "app/core/src/brand.rs",
+    "docs/spec/quotes-pick.md",
+    "app/payments/src/pick_fee.rs"
    ],
    "requirements": [
     "WORD-001",
@@ -11709,7 +11780,10 @@
     "WORD-021",
     "FEE-015",
     "FEE-049",
-    "TERMS-016"
+    "TERMS-016",
+    "FEE-007",
+    "PICK-048",
+    "PICK-056"
    ],
    "tests": [],
    "decisions": [
@@ -11721,7 +11795,7 @@
     "BUILD_BRIEF.md:69"
    ],
    "budget": {
-    "files": 13,
+    "files": 14,
     "lines": 500,
     "context_pct": 23
    },
@@ -11732,7 +11806,7 @@
    ],
    "branch": "claude/task/T428-brand-switch-laftly",
    "prompt": "kit/prompts/T428.md",
-   "acceptance": "`app/core/data/brand.json` holds the D-3347 values and `python3 scripts/brand.py` prints \"Laftly\"; `cargo test --workspace`, `python3 -m pytest` and the Playwright journeys pass; `python3 scripts/check_legal_docs.py` passes on the re-issued drafts; `AUTHORIZATION_VERSION` is 2 with its SHA-256 pinned and version 1's kept; no file outside the owned list changes except `app/core/CLAUDE.md`, `app/payments/CLAUDE.md` and `docs/decisions.md`."
+   "acceptance": "`app/core/data/brand.json` holds the D-3347 values and `python3 scripts/brand.py` prints \"Laftly\"; `cargo test --workspace`, `python3 -m pytest` and the Playwright journeys pass, including `tests/docs/test_brand_literals.py`'s `check_legal_docs.run(ROOT).errors == []` (exempt from T426's switched-brand run) on the re-issued drafts; `python3 scripts/check_legal_docs.py` passes; `AUTHORIZATION_VERSION` is 2 with its SHA-256 pinned and version 1's kept; `tests/integration/tests/fee_fixed_at_pick.rs` passes unchanged, and a version-1 acceptance no longer allows a Confirm (shown by that file's existing `NewAuthorizationNeeded` case or the run recorded in the PR); `AUTO_CONFIRM_VERSION` is 2; no file outside the owned list changes except `app/core/CLAUDE.md`, `app/payments/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/decisions.md`."
   },
   {
    "id": "T429",
@@ -14088,7 +14162,8 @@
     "T420",
     "T421",
     "T427",
-    "T428"
+    "T428",
+    "T430"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16966,7 +17041,8 @@
     "T424",
     "T425",
     "T426",
-    "T429"
+    "T429",
+    "T430"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -19313,7 +19389,8 @@
     "T425",
     "T426",
     "T427",
-    "T428"
+    "T428",
+    "T430"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19401,7 +19478,8 @@
     "T425",
     "T426",
     "T427",
-    "T428"
+    "T428",
+    "T430"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19488,7 +19566,8 @@
     "T425",
     "T426",
     "T427",
-    "T428"
+    "T428",
+    "T430"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19766,7 +19845,8 @@
     "T420",
     "T421",
     "T427",
-    "T428"
+    "T428",
+    "T430"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -27819,7 +27899,8 @@
     "T352",
     "T334",
     "T340",
-    "T332"
+    "T332",
+    "T430"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
