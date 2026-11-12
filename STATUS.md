@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T04:07:43Z by runner fe14fd0d43a4 (actions).
+Updated 2026-11-12T04:23:09Z by runner 47a83212b95f (actions).
 
-**Building: T356 in progress since 04:05Z; 222 of 390 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T356 in progress since 04:05Z; 222 of 391 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 222 of 390 build tasks (owner gates not counted)
+- **Tasks done:** 222 of 391 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z
 - **Week:** 84% used, 26.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:05Z, 2 min before this update
+- **Last run:** 04:07Z, 15 min before this update
 - **Keeper:** last ran 03:55Z, next wake 04:15Z
 
 ## Needs attention
 - BLOCKED T401: plan gap reported: PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a homeowner mark (door_matrix.rs already names Realm::Homeowner at ~969/979) plus askhava_payments/payments::api; T401 needs payments::api::no_fee_release in door_matrix.rs (kit/prompts/T401.md:9). Evidence: cargo test -p askhava-security --test no_homeowner_charge -> td_fee_07_no_homeowner_route_reaches_payments FAILED: door_matrix.rs: homeowner-realm code reaches payments. Reviewer confirmed; no legitimate workaround. Smallest plan change: give T401 a second owned file (e.g. app; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T401 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 8 problem(s) on tasks still to run (+80 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+80 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -119,12 +119,11 @@ Updated 2026-11-12T04:07:43Z by runner fe14fd0d43a4 (actions).
 - 06:12Z Harness: the state schema accepts the hand-in update merge — runner stopped with state_invalid (D-2870) (#459)
 - 05:26Z Plan: T337 owns its confirm_and_pay fixture rows; paid-pick guard keeps a test (D-2832) (#453)
 - 05:08Z Plan: new T383 removes the brand words left in the text templates and homeowner page; T295 waits for it (D-2843) (#455)
-- 04:14Z Plan: three lanes (D-2810) (#451)
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 211 of 733 (28.8%) · partial 350 · unstarted 172
-**Tasks merged (throughput only):** 222 of 390
+**Tasks merged (throughput only):** 222 of 391
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -159,7 +158,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 102 of 176 done
+- stage 4: 102 of 177 done
 - stage 5: 0 of 60 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done

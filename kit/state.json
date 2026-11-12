@@ -27001,7 +27001,11 @@
    "deps": [
     "T282",
     "T262",
-    "T281"
+    "T281",
+    "T378",
+    "T390",
+    "T311",
+    "T349"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30335,7 +30339,8 @@
   {
    "id": "T314",
    "deps": [
-    "T281"
+    "T281",
+    "T405"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -33811,7 +33816,8 @@
   {
    "id": "T377",
    "deps": [
-    "T336"
+    "T336",
+    "T405"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -34853,11 +34859,27 @@
     "T337",
     "T214",
     "T068",
-    "T401"
+    "T401",
+    "T095"
    ],
    "status": "QUEUED",
    "attempts": 0,
    "slug": "door-matrix-charged-pick-and-facts",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T405",
+   "deps": [
+    "T260",
+    "T176",
+    "T258",
+    "T075",
+    "T275"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payment-three-ds-result",
    "type": "harness",
    "stage": "4"
   }
@@ -36984,7 +37006,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T04:07:43Z",
+ "updated_at": "2026-11-12T04:23:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -37082,7 +37104,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fe14fd0d43a457471dcb3f9371bb2272ac93eb0c",
+ "runner_sha": "47a83212b95ffbe5cbbef28c44394dfe945266cb",
  "starter": "actions",
  "smoke_runs": [
   {
