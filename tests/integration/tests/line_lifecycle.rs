@@ -10,10 +10,10 @@ use askhava_businesses::api::{
     Acting, Roles, SenderLink, TeamError, add_member, add_owner, create, link_phone, remove_member,
 };
 use askhava_calls::api::{
-    Answer, Attestation, CallTurn, CloseReason, Connected, IncomingCall, LINK_TEXT_TO, Party,
-    PhoneStanding, RoutedLine, Step, answer_call, assign_number, close_expired, close_line,
-    code_call_twiml, expired, gate, greeting_en, greeting_es, greeting_twiml, job_pin, last4,
-    phone_works, request_link, route, safety_script,
+    Answer, Attestation, CallTurn, CloseReason, Connected, IncomingCall, JobPin, LINK_TEXT_TO,
+    Party, PhoneStanding, RoutedLine, Step, answer_call, assign_number, close_expired, close_line,
+    code_call_twiml, expired, gate, greeting_en, greeting_es, greeting_twiml, last4, phone_works,
+    request_link, route_with, safety_script, stored_pin,
 };
 use askhava_core::api::{Settings, brand};
 use askhava_messaging::api::{OutboxError, UpdateChannel, sender_add, set_update_channel};
@@ -276,8 +276,8 @@ async fn td_call_05_a_line_closes_after_30_days(pool: PgPool) {
 
 /// TD-CALL-05 (CALL-011, D-078): a blocked call from an unlinked staff phone hears the PIN prompt;
 /// the LINK notice is emailed to the owner and the billing member, never the cards-only member,
-/// and texted only to the main phone, with the last 4 digits and the line's PIN, never the full
-/// number; once per line, with no digits in its dedupe key.
+/// and texted only to the main phone, with the last 4 digits and the line's stored PIN (D-2247),
+/// never the full number; once per line, with no digits in its dedupe key.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_call_05_a_blocked_staff_phone_hears_the_pin_prompt_and_link_names_its_last_4(
     pool: PgPool,
@@ -306,7 +306,8 @@ async fn td_call_05_a_blocked_staff_phone_hears_the_pin_prompt_and_link_names_it
     );
     assert_eq!(sent[0]["template"], "link_this_phone");
     assert_eq!(sent[0]["values"]["number"], "0177");
-    assert_eq!(sent[0]["values"]["job"], job_pin(id).digits());
+    let pin = stored_pin(&mut db, id).await.expect("read").expect("pin");
+    assert_eq!(sent[0]["values"]["job"], pin.digits());
     let to = [Uuid::from_u128(0xa0), Uuid::from_u128(0xa1)].map(|u| u.to_string());
     assert_eq!(sent[0]["to"], serde_json::json!(to));
     assert!(
@@ -444,6 +445,9 @@ fn td_call_08_a_member_linked_phone_works_only_after_approval() {
         tries_call: 0,
         tries_today: 0,
         entered: None,
+    };
+    let route = |party, lines: &[RoutedLine], turn| {
+        route_with(party, lines, turn, |_: &RoutedLine| JobPin::parse("4321"))
     };
     let seeded = |linked_by_owner, owner_approved| PhoneStanding {
         linked_by_owner,
