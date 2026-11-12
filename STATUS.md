@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-12T19:23:51Z by runner b1384370ebfb (actions).
+Updated 2026-11-12T19:25:07Z by runner 3328b4e80835 (actions).
 
-**Building: T251 in progress since 19:00Z; 251 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T251 in progress since 19:00Z; 252 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 251 of 403 build tasks (owner gates not counted)
+- **Tasks done:** 252 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 6: T416 claimed 19:04Z, lease until 22:04Z
 - **Week:** 3% used, 180.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:23Z, 0 min before this update
+- **Last run:** 19:23Z, 1 min before this update
 - **Keeper:** last ran 19:23Z, next wake 22:03Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 20 problem(s) on tasks still to run (+124 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+125 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | MERGE_PENDING | 2 | 15 min | 19:11Z | Twin: failure / Twin failed at step: Build rules_bridge from this commit (T074) / ##[error]Command failed: rustc -vV |
 | T350 | privacy: an opt-out, HELP or START word is never taken or re | MERGE_PENDING | 1 | 103 min | 19:09Z |  |
-| T362 | server: the built static files are served at /static/<crate> | MERGE_PENDING | 3 | 26 min | 19:03Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
+| T362 | server: the built static files are served at /static/<crate> | done | 3 | 26 min | 19:03Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T346 | portals: every homeowner Verify code is bound to its purpose | done | 1 | 40 min | 18:57Z |  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | resync | 2 | 87 min | 18:46Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T376 | ai and stand-in (harness): the intake schema sent to Claude  | done | 1 | 35 min | 18:40Z |  |
@@ -122,7 +122,7 @@ Updated 2026-11-12T19:23:51Z by runner b1384370ebfb (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 335 · unstarted 168
-**Tasks merged (throughput only):** 251 of 403
+**Tasks merged (throughput only):** 252 of 403
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -157,7 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 131 of 185 done
+- stage 4: 132 of 185 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
