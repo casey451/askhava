@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T14:51:13Z by runner f2ec2c57dae9 (actions).
+Updated 2026-11-12T14:54:37Z by runner e2c37a7d0cad (actions).
 
 **Building: T362 in progress since 14:45Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,13 @@ Updated 2026-11-12T14:51:13Z by runner f2ec2c57dae9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T362 claimed 14:45Z, lease until 17:45Z; lane 2: T389 claimed 14:39Z, lease until 17:39Z
 - **Week:** 94% used, 0.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:51Z, 0 min before this update
+- **Last run:** 14:51Z, 3 min before this update
 - **Keeper:** last ran 14:51Z, next wake 17:42Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 47% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+115 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+115 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -152,7 +151,7 @@ Updated 2026-11-12T14:51:13Z by runner f2ec2c57dae9 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T14:49:50Z (week)): week: 193.9M used, 68k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T21:27:53Z; waiting until 2026-11-12T17:00:00Z.
+- Pacing (session_reading 2026-11-12T14:50:52Z (week)): week: 193.9M used, 68k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T21:32:06Z; waiting until 2026-11-12T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
