@@ -2747,3 +2747,4 @@
 - 2026-11-12T11:48:15Z runner 507412dca6ea (actions): {"T323": "IN_PROGRESS -> MERGE_PENDING"}
 - 2026-11-12T11:48:33Z runner 507412dca6ea (actions): {}
 - 2026-11-12T11:48:48Z runner b513c7d4ca37 (actions): {}
+- 2026-11-12T11:49:37Z runner fd946f4ebc08 (actions): {"T378": "QUEUED -> IN_PROGRESS"}; T378 estimated 4.1M tokens (calibrated); week has 8.0M left (no five-hour budget, D-3056) (session_reading 2026-11-12T11:48:33Z (week)); claimed
