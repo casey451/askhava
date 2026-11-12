@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T07:36:06Z by runner 05dde1522d86 (actions).
+Updated 2026-11-12T07:36:36Z by runner 5cbddc23fd8c (actions).
 
-**Building: T360 in progress since 06:59Z; 228 of 394 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T360 in progress since 06:59Z; 229 of 394 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 228 of 394 build tasks (owner gates not counted)
+- **Tasks done:** 229 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T360 claimed 06:59Z, lease until 09:59Z
 - **Week:** 89% used, 5.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:35Z, 0 min before this update
+- **Last run:** 07:36Z, 0 min before this update
 - **Keeper:** last ran 07:16Z, next wake 09:50Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 16 problem(s) on tasks still to run (+94 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+92 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -21,7 +21,7 @@ Updated 2026-11-12T07:36:06Z by runner 05dde1522d86 (actions).
 | T336 | server, adapters and stand-in (harness): a text stopped by a | MERGE_PENDING | 2 | 47 min | 07:35Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T390 | calls and server: a blocked staff call that connects a line  | MERGE_PENDING | 1 | 29 min | 07:34Z |  |
 | T401 | server (harness): the door probe's fixture gains a released  | MERGE_PENDING | 2 | 37 min | 07:33Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
-| T339 | jobs: each job keeps its category code and remaining candida | MERGE_PENDING | 1 | 18 min | 07:13Z |  |
+| T339 | jobs: each job keeps its category code and remaining candida | done | 1 | 18 min | 07:13Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 71 min | 06:06Z |  |
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | done | 1 | 51 min | 06:05Z |  |
 | T356 | messaging and server (harness): the worker sends queued text | done | 1 | 86 min | 05:31Z |  |
@@ -124,7 +124,7 @@ Updated 2026-11-12T07:36:06Z by runner 05dde1522d86 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 210 of 733 (28.6%) · partial 353 · unstarted 170
-**Tasks merged (throughput only):** 228 of 394
+**Tasks merged (throughput only):** 229 of 394
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -159,7 +159,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 108 of 178 done
+- stage 4: 109 of 178 done
 - stage 5: 0 of 62 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
