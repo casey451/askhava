@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-12T02:25:03Z by runner 00d214c9e37e (actions).
+Updated 2026-11-12T02:25:16Z by runner 348dd46df0d7 (actions).
 
-**Building: T248 in progress since 01:49Z; 219 of 389 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T248 in progress since 01:49Z; 219 of 383 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 219 of 389 build tasks (owner gates not counted)
+- **Tasks done:** 219 of 383 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T248 claimed 01:49Z, lease until 04:49Z; lane 5: T334 claimed 01:43Z, lease until 04:43Z
 - **Week:** 81% used, 24.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:24Z, 0 min before this update
+- **Last run:** 02:25Z, 0 min before this update
 - **Keeper:** last ran 02:16Z, next wake 04:45Z
 
 ## Needs attention
-- Strict plan check red: 7 problem(s) on tasks still to run (+71 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+73 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -119,14 +119,14 @@ Updated 2026-11-12T02:25:03Z by runner 00d214c9e37e (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 211 of 733 (28.8%) · partial 350 · unstarted 172
-**Tasks merged (throughput only):** 219 of 389
+**Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
+**Tasks merged (throughput only):** 219 of 383
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
-| businesses | 15 | 39 | 4 | 58 |
+| businesses | 16 | 38 | 4 | 58 |
 | calls | 9 | 15 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |

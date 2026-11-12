@@ -31820,12 +31820,12 @@
      "result": "resync"
     }
    ],
-   "reviewed_sha": "f5c24117141d98aea1087609fbfd58235b988559",
+   "reviewed_sha": "75f1f8621eebcdab03702cbea879836646546267",
    "review_lease": {
     "task": "T334",
-    "session": "actions-43106233823",
-    "expires": "2026-11-12T01:00:14Z",
-    "lane": "2"
+    "session": "actions-43134334367",
+    "expires": "2026-11-12T04:43:13Z",
+    "lane": "5"
    },
    "branch": "claude/task/T334-reconcile-catch-up-and-paging",
    "auto_merge": {
@@ -31833,83 +31833,6 @@
     "why": "auto-merge on #527 (gh pr merge)",
     "head": "1666208a3b6bafe2022c038187dfb637ef22ae16"
    },
-   "update_merges": [
-    {
-     "from": "618f102553dd22f3e82a2c346c10dce358b3352d",
-     "to": "1666208a3b6bafe2022c038187dfb637ef22ae16",
-     "main": "49e840f967473aa236e7af4c5d647291bb0ec5f4",
-     "how": "hand-in",
-     "at": "2026-11-11T23:36:29Z"
-    },
-    {
-     "from": "1666208a3b6bafe2022c038187dfb637ef22ae16",
-     "to": "b26715508eb20586647b5d43d5c57d1330b352ff",
-     "main": "ce92afb8a8caf6cf218f55cba20ab20b5d4347f7",
-     "how": "runner",
-     "checks": {
-      "Ci": "success",
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-11T23:56:58Z"
-    },
-    {
-     "from": "b26715508eb20586647b5d43d5c57d1330b352ff",
-     "to": "5f9825b248cd37b29de0344d7db7dda8ffcd6793",
-     "main": "4f3341fd59e7d9a79fa5f5352fd4df7ee87b7d84",
-     "how": "runner",
-     "checks": {
-      "Twin": "success",
-      "Ally": "success"
-     },
-     "at": "2026-11-12T00:07:32Z"
-    },
-    {
-     "from": "5f9825b248cd37b29de0344d7db7dda8ffcd6793",
-     "to": "094dcfa4895f60ae3a3038e53c2dbf1feca46724",
-     "main": "162c61d4f51a3efe8f42c8f3ea5430543bfb5709",
-     "how": "runner",
-     "checks": {
-      "Ci": "success",
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-12T00:22:35Z"
-    },
-    {
-     "from": "094dcfa4895f60ae3a3038e53c2dbf1feca46724",
-     "to": "768f630634509ac6cade86479c7e8bbb1e5f22ca",
-     "main": "2f7ee2336488474e27262fc608d3242546e602f9",
-     "how": "runner",
-     "checks": {
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-12T00:36:20Z"
-    },
-    {
-     "from": "768f630634509ac6cade86479c7e8bbb1e5f22ca",
-     "to": "9aa42ea7e89a28a1729fe4c2657f6ebaf12a9208",
-     "main": "5cf1428bd66b2cf00fa87bb110bd43ba60bf2f8c",
-     "how": "runner",
-     "checks": {},
-     "at": "2026-11-12T00:38:51Z"
-    },
-    {
-     "from": "9aa42ea7e89a28a1729fe4c2657f6ebaf12a9208",
-     "to": "f5c24117141d98aea1087609fbfd58235b988559",
-     "main": "fe7a56647b29e78ab467a799951025f1a196d6d7",
-     "how": "runner",
-     "checks": {
-      "Ci": "success",
-      "Twin": "success",
-      "Ally": "success"
-     },
-     "at": "2026-11-12T01:11:52Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "runner_closed_prs": [
     527
    ],
@@ -31932,7 +31855,19 @@
      ],
      "at": "2026-11-12T01:43:13Z"
     }
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "348dd46df0d76416e99cbbdcdded809e579b842a",
+     "to": "75f1f8621eebcdab03702cbea879836646546267",
+     "main": "25014a67ca157050e1b264fb7e7b257bbd172766",
+     "how": "hand-in",
+     "at": "2026-11-12T02:25:16Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T335",
@@ -36381,7 +36316,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T02:25:03Z",
+ "updated_at": "2026-11-12T02:25:16Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -36479,7 +36414,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "00d214c9e37e1d160047b8f2682ddc89d6287972",
+ "runner_sha": "348dd46df0d76416e99cbbdcdded809e579b842a",
  "starter": "actions",
  "smoke_runs": [
   {
