@@ -2,8 +2,10 @@
 //!
 //! [`hit`] raises one `core.rate_limit` counter per bucket and fixed window with a single atomic
 //! `INSERT … ON CONFLICT … DO UPDATE … RETURNING`, so concurrent requests on any number of web
-//! processes count exactly (SEC-040). A bucket is a scope plus an IP ([`ip_bucket`]) or a
-//! blind-index hash a module computes; never a plaintext phone or email (postgres brain P12).
+//! processes count exactly (SEC-040); [`hit_on`] runs the same upsert on the caller's connection,
+//! so the count commits or rolls back with the caller's transaction (D-2206). A bucket is a scope
+//! plus an IP ([`ip_bucket`]) or a blind-index hash a module computes; never a plaintext phone or
+//! email (postgres brain P12).
 //!
 //! [`ClientIpPolicy::client_ip`] takes the IP from the one header the host's edge sets and
 //! overwrites, named by `ASKHAVA_CLIENT_IP_HEADER` (default `x-real-ip`, to be measured on the test
@@ -17,7 +19,7 @@ use std::net::IpAddr;
 use axum::http::{HeaderMap, HeaderName, header};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
-use sqlx::PgPool;
+use sqlx::{PgConnection, PgPool};
 use thiserror::Error;
 
 const CLIENT_IP_HEADER: &str = "ASKHAVA_CLIENT_IP_HEADER";
@@ -205,6 +207,24 @@ pub async fn hit(
     window: SignedDuration,
     limit: i32,
 ) -> Result<RateDecision, RateLimitError> {
+    let mut conn = pool.acquire().await.map_err(|_| RateLimitError::Db)?;
+    hit_on(&mut conn, bucket, now, window, limit).await
+}
+
+/// [`hit`] on the caller's connection, so the count joins the caller's transaction: a rolled-back
+/// transaction counts nothing, and the counter row stays locked until it ends (SEC-014, SEC-040,
+/// D-2206, D-3083). Hold no network call between this and the commit.
+///
+/// # Errors
+///
+/// [`RateLimitError::Db`] when the upsert fails.
+pub async fn hit_on(
+    conn: &mut PgConnection,
+    bucket: &str,
+    now: Timestamp,
+    window: SignedDuration,
+    limit: i32,
+) -> Result<RateDecision, RateLimitError> {
     let hits = sqlx::query_scalar!(
         "INSERT INTO core.rate_limit (bucket, window_start, hits) VALUES ($1, $2, 1) \
          ON CONFLICT (bucket, window_start) DO UPDATE SET hits = core.rate_limit.hits + 1 \
@@ -212,7 +232,7 @@ pub async fn hit(
         bucket,
         window_start(now, window).to_sqlx() as _,
     )
-    .fetch_one(pool)
+    .fetch_one(conn)
     .await
     .map_err(|_| RateLimitError::Db)?;
     Ok(if hits <= limit {
