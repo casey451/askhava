@@ -338,3 +338,47 @@ pub async fn raise_alert_once(
     tx.commit().await.map_err(|_| OpsError::Database)?;
     Ok(Some(id))
 }
+
+/// LIC-008, D-2954: raises a subject-less `kind` alert unless one of that kind was already raised
+/// this Arizona day (UTC-7, by the database clock), checking and raising in one transaction under
+/// an advisory lock on the kind, so two raises at once give one alert; returns the new alert's ID,
+/// or `None` when today's was already raised.
+///
+/// # Errors
+///
+/// [`OpsError::NotACodeName`] (nothing is written), or [`OpsError::Database`].
+pub async fn raise_alert_once_a_day(
+    db: &mut PgConnection,
+    kind: &'static str,
+    severity: Severity,
+) -> Result<Option<Uuid>, OpsError> {
+    let alert = NewAlert {
+        kind,
+        severity,
+        subject: None,
+    };
+    let mut tx = db.begin().await.map_err(|_| OpsError::Database)?;
+    let key = format!("ops.alert_day:{kind}");
+    sqlx::query_scalar!(
+        r#"SELECT 1 AS "locked!" FROM (SELECT pg_advisory_xact_lock(hashtextextended($1::text, 21))) AS lock"#,
+        key,
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    let raised = sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM ops.alert WHERE kind = $1 AND subject_kind IS NULL
+           AND ((raised_at AT TIME ZONE 'UTC') - interval '7 hours')::date
+             = ((now() AT TIME ZONE 'UTC') - interval '7 hours')::date) AS "raised!""#,
+        kind,
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    if raised {
+        return Ok(None);
+    }
+    let id = raise_alert(&mut tx, &alert).await?;
+    tx.commit().await.map_err(|_| OpsError::Database)?;
+    Ok(Some(id))
+}

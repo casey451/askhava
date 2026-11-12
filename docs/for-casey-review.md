@@ -2600,3 +2600,8 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Three held tasks under their size limits (D-3325)
 
 - T340, T271 and T126 now find their line in the big architecture notes by search instead of loading that whole section, so the build can run them; nothing they must do changed.
+
+## Phone-page speed test and the speed report in each check run (T418, D-3342, D-3343)
+
+- Each check run now times the quote page in a test phone browser (slowed like a mid-range phone on a weak mobile signal) and adds a speed table to the run's summary. It only warns, it never fails a run. The other pages it should time (home, ZIP result, the first request step, Confirm, the business home) are not served yet, so they show "not measured" until they are.
+- One follow-up for a later task: the rule that decides when the TypeScript checks run should also cover the new speed test folder, but that rule has a locked copy in the hand-in script, so a task that owns that script should change both together.

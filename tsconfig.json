@@ -15,5 +15,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["tests/e2e/**/*.ts", "tests/a11y/**/*.ts", "app/*/static/**/*.ts"]
+  "include": ["tests/e2e/**/*.ts", "tests/perf/**/*.ts", "tests/a11y/**/*.ts", "app/*/static/**/*.ts"]
 }
