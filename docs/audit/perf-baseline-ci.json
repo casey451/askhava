@@ -1,0 +1,5 @@
+{
+ "note": "Empty until the first green main run of the E2e job: copy its step summary figures here with perf/compare.py --write-baseline (T418, D-3292). An empty baseline compares nothing.",
+ "routes": {},
+ "vitals": {}
+}
