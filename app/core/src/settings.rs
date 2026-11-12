@@ -28,6 +28,7 @@ const PUBLIC_BASE_URL: &str = "ASKHAVA_PUBLIC_BASE_URL";
 const REQUEST_TIMEOUT_SECS: &str = "ASKHAVA_REQUEST_TIMEOUT_SECS";
 const POSTAL_ADDRESS: &str = "ASKHAVA_POSTAL_ADDRESS";
 const STATIC_DIR: &str = "ASKHAVA_STATIC_DIR";
+const LICENSE_BASE_URL: &str = "ASKHAVA_LICENSE_BASE_URL";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -48,6 +49,9 @@ const KEYS: &[&str] = &[
     POSTAL_ADDRESS,
     // The folder of built browser files the web process serves at `/static/` (T362, D-2633).
     STATIC_DIR,
+    // The license lists' and records' base URL, optional here; the composition that builds the
+    // license source requires it in `test` and `live` (T385, SEC-032, D-2954).
+    LICENSE_BASE_URL,
     "ASKHAVA_TWILIO_ACCOUNT_SID",
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",
@@ -251,6 +255,7 @@ pub struct Settings {
     request_timeout_secs: u64,
     postal_address: Option<String>,
     static_dir: Option<String>,
+    license_base_url: Option<String>,
 }
 
 impl Settings {
@@ -277,6 +282,10 @@ impl Settings {
         }
         let accounts = check_accounts(environment, &mut raw)?;
         let public_base_url = public_base_url(environment, raw.remove(PUBLIC_BASE_URL))?;
+        let license_base_url = raw.remove(LICENSE_BASE_URL);
+        if let Some(url) = &license_base_url {
+            check_base_url(environment, LICENSE_BASE_URL, url)?;
+        }
         Ok(Self {
             environment,
             database_url: required(&mut raw, DATABASE_URL)?.into(),
@@ -290,6 +299,7 @@ impl Settings {
             request_timeout_secs: request_timeout_secs(raw.remove(REQUEST_TIMEOUT_SECS))?,
             postal_address: raw.remove(POSTAL_ADDRESS).map(|p| p.trim().to_owned()),
             static_dir: raw.remove(STATIC_DIR).map(|d| d.trim().to_owned()),
+            license_base_url,
         })
     }
 
@@ -383,6 +393,15 @@ impl Settings {
     #[must_use]
     pub fn static_dir(&self) -> Option<&str> {
         self.static_dir.as_deref()
+    }
+
+    /// The license lists' and records' base URL (`ASKHAVA_LICENSE_BASE_URL`, checked by
+    /// [`check_base_url`]): `file://` fixtures or the public lists (SEC-032, D-2954). Optional
+    /// here; the composition that builds the license source requires it in `test` and `live`, and
+    /// in `ci` and `dev` its absence makes every sign-up record read unreadable.
+    #[must_use]
+    pub fn license_base_url(&self) -> Option<&str> {
+        self.license_base_url.as_deref()
     }
 }
 

@@ -39,6 +39,11 @@
 //! jobs on a homeowner's wrong-license report and raises [`PEST_LICENSE_REPORTED_ALERT`];
 //! [`replace_pest_number`] stores the number found on the Department's search and clears the
 //! pause (LIC-047).
+//!
+//! The own record (T385, D-2954): [`read_own_record`] reads a business's own ROC or city record
+//! once at sign-up into [`OwnRecord`], nothing kept (BIZ-002, LIC-008, LIC-010); [`names_agree`]
+//! is BIZ-016's name check; [`city_match_number`] and [`bound_roc_number`] give the number it is
+//! read under (LIC-011, LIC-048).
 
 pub use crate::class_map::{
     ClassMap, ClassMapError, JobTypeKey, Opening, ProjectLimitRefusal, RequestIntake,
@@ -68,6 +73,10 @@ pub use crate::lines::{
 pub use crate::models::{
     Agency, CityListStanding, CityRecord, Eligibility, Holder, InspectionFee, Job, LicenseKind,
     LicensingError, NoCardReason, PestAttestation, PestRecordCategory, SaleAnswer,
+};
+pub use crate::own_record::{
+    OwnRecord, RECORD_HEADER, RECORD_UNREADABLE_ALERT, RecordList, RecordRead, bound_roc_number,
+    city_match_number, names_agree, read_own_record,
 };
 pub use crate::pest_report::{
     PEST_LICENSE_REPORTED_ALERT, PestReplacement, PestReport, replace_pest_number,
