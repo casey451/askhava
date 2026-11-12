@@ -31,6 +31,7 @@ mod mode_state;
 mod models;
 mod open_cards_digest;
 mod optout;
+mod optout_email;
 mod outbox_sender;
 mod purge;
 mod receipt_email;
