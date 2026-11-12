@@ -484,8 +484,14 @@ def _resolve_one(state: State, env: Env, cfg: Config, now: datetime, task: dict[
         pr = None  # an earlier attempt's PR beside an empty hand-in already on main (D-584)
     if pr is None:
         return _without_pr(state, env, task, now)
+    return _resolve_pr(state, env, cfg, now, tid, pr)
+
+
+def _resolve_pr(state: State, env: Env, cfg: Config, now: datetime, tid: str, pr: dict[str, Any]) -> tuple[State, str]:
+    """A MERGE_PENDING task whose pull request exists: merged (DONE or a red main) or still open. The one rule
+    by which both the cycle and `resolve_merged` (D-3141) close a merge."""
     reviewed = _head_reviewed(state, env, tid, pr)
-    if reviewed is not None and task.get("head_check_since"):
+    if reviewed is not None and st.entry(state, tid).get("head_check_since"):
         state = st.with_task(state, tid, head_check_since=None)  # the head was placed: the wait is over (D-584)
     if not pr.get("merged"):
         return _open_pr_step(state, env, tid, pr, reviewed, now)
@@ -495,6 +501,42 @@ def _resolve_one(state: State, env: Env, cfg: Config, now: datetime, task: dict[
         return _unplaced_merge(state, cfg, tid, pr, now)
     state, result = _merged(state, tid, pr, cfg, now, reviewed)
     return mark_owned_gap(state, env, cfg, tid, now), result
+
+
+MERGES_RESOLVED = "merges_resolved"  # `--resolve-merges` closed at least one merged task (D-3141)
+NO_MERGED = "no_merged"  # `--resolve-merges` found nothing merged to close; it writes no log row (D-3141)
+
+
+def resolve_merged(cfg: Config, env: Env, now: datetime) -> str:
+    """`python3 -m runner --resolve-merges` (backup-runner.yml, before the smoke warm-up, D-3141).
+
+    The run a merge starts used to close that merge only in the session's cycle, after the warm-up and the
+    pre-session smoke: T388 merged at 22:53Z on November 11 and stayed MERGE_PENDING, holding its lane and its
+    dependents, until 23:19Z. This closes, in one read and one push, every MERGE_PENDING task whose pull request
+    has merged and whose checks have all finished, by the cycle's own rule (`_resolve_pr`: DONE only from
+    `verify.check_done`, i.e. Ci, Twin and Ally green on the merged head and the squash tree equal to it, and a
+    reviewed head; otherwise BLOCKED and a red main, exactly as in the cycle). An open or absent pull request,
+    checks still running and a merged head git cannot place yet are left to the cycle, as is everything else it
+    does (inbox, smoke, claims). A lost race changes nothing: the session's cycle resolves the merge as before."""
+    base = env.read_state()
+    state, final = base, False
+    for task in [t for t in base["tasks"] if t.get("status") == st.MERGE_PENDING]:
+        tid, pr = task["id"], env.pr_for(task["id"])
+        if pr is None or not pr.get("merged") or verify.checks_state(pr) == "pending" or _earlier_pr(task, pr, env):
+            continue
+        if not _proof_ok(state, tid):
+            continue  # a cleanup task whose stage proof the cycle records first (`record_proofs`, D-551)
+        resolved, result = _resolve_pr(state, env, cfg, now, tid, pr)
+        if result == "merge_pending":
+            continue  # a merged head not placed yet: its wait is the cycle's to start (D-584)
+        state, final = _lane_outcome(resolved, tid, st.task_lane(task), result, now, env.checks_on), True
+    if not final:
+        return NO_MERGED
+    _note_fallback(cfg, base, state)
+    if not env.push_state(state, base):
+        _drop_fallback_note(cfg)
+        return "lost_race"
+    return MERGES_RESOLVED
 
 
 def _lane_outcome(state: State, tid: str, lane: str, result: str, now: datetime,
@@ -1361,16 +1403,22 @@ def _note_fallback(cfg: Config, before: State, after: State) -> None:
         outbox.write_outbox(cfg.outbox_dir, "lanes-fallback", "Runner: back to one lane", "info", lanes.fallback_note(after))
 
 
-def refill_lanes(cfg: Config, state: State, now: datetime) -> list[str]:
+def refill_lanes(cfg: Config, state: State, now: datetime, own: str | None = None) -> list[str]:
     """The free lanes a new run should be started for, at most one per task that could be claimed beside
     the tasks in flight; the backup-runner chain step dispatches one run per lane (D-620). None while the
     pacer's last decision is still a wait (`pacing.waiting_until` in the future): nothing fits the usage
-    windows then, so a started run would only report `paced` (D-723)."""
+    windows then, so a started run would only report `paced` (D-723). None while `main` is red: only
+    FIX-MAIN may be claimed then, and the gate's lane pick (`state.run_lane`, the "fix" lane) places it,
+    so every run that ends can start these without ever adding a run beside a red main (D-3140). `own`, a
+    lane this very run's session is about to claim on (`--resolve-merges`, D-3141), is left out and takes one
+    of the tasks."""
     free = lanes.free_lanes(cfg.lanes, state, now)
-    if not free or _pacer_waiting(state, now):
+    if not free or state.get("main_red") or _pacer_waiting(state, now):
         return []
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ready = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
+    if own in free:
+        free, ready = [lane for lane in free if lane != own], ready[1:]
     return free[: len(ready)]
 
 
