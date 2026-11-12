@@ -16,7 +16,7 @@ use askhava_core::api::{IdSecret, ManualClock};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{JobStart, Opened, TextIn, begin_job, receive_text};
 use askhava_jobs::api::quote_token::issue;
-use askhava_jobs::api::{JobStatus, move_to};
+use askhava_jobs::api::{JobStatus, move_to, record_job_facts};
 use askhava_messaging::api::{RevokeChannel, suppress};
 use askhava_ops::api::Actor;
 use askhava_portals::api::{PRE_SESSION_COOKIE, PickCodeKeys, pick_flow_routes};
@@ -166,6 +166,7 @@ async fn ready(db: &mut PgConnection) -> (Uuid, String) {
     let Ok(Opened::Created(job)) = begin_job(db, &start).await else {
         panic!("a new job");
     };
+    facts(db, job).await;
     for step in [
         (JobStatus::Intake, JobStatus::Open),
         (JobStatus::Open, JobStatus::QuotesReady),
@@ -177,6 +178,18 @@ async fn ready(db: &mut PgConnection) -> (Uuid, String) {
     let link = IdSecret::new(1, secret()).expect("id");
     let token = issue(db, &link, job, ts(DAY)).await.expect("token");
     (job, token.as_str().to_owned())
+}
+
+/// Stores the catalog and records `job`'s facts, plumbing repair and leak repair: not fee-free,
+/// the default visit tier, one-time (FEE-005, D-2331).
+async fn facts(db: &mut PgConnection, job: Uuid) {
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["leak repair".to_owned()];
+    record_job_facts(db, job, "plumbing_repair", &types)
+        .await
+        .expect("job facts");
 }
 
 /// One confirmed quote on `job` from a fake business (fake wording).

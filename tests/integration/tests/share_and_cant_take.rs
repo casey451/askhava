@@ -19,7 +19,7 @@ use askhava_core::api::{Claimed, Guarded, IdSecret, ManualClock};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{JobStart, Opened, TextIn, begin_job, receive_text};
 use askhava_jobs::api::quote_token::issue;
-use askhava_jobs::api::{JobStatus, current, move_to};
+use askhava_jobs::api::{JobStatus, current, move_to, record_job_facts};
 use askhava_ops::api::Actor;
 use askhava_picks::api::{
     Backup, Browser, ConfirmSettings, PagePick, bind_backup, bind_share, cant_take_link,
@@ -65,6 +65,13 @@ async fn quoted(db: &mut PgConnection, first: Uuid) -> Uuid {
 
 /// Walks `job` to Quotes ready with three confirmed quotes; quote 1 is `first`'s.
 async fn ready(db: &mut PgConnection, job: Uuid, first: Uuid) {
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["leak repair".to_owned()];
+    record_job_facts(db, job, "plumbing_repair", &types)
+        .await
+        .expect("job facts");
     for step in [
         (JobStatus::Intake, JobStatus::Open),
         (JobStatus::Open, JobStatus::QuotesReady),
