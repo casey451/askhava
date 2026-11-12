@@ -1,18 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T17:09:02Z by runner eccfd35b9e3a (manual).
+Updated 2026-11-12T17:11:55Z by runner eccfd35b9e3a (actions).
 
-**Idle since 16:33Z; 247 of 400 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 19:01Z; 247 of 400 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 247 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:33Z (no task in progress)
-- **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:08Z, 0 min before this update
+- **Week:** 96% used, -241.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:09Z, 2 min before this update
 - **Keeper:** last ran 16:57Z, next wake 17:07Z
 
 ## Needs attention
 - BLOCKED T362: plan gap reported: PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): "Tab from "" ... Expected: 3, Received: 0" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState("load") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_serve; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T362 --plan-fix D-### --reason "..."` (D-2859)
+- PLAN GAP T346 (since 2026-11-12T17:11:48Z, no attempt used; a plan change fixes it): T346: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 24 problem(s) on tasks still to run (+120 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
@@ -105,39 +106,50 @@ Updated 2026-11-12T17:09:02Z by runner eccfd35b9e3a (manual).
 - 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
 - 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
 - 01:55Z Plan: owner approval before a team-linked phone works (BIZ-033, IC-95) — T396–T399 (D-3081) (#531)
+- 00:38Z Plan: T261 pre-flight fix and catalog loaded at start-up (T400, IC-96) (D-3100) (#534)
+- 00:00Z Plan: pre-flight fixes round 3 — T360, T368, T350, T358, T366, T385 (D-3094) (#528)
+- 23:50Z Plan: Gate C preconditions, vendor-leak check, quote cards, AI writing calls (D-3080) (#518)
+- 23:07Z Plan: IC-74 owners T390/T391, migration renumber, budget refresh, IC-95 logged (D-3079) (#517)
+- 23:02Z Plan: pre-flight fixes for T317, T323, T313, T315, T347 and the T345 gap (D-3083) (#524)
+- 22:35Z Harness: smoke ancestry reuse across DONE task merges and a running duplicate smoke yields (D-3058) (#516)
+- 21:48Z Harness: no five-hour pacing budget (D-3056) (#513)
+- 20:03Z Harness: the critical-path test checks what the runner can claim, not live in-flight work (D-3057) (#514)
+- 19:58Z Plan: pre-flight fixes for five queued tasks before they're claimed (D-3055) (#512)
+- 18:49Z Plan: five lanes (D-3043) (#504)
+- 18:37Z Plan: T387 steadies payments branch coverage and adds margin, claimed first (D-3049) (#507)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 7 of 733 (1.0%) · partial 557 · unstarted 169
+**Requirements verified:** 208 of 733 (28.4%) · partial 356 · unstarted 169
 **Tasks merged (throughput only):** 247 of 400
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 29 | 6 | 35 |
-| ai | 0 | 24 | 5 | 29 |
-| businesses | 0 | 55 | 3 | 58 |
-| calls | 0 | 24 | 1 | 25 |
-| consent | 0 | 31 | 4 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 2 | 36 | 5 | 43 |
-| job-cards | 0 | 22 | 2 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 42 | 3 | 45 |
-| ops-recovery | 0 | 9 | 45 | 54 |
-| privacy | 1 | 28 | 2 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 4 | 51 | 1 | 56 |
-| recurring | 0 | 8 | 3 | 11 |
-| security | 0 | 49 | 6 | 55 |
+| accessibility | 13 | 16 | 6 | 35 |
+| ai | 7 | 17 | 5 | 29 |
+| businesses | 15 | 40 | 3 | 58 |
+| calls | 10 | 14 | 1 | 25 |
+| consent | 8 | 23 | 4 | 35 |
+| fees | 12 | 39 | 1 | 52 |
+| intake | 21 | 17 | 5 | 43 |
+| job-cards | 11 | 11 | 2 | 24 |
+| licensing | 20 | 28 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 17 | 25 | 3 | 45 |
+| ops-recovery | 2 | 7 | 45 | 54 |
+| privacy | 6 | 23 | 2 | 31 |
+| quiet-hours | 4 | 5 | 0 | 9 |
+| quotes-pick | 30 | 25 | 1 | 56 |
+| recurring | 6 | 2 | 3 | 11 |
+| security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 0 | 7 | 25 | 32 |
+| wording | 2 | 5 | 25 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T15:14:31Z (week)): week: 194.0M used, 6k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T21:55:46Z; waiting until 2026-11-12T17:00:00Z.
+- Pacing (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file): week: 435.4M used, -241.4M left, resets 2026-11-12T19:01:47Z; projected finish 2026-12-06T05:07:25Z; waiting until 2026-11-12T19:01:47Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
