@@ -108,6 +108,10 @@ pub use crate::service::{
     Ticks, apply, create, night_count, own_hours, pause_for_rule, pause_self, resume_self,
     set_job_types, set_own_hours, set_ticks, set_towns,
 };
+pub use crate::service_area::{
+    MAX_RADIUS_MILES, MIN_RADIUS_MILES, ServiceArea, ServiceAreaProblem, StoredServiceArea,
+    save_service_area, service_area,
+};
 pub use crate::signup::{
     ContactKind, EntityValues, FeeNumbers, HeardFrom, LIST_DELAY_KEY, MaskedContact,
     NUMBER_OLD_BUTTON, RECORD_UPDATED_TEMPLATE, REPEAT_FREE_DAYS, REVIEW_TARGET_KEY, RecordSeen,

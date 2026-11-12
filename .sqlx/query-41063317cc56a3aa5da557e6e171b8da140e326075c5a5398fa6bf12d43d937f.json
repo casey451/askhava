@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT base_zip, radius_miles FROM businesses.service_area WHERE business_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "base_zip",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.service_area",
+            "name": "base_zip"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "radius_miles",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "businesses.service_area",
+            "name": "radius_miles"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "41063317cc56a3aa5da557e6e171b8da140e326075c5a5398fa6bf12d43d937f"
+}
