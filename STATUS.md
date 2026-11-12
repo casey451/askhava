@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T03:22:49Z by runner 0a050e8d3a67 (actions).
+Updated 2026-11-12T03:23:05Z by runner 0a050e8d3a67 (actions).
 
 **Building: T336 in progress since 03:22Z; 222 of 390 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 222 of 390 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T336 claimed 03:22Z, lease until 06:22Z; lane 2: T248 claimed 03:10Z, lease until 06:10Z; lane 3: T326 claimed 03:12Z, lease until 06:12Z
+- **Lane:** lane 1: T336 claimed 03:22Z, lease until 06:22Z; lane 3: T326 claimed 03:12Z, lease until 06:12Z
 - **Week:** 83% used, 21.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:22Z, 0 min before this update
 - **Keeper:** last ran 03:18Z, next wake 06:12Z
@@ -18,9 +18,10 @@ Updated 2026-11-12T03:22:49Z by runner 0a050e8d3a67 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T248 | catalog and businesses: markets as reviewed data, Arizona ZI | MERGE_PENDING | 1 | 12 min | 03:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
 | T400 | server: the web process stores the catalog file at start-up, | MERGE_PENDING | 1 | 21 min | 03:07Z |  |
-| T248 | catalog and businesses: markets as reviewed data, Arizona ZI | resync | 1 | 67 min | 02:56Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T248 | catalog and businesses: markets as reviewed data, Arizona ZI | resync | 1 | 67 min | 02:56Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | MERGE_PENDING | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T313 | messaging and server: an EMERGENCY card notice goes at night | done | 1 | 19 min | 02:07Z |  |
 | T368 | businesses (harness): the capability checklist offers every  | done | 1 | 17 min | 02:06Z |  |
@@ -167,8 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T336 (lease until 2026-11-12T06:22:15Z)
-- lane 2: T248 (lease until 2026-11-12T06:10:23Z)
 - lane 3: T326 (lease until 2026-11-12T06:12:28Z)
 
 ## Last usage reading
-- {"task": "T400", "at": "2026-11-12T03:07:01Z", "output_tokens": 34345, "cache_read_input_tokens": 2866432, "input_tokens": 128, "cache_creation_input_tokens": 162161}
+- {"task": "T248", "at": "2026-11-12T03:22:48Z", "cache_read_input_tokens": 894530, "output_tokens": 12100, "input_tokens": 75, "cache_creation_input_tokens": 58343}
