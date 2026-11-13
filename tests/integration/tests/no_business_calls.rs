@@ -14,7 +14,7 @@ use askhava_businesses::api::{
     CONTACT_CARD_PATH, RecordContacts, Step, next_step, welcome_card_line, welcome_lines,
 };
 use askhava_calls::api::{Party, code_call_twiml, may_code_call};
-use askhava_core::api::Settings;
+use askhava_core::api::{Settings, brand};
 use askhava_picks::api::{ConfirmSettings, WindowRules};
 use askhava_portals::api::{
     CONTACT_CARD_ROUTE, CodeTo, DoneFacts, InboxSwitch, PageLanguage, Parts, Screen, YourNumbers,
@@ -56,6 +56,12 @@ fn first(pool: &MaskedPool) -> &PoolNumber {
     &pool.numbers()[0]
 }
 
+/// `text` with the brand file's English names in place of its `{brand}` and `{brand_legal}`
+/// tokens (WORD-001, D-1932).
+fn filled(text: &str) -> String {
+    brand().fill(text, false).expect("brand tokens")
+}
+
 /// TD-BIZ-25 (CALL-014, CALL-015, SEC-008, PICK-013, BIZ-046, TXT-038): a code call goes only to a
 /// homeowner who tapped "Call me with the code instead"; opening the screen alone (no tap) places
 /// nothing; no business, tapped or not, ever gets one; the call opens "This is Ask Hava LLC",
@@ -76,7 +82,7 @@ fn td_biz_25_voice_codes_only_on_her_tap_never_to_a_business() {
     let code = SecretString::from("482913".to_owned());
     let twiml = code_call_twiml(first(&pool), MAIN, &code, "/v/again").expect("twiml");
     let words = twiml.expose_secret();
-    assert!(words.contains("This is Ask Hava LLC."));
+    assert!(words.contains(&filled("This is {brand_legal}.")));
     assert_eq!(
         words.matches("4, 8, 2, 9, 1, 3").count(),
         2,
@@ -208,11 +214,11 @@ fn td_biz_22_the_contact_card_holds_exactly_the_current_pool() {
     let two = pool(&["+15005550101", "+15005550102"]);
     let card = contact_card(two.numbers());
     assert!(card.starts_with("BEGIN:VCARD\r\nVERSION:3.0\r\n"));
-    assert!(card.contains("FN:Ask Hava homeowner calls\r\n"));
-    assert!(card.contains(
-        "NOTE:Calls from these numbers are homeowners who chose your quote\\, calling on an Ask \
-         Hava masked number. Ask Hava never calls you.\r\n"
-    ));
+    assert!(card.contains(&filled("FN:{brand} homeowner calls\r\n")));
+    assert!(card.contains(&filled(
+        "NOTE:Calls from these numbers are homeowners who chose your quote\\, calling on an \
+         {brand} masked number. {brand} never calls you.\r\n"
+    )));
     assert_eq!(card_numbers(&card), ["+15005550101", "+15005550102"]);
     assert!(!card.contains("+1928"), "no business or homeowner number");
     let three = pool(&["+15005550101", "+15005550102", "+15005550103"]);
@@ -249,12 +255,13 @@ fn td_biz_22_the_done_screen_and_welcome_email_offer_the_card() {
         fees: fee_numbers(ConfirmSettings::default(), WindowRules::default()),
     };
     let done = signup_page(Screen::Done(&facts), &parts).expect("done");
-    assert!(done.contains("(contact card: Ask Hava homeowner calls)"));
+    assert!(done.contains(&filled("(contact card: {brand} homeowner calls)")));
     assert!(done.contains(&format!("href=\"{CONTACT_CARD_ROUTE}\" download")));
     assert_eq!(format!("/{CONTACT_CARD_PATH}"), CONTACT_CARD_ROUTE);
-    let link = format!("https://askhava.com{CONTACT_CARD_ROUTE}");
+    let link = format!("https://{}{CONTACT_CARD_ROUTE}", brand().domain());
     assert!(welcome_card_line().contains(&format!(
-        "open {link}. It adds a contact named \"Ask Hava homeowner calls\"."
+        "open {link}. It adds a contact named \"{} homeowner calls\".",
+        brand().display_name()
     )));
     assert!(welcome_lines().contains(&welcome_card_line()));
     let form = signup_page(Screen::Form(&[]), &parts).expect("form");

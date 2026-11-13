@@ -9,7 +9,7 @@
 use std::sync::Mutex;
 
 use askhava_adapters::api::{AdapterError, FetchError, IdempotencyKey, LocalStorage};
-use askhava_core::api::IdSecret;
+use askhava_core::api::{IdSecret, brand};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     AfterQuestions, CONCEPT_QUESTION, ConceptStep, LEAVE_OUT_LINE, NO_PHOTO_LINE, PhotoStep,
@@ -336,7 +336,10 @@ fn td_int_27_the_upload_page_and_photo_ask_say_leave_people_out() {
             link: "https://askhava.com/h",
         };
         let (_, body) = photo_body(ask, language, false);
-        assert!(body.starts_with("Ask Hava: ") && body.contains(LEAVE_OUT_LINE));
+        let short = brand()
+            .fill("{brand_short}: ", matches!(language, Language::Es))
+            .expect("brand tokens");
+        assert!(body.starts_with(&short) && body.contains(LEAVE_OUT_LINE));
     }
 }
 
@@ -358,7 +361,12 @@ fn td_int_28_only_design_categories_ask_for_look_pictures() {
     let (_, ask) = photo_body(PhotoText::LookAsk, Language::En, false);
     assert_eq!(
         ask,
-        "Ask Hava: Have any pictures of the look you want? Screenshots are fine."
+        brand()
+            .fill(
+                "{brand_short}: Have any pictures of the look you want? Screenshots are fine.",
+                false
+            )
+            .expect("brand tokens")
     );
 }
 
