@@ -2605,3 +2605,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 
 - Each check run now times the quote page in a test phone browser (slowed like a mid-range phone on a weak mobile signal) and adds a speed table to the run's summary. It only warns, it never fails a run. The other pages it should time (home, ZIP result, the first request step, Confirm, the business home) are not served yet, so they show "not measured" until they are.
 - One follow-up for a later task: the rule that decides when the TypeScript checks run should also cover the new speed test folder, but that rule has a locked copy in the hand-in script, so a task that owns that script should change both together.
+
+## Re-sending an emergency job's details once the address arrives (T255 plan fix, D-3358)
+
+- The task that shares an emergency job's details after the homeowner sends her address late was stuck: the code that proves "this pick was paid" could not be reached from its file. It now gets one narrow, internal way to re-confirm a pick, which only reads that pick's own recorded, successful, not refunded and not disputed payment. Nothing outside the payments code can use it, and a first release still needs Stripe's signed confirmation.
