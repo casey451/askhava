@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T04:12:41Z by runner 394341cd00e8 (actions).
+Updated 2026-11-13T04:13:04Z by runner f5757405157a (actions).
 
-**Building: T371 in progress since 03:08Z; 271 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T371 in progress since 03:08Z; 272 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 271 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 272 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T371 claimed 03:08Z, lease until 06:08Z; lane 7: T215 claimed 04:02Z, lease until 07:02Z
 - **Week:** 12% used, 166.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:11Z, 0 min before this update
+- **Last run:** 04:12Z, 0 min before this update
 - **Keeper:** last ran 04:08Z, next wake 06:10Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-13T04:12:41Z by runner 394341cd00e8 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T427 | WORD-022 phrases catch both brand names in the spec trace, t | MERGE_PENDING | 1 | 29 min | 03:17Z |  |
-| T429 | Copy, voice and AI-smell docs name Laftly | MERGE_PENDING | 1 | 22 min | 03:13Z |  |
+| T429 | Copy, voice and AI-smell docs name Laftly | done | 1 | 22 min | 03:13Z |  |
 | T430 | payments: a Confirm needs the current card-authorization wor | done | 1 | 39 min | 03:13Z |  |
 | T426 | Brand rename prep: notice-address and sign-in security tests | done | 1 | 35 min | 02:49Z |  |
 | T425 | Brand rename prep: the last integration tests and four secur | done | 1 | 28 min | 02:39Z |  |
@@ -118,8 +118,8 @@ Updated 2026-11-13T04:12:41Z by runner 394341cd00e8 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 230 of 733 (31.4%) · partial 339 · unstarted 164
-**Tasks merged (throughput only):** 271 of 415
+**Requirements verified:** 230 of 733 (31.4%) · partial 340 · unstarted 163
+**Tasks merged (throughput only):** 272 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -142,7 +142,7 @@ Updated 2026-11-13T04:12:41Z by runner 394341cd00e8 (actions).
 | security | 8 | 42 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 6 | 25 | 32 |
+| wording | 1 | 7 | 24 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -154,7 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 151 of 197 done
+- stage 4: 152 of 197 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
