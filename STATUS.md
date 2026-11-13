@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T19:27:52Z by runner 6cc0b1c3ccc3 (actions).
+Updated 2026-11-13T19:28:45Z by runner 6cc0b1c3ccc3 (actions).
 
 **Building: T357 in progress since 19:21Z; 289 of 424 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 289 of 424 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T357 claimed 19:21Z, lease until 22:21Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T277 claimed 19:27Z, lease until 22:27Z; lane 4: T438 claimed 19:25Z, lease until 22:25Z; lane 5: T314 claimed 19:26Z, lease until 22:26Z; lane 7: T318 claimed 19:26Z, lease until 22:26Z
-- **Week:** 25% used, 128.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:27Z, 0 min before this update
+- **Lane:** lane 1: T357 claimed 19:21Z, lease until 22:21Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T277 claimed 19:27Z, lease until 22:27Z; lane 4: T438 claimed 19:25Z, lease until 22:25Z; lane 5: T314 claimed 19:26Z, lease until 22:26Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z; lane 7: T318 claimed 19:26Z, lease until 22:26Z
+- **Week:** 25% used, 124.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:28Z, 0 min before this update
 - **Keeper:** last ran 19:05Z, next wake 00:45Z
 
 ## Needs attention
@@ -74,6 +74,7 @@ Updated 2026-11-13T19:27:52Z by runner 6cc0b1c3ccc3 (actions).
 | T416 | Performance: database pool and query measurements (PERF-004) | done | 1 | 54 min | 19:59Z |  |
 
 ### Plan and harness merges on main
+- 19:27Z Plan: pre-flight 15, split T341 and T361 (D-3497) (#691)
 - 19:23Z Plan: deterministic kills for proptest-only named mutants (D-3499) (#694)
 - 19:02Z Plan: report-only symbol pre-flight in plan_health (D-3496) (#688)
 - 18:48Z Plan: crate guides to ≤8 KB, detail one entry per line in NOTES.md (D-3474) (#687)
@@ -131,7 +132,7 @@ Updated 2026-11-13T19:27:52Z by runner 6cc0b1c3ccc3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T19:05:04Z (week)): week: 66.0M used, 128.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T22:44:03Z.
+- Pacing (session_reading 2026-11-13T19:05:04Z (week)): week: 69.4M used, 124.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T22:44:49Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -151,6 +152,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T277 (lease until 2026-11-13T22:27:41Z)
 - lane 4: T438 (lease until 2026-11-13T22:25:17Z)
 - lane 5: T314 (lease until 2026-11-13T22:26:40Z)
+- lane 6: T271 (lease until 2026-11-13T22:28:27Z)
 - lane 7: T318 (lease until 2026-11-13T22:26:14Z)
 
 ## Last usage reading
