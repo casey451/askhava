@@ -35,6 +35,7 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::contact_choice::contact_choice;
+use crate::status::steps_run;
 use crate::unreachable_refund::{
     AtNinetySix, MISSED_CALL_TEMPLATE, ReleasedPick, call_record, decide_at_96_hours,
     fraud_warning, missed_call_at, missed_call_text, no_call_at_72_hours, queue_reminders,
@@ -269,7 +270,7 @@ pub async fn run_unreachable_step<P: PaymentsAdapter>(
     let refunded =
         refund_state(&mut db, pick).await.map_err(|_| FAILED)? == PickRefundState::Succeeded;
     let finishing = step == Step::NinetySix && refunded;
-    if facts.status != JobStatus::Connected && !finishing {
+    if !steps_run(facts.status) && !finishing {
         return Ok(());
     }
     match step {

@@ -192,6 +192,26 @@ pub const fn awaits_confirm(status: JobStatus) -> bool {
     }
 }
 
+/// Whether the unreachable-homeowner steps act on a job in `status`: only while Connected
+/// (FEE-022, FEE-035, TXT-026, TXT-030, D-1845); a job that moved on gets no step.
+#[must_use]
+pub const fn steps_run(status: JobStatus) -> bool {
+    match status {
+        JobStatus::Connected => true,
+        JobStatus::Intake
+        | JobStatus::Open
+        | JobStatus::NoQuotesYet
+        | JobStatus::QuotesReady
+        | JobStatus::AwaitingConfirm
+        | JobStatus::PaymentPending
+        | JobStatus::Done
+        | JobStatus::Closed
+        | JobStatus::ClosedEarly
+        | JobStatus::NotCovered
+        | JobStatus::Cancelled => false,
+    }
+}
+
 /// Whether a job in `status` still waits for the charge (FEE-041, FEE-018, FEE-020): an ended
 /// pick there moves to no backup until `payments`' caller returns the job to Quotes ready
 /// (PICK-047, D-2662).
