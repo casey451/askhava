@@ -11,7 +11,7 @@
 
 use std::sync::Arc;
 
-use askhava_core::api::{IdSecret, LinkToken, ManualClock};
+use askhava_core::api::{IdSecret, LinkToken, ManualClock, brand};
 use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{JobStatus, create, job_number, move_to};
 use askhava_licensing::api::LicenseKind;
@@ -30,6 +30,13 @@ use secrecy::SecretString;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 use tower::ServiceExt;
+
+/// `text` with the brand file's names for its `{brand...}` and `{domain}` tokens, the Spanish
+/// names when `spanish`: expected brand words come from the brand file (WORD-001, WORD-008,
+/// D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("the brand fills")
+}
 
 fn at(text: &str) -> Timestamp {
     format!("2026-11-{text}-07:00").parse().expect("time")
@@ -125,7 +132,7 @@ async fn td_pick_04_arrival_order_numbers_stay(pool: PgPool) {
     assert!(first < gone && gone < third && third < fourth);
     assert!(body.contains("No longer available, so it can't be picked."));
     assert!(!body.contains("Sample wording from business 1"));
-    let card_line = "Ask Hava doesn't rank businesses; check it yourself.";
+    let card_line = &branded("{brand} doesn't rank businesses; check it yourself.", false);
     assert_eq!(
         body.matches(card_line).count(),
         3,
@@ -147,8 +154,11 @@ async fn td_pick_38_page_lines_and_empty_status(pool: PgPool) {
     let (job, token) = open_job(&pool).await;
     quote(&pool, job, (1, 0)).await;
     let body = page(&pool, &token).await;
-    let top = "Ask Hava doesn't rank businesses or show ratings. Check each business yourself: \
-               its license, and its reviews on Google and Yelp.";
+    let top: &str = &branded(
+        "{brand} doesn't rank businesses or show ratings. Check each business yourself: \
+         its license, and its reviews on Google and Yelp.",
+        false,
+    );
     for line in [
         top,
         "Every eligible quote shown, in the order received.",
