@@ -395,13 +395,13 @@
     "audience": "business",
     "draft": true,
     "segments": 2,
-    "text": "{brand_short}: Un propietario eligió su cotización para el trabajo {job}. Acepte antes de {time}."
+    "text": "{brand_short}: Un propietario eligió su cotización para el trabajo {job}. Acepte antes de {time}. ¿No puede aceptarlo? {cant_take}"
   },
   "pick_notice_emergency": {
     "audience": "business",
     "draft": true,
-    "segments": 2,
-    "text": "{brand_short}: EMERGENCIA: un propietario eligió su cotización para el trabajo {job}. Acepte antes de {time}."
+    "segments": 3,
+    "text": "{brand_short}: EMERGENCIA: un propietario eligió su cotización para el trabajo {job}. Acepte antes de {time}. ¿No puede aceptarlo? {cant_take}"
   },
   "pick_fee_reply": {
     "audience": "business",
