@@ -620,7 +620,7 @@ jobs:
           set -u
           # A session that claimed a task but ended without `--after` would hold the lease for three hours.
           # `--after` finishes only a task this run's session still holds; otherwise it answers
-          # not_lease_holder and changes nothing.
+          # not_lease_holder and changes nothing; that, `runner: lost_race` and `runner: state_invalid` free no lease: released=no (D-3419).
           [ -f .git/runner_handoff.json ] || { echo "no handoff in this run"; exit 0; }
           # A session the plan's usage limit stopped mid-task (its execution file's last reading at 100% or
           # rejected) hands in `usage_limit`: RETRY_AFTER_RESET with `limit_hit`, no attempt spent, no chained
@@ -631,7 +631,7 @@ jobs:
           fi
           out="$(python3 -m runner --after --outcome "$outcome" --log "$log" 2>&1 || true)"
           echo "$out"
-          case "$outcome:$out" in usage_limit:*|*not_lease_holder*|*" is "*) echo "released=no" >> "$GITHUB_OUTPUT";; *) echo "released=yes" >> "$GITHUB_OUTPUT";; esac
+          case "$outcome:$out" in usage_limit:*|*not_lease_holder*|*" is "*|*"runner: lost_race"*|*"runner: state_invalid"*) echo "released=no" >> "$GITHUB_OUTPUT";; *) echo "released=yes" >> "$GITHUB_OUTPUT";; esac
       - name: Start the next cycle at once when this one cleared the way (D-500)
         if: always()
         env:
