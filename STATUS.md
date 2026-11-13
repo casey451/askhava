@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T23:27:54Z by runner a409b1914d2f (manual).
+Updated 2026-11-13T23:41:45Z by runner dd258e06710f (actions).
 
-**Idle since 23:23Z; 300 of 428 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 23:40Z; 301 of 428 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 300 of 428 build tasks (owner gates not counted)
+- **Tasks done:** 301 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 23:23Z (no task in progress)
+- **Lane:** idle since 23:40Z (no task in progress)
 - **Week:** 30% used, 123.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:27Z, 0 min before this update
+- **Last run:** 23:28Z, 13 min before this update
 - **Keeper:** last ran 23:25Z, next wake 23:45Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Updated 2026-11-13T23:27:54Z by runner a409b1914d2f (manual).
 |---|---|---|---|---|---|---|
 | T391 | calls, businesses, messaging and server: the main phone's "L | MERGE_PENDING | 1 | 47 min | 23:23Z |  |
 | T415 | businesses, messaging and server: the production phone link  | MERGE_PENDING | 1 | 69 min | 23:15Z |  |
-| T355 | picks: the release claim re-checks the pick under its row lo | MERGE_PENDING | 1 | 59 min | 23:11Z |  |
+| T355 | picks: the release claim re-checks the pick under its row lo | done | 1 | 59 min | 23:11Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | BLOCKED | 1 | 3 min | 23:11Z | PLAN GAP: test-design.md:203 (TD-FEE-63) and D-2332 require a text pick of a tiers quote to store nothing and reply with |
 | T328 | picks and server: an ended pick offers the next quote (`paym | BLOCKED | 1 | 4 min | 23:00Z | PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text canno |
 | T340 | picks and payments: the fee at the pick uses the job's lates | done | 1 | 40 min | 22:32Z |  |
@@ -112,31 +112,31 @@ Updated 2026-11-13T23:27:54Z by runner a409b1914d2f (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 7 of 733 (1.0%) · partial 566 · unstarted 160
-**Tasks merged (throughput only):** 300 of 428
+**Requirements verified:** 281 of 733 (38.3%) · partial 292 · unstarted 160
+**Tasks merged (throughput only):** 301 of 428
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 29 | 6 | 35 |
-| ai | 0 | 24 | 5 | 29 |
-| businesses | 1 | 54 | 3 | 58 |
-| calls | 0 | 24 | 1 | 25 |
-| consent | 0 | 31 | 4 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 2 | 38 | 3 | 43 |
-| job-cards | 2 | 22 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 1 | 42 | 2 | 45 |
-| ops-recovery | 0 | 10 | 44 | 54 |
-| privacy | 0 | 29 | 2 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 55 | 1 | 56 |
-| recurring | 0 | 8 | 3 | 11 |
-| security | 1 | 49 | 5 | 55 |
+| accessibility | 15 | 14 | 6 | 35 |
+| ai | 11 | 13 | 5 | 29 |
+| businesses | 20 | 35 | 3 | 58 |
+| calls | 10 | 14 | 1 | 25 |
+| consent | 14 | 17 | 4 | 35 |
+| fees | 14 | 37 | 1 | 52 |
+| intake | 27 | 13 | 3 | 43 |
+| job-cards | 19 | 5 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 23 | 5 | 0 | 28 |
+| messaging | 24 | 19 | 2 | 45 |
+| ops-recovery | 2 | 8 | 44 | 54 |
+| privacy | 9 | 20 | 2 | 31 |
+| quiet-hours | 7 | 2 | 0 | 9 |
+| quotes-pick | 36 | 19 | 1 | 56 |
+| recurring | 6 | 2 | 3 | 11 |
+| security | 9 | 41 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 0 | 9 | 23 | 32 |
+| wording | 2 | 7 | 23 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -148,7 +148,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 180 of 208 done
+- stage 4: 181 of 208 done
 - stage 5: 0 of 66 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
