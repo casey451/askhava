@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-13T15:52:29Z by runner b0f6fb3a71c8 (actions).
+Updated 2026-11-13T15:53:46Z by runner 9d7e3b884c94 (actions).
 
-**Building: T386 in progress since 15:27Z; 283 of 420 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T386 in progress since 15:27Z; 283 of 421 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 283 of 420 build tasks (owner gates not counted)
+- **Tasks done:** 283 of 421 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T386 claimed 15:27Z, lease until 18:27Z
 - **Week:** 21% used, 147.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:52Z, 0 min before this update
+- **Last run:** 15:52Z, 1 min before this update
 - **Keeper:** last ran 15:52Z, next wake 18:30Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+156 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+159 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -106,7 +106,7 @@ Updated 2026-11-13T15:52:29Z by runner b0f6fb3a71c8 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 233 of 733 (31.8%) · partial 340 · unstarted 160
-**Tasks merged (throughput only):** 283 of 420
+**Tasks merged (throughput only):** 283 of 421
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
