@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T10:17:10Z by runner e47304f7b675 (actions).
+Updated 2026-11-13T10:17:26Z by runner e47304f7b675 (actions).
 
-**Building: T312 in progress since 09:53Z; 278 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 10:17Z; 278 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 278 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T312 claimed 09:53Z, lease until 12:53Z
+- **Lane:** idle since 10:17Z (no task in progress)
 - **Week:** 15% used, 162.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:16Z, 1 min before this update
+- **Last run:** 10:17Z, 0 min before this update
 - **Keeper:** last ran 10:15Z, next wake 12:55Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-13T10:17:10Z by runner e47304f7b675 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T312 | intake: a street address written in lower case never trips t | QUEUED | 1 | 24 min | 10:17Z | session ended without handing in |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | QUEUED | 2 | 22 min | 10:15Z | session ended without handing in |
 | T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 3 | 26 min | 09:48Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T431 | Brand rename prep: the legal-docs version case and five paym | done | 1 | 30 min | 09:32Z |  |
@@ -82,6 +83,7 @@ Updated 2026-11-13T10:17:10Z by runner e47304f7b675 (actions).
 | T343 | harness: the DONE pick tests' fixtures record each job's fac | done | 1 | 24 min | 10:23Z |  |
 
 ### Plan and harness merges on main
+- 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
 - 09:02Z Plan: T255 plan gap 2, the address is written onto the homeowner's own contact (D-3431) (#660)
 - 08:55Z Plan: T428 plan gap, new prep task owns the six pinned tests (D-3430) (#659)
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
@@ -150,7 +152,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T312 (lease until 2026-11-13T12:53:25Z)
+- nothing
 
 ## Last usage reading
 - {"task": "T431", "at": "2026-11-13T09:32:54Z", "cache_read_input_tokens": 3434781, "input_tokens": 164, "output_tokens": 32044, "cache_creation_input_tokens": 131776}
