@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:01:46Z by runner 4bc0aa878dc0 (actions).
+Updated 2026-11-13T22:06:03Z by runner 4bc0aa878dc0 (actions).
 
 **Building: T438 in progress since 21:51Z; 295 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 295 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T438 claimed 21:51Z, lease until 00:51Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
-- **Week:** 29% used, 128.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:01Z, 0 min before this update
+- **Lane:** lane 2: T438 claimed 21:51Z, lease until 00:51Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
+- **Week:** 29% used, 126.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:01Z, 4 min before this update
 - **Keeper:** last ran 22:01Z, next wake 00:53Z
 
 ## Needs attention
@@ -140,7 +140,7 @@ Updated 2026-11-13T22:01:46Z by runner 4bc0aa878dc0 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T21:43:30Z (week)): week: 65.2M used, 128.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T20:08:00Z.
+- Pacing (session_reading 2026-11-13T22:01:30Z (week)): week: 67.2M used, 126.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T20:19:47Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -157,6 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T438 (lease until 2026-11-14T00:51:05Z)
+- lane 3: T415 (lease until 2026-11-14T01:05:51Z)
 - lane 6: T357 (lease until 2026-11-14T00:52:50Z)
 - lane 7: T340 (lease until 2026-11-14T00:52:00Z)
 

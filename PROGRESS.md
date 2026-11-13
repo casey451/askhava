@@ -4038,3 +4038,4 @@
 - 2026-11-13T22:01:09Z runner 343fd3e7c696 (actions): {"T280": "IN_PROGRESS -> BLOCKED"}
 - 2026-11-13T22:01:31Z runner 343fd3e7c696 (actions): {}
 - 2026-11-13T22:01:46Z runner 4bc0aa878dc0 (actions): {}
+- 2026-11-13T22:06:03Z runner 4bc0aa878dc0 (actions): {"T415": "QUEUED -> IN_PROGRESS"}; T415 estimated 3.5M tokens (calibrated); week has 126.8M left (no five-hour budget, D-3056) after 9.2M still running in another lane (session_reading 2026-11-13T22:01:30Z (week)); claimed
