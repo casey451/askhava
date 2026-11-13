@@ -2707,3 +2707,8 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Token counts fixed; fix rounds must be re-reviewed (D-3475, November 13)
 
 Two runner fixes are queued first. The runner was counting tokens about 1.65 times over, because each reply appears on several lines of a session log; T438 counts each reply once and corrects the pacer's estimates for the older numbers. Your weekly usage reading comes from the plan itself, so it was never wrong. T439 makes the runner refuse a hand-in unless an Opus reviewer approved the exact final commit and every new commit was made by a worker, not the coordinating session; three of four fix rounds checked earlier this week had merged without that second look. Nothing needs you.
+
+## The unreachable-homeowner steps now run (D-3486 to D-3490, November 13)
+
+- After a business is given a homeowner's details, the worker now sends the "no call yet" reminders at 24 and 48 hours, returns a job whose business never called at 72 hours, asks an email-contact homeowner at 72 hours whether the business emailed her, and decides the automatic refund at 96 hours, retrying an hour later while the refund is still waiting on Stripe. The missed-call text waits for 8 a.m. unless the job is an emergency, and a number that can't be texted gets it by email.
+- For now these homeowner messages from the steps go in English: the step cannot read the language of her request yet (D-3489). Spanish conversations are off at launch, so nothing changes today; a follow-up should pass her language along before Spanish is switched on.
