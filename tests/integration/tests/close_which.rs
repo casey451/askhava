@@ -5,6 +5,7 @@
 //! Cancelled; with two open jobs a cancel-intent message gets "Close which?" and closes nothing
 //! until answered; "I had to cancel the plumber" gets the JOB-023 line; an opt-out changes no job.
 
+use askhava_core::api::brand;
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
@@ -134,7 +135,10 @@ async fn td_job_05_cancel_alone_or_mentioned_closes_nothing(mut db: Db) {
     assert_eq!(sent.template, CLOSE_MENTION_TEMPLATE);
     assert_eq!(
         body(&mut db, sent.outbox_id).await,
-        format!("Ask Hava: To close request {number}, reply CLOSE {number}.")
+        format!(
+            "{}: To close request {number}, reply CLOSE {number}.",
+            brand().short_name()
+        )
     );
     assert_eq!(status(&mut db, job).await, "intake");
 }
@@ -152,7 +156,8 @@ async fn td_job_05_two_open_jobs_ask_close_which(mut db: Db) {
     let sent = sent.expect("Close which?");
     assert_eq!(sent.template, CLOSE_WHICH_TEMPLATE);
     let which = body(&mut db, sent.outbox_id).await;
-    assert!(which.starts_with("Ask Hava: Close which?") && which.contains("CLOSE ALL"));
+    let opening = format!("{}: Close which?", brand().short_name());
+    assert!(which.starts_with(&opening) && which.contains("CLOSE ALL"));
     assert!(numbers.iter().all(|n| which.contains(&n.to_string())));
     for (job, _) in &jobs {
         assert_eq!(status(&mut db, *job).await, "intake", "nothing closes yet");
@@ -262,7 +267,10 @@ async fn td_job_05_mention_names_the_number_written(mut db: Db) {
     assert_eq!(done, Closing::Explained(first));
     assert_eq!(
         body(&mut db, sent.expect("how-to").outbox_id).await,
-        format!("Ask Hava: To close request {first}, reply CLOSE {first}.")
+        format!(
+            "{}: To close request {first}, reply CLOSE {first}.",
+            brand().short_name()
+        )
     );
     for (job, _) in &jobs {
         assert_eq!(status(&mut db, *job).await, "intake");

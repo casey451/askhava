@@ -15,7 +15,7 @@ use askhava_businesses::api::{
     add_member, add_owner, apply, create, may_text, notice_recipients, record_consent,
     request_welcome, set_notice_channel, welcome_sent,
 };
-use askhava_core::api::IdSecret;
+use askhava_core::api::{IdSecret, brand};
 use askhava_messaging::api::{
     LINK_LIFE, Line, Lines, MailboxKind, NoticeOutcome, NoticeSender, NumberState, SendChecks,
     SendingNumber, business_notice, held_until, sign_in_link,
@@ -38,6 +38,12 @@ const SENTINELS: [&str; 5] = [
     "Onsite Fakeperson",
     "https://askhava.com/p/sentinel-photo",
 ];
+
+/// `text` with the brand file's names in place of its `{brand...}` and `{domain}` tokens, so an
+/// expected line follows a brand switch (WORD-001, D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("known brand tokens")
+}
 
 fn at(s: &str) -> Timestamp {
     s.parse().expect("time")
@@ -342,8 +348,11 @@ async fn td_txt_18_release_email_has_a_signed_link_per_person(pool: PgPool) {
         .iter()
         .find(|r| r.1.contains("confirmed"))
         .expect("release");
-    let line = "Ask Hava: Job 1042 is confirmed. Sign in to see the homeowner's details.";
-    assert!(release.3.starts_with(line));
+    let line = branded(
+        "{brand_short}: Job 1042 is confirmed. Sign in to see the homeowner's details.",
+        false,
+    );
+    assert!(release.3.starts_with(&line));
 }
 
 /// TD-TXT-18 (TXT-036, D-306): every business text template, rendered with sentinel homeowner
@@ -391,7 +400,10 @@ async fn td_priv_12_card_email_has_no_image_and_one_job_page_link(pool: PgPool) 
     let (_, subject, html, plain) = emailed(&mut db, b).await.remove(0);
     assert_eq!(
         subject,
-        "Ask Hava: New plumbing job in Lake Havasu City. Quote by 12 p.m. Arizona time."
+        branded(
+            "{brand_short}: New plumbing job in Lake Havasu City. Quote by 12 p.m. Arizona time.",
+            false
+        )
     );
     assert!(plain.contains("Kitchen sink drips") && plain.contains("not a contractor"));
     for bytes in [&html, &plain] {
@@ -400,7 +412,7 @@ async fn td_priv_12_card_email_has_no_image_and_one_job_page_link(pool: PgPool) 
         );
     }
     assert_eq!(
-        html.matches("href=\"https://askhava.com/b/jobs/1042\"")
+        html.matches(&branded("href=\"https://{domain}/b/jobs/1042\"", false))
             .count(),
         1
     );
@@ -540,9 +552,11 @@ async fn td_biz_14_times_are_set_at_send_and_a_link_is_never_unsigned(pool: PgPo
         .await
         .expect("fix");
     let plains: Vec<String> = emailed(&mut db, b).await.into_iter().map(|e| e.3).collect();
-    let line =
-        "Ask Hava: A homeowner picked your quote for job 1042. Accept by 4 p.m. Arizona time.";
-    assert!(plains.iter().any(|p| p.starts_with(line)), "{plains:?}");
+    let line = branded(
+        "{brand_short}: A homeowner picked your quote for job 1042. Accept by 4 p.m. Arizona time.",
+        false,
+    );
+    assert!(plains.iter().any(|p| p.starts_with(&line)), "{plains:?}");
     let untimed = plains
         .iter()
         .find(|p| p.contains("didn't go through"))
