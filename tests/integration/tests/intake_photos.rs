@@ -337,7 +337,7 @@ fn td_int_27_the_upload_page_and_photo_ask_say_leave_people_out() {
         };
         let (_, body) = photo_body(ask, language, false);
         let short = brand()
-            .fill("{brand_short}: ", matches!(language, Language::Es))
+            .fill("{brand_short}: ", false)
             .expect("brand tokens");
         assert!(body.starts_with(&short) && body.contains(LEAVE_OUT_LINE));
     }
