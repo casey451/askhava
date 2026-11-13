@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T01:15:15Z by runner e3ca79a08538 (actions).
+Updated 2026-11-13T01:15:32Z by runner e3ca79a08538 (actions).
 
 **Building: T215 in progress since 23:45Z; 263 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 263 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 2: T421 claimed 00:52Z, lease until 03:52Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 5: T424 claimed 00:42Z, lease until 03:42Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
+- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 2: T421 claimed 00:52Z, lease until 03:52Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
 - **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:08Z, 6 min before this update
 - **Keeper:** last ran 01:08Z, next wake 02:47Z
@@ -18,6 +18,7 @@ Updated 2026-11-13T01:15:15Z by runner e3ca79a08538 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T424 | Brand rename prep: integration tests (open-cards digest to s | MERGE_PENDING | 1 | 32 min | 01:15Z |  |
 | T372 | businesses and licensing: each recorded ROC list re-applies  | MERGE_PENDING | 1 | 81 min | 01:07Z |  |
 | T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 1 | 2 min | 23:48Z | PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclea |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | done | 1 | 57 min | 23:46Z |  |
@@ -168,9 +169,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - T215 (lease until 2026-11-13T02:45:19Z)
 - lane 2: T421 (lease until 2026-11-13T03:52:45Z)
 - lane 4: T422 (lease until 2026-11-13T03:36:38Z)
-- lane 5: T424 (lease until 2026-11-13T03:42:22Z)
 - lane 6: T249 (lease until 2026-11-13T03:01:54Z)
 - lane 7: T423 (lease until 2026-11-13T03:40:54Z)
 
 ## Last usage reading
-- {"task": "T372", "at": "2026-11-13T01:07:19Z", "input_tokens": 546, "output_tokens": 176077, "cache_read_input_tokens": 35111502, "cache_creation_input_tokens": 702685}
+- {"task": "T424", "at": "2026-11-13T01:15:13Z", "output_tokens": 52520, "cache_read_input_tokens": 4492786, "input_tokens": 179, "cache_creation_input_tokens": 198362}
