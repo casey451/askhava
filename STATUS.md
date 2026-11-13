@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-13T09:21:51Z by runner 553bd9eb54c3 (actions).
+Updated 2026-11-13T09:22:27Z by runner f11e5ea2d96c (actions).
 
 **Building: T431 in progress since 09:02Z; 277 of 417 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 277 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T431 claimed 09:02Z, lease until 12:02Z
-- **Week:** 14% used, 161.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:17Z, 4 min before this update
+- **Lane:** lane 2: T431 claimed 09:02Z, lease until 12:02Z; lane 3: T255 claimed 09:22Z, lease until 12:22Z
+- **Week:** 14% used, 165.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 09:21Z, 0 min before this update
 - **Keeper:** last ran 09:17Z, next wake 12:05Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+150 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+150 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -104,7 +104,6 @@ Updated 2026-11-13T09:21:51Z by runner 553bd9eb54c3 (actions).
 - 15:45Z Plan: new T412/T415 store business sign-in addresses and phones in the vault for T280, T397, T302 and T364 (D-3262) (#596)
 - 14:48Z Plan: trim T251 to its context limit (D-3256) (#590)
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
-- 09:22Z Plan: T345 owns the runner tests that hard-code action tags (D-3200) (#572)
 
 ## Progress (requirements verified)
 
@@ -137,7 +136,7 @@ Updated 2026-11-13T09:21:51Z by runner 553bd9eb54c3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T08:57:15Z (week)): week: 32.3M used, 161.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T09:49:52Z.
+- Pacing (session_reading 2026-11-13T09:16:48Z (week)): week: 29.0M used, 165.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T10:52:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -154,6 +153,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T431 (lease until 2026-11-13T12:02:06Z)
+- lane 3: T255 (lease until 2026-11-13T12:22:11Z)
 
 ## Last usage reading
 - {"task": "T249", "at": "2026-11-13T09:03:39Z", "output_tokens": 215790, "cache_read_input_tokens": 44095436, "cache_creation_input_tokens": 833016, "input_tokens": 675}
