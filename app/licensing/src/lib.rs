@@ -29,11 +29,15 @@
 //! T372 added the class changes between recorded ROC lists that `businesses`' daily re-apply
 //! reads (BIZ-050, LIC-043, D-2705) in `class_changes`.
 //!
+//! T371 added the worker's daily ROC and city list run, with the failing-list alerts and the
+//! throttled lookups (LIC-006 to LIC-008, LIC-010, LIC-039, CARD-015, D-2704) in `daily_lists`.
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
 mod class_changes;
 mod class_map;
+mod daily_lists;
 mod handlers;
 mod handyman;
 mod holder;
