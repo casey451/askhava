@@ -20,8 +20,8 @@ use askhava_intake::api::{
 use askhava_jobs::api::{JobStatus, move_to, record_job_facts};
 use askhava_messaging::api::{
     Audience, MailboxKind, OPTOUT_CONFIRMATION_EMAIL, OPTOUT_FOLLOWUP_KIND,
-    OPTOUT_WROTE_AGAIN_EMAIL, OptOutEmailSender, WROTE_AGAIN_ACTION, record_suspension,
-    run_optout_followup,
+    OPTOUT_WROTE_AGAIN_EMAIL, OptOutEmailSender, RevokeChannel, WROTE_AGAIN_ACTION,
+    record_suspension, run_optout_followup, suppress,
 };
 use askhava_ops::api::Actor;
 use askhava_privacy::api::{NewContact, Vault, store_contact};
@@ -328,6 +328,87 @@ async fn td_con_33_a_repeat_stop_queues_no_second_still_open_notice(pool: PgPool
         count_kind(&pool, OPTED_OUT_LIVE_KIND).await,
         1,
         "repeat adds none"
+    );
+}
+
+/// TD-CON-33 (CON-029, D-3480): a sole CANCEL after an earlier STOP still pauses her job and
+/// withdraws the pick waiting for Confirm, and queues no second `intake.opted_out_live_job`.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_33_cancel_after_stop_still_pauses_and_withdraws_the_pick(pool: PgPool) {
+    let contact = her(&pool, true).await;
+    text(&pool, 41, LEAK, None).await;
+    let job = quoted_job(&pool, contact).await;
+    let mut waiting = None;
+    for minute in [10, 11] {
+        waiting = pick(&pool, contact, minute).await.or(waiting);
+    }
+    let waiting = waiting.expect("a pick waits for Confirm");
+    text_at(
+        &pool,
+        (42, "STOP", Some("STOP")),
+        at() + jiff::SignedDuration::from_mins(12),
+    )
+    .await;
+    let status = "SELECT count(*) FROM picks.pick WHERE id = $1 AND status = 'awaiting_confirm'";
+    assert_eq!(
+        count(&pool, status, waiting).await,
+        1,
+        "STOP pauses nothing"
+    );
+    text_at(
+        &pool,
+        (43, "CANCEL", Some("STOP")),
+        at() + jiff::SignedDuration::from_mins(13),
+    )
+    .await;
+    let pauses = "SELECT count(*) FROM intake.homeowner_pause WHERE job_id = $1";
+    assert_eq!(count(&pool, pauses, job).await, 1, "CANCEL pauses");
+    assert_eq!(
+        count(&pool, status, waiting).await,
+        0,
+        "the pick is withdrawn"
+    );
+    assert_eq!(
+        count_kind(&pool, OPTED_OUT_LIVE_KIND).await,
+        1,
+        "no second notice"
+    );
+}
+
+/// TD-CON-33 (CON-029, CON-035, D-3480): after she turned texts off in the portal (no inbox row
+/// lists her), a sole CANCEL still pauses her job and withdraws the pick waiting for Confirm.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_33_cancel_after_a_portal_opt_out_still_pauses(pool: PgPool) {
+    let contact = her(&pool, false).await;
+    text(&pool, 51, LEAK, None).await;
+    let job = quoted_job(&pool, contact).await;
+    let mut waiting = None;
+    for minute in [10, 11] {
+        waiting = pick(&pool, contact, minute).await.or(waiting);
+    }
+    let waiting = waiting.expect("a pick waits for Confirm");
+    let mut db = pool.acquire().await.expect("conn");
+    let how = (RevokeChannel::Portal, "portal:switch");
+    let off = at() + jiff::SignedDuration::from_mins(12);
+    assert!(
+        suppress(&mut db, &vault(), HOME, how, off)
+            .await
+            .expect("off")
+    );
+    drop(db);
+    text_at(
+        &pool,
+        (52, "CANCEL", Some("STOP")),
+        at() + jiff::SignedDuration::from_mins(13),
+    )
+    .await;
+    let pauses = "SELECT count(*) FROM intake.homeowner_pause WHERE job_id = $1";
+    assert_eq!(count(&pool, pauses, job).await, 1, "CANCEL pauses");
+    let status = "SELECT count(*) FROM picks.pick WHERE id = $1 AND status = 'awaiting_confirm'";
+    assert_eq!(
+        count(&pool, status, waiting).await,
+        0,
+        "the pick is withdrawn"
     );
 }
 

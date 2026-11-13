@@ -918,7 +918,8 @@ pub struct OptOutJobs {
     pub jobs: Vec<Uuid>,
     /// Whether the text was a sole-word CANCEL or CANCELAR, which paused them (CON-029).
     pub paused: bool,
-    /// The [`OPTED_OUT_LIVE_KIND`] task, `None` when this inbox row already queued it.
+    /// The [`OPTED_OUT_LIVE_KIND`] task, `None` when this inbox row already queued it or the text
+    /// was a repeat CANCEL ([`pause_on_repeat_cancel`]).
     pub task: Option<i64>,
 }
 
@@ -941,6 +942,33 @@ pub fn sole_cancel(words: &str) -> bool {
 pub async fn on_opt_out(
     db: &mut PgConnection,
     msg: &TextIn<'_>,
+) -> Result<Option<OptOutJobs>, IntakeError> {
+    opt_out_jobs(db, msg, true).await
+}
+
+/// A sole-word CANCEL or CANCELAR from a number an earlier opt-out already listed (CON-029,
+/// D-3480): pauses her live jobs and withdraws a waiting pick as [`on_opt_out`] does, but enqueues
+/// no [`OPTED_OUT_LIVE_KIND`] task, so the earlier opt-out's "still open" email is not sent twice
+/// (`task` is `None`). Any other text does nothing (`None`).
+///
+/// # Errors
+///
+/// As [`on_opt_out`].
+pub async fn pause_on_repeat_cancel(
+    db: &mut PgConnection,
+    msg: &TextIn<'_>,
+) -> Result<Option<OptOutJobs>, IntakeError> {
+    if !sole_cancel(msg.inbound.words) {
+        return Ok(None);
+    }
+    opt_out_jobs(db, msg, false).await
+}
+
+/// [`on_opt_out`]'s body; `notify` enqueues the [`OPTED_OUT_LIVE_KIND`] task.
+async fn opt_out_jobs(
+    db: &mut PgConnection,
+    msg: &TextIn<'_>,
+    notify: bool,
 ) -> Result<Option<OptOutJobs>, IntakeError> {
     let found = models::open_conversation(db, msg.contact).await?;
     let Some(conversation) = found.filter(|_| msg.inbound.opt_out) else {
@@ -970,14 +998,11 @@ pub async fn on_opt_out(
             .await
             .map_err(|_| IntakeError::Database)?;
     }
-    let payload = serde_json::json!({
-        "conversation": conversation, "jobs": jobs, "paused": paused, "inbox": msg.inbox_id,
-    });
-    let mut task = NewTask::new(OPTED_OUT_LIVE_KIND, payload, msg.received_at);
-    task.dedupe_key = Some(format!("{OPTED_OUT_LIVE_KIND}.{}", msg.inbox_id));
-    let task = enqueue_task(&mut tx, &task)
-        .await
-        .map_err(|_| IntakeError::Database)?;
+    let task = if notify {
+        enqueue_live(&mut tx, msg, (conversation, &jobs, paused)).await?
+    } else {
+        None
+    };
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Some(OptOutJobs {
         conversation,
@@ -985,6 +1010,22 @@ pub async fn on_opt_out(
         paused,
         task,
     }))
+}
+
+/// One [`OPTED_OUT_LIVE_KIND`] task per inbox row (CON-028); `None` when the row already queued it.
+async fn enqueue_live(
+    tx: &mut PgConnection,
+    msg: &TextIn<'_>,
+    (conversation, jobs, paused): (Uuid, &[Uuid], bool),
+) -> Result<Option<i64>, IntakeError> {
+    let payload = serde_json::json!({
+        "conversation": conversation, "jobs": jobs, "paused": paused, "inbox": msg.inbox_id,
+    });
+    let mut task = NewTask::new(OPTED_OUT_LIVE_KIND, payload, msg.received_at);
+    task.dedupe_key = Some(format!("{OPTED_OUT_LIVE_KIND}.{}", msg.inbox_id));
+    enqueue_task(tx, &task)
+        .await
+        .map_err(|_| IntakeError::Database)
 }
 
 /// The request's jobs before a final status (CON-028's "live job").

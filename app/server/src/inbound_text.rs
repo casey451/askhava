@@ -60,8 +60,8 @@ use askhava_intake::api::rules::{
 };
 use askhava_intake::api::{
     Admission, IntakeError, LimitError, SafetyCallAsk, TextIn, admit_new_request,
-    enqueue_safety_call, list_ask, on_opt_out, open_request_jobs, receive_reply,
-    restart_after_start,
+    enqueue_safety_call, list_ask, on_opt_out, open_request_jobs, pause_on_repeat_cancel,
+    receive_reply, restart_after_start,
 };
 use askhava_messaging::api::{
     APP_OPT_OUT_WORDS, Detected, EmergencyFacts, FollowUp, HelpSettings, InboundText, InboxError,
@@ -773,9 +773,10 @@ async fn screen(
 /// transaction: with `email` (texting off, suspended or paused, so no text confirmed it) one
 /// confirmation follow-up task, in Spanish for a Spanish opt-out (CON-009); then
 /// `intake::api::on_opt_out`, which pauses her live jobs on a sole CANCEL (withdrawing a waiting
-/// pick) and queues `intake.opted_out_live_job` for T330's handler, only when this text is the
-/// one that listed her (`messaging::api::listed_by`), so a repeat STOP queues no second "still
-/// open" email (CON-028, D-3480).
+/// pick) and queues `intake.opted_out_live_job` for T330's handler, when this text is the one
+/// that listed her (`messaging::api::listed_by`); a text from a number listed earlier (a repeat
+/// STOP, or after a portal or safety-call opt-out) goes to `pause_on_repeat_cancel`, which still
+/// pauses on a sole CANCEL but queues no second "still open" email (CON-028, CON-029, D-3480).
 async fn homeowner_opted_out(
     db: &mut PgConnection,
     (vault, msg): (&Vault, &InboundText<'_>),
@@ -790,12 +791,9 @@ async fn homeowner_opted_out(
             .await
             .map_err(outbox_halt)?;
     }
-    if !listed_by(db, vault, msg.phone, msg.inbox_id)
+    let first = listed_by(db, vault, msg.phone, msg.inbox_id)
         .await
-        .map_err(outbox_halt)?
-    {
-        return Ok(());
-    }
+        .map_err(outbox_halt)?;
     let inbound = Inbound {
         words: msg.text,
         opt_out: true,
@@ -809,7 +807,13 @@ async fn homeowner_opted_out(
         inbound,
         received_at: now,
     };
-    on_opt_out(db, &opt_out).await.map_err(intake_halt)?;
+    if first {
+        on_opt_out(db, &opt_out).await.map_err(intake_halt)?;
+    } else {
+        pause_on_repeat_cancel(db, &opt_out)
+            .await
+            .map_err(intake_halt)?;
+    }
     Ok(())
 }
 
