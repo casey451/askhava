@@ -634,6 +634,7 @@ where
     register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
+    register_unreachable(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {
         register_inbound_retry(
             &mut registry,
@@ -719,6 +720,67 @@ fn register_opted_out_live(
         run_opted_out_live(pool, sender.clone(), task)
     });
     Ok(())
+}
+
+/// T281 (FEE-022, FEE-052, TXT-030, D-1845, D-3490): `picks.unreachable_step` and
+/// `picks.fraud_warning`, always registered, over `picks::api::StepParts`: the Stripe client of
+/// the Stripe webhook's settings (`release_sink::stripe_webhook`, read by [`stripe_wanted`]: unset
+/// in dev and CI, required in test and live), `ID_SECRET`, the vault and the footer postal line when set; a step
+/// that needs a missing part fails and is retried, then dead-lettered with its alert.
+fn register_unreachable(
+    registry: &mut Registry,
+    settings: &Settings,
+    (id_secret, clock): (&SecretString, &Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    use askhava_messaging::api::{MailboxKind, PostalAddress};
+    use askhava_picks::api::{StepParts, UNREACHABLE_STEP_KIND, run_fraud_warning};
+    use secrecy::ExposeSecret;
+    let hooks = if stripe_wanted(settings, &pairs) {
+        let lazy = PgPool::connect_lazy(settings.database_url().expose_secret())
+            .map_err(|_| io::Error::other("setting ASKHAVA_DATABASE_URL has an invalid value"))?;
+        release_sink::stripe_webhook(settings, lazy, pairs.clone())?
+    } else {
+        None
+    };
+    let postal = settings.postal_address().ok().and_then(|line| {
+        PostalAddress::new(line, MailboxKind::PoBox)
+            .or_else(|_| PostalAddress::new(line, MailboxKind::PrivateMailbox))
+            .ok()
+    });
+    let parts = Arc::new(StepParts {
+        stripe: hooks.map(|h| h.stripe.clone()),
+        secret: id_secret.clone(),
+        vault: vault_from(settings, pairs)?,
+        postal,
+    });
+    let (step_parts, step_clock) = (Arc::clone(&parts), Arc::clone(clock));
+    registry.register(UNREACHABLE_STEP_KIND, move |pool, task| {
+        askhava_picks::api::run_unreachable_step(
+            pool,
+            Arc::clone(&step_parts),
+            task,
+            step_clock.now(),
+        )
+    });
+    let fraud_clock = Arc::clone(clock);
+    registry.register(
+        askhava_payments::api::FRAUD_WARNING_KIND,
+        move |pool, task| run_fraud_warning(pool, Arc::clone(&parts), task, fraud_clock.now()),
+    );
+    Ok(())
+}
+
+/// Whether the Stripe webhook's settings are read for the worker: in test and live always (they
+/// are required there), elsewhere only when its signing secret is set.
+fn stripe_wanted(settings: &Settings, pairs: &[(String, String)]) -> bool {
+    let set = pairs
+        .iter()
+        .any(|(k, v)| k == release_sink::WEBHOOK_SECRET && !v.trim().is_empty());
+    set || matches!(
+        settings.environment(),
+        Environment::Test | Environment::Live
+    )
 }
 
 /// The safety voice call switch, read on every `calls.safety_call` run, so the registration holds
