@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-13T06:56:23Z by runner f7189ec863bb (actions).
+Updated 2026-11-13T07:00:08Z by runner bee96646639a (actions).
 
-**Idle since 06:56Z; 276 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T428 in progress since 07:00Z; 276 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 276 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 06:56Z (no task in progress)
+- **Lane:** lane 1: T428 claimed 07:00Z, lease until 10:00Z
 - **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:55Z, 1 min before this update
+- **Last run:** 06:56Z, 3 min before this update
 - **Keeper:** last ran 06:55Z, next wake 12:35Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+148 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+149 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -146,7 +146,7 @@ Updated 2026-11-13T06:56:23Z by runner f7189ec863bb (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T05:36:32Z (week)): week: 26.0M used, 168.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T05:45:37Z.
+- Pacing (session_reading 2026-11-13T06:54:44Z (week)): week: 26.0M used, 168.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T06:53:53Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -161,7 +161,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T428 (lease until 2026-11-13T10:00:00Z)
 
 ## Last usage reading
 - {"task": "T420", "at": "2026-11-13T06:38:19Z", "cache_read_input_tokens": 7883492, "output_tokens": 61312, "cache_creation_input_tokens": 283387, "input_tokens": 219}
