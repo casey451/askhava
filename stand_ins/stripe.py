@@ -15,6 +15,11 @@ authenticate then settles (succeeded, or requires_payment_method on a failed app
 A succeeded intent names its charge in latest_charge (a ch_ ID string, as Stripe sends it
 unexpanded); the charge object, stored under that ID, carries payment_method_details.card.
 three_d_secure: result authenticated after a passed approval, null for a card never asked (D-3118).
+That charge (D-2305) also carries created, amount_refunded (kept in step with refunds), disputed,
+the intent's metadata and a balance_transaction ID whose stored object holds the processing fee
+(2.9% + 30 cents); list_charges pages these same objects newest first (created[gte], limit,
+starting_after, has_more), list_disputes filters disputes by charge, and update_dispute takes
+evidence[...] and submit=true once per idempotency key, after which the dispute is under_review.
 Webhook header: Stripe-Signature: t=<unix>,v1=<hex HMAC-SHA256(secret, "<t>.<payload>")>.
 """
 
@@ -23,6 +28,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import time
 from typing import Any
 
 from stand_ins.common import IdempotencyStore, Reply, fake_id
@@ -46,6 +52,9 @@ AUTH_FAILED = (
     "The provided PaymentMethod has failed authentication.",
 )
 CONFIRMABLE = {"requires_payment_method", "requires_confirmation", "requires_action"}
+OPEN_DISPUTE = {"needs_response", "warning_needs_response"}
+LIST_MAX = 100
+DUE_SECONDS = 7 * 24 * 3600
 
 
 def error(kind: str, code: str, message: str, status: int = 400, param: str | None = None) -> Reply:
@@ -197,6 +206,18 @@ class FakeStripe:
         names; `card.three_d_secure` is null unless the bank's 3-D Secure step ran (D-3118)."""
         charge_id = "ch_" + pi["id"].removeprefix("pi_")
         card = {"brand": "visa", "last4": "4242", "three_d_secure": three_d_secure}
+        txn_id = "txn_" + pi["id"].removeprefix("pi_")
+        fee = round(pi["amount"] * 0.029) + 30
+        self.objects[txn_id] = {
+            "id": txn_id,
+            "object": "balance_transaction",
+            "amount": pi["amount"],
+            "fee": fee,
+            "net": pi["amount"] - fee,
+            "currency": pi["currency"],
+            "source": charge_id,
+            "type": "charge",
+        }
         self.objects[charge_id] = {
             "id": charge_id,
             "object": "charge",
@@ -204,6 +225,12 @@ class FakeStripe:
             "amount": pi["amount"],
             "currency": pi["currency"],
             "status": "succeeded",
+            "created": int(time.time()),
+            "amount_refunded": 0,
+            "refunded": False,
+            "disputed": False,
+            "metadata": dict(pi.get("metadata") or {}),
+            "balance_transaction": txn_id,
             "payment_method_details": {"type": "card", "card": card},
         }
         pi.update(
@@ -288,6 +315,9 @@ class FakeStripe:
                 "amount",
             )
         pi["amount_refunded"] += amount
+        charge = self.objects.get(str(pi.get("latest_charge")))
+        if charge is not None:
+            charge.update(amount_refunded=pi["amount_refunded"], refunded=pi["amount_refunded"] == charge["amount"])
         refund = self._new(
             "re_", object="refund", payment_intent=pi["id"], amount=amount, currency="usd", status="succeeded"
         )
@@ -295,9 +325,77 @@ class FakeStripe:
         return 200, dict(refund)
 
     def open_dispute(self, payment_intent: str) -> dict[str, Any]:
-        dispute = self._new("dp_", object="dispute", payment_intent=payment_intent, status="needs_response")
+        pi = self.objects[payment_intent]
+        charge = self.objects.get(str(pi.get("latest_charge")))
+        now = int(time.time())
+        dispute = self._new(
+            "dp_",
+            object="dispute",
+            payment_intent=payment_intent,
+            charge=None if charge is None else charge["id"],
+            amount=pi["amount"],
+            currency=pi["currency"],
+            reason="fraudulent",
+            status="needs_response",
+            created=now,
+            evidence={},
+            evidence_details={"due_by": now + DUE_SECONDS, "has_evidence": False, "submission_count": 0},
+        )
+        if charge is not None:
+            charge["disputed"] = True
         self._event("charge.dispute.created", dispute)
         return dict(dispute)
+
+    def list_charges(self, created_gte: int, limit: int, starting_after: str | None, expand: bool) -> Reply:
+        """Charges created at or after created_gte, newest first, one page after the cursor."""
+        charges = [o for o in self.objects.values() if o.get("object") == "charge" and o["created"] >= created_gte]
+        charges.reverse()
+        ids = [c["id"] for c in charges]
+        if starting_after is not None:
+            if starting_after not in ids:
+                return error("invalid_request_error", "resource_missing", "No such charge", 400, "starting_after")
+            charges = charges[ids.index(starting_after) + 1 :]
+        page = [dict(c) for c in charges[:limit]]
+        for charge in page if expand else []:
+            charge["balance_transaction"] = dict(self.objects[charge["balance_transaction"]])
+        return 200, {"object": "list", "url": "/v1/charges", "data": page, "has_more": len(charges) > limit}
+
+    def fetch_charge(self, charge_id: str, expand: bool) -> Reply:
+        """The stored charge object; `expand` swaps its balance transaction ID for the object."""
+        charge = self.objects.get(charge_id)
+        if charge is None or charge.get("object") != "charge":
+            return error("invalid_request_error", "resource_missing", "No such charge", 404, "id")
+        found = dict(charge)
+        if expand:
+            found["balance_transaction"] = dict(self.objects[found["balance_transaction"]])
+        return 200, found
+
+    def list_disputes(self, charge: str | None) -> Reply:
+        data = [dict(o) for o in self.objects.values() if o.get("object") == "dispute" and charge in (None, o["charge"])]
+        return 200, {"object": "list", "url": "/v1/disputes", "data": data[::-1][:LIST_MAX], "has_more": False}
+
+    def update_dispute(self, dispute_id: str, params: dict[str, Any], idempotency_key: str | None = None) -> Reply:
+        """Evidence fields and, with submit=true, the submission; a repeat of the key replays."""
+        if not idempotency_key:
+            return error("invalid_request_error", "idempotency_key_missing", "Every dispute update needs a key.")
+        scoped = {"dispute": dispute_id, **params}
+        return self._once(idempotency_key, scoped, lambda: self._update_dispute(dispute_id, params))
+
+    def _update_dispute(self, dispute_id: str, params: dict[str, Any]) -> Reply:
+        dispute = self.objects.get(dispute_id)
+        if dispute is None or dispute.get("object") != "dispute":
+            return error("invalid_request_error", "resource_missing", "No such dispute", 404, "dispute")
+        if dispute["status"] not in OPEN_DISPUTE:
+            return error("invalid_request_error", "dispute_already_submitted", "This dispute is no longer open.")
+        evidence = params.get("evidence")
+        dispute["evidence"].update(evidence if isinstance(evidence, dict) else {})
+        details = dispute["evidence_details"]
+        details["has_evidence"] = bool(dispute["evidence"])
+        if params.get("submit") is True:
+            details["submission_count"] += 1
+            dispute["status"] = "under_review"
+        self._event("charge.dispute.updated", dispute)
+        return 200, dict(dispute)
 
     def list_events(self, event_type: str | None = None) -> Reply:
         data = [e for e in self.events if event_type in (None, e["type"])]

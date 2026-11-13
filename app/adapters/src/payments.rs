@@ -19,6 +19,11 @@
 //! T405 (FEE-050, D-3118): [`StripePayments::fetch_three_ds`] reads whether a payment was 3-D
 //! Secure authenticated as a separate [`ThreeDs`] value, so neither [`PaymentIntent`] nor
 //! [`PaymentsAdapter`] changes.
+//!
+//! T335 (FEE-029, FEE-051, FEE-027, FEE-050, D-2305): [`StripePayments::list_charge_page`] reads
+//! one page of succeeded charges with their processing fee, refunded amount and dispute for the
+//! nightly reconcile, and [`StripePayments::submit_dispute_evidence`] submits a dispute's
+//! evidence; `payments` implements its `ReconcileStripe` and `DisputeStripe` over them.
 
 use std::future::Future;
 use std::sync::Arc;
@@ -148,6 +153,93 @@ struct Confirmed {
 #[derive(serde::Deserialize)]
 struct Created {
     id: String,
+}
+
+/// Stripe's largest list page (`limit` 1 to 100, D-2305).
+pub const CHARGE_PAGE_MAX: usize = 100;
+
+/// One succeeded charge as Stripe lists it: IDs and amounts only (FEE-029, FEE-051, D-2305).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ListedCharge {
+    /// `ch_…`.
+    pub id: String,
+    /// Its PaymentIntent, `pi_…`, if any.
+    pub payment_intent: Option<String>,
+    /// Its `metadata[pick_id]`, if any (copied from the PaymentIntent).
+    pub pick_id: Option<String>,
+    /// The gross amount in cents.
+    pub amount: i64,
+    /// What Stripe has refunded of it so far, in cents.
+    pub amount_refunded: i64,
+    /// Its balance transaction, `txn_…`, and that transaction's processing fee in cents.
+    pub balance_transaction: Option<(String, i64)>,
+    /// Its dispute, `dp_…`, and the disputed amount in cents.
+    pub dispute: Option<(String, i64)>,
+}
+
+/// A charge ID as Stripe lists it: `ch_…`, or `py_…` for a non-card payment (D-3538).
+fn is_charge_id(id: &str) -> bool {
+    is_vendor_id(id, "ch_") || is_vendor_id(id, "py_")
+}
+
+/// One page of [`ListedCharge`]s and the cursor of the next, `None` after the last (D-2305).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChargeList {
+    /// The page's succeeded charges.
+    pub charges: Vec<ListedCharge>,
+    /// The `starting_after` of the next page: the last charge Stripe listed, of any status.
+    pub next: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+struct RawList<T> {
+    data: Vec<T>,
+    has_more: bool,
+}
+
+#[derive(serde::Deserialize)]
+struct RawCharge {
+    id: String,
+    status: String,
+    payment_intent: Option<String>,
+    amount: i64,
+    amount_refunded: i64,
+    #[serde(default)]
+    disputed: bool,
+    #[serde(default)]
+    metadata: RawMetadata,
+    balance_transaction: Option<RawTransaction>,
+}
+
+#[derive(Default, serde::Deserialize)]
+struct RawMetadata {
+    pick_id: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+struct RawTransaction {
+    id: String,
+    fee: i64,
+}
+
+#[derive(serde::Deserialize)]
+struct RawDispute {
+    id: String,
+    amount: i64,
+}
+
+impl RawCharge {
+    fn listed(self, dispute: Option<(String, i64)>) -> ListedCharge {
+        ListedCharge {
+            id: self.id,
+            payment_intent: self.payment_intent,
+            pick_id: self.metadata.pick_id,
+            amount: self.amount,
+            amount_refunded: self.amount_refunded,
+            balance_transaction: self.balance_transaction.map(|t| (t.id, t.fee)),
+            dispute,
+        }
+    }
 }
 
 /// One introduction fee charge: record IDs and the amount only, no card data (FEE-014).
@@ -302,15 +394,132 @@ impl StripePayments {
             return Err(AdapterError::InvalidId);
         }
         let path = ["v1", "payment_intents", id];
-        let (client, request) = self.http.request(Method::GET, &path, None).build_split();
-        let mut request = request.map_err(|_| AdapterError::NotSent)?;
-        request
-            .url_mut()
-            .query_pairs_mut()
-            .append_pair("expand[]", "latest_charge");
-        let builder = reqwest::RequestBuilder::from_parts(client, request);
-        let answer: serde_json::Value = self.http.json(builder).await?;
+        let answer: serde_json::Value = self
+            .get_query(&path, &[("expand[]", "latest_charge")])
+            .await?;
         Ok(ThreeDs::of_intent(&answer))
+    }
+
+    /// A GET of `path` with `query` appended (the client has no query feature).
+    async fn get_query<T: serde::de::DeserializeOwned>(
+        &self,
+        path: &[&str],
+        query: &[(&str, &str)],
+    ) -> Result<T, AdapterError> {
+        let (client, request) = self.http.request(Method::GET, path, None).build_split();
+        let mut request = request.map_err(|_| AdapterError::NotSent)?;
+        request.url_mut().query_pairs_mut().extend_pairs(query);
+        self.http
+            .json(reqwest::RequestBuilder::from_parts(client, request))
+            .await
+    }
+
+    /// FEE-029, FEE-051, D-2305: one page of the charges created at or after `created_gte`
+    /// (Unix seconds; an earlier time reads from 0), newest first as Stripe lists them, at most
+    /// `limit` (1 to [`CHARGE_PAGE_MAX`]) after the cursor `starting_after` (`ch_…` or `py_…`), from
+    /// `GET /v1/charges` with `expand[]=data.balance_transaction`. Only `succeeded` charges are
+    /// kept; each `disputed` one has its dispute read from `GET /v1/disputes?charge=`, because a
+    /// Charge names no dispute. Nothing but IDs and amounts is kept (no card data, FEE-014).
+    ///
+    /// # Errors
+    /// [`AdapterError::InvalidId`] for a cursor not `ch_…` or `py_…` (nothing sent); the HTTP errors;
+    /// [`AdapterError::Decode`] for an answer that is not a charge list.
+    pub async fn list_charge_page(
+        &self,
+        created_gte: i64,
+        starting_after: Option<&str>,
+        limit: usize,
+    ) -> Result<ChargeList, AdapterError> {
+        if starting_after.is_some_and(|c| !is_charge_id(c)) {
+            return Err(AdapterError::InvalidId);
+        }
+        let (since, limit) = (
+            created_gte.max(0).to_string(),
+            limit.clamp(1, CHARGE_PAGE_MAX).to_string(),
+        );
+        let mut query = vec![
+            ("created[gte]", since.as_str()),
+            ("limit", limit.as_str()),
+            ("expand[]", "data.balance_transaction"),
+        ];
+        query.extend(starting_after.map(|c| ("starting_after", c)));
+        let page: RawList<RawCharge> = self.get_query(&["v1", "charges"], &query).await?;
+        let next = page
+            .has_more
+            .then(|| page.data.last().map(|c| c.id.clone()))
+            .flatten();
+        let mut charges = Vec::with_capacity(page.data.len());
+        for raw in page.data.into_iter().filter(|c| c.status == "succeeded") {
+            charges.push(self.listed(raw).await?);
+        }
+        Ok(ChargeList { charges, next })
+    }
+
+    /// FEE-029, FEE-051, D-1872, D-3538: one charge as Stripe holds it now, by
+    /// `GET /v1/charges/{id}` with `expand[]=balance_transaction`, read as
+    /// [`list_charge_page`](Self::list_charge_page) reads a listed one; `None` when Stripe
+    /// answers 404 or the charge has not succeeded (the list keeps only succeeded charges).
+    ///
+    /// # Errors
+    /// [`AdapterError::InvalidId`] for an ID not `ch_…` or `py_…` (nothing sent); the other
+    /// HTTP errors; [`AdapterError::Decode`] for an answer that is not a charge.
+    pub async fn fetch_charge(&self, id: &str) -> Result<Option<ListedCharge>, AdapterError> {
+        if !is_charge_id(id) {
+            return Err(AdapterError::InvalidId);
+        }
+        let query = [("expand[]", "balance_transaction")];
+        let raw: RawCharge = match self.get_query(&["v1", "charges", id], &query).await {
+            Err(AdapterError::Vendor { status: 404, .. }) => return Ok(None),
+            other => other?,
+        };
+        if raw.status != "succeeded" {
+            return Ok(None);
+        }
+        self.listed(raw).await.map(Some)
+    }
+
+    /// A succeeded raw charge as a [`ListedCharge`], its dispute read when it is `disputed`.
+    async fn listed(&self, raw: RawCharge) -> Result<ListedCharge, AdapterError> {
+        let dispute = if raw.disputed {
+            self.dispute_of(&raw.id).await?
+        } else {
+            None
+        };
+        Ok(raw.listed(dispute))
+    }
+
+    /// The first dispute Stripe lists for charge `id`, as its ID and amount (FEE-027).
+    async fn dispute_of(&self, id: &str) -> Result<Option<(String, i64)>, AdapterError> {
+        let query = [("charge", id), ("limit", "1")];
+        let list: RawList<RawDispute> = self.get_query(&["v1", "disputes"], &query).await?;
+        Ok(list.data.into_iter().next().map(|d| (d.id, d.amount)))
+    }
+
+    /// FEE-027, FEE-050, D-2305: sends `evidence` (its `evidence[…]` fields; any other field is
+    /// dropped) as the evidence of `dispute` (`dp_…`) with `submit=true` by
+    /// `POST /v1/disputes/{id}` under `idempotency`, so a repeat of the key submits once.
+    ///
+    /// # Errors
+    /// [`AdapterError::InvalidId`] for a dispute not `dp_…` (nothing sent); the HTTP errors.
+    pub async fn submit_dispute_evidence(
+        &self,
+        idempotency: &IdempotencyKey,
+        dispute: &str,
+        evidence: &[(&str, String)],
+    ) -> Result<(), AdapterError> {
+        if !is_vendor_id(dispute, "dp_") {
+            return Err(AdapterError::InvalidId);
+        }
+        let mut form: Vec<(&str, &str)> = evidence
+            .iter()
+            .filter(|(k, _)| k.starts_with("evidence["))
+            .map(|(k, v)| (*k, v.as_str()))
+            .collect();
+        form.push(("submit", "true"));
+        let path = ["v1", "disputes", dispute];
+        let request = self.http.request(Method::POST, &path, Some(idempotency));
+        let _: Created = self.http.json(request.form(&form)).await?;
+        Ok(())
     }
 
     /// FEE-014, FEE-016, D-1754: confirms `intent` on-session with `payment_method` under one
@@ -430,7 +639,7 @@ mod tests {
 
     use secrecy::{ExposeSecret, SecretString};
 
-    use super::{StripePayments, ThreeDs};
+    use super::{ChargeList, StripePayments, ThreeDs};
     use crate::base::{AdapterError, IdempotencyKey};
 
     /// A client for a vendor that answers one request with `answer` and hands back the request
@@ -599,6 +808,115 @@ mod tests {
         );
         assert!(!request.to_ascii_lowercase().contains("idempotency-key"));
         let refused = stripe.fetch_three_ds("ch_fake1").await;
+        assert!(matches!(refused, Err(AdapterError::InvalidId)));
+    }
+
+    /// TD-FEE-61 (FEE-029, FEE-051): the page read sends the filter, limit, cursor and expand,
+    /// keeps only succeeded charges with their fee and refund, and takes the next cursor from
+    /// the last charge listed.
+    #[tokio::test]
+    async fn td_fee_61_the_charge_page_keeps_succeeded_charges_and_the_cursor() {
+        let answer = r#"{"object":"list","has_more":true,"data":[
+            {"id":"ch_fake1","status":"succeeded","payment_intent":"pi_fake1","amount":7500,
+             "amount_refunded":0,"disputed":false,"metadata":{"pick_id":"pick-fake-1"},
+             "balance_transaction":{"id":"txn_fake1","fee":248}},
+            {"id":"ch_fake2","status":"failed","payment_intent":"pi_fake2","amount":2500,
+             "amount_refunded":0,"balance_transaction":null}]}"#;
+        let (stripe, got) = scripted(answer);
+        let page = stripe
+            .list_charge_page(-5, Some("ch_fake0"), 500)
+            .await
+            .expect("page");
+        let request = got.recv().expect("request");
+        assert!(
+            request.starts_with(
+                "GET /stripe/v1/charges?created%5Bgte%5D=0&limit=100\
+                 &expand%5B%5D=data.balance_transaction&starting_after=ch_fake0 "
+            ),
+            "{request}"
+        );
+        assert_eq!(page.next.as_deref(), Some("ch_fake2"));
+        assert_eq!(page.charges.len(), 1);
+        let charge = &page.charges[0];
+        assert_eq!(
+            (
+                charge.pick_id.as_deref(),
+                charge.amount,
+                charge.amount_refunded
+            ),
+            (Some("pick-fake-1"), 7500, 0)
+        );
+        assert_eq!(charge.balance_transaction, Some(("txn_fake1".into(), 248)));
+        assert_eq!(charge.dispute, None);
+        let refused = stripe.list_charge_page(0, Some("pi_fake1"), 10).await;
+        assert!(matches!(refused, Err(AdapterError::InvalidId)));
+    }
+
+    /// D-3538: a `py_…` last item is a cursor like a `ch_…` one, so the next page is read.
+    #[tokio::test]
+    async fn a_py_cursor_is_sent_as_the_next_page() {
+        let (stripe, got) = scripted(r#"{"object":"list","has_more":false,"data":[]}"#);
+        let page = stripe
+            .list_charge_page(0, Some("py_fake1"), 10)
+            .await
+            .expect("page");
+        let request = got.recv().expect("request");
+        assert!(request.contains("&starting_after=py_fake1 "), "{request}");
+        assert_eq!(
+            page,
+            ChargeList {
+                charges: vec![],
+                next: None
+            }
+        );
+    }
+
+    /// FEE-029, D-3538: the one-charge read retrieves by ID with the transaction expanded;
+    /// a charge that has not succeeded is none, and a non-charge ID is refused unsent.
+    #[tokio::test]
+    async fn the_charge_read_expands_the_transaction_and_keeps_only_succeeded() {
+        let (stripe, got) = scripted(
+            r#"{"id":"ch_fake3","status":"failed","payment_intent":"pi_fake3","amount":2500,
+                "amount_refunded":0,"balance_transaction":null}"#,
+        );
+        assert_eq!(stripe.fetch_charge("ch_fake3").await.expect("read"), None);
+        let request = got.recv().expect("request");
+        assert!(
+            request
+                .starts_with("GET /stripe/v1/charges/ch_fake3?expand%5B%5D=balance_transaction "),
+            "{request}"
+        );
+        let refused = stripe.fetch_charge("pi_fake3").await;
+        assert!(matches!(refused, Err(AdapterError::InvalidId)));
+    }
+
+    /// TD-FEE-61 (FEE-027): the evidence submit posts only the evidence fields and
+    /// `submit=true` under the key.
+    #[tokio::test]
+    async fn td_fee_61_the_evidence_submit_posts_submit_true_with_the_key() {
+        let (stripe, got) = scripted(r#"{"id":"dp_fake1","status":"under_review"}"#);
+        let form = [
+            ("evidence[uncategorized_text]", "fake record".to_owned()),
+            ("submit", "false".to_owned()),
+            ("metadata[x]", "dropped".to_owned()),
+        ];
+        stripe
+            .submit_dispute_evidence(&key("dp-fake1"), "dp_fake1", &form)
+            .await
+            .expect("submitted");
+        let request = got.recv().expect("request");
+        assert!(
+            request.starts_with("POST /stripe/v1/disputes/dp_fake1 "),
+            "{request}"
+        );
+        assert!(request.to_ascii_lowercase().contains("idempotency-key:"));
+        assert!(
+            request.ends_with("evidence%5Buncategorized_text%5D=fake+record&submit=true"),
+            "{request}"
+        );
+        let refused = stripe
+            .submit_dispute_evidence(&key("x"), "ch_fake1", &form)
+            .await;
         assert!(matches!(refused, Err(AdapterError::InvalidId)));
     }
 }
