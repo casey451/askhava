@@ -231,6 +231,32 @@ pub async fn audited(
     .map_err(|_| OpsError::Database)
 }
 
+/// BIZ-009, D-969, D-970 (T372, D-3354): true when the newest audit row about `subject` that is
+/// either a status change or a change of `field` is the field change; false when it is a status
+/// change or there is none. `businesses` reads with it whether a rule's pause replaced the owner's
+/// own pause (`pause_reason` changed with no status row after it).
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn field_changed_last(
+    db: &mut PgConnection,
+    subject: (&str, Uuid),
+    field: &str,
+) -> Result<bool, OpsError> {
+    let latest = sqlx::query_scalar!(
+        "SELECT field FROM ops.audit_log WHERE subject_kind = $1 AND subject_id = $2 \
+         AND (to_status IS NOT NULL OR field = $3) ORDER BY id DESC LIMIT 1",
+        subject.0,
+        subject.1,
+        field,
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    Ok(latest.flatten().as_deref() == Some(field))
+}
+
 /// The ID of the newest audit row below `id`, the row the off-database chain links `id` to
 /// (PRIV-029, D-735); none when `id` is the first. One indexed lookup, however far below it is.
 ///
