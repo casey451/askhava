@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-13T16:55:42Z by runner 434281d080d1 (actions).
+Updated 2026-11-13T16:56:22Z by runner 183c06a7dd69 (actions).
 
-**Building: T357 in progress since 16:24Z; 284 of 421 done; week 23% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T357 in progress since 16:24Z; 285 of 421 done; week 23% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 284 of 421 build tasks (owner gates not counted)
+- **Tasks done:** 285 of 421 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:55Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z; lane 7: T273 claimed 16:29Z, lease until 19:29Z
 - **Week:** 23% used, 134.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -13,14 +13,14 @@ Updated 2026-11-13T16:55:42Z by runner 434281d080d1 (actions).
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+166 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+174 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T436 | portals, core and server: expired sessions are swept and old | MERGE_PENDING | 1 | 28 min | 16:53Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | MERGE_PENDING | 2 | 22 min | 16:46Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
-| T319 | portals and server: security-event rows are capped per addre | MERGE_PENDING | 1 | 17 min | 16:40Z | merging main into the reviewed head conflicts in app/core/CLAUDE.md, app/core/src/settings.rs; a resync merges it in on  |
+| T319 | portals and server: security-event rows are capped per addre | done | 1 | 17 min | 16:40Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | resync | 2 | 35 min | 16:03Z |  |
 | T319 | portals and server: security-event rows are capped per addre | resync | 1 | 54 min | 15:51Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | done | 2 | 66 min | 15:48Z | session ended without handing in |
@@ -108,7 +108,7 @@ Updated 2026-11-13T16:55:42Z by runner 434281d080d1 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 233 of 733 (31.8%) · partial 340 · unstarted 160
-**Tasks merged (throughput only):** 284 of 421
+**Tasks merged (throughput only):** 285 of 421
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -143,7 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 164 of 202 done
+- stage 4: 165 of 202 done
 - stage 5: 0 of 65 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
