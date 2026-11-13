@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T16:16:27Z by runner 9d7e3b884c94 (actions).
+Updated 2026-11-13T16:22:28Z by runner 6dfa812afb95 (manual).
 
 **Idle since 16:05Z; 284 of 421 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-13T16:16:27Z by runner 9d7e3b884c94 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:05Z (no task in progress)
 - **Week:** 21% used, 147.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:06Z, 10 min before this update
+- **Last run:** 16:17Z, 4 min before this update
 - **Keeper:** last ran 16:04Z, next wake 16:24Z
 
 ## Needs attention
 - PLAN GAP T273 (since 2026-11-13T16:08:58Z, no attempt used; a plan change fixes it): T273: dependency T266 is DONE but its owned file app/picks/src/contact_choice.rs is not on main; T273: dependency T266 is DONE but its owned file migrations/0166_picks_contact_choice.sql is not on main; T273: dependency T266 is DONE but its owned file tests/integration/tests/pick_contact_choice.rs is not on main; T273: dependency T266 is DONE but its owned file app/server/tests/release_contact_choice.rs is not on main
 - PLAN GAP T281 (since 2026-11-13T16:08:58Z, no attempt used; a plan change fixes it): T281: dependency T266 is DONE but its owned file app/picks/src/contact_choice.rs is not on main; T281: dependency T266 is DONE but its owned file migrations/0166_picks_contact_choice.sql is not on main; T281: dependency T266 is DONE but its owned file tests/integration/tests/pick_contact_choice.rs is not on main; T281: dependency T266 is DONE but its owned file app/server/tests/release_contact_choice.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 24 problem(s) on tasks still to run (+159 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+160 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -76,7 +76,6 @@ Updated 2026-11-13T16:16:27Z by runner 9d7e3b884c94 (actions).
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 2 | 60 min | 18:26Z |  |
 | T366 | jobs and server: every dead-lettered task alerts, and a dail | done | 1 | 26 min | 17:53Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 1 | 32 min | 17:52Z |  |
-| T315 | jobs and portals: feedback words are blanked by the 3-year p | done | 1 | 66 min | 16:18Z |  |
 
 ### Plan and harness merges on main
 - 15:02Z Plan: split T328 and trim T321 to fit the context limit (D-3468) (#676)
@@ -98,40 +97,34 @@ Updated 2026-11-13T16:16:27Z by runner 9d7e3b884c94 (actions).
 - 00:14Z Plan: T255 plan gap: re-clear builds Releasable from the stored success (D-3358) (#638)
 - 22:08Z Plan: T340, T271, T126 under their context limits (D-3325) (#623)
 - 22:01Z plan: T419 fixes the flaky TD-CALL-23 no-plaintext scan, claimed first (D-3324) (#622)
-- 20:49Z Harness: worker output discipline and per-role usage recording (D-3305) (#618)
-- 20:07Z Harness: up to 2 tasks per crate; one only where the crate's CLAUDE.md is full (D-3303) (#615)
-- 18:44Z Plan: performance track — measurement harness T416–T418, goals as non-blocking (D-3292) (#607)
-- 18:11Z Plan: pre-flight fixes round 11 — T346 context gap, T162 template key, T372 cite, T255/T347 budgets (D-3286) (#605)
-- 18:06Z Plan: T362 takes the keyboard test's load wait (D-3270) (#601)
-- 17:59Z Harness: seven lanes without merge collisions — crate exclusion, add-only conflict resolution, lanes 5→7 (D-3269) (#603)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 233 of 733 (31.8%) · partial 340 · unstarted 160
+**Requirements verified:** 7 of 733 (1.0%) · partial 566 · unstarted 160
 **Tasks merged (throughput only):** 284 of 421
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 15 | 14 | 6 | 35 |
-| ai | 8 | 16 | 5 | 29 |
-| businesses | 17 | 38 | 3 | 58 |
-| calls | 10 | 14 | 1 | 25 |
-| consent | 11 | 20 | 4 | 35 |
-| fees | 13 | 38 | 1 | 52 |
-| intake | 23 | 17 | 3 | 43 |
-| job-cards | 12 | 12 | 0 | 24 |
-| licensing | 26 | 22 | 0 | 48 |
-| lifecycle | 19 | 9 | 0 | 28 |
-| messaging | 20 | 23 | 2 | 45 |
-| ops-recovery | 2 | 8 | 44 | 54 |
-| privacy | 6 | 23 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 29 | 26 | 1 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 8 | 42 | 5 | 55 |
+| accessibility | 0 | 29 | 6 | 35 |
+| ai | 0 | 24 | 5 | 29 |
+| businesses | 0 | 55 | 3 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 31 | 4 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 3 | 37 | 3 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 43 | 2 | 45 |
+| ops-recovery | 0 | 10 | 44 | 54 |
+| privacy | 1 | 28 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 3 | 52 | 1 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 0 | 50 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 8 | 23 | 32 |
+| wording | 0 | 9 | 23 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
