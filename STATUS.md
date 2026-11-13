@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T08:34:03Z by runner bee96646639a (actions).
+Updated 2026-11-13T08:38:51Z by runner bee96646639a (actions).
 
 **Building: T249 in progress since 07:51Z; 276 of 415 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T08:34:03Z by runner bee96646639a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T249 claimed 07:51Z, lease until 10:51Z
 - **Week:** 14% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:33Z, 0 min before this update
+- **Last run:** 08:38Z, 0 min before this update
 - **Keeper:** last ran 08:34Z, next wake 10:54Z
 
 ## Needs attention
@@ -85,7 +85,6 @@ Updated 2026-11-13T08:34:03Z by runner bee96646639a (actions).
 | T406 | quotes: a quote's PICK-040 facts are stored with it and read | done | 1 | 41 min | 09:05Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | done | 2 | 56 min | 09:00Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 2 | 4 min | 08:47Z |  |
-| T322 | businesses: a backup notice address is checked again at conf | done | 1 | 35 min | 08:36Z |  |
 
 ### Plan and harness merges on main
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
