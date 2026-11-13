@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T09:37:57Z by runner 553bd9eb54c3 (actions).
+Updated 2026-11-13T09:41:43Z by runner 553bd9eb54c3 (actions).
 
 **Building: T255 in progress since 09:22Z; 277 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T09:37:57Z by runner 553bd9eb54c3 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T255 claimed 09:22Z, lease until 12:22Z
 - **Week:** 15% used, 165.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:37Z, 0 min before this update
+- **Last run:** 09:41Z, 0 min before this update
 - **Keeper:** last ran 09:37Z, next wake 12:24Z
 
 ## Needs attention
@@ -79,7 +79,6 @@ Updated 2026-11-13T09:37:57Z by runner 553bd9eb54c3 (actions).
 | T411 | quotes: the scrubbed job description and the shown and appro | done | 1 | 28 min | 10:36Z |  |
 | T343 | harness: the DONE pick tests' fixtures record each job's fac | done | 1 | 24 min | 10:23Z |  |
 | T411 | quotes: the scrubbed job description and the shown and appro | resync | 1 | 30 min | 10:00Z |  |
-| T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 21 min | 09:38Z |  |
 
 ### Plan and harness merges on main
 - 09:02Z Plan: T255 plan gap 2, the address is written onto the homeowner's own contact (D-3431) (#660)
