@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT mailbox_id AS \"id!\" FROM privacy.business_mailbox_index\n           WHERE purpose = 'email' AND (key_version, digest) IN\n             (SELECT * FROM unnest($1::int4[], $2::bytea[])) ORDER BY 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "privacy.business_mailbox_index",
+            "name": "mailbox_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "ByteaArray"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "b71cda93bd8c6ff54c91da13d08d36ae42e59e11654b98d78f7ae7a1cebb3756"
+}
