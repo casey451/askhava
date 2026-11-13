@@ -93,3 +93,10 @@ def test_expander_catches_a_dropped_alternative():
     assert slot_phrases(slots) == regex_phrases(r"\bour pros?\b")
     assert slot_phrases([["our "], ["pros"]]) != regex_phrases(r"\bour pros?\b")
     assert regex_phrases(r"\bsubcontract\w*") == {"subcontract*"}
+
+
+@pytest.mark.parametrize("phrase", ["hire through laftly", "laftly's plumbers", "hire through ask hava"])
+def test_both_brand_names_are_on_the_list(phrase):
+    """WORD-022 (D-3347): the AI screen's list refuses a phrase naming Laftly or the old name."""
+    listed = set().union(*(slot_phrases(e["slots"]) for e in _entries()))
+    assert phrase in listed
