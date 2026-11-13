@@ -1,23 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-13T16:54:08Z by runner 6dfa812afb95 (actions).
+Updated 2026-11-13T16:54:20Z by runner 4095f078e241 (actions).
 
 **Building: T357 in progress since 16:24Z; 284 of 421 done; week 23% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 284 of 421 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:24Z; lane 2: T436 claimed 16:25Z, lease until 19:25Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z; lane 7: T273 claimed 16:29Z, lease until 19:29Z
+- **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:24Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z; lane 7: T273 claimed 16:29Z, lease until 19:29Z
 - **Week:** 23% used, 134.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:53Z, 0 min before this update
+- **Last run:** 16:54Z, 0 min before this update
 - **Keeper:** last ran 16:53Z, next wake 19:26Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 24 problem(s) on tasks still to run (+160 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+160 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T436 | portals, core and server: expired sessions are swept and old | MERGE_PENDING | 1 | 28 min | 16:53Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | MERGE_PENDING | 2 | 22 min | 16:46Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T319 | portals and server: security-event rows are capped per addre | MERGE_PENDING | 1 | 17 min | 16:40Z | merging main into the reviewed head conflicts in app/core/CLAUDE.md, app/core/src/settings.rs; a resync merges it in on  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | resync | 2 | 35 min | 16:03Z |  |
@@ -151,9 +152,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T357 (lease until 2026-11-13T19:24:46Z)
-- lane 2: T436 (lease until 2026-11-13T19:25:24Z)
 - lane 5: T281 (lease until 2026-11-13T19:27:55Z)
 - lane 7: T273 (lease until 2026-11-13T19:29:07Z)
 
 ## Last usage reading
-- {"task": "T386", "at": "2026-11-13T16:46:46Z", "cache_creation_input_tokens": 73804, "cache_read_input_tokens": 932287, "input_tokens": 87, "output_tokens": 13426}
+- {"task": "T436", "at": "2026-11-13T16:53:49Z", "input_tokens": 259, "cache_creation_input_tokens": 368386, "output_tokens": 85856, "cache_read_input_tokens": 11844389}
