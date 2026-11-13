@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-13T18:05:49Z by runner 5918a2604c7c (actions).
+Updated 2026-11-13T18:06:03Z by runner 5918a2604c7c (actions).
 
-**Building: T357 in progress since 16:24Z; 287 of 423 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T357 in progress since 16:24Z; 288 of 423 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 287 of 423 build tasks (owner gates not counted)
+- **Tasks done:** 288 of 423 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:55Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z
 - **Week:** 25% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -18,7 +18,7 @@ Updated 2026-11-13T18:05:49Z by runner 5918a2604c7c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T436 | portals, core and server: expired sessions are swept and old | MERGE_PENDING | 1 | 34 min | 17:52Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T436 | portals, core and server: expired sessions are swept and old | done | 1 | 34 min | 17:52Z |  |
 | T273 | privacy: a photo's plaintext is returned only after its open | done | 1 | 41 min | 17:10Z |  |
 | T436 | portals, core and server: expired sessions are swept and old | resync | 1 | 28 min | 16:53Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | done | 2 | 22 min | 16:46Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
@@ -108,7 +108,7 @@ Updated 2026-11-13T18:05:49Z by runner 5918a2604c7c (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 573 · unstarted 160
-**Tasks merged (throughput only):** 287 of 423
+**Tasks merged (throughput only):** 288 of 423
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -143,7 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 167 of 204 done
+- stage 4: 168 of 204 done
 - stage 5: 0 of 65 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
