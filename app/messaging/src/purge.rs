@@ -111,7 +111,8 @@ pub async fn schedule_body_scan(db: &mut PgConnection, now: Timestamp) -> Result
     enqueue(db, &task).await.map(|_| ())
 }
 
-/// PRIV-027, D-1841: registers [`SCAN_KIND`] (at `clock`'s now, then the next day's scan) and
+/// PRIV-027, D-1841, D-2641: registers [`SCAN_KIND`] (at `clock`'s now: the next day's scan first,
+/// so a run that fails for good still leaves it, then the deletes due) and
 /// [`DELETE_KIND`] over the texting client `sms`, deriving each delete's key from `secret`. A
 /// delete's last failed attempt raises a High alert (D-2162).
 pub fn register_body_deletes<S>(
@@ -133,11 +134,12 @@ pub fn register_body_deletes<S>(
         let now = clock.now();
         async move {
             let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
-            queue_body_deletes(&mut conn, now)
-                .await
-                .map_err(|_| DB_FAILED)?;
             schedule_body_scan(&mut conn, now)
                 .await
+                .map_err(|_| DB_FAILED)?;
+            queue_body_deletes(&mut conn, now)
+                .await
+                .map(|_| ())
                 .map_err(|_| DB_FAILED)
         }
     });

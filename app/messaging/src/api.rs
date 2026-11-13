@@ -87,7 +87,7 @@ pub use crate::receipt_email::{
     render_receipt, run_receipt_email,
 };
 pub use crate::retention::{
-    BODY_KEPT_FOR, CUT_KIND, LogEntry, cut_bodies, message_log, run_cut, schedule_cut,
+    BODY_KEPT_FOR, CUT_KIND, LogEntry, cut_bodies, message_log, run_cut, run_cut_at, schedule_cut,
 };
 pub use crate::retries::{
     CALL_BACK_ALERT, GaveUp, IMPORTANT_TEMPLATES, NO_RUSH_CALL_BACK, RETRY_AFTER, Reach, Step,

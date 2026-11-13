@@ -181,15 +181,26 @@ pub async fn schedule_cut(db: &mut PgConnection, now: Timestamp) -> Result<(), T
     enqueue(db, &task).await.map(|_| ())
 }
 
-/// The [`CUT_KIND`] handler: [`cut_bodies`] at the wall clock, then the next day's cut (TXT-020).
+/// The [`CUT_KIND`] handler at the wall clock: [`run_cut_at`] (TXT-020).
+///
+/// # Errors
+/// As [`run_cut_at`].
+pub async fn run_cut(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    run_cut_at(pool, task, Timestamp::now()).await
+}
+
+/// TXT-020, D-2641: the [`CUT_KIND`] handler at `now` (the worker's clock): queues the next day's
+/// cut first, so a run that fails for good still leaves it, then [`cut_bodies`].
 ///
 /// # Errors
 ///
 /// A fixed [`HandlerError`] when the database call fails.
-pub async fn run_cut(pool: PgPool, _task: Claimed) -> Result<(), HandlerError> {
+pub async fn run_cut_at(pool: PgPool, _task: Claimed, now: Timestamp) -> Result<(), HandlerError> {
     let failed = HandlerError("message body cut database call failed");
     let mut conn = pool.acquire().await.map_err(|_| failed)?;
-    let now = Timestamp::now();
-    cut_bodies(&mut conn, now).await.map_err(|_| failed)?;
-    schedule_cut(&mut conn, now).await.map_err(|_| failed)
+    schedule_cut(&mut conn, now).await.map_err(|_| failed)?;
+    cut_bodies(&mut conn, now)
+        .await
+        .map(|_| ())
+        .map_err(|_| failed)
 }
