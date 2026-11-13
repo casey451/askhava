@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T07:10:56Z by runner bee96646639a (actions).
+Updated 2026-11-13T07:15:37Z by runner bee96646639a (actions).
 
 **Building: T428 in progress since 07:00Z; 276 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T07:10:56Z by runner bee96646639a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T428 claimed 07:00Z, lease until 10:00Z
 - **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:10Z, 0 min before this update
+- **Last run:** 07:15Z, 0 min before this update
 - **Keeper:** last ran 07:10Z, next wake 10:02Z
 
 ## Needs attention
@@ -87,7 +87,6 @@ Updated 2026-11-13T07:10:56Z by runner bee96646639a (actions).
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 47 min | 07:35Z |  |
 | T390 | calls and server: a blocked staff call that connects a line  | done | 1 | 29 min | 07:34Z |  |
 | T401 | server (harness): the door probe's fixture gains a released  | done | 2 | 37 min | 07:33Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
-| T339 | jobs: each job keeps its category code and remaining candida | done | 1 | 18 min | 07:13Z |  |
 
 ### Plan and harness merges on main
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
@@ -113,7 +112,6 @@ Updated 2026-11-13T07:10:56Z by runner bee96646639a (actions).
 - 09:22Z Plan: T345 owns the runner tests that hard-code action tags (D-3200) (#572)
 - 09:13Z Plan: store the scrubbed job description and shown card so T251 can send approved cards (D-3189) (#568)
 - 08:32Z Harness: smoke ancestry reuse accepts squash commits whose identical tree passed Ci, Twin and Ally (D-3156) (#560)
-- 07:12Z Harness: close merged tasks before the smoke so their lanes free ~20 min sooner (D-3141) (#552)
 
 ## Progress (requirements verified)
 
