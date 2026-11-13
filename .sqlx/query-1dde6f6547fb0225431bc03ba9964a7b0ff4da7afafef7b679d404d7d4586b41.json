@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT line_id FROM privacy.staff_phone WHERE key_version < $1 ORDER BY line_id LIMIT $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "line_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "privacy.staff_phone",
+            "name": "line_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "1dde6f6547fb0225431bc03ba9964a7b0ff4da7afafef7b679d404d7d4586b41"
+}

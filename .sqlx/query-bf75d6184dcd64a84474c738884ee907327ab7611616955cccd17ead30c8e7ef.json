@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id FROM privacy.business_mailbox WHERE key_version < $1 OR id IN (SELECT mailbox_id FROM privacy.business_mailbox_index WHERE key_version < $2) ORDER BY id LIMIT $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "privacy.business_mailbox",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "bf75d6184dcd64a84474c738884ee907327ab7611616955cccd17ead30c8e7ef"
+}
