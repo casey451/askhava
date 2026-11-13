@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T20:24:41Z by runner 900e97dabbc9 (actions).
+Updated 2026-11-13T20:27:54Z by runner 900e97dabbc9 (actions).
 
-**Building: T357 in progress since 20:16Z; 290 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T357 in progress since 20:16Z; 291 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 290 of 427 build tasks (owner gates not counted)
+- **Tasks done:** 291 of 427 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T357 claimed 20:16Z, lease until 23:16Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
 - **Week:** 28% used, 128.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:24Z, 0 min before this update
+- **Last run:** 20:24Z, 3 min before this update
 - **Keeper:** last ran 20:24Z, next wake 22:29Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-13T20:24:41Z by runner 900e97dabbc9 (actions).
 |---|---|---|---|---|---|---|
 | T271 | server and calls (harness): the dialed leg asks for status c | MERGE_PENDING | 1 | 53 min | 20:22Z |  |
 | T318 | calls, picks and quotes: the who's-calling text goes out at  | MERGE_PENDING | 1 | 52 min | 20:18Z |  |
-| T277 | intake and privacy: a check-in reply reaches its job, and a  | MERGE_PENDING | 1 | 45 min | 20:13Z |  |
+| T277 | intake and privacy: a check-in reply reaches its job, and a  | done | 1 | 45 min | 20:13Z |  |
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 48 min | 20:09Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T314 | payments and picks: a dispute's auto-submit mark and its tas | done | 1 | 29 min | 19:56Z |  |
 | T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
@@ -108,7 +108,7 @@ Updated 2026-11-13T20:24:41Z by runner 900e97dabbc9 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 279 of 733 (38.1%) · partial 294 · unstarted 160
-**Tasks merged (throughput only):** 290 of 427
+**Tasks merged (throughput only):** 291 of 427
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -143,7 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 170 of 207 done
+- stage 4: 171 of 207 done
 - stage 5: 0 of 66 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
