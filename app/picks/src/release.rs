@@ -641,3 +641,88 @@ async fn notify_business(
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    //! TD-PICK-59 (PICK-022, PRIV-005, FEE-052, D-2627, D-3559): `record`, the release claim
+    //! itself, refuses a pick whose fraud warning committed its `picks.fraud_hold` row, writing
+    //! no release row, and claims the same pick without one. Fake IDs only.
+
+    use askhava_jobs::api::create;
+    use askhava_ops::api::Actor;
+    use jiff::Timestamp;
+    use sqlx::types::Uuid;
+    use sqlx::{PgConnection, PgPool};
+
+    use super::{Claim, PickStatus, ReleaseBasis, ReleaseTarget, record};
+
+    /// A paid pick of a new business on a new job, with a fraud hold when `held`.
+    async fn paid_pick(db: &mut PgConnection, held: bool) -> (Uuid, ReleaseTarget) {
+        let now = Timestamp::now();
+        let business = askhava_businesses::api::create(db, false, now)
+            .await
+            .expect("business");
+        let job = create(db, now, false, Actor::System).await.expect("job");
+        let pick = sqlx::query_scalar!(
+            "INSERT INTO picks.pick (job_id, business_id, quote_number, channel, status, \
+             picked_at) VALUES ($1, $2, 1, 'page', $3, now()) RETURNING id",
+            job,
+            business,
+            PickStatus::Paid.code(),
+        )
+        .fetch_one(&mut *db)
+        .await
+        .expect("pick");
+        if held {
+            sqlx::query!(
+                "INSERT INTO picks.fraud_hold (pick_id, held_at) VALUES ($1, now())",
+                pick
+            )
+            .execute(&mut *db)
+            .await
+            .expect("hold");
+        }
+        let target = ReleaseTarget {
+            job,
+            business,
+            ended: false,
+            confirmed: true,
+            released: false,
+        };
+        (pick, target)
+    }
+
+    /// The pick's `picks.release` rows.
+    async fn releases(db: &mut PgConnection, pick: Uuid) -> i64 {
+        sqlx::query_scalar!(
+            r#"SELECT count(*) AS "n!" FROM picks.release WHERE pick_id = $1"#,
+            pick
+        )
+        .fetch_one(db)
+        .await
+        .expect("count")
+    }
+
+    /// TD-PICK-59 (b) on the claim path: a held pick is `MovedOn` with no release row; the same
+    /// pick without a hold is `Claimed` with one.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn td_pick_59_record_refuses_a_held_pick_and_claims_an_unheld_one(pool: PgPool) {
+        let mut db = pool.acquire().await.expect("conn");
+        let contact = Uuid::from_u128(0xc355_0002);
+        let basis = (ReleaseBasis::PaidCharge, contact, false);
+        let (held, target) = paid_pick(&mut db, true).await;
+        let claim = record(&mut db, (held, &target), basis, Timestamp::now()).await;
+        assert!(
+            matches!(claim, Ok(Claim::MovedOn)),
+            "a held pick is refused"
+        );
+        assert_eq!(releases(&mut db, held).await, 0);
+        let (open, target) = paid_pick(&mut db, false).await;
+        let claim = record(&mut db, (open, &target), basis, Timestamp::now()).await;
+        assert!(
+            matches!(claim, Ok(Claim::Claimed)),
+            "an unheld pick is claimed"
+        );
+        assert_eq!(releases(&mut db, open).await, 1);
+    }
+}

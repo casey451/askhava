@@ -2,11 +2,12 @@
 //! early-fraud-warning end both lock the pick's row first, on two connections, with no sleeps:
 //! (a) a claim holding its lock and its release row makes the fraud path wait, which then finds
 //! the row and writes no hold and asks for no refund; (b) a fraud path that committed its hold
-//! first makes the claim refuse (no release row, no vault read), and the refund goes out once;
+//! first makes the claim refuse (no release row), and the refund goes out once;
 //! (c) the 72-hour no-show still ends a released, paid pick, and the plain claim and the plain
 //! fraud end behave as before. The claim is driven through `picks::api::claim_still_open`, the
 //! lock and re-check `release`'s claim takes first (a test crate cannot mint a `ReleaseProof`,
-//! SEC-030, `tests/integration/tests/architecture.rs`). Stripe is a counting fake; every ID and
+//! SEC-030, `tests/integration/tests/architecture.rs`); the in-crate `release::tests` pins that
+//! `record` itself refuses a held pick (D-3559). Stripe is a counting fake; every ID and
 //! number is fake.
 
 use std::sync::Arc;
@@ -34,7 +35,6 @@ const SECRET: &str = "fake-id-secret-t355";
 const HOLDS: &str = "SELECT count(*) FROM picks.fraud_hold WHERE pick_id = $1";
 const RELEASES: &str = "SELECT count(*) FROM picks.release WHERE pick_id = $1";
 const REFUNDED: &str = "SELECT count(*) FROM payments.refund WHERE pick_id = $1 AND trigger = 'fraud-warning' AND status = 'succeeded'";
-const VAULT_READS: &str = "SELECT count(*) FROM ops.audit_log WHERE action = 'vault_read.picks.release' AND $1::uuid IS NOT NULL";
 
 /// Refunds succeed when `up`, else the request is never sent; counts every refund asked for.
 struct FakeStripe {
@@ -209,7 +209,7 @@ async fn td_pick_59_a_fraud_warning_waits_for_a_claim_and_refunds_nothing(pool: 
 }
 
 /// TD-PICK-59 (b) (PRIV-005, FEE-052, D-2627): the fraud path commits its hold first (its refund
-/// failing here, so the pick stays paid); the claim then refuses with nothing written or read;
+/// failing here, so the pick stays paid); the claim then refuses with nothing written;
 /// the next warning refunds once and ends the pick; the hold is append-only for the app role.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_59_b_a_committed_hold_refuses_the_claim_and_refunds_once(pool: PgPool) {
@@ -228,7 +228,6 @@ async fn td_pick_59_b_a_committed_hold_refuses_the_claim_and_refunds_once(pool: 
     assert_eq!(open, Ok(false), "the claim answers MovedOn");
     claim.commit().await.expect("claim commits");
     assert_eq!(count(&pool, RELEASES, case.pick).await, 0);
-    assert_eq!(count(&pool, VAULT_READS, case.pick).await, 0);
     assert_eq!(
         fraud_warning(&pool, (&up, &secret), ids, az(3, 10)).await,
         Ok(true)
