@@ -2646,3 +2646,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** Each cycle now asks GitHub whether a lane's worker run is still alive. When that run has been finished for at least 10 minutes without handing in, the next runner cycle frees the lane exactly as an expired lease frees it (cycles start on merges, on other lanes' runs and on the hourly schedule, so typically within about an hour instead of the 3-hour expiry): the task goes back to the queue with no attempt used, and a change it already finished and had reviewed is picked up as before. Any doubt (GitHub unreadable, a re-run in progress) keeps the lane held as before. Nothing cancels a run.
 - **Decided for you (by Fable under your standing rule).** Yes, with those conditions. A lane where the safety hand-in ran but still did not free it (T327's case) is freed by the same rule too; finding out why that happened is a separate follow-up.
 - **Nothing needs you now.**
+
+## Pull requests now wait their turn to catch up with main (D-3418)
+
+- When one task merged, the runner used to bring every other waiting task up to date at once, which restarted all their checks; only one could merge next, so about 2 check runs per merge were thrown away. Now only the oldest waiting task is brought up to date, and the next one gets its turn when it merges or drops out. Nothing needs you now.
