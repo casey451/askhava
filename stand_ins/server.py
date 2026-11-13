@@ -329,6 +329,29 @@ def stripe_events(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     return (*s.stripe.list_events(req.query.get("type")), {})
 
 
+def stripe_charges(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """One page of the charges T405 stores, with `expand[]=data.balance_transaction` (D-2305)."""
+    since, limit = req.query.get("created[gte]", "0"), req.query.get("limit", "10")
+    if not since.isdigit() or not limit.isdigit() or not 1 <= int(limit) <= stripe.LIST_MAX:
+        return (*stripe.error("invalid_request_error", "parameter_invalid_integer", "Bad created or limit", 400), {})
+    expand = req.query.get("expand[]") == "data.balance_transaction"
+    return (*s.stripe.list_charges(int(since), int(limit), req.query.get("starting_after"), expand), {})
+
+
+def stripe_charge(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """One stored charge, with `expand[]=balance_transaction` (D-3538)."""
+    return (*s.stripe.fetch_charge(m.group("id"), req.query.get("expand[]") == "balance_transaction"), {})
+
+
+def stripe_disputes(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    return (*s.stripe.list_disputes(req.query.get("charge")), {})
+
+
+def stripe_dispute_update(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    params = stripe_params(req.form())
+    return (*s.stripe.update_dispute(m.group("id"), params, req.headers.get("idempotency-key")), {})
+
+
 def resend_send(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     return (*s.resend.send(req.json(), req.headers.get("idempotency-key")), {})
 
@@ -375,6 +398,10 @@ ROUTES: list[tuple[str, re.Pattern[str], Handler]] = [
         ("POST", PI + r"/(?P<step>confirm|stand_in_authenticate)", stripe_intent_step),
         ("GET", r"/stripe/v1/(payment_intents|setup_intents|customers|refunds)/(?P<id>\w+)", stripe_fetch),
         ("GET", r"/stripe/v1/events", stripe_events),
+        ("GET", r"/stripe/v1/charges", stripe_charges),
+        ("GET", r"/stripe/v1/charges/(?P<id>(ch|py)_\w+)", stripe_charge),
+        ("GET", r"/stripe/v1/disputes", stripe_disputes),
+        ("POST", r"/stripe/v1/disputes/(?P<id>dp_\w+)", stripe_dispute_update),
         ("POST", r"/resend/emails", resend_send),
         ("POST", r"/lob/v1/letters", lob_create),
         ("GET", r"/lob/v1/letters/(?P<id>ltr_\w+)", lob_fetch),
