@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T15:42:31Z by runner 9d7e3b884c94 (actions).
+Updated 2026-11-13T15:48:23Z by runner 9d7e3b884c94 (actions).
 
-**Building: T386 in progress since 15:27Z; 283 of 421 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T386 in progress since 15:27Z; 283 of 421 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 283 of 421 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T386 claimed 15:27Z, lease until 18:27Z; lane 3: T319 claimed 14:57Z, lease until 17:57Z; lane 5: T266 claimed 14:42Z, lease until 17:42Z
-- **Week:** 20% used, 147.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:42Z, 0 min before this update
+- **Week:** 21% used, 147.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:48Z, 0 min before this update
 - **Keeper:** last ran 15:42Z, next wake 17:45Z
 
 ## Needs attention
@@ -100,7 +100,6 @@ Updated 2026-11-13T15:42:31Z by runner 9d7e3b884c94 (actions).
 - 18:06Z Plan: T362 takes the keyboard test's load wait (D-3270) (#601)
 - 17:59Z Harness: seven lanes without merge collisions — crate exclusion, add-only conflict resolution, lanes 5→7 (D-3269) (#603)
 - 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
-- 15:45Z Plan: new T412/T415 store business sign-in addresses and phones in the vault for T280, T397, T302 and T364 (D-3262) (#596)
 
 ## Progress (requirements verified)
 
