@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-13T21:19:23Z by runner 6cc0b1c3ccc3 (actions).
+Updated 2026-11-13T21:19:46Z by runner 58eef26515d0 (actions).
 
-**Building: T354 in progress since 20:29Z; 292 of 424 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T354 in progress since 20:29Z; 293 of 428 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 292 of 424 build tasks (owner gates not counted)
+- **Tasks done:** 293 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T354 claimed 20:29Z, lease until 23:29Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
 - **Week:** 28% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -13,15 +13,15 @@ Updated 2026-11-13T21:19:23Z by runner 6cc0b1c3ccc3 (actions).
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+183 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T412 | privacy: each business member's sign-in address and texting  | MERGE_PENDING | 1 | 111 min | 21:18Z |  |
-| T442 |  | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
+| T442 | mutation (harness): every named mutant is killed by a determ | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
 | T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 1 | 23 min | 20:39Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
-| T271 | server and calls (harness): the dialed leg asks for status c | MERGE_PENDING | 1 | 53 min | 20:22Z |  |
+| T271 | server and calls (harness): the dialed leg asks for status c | done | 1 | 53 min | 20:22Z |  |
 | T318 | calls, picks and quotes: the who's-calling text goes out at  | done | 1 | 52 min | 20:18Z |  |
 | T277 | intake and privacy: a check-in reply reaches its job, and a  | done | 1 | 45 min | 20:13Z |  |
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 48 min | 20:09Z |  |
@@ -110,7 +110,7 @@ Updated 2026-11-13T21:19:23Z by runner 6cc0b1c3ccc3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 280 of 733 (38.2%) · partial 293 · unstarted 160
-**Tasks merged (throughput only):** 292 of 424
+**Tasks merged (throughput only):** 293 of 428
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -145,7 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 172 of 207 done
+- stage 4: 173 of 207 done
 - stage 5: 0 of 66 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
