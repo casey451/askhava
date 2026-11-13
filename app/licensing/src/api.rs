@@ -6,8 +6,8 @@
 //! fee-free job type (LIC-015, FEE-045). The handyman limits (T035): [`eligibility_for_request`]
 //! withholds a handyman card from gas, smoke-alarm, sprinkler and permit-type requests (AI-012,
 //! LIC-021, LIC-022); [`check_quote`] refuses an uncertified handyman quote or one at $1,000 or
-//! more (LIC-019, LIC-020, LIC-025, LIC-036); [`split_job`] runs the split-job check (LIC-023);
-//! [`HANDYMAN_CARD_LINE`] is the LIC-024 line. `quotes` combines these with towns and ticked job types
+//! more (LIC-019, LIC-020, LIC-025, LIC-036), each job judged only by its own price, with no
+//! split-job check (LIC-023, D-2407); [`HANDYMAN_CARD_LINE`] is the LIC-024 line. `quotes` combines these with towns and ticked job types
 //! (CARD-001) when it chooses recipients.
 //!
 //! The daily lists (T036): [`import_roc_list`] and [`import_city_list`] record the day's lists,
@@ -39,6 +39,11 @@
 //! jobs on a homeowner's wrong-license report and raises [`PEST_LICENSE_REPORTED_ALERT`];
 //! [`replace_pest_number`] stores the number found on the Department's search and clears the
 //! pause (LIC-047).
+//!
+//! The own record (T385, D-2954): [`read_own_record`] reads a business's own ROC or city record
+//! once at sign-up into [`OwnRecord`], nothing kept (BIZ-002, LIC-008, LIC-010); [`names_agree`]
+//! is BIZ-016's name check; [`city_match_number`] and [`bound_roc_number`] give the number it is
+//! read under (LIC-011, LIC-048).
 
 pub use crate::class_map::{
     ClassMap, ClassMapError, JobTypeKey, Opening, ProjectLimitRefusal, RequestIntake,
@@ -50,8 +55,8 @@ pub use crate::handlers::{
     lookup_at_pick, lookup_while_list_fails, unknown_standing,
 };
 pub use crate::handyman::{
-    HANDYMAN_CARD_LINE, HANDYMAN_LIMIT_CENTS, HandymanJob, JobRequest, NeverHandyman, QuotePrice,
-    QuoteRefusal, QuoteSubmission, SPLIT_JOB_WINDOW_DAYS, check_quote, never_handyman, split_job,
+    HANDYMAN_CARD_LINE, HANDYMAN_LIMIT_CENTS, JobRequest, NeverHandyman, QuotePrice, QuoteRefusal,
+    QuoteSubmission, check_quote, never_handyman,
 };
 pub use crate::holder::{
     HolderError, HolderInputs, HolderParts, holder_for, record_agency_license,
@@ -68,6 +73,10 @@ pub use crate::lines::{
 pub use crate::models::{
     Agency, CityListStanding, CityRecord, Eligibility, Holder, InspectionFee, Job, LicenseKind,
     LicensingError, NoCardReason, PestAttestation, PestRecordCategory, SaleAnswer,
+};
+pub use crate::own_record::{
+    OwnRecord, RECORD_HEADER, RECORD_UNREADABLE_ALERT, RecordList, RecordRead, bound_roc_number,
+    city_match_number, names_agree, read_own_record,
 };
 pub use crate::pest_report::{
     PEST_LICENSE_REPORTED_ALERT, PestReplacement, PestReport, replace_pest_number,

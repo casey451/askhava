@@ -213,14 +213,64 @@ async fn pending(db: &PgPool) -> i64 {
     count(db, "SELECT count(*) FROM calls.link_request").await
 }
 
-/// How many rows of `table` (whole row as text) hold `needle`.
+/// How many rows of `table` hold `needle` in a text-typed column (PRIV-002, D-3324).
 async fn rows_holding(db: &PgPool, table: &'static str, needle: &str) -> i64 {
+    rows_where(db, (table, "TRUE"), needle).await
+}
+
+/// How many rows of `table` matching `filter` hold `needle` in a text, varchar, char, json or
+/// jsonb column; a uuid, bytea, timestamp or number never matches by chance (D-3324). A table
+/// with no such column counts 0.
+async fn rows_where(db: &PgPool, (table, filter): (&str, &str), needle: &str) -> i64 {
+    let columns: Vec<String> = sqlx::query_scalar(
+        "SELECT quote_ident(attname) FROM pg_attribute WHERE attrelid = $1::text::regclass \
+         AND attnum > 0 AND NOT attisdropped \
+         AND atttypid = ANY (ARRAY['text', 'varchar', 'bpchar', 'json', 'jsonb']::regtype[]) \
+         ORDER BY attnum",
+    )
+    .bind(table)
+    .fetch_all(db)
+    .await
+    .expect("text columns");
+    if columns.is_empty() {
+        return 0;
+    }
+    let held: Vec<String> = columns
+        .iter()
+        .map(|c| format!("t.{c}::text LIKE '%' || $1 || '%'"))
+        .collect();
+    let held = held.join(" OR ");
+    let sql = format!("SELECT count(*) FROM {table} t WHERE ({filter}) AND ({held})");
+    sqlx::query_scalar(AssertSqlSafe(sql))
+        .bind(needle)
+        .fetch_one(db)
+        .await
+        .expect("scan")
+}
+
+/// The flaky check D-3324 replaced: rows of `table` whose whole row as text holds `needle`, so a
+/// uuid or a digest's hex can hold a 4-digit needle by chance. Kept only to prove the regression.
+async fn whole_rows_holding(db: &PgPool, table: &'static str, needle: &str) -> i64 {
     let sql = format!("SELECT count(*) FROM {table} t WHERE t::text LIKE '%' || $1 || '%'");
     sqlx::query_scalar(AssertSqlSafe(sql))
         .bind(needle)
         .fetch_one(db)
         .await
         .expect("scan")
+}
+
+/// How many stored link digests equal `needle`'s own bytes, or those bytes zero-padded to 32
+/// (PRIV-002, D-3324): a digest is the keyed index, never the value.
+async fn digests_equal(db: &PgPool, needle: &str) -> i64 {
+    sqlx::query_scalar(
+        "SELECT count(*) FROM calls.link_request_digest, convert_to($1, 'UTF8') AS n(b) \
+         WHERE digest = n.b \
+         OR digest = n.b || decode(repeat('00', 32 - octet_length(n.b)), 'hex')",
+    )
+    .bind(needle)
+    .fetch_one(db)
+    .await
+    .expect("digests")
 }
 
 /// Every app (non-sqlx) log line's message and fields, for the test's thread.
@@ -327,14 +377,21 @@ async fn td_call_23_a_blocked_call_that_connects_queues_one_notice_and_one_pendi
                 "{table} holds a value"
             );
         }
-        let others = "(SELECT * FROM core.task WHERE payload->>'template' IS DISTINCT FROM 'link_this_phone')";
+        assert_eq!(digests_equal(&db, needle).await, 0, "a digest is a value");
+        let others = "payload->>'template' IS DISTINCT FROM 'link_this_phone'";
         assert_eq!(
-            rows_holding(&db, others, needle).await,
+            rows_where(&db, ("core.task", others), needle).await,
             0,
             "a task payload holds a value"
         );
         assert_eq!(lines.holding(needle), 0, "a log line holds a value");
     }
+    let notice = ("core.task", "payload->>'template' = 'link_this_phone'");
+    assert_eq!(
+        rows_where(&db, notice, &pin).await,
+        1,
+        "the scan reads text"
+    );
     assert_eq!(
         rows_holding(&db, "core.task", BLOCKED).await,
         0,
@@ -428,4 +485,38 @@ async fn td_call_23_a_failed_link_step_still_answers_the_dial(db: PgPool) {
     ] {
         assert_eq!(lines.holding(needle), 0, "a log line holds a value");
     }
+}
+
+/// TD-CALL-23 (CALL-011, PRIV-002; D-3324): a pending link whose digest's hex holds the blocked
+/// number's last 4 digits (bytes 0x01 0x87, `0187`) is counted by the old whole-row scan, so that
+/// scan flaked; the text-column scan and the digest check count 0. Fake data only.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_call_23_a_digest_whose_hex_holds_the_last_4_digits_is_not_plaintext(db: PgPool) {
+    let (line, _) = setup(&db).await;
+    let request = Uuid::from_u128(0x2222_2222_2222_4222_a222_2222_2222_2222);
+    sqlx::query(
+        "INSERT INTO calls.link_request (id, line_id, business_id, requested_at, expires_at) \
+         VALUES ($1, $2, $3, '2026-11-02T17:00:00Z', '2026-11-03T17:00:00Z')",
+    )
+    .bind(request)
+    .bind(line)
+    .bind(Uuid::from_u128(0x3333_3333_3333_4333_a333_3333_3333_3333))
+    .execute(&db)
+    .await
+    .expect("a pending link");
+    let mut digest = vec![0x11_u8; 32];
+    digest[..2].copy_from_slice(&[0x01, 0x87]);
+    sqlx::query("INSERT INTO calls.link_request_digest VALUES ($1, 1, $2)")
+        .bind(request)
+        .bind(digest)
+        .execute(&db)
+        .await
+        .expect("a digest");
+    let last4 = &BLOCKED[BLOCKED.len() - 4..];
+    assert_eq!(last4, "0187");
+    let table = "calls.link_request_digest";
+    assert_eq!(whole_rows_holding(&db, table, last4).await, 1, "reproduces");
+    assert_eq!(rows_holding(&db, table, last4).await, 0);
+    assert_eq!(rows_holding(&db, "calls.link_request", last4).await, 0);
+    assert_eq!(digests_equal(&db, last4).await, 0);
 }

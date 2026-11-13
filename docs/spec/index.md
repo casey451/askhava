@@ -1,4 +1,4 @@
-# Ask Hava spec: numbered requirements
+# Laftly spec: numbered requirements
 
 What to build, one file per area (`BUILD_BRIEF.md:80`). Every requirement here restates a source line; it never creates a rule. If a requirement and its cited source disagree, the source wins and the requirement is the bug. Where sources conflict, the choice is logged in `docs/decisions.md` and the requirement names that decision (for example "D-005").
 

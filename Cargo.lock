@@ -459,6 +459,7 @@ dependencies = [
  "sqlx",
  "thiserror 2.0.21",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -527,6 +528,7 @@ dependencies = [
  "jiff",
  "jiff-sqlx",
  "proptest",
+ "secrecy",
  "serde",
  "serde-saphyr",
  "sqlx",
