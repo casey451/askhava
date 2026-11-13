@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T10:17:49Z by runner 553bd9eb54c3 (actions).
+Updated 2026-11-13T10:27:55Z by runner 07cc7ea488ef (actions).
 
-**Idle since 10:17Z; 278 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T428 in progress since 10:27Z; 278 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 278 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 10:17Z (no task in progress)
-- **Week:** 15% used, 162.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:17Z, 0 min before this update
+- **Lane:** lane 2: T428 claimed 10:27Z, lease until 13:27Z
+- **Week:** 15% used, 164.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 10:17Z, 9 min before this update
 - **Keeper:** last ran 10:17Z, next wake 10:37Z
 
 ## Needs attention
@@ -80,7 +80,6 @@ Updated 2026-11-13T10:17:49Z by runner 553bd9eb54c3 (actions).
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 1 | 8 min | 11:14Z | PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to l |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | done | 1 | 24 min | 11:05Z |  |
 | T411 | quotes: the scrubbed job description and the shown and appro | done | 1 | 28 min | 10:36Z |  |
-| T343 | harness: the DONE pick tests' fixtures record each job's fac | done | 1 | 24 min | 10:23Z |  |
 
 ### Plan and harness merges on main
 - 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
@@ -137,7 +136,7 @@ Updated 2026-11-13T10:17:49Z by runner 553bd9eb54c3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T09:48:00Z (week)): week: 31.7M used, 162.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T11:24:38Z.
+- Pacing (session_reading 2026-11-13T10:17:09Z (week)): week: 30.0M used, 164.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T12:00:11Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -153,6 +152,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T428 (lease until 2026-11-13T13:27:51Z)
 
 ## Last usage reading
 - {"task": "T431", "at": "2026-11-13T09:32:54Z", "cache_read_input_tokens": 3434781, "input_tokens": 164, "output_tokens": 32044, "cache_creation_input_tokens": 131776}
