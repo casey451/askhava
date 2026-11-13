@@ -416,6 +416,12 @@
               ]
             }
           },
+          "merge_turn_since": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "update_merges": {
             "type": "array",
             "items": {
