@@ -50,23 +50,41 @@ fn td_job_03_job_text_payload_parses_once() {
     );
 }
 
+/// `text` with the brand file's names in place of its brand tokens, the Spanish names when
+/// `spanish` (WORD-001, WORD-008, D-1932).
+fn branded(text: &str, spanish: bool) -> String {
+    askhava_core::api::brand()
+        .fill(text, spanish)
+        .expect("the brand fills")
+}
+
 /// TD-JOB-03, JOB-010, JOB-011, JOB-012: the timeout texts carry the request number, word for
 /// word as the spec gives them.
 #[test]
 fn td_job_03_timeout_texts_name_the_request() {
     assert_eq!(
         body("no_quotes_yet", Language::En),
-        "Ask Hava: No quotes yet for request 1042. A few more details or a photo often help a \
-         business price it. Reply 1 to add details, 2 to keep waiting, or 3 to close."
+        branded(
+            "{brand_short}: No quotes yet for request 1042. A few more details or a photo often \
+             help a business price it. Reply 1 to add details, 2 to keep waiting, or 3 to close.",
+            false
+        )
     );
     assert_eq!(
         body("closed_no_quotes", Language::En),
-        "Ask Hava: Request 1042 is closed because no quotes came in. Text us any time to try again."
+        branded(
+            "{brand_short}: Request 1042 is closed because no quotes came in. Text us any time to \
+             try again.",
+            false
+        )
     );
     assert_eq!(
         body("closed_no_pick", Language::En),
-        "Ask Hava: Request 1042 is closed because no quote was picked. Text us any time to start \
-         a new one."
+        branded(
+            "{brand_short}: Request 1042 is closed because no quote was picked. Text us any time \
+             to start a new one.",
+            false
+        )
     );
 }
 
@@ -76,9 +94,12 @@ fn td_job_03_timeout_texts_name_the_request() {
 fn td_job_03_all_quotes_in_has_counts_and_her_link() {
     assert_eq!(
         body(ALL_QUOTES_IN_TEMPLATE, Language::En),
-        format!(
-            "Ask Hava: All quotes are in for request 1042: 2 of 3 businesses quoted. {LINK} Reply \
-             LIST to see them here, or CLOSE 1042 if you don't need it."
+        branded(
+            &format!(
+                "{{brand_short}}: All quotes are in for request 1042: 2 of 3 businesses quoted. \
+                 {LINK} Reply LIST to see them here, or CLOSE 1042 if you don't need it."
+            ),
+            false
         )
     );
     let es = body(ALL_QUOTES_IN_TEMPLATE, Language::Es);

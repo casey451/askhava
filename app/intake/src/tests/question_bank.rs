@@ -14,11 +14,19 @@ use crate::api::{
 
 const WORDS: &str = "The house is warm and the system makes a noise";
 const SMELL_TEXT: &str =
-    "Ask Hava: What kind of smell? 1) Gas or rotten egg 2) Burning 3) Something else";
+    "{brand_short}: What kind of smell? 1) Gas or rotten egg 2) Burning 3) Something else";
 const AI_ON: BankSettings = BankSettings {
     ai_on: true,
     skip_threshold: None,
 };
+
+/// `text` with the brand file's names in place of its brand tokens, the Spanish names when
+/// `spanish` (WORD-001, WORD-008, D-1932).
+fn branded(text: &str, spanish: bool) -> String {
+    askhava_core::api::brand()
+        .fill(text, spanish)
+        .expect("the brand fills")
+}
 
 fn bank() -> QuestionBank {
     question_bank().expect("the shipped bank loads")
@@ -360,7 +368,7 @@ fn td_int_18_smell_answer_asks_what_kind_and_1_or_2_sends_the_911_text() {
         ask(&mut run, "", &AiTurn::default());
         run.hear("5");
         let smell = ask(&mut run, "", &AiTurn::default()).expect("smell question");
-        assert_eq!(smell.render(), SMELL_TEXT);
+        assert_eq!(smell.render(), branded(SMELL_TEXT, false));
         assert_eq!(run.hear(reply), heard, "{reply}");
     }
     let mut set = bank.sets["electrical"].clone();
@@ -372,7 +380,7 @@ fn td_int_18_smell_answer_asks_what_kind_and_1_or_2_sends_the_911_text() {
         ask(&mut run, "", &AiTurn::default())
             .expect("smell")
             .render(),
-        SMELL_TEXT
+        branded(SMELL_TEXT, false)
     );
 }
 

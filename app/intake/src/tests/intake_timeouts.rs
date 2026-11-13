@@ -28,6 +28,14 @@ fn td_int_08_reminder_at_24_hours_held_to_8_am() {
     assert_eq!(texting_window(az("03T00:00:00")), az("03T08:00:00"));
 }
 
+/// `text` with the brand file's names in place of its brand tokens, the Spanish names when
+/// `spanish` (WORD-001, WORD-008, D-1932).
+fn branded(text: &str, spanish: bool) -> String {
+    askhava_core::api::brand()
+        .fill(text, spanish)
+        .expect("the brand fills")
+}
+
 /// TD-PICK-33, TD-INT-08 (INT-019, D-406): the closing text equals INT-019's words, with a
 /// Spanish template; the reminder is one segment in English and has a Spanish template; neither
 /// holds a pressure word.
@@ -37,11 +45,14 @@ fn td_pick_33_int_019_closing_text_equals_the_spec() {
     let en = render(CLOSED_TEMPLATE, Language::En, false, &job).expect("en");
     assert_eq!(
         en.body,
-        "Ask Hava: We closed request 1234 because we didn't hear back. No problem. Text us any time and we'll start again."
+        branded(
+            "{brand_short}: We closed request 1234 because we didn't hear back. No problem. Text us any time and we'll start again.",
+            false
+        )
     );
     for id in [CLOSED_TEMPLATE, REMINDER_TEMPLATE] {
         let es = render(id, Language::Es, true, &job).expect("es");
-        assert!(es.body.starts_with("Ask Hava: ") && es.body.contains("1234"));
+        assert!(es.body.starts_with(&branded("{brand_short}: ", true)) && es.body.contains("1234"));
         let en = render(id, Language::En, false, &job).expect("en").body;
         for word in ["hurry", "last chance", "act now", "expire", "urgent"] {
             assert!(!en.to_lowercase().contains(word), "{id}: {word}");

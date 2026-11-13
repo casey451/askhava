@@ -2,6 +2,7 @@
 //! TD-AI-06, TD-AI-10; AI-006, AI-010, AI-021, CARD-010).
 
 use askhava_catalog::api::{RESTRICTED_WORDS, restricted_match};
+use askhava_core::api::brand;
 use proptest::prelude::*;
 use serde_json::{Value, json};
 
@@ -103,22 +104,24 @@ proptest! {
 /// rejected and the fixed template goes out instead.
 #[test]
 fn planted_restricted_word_url_and_long_text_fall_back_to_the_template() {
-    let template = "Ask Hava: What is leaking?";
+    let opening = format!("{}: ", brand().short_name());
+    let template = &*format!("{opening}What is leaking?");
     let plants = [
         (
-            "Ask Hava: Your plumber also sells cannabis and tobacco.",
+            format!("{opening}Your plumber also sells cannabis and tobacco."),
             ScreenHit::Restricted("tobacco"),
         ),
         (
-            "Ask Hava: See https://example.com/offer for details.",
+            format!("{opening}See https://example.com/offer for details."),
             ScreenHit::Url,
         ),
         (
-            &*format!("Ask Hava: {}", "x".repeat(590)),
+            format!("{opening}{}", "x".repeat(600 - opening.chars().count())),
             ScreenHit::TooLong,
         ),
     ];
     for (text, hit) in plants {
+        let text = text.as_str();
         assert_eq!(
             screen_text(TextKind::Question, text),
             Screened::Fallback(hit)
@@ -139,7 +142,9 @@ fn planted_restricted_word_url_and_long_text_fall_back_to_the_template() {
             "{link}"
         );
     }
-    let fine = "Ask Hava: Is the leak under the sink or behind the wall, e.g. at the pipe joint?";
+    let fine = &*format!(
+        "{opening}Is the leak under the sink or behind the wall, e.g. at the pipe joint?"
+    );
     assert_eq!(
         screen_text(TextKind::Question, fine).or_template(template),
         fine
