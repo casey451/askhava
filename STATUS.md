@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T16:09:10Z by runner 9d7e3b884c94 (actions).
+Updated 2026-11-13T16:16:27Z by runner 9d7e3b884c94 (actions).
 
 **Idle since 16:05Z; 284 of 421 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,10 +8,12 @@ Updated 2026-11-13T16:09:10Z by runner 9d7e3b884c94 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:05Z (no task in progress)
 - **Week:** 21% used, 147.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:06Z, 2 min before this update
+- **Last run:** 16:06Z, 10 min before this update
 - **Keeper:** last ran 16:04Z, next wake 16:24Z
 
 ## Needs attention
+- PLAN GAP T273 (since 2026-11-13T16:08:58Z, no attempt used; a plan change fixes it): T273: dependency T266 is DONE but its owned file app/picks/src/contact_choice.rs is not on main; T273: dependency T266 is DONE but its owned file migrations/0166_picks_contact_choice.sql is not on main; T273: dependency T266 is DONE but its owned file tests/integration/tests/pick_contact_choice.rs is not on main; T273: dependency T266 is DONE but its owned file app/server/tests/release_contact_choice.rs is not on main
+- PLAN GAP T281 (since 2026-11-13T16:08:58Z, no attempt used; a plan change fixes it): T281: dependency T266 is DONE but its owned file app/picks/src/contact_choice.rs is not on main; T281: dependency T266 is DONE but its owned file migrations/0166_picks_contact_choice.sql is not on main; T281: dependency T266 is DONE but its owned file tests/integration/tests/pick_contact_choice.rs is not on main; T281: dependency T266 is DONE but its owned file app/server/tests/release_contact_choice.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 24 problem(s) on tasks still to run (+159 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
@@ -102,7 +104,6 @@ Updated 2026-11-13T16:09:10Z by runner 9d7e3b884c94 (actions).
 - 18:11Z Plan: pre-flight fixes round 11 — T346 context gap, T162 template key, T372 cite, T255/T347 budgets (D-3286) (#605)
 - 18:06Z Plan: T362 takes the keyboard test's load wait (D-3270) (#601)
 - 17:59Z Harness: seven lanes without merge collisions — crate exclusion, add-only conflict resolution, lanes 5→7 (D-3269) (#603)
-- 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
 
 ## Progress (requirements verified)
 
