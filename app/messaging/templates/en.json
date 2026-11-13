@@ -322,12 +322,12 @@
   "pick_notice": {
     "audience": "business",
     "segments": 1,
-    "text": "{brand_short}: A homeowner picked your quote for job {job}. Accept by {time}."
+    "text": "{brand_short}: A homeowner picked your quote for job {job}. Accept by {time}. Can't take it: {cant_take}"
   },
   "pick_notice_emergency": {
     "audience": "business",
     "segments": 1,
-    "text": "{brand_short}: EMERGENCY: a homeowner picked your quote for job {job}. Accept by {time}."
+    "text": "{brand_short}: EMERGENCY: a homeowner picked your quote for job {job}. Accept by {time}. Can't take it: {cant_take}"
   },
   "pick_fee_reply": {
     "audience": "business",
