@@ -1,5 +1,5 @@
 //! Security-event rows are capped per minute, and webhook refusals are security events
-//! (TD-SEC-53; SEC-048, SEC-016, SEC-040; D-2207, D-3445, D-3469 to D-3471).
+//! (TD-SEC-53; SEC-048, SEC-016, SEC-040; D-2207, D-3445, D-3469 to D-3473).
 //!
 //! A flood of cross-site posts stores at most the cap of rows per (kind, client address, route)
 //! and per (kind, route) in a minute, each still a 403, and the burst alert still fires once; the
@@ -8,10 +8,10 @@
 //! `sentinel_db_logs.rs`, since no test crate depends on `askhava-server`) records each Stripe
 //! and Twilio refusal as one `webhook_signature_failed` event with route and request ID and no
 //! actor, under the same cap, and a valid delivery records none. The routes under the layer
-//! refuse exactly as `payments`' Stripe route and `server`'s `inbound_text` and `inbound_voice`
-//! do (the adapter's `check_webhook_source` for Stripe, `verify_webhook`, then `refuse`; only
-//! `payments` may build its route's Stripe client, FEE-032), and a source check pins the layer
-//! on all three routers in `build_router`. Every value is fake.
+//! refuse exactly as `payments`' Stripe route and `server`'s `inbound_text`, `inbound_voice`
+//! and `voice_status` do (the adapter's `check_webhook_source` for Stripe, `verify_webhook`,
+//! then `refuse`; only `payments` may build its route's Stripe client, FEE-032), and a source
+//! check pins the layer on all four routers in `build_router`. Every value is fake.
 
 #[path = "../../../app/server/src/webhook_refusals.rs"]
 mod webhook_refusals;
@@ -50,6 +50,7 @@ const FAKE_REQUEST_ID: &str = "6f9619ff-8b86-4011-b42d-00c04fc964ff";
 const STRIPE_PATH: &str = "/webhooks/stripe";
 const SMS_PATH: &str = "/webhooks/twilio/sms";
 const VOICE_PATH: &str = "/webhooks/twilio/voice";
+const CALL_STATUS_PATH: &str = "/webhooks/twilio/voice/status";
 
 /// One fixed minute for every capped case in this file: the cap's window is per process, and a
 /// later minute would drop the earlier minute's counts of a case running beside it.
@@ -241,7 +242,7 @@ fn stripe_signature(body: &str) -> String {
     format!("t={SIGNED_AT},v1={hex}")
 }
 
-/// A Twilio route that refuses as `server`'s `inbound_text` and `inbound_voice` do.
+/// A Twilio route that refuses as `server`'s `inbound_text`, `inbound_voice` and `voice_status` do.
 async fn twilio(uri: axum::http::Uri, head: HeaderMap, body: Bytes) -> StatusCode {
     let pairs: Vec<(&str, &str)> = head
         .iter()
@@ -269,9 +270,13 @@ fn twilio_routes(pool: PgPool) -> Router {
     );
     let voice = layer(
         Router::new().route(VOICE_PATH, post(twilio)),
+        RefusalLog::new(pool.clone(), clock()),
+    );
+    let calls = layer(
+        Router::new().route(CALL_STATUS_PATH, post(twilio)),
         RefusalLog::new(pool, clock()),
     );
-    text.merge(voice)
+    text.merge(voice).merge(calls)
 }
 
 fn twilio_request(path: &str) -> Request<Body> {
@@ -294,7 +299,7 @@ async fn webhook_events(pool: &PgPool) -> Vec<(String, Option<Uuid>, Option<Uuid
 }
 
 /// TD-SEC-53 (SEC-016, SEC-048): a bad Stripe signature, a Stripe request from an address off
-/// the list and a bad Twilio signature on the text and voice routes each record one
+/// the list and a bad Twilio signature on the text, voice and call-status routes each record one
 /// `webhook_signature_failed` event with route and request ID and no actor; a valid delivery
 /// records none.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -316,7 +321,7 @@ async fn td_sec_53_each_webhook_refusal_is_one_event(pool: PgPool) {
     let off_list = stripe_request(body, &good, Some("203.0.113.77"));
     assert_eq!(status(&app, off_list).await, StatusCode::FORBIDDEN);
     let twilio = twilio_routes(pool.clone());
-    for path in [SMS_PATH, VOICE_PATH] {
+    for path in [SMS_PATH, VOICE_PATH, CALL_STATUS_PATH] {
         assert_eq!(
             status(&twilio, twilio_request(path)).await,
             StatusCode::FORBIDDEN
@@ -325,10 +330,16 @@ async fn td_sec_53_each_webhook_refusal_is_one_event(pool: PgPool) {
     let id = Uuid::parse_str(FAKE_REQUEST_ID).ok();
     let mut events = webhook_events(&pool).await;
     events.sort();
-    let mut expected: Vec<_> = [STRIPE_PATH, SMS_PATH, VOICE_PATH, STRIPE_PATH]
-        .into_iter()
-        .map(|route| (route.to_owned(), id, None))
-        .collect();
+    let mut expected: Vec<_> = [
+        STRIPE_PATH,
+        SMS_PATH,
+        VOICE_PATH,
+        CALL_STATUS_PATH,
+        STRIPE_PATH,
+    ]
+    .into_iter()
+    .map(|route| (route.to_owned(), id, None))
+    .collect();
     expected.sort();
     assert_eq!(events, expected);
 }
@@ -347,17 +358,18 @@ async fn td_sec_53_webhook_refusals_are_capped(pool: PgPool) {
     assert_eq!(stored, EVENTS_PER_HOUR_ALERT);
 }
 
-/// TD-SEC-53 (SEC-016): `build_router` puts the layer on the Stripe, Twilio text and Twilio voice
-/// routers, and on no other.
+/// TD-SEC-53 (SEC-016, D-3473): `build_router` puts the layer on the Stripe, Twilio text, Twilio
+/// voice and Twilio call-callback routers, and on no other.
 #[test]
-fn td_sec_53_the_layer_is_on_the_three_webhook_routers() {
+fn td_sec_53_the_layer_is_on_the_four_webhook_routers() {
     let lib = include_str!("../../../app/server/src/lib.rs");
     for wired in [
         "refused(inbound_text::routes(h))",
         "refused(inbound_voice::routes(v))",
         "refused(stripe_webhook_routes(s))",
+        "refused(voice_status::routes(h))",
     ] {
         assert!(lib.contains(wired), "{wired} in build_router");
     }
-    assert_eq!(lib.matches("refused(").count(), 3, "three routers only");
+    assert_eq!(lib.matches("refused(").count(), 4, "four routers only");
 }

@@ -1,13 +1,14 @@
 //! Webhook refusals as security events (SEC-048, SEC-016, D-2207, T319).
 //!
-//! [`layer`] goes on the Stripe, Twilio text (inbound and status) and Twilio voice routers only,
-//! as a route layer. On those routes a 403 means one thing: a source or signature refusal
-//! (`adapters::api::refuse`'s `REJECTED_STATUS`, the only 403 any of their handlers answers;
-//! every other failure is 200 or 500), so the layer reads the status alone, never the body. Each
-//! 403 records one `webhook_signature_failed` event with the route template and request ID and no
-//! actor, through `portals::api::record_security_event`, under the same per-minute cap
-//! (`admit_security_event`) the portals' refusals use, checked before the pool is touched. The
-//! refusal's own log line (vendor and reason) stays the handler's; the 403 is unchanged.
+//! [`layer`] goes on the Stripe, Twilio text (inbound and status), Twilio voice and Twilio
+//! call-callback (`voice_status`: status and safety key) routers only, as a route layer. On those
+//! routes a 403 means one thing: a source or signature refusal (`adapters::api::refuse`'s
+//! `REJECTED_STATUS`, the only 403 any of their handlers answers; every other failure is 200 or
+//! 500), so the layer reads the status alone, never the body. Each 403 records one
+//! `webhook_signature_failed` event with the route template and request ID and no actor, through
+//! `portals::api::record_security_event`, under the same per-minute cap (`admit_security_event`)
+//! the portals' refusals use, checked before the pool is touched. The refusal's own log line
+//! (vendor and reason) stays the handler's; the 403 is unchanged.
 
 use std::sync::Arc;
 

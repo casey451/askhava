@@ -126,7 +126,9 @@ pub fn security_event_client(request: &Request) -> IpAddr {
 /// Whether a security event of `kind` from `client` on `route` at `now` may store its row: true
 /// for the first N per (kind, client, route) and per (kind, route) in its minute; the rest are
 /// counted and logged once per minute, count only (SEC-048, SEC-016, D-2207). Checked before any
-/// pool connection is taken; the 403 is the caller's either way.
+/// pool connection is taken; the 403 is the caller's either way. The count of a minute is logged
+/// when the first event of a later minute arrives (no timer, D-3472): after a flood's last minute
+/// it waits for the next security event, and none is lost from the rows or the hourly alert.
 pub fn admit_security_event(
     kind: SecurityEventKind,
     client: IpAddr,
@@ -142,9 +144,8 @@ pub fn admit_security_event(
 
 /// The per-minute counts. Keys carry their minute, so a request timed by an earlier clock counts
 /// in its own minute; a new latest minute drops keys older than the minute before it and logs
-/// the held counts of earlier minutes. A key
-/// per address is made only while its route is under the ceiling, so a minute holds at most N
-/// address keys per kind and route.
+/// the held counts of earlier minutes (only then, D-3472). A key per address is made only while
+/// its route is under the ceiling, so a minute holds at most N address keys per kind and route.
 #[derive(Default)]
 struct CapWindow {
     latest: i64,
