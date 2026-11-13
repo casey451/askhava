@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T20:54:10Z by runner 1a1400fd7ccf (manual).
+Updated 2026-11-13T21:04:55Z by runner 4a8b6490731d (actions).
 
 **Building: T412 in progress since 19:27Z; 292 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T20:54:10Z by runner 1a1400fd7ccf (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T354 claimed 20:29Z, lease until 23:29Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
 - **Week:** 28% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:53Z, 0 min before this update
+- **Last run:** 20:54Z, 10 min before this update
 - **Keeper:** last ran 20:53Z, next wake 22:29Z
 
 ## Needs attention
@@ -77,9 +77,9 @@ Updated 2026-11-13T20:54:10Z by runner 1a1400fd7ccf (manual).
 | T417 | Performance: seeded fake-data route benchmark and the first  | done | 1 | 36 min | 22:22Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 3 | 40 min | 22:16Z |  |
 | T162 | intake: the one intake order for the five paths and the Span | resync | 1 | 22 min | 21:57Z |  |
-| T414 | Stand-ins (harness): end-to-end specs can read the emails th | done | 3 | 28 min | 20:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 
 ### Plan and harness merges on main
+- 21:01Z Plan: fewer smoke runs, scoped fix rounds, batched reads, decision excerpts (D-3530) (#698)
 - 20:53Z Plan: T438 plan gap, leave the ledger windows as today (D-3536) (#696)
 - 19:27Z Plan: pre-flight 15, split T341 and T361 (D-3497) (#691)
 - 19:23Z Plan: deterministic kills for proptest-only named mutants (D-3499) (#694)

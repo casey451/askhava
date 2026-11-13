@@ -28958,7 +28958,7 @@
      }
     }
    ],
-   "reviewed_sha": "561d2ba4aa304c48c72b1264a9be22ae4f49457c",
+   "reviewed_sha": "e806bf171b599f172be94ecd8c098b123b0b3162",
    "review_lease": {
     "task": "T271",
     "session": "actions-43491446901",
@@ -28990,6 +28990,18 @@
       "Ally": "success"
      },
      "at": "2026-11-13T20:51:14Z"
+    },
+    {
+     "from": "561d2ba4aa304c48c72b1264a9be22ae4f49457c",
+     "to": "e806bf171b599f172be94ecd8c098b123b0b3162",
+     "main": "f85f3fabcf6f4902ca71edcdefbfbae885bbb93e",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-13T21:04:44Z"
     }
    ],
    "update_waiting_since": null,
@@ -50761,7 +50773,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T20:54:10Z",
+ "updated_at": "2026-11-13T21:04:55Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -50859,8 +50871,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "1a1400fd7ccfa7625664ac11302649f4e1bdd4e7",
- "starter": "manual",
+ "runner_sha": "4a8b6490731dd532871a4f1be1e1929b58768d0e",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "b0f6fb3a71c8f2365acb7dce6da3e2a2e2bafd5f",
