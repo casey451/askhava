@@ -16394,7 +16394,7 @@
    "id": "T116",
    "slug": "site-stage05-dns",
    "title": "Stage 0.5 static page set and the DNS records file",
-   "goal": "`scripts/build_stage05.py` builds the Stage 0.5 static page set (every public page of the final site, the request page with the full consent text, no texting number, no requests taken), published only on Casey's separate go, and `docs/dns-records.md` keeps any existing Search Console verification (WEB-013, WEB-016, WEB-017). The DNS records file marks every laftly.com web hostname, including `hooks.laftly.com` for vendor webhooks, DNS-only (SEC-053), and holds CAA records allowing only `letsencrypt.org`, with Cloudflare's HSTS off and no preload submission before the pilot ends (SEC-054) (D-492). Plan change D-3155: the site's pages are Askama-rendered by the `web` process and `tests/docs/test_stage05.py` runs in CI's Python job (no Rust build, no server, no database, `.github/workflows/ci.yml:433` to `:458`). So `scripts/build_stage05.py --base-url <url> --out <folder>` fetches each public page (the `site` rows of `docs/architecture.md` section 13, `GET` only) and `/static/site/` assets from a running server (a local `cargo run` against the stand-ins, run by hand on Casey's go) and applies the Stage 0.5 filters as pure functions (the texting number removed, every `POST` form removed, the request page reduced to the full consent text and an \"opening soon\" line), failing when a filtered page still holds the texting number or a `POST` form; the docs test runs those filters on planted fake HTML and checks the DNS file.",
+   "goal": "`scripts/build_stage05.py` builds the Stage 0.5 static page set (every public page of the final site, the request page with the full consent text, no texting number, no requests taken), published only on Casey's separate go, and `docs/dns-records.md` keeps any existing Search Console verification (WEB-013, WEB-016, WEB-017). The DNS records file marks every laftly.com web hostname, including `hooks.laftly.com` for vendor webhooks, DNS-only (SEC-053), and holds CAA records allowing only `letsencrypt.org`, with Cloudflare's HSTS off and no preload submission before the pilot ends (SEC-054) (D-492). Plan change D-3155: the site's pages are Askama-rendered by the `web` process and `tests/docs/test_stage05.py` runs in CI's Python job (no Rust build, no server, no database, `.github/workflows/ci.yml:437` to `:462`). So `scripts/build_stage05.py --base-url <url> --out <folder>` fetches each public page (the `site` rows of `docs/architecture.md` section 13, `GET` only) and `/static/site/` assets from a running server (a local `cargo run` against the stand-ins, run by hand on Casey's go) and applies the Stage 0.5 filters as pure functions (the texting number removed, every `POST` form removed, the request page reduced to the full consent text and an \"opening soon\" line), failing when a filtered page still holds the texting number or a `POST` form; the docs test runs those filters on planted fake HTML and checks the DNS file.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16446,7 +16446,8 @@
     "D-490",
     "D-492",
     "D-1143",
-    "D-3155"
+    "D-3155",
+    "D-3307"
    ],
    "cites": [],
    "budget": {
