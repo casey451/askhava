@@ -554,7 +554,14 @@ mod tests {
         let tag = input.split('>').next().expect("the tag");
         assert!(!tag.contains("checked"));
         assert!(html.contains("<label for=\"save-card\">Save this card for next time</label>"));
-        assert!(html.contains("I authorize Ask Hava LLC to save this card with Stripe"));
+        let end = AUTHORIZATION_TEXT
+            .find(" for introduction fees.")
+            .expect("FEE-015's wording");
+        let line = &AUTHORIZATION_TEXT[..end];
+        assert!(
+            line.starts_with("I authorize ") && line.ends_with(" to save this card with Stripe")
+        );
+        assert!(html.contains(line));
     }
 
     #[test]

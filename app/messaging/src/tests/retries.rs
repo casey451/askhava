@@ -1,6 +1,7 @@
 //! Retry steps, call-back due times, the daily limit and the email layout (TD-TXT-05, TD-OPS-14,
 //! TD-BIZ-26, TD-A11Y-02; TXT-014, TXT-015, INT-023, OPS-038, SEC-028, A11Y-034). Fake data only.
 
+use askhava_core::api::brand;
 use jiff::{SignedDuration, Timestamp};
 use sqlx::types::Uuid;
 
@@ -12,6 +13,13 @@ const LAYOUT: &str = include_str!("../../templates/email_layout.html");
 
 fn at(s: &str) -> Timestamp {
     s.parse().expect("time")
+}
+
+/// `text` with its brand tokens filled from the brand file in `language` (WORD-001, D-1932).
+fn fill(text: &str, language: Language) -> String {
+    brand()
+        .fill(text, language == Language::Es)
+        .expect("the brand fills")
 }
 
 fn postal() -> PostalAddress {
@@ -102,10 +110,10 @@ fn td_biz_26_postal_address_is_a_box_never_empty() {
 /// Each audience and language with its why-line, manage label and `lang` (SEC-028, A11Y-034).
 #[rustfmt::skip]
 const FOOTERS: [(Audience, Language, &str, &str, &str); 4] = [
-    (Audience::Business, Language::En, "because your business signed up for job requests from Ask Hava.", "Manage email notices", "en"),
-    (Audience::Homeowner, Language::En, "because you asked Ask Hava for quotes.", "Manage email notices", "en"),
+    (Audience::Business, Language::En, "because your business signed up for job requests from {brand}.", "Manage email notices", "en"),
+    (Audience::Homeowner, Language::En, "because you asked {brand} for quotes.", "Manage email notices", "en"),
     (Audience::Business, Language::Es, "su negocio se inscribió", "Administrar avisos por correo", "es"),
-    (Audience::Homeowner, Language::Es, "pidió cotizaciones a Ask Hava.", "Administrar avisos por correo", "es"),
+    (Audience::Homeowner, Language::Es, "pidió cotizaciones a {brand}.", "Administrar avisos por correo", "es"),
 ];
 
 /// TD-BIZ-26, TD-A11Y-02, SEC-028, A11Y-034: every audience and language gets its why-line,
@@ -114,13 +122,15 @@ const FOOTERS: [(Audience, Language, &str, &str, &str); 4] = [
 #[test]
 fn td_biz_26_every_footer_has_address_link_and_why_line() {
     for (audience, language, why, manage, lang) in FOOTERS {
+        let why = fill(why, language);
+        let why = why.as_str();
         let r =
             render(&postal(), &to(audience, language), Notice::StillOpen(1042)).expect("render");
         for part in [&r.html, &r.plain] {
             assert!(part.contains(why), "{lang} {audience:?}: why-line");
             assert!(part.contains(manage), "{lang} {audience:?}: manage link");
             assert!(
-                part.contains("Ask Hava LLC, PO Box 1234"),
+                part.contains(&fill("{brand_legal}, PO Box 1234", language)),
                 "{lang}: postal address"
             );
             assert!(
@@ -132,7 +142,7 @@ fn td_biz_26_every_footer_has_address_link_and_why_line() {
             r.html
                 .starts_with(&format!("<!DOCTYPE html>\n<html lang=\"{lang}\">"))
         );
-        assert!(r.subject.starts_with("Ask Hava: "));
+        assert!(r.subject.starts_with(&fill("{brand_short}: ", language)));
         assert!(
             r.html.find("1042") < r.html.find(why),
             "content comes before the footer"
