@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-13T21:53:13Z by runner 58eef26515d0 (actions).
+Updated 2026-11-13T21:54:11Z by runner 4bc0aa878dc0 (actions).
 
-**Building: T438 in progress since 21:51Z; 294 of 428 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T438 in progress since 21:51Z; 295 of 428 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 294 of 428 build tasks (owner gates not counted)
+- **Tasks done:** 295 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T438 claimed 21:51Z, lease until 00:51Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
 - **Week:** 28% used, 132.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:52Z, 0 min before this update
+- **Last run:** 21:53Z, 0 min before this update
 - **Keeper:** last ran 21:43Z, next wake 22:03Z
 
 ## Needs attention
 - PLAN GAP T280 (since 2026-11-13T21:43:04Z, no attempt used; a plan change fixes it): T280: dependency T412 is DONE but its owned file migrations/0188_privacy_business_contacts.sql is not on main; T280: dependency T412 is DONE but its owned file app/privacy/src/business_contacts.rs is not on main; T280: dependency T412 is DONE but its owned file tests/integration/tests/business_contacts.rs is not on main; T280: dependency T412 is DONE but its owned file tests/security/tests/business_contact_readers.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T415 (since 2026-11-13T21:43:04Z, no attempt used; a plan change fixes it): T415: dependency T412 is DONE but its owned file migrations/0188_privacy_business_contacts.sql is not on main; T415: dependency T412 is DONE but its owned file app/privacy/src/business_contacts.rs is not on main; T415: dependency T412 is DONE but its owned file tests/integration/tests/business_contacts.rs is not on main; T415: dependency T412 is DONE but its owned file tests/security/tests/business_contact_readers.rs is not on main
-- Strict plan check red: 26 problem(s) on tasks still to run (+183 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 26 problem(s) on tasks still to run (+186 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T354 | privacy: key rotation re-seals stored photos too, so droppin | MERGE_PENDING | 1 | 69 min | 21:39Z |  |
+| T354 | privacy: key rotation re-seals stored photos too, so droppin | done | 1 | 69 min | 21:39Z |  |
 | T335 | adapters, payments and stand-in (harness): the reconcile's p | MERGE_PENDING | 1 | 59 min | 21:20Z |  |
 | T412 | privacy: each business member's sign-in address and texting  | done | 1 | 111 min | 21:18Z |  |
 | T442 | mutation (harness): every named mutant is killed by a determ | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
@@ -114,7 +114,7 @@ Updated 2026-11-13T21:53:13Z by runner 58eef26515d0 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 280 of 733 (38.2%) · partial 293 · unstarted 160
-**Tasks merged (throughput only):** 294 of 428
+**Tasks merged (throughput only):** 295 of 428
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -149,7 +149,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 174 of 208 done
+- stage 4: 175 of 208 done
 - stage 5: 0 of 66 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
