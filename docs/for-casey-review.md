@@ -2721,3 +2721,10 @@ Two runner fixes are queued first. The runner was counting tokens about 1.65 tim
 ## A cheap pre-check for plan gaps (D-3496, November 13)
 
 - Since November 10, nineteen build attempts stopped because a task's change broke a file another task owns. Each one wasted a whole session. The plan check now also warns, before a task starts, when its goal changes something a file it may not touch uses, quotes a value a test it may not edit pins, or claims such a test "passes unchanged". It only warns; it holds nothing. Tried on the past cases, it would have flagged 4 of 15. Most of the rest were hidden behavior no text check can see. Nothing needs you.
+
+## A nightly check that failed by chance (D-3499, November 13)
+
+- Last night's full check failed because one planted bug in the license filter was caught only by a randomized test, which misses it about once in 100 runs. A failed nightly stops the runner from starting new work, so the build sat idle for hours. A small tooling task (T442, the next one the runner picks up) points that check, and two others found the same way, at fixed tests that catch the bug every time. Nothing is removed or weakened. Nothing needs you.
+## Two more queued tasks split; splitting alone does not save tokens (D-3497, November 13)
+
+Two large queued tasks were each split in two: the homeowner choosing a package on a tiered quote (T341, now with T440 for the pages) and a quote keeping its number once shown (T361, now with T441 for the pages). Each half has its own tests and review, nothing in the product changes, and no requirement or test was dropped. Measuring last week's finished tasks showed that splitting does not by itself cut the total tokens, because every task carries the same start-up, rules and review cost; it makes each attempt shorter, a failed attempt cheaper, and lets the halves run beside other work. So two other candidates were left whole. Nothing needs you.
