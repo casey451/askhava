@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T20:13:34Z by runner 3118516ea12c (actions).
+Updated 2026-11-13T20:13:53Z by runner 3118516ea12c (actions).
 
 **Building: T412 in progress since 19:27Z; 290 of 427 done; week 27% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 290 of 427 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T277 claimed 19:27Z, lease until 22:27Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z; lane 7: T318 claimed 19:26Z, lease until 22:26Z
+- **Lane:** lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z; lane 7: T318 claimed 19:26Z, lease until 22:26Z
 - **Week:** 27% used, 120.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:11Z, 1 min before this update
+- **Last run:** 20:11Z, 2 min before this update
 - **Keeper:** last ran 20:10Z, next wake 22:29Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-13T20:13:34Z by runner 3118516ea12c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T277 | intake and privacy: a check-in reply reaches its job, and a  | MERGE_PENDING | 1 | 45 min | 20:13Z |  |
 | T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 1 | 48 min | 20:09Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T314 | payments and picks: a dispute's auto-submit mark and its tas | done | 1 | 29 min | 19:56Z |  |
 | T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
@@ -151,10 +152,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T412 (lease until 2026-11-13T22:27:09Z)
-- lane 3: T277 (lease until 2026-11-13T22:27:41Z)
 - lane 4: T442 (lease until 2026-11-13T22:41:31Z)
 - lane 6: T271 (lease until 2026-11-13T22:28:27Z)
 - lane 7: T318 (lease until 2026-11-13T22:26:14Z)
 
 ## Last usage reading
-- {"task": "T357", "at": "2026-11-13T20:09:01Z", "output_tokens": 31313, "cache_read_input_tokens": 3215780, "input_tokens": 146, "cache_creation_input_tokens": 140252}
+- {"task": "T277", "at": "2026-11-13T20:13:33Z", "output_tokens": 143250, "cache_read_input_tokens": 29162120, "cache_creation_input_tokens": 468698, "input_tokens": 510}
