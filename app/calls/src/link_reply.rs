@@ -9,12 +9,13 @@
 //! digest in `calls.link_reply_refusal`, never its number; past 3 the PIN is never compared, so
 //! the reply is no PIN oracle), it is the business's main phone (CALL-012), and a live pending link
 //! (`now < expires_at`, never used) on an open line of that same business has a stored PIN equal
-//! to the digits. Then, in a savepoint: `businesses::api::link_by_reply` adds a staff phone linked
-//! as by the owner (BIZ-033) with its audit row, `messaging::api::sender_put_pending` files the
-//! pending digests under it (a digest another phone holds refuses), the pending link is marked
-//! used and its digests deleted. Anything else is [`LinkReply::Refused`] with no change but one
-//! more refusal counted. Pending links no longer live and used ones of the business are deleted
-//! when met. Nothing here logs or stores a number or a PIN (PRIV-002, PRIV-016).
+//! to the digits, and no other live pending link of it does (D-3567). Then, in a savepoint:
+//! `businesses::api::link_by_reply` adds a staff phone linked as by the owner (BIZ-033) with its
+//! audit row, `messaging::api::sender_put_pending` files the pending digests under it (a digest
+//! another phone holds refuses), the pending link is marked used and its digests deleted. A
+//! transaction lock on the replying phone's digest serialises its LINK replies (D-3567).
+//! Anything else is [`LinkReply::Refused`] with no change but one more refusal counted. Pending
+//! links no longer live and used ones of the business are deleted when met. Nothing here logs or stores a number or a PIN (PRIV-002, PRIV-016).
 
 use askhava_businesses::api::{BusinessesError, is_main_phone, link_by_reply};
 use askhava_messaging::api::{OutboxError, sender_line, sender_put_pending};
@@ -69,6 +70,7 @@ pub async fn link_reply(
         return Ok(LinkReply::Refused);
     };
     let keys = vault.blind_index(IndexPurpose::SenderDir, &phone);
+    lock_phone(conn, &keys).await?;
     if refusals_today(conn, &keys, now).await? >= LINK_REFUSALS_PER_DAY {
         return Ok(LinkReply::Refused);
     }
@@ -82,6 +84,22 @@ pub async fn link_reply(
     }
     count_refusal(conn, &keys, now).await?;
     Ok(LinkReply::Refused)
+}
+
+/// Holds the phone's transaction lock (its newest-version digest) until the caller's transaction
+/// ends, so parallel LINK replies from one phone read and count refusals one at a time and never
+/// compare more than 3 PINs a day (CALL-025, D-3567).
+async fn lock_phone(conn: &mut PgConnection, keys: &[(u16, [u8; 32])]) -> Result<(), CallsError> {
+    let newest = keys.iter().max_by_key(|(v, _)| *v).map(|(_, d)| d.to_vec());
+    sqlx::query_scalar!(
+        r#"SELECT 1 AS "locked!" FROM (SELECT pg_advisory_xact_lock(
+             hashtextextended(encode($1::bytea, 'hex'), 391))) AS lock"#,
+        newest.unwrap_or_default()
+    )
+    .fetch_one(conn)
+    .await
+    .map_err(|_| CallsError::Database)?;
+    Ok(())
 }
 
 /// The most refusals any of the phone's key versions holds today (CALL-025).
@@ -145,8 +163,10 @@ async fn forget_spent(
     Ok(())
 }
 
-/// The live, unused pending link on an open line of `business` whose stored PIN is `pin`, when
-/// `from` is the business's main phone (CALL-012); locked for the link.
+/// The one live, unused pending link on an open line of `business` whose stored PIN is `pin`, when
+/// `from` is the business's main phone (CALL-012); locked for the link. PINs are unique per pool
+/// number only, so two lines of one business can share one: then nothing matches, the reply fails
+/// closed (D-3567).
 async fn matching_request(
     conn: &mut PgConnection,
     vault: &Vault,
@@ -175,12 +195,16 @@ async fn matching_request(
     .fetch_all(&mut *conn)
     .await
     .map_err(|_| CallsError::Database)?;
+    let mut matched = Vec::new();
     for row in live {
         if stored_pin(conn, row.line_id).await?.map(|p| p.digits()) == Some(pin.to_owned()) {
-            return Ok(Some(row.id));
+            matched.push(row.id);
         }
     }
-    Ok(None)
+    Ok(match matched[..] {
+        [one] => Some(one),
+        _ => None,
+    })
 }
 
 /// In a savepoint: the staff phone, its sender-directory digests, the pending link marked used

@@ -17,7 +17,7 @@ use askhava_calls::api::{Connected, LINK_REQUEST_LIFE, PinWait, assign_number, s
 use askhava_core::api::{Environment, ManualClock, Settings};
 use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_messaging::api::{OutboxError, sender_add};
-use askhava_privacy::api::{NewContact, Vault, store_contact};
+use askhava_privacy::api::{IndexPurpose, NewContact, Vault, normalize_phone, store_contact};
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode};
 use base64::Engine as _;
@@ -437,6 +437,62 @@ async fn td_call_24_a_replayed_link_adds_nothing(db: PgPool) {
     assert_eq!(state(&db).await[0], 1);
     refused(&s, &db, (2, SHOP), &format!("LINK {pin}"), now).await;
     assert_eq!(state(&db).await[0], 1, "exactly one staff phone");
+}
+
+/// A second open line of the same business on another pool number with the same PIN as its
+/// first line, and a newer pending link on it for `caller` (PINs are unique per pool number only).
+async fn twin_line_pending(db: &PgPool, caller: &str) {
+    let line: Uuid = sqlx::query_scalar(
+        "INSERT INTO calls.number_pool \
+         (job_id, homeowner_id, business_id, pool_number, shared, assigned_at, pin) \
+         SELECT gen_random_uuid(), homeowner_id, business_id, '+15005550101', false, \
+         assigned_at, pin FROM calls.number_pool RETURNING id",
+    )
+    .fetch_one(db)
+    .await
+    .expect("second line");
+    let requested = (at() + SignedDuration::from_secs(30)).to_sqlx();
+    let request: Uuid = sqlx::query_scalar(
+        "INSERT INTO calls.link_request (line_id, business_id, requested_at, expires_at) \
+         SELECT id, business_id, $2, $2 + interval '24 hours' FROM calls.number_pool \
+         WHERE id = $1 RETURNING id",
+    )
+    .bind(line)
+    .bind(requested)
+    .fetch_one(db)
+    .await
+    .expect("second pending link");
+    let phone = normalize_phone(caller).expect("phone");
+    for (version, digest) in vault().blind_index(IndexPurpose::SenderDir, &phone) {
+        sqlx::query(
+            "INSERT INTO calls.link_request_digest (request_id, index_version, digest) \
+             VALUES ($1, $2, $3)",
+        )
+        .bind(request)
+        .bind(i16::try_from(version).expect("version"))
+        .bind(digest.to_vec())
+        .execute(db)
+        .await
+        .expect("digest");
+    }
+}
+
+/// TD-CALL-24 (CALL-011, D-3567): two live pending links of one business on two pool numbers
+/// whose lines share the PIN make `LINK <PIN>` ambiguous: it is refused and links neither phone.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_call_24_a_pin_two_pending_links_share_is_refused(db: PgPool) {
+    let (_, _, pin) = setup(&db).await;
+    let s = served(&db);
+    blocked_call(&s, (1, BLOCKED), &pin).await;
+    twin_line_pending(&db, OTHER).await;
+    let now = at() + SignedDuration::from_secs(60);
+    refused(&s, &db, (1, SHOP), &format!("LINK {pin}"), now).await;
+    let used: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM calls.link_request WHERE used_at IS NOT NULL")
+            .fetch_one(&db)
+            .await
+            .expect("used");
+    assert_eq!(used, 0, "neither pending link is used");
 }
 
 /// Every app (non-sqlx) log line, for the test's thread.
