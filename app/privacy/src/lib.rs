@@ -13,6 +13,7 @@ mod business_contacts;
 mod contact_fields;
 mod handlers;
 mod media_fetch;
+mod message_body;
 mod models;
 mod photos;
 mod purge;

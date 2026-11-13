@@ -1514,7 +1514,7 @@
    "budget": {
     "files": 8,
     "lines": 350,
-    "context_pct": 30
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -1827,7 +1827,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 17
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -3376,7 +3376,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 11
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -10742,7 +10742,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 10
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -12066,8 +12066,8 @@
   {
    "id": "T341",
    "slug": "tier-and-visit-schedule-at-pick",
-   "title": "picks and portals (harness): the homeowner picks a tier of a tiers quote, and a per-visit price with its schedule gets its fee",
-   "goal": "Seventh audit N7-02 and N7-04's pick side (D-2332, D-2333; PICK-053, PICK-038, PICK-039, PICK-021, REC-010, REC-011; sets aside only D-2210's refusals of a tiered quote and a per-visit period). After T340 and T342: (1) Tiers: the quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`); `migrations/0179_picks_chosen_tier.sql` adds the chosen tier's index and name to `picks.pick`, written in the pick's transaction; `fee_inputs` uses that tier's price and no default tier exists; a missing or stale tier (the quote edited since) is a validation error that shows the choices again and stores nothing; the Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). The text pick (`<n> YES`, PICK-015) names no tier and the spec gives no text syntax for one, so a text pick of a tiers quote stores nothing and replies with the quote-page link to choose the package; the syntax is listed for Casey (D-2332). (2) Per-visit: `fee_period` (`service.rs:452`) maps a per-visit price with its stored visit schedule (T342, T164) to the matching fee period (weekly 52/12, every two weeks 26/12, and so on, as `app/payments/src/rules.rs:198` already converts); a per-visit quote without a schedule cannot exist after T342, and one from before is refused. (D-3118) Shapes that done code and tests build stay as they are: no new field on `quotes::api::PageQuote` (`app/quotes/src/api.rs:115`, which holds only the original text and is built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), on `PageView` or `Numbered` (`app/portals/src/quote_page.rs:117`, `:50`; `PageView` built by literal at `prop_arrival_order.rs:99`) or on `ConfirmFacts` (`app/portals/src/confirm_pay.rs:69`, built by literal in `tests/integration/tests/confirm_terms.rs:89` and `:120`). So: `quote_page.rs` (owned here) reads each tiers quote's tier names from `quotes::api::quoted_prices` and carries them beside the view the way `ShownPage` carries the accepted quote (D-3078: a field on `ShownPage`, a method on `PageView` answering none); the Confirm page takes the chosen tier through a new render entry point in `confirm_pay.rs` (owned here) beside `confirm_page_with_code`, whose existing callers pass no tier, and a field on the private `ConfirmView` (`:92`); and `page_pick` keeps its signature (its callers include done tests and `opted_out_yes` and `backup_choice`): the tier comes through a new entry point beside it that the code step calls, while `page_pick` with no tier refuses a tiers quote as today. T261 and T132 (the later owners of `confirm_pay.rs`) and T308 and T393 (of `quote_page.rs`) already depend on this task. (3) `tests/integration/tests/fee_fixed_at_pick.rs`'s tiered-pick case changes only as D-2332 records: the refusal is for a pick with no tier. Tests in `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
+   "title": "picks (harness): a pick of a tiers quote names its tier, and a per-visit price with its schedule gets its fee",
+   "goal": "Seventh audit N7-02 and N7-04's pick side (D-2332, D-2333; PICK-053, PICK-038, PICK-039, REC-010, REC-011; sets aside only D-2210's refusals of a tiered quote and a per-visit period). Plan change D-3497 split this task in two: this task stores and prices the chosen tier and the per-visit period in `picks`; T440 builds the quote page's tier choice and the Confirm page's tier (PICK-021). After T340 and T342: (1) Tiers: `migrations/0179_picks_chosen_tier.sql` adds the chosen tier's index and name to `picks.pick`, written in the pick's transaction; `fee_inputs` uses that tier's price and no default tier exists; a missing or stale tier (the quote edited since) is a validation error that names the choices and stores nothing. `page_pick` keeps its signature (its callers include done tests and `opted_out_yes` and `backup_choice`) and with no tier refuses a tiers quote as today; the tier comes through a new entry point beside it in `app/picks/src/service.rs`, reached through `picks::api`, which T440's code step calls. The text pick (`<n> YES`, PICK-015) names no tier and the spec gives no text syntax for one, so a text pick of a tiers quote stores nothing and replies with the quote-page link to choose the package; the syntax is listed for Casey (D-2332). (2) Per-visit: `fee_period` (`service.rs:452`) maps a per-visit price with its stored visit schedule (T342, T164) to the matching fee period (weekly 52/12, every two weeks 26/12, and so on, as `app/payments/src/rules.rs:198` already converts); a per-visit quote without a schedule cannot exist after T342, and one from before is refused. (3) `tests/integration/tests/fee_fixed_at_pick.rs`'s tiered-pick case changes only as D-2332 records: the refusal is for a pick with no tier. Tests in `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63) through `picks::api`. Money: the overseer runs an independent money review of the hand-in. Update the `picks` `CLAUDE.md` and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -12098,11 +12098,6 @@
    "owns": [
     "migrations/0179_picks_chosen_tier.sql",
     "app/picks/src/service.rs",
-    "app/portals/src/pick_flow.rs",
-    "app/portals/templates/quote_page.html",
-    "app/portals/src/confirm_pay.rs",
-    "app/portals/src/quote_page.rs",
-    "app/portals/templates/confirm_pay.html",
     "tests/integration/tests/fee_fixed_at_pick.rs",
     "tests/integration/tests/tier_and_visit_pick.rs"
    ],
@@ -12118,7 +12113,6 @@
    "requirements": [
     "PICK-053",
     "PICK-038",
-    "PICK-021",
     "REC-010",
     "REC-011"
    ],
@@ -12130,13 +12124,14 @@
     "D-2333",
     "D-2210",
     "D-3118",
-    "D-3134"
+    "D-3134",
+    "D-3497"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
-    "lines": 700,
-    "context_pct": 36
+    "files": 4,
+    "lines": 360,
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -12145,6 +12140,83 @@
    ],
    "branch": "claude/task/T341-tier-and-visit-schedule-at-pick",
    "prompt": "kit/prompts/T341.md"
+  },
+  {
+   "id": "T440",
+   "slug": "tier-choice-pages",
+   "title": "portals: the quote page's tier choice and the Confirm page's chosen tier",
+   "goal": "Plan change D-3497 split T341 in two: T341 stores and prices the chosen tier in `picks` and adds a tier-taking pick entry point beside `page_pick`, reached through `picks::api`; this task builds the pages (D-2332; PICK-021, PICK-053). (1) The quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`), and the code step calls T341's entry point with it; on T341's validation error for a missing or stale tier the page shows the choices again and nothing is stored. (2) The Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). (D-3118) Shapes that done code and tests build stay as they are: no new field on `quotes::api::PageQuote` (`app/quotes/src/api.rs:115`, which holds only the original text and is built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), on `PageView` or `Numbered` (`app/portals/src/quote_page.rs:117`, `:50`; `PageView` built by literal at `prop_arrival_order.rs:99`) or on `ConfirmFacts` (`app/portals/src/confirm_pay.rs:69`, built by literal in `tests/integration/tests/confirm_terms.rs:89` and `:120`). So `quote_page.rs` reads each tiers quote's tier names from `quotes::api::quoted_prices` and carries them beside the view the way `ShownPage` carries the accepted quote (D-3078: a field on `ShownPage`, a method on `PageView` answering none); the Confirm page takes the chosen tier through a new render entry point in `confirm_pay.rs` beside `confirm_page_with_code`, whose existing callers pass no tier, and a field on the private `ConfirmView` (`:92`). T261 and T132 (the later owners of `confirm_pay.rs`) and T308 and T393 (of `quote_page.rs`) run after this task. Tests in `tests/integration/tests/tier_pick_pages.rs` (TD-FEE-70) against real PostgreSQL, fake data only. Money: the overseer runs an independent money review of the hand-in. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` builds it with `serde_json::from_value`, never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge` (D-3134).",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "portals",
+   "deps": [
+    "T341",
+    "T340",
+    "T342",
+    "T157",
+    "T214",
+    "T266",
+    "T164",
+    "T232",
+    "T388",
+    "T294",
+    "T384",
+    "T421",
+    "T431"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/pick_flow.rs",
+    "app/portals/templates/quote_page.html",
+    "app/portals/src/quote_page.rs",
+    "app/portals/src/confirm_pay.rs",
+    "app/portals/templates/confirm_pay.html",
+    "tests/integration/tests/tier_pick_pages.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/recurring.md",
+    "docs/spec/fees.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-021"
+   ],
+   "tests": [
+    "TD-FEE-70"
+   ],
+   "decisions": [
+    "D-2332",
+    "D-2333",
+    "D-2210",
+    "D-3118",
+    "D-3134",
+    "D-3497"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 380,
+    "context_pct": 31
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T440-tier-choice-pages",
+   "prompt": "kit/prompts/T440.md"
   },
   {
    "id": "T344",
@@ -14336,7 +14408,7 @@
     "T338",
     "T339",
     "T340",
-    "T341",
+    "T440",
     "T342",
     "T343",
     "T344",
@@ -14387,7 +14459,8 @@
     "T430",
     "T432",
     "T437",
-    "T442"
+    "T442",
+    "T443"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -14421,7 +14494,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 54
+    "context_pct": 58
    },
    "checks": [
     "Ci",
@@ -17256,7 +17329,7 @@
     "T320",
     "T321",
     "T324",
-    "T361",
+    "T441",
     "T363",
     "T364",
     "T373",
@@ -19414,7 +19487,7 @@
     "T164",
     "T232",
     "T388",
-    "T341"
+    "T440"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -23378,7 +23451,7 @@
    "id": "T261",
    "slug": "served-confirm-route",
    "title": "portals and server (harness): the served Confirm page under the real middleware, the payment page's own Stripe CSP, and truthful bank-approval handling",
-   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `adapters::api::StripePayments` as the `IntentStripe` (`app/payments/src/intent_http.rs:15`; no `StripeHttp` exists, and the bank approval's client secret comes from `StripePayments`'s own intent answers, D-2076 (2); D-3100): only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` counts as a component test of the script only, never as journey evidence (D-1754), and changes in one case only (D-3100): its fake `handleNextAction` answers success at once, so after (3) its TD-FEE-25 3-D Secure case could never see the \"Your bank wants to check\" line it asserts (`:123`); that case holds the fake's answer until it has asserted that line and the `3ds` call, then releases it; the stand-in likewise holds its answer to the page's state ask until the case has asserted the checking line, then releases it; every other case, the stand-in page and the fake's other calls stay byte-identical; this one case is why the task is a harness task (only a harness task changes an earlier task's test). Update the `portals` and `server` `CLAUDE.md` files, add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3100) and `docs/decisions.md`. The Confirm route is served only after T433 (D-3468's half of T328) registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick, (business, job))` with the pick's own business and job (`app/payments/src/release_proof.rs:237`; since T337 it reads the pick's stored fee row and refuses any other pair; D-3100) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58). The Confirm route is served only after T340 and T341 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3055 (T232's pieces, which it builds but cannot serve): on `GET` the route calls T232's Confirm-page first-opening stamp; on each `POST` it applies T232's shared-inbox fresh-code check before `may_confirm` and stores T232's business-terms record (`businesses::api::record_confirm_terms`, channel `confirm_page`, the pick ID) in the press's transaction. `tests/e2e/confirm_served.spec.ts` also checks that the served page carries the \"Can't take it\" link to `/b/picks/{pick}/cant-take` (the page behind it is served by T306) and that reloading the page stores no terms row, and `confirm_route.rs` that with \"This inbox is shared\" on a Confirm inside a live session asks for a fresh code and charges nothing without it (the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32).",
+   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `adapters::api::StripePayments` as the `IntentStripe` (`app/payments/src/intent_http.rs:15`; no `StripeHttp` exists, and the bank approval's client secret comes from `StripePayments`'s own intent answers, D-2076 (2); D-3100): only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` counts as a component test of the script only, never as journey evidence (D-1754), and changes in one case only (D-3100): its fake `handleNextAction` answers success at once, so after (3) its TD-FEE-25 3-D Secure case could never see the \"Your bank wants to check\" line it asserts (`:123`); that case holds the fake's answer until it has asserted that line and the `3ds` call, then releases it; the stand-in likewise holds its answer to the page's state ask until the case has asserted the checking line, then releases it; every other case, the stand-in page and the fake's other calls stay byte-identical; this one case is why the task is a harness task (only a harness task changes an earlier task's test). Update the `portals` and `server` `CLAUDE.md` files, add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3100) and `docs/decisions.md`. The Confirm route is served only after T433 (D-3468's half of T328) registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick, (business, job))` with the pick's own business and job (`app/payments/src/release_proof.rs:237`; since T337 it reads the pick's stored fee row and refuses any other pair; D-3100) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58). The Confirm route is served only after T340, T341 and T440 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3055 (T232's pieces, which it builds but cannot serve): on `GET` the route calls T232's Confirm-page first-opening stamp; on each `POST` it applies T232's shared-inbox fresh-code check before `may_confirm` and stores T232's business-terms record (`businesses::api::record_confirm_terms`, channel `confirm_page`, the pick ID) in the press's transaction. `tests/e2e/confirm_served.spec.ts` also checks that the served page carries the \"Can't take it\" link to `/b/picks/{pick}/cant-take` (the page behind it is served by T306) and that reloading the page stores no terms row, and `confirm_route.rs` that with \"This inbox is shared\" on a Confirm inside a live session asks for a fresh code and charges nothing without it (the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -23393,7 +23466,7 @@
     "T433",
     "T337",
     "T340",
-    "T341",
+    "T440",
     "T348",
     "T359",
     "T362",
@@ -28452,8 +28525,8 @@
   {
    "id": "T361",
    "slug": "pick-bound-to-business",
-   "title": "quotes, picks and portals: a quote keeps its number once shown, and a pick names the business it was reviewed for",
-   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business. `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; the forms post only `quote=<n>` (`quote_page.html`, `pick_review.html`, `pick_code.html`); text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering. An AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`, so: A AI-read at 10:00 (hidden), B by form at 10:05 shows as #1; she reviews \"Pick #1\" and starts the code step; at 10:07 A is confirmed and becomes #1; her code then picks A, notifies A and fixes A's fee. An AI-read edit (the upsert sets `confirmed = false`) and a withdrawal (dropped from the list) shift later numbers the same way. Fix: (1) `migrations/0199_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; `page_quotes` and `list_rows` order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes only the order both share); a withdrawn quote keeps its place and number (shown as \"Withdrawn by the business\") (T384 already keeps it in place in `page_quotes` and the LIST reply, marked unavailable, D-2912) and an unconfirmed edit keeps its number while it waits; (2) the review, pick and code forms carry the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret), and `page_pick` and the text pick answer `Taken` when the number no longer maps to that business, so nothing is stored, notified or charged for another business. (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60), each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912): A AI-read at t0, B by form at t0+5m; review #1; confirm A; finish #1: the pick is B's (or refused), never A's; the same with an AI-read edit of an earlier quote, and with a withdrawal of #1 (B stays #2); a text \"2 YES\" after a reorder picks the business shown as #2. Every TD-PICK case passes unchanged. Update the `quotes`, `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3144: `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests): the business-bound pick is a new entry point beside it, which the page's forms use; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches the page through a new `quotes::api` read beside `page_quotes` and a new numbering function beside `portals`' `number_quotes`, which keeps its signature for that test.",
+   "title": "quotes and picks: a quote keeps its number once shown, and a pick resolves to the business it was shown for",
+   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business, so a quote confirmed or edited after a later one, or a withdrawal, shifts the numbers and a pick can land on, notify and charge another business (D-2632 gives the sequence). Plan change D-3497 split this task in two: this task stores the shown number and binds the pick in `quotes` and `picks`; T441 makes the quote page and the review, pick and code forms use them. Today `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering; an AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`. Fix: (1) `migrations/0199_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; `page_quotes` and `list_rows` order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes only the order both share); a withdrawn quote keeps its place and number (T384 already keeps it in place, D-2912) and an unconfirmed edit keeps its number while it waits; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches callers through a new `quotes::api` read beside `page_quotes` (D-3144). (2) `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests, D-3144), and a new business-bound entry point beside it, reached through `picks::api`, takes the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret) and answers `Taken` when the number no longer maps to that business; the text pick answers `Taken` the same way; so nothing is stored, notified or charged for another business. The new entry point and the text pick resolve a number by its shown number, never its list position; until T441 merges, the quote page still numbers by position through `number_quotes`, so `page_pick` keeps resolving a number by its position in the list the page shows (now in shown-number order), and the page and the pick it posts always agree; T441 moves the page to the shown number and the new entry point together (D-3497). (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60) through `quotes::api` and `picks::api`, each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912). Every TD-PICK case passes unchanged. Update the `quotes` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -28484,15 +28557,11 @@
     "security"
    ],
    "owns": [
+    "migrations/0199_quotes_shown_number.sql",
     "app/quotes/src/api.rs",
     "app/quotes/src/models.rs",
     "app/quotes/src/intake.rs",
-    "migrations/0199_quotes_shown_number.sql",
     "app/picks/src/service.rs",
-    "app/portals/src/pick_flow.rs",
-    "app/portals/templates/quote_page.html",
-    "app/portals/templates/pick_review.html",
-    "app/portals/templates/pick_code.html",
     "tests/integration/tests/pick_bound_business.rs"
    ],
    "reads": [
@@ -28520,13 +28589,14 @@
     "D-2912",
     "D-3144",
     "D-3262",
-    "D-3263"
+    "D-3263",
+    "D-3497"
    ],
    "cites": [],
    "budget": {
-    "files": 10,
-    "lines": 600,
-    "context_pct": 38
+    "files": 6,
+    "lines": 380,
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -28615,6 +28685,87 @@
    "branch": "claude/task/T407-safety-call-switch-stored",
    "prompt": "kit/prompts/T407.md",
    "acceptance": "TD-CALL-26 passes against PostgreSQL through the worker and the served routes; TD-CALL-19 and every existing safety-call, consent and owner-portal test passes unchanged; the switch stays off at launch."
+  },
+  {
+   "id": "T441",
+   "slug": "pick-forms-carry-business",
+   "title": "portals: the quote page shows the kept number, and the pick forms carry the business it was shown for",
+   "goal": "Plan change D-3497 split T361 in two (D-2632; PICK-008, PRIV-005): T361 stores each quote's shown number, orders `page_quotes` and the LIST by it, gives a `quotes::api` read of the shown numbers and a `picks::api` business-bound pick entry point that answers `Taken` when a number no longer maps to the business; this task makes the pages use them. The quote page numbers each quote by its shown number through T361's read and a new numbering function beside `portals`' `number_quotes` (`app/portals/src/quote_page.rs:61`, rendered at `:257`), which keeps its signature for `app/portals/src/tests/prop_arrival_order.rs` (D-3144); a withdrawn quote keeps its place and number, shown as \"Withdrawn by the business\". The review, pick and code forms (`app/portals/templates/quote_page.html`, `pick_review.html`, `pick_code.html`, posted to `app/portals/src/pick_flow.rs`) carry the business the number was shown for, in the form T361's entry point takes, and `pick_flow.rs` calls that entry point and treats `Taken` as it treats any quote that can no longer be picked, so nothing is stored, notified or charged for another business. Tests in `tests/integration/tests/pick_bound_forms.rs` (TD-PICK-64) against real PostgreSQL, fake data only. Every TD-PICK case passes unchanged. Update the `portals` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T361",
+    "T249",
+    "T342",
+    "T340",
+    "T341",
+    "T344",
+    "T295",
+    "T318",
+    "T266",
+    "T157",
+    "T214",
+    "T164",
+    "T232",
+    "T388",
+    "T308",
+    "T384",
+    "T440"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/pick_flow.rs",
+    "app/portals/src/quote_page.rs",
+    "app/portals/templates/quote_page.html",
+    "app/portals/templates/pick_review.html",
+    "app/portals/templates/pick_code.html",
+    "tests/integration/tests/pick_bound_forms.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/terms.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/privacy.md"
+   ],
+   "requirements": [],
+   "tests": [
+    "TD-PICK-64"
+   ],
+   "decisions": [
+    "D-2632",
+    "D-2631",
+    "D-084",
+    "D-2912",
+    "D-3144",
+    "D-3262",
+    "D-3263",
+    "D-3497"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 260,
+    "context_pct": 27
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T441-pick-forms-carry-business",
+   "prompt": "kit/prompts/T441.md"
   },
   {
    "id": "T382",
@@ -28759,13 +28910,13 @@
    "id": "T363",
    "slug": "pick-code-ip-limits",
    "title": "portals: the served pick and its code step apply the per-IP code send and try limits",
-   "goal": "Nov 10 code review batch 2, portals F3 (D-2634; SEC-014, D-1950, D-1951): the served pick's code step skips T089's per-IP code limits: `final_pick` and `code_step` (`app/portals/src/pick_flow.rs`) call neither of `portals`' own `crate::limits::admit_code_send` and `admit_code_try` (`app/portals/src/limits.rs:107`, `:84`), although `CODE_TRIES_PER_IP` (`:26`) is meant to cover pick codes, and D-1951's wiring list names only T280, T301, T302, T303 and T307. Fix: `final_pick` and \"Send a new code\" call `admit_code_send(pool, (ip, None), (now, threshold))` and \"Finish my pick\" calls `admit_code_try(pool, (ip, None), now)`, with the client IP from `ClientIpPolicy`, each before any Verify call; a refusal shows the existing daily-cap line and sends nothing. After T361 (the last earlier owner of `pick_flow.rs`). Tests in `tests/integration/tests/pick_code_limits.rs` (TD-SEC-63): 11 code sends from one IP across different jobs give exactly one refusal and no eleventh send; tries over the per-IP limit are refused before Verify; another IP is unaffected. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3144: the contact passed is `None`: `picks`' `send_code` already counts the per-number and global daily caps (`app/picks/src/service.rs:714`; the global threshold is `VERIFY_DAILY_THRESHOLD`, `app/portals/src/pick_flow.rs:274`), so `Some` would count them twice; `None` spends the per-IP count and two `CODE_SENDS_UNKNOWN` counters that never refuse. The client IP comes from a `ClientIpPolicy` that `PickCodeKeys` gains through a builder beside `with_threshold` (`:309`), so `pick_flow_routes` and `PickCodeKeys::new` keep their signatures (callers `tests/integration/tests/page_pick.rs:91`, `tests/integration/tests/share_and_cant_take.rs:197` to `:199`, `tests/security/tests/page_pick_privacy.rs:102`); `server`'s `pick_code_keys` (the shared `app/server/src/lib.rs:220`) sets it from the settings.",
+   "goal": "Nov 10 code review batch 2, portals F3 (D-2634; SEC-014, D-1950, D-1951): the served pick's code step skips T089's per-IP code limits: `final_pick` and `code_step` (`app/portals/src/pick_flow.rs`) call neither of `portals`' own `crate::limits::admit_code_send` and `admit_code_try` (`app/portals/src/limits.rs:107`, `:84`), although `CODE_TRIES_PER_IP` (`:26`) is meant to cover pick codes, and D-1951's wiring list names only T280, T301, T302, T303 and T307. Fix: `final_pick` and \"Send a new code\" call `admit_code_send(pool, (ip, None), (now, threshold))` and \"Finish my pick\" calls `admit_code_try(pool, (ip, None), now)`, with the client IP from `ClientIpPolicy`, each before any Verify call; a refusal shows the existing daily-cap line and sends nothing. After T441 (the last earlier owner of `pick_flow.rs`, D-3497). Tests in `tests/integration/tests/pick_code_limits.rs` (TD-SEC-63): 11 code sends from one IP across different jobs give exactly one refusal and no eleventh send; tries over the per-IP limit are refused before Verify; another IP is unaffected. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3144: the contact passed is `None`: `picks`' `send_code` already counts the per-number and global daily caps (`app/picks/src/service.rs:714`; the global threshold is `VERIFY_DAILY_THRESHOLD`, `app/portals/src/pick_flow.rs:274`), so `Some` would count them twice; `None` spends the per-IP count and two `CODE_SENDS_UNKNOWN` counters that never refuse. The client IP comes from a `ClientIpPolicy` that `PickCodeKeys` gains through a builder beside `with_threshold` (`:309`), so `pick_flow_routes` and `PickCodeKeys::new` keep their signatures (callers `tests/integration/tests/page_pick.rs:91`, `tests/integration/tests/share_and_cant_take.rs:197` to `:199`, `tests/security/tests/page_pick_privacy.rs:102`); `server`'s `pick_code_keys` (the shared `app/server/src/lib.rs:220`) sets it from the settings.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "portals",
    "deps": [
-    "T361",
+    "T441",
     "T089",
     "T317"
    ],
@@ -29885,7 +30036,7 @@
    "module": "portals",
    "deps": [
     "T316",
-    "T341",
+    "T440",
     "T374",
     "T406"
    ],
@@ -30076,7 +30227,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 30
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -30485,7 +30636,7 @@
    "id": "T438",
    "slug": "usage-dedupe",
    "title": "Token usage counts each reply once: dedupe transcript usage by message id and re-base pacing on deduped figures",
-   "goal": "Token double count (D-3475; D-3305, D-1110, D-3444; BUILD_BRIEF.md:510): `runner/verify.py` `usage_in_transcript` (lines 119-133) adds the `message.usage` of every transcript line, but Claude Code writes one line per content block of a reply, each repeating the reply's `message.id` and `usage` (the fact `turns_in_transcript`, line 136, already counts on), so every recorded token total reads about 1.65 times the real one (T319: 27.6M recorded against about 16.5M; T249: 45.2M against about 26.6M; a 36-line sample transcript holds 17 replies). (1) `usage_in_transcript` counts each reply once: among lines whose `message.usage` is a dict, the LAST line of each string `message.id` gives that reply's usage; a line without a string id counts once on its own; bad JSON, non-object and usage-less lines count nothing, as now. `read_transcripts` and `role_reading` (`runner/github_env.py`, not owned) then record deduped figures without change. (2) Marking, so old and new figures never mix unseen: `runner/cycle.py` `_record_usage` always writes `usage_counting: \"message_id\"` (also when `cfg.on_usage` is unset) on a `usage.by_task` entry holding no `USAGE_FIELDS` key yet; the claim pre-seeds the entry with `estimated_bytes` and `estimated_tokens` (`scripts/pacing.py:389`), so \"new\" means no token field, never \"task id absent from by_task\". An entry spanning the change (token fields recorded before it, more added after) stays unmarked and is corrected by the factor as a whole, a small under-estimate for the few tasks in flight at the change, accepted and logged in `docs/decisions.md` rather than stored separately. No one-time rewrite of `kit/state.json`: unmarked entries keep their raw numbers, and `history[n].usage` rows before this change stay as recorded (documented as per-line in `docs/architecture.md` section 12). (3) Pacing on deduped numbers: new `kit/pacing.json` key `pre_dedupe_factor` 0.6 (T319 16.5/27.6 = 0.60, T249 26.6/45.2 = 0.59), with its note; `scripts/pacing.py` `calibrated()` multiplies an unmarked DONE entry's weighted tokens by it before the median (a marked entry is used as recorded), so `estimate()`, the claim's `estimated_tokens`, `reserved()` and `projected_finish()` (line 375) run on deduped figures; a config without the key reads 1.0, so today's behaviour. The ledger windows (`usage.windows`, used only when no quota or session reading is under six hours old): `record_usage` scales an unmarked window's `tokens` once by the factor and marks the window (`counting: \"message_id\"`) before adding; a window that starts or rolls over starts marked; with no factor configured it behaves exactly as today. The weekly `standing.week.used` comes from a session reading or the quota command (the plan's own utilisation; `usage.source` was `session_reading` on November 13), which never sums transcripts, so it is not affected; only its ledger fallback was, and (3) fixes that. (4) `kit/state_schema.json` declares `usage_counting` (enum `message_id`) on `usage.by_task` entries and the window `counting`; `standing()` applies the factor when it reads an unmarked ledger window too, so a fallback standing before the next record is deduped; `python3 scripts/check_state.py` passes on a state with and without them. Tests (new `tests/test_runner_usage_dedupe.py`; no existing test changes, and every existing runner and pacing test passes unchanged; the marker is never made conditional: if a whole-entry comparison in an existing test breaks only because of it, stop and report it as a decided-value change for `docs/decisions.md` under `BUILD_BRIEF.md:69`, never weaken or skip the assertion): a fixture of repeated-id lines (three lines of one id with the same usage, two of another whose last line has a larger `output_tokens`, one id-less line, a usage-less line, bad JSON) gives the per-reply totals with the last line per id winning; `read_transcripts` and `role_reading` over two files of it; `_record_usage` marks an entry the claim pre-seeded with only `estimated_*` (and one with no entry), marks it with the pacer unset too, and leaves an entry with earlier tokens unmarked, never scaling turns; `calibrated()` over three unmarked DONE entries is 0.6 of the old median with the factor and the old median without it, and over marked entries the raw median; `projected_finish` falls by the factor for a calibrated model; `record_usage` scales an unmarked window once and never again; `standing()` on an unmarked ledger window reads the scaled figure; `check_state` validates both shapes. Update `docs/architecture.md` section 12 and `docs/decisions.md` (the measured before and after totals of the fixture).",
+   "goal": "Token double count (D-3475; D-3305, D-1110, D-3444; BUILD_BRIEF.md:510): `runner/verify.py` `usage_in_transcript` (lines 119-133) adds the `message.usage` of every transcript line, but Claude Code writes one line per content block of a reply, each repeating the reply's `message.id` and `usage` (the fact `turns_in_transcript`, line 136, already counts on), so every recorded token total reads about 1.65 times the real one (T319: 27.6M recorded against about 16.5M; T249: 45.2M against about 26.6M; a 36-line sample transcript holds 17 replies). (1) `usage_in_transcript` counts each reply once: among lines whose `message.usage` is a dict, the LAST line of each string `message.id` gives that reply's usage; a line without a string id counts once on its own; bad JSON, non-object and usage-less lines count nothing, as now. `read_transcripts` and `role_reading` (`runner/github_env.py`, not owned) then record deduped figures without change. (2) Marking, so old and new figures never mix unseen: `runner/cycle.py` `_record_usage` always writes `usage_counting: \"message_id\"` (also when `cfg.on_usage` is unset) on a `usage.by_task` entry holding no `USAGE_FIELDS` key yet; the claim pre-seeds the entry with `estimated_bytes` and `estimated_tokens` (`scripts/pacing.py:389`), so \"new\" means no token field, never \"task id absent from by_task\". An entry spanning the change (token fields recorded before it, more added after) stays unmarked and is corrected by the factor as a whole, a small under-estimate for the few tasks in flight at the change, accepted and logged in `docs/decisions.md` rather than stored separately. No one-time rewrite of `kit/state.json`: unmarked entries keep their raw numbers, and `history[n].usage` rows before this change stay as recorded (documented as per-line in `docs/architecture.md` section 12). (3) Pacing on deduped numbers: new `kit/pacing.json` key `pre_dedupe_factor` 0.6 (T319 16.5/27.6 = 0.60, T249 26.6/45.2 = 0.59), with its note; `scripts/pacing.py` `calibrated()` multiplies an unmarked DONE entry's weighted tokens by it before the median (a marked entry is used as recorded), so `estimate()`, the claim's `estimated_tokens`, `reserved()` and `projected_finish()` (line 375) run on deduped figures; a config without the key reads 1.0, so today's behaviour. The ledger windows (`usage.windows`, a fallback used only when no quota or session reading is under six hours old) are left exactly as today: never scaled, never marked, their shape `{start, tokens}` unchanged (D-3536: scaling them raced in `_windows_onto` across lanes, and an inflated fallback only errs toward waiting and rolls off within 7 days). The weekly `standing.week.used` comes from a session reading or the quota command (the plan's own utilisation; `usage.source` was `session_reading` on November 13), which never sums transcripts, so it is not affected; only its ledger fallback was, and that fallback stays as today (D-3536). (4) `kit/state_schema.json` declares `usage_counting` (enum `message_id`) on `usage.by_task` entries; `python3 scripts/check_state.py` passes on a state with and without them. Tests (new `tests/test_runner_usage_dedupe.py`; no existing test changes, and every existing runner and pacing test passes unchanged; the marker is never made conditional: if a whole-entry comparison in an existing test breaks only because of it, stop and report it as a decided-value change for `docs/decisions.md` under `BUILD_BRIEF.md:69`, never weaken or skip the assertion): a fixture of repeated-id lines (three lines of one id with the same usage, two of another whose last line has a larger `output_tokens`, one id-less line, a usage-less line, bad JSON) gives the per-reply totals with the last line per id winning; `read_transcripts` and `role_reading` over two files of it; `_record_usage` marks an entry the claim pre-seeded with only `estimated_*` (and one with no entry), marks it with the pacer unset too, and leaves an entry with earlier tokens unmarked, never scaling turns; `calibrated()` over three unmarked DONE entries is 0.6 of the old median with the factor and the old median without it, and over marked entries the raw median; `projected_finish` falls by the factor for a calibrated model; `record_usage` leaves the ledger windows exactly as today; `check_state` validates both shapes. Update `docs/architecture.md` section 12 and `docs/decisions.md` (the measured before and after totals of the fixture).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -30518,7 +30669,8 @@
     "D-3305",
     "D-1110",
     "D-3444",
-    "D-3475"
+    "D-3475",
+    "D-3536"
    ],
    "cites": [
     "BUILD_BRIEF.md:510"
@@ -30535,7 +30687,7 @@
    ],
    "branch": "claude/task/T438-usage-dedupe",
    "prompt": "kit/prompts/T438.md",
-   "acceptance": "Repeated `message.id` lines count once (last usage per id wins, id-less lines once each) in `usage_in_transcript`; every by_task entry with no token field yet (including one the claim pre-seeded) gets, pacer set or not, `usage_counting: \"message_id\"`; calibration, estimates, the projected finish and the ledger windows apply `pre_dedupe_factor` only to unmarked, pre-change figures and behave as today without the key; `kit/state_schema.json` declares the new keys and `check_state.py` passes; `tests/test_runner_usage_dedupe.py` covers each case and every existing test passes unchanged."
+   "acceptance": "Repeated `message.id` lines count once (last usage per id wins, id-less lines once each) in `usage_in_transcript`; every by_task entry with no token field yet (including one the claim pre-seeded) gets, pacer set or not, `usage_counting: \"message_id\"`; calibration, estimates and the projected finish apply `pre_dedupe_factor` only to unmarked, pre-change figures and behave as today without the key; `kit/state_schema.json` declares the new keys and `check_state.py` passes; `tests/test_runner_usage_dedupe.py` covers each case and every existing test passes unchanged. The ledger windows are unchanged (tests/test_failure_drills.py, tests/test_pacing.py and tests/test_runner_two_lanes.py pass unchanged)."
   },
   {
    "id": "T439",
@@ -30700,6 +30852,62 @@
    "branch": "claude/task/T442-mutant-deterministic-kills",
    "prompt": "kit/prompts/T442.md",
    "acceptance": "With a copy of the manifest from which only these property tests are stripped, by name: `tests::prop_matching_props`, `tests::prop_rules`, `tests::prop_handyman_never_gas`, and the proptest `td_con_06_an_opt_out_word_never_closes` (the intake `service.rs` group's entry narrowed to `tests::prop_optout_no_close::td_con_06_an_opt_out_changes_no_job_status`), `python3 scripts/run_named_mutants.py --manifest <that copy> --only 'ticked-job-type check dropped'` reports the mutant killed (by `tests::radius_matching`), and the same holds for each other mutant the goal names; `python3 scripts/run_named_mutants.py --all` kills every mutant; no mutant is removed and no `find`, `replace` or property test entry changes; no file other than `tests/mutation/mutants.toml` and `docs/decisions.md` changes."
+  },
+  {
+   "id": "T443",
+   "slug": "after-smoke-fix-rounds",
+   "title": "--after runs the full smoke itself on a fix-round hand-in; the session prompt's fix rounds run scoped checks",
+   "goal": "Give scoped fix rounds (D-3530) a full smoke test outside the model, and align the session prompt with D-3530's fix-round rule. D-3530 has a fix-round worker (D-3444's hand-off, and step 5b's held-gate round) run only `cargo fmt --check`, workspace clippy, `cargo test -p <crate>` for each crate it touched, the named failing tests and `scripts/prehandin.sh`, with the full `scripts/smoke.sh` only when its fixes touched more than one crate; `--after` runs only main's `prehandin.sh --quick` (D-1300), which runs no pytest, cargo or tsc, so a one-crate fix that breaks a dependent crate's or the integration crate's tests is caught only by `Ci` after the push, at the cost of the attempt. (1) `--after` (`runner/__main__.py` `after`, `runner/github_env.py` `collect_result`): when the hand-in followed a fix round (more than one `--worker-agent`, or a hand-off `prehandin_holds` above 0), after the pre-hand-in gate passes and before anything is pushed, the runner runs main's full `scripts/smoke.sh` on the handed-in head itself, outside the model: in a detached worktree of the head, with the smoke's own tree, seed, pinned mtimes and environment as the start routine's smoke (D-1890, D-2028), in the background as D-2560 does for the claim (the 600-second Bash call cannot hold it): `--after` prints `runner: smoke_pending` and exits 0 with nothing pushed and no state written while it runs, and the session runs step 5 again, the same way, until a verdict. The run is keyed to the head SHA and kept in the local hand-off file (no `kit/state.json` key, so `kit/state_schema.json` is untouched); a re-run of `--after` on the same head takes its result, a new head starts a new run. Green: the hand-in goes on as today. Red (smoke exit 1): held once like the pre-hand-in gate (`hold_red_gate`'s shape, its own hand-off counter `after_smoke_holds`, at most 1), printing `runner: smoke_red` with the failing lines (redacted as `_gate_verdict` does), so the session gives them to a new fix-round worker; red again after its hold fails the attempt as `tests_failed` with that output as `last_failure`. A timeout (the D-1178 budget), a worktree git cannot make, a dry run or any exit other than 0 or 1 is logged and lets the hand-in through (`Ci` still judges), as `prehandin` does. A first-round hand-in (one worker, no hold) runs no runner smoke: its worker ran the one full smoke D-3530 keeps. (2) `.github/workflows/backup-runner.yml` session prompt: step 4c's \"run `bash scripts/smoke.sh` and `bash scripts/prehandin.sh` once at the end\" becomes D-3530's scoped checks (the words of `kit/prompts/TEMPLATE.md` End step 1), and step 5b's \"run both scripts again\" likewise; steps 5 and 5a say what to do with `runner: smoke_pending` (run step 5 again the same way) and `runner: smoke_red` (a new foreground fix-round worker with step 4c's hand-off and that output in place of the findings, the reviewer reads the fix, then step 5 again); step 3c (resync) is unchanged. It also adds the exact line `# T443: after-smoke live` (a YAML comment, on a line of its own) to `.github/workflows/backup-runner.yml`: `kit/prompts/TEMPLATE.md` End step 1 greps for that line to know the runner now smokes fix-round heads (D-3530). Keep T439's verdict and commit-line rules and every other step word for word. Tests (new `tests/test_runner_after_smoke.py`; no existing test changes, every existing runner test passes): a first-round hand-in runs no smoke; a fix-round hand-in prints `smoke_pending` and pushes nothing, then takes a green verdict and hands in; a red verdict holds once, then fails `tests_failed` with the output as `last_failure`; a timeout, exit 3 or a missing worktree lets the hand-in through with a log line; a new head after a hold starts a new run; the workflow text of steps 4c and 5b names the scoped checks and no longer says \"once at the end\", and steps 5 and 5a name `smoke_pending` and `smoke_red`; the workflow holds the exact marker line.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T439"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "runner/__main__.py",
+    "runner/github_env.py",
+    ".github/workflows/backup-runner.yml",
+    "tests/test_runner_after_smoke.py"
+   ],
+   "reads": [
+    "scripts/smoke.sh",
+    "scripts/prehandin.sh",
+    "kit/prompts/TEMPLATE.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-1300",
+    "D-2028",
+    "D-2560",
+    "D-3444",
+    "D-3475",
+    "D-3530"
+   ],
+   "cites": [
+    "BUILD_BRIEF.md:250"
+   ],
+   "budget": {
+    "files": 4,
+    "lines": 450,
+    "context_pct": 42
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T443-after-smoke-fix-rounds",
+   "prompt": "kit/prompts/T443.md",
+   "acceptance": "`--after` on a fix-round hand-in (more than one `--worker-agent` or a prehand-in hold) runs main's `scripts/smoke.sh` on the head in the background outside the model (`runner: smoke_pending` until a verdict, nothing pushed meanwhile), holds a red once (`runner: smoke_red`) then fails `tests_failed`, lets a non-verdict through with a log line, and runs nothing for a first-round hand-in; the workflow's steps 4c and 5b carry D-3530's scoped fix-round checks and steps 5 and 5a handle both new results; the workflow holds the exact line `# T443: after-smoke live` (`grep -qxF` succeeds); `tests/test_runner_after_smoke.py` holds every listed case and every existing test passes unchanged."
   }
  ]
 }

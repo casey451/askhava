@@ -28,8 +28,12 @@
 //! released-before pick opens nothing again; a line that fails to open never hides the view and
 //! raises one High [`RELEASE_LINE_FAILED_ALERT`] instead, with one [`LINE_RETRY_KIND`] task that
 //! `settle::retry_line` runs (T254, D-1688); a failed release queues that task only once its
-//! claim stands (D-2017). The who's-calling text (TXT-027) is not sent here
-//! yet (D-1687).
+//! claim stands (D-2017).
+//!
+//! T318 (TXT-027, D-1687, D-3118): after the line is asked for, outside the claim's transaction,
+//! a shown release, or a failed one whose claim committed (D-3508), queues the pick's one
+//! who's-calling task (`calls::api::queue_whos_calling`, `follow_up`); `calls` sends the text once the line is open, at once on an
+//! emergency job, else in her window (QH-004).
 //!
 //! T278 (JOB-015, D-1842): the claim's transaction also queues the day-3 and day-14 check-ins of
 //! a Connected job, from the release and the picked quote's earliest visit
@@ -40,10 +44,10 @@
 
 use askhava_adapters::api::MaskedPool;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
-use askhava_calls::api::{Connected, assign_number};
+use askhava_calls::api::{Connected, WhosCalling, assign_number, queue_whos_calling};
 use askhava_core::api::{NewTask, enqueue};
 use askhava_jobs::api::{current, job_number, schedule_check_ins};
-use askhava_ops::api::{NewAlert, Severity, raise_alert};
+use askhava_ops::api::{NewAlert, Severity, raise_alert, raise_alert_once};
 use askhava_privacy::api::{
     ContactDetails, Field, ReleaseBasis, ReleaseProof, Vault, read_for_release,
 };
@@ -72,6 +76,10 @@ pub const RELEASE_NO_RECIPIENT_ALERT: &str = "picks.release_no_recipient";
 /// The High alert raised when a shown release's masked line fails to open; the view still goes
 /// back, and one `picks.line_retry` task opens the line later (CALL-001, D-1688).
 pub const RELEASE_LINE_FAILED_ALERT: &str = "picks.release_line_failed";
+
+/// The High alert raised when a claimed release's who's-calling task could not be queued, about
+/// the pick, once per pick (TXT-027, D-3508).
+pub const WHOS_CALLING_FAILED_ALERT: &str = "picks.whos_calling_failed";
 /// The vault fields a release opens; never the phone (PICK-023, PRIV-020).
 pub const RELEASE_FIELDS: [Field; 2] = [Field::Name, Field::Address];
 /// The fields when the homeowner chose email contact at the pick (PICK-018); never the phone.
@@ -199,8 +207,8 @@ pub fn release_notice(business: Uuid, pick: Uuid, to: &[Uuid], job: i64) -> Valu
 /// [`PicksError::Database`] (also for a refused or failed vault read, which `privacy` has
 /// already audited or alerted) or [`PicksError::Job`]. A regular job's vault read fails after its
 /// claim committed, so the release stands and a later proof gets [`Released::Already`]; an
-/// error after the claim also queues the [`LINE_RETRY_KIND`] task, so that release's line still
-/// opens, and one before the claim queues nothing (D-1739, D-2017). A line
+/// error after the claim also queues the [`LINE_RETRY_KIND`] task and the who's-calling task
+/// (D-3508), so that release's line still opens and its text still goes, and one before the claim queues nothing (D-1739, D-2017). A line
 /// that fails to open is no error: the view still comes back, one High
 /// [`RELEASE_LINE_FAILED_ALERT`] is raised and one [`LINE_RETRY_KIND`] task queued (D-1688).
 pub async fn release(
@@ -209,22 +217,112 @@ pub async fn release(
     (proof, email_chosen): (ReleaseProof, bool),
     at: Timestamp,
 ) -> Result<Released, PicksError> {
-    let (pick, contact, basis) = (proof.pick_id(), proof.contact_id(), proof.basis());
-    let released = match show(pool, vault, (proof, email_chosen), at).await {
-        Ok(released) => released,
-        Err(error) => {
-            line_later(pool, pick, at, false).await;
-            return Err(error);
-        }
+    let ids = (proof.pick_id(), proof.contact_id(), proof.basis());
+    let released = show(pool, vault, (proof, email_chosen), at).await;
+    let shown = match &released {
+        Ok(Released::Shown(_)) => Shown::Yes,
+        Ok(_) => Shown::No,
+        Err(_) => Shown::Failed,
     };
-    if let Released::Shown(_) = released
-        && open_line(pool, masked, (pick, contact, basis), at)
-            .await
-            .is_err()
-    {
-        line_later(pool, pick, at, true).await;
+    follow_up(pool, masked, (ids, email_chosen), shown, at).await;
+    released
+}
+
+/// How [`show`] ended, for [`follow_up`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Shown {
+    /// `Released::Shown`: the claim committed and the view came back.
+    Yes,
+    /// `Already`, `WaitingForAddress` or `MovedOn`: nothing follows.
+    No,
+    /// An error, before or after the claim; only a committed claim gets a follow-up.
+    Failed,
+}
+
+/// What follows a release, outside its transaction (CALL-001, TXT-027, D-1688, D-3508): a shown
+/// release opens the line (else [`line_later`] with its alert) and queues the who's-calling task;
+/// a failed one whose claim stands queues the line retry and the who's-calling task too, since a
+/// later proof gets `Already` and queues neither.
+pub(crate) async fn follow_up(
+    pool: &PgPool,
+    masked: &MaskedPool,
+    ((pick, contact, basis), email_chosen): ((Uuid, Uuid, ReleaseBasis), bool),
+    shown: Shown,
+    at: Timestamp,
+) {
+    match shown {
+        Shown::No => return,
+        Shown::Yes => {
+            if open_line(pool, masked, (pick, contact, basis), at)
+                .await
+                .is_err()
+            {
+                line_later(pool, pick, at, true).await;
+            }
+        }
+        Shown::Failed => line_later(pool, pick, at, false).await,
     }
-    Ok(released)
+    whos_calling_later(pool, (pick, contact, basis, email_chosen), at).await;
+}
+
+/// TXT-027, D-1687, D-3118, D-3508: queues the pick's one `calls.whos_calling` task through
+/// `calls::api::queue_whos_calling`, after the claim committed and the line was asked for, never
+/// in the claim's transaction; its handler sends once the line is open (now, or after a
+/// `picks.line_retry` opens it). One dedupe key per pick, so a repeated release queues none; a
+/// pick with no `picks.release` row queues none. The release stands regardless, so a failed
+/// write raises one High [`WHOS_CALLING_FAILED_ALERT`] about the pick instead.
+async fn whos_calling_later(
+    pool: &PgPool,
+    (pick, contact, basis, email_chosen): (Uuid, Uuid, ReleaseBasis, bool),
+    at: Timestamp,
+) {
+    let Ok(mut conn) = pool.acquire().await else {
+        return;
+    };
+    let ids = (pick, contact, basis, email_chosen);
+    if queue_released(&mut conn, ids, at).await.is_err() {
+        let subject = ("pick", pick);
+        raise_alert_once(
+            &mut conn,
+            WHOS_CALLING_FAILED_ALERT,
+            Severity::High,
+            subject,
+        )
+        .await
+        .ok();
+    }
+}
+
+/// Queues the who's-calling task of a claimed pick; an unknown or unclaimed pick queues nothing
+/// (TXT-027, D-3508).
+async fn queue_released(
+    conn: &mut PgConnection,
+    (pick, contact, basis, email_chosen): (Uuid, Uuid, ReleaseBasis, bool),
+    at: Timestamp,
+) -> Result<(), PicksError> {
+    let target = models::release_target(conn, pick, release_status(basis)).await?;
+    let Some(target) = target.filter(|t| t.released) else {
+        return Ok(());
+    };
+    let job = current(conn, target.job)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    let job_number = job_number(conn, target.job)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    let call = WhosCalling {
+        pick,
+        job: target.job,
+        job_number,
+        business: target.business,
+        homeowner: contact,
+        email_contact: email_chosen,
+        emergency: job.emergency,
+    };
+    queue_whos_calling(conn, &call, at)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    Ok(())
 }
 
 /// Opens the released job's masked line, the homeowner side being the proof's contact (CALL-001).
