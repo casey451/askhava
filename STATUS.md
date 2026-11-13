@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-13T01:48:36Z by runner 7ae5f9a704c4 (actions).
+Updated 2026-11-13T01:49:10Z by runner 9901076ee397 (actions).
 
-**Building: T215 in progress since 23:45Z; 263 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T215 in progress since 23:45Z; 264 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 263 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 264 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
 - **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -13,7 +13,7 @@ Updated 2026-11-13T01:48:36Z by runner 7ae5f9a704c4 (actions).
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 20 problem(s) on tasks still to run (+138 on DONE tasks); first: T321: stored context_pct 41% but it measures 45%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+139 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +22,7 @@ Updated 2026-11-13T01:48:36Z by runner 7ae5f9a704c4 (actions).
 | T422 | Brand rename prep: integration tests (accepted-quote email t | MERGE_PENDING | 1 | 44 min | 01:20Z |  |
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | MERGE_PENDING | 1 | 26 min | 01:18Z |  |
 | T424 | Brand rename prep: integration tests (open-cards digest to s | MERGE_PENDING | 1 | 32 min | 01:15Z |  |
-| T372 | businesses and licensing: each recorded ROC list re-applies  | MERGE_PENDING | 1 | 81 min | 01:07Z |  |
+| T372 | businesses and licensing: each recorded ROC list re-applies  | done | 1 | 81 min | 01:07Z |  |
 | T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 1 | 2 min | 23:48Z | PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclea |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | done | 1 | 57 min | 23:46Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -127,7 +127,7 @@ Updated 2026-11-13T01:48:36Z by runner 7ae5f9a704c4 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 339 · unstarted 164
-**Tasks merged (throughput only):** 263 of 415
+**Tasks merged (throughput only):** 264 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -162,7 +162,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 143 of 197 done
+- stage 4: 144 of 197 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
