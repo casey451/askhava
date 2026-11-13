@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:32:46Z by runner 707ce7cfd47a (actions).
+Updated 2026-11-13T22:33:10Z by runner 707ce7cfd47a (actions).
 
 **Building: T355 in progress since 22:11Z; 297 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 297 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
+- **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z
 - **Week:** 29% used, 124.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:29Z, 3 min before this update
 - **Keeper:** last ran 22:27Z, next wake 00:54Z
@@ -19,6 +19,7 @@ Updated 2026-11-13T22:32:46Z by runner 707ce7cfd47a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T340 | picks and payments: the fee at the pick uses the job's lates | MERGE_PENDING | 1 | 40 min | 22:32Z |  |
 | T357 | server, messaging and intake: START into an open request res | done | 2 | 21 min | 22:14Z | Ci: failure; Lint and slow tests: failure / Lint and slow tests failed at step: Rust format and lint (clippy once, befor |
 | T438 | Token usage counts each reply once: dedupe transcript usage  | MERGE_PENDING | 2 | 19 min | 22:10Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 2 | 7 min | 22:01Z | PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no p |
@@ -156,7 +157,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T355 (lease until 2026-11-14T01:11:47Z)
 - lane 3: T415 (lease until 2026-11-14T01:05:51Z)
-- lane 7: T340 (lease until 2026-11-14T00:52:00Z)
 
 ## Last usage reading
-- {"task": "T357", "at": "2026-11-13T22:14:00Z", "output_tokens": 20786, "input_tokens": 77, "cache_read_input_tokens": 1564625, "cache_creation_input_tokens": 136320}
+- {"task": "T340", "at": "2026-11-13T22:32:45Z", "input_tokens": 307, "cache_read_input_tokens": 12561916, "output_tokens": 111508, "cache_creation_input_tokens": 358321}
