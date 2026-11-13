@@ -29,6 +29,7 @@ const REQUEST_TIMEOUT_SECS: &str = "ASKHAVA_REQUEST_TIMEOUT_SECS";
 const POSTAL_ADDRESS: &str = "ASKHAVA_POSTAL_ADDRESS";
 const STATIC_DIR: &str = "ASKHAVA_STATIC_DIR";
 const LICENSE_BASE_URL: &str = "ASKHAVA_LICENSE_BASE_URL";
+const SECURITY_EVENTS_PER_MINUTE: &str = "ASKHAVA_SECURITY_EVENTS_PER_MINUTE";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -52,6 +53,9 @@ const KEYS: &[&str] = &[
     // The license lists' and records' base URL, optional here; the composition that builds the
     // license source requires it in `test` and `live` (T385, SEC-032, D-2954).
     LICENSE_BASE_URL,
+    // The security-event rows per minute per key, raised to `portals`' alert threshold
+    // (T319, SEC-048, D-2207).
+    SECURITY_EVENTS_PER_MINUTE,
     "ASKHAVA_TWILIO_ACCOUNT_SID",
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",
@@ -260,6 +264,7 @@ pub struct Settings {
     postal_address: Option<String>,
     static_dir: Option<String>,
     license_base_url: Option<String>,
+    security_events_per_minute: Option<u32>,
 }
 
 impl Settings {
@@ -304,6 +309,7 @@ impl Settings {
             postal_address: raw.remove(POSTAL_ADDRESS).map(|p| p.trim().to_owned()),
             static_dir: raw.remove(STATIC_DIR).map(|d| d.trim().to_owned()),
             license_base_url,
+            security_events_per_minute: per_minute(raw.remove(SECURITY_EVENTS_PER_MINUTE))?,
         })
     }
 
@@ -367,6 +373,15 @@ impl Settings {
     #[must_use]
     pub fn public_base_url(&self) -> Option<&str> {
         self.public_base_url.as_deref()
+    }
+
+    /// The security-event rows stored per minute per (kind, client address, route) and per
+    /// (kind, route) (`ASKHAVA_SECURITY_EVENTS_PER_MINUTE`, a whole number above 0; unset is
+    /// `None`). `portals::api::configure_security_events` raises a value below its alert
+    /// threshold to it (T319, SEC-048, D-2207).
+    #[must_use]
+    pub fn security_events_per_minute(&self) -> Option<u32> {
+        self.security_events_per_minute
     }
 
     /// The web process's whole-request time limit in seconds (`ASKHAVA_REQUEST_TIMEOUT_SECS`, a
@@ -602,6 +617,16 @@ fn request_timeout_secs(raw: Option<String>) -> Result<u64, SettingsError> {
     match raw.trim().parse::<u64>() {
         Ok(secs @ 10..=300) => Ok(secs),
         _ => Err(SettingsError::Invalid(REQUEST_TIMEOUT_SECS)),
+    }
+}
+
+fn per_minute(raw: Option<String>) -> Result<Option<u32>, SettingsError> {
+    let Some(raw) = raw else {
+        return Ok(None);
+    };
+    match raw.trim().parse::<u32>() {
+        Ok(n) if n > 0 => Ok(Some(n)),
+        _ => Err(SettingsError::Invalid(SECURITY_EVENTS_PER_MINUTE)),
     }
 }
 
