@@ -3634,3 +3634,4 @@
 - 2026-11-13T11:35:35Z runner adb37e15746b (actions): {}
 - 2026-11-13T11:35:52Z runner adb37e15746b (actions): {}
 - 2026-11-13T11:40:49Z runner 67d6f23a8fa8 (actions): {"T255": "QUEUED -> IN_PROGRESS"}; T255 estimated 4.4M tokens (calibrated); week has 162.0M left (no five-hour budget, D-3056) (session_reading 2026-11-13T11:35:35Z (week)); claimed
+- 2026-11-13T11:41:20Z runner 67d6f23a8fa8 (actions): {"T312": "QUEUED -> IN_PROGRESS"}; T312 estimated 3.0M tokens (calibrated); week has 157.6M left (no five-hour budget, D-3056) after 4.4M still running in another lane (session_reading 2026-11-13T11:35:35Z (week)); claimed
