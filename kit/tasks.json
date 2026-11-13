@@ -10333,7 +10333,7 @@
     "D-3079",
     "D-3106",
     "D-3263",
-    "D-3445"
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -10394,7 +10394,7 @@
     "D-3079",
     "D-3106",
     "D-3263",
-    "D-3445"
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -13977,7 +13977,7 @@
     "D-3155",
     "D-3262",
     "D-3263",
-    "D-3445"
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -16211,7 +16211,7 @@
     "D-490",
     "D-492",
     "D-3263",
-    "D-3445"
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -16402,7 +16402,7 @@
     "D-492",
     "D-1143",
     "D-3263",
-    "D-3445"
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -18682,7 +18682,7 @@
     "D-2054",
     "D-2065",
     "D-2206",
-    "D-3445"
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -19213,7 +19213,7 @@
    "decisions": [
     "D-2128",
     "D-2440",
-    "D-3445"
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -21688,7 +21688,7 @@
     "D-3155",
     "D-3262",
     "D-3263",
-    "D-3445"
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -21756,7 +21756,7 @@
     "D-3155",
     "D-3262",
     "D-3263",
-    "D-3445"
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -23868,7 +23868,7 @@
    "id": "T271",
    "slug": "call-status-route",
    "title": "server and calls (harness): the dialed leg asks for status callbacks and they are served, so each call's start and finish are logged once",
-   "goal": "No route serves the dialed leg's status callbacks, so nothing in production calls `calls::api::log_finished_call` or T282's `call_start_confirmed`, and no call log exists for the refund rules, the TXT-026 reminders, the no-show, or the business portal's call log (D-1814's caller \"not wired yet\"; second external audit B06, D-1836). D-3118: `dial_twiml` asks for no status callback today (`app/calls/src/handlers.rs:29` to `:40`; D-2129 (4) left that to this task or a harness task), because the done `tests/integration/tests/no_recording.rs` (T078) pins its exact `<Number machineDetection=\"Enable\">` tag (`:116`). So first, as a harness change: `dial_twiml` gains the absolute status-callback URL as a parameter and writes `statusCallback` (that URL), `statusCallbackMethod=\"POST\"` and `statusCallbackEvent=\"initiated completed\"` on `<Number>`, keeping `do-not-record`, `machineDetection` and no whisper `url`; TD-CALL-03's `<Number>` tag assertion becomes the exact new tag and its calls pass the URL, every other assertion byte-identical; `tests/integration/tests/voice_calls.rs:368` (TD-CALL-09) passes the URL, its call only; the URL is the composition's public base (`ASKHAVA_PUBLIC_BASE_URL`, `app/server/src/lib.rs:288`) plus this route's path, reaching `connect` (`app/calls/src/pins.rs:489`, its production caller at `:512`) through new entry points beside `voice_turn` and `voice_confirm` that `app/server/src/inbound_voice.rs` calls, because `VoiceKeys` (`pins.rs:201`) is built by literal in done tests (`tests/integration/tests/call_pins.rs:101`, `app/server/tests/voice_confirm_line.rs:397`, `app/server/tests/inbound_voice.rs:257`) and keeps its fields. Then `app/server/src/call_status.rs`: the status-callback route that `dial_twiml` now names, checked with `X-Twilio-Signature` (SEC-016) and merged in the shared `app/server/src/lib.rs`: an `initiated` event records the dialed leg against the start T262's webhook stored, by `ParentCallSid`, through `call_start_confirmed` (creating the start at the callback's time when the webhook's write was lost); a final event logs the call through `finished_call` and `log_finished_call`, its start joined by the dialed SID, the party taken from the line as T262's voice route resolves it; each is applied once per CallSid and event (SEC-017), a repeated or out-of-order callback changing nothing; after a business call is logged the route enqueues T281's `picks.unreachable_step` check for the line's pick (deduped per call). A forged signature gets 403 and changes nothing; no phone number is stored or logged (PRIV-016), and the request log shows the route template only. Tests in `app/server/tests/call_status.rs` through the real route with signed fake Twilio requests. Update the `server` and `calls` `CLAUDE.md` files and `docs/decisions.md`, and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole). Harness: an Opus review.",
+   "goal": "No route serves the dialed leg's status callbacks, so nothing in production calls `calls::api::log_finished_call` or T282's `call_start_confirmed`, and no call log exists for the refund rules, the TXT-026 reminders, the no-show, or the business portal's call log (D-1814's caller \"not wired yet\"; second external audit B06, D-1836). D-3118: `dial_twiml` asks for no status callback today (`app/calls/src/handlers.rs:29` to `:40`; D-2129 (4) left that to this task or a harness task), because the done `tests/integration/tests/no_recording.rs` (T078) pins its exact `<Number machineDetection=\"Enable\">` tag (`:116`). So first, as a harness change: `dial_twiml` gains the absolute status-callback URL as a parameter and writes `statusCallback` (that URL), `statusCallbackMethod=\"POST\"` and `statusCallbackEvent=\"initiated completed\"` on `<Number>`, keeping `do-not-record`, `machineDetection` and no whisper `url`; TD-CALL-03's `<Number>` tag assertion becomes the exact new tag and its calls pass the URL, every other assertion byte-identical; `tests/integration/tests/voice_calls.rs` (TD-CALL-09, `td_call_09_a_bridged_call_plays_nothing_to_the_homeowner`) passes the URL, its call only; the URL is the composition's public base (`ASKHAVA_PUBLIC_BASE_URL`, `app/server/src/lib.rs:288`) plus this route's path, reaching `connect` (`app/calls/src/pins.rs:489`, its production caller at `:512`) through new entry points beside `voice_turn` and `voice_confirm` that `app/server/src/inbound_voice.rs` calls, because `VoiceKeys` (`pins.rs:201`) is built by literal in done tests (`tests/integration/tests/call_pins.rs:101`, `app/server/tests/voice_confirm_line.rs:397`, `app/server/tests/inbound_voice.rs:257`) and keeps its fields. Then `app/server/src/call_status.rs`: the status-callback route that `dial_twiml` now names, checked with `X-Twilio-Signature` (SEC-016) and merged in the shared `app/server/src/lib.rs`: an `initiated` event records the dialed leg against the start T262's webhook stored, by `ParentCallSid`, through `call_start_confirmed` (creating the start at the callback's time when the webhook's write was lost); a final event logs the call through `finished_call` and `log_finished_call`, its start joined by the dialed SID, the party taken from the line as T262's voice route resolves it; each is applied once per CallSid and event (SEC-017), a repeated or out-of-order callback changing nothing; after a business call is logged the route enqueues T281's `picks.unreachable_step` check for the line's pick (deduped per call). A forged signature gets 403 and changes nothing; no phone number is stored or logged (PRIV-016), and the request log shows the route template only. Tests in `app/server/tests/call_status.rs` through the real route with signed fake Twilio requests. Update the `server` and `calls` `CLAUDE.md` files and `docs/decisions.md`, and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole). Harness: an Opus review.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -23881,7 +23881,8 @@
     "T390",
     "T311",
     "T349",
-    "T425"
+    "T425",
+    "T386"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -23923,7 +23924,8 @@
     "D-1814",
     "D-1690",
     "D-3118",
-    "D-3325"
+    "D-3325",
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -26822,7 +26824,7 @@
     "D-480",
     "D-2306",
     "D-3134",
-    "D-3445"
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -26883,7 +26885,7 @@
     "D-480",
     "D-2306",
     "D-3134",
-    "D-3445"
+    "D-3467"
    ],
    "cites": [],
    "budget": {
@@ -29479,7 +29481,7 @@
    "id": "T386",
    "slug": "pick-notice-cant-take-words",
    "title": "messaging (harness): the pick notice's \"Can't take it\" line in both languages",
-   "goal": "Plan change D-3024 (PICK-050, PICK-037, TXT-001, TXT-044; D-446, D-493, D-491): after T214 adds the `cant_take` value to the pick notice (`run_pick_notice`, `app/picks/src/handlers.rs`), the words show it. (1) In `app/messaging/templates/en.json`, `pick_notice` and `pick_notice_emergency` each gain, right after \"Accept by {time}.\", exactly \" Can't take it: {cant_take}\"; in `app/messaging/templates/es.json` the same two keys gain, after \"Acepte antes de {time}.\", exactly \" ¿No puede aceptarlo? {cant_take}\" (still `draft`), so every text kind keeps its Spanish template (TXT-001); each of the four entries' `segments` rises to what the registry's TXT-044 check counts; no other key changes and no key is added, removed or renamed. The email subject (the first sentence) is unchanged. (2) Five done tests that render these templates with a fixed value list change only by adding a fake `cant_take` value (an `example` address, never a real brand word or domain), every other line byte-identical, no assertion removed or loosened: `app/messaging/src/tests/template_registry.rs` (T026's) adds `(\"cant_take\", ...)` to its `VALUES`; `app/intake/src/tests/intake_timeouts.rs` (T048's) adds the same to its `VALUES`; `tests/integration/tests/business_notices.rs` (T147's) `td_biz_14_times_are_set_at_send_and_a_link_is_never_unsigned` adds `\"cant_take\"` to its two `pick_notice` payloads' `values`; `tests/integration/tests/brand_setting.rs` (T295's) `td_word_38_texts_take_the_fake_brand` adds a `(\"cant_take\", ...)` pair to its `values`; and `app/picks/src/tests/confirm.rs` (T063's) `td_pick_33_templates_equal_the_spec_text` expects the two English texts with the sentence appended (still exact equality). (3) TD-PICK-43's rendered half, in `tests/integration/tests/business_notices.rs` (one new test beside `td_biz_14`): a `pick_notice` and a `pick_notice_emergency` notice with a fake `cant_take` address are sent, and both the stored plain body and the HTML body hold the \"Can't take it:\" line and the address. The HTML email shows it as text inside the line's `<p>`, not as an `<a>` (only `{link}` is made a link, `app/messaging/src/business_notices.rs:263`); making it a link is a possible later change to `business_notices.rs` (T313's and T379's), not this task's. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3024 (PICK-050, PICK-037, TXT-001, TXT-044; D-446, D-493, D-491): after T214 adds the `cant_take` value to the pick notice (`run_pick_notice`, `app/picks/src/handlers.rs`), the words show it. (1) In `app/messaging/templates/en.json`, `pick_notice` and `pick_notice_emergency` each gain, right after \"Accept by {time}.\", exactly \" Can't take it: {cant_take}\"; in `app/messaging/templates/es.json` the same two keys gain, after \"Acepte antes de {time}.\", exactly \" ¿No puede aceptarlo? {cant_take}\" (still `draft`), so every text kind keeps its Spanish template (TXT-001); each of the four entries' `segments` rises to what the registry's TXT-044 check counts; no other key changes and no key is added, removed or renamed. The email subject (the first sentence) is unchanged. (2) Five done tests that render these templates with a fixed value list change only by adding a fake `cant_take` value (an `example` address, never a real brand word or domain), every other line byte-identical, no assertion removed or loosened: `app/messaging/src/tests/template_registry.rs` (T026's) adds `(\"cant_take\", ...)` to its `VALUES`; `app/intake/src/tests/intake_timeouts.rs` (T048's) adds the same to its `VALUES`; `tests/integration/tests/business_notices.rs` (T147's) `td_biz_14_times_are_set_at_send_and_a_link_is_never_unsigned` adds `\"cant_take\"` to its two `pick_notice` payloads' `values`; `tests/integration/tests/brand_setting.rs` (T295's) `td_word_38_texts_take_the_fake_brand` adds a `(\"cant_take\", ...)` pair to its `values`; and `app/picks/src/tests/confirm.rs` (T063's) `td_pick_33_templates_equal_the_spec_text` expects the two English texts with the sentence appended (still exact equality). (3) TD-PICK-43's rendered half, in `tests/integration/tests/business_notices.rs` (one new test beside `td_biz_14`): a `pick_notice` and a `pick_notice_emergency` notice with a fake `cant_take` address are sent, and both the stored plain body and the HTML body hold the \"Can't take it:\" line and the address. The HTML email shows it as text inside the line's `<p>`, not as an `<a>` (only `{link}` is made a link, `app/messaging/src/business_notices.rs:263`); making it a link is a possible later change to `business_notices.rs` (T313's and T379's), not this task's. (4) Plan change D-3467: `tests/integration/tests/voice_calls.rs` (T080's, done) `td_call_06_no_route_lets_a_business_text_a_homeowner` keeps a fixed list of the placeholders `en.json` and `es.json` may hold (`slots`), and it fails once `{cant_take}` is in the templates; this task adds `\"{cant_take}\",` to that list right after `\"{business}\",`, every other line byte-identical and every assertion kept. `{cant_take}` is a real placeholder this task adds, so allowing it does not weaken the test: any other unknown placeholder still fails it. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -29507,7 +29509,8 @@
     "tests/integration/tests/business_notices.rs",
     "tests/integration/tests/brand_setting.rs",
     "app/messaging/src/tests/template_registry.rs",
-    "app/intake/src/tests/intake_timeouts.rs"
+    "app/intake/src/tests/intake_timeouts.rs",
+    "tests/integration/tests/voice_calls.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -29528,13 +29531,14 @@
    "decisions": [
     "D-446",
     "D-493",
-    "D-3024"
+    "D-3024",
+    "D-3467"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 8,
     "lines": 200,
-    "context_pct": 29
+    "context_pct": 35
    },
    "checks": [
     "Ci",
