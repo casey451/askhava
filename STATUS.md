@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T03:17:38Z by runner 3b6555499674 (actions).
+Updated 2026-11-13T03:17:52Z by runner 3b6555499674 (actions).
 
 **Building: T371 in progress since 03:08Z; 268 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 268 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T371 claimed 03:08Z, lease until 06:08Z; lane 5: T427 claimed 02:48Z, lease until 05:48Z
+- **Lane:** lane 4: T371 claimed 03:08Z, lease until 06:08Z
 - **Week:** 11% used, 170.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:15Z, 1 min before this update
+- **Last run:** 03:15Z, 2 min before this update
 - **Keeper:** last ran 03:14Z, next wake 05:50Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-13T03:17:38Z by runner 3b6555499674 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T427 | WORD-022 phrases catch both brand names in the spec trace, t | MERGE_PENDING | 1 | 29 min | 03:17Z |  |
 | T429 | Copy, voice and AI-smell docs name Laftly | MERGE_PENDING | 1 | 22 min | 03:13Z |  |
 | T430 | payments: a Confirm needs the current card-authorization wor | MERGE_PENDING | 1 | 39 min | 03:13Z |  |
 | T426 | Brand rename prep: notice-address and sign-in security tests | done | 1 | 35 min | 02:49Z |  |
@@ -168,7 +169,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 4: T371 (lease until 2026-11-13T06:08:00Z)
-- lane 5: T427 (lease until 2026-11-13T05:48:34Z)
 
 ## Last usage reading
-- {"task": "T429", "at": "2026-11-13T03:13:24Z", "cache_read_input_tokens": 2220674, "input_tokens": 126, "cache_creation_input_tokens": 101113, "output_tokens": 25045}
+- {"task": "T427", "at": "2026-11-13T03:17:37Z", "cache_creation_input_tokens": 218711, "output_tokens": 51904, "input_tokens": 197, "cache_read_input_tokens": 4285449}
