@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T00:42:43Z by runner 7ae5f9a704c4 (actions).
+Updated 2026-11-13T00:46:29Z by runner fff62a9375c6 (actions).
 
-**Building: T215 in progress since 23:45Z; 262 of 415 done; week 9% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T215 in progress since 23:45Z; 263 of 415 done; week 9% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 262 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 263 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 5: T424 claimed 00:42Z, lease until 03:42Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
 - **Week:** 9% used, 161.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:41Z, 1 min before this update
+- **Last run:** 00:42Z, 3 min before this update
 - **Keeper:** last ran 00:32Z, next wake 02:48Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Updated 2026-11-13T00:42:43Z by runner 7ae5f9a704c4 (actions).
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | done | 1 | 57 min | 23:46Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T418 | Performance: lab Core Web Vitals and Ci's warn-only performa | done | 1 | 50 min | 23:24Z |  |
-| T347 | licensing (harness): remove the handyman split-job check; ea | MERGE_PENDING | 1 | 52 min | 23:24Z |  |
+| T347 | licensing (harness): remove the handyman split-job check; ea | done | 1 | 52 min | 23:24Z |  |
 | T162 | intake: the one intake order for the five paths and the Span | done | 1 | 36 min | 23:01Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | done | 3 | 30 min | 22:57Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T419 | calls (harness): TD-CALL-23's no-plaintext scan reads only t | done | 1 | 24 min | 22:37Z |  |
@@ -122,13 +122,13 @@ Updated 2026-11-13T00:42:43Z by runner 7ae5f9a704c4 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 229 of 733 (31.2%) · partial 340 · unstarted 164
-**Tasks merged (throughput only):** 262 of 415
+**Requirements verified:** 230 of 733 (31.4%) · partial 339 · unstarted 164
+**Tasks merged (throughput only):** 263 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 14 | 6 | 35 |
-| ai | 7 | 17 | 5 | 29 |
+| ai | 8 | 16 | 5 | 29 |
 | businesses | 16 | 39 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
 | consent | 11 | 20 | 4 | 35 |
@@ -158,7 +158,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 142 of 197 done
+- stage 4: 143 of 197 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
