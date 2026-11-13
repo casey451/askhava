@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T03:27:11Z by runner 1351eeb1f8c2 (actions).
+Updated 2026-11-13T03:27:27Z by runner 1351eeb1f8c2 (actions).
 
 **Building: T371 in progress since 03:08Z; 269 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-13T03:27:11Z by runner 1351eeb1f8c2 (actions).
 - **Lane:** lane 4: T371 claimed 03:08Z, lease until 06:08Z
 - **Week:** 11% used, 170.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:27Z, 0 min before this update
-- **Keeper:** last ran 03:24Z, next wake 06:10Z
+- **Keeper:** last ran 03:27Z, next wake 06:10Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -89,7 +89,6 @@ Updated 2026-11-13T03:27:11Z by runner 1351eeb1f8c2 (actions).
 | T356 | messaging and server (harness): the worker sends queued text | done | 1 | 86 min | 05:31Z |  |
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | resync | 1 | 33 min | 04:56Z |  |
 | T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
-| T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z |  |
 
 ### Plan and harness merges on main
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
