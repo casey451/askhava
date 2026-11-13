@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T06:55:03Z by runner f7189ec863bb (actions).
+Updated 2026-11-13T06:56:23Z by runner f7189ec863bb (actions).
 
-**Idle since 06:38Z; 275 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 06:56Z; 276 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 275 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 276 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 06:38Z (no task in progress)
+- **Lane:** idle since 06:56Z (no task in progress)
 - **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:54Z, 0 min before this update
+- **Last run:** 06:55Z, 1 min before this update
 - **Keeper:** last ran 06:55Z, next wake 12:35Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-13T06:55:03Z by runner f7189ec863bb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T420 | Brand rename prep: intake and ai unit tests take the brand f | MERGE_PENDING | 1 | 28 min | 06:38Z |  |
+| T420 | Brand rename prep: intake and ai unit tests take the brand f | done | 1 | 28 min | 06:38Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | done | 1 | 22 min | 05:08Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 20 min | 04:22Z |  |
 | T371 | licensing and server: the worker fetches and records the dai | done | 1 | 70 min | 04:18Z |  |
@@ -118,7 +118,7 @@ Updated 2026-11-13T06:55:03Z by runner f7189ec863bb (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 234 of 733 (31.9%) · partial 338 · unstarted 161
-**Tasks merged (throughput only):** 275 of 415
+**Tasks merged (throughput only):** 276 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -153,7 +153,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 155 of 197 done
+- stage 4: 156 of 197 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
