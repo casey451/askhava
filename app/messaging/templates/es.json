@@ -126,6 +126,18 @@
     "segments": 2,
     "text": "{brand_short}: {business} intentó llamarle por la solicitud {job}. Llámele de vuelta al {number}."
   },
+  "whos_calling": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "{brand_short}: {business} le llamará por la solicitud {job} desde el {number}. Si no contesta, llámele de vuelta a este número. Funciona durante 30 días. Pida el precio y cualquier cambio por escrito antes de empezar el trabajo. No pague todo por adelantado."
+  },
+  "whos_calling_email": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "{brand_short}: {business} aceptó la solicitud {job}. Le escribirá por correo electrónico a la dirección que eligió. Pida el precio y cualquier cambio por escrito antes de empezar el trabajo. No pague todo por adelantado."
+  },
   "problem_reply": {
     "audience": "homeowner",
     "draft": true,
