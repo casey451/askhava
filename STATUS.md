@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T07:29:22Z by runner bee96646639a (actions).
+Updated 2026-11-13T07:34:53Z by runner bee96646639a (actions).
 
 **Building: T428 in progress since 07:00Z; 276 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T07:29:22Z by runner bee96646639a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T428 claimed 07:00Z, lease until 10:00Z
 - **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:29Z, 0 min before this update
+- **Last run:** 07:34Z, 0 min before this update
 - **Keeper:** last ran 07:29Z, next wake 10:02Z
 
 ## Needs attention
@@ -86,7 +86,6 @@ Updated 2026-11-13T07:29:22Z by runner bee96646639a (actions).
 | T360 | messaging: the opt-out confirmation email while texting is o | done | 1 | 43 min | 07:42Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 47 min | 07:35Z |  |
 | T390 | calls and server: a blocked staff call that connects a line  | done | 1 | 29 min | 07:34Z |  |
-| T401 | server (harness): the door probe's fixture gains a released  | done | 2 | 37 min | 07:33Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
 
 ### Plan and harness merges on main
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
