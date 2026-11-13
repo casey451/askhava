@@ -1,0 +1,28 @@
+# catalog notes (D-3474): one entry per line, `- [REQUIREMENT-IDS] (section) text`; grep by ID, never read whole; add yours at the end, one line each.
+- [-] (purpose) T248 added markets as reviewed data and ZIP locations (D-3113 to D-3115). Not here yet: the not-offered reply (T043), numeric settings and feature switches beyond the category switch.
+- [-] (owns) `src/api.rs`: the only public surface: `load_embedded` (categories, then markets and centroids), `markets`, `service_area_towns`, `town_for_zip`, `zip_location`, the re-exported `miles_between`, `parse_markets`, `parse_centroids`, `is_zip`, `Markets`, `MarketDef`, `TownDef`, `MarketTown`, `Centroid`, `MarketRefused`, `load`, `category`, `is_enabled`, `enabled_categories`, `is_not_offered`,
+- [-] (owns) `set_category_enabled`.
+- [-] (owns) `src/loader.rs`: `embedded` (the file is `include_str!`ed), `parse` (pure checks), `normalize`.
+- [LIC-040] (owns) `src/question_bank.rs`: `parse_bank`, `embedded_bank` (pure, in memory; `api::question_bank`, `api::parse_question_bank`): sets of 3 to 8 questions, both languages, card fields multiple choice only (LIC-040, D-754).
+- [-] (owns) `src/restricted_words.rs`: `RESTRICTED_WORDS`, `restricted_match` (pure; `api` re-exports them for `quotes` and `ai`).
+- [-] (owns) `src/service.rs`: the SQL: `load`, reads, `set_enabled`.
+- [-] (owns) `src/models.rs`: file types (`Catalog`, `CategoryDef`, `LicenseRule`), `Category`, `CatalogError`.
+- [-] (owns) `src/markets.rs` (T248): `docs/catalog/markets.yaml` and `data/zcta_centroids_az.csv` compiled in; `parse_markets`, `parse_centroids`, `embedded`, `centroids` (parsed once, `LazyLock`), `miles_between`, `store` (the sync's upserts).
+- [-] (owns) Migration `0162_catalog_markets.sql`: `catalog.market` (column-level INSERT and UPDATE grants leave out `launched_at`), `market_town` (code is the key, so one market per town), `zcta_centroid`.
+- [-] (owns) Migration `0027_catalog_module.sql`: `catalog.category`, `job_type`, `license_rule`, `fee_rule`, `not_offered`.
+- [INT-048 INT-022] (rules) INT-048, INT-022, D-382: `parse_markets` refuses a duplicate market ID, a town in two markets, a ZIP under two towns, an unknown IANA time zone, a market with no towns and a state other than AZ without a decision ID (`D-` then digits only); a reviewed extra ZIP gives a town and no location; `zip_location` is the Census ZCTA internal point or none.
+- [LIC-001] (rules) LIC-001: each category stores job types (with one-time, fee-free, kind and format), license rule, recurring flag, fee tier, after-hours flag and keywords.
+- [LIC-002] (rules) LIC-002: `set_category_enabled` updates the one column and writes an `ops` audit row (`catalog.category_switched`, subject `catalog.category`) in one transaction; no code change is needed to switch.
+- [LIC-003 LIC-005] (rules) LIC-003, LIC-005: a new category starts as the file says (`enabled: false` for garage doors, junk removal); a category not in the file is never stored and reads as off.
+- [LIC-004] (rules) LIC-004: the eight not-offered kinds are forced off by `parse` and refused by `set_category_enabled` (`NotOffered`); `is_not_offered` serves T043.
+- [AI-017] (rules) AI-017: no function takes a license class; classes come from the reviewed file only; a ROC category with no classes cannot be switched on (`LicenseUnresolved`); only `Actor::Owner` switches (`OwnerOnly`).
+- [LIC-042] (rules) LIC-042: `loader::covers_warranty` makes `parse` refuse a category, job type or keyword (and `parse_bank` a set code) that covers a warranty, protection plan, service contract or guarantee (D-755).
+- [CARD-010 AI-021] (rules) CARD-010: `restricted_words::restricted_match`: whole-word, any-case match against the SHAFT, cannabis and drug list, naming the entry, never the text; trade words such as "weed" and "nail gun" are off the list on purpose (D-813). `ai` screens AI-written text with it (AI-021); `quotes` (T185) removes the phrases from card descriptions.
+- [-] (change) Add or change a category: edit the file (a `docs/decisions.md` entry and `scripts/check_catalog.py`), then `load_embedded` (the server does not call it yet; D-748 says the first task with a start-up pool calls it); a changed `enabled` for an existing category does not apply, switch it through `set_category_enabled`.
+- [-] (change) Add a market or a town: edit `docs/catalog/markets.yaml` (ZIPs from the Census ZCTA-to-place file, extra ZIPs reviewed; a state other than AZ needs its legal-review decision ID), add a `docs/decisions.md` entry, rewrite `kit/plan.lock`, and copy any missing ZCTA rows from the Census Gazetteer into `data/zcta_centroids_az.csv` by script; run `cargo test -p askhava-catalog tests::markets`.
+- [-] (change) Add a column: a new migration starting `-- catalog (T###)`, update `service.rs`, regenerate `.sqlx/`.
+- [-] (change) Run `cargo test -p askhava-catalog`, `cargo test -p askhava-integration --test catalog_settings`, clippy and `bash scripts/smoke.sh`.
+- [INT-022] (tests) `src/tests/markets.rs` (TD-INT-37: the file, the refusals, the Phoenix fixture, the centroid table, `miles_between`): `cargo test -p askhava-catalog tests::markets`; the database and INT-022 cases are in `tests/integration/tests/service_area.rs`.
+- [LIC-040 LIC-042] (tests) `src/tests/question_bank_load.rs` (TD-LIC-24, TD-LIC-16; LIC-040 to LIC-042).
+- [-] (tests) The restricted list's cases are in `app/ai/src/tests/no_tools.rs::restricted_list_matches_whole_words_only` (T024, TD-AI-10).
+- [LIC-001 LIC-005 AI-017] (tests) `src/tests/loader.rs` and `tests/integration/tests/catalog_settings.rs` (TD-LIC-01; LIC-001 to LIC-005, AI-017).

@@ -67,10 +67,10 @@ A **worker** follows its prompt's shorter start routine instead: the prompt past
 
 ## 5. Doing a build task
 
-1. Read the requirement lines and the `TD-` entries your prompt names, the crate's `CLAUDE.md`, and the `docs/brains/` files your prompt lists; cite the brain principle you applied in the pull request when a design choice rests on it. Read the cited source lines only to settle a doubt.
+1. Read the requirement lines and the `TD-` entries your prompt names, the crate's `CLAUDE.md` (it loads on its own) and the lines of its `NOTES.md` that name your requirement IDs (`grep -n`, never the whole file), and the `docs/brains/` files your prompt lists; cite the brain principle you applied in the pull request when a design choice rests on it. Read the cited source lines only to settle a doubt.
 2. Write the tests first, from the `TD-` entries (behaviour, boundary, failure, invariant), each naming its IDs in a doc comment. Run them; they fail.
 3. Write the smallest code that passes, inside your owned files. Functions under 50 lines. Only `api` is `pub`. Money through `payments`; vault plaintext through `privacy::api`; every state change writes an audit row; every outside action carries an idempotency key.
-4. Document as you go (`docs/code-docs.md`): `//!` at the top of every file, `///` on every public item, requirement IDs on rule code, the crate's `CLAUDE.md` updated.
+4. Document as you go (`docs/code-docs.md`): `//!` at the top of every file, `///` on every public item, requirement IDs on rule code, one line per new fact at the end of the crate's `NOTES.md` (D-3474).
 5. If you changed any words a homeowner or business reads, run `scripts/check_ai_smell.py` and `scripts/check_copy.py`, then the cold read and the copy panel as your prompt describes.
 6. Run `bash scripts/smoke.sh` on your branch. Then `cargo test -p <your test crate>` for your `TD-` entries, and the twin if your prompt says so. Commit, then run `bash scripts/prehandin.sh` last (the `Ci` steps smoke does not run: the change rules against `main`, the PII scan, the npm and cargo audits); the runner runs the same gate at `--after` and holds or fails a red hand-in (D-1300).
 7. Update `docs/architecture.md` (sections 7 to 12 only, unless you are a harness task with a decision) and `docs/decisions.md` in the same commit when behaviour or design changed.
