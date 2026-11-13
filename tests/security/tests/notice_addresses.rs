@@ -147,7 +147,11 @@ async fn td_sec_07_only_the_owner_changes_and_the_new_address_is_verified_first(
 /// TD-SEC-07 (SEC-025): every business email comes from the one askhava.com sending subdomain.
 #[test]
 fn td_sec_07_business_email_comes_from_the_sending_subdomain() {
-    assert_eq!(FROM.to_string(), "\"Ask Hava\" <jobs@notify.askhava.com>");
+    let b = brand();
+    assert_eq!(
+        FROM.to_string(),
+        format!("\"{}\" <jobs@notify.{}>", b.email_from_name(), b.domain())
+    );
 }
 
 /// A brand file like the embedded one with `short` as both short names (fake, D-1932).
@@ -157,6 +161,11 @@ fn fake_brand(short: &str) -> Brand {
     data["short_name"] = short.into();
     data["es"]["short_name"] = short.into();
     Brand::parse(&data.to_string()).expect("fake brand")
+}
+
+/// `text` with its brand tokens filled from the brand file (D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("fill")
 }
 
 /// One template in each language, `segments` 1, with the English and Spanish text given.
@@ -188,7 +197,10 @@ fn td_word_35_the_registry_fills_the_brand_and_refuses_a_lacking_or_longer_text(
                 .expect("fill");
             let (text, _) = registry.template(&id, language).expect("template");
             assert_eq!(text, before, "{id}");
-            assert!(text.starts_with("Ask Hava:"), "{id}");
+            assert!(
+                text.starts_with(&branded("{brand_short}:", spanish)),
+                "{id}"
+            );
         }
     }
     let tail = "a".repeat(140);
@@ -199,7 +211,7 @@ fn td_word_35_the_registry_fills_the_brand_and_refuses_a_lacking_or_longer_text(
     let filled = Registry::parse_with(&en, &es, brand()).expect("fits one segment");
     assert_eq!(
         filled.template("t", Language::En).expect("t").0,
-        format!("Ask Hava: {tail}")
+        branded(&format!("{{brand_short}}: {tail}"), false)
     );
     let longer = fake_brand("Fakeco Home Services");
     assert!(
@@ -220,31 +232,32 @@ fn td_word_35_the_registry_fills_the_brand_and_refuses_a_lacking_or_longer_text(
     );
 }
 
-/// Each audience and language: the still-open email's subject and why-line in today's words.
+/// Each audience and language: the still-open email's subject and why-line in today's words, with
+/// the brand tokens filled in that language.
 const EMAIL_CASES: [(Audience, Language, &str, &str); 4] = [
     (
         Audience::Business,
         Language::En,
-        "Ask Hava: Request 1042 is still open",
-        "You get these emails because your business signed up for job requests from Ask Hava.",
+        "{brand_short}: Request 1042 is still open",
+        "You get these emails because your business signed up for job requests from {brand}.",
     ),
     (
         Audience::Homeowner,
         Language::En,
-        "Ask Hava: Request 1042 is still open",
-        "You get these emails because you asked Ask Hava for quotes.",
+        "{brand_short}: Request 1042 is still open",
+        "You get these emails because you asked {brand} for quotes.",
     ),
     (
         Audience::Business,
         Language::Es,
-        "Ask Hava: La solicitud 1042 sigue abierta",
-        "Recibe estos correos porque su negocio se inscribió para recibir solicitudes de trabajo de Ask Hava.",
+        "{brand_short}: La solicitud 1042 sigue abierta",
+        "Recibe estos correos porque su negocio se inscribió para recibir solicitudes de trabajo de {brand}.",
     ),
     (
         Audience::Homeowner,
         Language::Es,
-        "Ask Hava: La solicitud 1042 sigue abierta",
-        "Recibe estos correos porque pidió cotizaciones a Ask Hava.",
+        "{brand_short}: La solicitud 1042 sigue abierta",
+        "Recibe estos correos porque pidió cotizaciones a {brand}.",
     ),
 ];
 
@@ -257,12 +270,15 @@ fn td_word_35_the_email_sender_subjects_and_footers_come_from_the_brand() {
         FROM.to_string(),
         format!("\"{}\" <{}>", b.email_from_name(), b.email_from_address())
     );
-    assert_eq!(reply_to(), "help@askhava.com");
+    assert_eq!(reply_to(), branded("help@{domain}", false));
     assert_eq!(
         WHY_CHARGED_PREFIX.to_string(),
-        "https://askhava.com/b/charges/"
+        branded("https://{domain}/b/charges/", false)
     );
-    assert_eq!(SIGN_IN_URL.to_string(), "https://askhava.com/b/sign-in");
+    assert_eq!(
+        SIGN_IN_URL.to_string(),
+        branded("https://{domain}/b/sign-in", false)
+    );
     let postal = PostalAddress::new(
         "PO Box 1234, Lake Havasu City, AZ 86405",
         MailboxKind::PoBox,
@@ -275,20 +291,20 @@ fn td_word_35_the_email_sender_subjects_and_footers_come_from_the_brand() {
             language,
             manage_url: "https://askhava.com/b",
         };
+        let spanish = language == Language::Es;
+        let (subject, why) = (branded(subject, spanish), branded(why, spanish));
         let email = render_email(&postal, &to, Notice::StillOpen(1042)).expect("email");
         assert_eq!(email.subject, subject);
         assert!(email.subject.starts_with(&format!("{}:", b.short_name())));
         assert!(email.plain.contains(&format!("\n{why}\n")), "{why}");
-        assert!(
-            email
-                .plain
-                .ends_with("\nAsk Hava LLC, PO Box 1234, Lake Havasu City, AZ 86405\n")
-        );
-        assert!(
-            email
-                .html
-                .contains("<p>Ask Hava LLC, PO Box 1234, Lake Havasu City, AZ 86405</p>")
-        );
+        assert!(email.plain.ends_with(&branded(
+            "\n{brand_legal}, PO Box 1234, Lake Havasu City, AZ 86405\n",
+            false
+        )));
+        assert!(email.html.contains(&branded(
+            "<p>{brand_legal}, PO Box 1234, Lake Havasu City, AZ 86405</p>",
+            false
+        )));
         assert!(email.html.contains(&format!("<p>{}, ", b.legal_name())));
     }
 }
@@ -338,9 +354,10 @@ async fn td_biz_13_the_notice_page_and_owner_only_channel(pool: PgPool) {
     };
     let html = notice_settings_page(&boss, &list, off, "tok").expect("page");
     assert!(html.contains("owner@example.test") && html.contains("Not confirmed yet"));
-    assert!(
-        html.contains("Ask Hava emails to old@example.test are being returned or marked as spam")
-    );
+    assert!(html.contains(&branded(
+        "{brand} emails to old@example.test are being returned or marked as spam",
+        false
+    )));
     assert!(html.contains("value=\"email\" checked") && !html.contains("value=\"text\""));
     let on = ChannelFacts {
         texting_on: true,
