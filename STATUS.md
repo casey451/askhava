@@ -1,19 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-13T00:48:43Z by runner 7ae5f9a704c4 (actions).
+Updated 2026-11-13T00:53:01Z by runner fff62a9375c6 (actions).
 
 **Building: T215 in progress since 23:45Z; 263 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 263 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 5: T424 claimed 00:42Z, lease until 03:42Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
-- **Week:** 10% used, 161.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:48Z, 0 min before this update
+- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 2: T421 claimed 00:52Z, lease until 03:52Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 5: T424 claimed 00:42Z, lease until 03:42Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
+- **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 00:48Z, 4 min before this update
 - **Keeper:** last ran 00:48Z, next wake 02:47Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T371 (since 2026-11-12T23:46:03Z, no attempt used; a plan change fixes it): T371: dependency T385 is DONE but its owned file app/licensing/src/own_record.rs is not on main; T371: dependency T385 is DONE but its owned file app/businesses/src/signup_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/integration/tests/signup_own_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/record/roc/ROC100001 is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/roc is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/city is not on main
 - Strict plan check red: 20 problem(s) on tasks still to run (+138 on DONE tasks); first: T321: stored context_pct 41% but it measures 45%; regenerate
 
 ## Last 24 hours
@@ -151,7 +150,7 @@ Updated 2026-11-13T00:48:43Z by runner 7ae5f9a704c4 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T00:31:43Z (week)): week: 32.3M used, 161.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T01:58:36Z.
+- Pacing (session_reading 2026-11-13T00:48:25Z (week)): week: 35.8M used, 158.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-05T17:28:22Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -167,6 +166,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T215 (lease until 2026-11-13T02:45:19Z)
+- lane 2: T421 (lease until 2026-11-13T03:52:45Z)
 - lane 3: T372 (lease until 2026-11-13T02:46:03Z)
 - lane 4: T422 (lease until 2026-11-13T03:36:38Z)
 - lane 5: T424 (lease until 2026-11-13T03:42:22Z)
