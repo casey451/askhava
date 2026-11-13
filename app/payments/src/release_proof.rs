@@ -146,9 +146,13 @@ pub struct StripeAccount {
     pub account: String,
 }
 
-/// A pick cleared for release, and why: made only by [`paid_release`] and [`no_fee_release`],
-/// with private fields and no `Clone`, so the one way to a [`ReleaseProof`] is through those
-/// checks and [`Minter::mint`] (PICK-022, SEC-030).
+/// A pick cleared for release, and why, with private fields and no `Clone` (PICK-022, SEC-030,
+/// D-3358): release only through [`paid_release`], [`no_fee_release`] or `reclear_release` and
+/// then [`Minter::mint`]; `Releasable`'s one crate-private constructor is
+/// [`Releasable::from_stored_success`], which reads only the named pick's own stored, unended,
+/// unrefunded, undisputed success; `reclear_release` is called only by `server`'s
+/// `intake.address_in` handler after `picks::api::awaiting_address` found the wait row; never a
+/// public constructor, `Default` or `Clone`.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Releasable {
     pick: Uuid,
@@ -263,6 +267,53 @@ pub async fn no_fee_release(
     }
     let basis = ReleaseBasis::NoFeeDue;
     Ok(Releasable { pick, basis })
+}
+
+impl Releasable {
+    /// Re-clears pick `pick` from its own stored, unended, unrefunded, undisputed success, for
+    /// `reclear_release` only (INT-029, PICK-022, SEC-030, FEE-021, FEE-026, FEE-027, FEE-042,
+    /// D-3358): one statement takes `FOR SHARE OF` the pick's `payments.pick_intent` row (so
+    /// `request_refund`'s `FOR UPDATE` waits for the caller's transaction) and reads that pick's
+    /// own rows: the intent with `ended_at` null, no `payments.refund` row of any status and no
+    /// `payments.dispute` row, a latest `payments.charge_attempt` that `succeeded`, and its
+    /// `payments.charge_evidence` row naming the intent's own `pi_…` and amount. It takes nothing
+    /// but the pick, so no redirect, message, event or caller value can clear a pick.
+    ///
+    /// # Errors
+    /// The first failing check in this order: no intent row [`ReleaseError::WrongIntent`]; ended,
+    /// refunded or disputed [`ReleaseError::PickEnded`]; no attempt, a latest attempt not
+    /// succeeded or no matching evidence row [`ReleaseError::NotPaid`]; a failed statement
+    /// [`ReleaseError::Database`].
+    pub(crate) async fn from_stored_success(
+        conn: &mut PgConnection,
+        pick: Uuid,
+    ) -> Result<Releasable, ReleaseError> {
+        let row = sqlx::query!(
+            r#"SELECT (i.ended_at IS NOT NULL
+                 OR EXISTS (SELECT 1 FROM payments.refund r WHERE r.pick_id = i.pick_id)
+                 OR EXISTS (SELECT 1 FROM payments.dispute d WHERE d.pick_id = i.pick_id))
+                 AS "ended!",
+               COALESCE((SELECT a.status = 'succeeded' FROM payments.charge_attempt a
+                 WHERE a.pick_id = i.pick_id ORDER BY a.try_no DESC LIMIT 1), false)
+               AND EXISTS (SELECT 1 FROM payments.charge_evidence e WHERE e.pick_id = i.pick_id
+                 AND e.stripe_intent_id = i.stripe_intent_id
+                 AND e.amount_cents = i.amount_cents) AS "paid!"
+               FROM payments.pick_intent i WHERE i.pick_id = $1 FOR SHARE OF i"#,
+            pick
+        )
+        .fetch_optional(conn)
+        .await
+        .map_err(|_| ReleaseError::Database)?
+        .ok_or(ReleaseError::WrongIntent)?;
+        if row.ended {
+            return Err(ReleaseError::PickEnded);
+        }
+        if !row.paid {
+            return Err(ReleaseError::NotPaid);
+        }
+        let basis = ReleaseBasis::PaidCharge;
+        Ok(Releasable { pick, basis })
+    }
 }
 
 /// The event's own checks: type, mode and account (SEC-039). Stripe names `account` only on

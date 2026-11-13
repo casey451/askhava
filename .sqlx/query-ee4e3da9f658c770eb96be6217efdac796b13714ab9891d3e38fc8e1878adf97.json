@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.dispute (stripe_dispute_id, pick_id, amount_cents, due_at, opened_at) VALUES ('dp_fake20', $1, 7500, now(), now())",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ee4e3da9f658c770eb96be6217efdac796b13714ab9891d3e38fc8e1878adf97"
+}
