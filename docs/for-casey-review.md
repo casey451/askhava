@@ -2650,3 +2650,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Pull requests now wait their turn to catch up with main (D-3418)
 
 - When one task merged, the runner used to bring every other waiting task up to date at once, which restarted all their checks; only one could merge next, so about 2 check runs per merge were thrown away. Now only the oldest waiting task is brought up to date, and the next one gets its turn when it merges or drops out. Nothing needs you now.
+
+## One more prep step before the Laftly switch (T428 plan fix, D-3430)
+
+- The step that switches the name to Laftly stopped before changing anything: six existing tests still spelled "Ask Hava", the old version line of the texting terms, or the first version of the card-authorization wording, and that step is not allowed to edit them. A new step, T431, runs just before it and makes those six tests read the name, the version line and the wording version from where the app keeps them. Every test still checks exactly what it checked before; nothing is loosened. Nothing needs you now.
