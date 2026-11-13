@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT k.key AS \"key!\" FROM unnest($1::text[]) WITH ORDINALITY AS k(key, n)\n           WHERE NOT EXISTS (SELECT 1 FROM core.task t WHERE t.dedupe_key = k.key) ORDER BY k.n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "key!",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "2163755b19a6498c3409d07048e7c606e5548b5349fa7c2eed2e0e74d14a04d6"
+}

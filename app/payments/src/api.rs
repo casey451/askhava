@@ -142,7 +142,9 @@ pub use crate::off_session::{
 pub use crate::pick_fee::{
     PickFeeError, StoredPickFee, fee_terms_in_force, fix_fee_at_pick, pick_fee,
 };
-pub use crate::purge::{DISPUTE_OPEN_AFTER_DUE, place_dispute_holds, run_dispute_holds};
+pub use crate::purge::{
+    DISPUTE_OPEN_AFTER_DUE, place_dispute_holds, run_dispute_holds, run_dispute_holds_at,
+};
 pub use crate::receipts::{ChargeReceipt, RECEIPT_KIND, queue_receipt, receipt_for, tier_of_fee};
 pub use crate::reclear::reclear_release;
 pub use crate::reconcile::{

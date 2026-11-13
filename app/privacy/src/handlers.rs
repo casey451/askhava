@@ -42,15 +42,27 @@ pub fn purge_target(task: &Claimed) -> Result<(Uuid, PurgeStage), HandlerError> 
     job.zip(stage).ok_or(BAD_PAYLOAD)
 }
 
-/// PRIV-007 to PRIV-009: the purge-due handler, for `jobs`' stage tasks and [`RECHECK_KIND`]; safe
-/// to run twice (each enqueue carries a dedupe key, each delete finds nothing the second time).
+/// PRIV-007 to PRIV-009: [`run_purge_due_at`] at the wall clock.
+///
+/// # Errors
+/// As [`run_purge_due_at`].
+pub async fn run_purge_due(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    run_purge_due_at(pool, task, Timestamp::now()).await
+}
+
+/// PRIV-007 to PRIV-009, D-2641: the purge-due handler at `now` (the worker's clock), for `jobs`'
+/// stage tasks and [`RECHECK_KIND`]; safe to run twice (each enqueue carries a dedupe key, each
+/// delete finds nothing the second time).
 ///
 /// # Errors
 /// A fixed [`HandlerError`] for a bad payload or a database failure.
-pub async fn run_purge_due(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+pub async fn run_purge_due_at(
+    pool: PgPool,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
     let (job, stage) = purge_target(&task)?;
     let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
-    let now = Timestamp::now();
     match stage {
         PurgeStage::Photos => purge_photos(&mut conn, job).await.map(|_| ()),
         PurgeStage::Text => return hand_on(&mut conn, job, stage, now).await,
@@ -80,12 +92,23 @@ pub async fn run_purge_due_after(
     task: Claimed,
     events_queued: usize,
 ) -> Result<(), HandlerError> {
+    run_purge_due_after_at(pool, task, (events_queued, Timestamp::now())).await
+}
+
+/// PRIV-007, D-1799, D-2641: [`run_purge_due_after`] at `now` (the worker's clock).
+///
+/// # Errors
+/// As [`run_purge_due_at`].
+pub async fn run_purge_due_after_at(
+    pool: PgPool,
+    task: Claimed,
+    (events_queued, now): (usize, Timestamp),
+) -> Result<(), HandlerError> {
     let (job, stage) = purge_target(&task)?;
     if events_queued == 0 || stage != PurgeStage::Contact || task.kind != RECHECK_KIND {
-        return run_purge_due(pool, task).await;
+        return run_purge_due_at(pool, task, now).await;
     }
     let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
-    let now = Timestamp::now();
     let round = format!("events-{}", now.as_second());
     recheck(&mut conn, job, now + FIRST_WAIT, &round).await
 }
@@ -120,8 +143,20 @@ async fn hand_on(
 /// "open"}`: an open complaint places its hold, a closed one releases it.
 ///
 /// # Errors
-/// A fixed [`HandlerError`] for a bad payload or a database failure.
+/// As [`run_complaint_hold_at`].
 pub async fn run_complaint_hold(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    run_complaint_hold_at(pool, task, Timestamp::now()).await
+}
+
+/// PRIV-007, D-2641: [`run_complaint_hold`] at `now` (the worker's clock).
+///
+/// # Errors
+/// A fixed [`HandlerError`] for a bad payload or a database failure.
+pub async fn run_complaint_hold_at(
+    pool: PgPool,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
     let id = |key: &str| {
         task.payload[key]
             .as_str()
@@ -134,7 +169,6 @@ pub async fn run_complaint_hold(pool: PgPool, task: Claimed) -> Result<(), Handl
         .as_bool()
         .ok_or(HandlerError("hold event payload has no open flag"))?;
     let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
-    let now = Timestamp::now();
     let source = HoldSource::Complaint;
     if open {
         place_hold(&mut conn, source, complaint, job, now).await

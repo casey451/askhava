@@ -32,8 +32,8 @@ pub use crate::handlers::{TEXT_KIND, all_windows_ended, connected_reply, text_du
 pub use crate::job_facts::{FactsError, JobFacts, Recorded, job_facts, record_job_facts};
 pub use crate::models::{JobRow, JobsError};
 pub use crate::purge_events::{
-    PURGE_DUE_KIND, PURGE_STAGES, SWEEP_KIND, enqueue_purge, run_sweep, schedule_sweep,
-    sweep_closed,
+    PURGE_DUE_KIND, PURGE_STAGES, SWEEP_KIND, SWEEP_PAGE, enqueue_purge, final_jobs_page,
+    run_sweep, run_sweep_at, schedule_sweep, sweep_closed, unqueued_finals,
 };
 pub use crate::service::{
     TIMER_KIND, create, job_number, move_to, raise_number_floor, restart_timer, run_timer,
