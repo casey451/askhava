@@ -67,7 +67,8 @@ pub use crate::mode_state::{
 pub use crate::models::{EmailError, EmailLog, InboxError, OutboxError};
 pub use crate::open_cards_digest::{DigestFacts, MIN_LEFT, digest_goes, listable, slot_due};
 pub use crate::optout::{
-    InboundText, Outcome, RevokeChannel, on_inbound_text, send_checked, suppress,
+    FollowUp, InboundText, OPTOUT_FOLLOWUP_KIND, Outcome, RevokeChannel, listed_by,
+    on_inbound_text, queue_optout_followup, run_optout_followup, send_checked, suppress,
 };
 pub use crate::optout_email::{
     OPTOUT_CONFIRMATION_EMAIL, OPTOUT_WROTE_AGAIN_EMAIL, OptOutEmailSender, WROTE_AGAIN_ACTION,
