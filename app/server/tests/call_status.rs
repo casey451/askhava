@@ -302,18 +302,18 @@ async fn dial(v: &Arc<VoiceHooks>, n: u32) -> String {
     body
 }
 
-/// The dialed leg `n + 100` of parent call `n` reports `status`; the route's status code.
-async fn callback(v: &Arc<VoiceHooks>, n: u32, status: &str, token: &str) -> StatusCode {
+/// The dialed leg `n + 100` of parent call `n` reports the status `word`; the route's status code.
+async fn callback(v: &Arc<VoiceHooks>, n: u32, word: &str, token: &str) -> StatusCode {
     let (parent, leg) = (sid(n), sid(n + 100));
     let mut fields = vec![
         ("CallSid", leg.as_str()),
         ("ParentCallSid", parent.as_str()),
-        ("CallStatus", status),
+        ("CallStatus", word),
         ("From", NUMBER),
         ("To", HER),
         ("Direction", "outbound-dial"),
     ];
-    if status == "completed" {
+    if word == "completed" {
         fields.extend([("CallDuration", "60"), ("AnsweredBy", "human")]);
     }
     post(v, STATUS_PATH, &fields, token).await.0

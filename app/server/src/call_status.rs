@@ -65,8 +65,8 @@ enum Event {
 
 impl Event {
     /// The event a `CallStatus` names; `None` for one this route does not act on.
-    fn parse(status: &str) -> Option<Self> {
-        match status {
+    fn parse(word: &str) -> Option<Self> {
+        match word {
             "queued" | "initiated" => Some(Self::Initiated),
             "completed" | "busy" | "no-answer" | "failed" | "canceled" => Some(Self::Final),
             _ => None,
