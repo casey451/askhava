@@ -14384,8 +14384,7 @@
     "T427",
     "T428",
     "T430",
-    "T432",
-    "T319"
+    "T432"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16940,8 +16939,7 @@
    "stage": "5",
    "module": null,
    "deps": [
-    "T345",
-    "T100"
+    "T345"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -18553,7 +18551,8 @@
    "deps": [
     "T295",
     "T370",
-    "T296"
+    "T296",
+    "T243"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -26843,7 +26842,7 @@
    "id": "T436",
    "slug": "session-sweep-and-rate-limit-prune",
    "title": "portals, core and server: expired sessions are swept and old rate-limit windows pruned daily",
-   "goal": "Plan change D-3445 split T319 in two: T319 capped security-event rows and made webhook refusals security events; this task adds the two daily sweeps, after T319 because both edit `portals` and the shared `app/server/src/lib.rs`. Fourth external audit F7 (D-2207; SEC-004): (1) Expired sessions are never removed (`app/portals/src/session.rs:165` deletes only a replaced cookie's row): a daily `portals.session_sweep` task, registered in the shared `app/server/src/lib.rs` and queued once a day like the purge sweep, deletes `portals.session` rows expired more than a day earlier, in batches. (2) Sixth audit U-08 (D-2306; SEC-014, SEC-040): `core.rate_limit` rows are never deleted (`prune`, `app/core/src/rate_limit.rs:230`, has no production caller) and their bucket names hold client addresses. A daily `core.rate_limit_prune` task, registered in the shared `app/server/src/lib.rs` and seeded in `worker.rs`'s `schedule_start` under a per-day dedupe key, deletes rows whose window started more than the longest configured window plus one day ago, in batches of at most 5,000 rows each in its own short statement (`prune_batch`, added to `rate_limit.rs`); it is registered, not deferred, in T327's registry. No index is added: once pruned daily the table holds a few days of windows. Tests in `tests/integration/tests/session_sweep.rs` (TD-SEC-54, TD-SEC-58); every existing session and rate-limit test passes unchanged. Update the `portals`, `core` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Plan change D-3445 split T319 in two: T319 capped security-event rows and made webhook refusals security events; this task adds the two daily sweeps, after T317, the earlier owner of `app/core/src/rate_limit.rs` (D-3446). Fourth external audit F7 (D-2207; SEC-004): (1) Expired sessions are never removed (`app/portals/src/session.rs:165` deletes only a replaced cookie's row): a daily `portals.session_sweep` task, registered in the shared `app/server/src/lib.rs` and queued once a day like the purge sweep, deletes `portals.session` rows expired more than a day earlier, in batches. (2) Sixth audit U-08 (D-2306; SEC-014, SEC-040): `core.rate_limit` rows are never deleted (`prune`, `app/core/src/rate_limit.rs:230`, has no production caller) and their bucket names hold client addresses. A daily `core.rate_limit_prune` task, registered in the shared `app/server/src/lib.rs` and seeded in `worker.rs`'s `schedule_start` under a per-day dedupe key, deletes rows whose window started more than the longest configured window plus one day ago, in batches of at most 5,000 rows each in its own short statement (`prune_batch`, added to `rate_limit.rs`); it is registered, not deferred, in T327's registry. No index is added: once pruned daily the table holds a few days of windows. Tests in `tests/integration/tests/session_sweep.rs` (TD-SEC-54, TD-SEC-58); every existing session and rate-limit test passes unchanged. Update the `portals`, `core` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
