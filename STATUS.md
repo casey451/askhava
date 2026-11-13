@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T15:06:01Z by runner 340e7b878b00 (actions).
+Updated 2026-11-13T15:06:21Z by runner 340e7b878b00 (actions).
 
-**Building: T330 in progress since 14:41Z; 282 of 420 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T319 in progress since 14:57Z; 282 of 420 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 282 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T330 claimed 14:41Z, lease until 17:41Z; lane 3: T319 claimed 14:57Z, lease until 17:57Z; lane 5: T266 claimed 14:42Z, lease until 17:42Z
+- **Lane:** lane 3: T319 claimed 14:57Z, lease until 17:57Z; lane 5: T266 claimed 14:42Z, lease until 17:42Z
 - **Week:** 20% used, 148.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:04Z, 1 min before this update
+- **Last run:** 15:04Z, 2 min before this update
 - **Keeper:** last ran 15:04Z, next wake 17:44Z
 
 ## Needs attention
@@ -18,8 +18,9 @@ Updated 2026-11-13T15:06:01Z by runner 340e7b878b00 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T330 | picks, intake and server: a withdrawn pick tells its busines | MERGE_PENDING | 1 | 24 min | 15:05Z | merging main into the reviewed head conflicts in app/messaging/CLAUDE.md, app/server/src/lib.rs; a resync merges it in o |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z | session ended without handing in |
-| T330 | picks, intake and server: a withdrawn pick tells its busines | resync | 1 | 39 min | 14:30Z | merging main into the reviewed head conflicts in app/messaging/CLAUDE.md, app/server/src/lib.rs; a resync merges it in o |
+| T330 | picks, intake and server: a withdrawn pick tells its busines | resync | 1 | 39 min | 14:30Z |  |
 | T367 | jobs, messaging, privacy, intake and payments: the daily swe | done | 1 | 60 min | 14:23Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z | PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
@@ -151,9 +152,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T330 (lease until 2026-11-13T17:41:21Z)
 - lane 3: T319 (lease until 2026-11-13T17:57:14Z)
 - lane 5: T266 (lease until 2026-11-13T17:42:55Z)
 
 ## Last usage reading
-- {"task": "T330", "at": "2026-11-13T14:30:29Z", "cache_creation_input_tokens": 821176, "cache_read_input_tokens": 43723133, "input_tokens": 522, "output_tokens": 171690}
+- {"task": "T330", "at": "2026-11-13T15:05:59Z", "output_tokens": 21673, "input_tokens": 127, "cache_read_input_tokens": 2845123, "cache_creation_input_tokens": 179866}
