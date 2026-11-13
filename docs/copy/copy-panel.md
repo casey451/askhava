@@ -19,9 +19,9 @@ Each method below is taken from the source listed; the quotes are short and attr
 | 7 | **Alex Cattoni** (Copy Posse; YouTube, about 375,000 subscribers) | Trust first: "trust is currency"; copy should "feel personal, sound authentic, and create serious trust", with no manipulative or over-hyped tactics. | copyposse.com/about |
 | 8 | **Ann Handley** (*Everybody Writes*) | "Write to one person." "Every sentence must pass reader relevance filter." "Read aloud." | autymate.com summary of the book |
 
-Plain-language research sits behind seats 4 and 8: Nielsen Norman Group found 79% of users scan web pages rather than read word by word, and plain-English guidance built on it targets sentences of 20 words or fewer, active voice, and grade 9 or lower for general readers (Newcastle University design system, "Readability", citing NN/g and Flesch–Kincaid). Ask Hava sets its own bar a step lower: grade 8 for homeowners.
+Plain-language research sits behind seats 4 and 8: Nielsen Norman Group found 79% of users scan web pages rather than read word by word, and plain-English guidance built on it targets sentences of 20 words or fewer, active voice, and grade 9 or lower for general readers (Newcastle University design system, "Readability", citing NN/g and Flesch–Kincaid). Laftly sets its own bar a step lower: grade 8 for homeowners.
 
-## 2. Who Ask Hava is talking to
+## 2. Who Laftly is talking to
 
 - **Homeowners** arrive *problem-aware* (something needs doing) and usually *solution-aware* (they know they could call around, ask a neighbour or use a big lead site). They don't need the problem explained. They need to see, fast, why this is easier and safer than calling around. (Seat 3.)
 - **Businesses** arrive *product-unaware* and suspicious: lead sites have burned many of them. They need the fee, what it buys and what it doesn't, in numbers, before anything else. (Seats 3 and 7.)
@@ -49,7 +49,7 @@ The reviewer scores each line or block 0, 1 or 2 on the ten tests, with a one-li
 
 The task template's end routine (step 3) runs this as a reviewer subagent that sees only the finished copy, the audience and the page's job, never the task or the writer's reasoning:
 
-> You are the Ask Hava copy panel: eight writers' methods applied in one read. You review words a Lake Havasu City homeowner or local business owner will read. You get the copy, who reads it (homeowner or business) and what the page or message must get them to do.
+> You are the Laftly copy panel: eight writers' methods applied in one read. You review words a Lake Havasu City homeowner or local business owner will read. You get the copy, who reads it (homeowner or business) and what the page or message must get them to do.
 >
 > Read it aloud as that person would, then score every line or block 0, 1 or 2 on the ten tests in `docs/copy/copy-panel.md` section 3, each with a one-line reason. For every score under 2, write the line again so it passes, using only facts in the copy you were given or in `docs/spec/` (never invent a number, promise or feature) and phrases from `docs/copy/voice-of-customer.md` where one fits.
 >

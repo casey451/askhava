@@ -16,14 +16,14 @@ Shown after the answer Spam or Junk, Promotions or another tab, or Not yet, with
 | app | step | help page | checked |
 |---|---|---|---|
 | gmail | Open Spam, open our sample email and tap Not spam. | https://support.google.com/mail/answer/1366858 | 2026-11-08 |
-| gmail | Add jobs@notify.askhava.com to your contacts. | https://support.google.com/mail/answer/16457426 | 2026-11-08 |
-| gmail | Make a filter for mail from jobs@notify.askhava.com and tick "Never send it to Spam". | https://support.google.com/mail/answer/16457426 | 2026-11-08 |
+| gmail | Add jobs@notify.laftly.com to your contacts. | https://support.google.com/mail/answer/16457426 | 2026-11-08 |
+| gmail | Make a filter for mail from jobs@notify.laftly.com and tick "Never send it to Spam". | https://support.google.com/mail/answer/16457426 | 2026-11-08 |
 | gmail | If it landed in Promotions or Updates, drag it to the Primary tab. | https://support.google.com/mail/answer/3055016 | 2026-11-08 |
 | outlook | Open Junk Email, open our sample email and choose Not junk. | https://support.microsoft.com/en-us/outlook/mail-goes-to-the-junk-folder-by-mistake | 2026-11-08 |
-| outlook | Add jobs@notify.askhava.com to your Safe senders. | https://support.microsoft.com/en-us/outlook/mail-goes-to-the-junk-folder-by-mistake | 2026-11-08 |
+| outlook | Add jobs@notify.laftly.com to your Safe senders. | https://support.microsoft.com/en-us/outlook/mail-goes-to-the-junk-folder-by-mistake | 2026-11-08 |
 | yahoo | Open Spam, open our sample email and click Not spam. | https://help.yahoo.com/kb/SLN28056.html | 2026-11-08 |
 | iphone | Open our sample email, tap our name at the top and tap Add to VIP. | https://support.apple.com/en-us/104971 | 2026-11-08 |
-| other | Add jobs@notify.askhava.com to your contacts. | none | 2026-11-08 |
+| other | Add jobs@notify.laftly.com to your contacts. | none | 2026-11-08 |
 
 ## last-step
 
@@ -32,13 +32,13 @@ The picture guide under "Reply OK to this email, star it and add us to your cont
 | app | step | help page | checked |
 |---|---|---|---|
 | gmail | Reply OK to the sample and star it. | https://support.google.com/mail/answer/5904 | 2026-11-08 |
-| gmail | Add jobs@notify.askhava.com to your contacts. | https://support.google.com/mail/answer/16457426 | 2026-11-08 |
+| gmail | Add jobs@notify.laftly.com to your contacts. | https://support.google.com/mail/answer/16457426 | 2026-11-08 |
 | gmail | Move it to the Primary tab. By default, the Gmail app only alerts you for mail in Primary. | https://support.google.com/mail/answer/1075549 | 2026-11-08 |
-| outlook | Reply OK and add jobs@notify.askhava.com to your Safe senders. | https://support.microsoft.com/en-us/outlook/mail-goes-to-the-junk-folder-by-mistake | 2026-11-08 |
+| outlook | Reply OK and add jobs@notify.laftly.com to your Safe senders. | https://support.microsoft.com/en-us/outlook/mail-goes-to-the-junk-folder-by-mistake | 2026-11-08 |
 | outlook | If you use Focused Inbox, move our email to Focused and choose Always move to Focused. | https://support.microsoft.com/en-us/outlook/mail/focused-inbox-for-outlook | 2026-11-08 |
 | yahoo | Reply OK and add us to your contacts from the sender's contact card. | https://help.yahoo.com/kb/add-edit-delete-contacts-yahoo-mail-sln28059.html | 2026-11-08 |
 | iphone | Reply OK, add us to VIP, then in Settings turn on VIP alerts for Mail. | https://support.apple.com/en-us/104971 | 2026-11-08 |
-| other | Reply OK and add jobs@notify.askhava.com to your contacts. | none | 2026-11-08 |
+| other | Reply OK and add jobs@notify.laftly.com to your contacts. | none | 2026-11-08 |
 
 ## pick-alert
 

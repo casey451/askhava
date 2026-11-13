@@ -180,5 +180,5 @@ not_copy_requirements:
 
 # Phrases the spec requires verbatim that contain a listed word; each names the requirement that fixes it.
 allowed_phrases:
-  - phrase: "Ask Hava is not a contractor and does not perform, bid on or supervise work"
+  - phrase: "Laftly is not a contractor and does not perform, bid on or supervise work"
     requirement: WORD-002
