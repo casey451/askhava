@@ -49,6 +49,11 @@
 //! number whose Active classes on a recorded ROC list differ from those on the last earlier list
 //! it had any on (D-3355; a missing or lapsed number is no change); [`bound_businesses`] and
 //! [`latest_check_active`] read the daily checks (BIZ-050, LIC-043, CARD-015).
+//!
+//! The daily run (T371, D-2704): [`run_daily_list`] is the [`DAILY_LISTS_KIND`] handler that
+//! fetches and records one [`DailyList`] and, while it fails, raises the LIC-039 alerts once and
+//! runs a capped batch of throttled lookups for the [`ActiveLicenses`] the composition gives;
+//! [`schedule_daily_lists`] seeds it, [`DailyListSettings`] holds its settings.
 
 pub use crate::class_changes::{
     ClassChange, RocList, bound_businesses, class_changes, latest_check_active, roc_lists,
@@ -56,6 +61,10 @@ pub use crate::class_changes::{
 pub use crate::class_map::{
     ClassMap, ClassMapError, JobTypeKey, Opening, ProjectLimitRefusal, RequestIntake,
     STRUCTURAL_JOB_TYPES, SignUpOutcome, request_intake,
+};
+pub use crate::daily_lists::{
+    ActiveLicenses, DAILY_LISTS_KIND, DailyList, DailyListSettings, LIST_HOUR_KEY, LIST_RETRY_KEY,
+    LOOKUP_BATCH_KEY, ListRun, run_daily_list, schedule_daily_lists,
 };
 pub use crate::handlers::{
     FailureLimits, LIST_FAILING_ALERT, LIST_STILL_FAILING_ALERT, ListFailureAlert, LookupOutcome,

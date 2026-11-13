@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT max(list_date)::text AS \"day\" FROM licensing.list_import WHERE source = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "day",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "71b5534d9379a1587034d7b78e06ee0ac24050d01f1492e73501735155a1188a"
+}

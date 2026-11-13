@@ -91,6 +91,10 @@ const KEYS: &[&str] = &[
     // Parsed by `askhava_businesses::api::SignupSettings::from_pairs` (T193, BIZ-026, BIZ-027).
     "ASKHAVA_BIZ_REVIEW_TARGET_DAYS",
     "ASKHAVA_BIZ_LIST_DELAY_DAYS",
+    // Parsed by `askhava_licensing::api::DailyListSettings::from_pairs` (T371, LIC-039, D-2704).
+    "ASKHAVA_LICENSE_LIST_HOUR",
+    "ASKHAVA_LICENSE_LIST_RETRY_MINUTES",
+    "ASKHAVA_LICENSE_LOOKUP_BATCH",
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).
