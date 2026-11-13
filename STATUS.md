@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T04:23:56Z by runner 3820cf2d9e18 (actions).
+Updated 2026-11-13T04:28:13Z by runner f5757405157a (actions).
 
 **Idle since 04:22Z; 272 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-13T04:23:56Z by runner 3820cf2d9e18 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 04:22Z (no task in progress)
 - **Week:** 12% used, 166.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:23Z, 0 min before this update
+- **Last run:** 04:27Z, 1 min before this update
 - **Keeper:** last ran 04:23Z, next wake 04:43Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+140 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+141 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -92,6 +92,7 @@ Updated 2026-11-13T04:23:56Z by runner 3820cf2d9e18 (actions).
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | resync | 1 | 33 min | 04:56Z |  |
 
 ### Plan and harness merges on main
+- 04:27Z Harness: safety hand-in reports unreleased leases (D-3419) (#654)
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
 - 01:29Z Harness: fail CI, smoke and prehandin on leftover merge-conflict markers (D-3307) (#619)
 - 01:16Z Plan: T255 follow-ups (D-3384) and pre-flight 12, T426 owns the legal-docs test (D-3385) (#640)
