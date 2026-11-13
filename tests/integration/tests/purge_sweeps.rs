@@ -109,6 +109,11 @@ async fn scalar(pool: &PgPool, sql: &'static str) -> i64 {
         .expect("count")
 }
 
+/// The last value drawn from `core.task`'s id sequence. An insert dropped by `ON CONFLICT DO
+/// NOTHING` still draws one, so an unmoved value proves the sweep attempted no insert at all.
+const TASK_IDS: &str = "SELECT last_value FROM pg_sequences \
+     WHERE format('%I.%I', schemaname, sequencename) = pg_get_serial_sequence('core.task', 'id')";
+
 /// TD-PRIV-25 (PRIV-007, D-2641): a sweep whose every attempt fails still leaves the next day's
 /// sweep queued and live, and its last attempt raises exactly one `privacy.purge_failed` alert.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -146,7 +151,7 @@ async fn td_priv_25_a_sweep_failing_every_attempt_leaves_tomorrows_and_alerts_on
 }
 
 /// TD-PRIV-25 (PRIV-007 to PRIV-009, D-2641): over 5,000 final jobs whose stages are queued, the
-/// sweep hands on none again and queues nothing, in pages of at most `SWEEP_PAGE`; a newly closed
+/// sweep hands on none again and queues nothing (the task id sequence does not move), in pages of at most `SWEEP_PAGE`; a newly closed
 /// job is still found.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_priv_25_a_sweep_over_5000_queued_jobs_reads_none_again(pool: PgPool) {
@@ -156,6 +161,7 @@ async fn td_priv_25_a_sweep_over_5000_queued_jobs_reads_none_again(pool: PgPool)
     assert_eq!(sweep_closed(&mut conn, closed + DAY).await, Ok(15_000));
     let tasks = "SELECT count(*) FROM core.task";
     let before = scalar(&pool, tasks).await;
+    let ids_before = scalar(&pool, TASK_IDS).await;
     assert_eq!(unqueued_finals(&mut conn, closed + DAY).await, Ok(vec![]));
     let page = final_jobs_page(&mut conn, closed + DAY, Uuid::nil())
         .await
@@ -164,6 +170,8 @@ async fn td_priv_25_a_sweep_over_5000_queued_jobs_reads_none_again(pool: PgPool)
     assert!(page.iter().all(|(_, _, open)| !open));
     assert_eq!(sweep_closed(&mut conn, closed + DAY * 2).await, Ok(0));
     assert_eq!(scalar(&pool, tasks).await, before);
+    let ids_after = scalar(&pool, TASK_IDS).await;
+    assert_eq!(ids_after, ids_before, "the sweep tried no insert, not even a deduped one");
     closed_jobs(&pool, 1, closed + DAY).await;
     let found = unqueued_finals(&mut conn, closed + DAY * 2)
         .await
