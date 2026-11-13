@@ -115,15 +115,18 @@ async fn td_call_03_no_call_request_asks_for_recording() {
 fn td_call_03_the_twiml_never_records() {
     let config = config("http://127.0.0.1:9/twilio");
     let from = &config.pool().numbers()[0];
-    let twiml = dial_twiml(from, &SecretString::from(HER_PHONE)).expect("twiml");
+    let status = "https://hooks.example.test/webhooks/twilio/voice/dialed-status";
+    let twiml = dial_twiml(from, &SecretString::from(HER_PHONE), status).expect("twiml");
     let xml = twiml.expose_secret();
     assert!(xml.contains("<Dial callerId=\"+15005550100\" record=\"do-not-record\">"));
-    assert!(xml.contains("<Number machineDetection=\"Enable\">+19285550178</Number>"));
+    assert!(xml.contains(
+        "<Number machineDetection=\"Enable\" statusCallback=\"https://hooks.example.test/webhooks/twilio/voice/dialed-status\" statusCallbackMethod=\"POST\" statusCallbackEvent=\"initiated completed\">+19285550178</Number>"
+    ));
     assert_eq!(xml.matches("record=").count(), 1, "{xml}");
     assert!(!xml.contains("<Record") && !xml.contains("Recording"));
     for bad in ["9285550178", "+1928555017<", "+1", "+1234567890123456", ""] {
         assert!(
-            dial_twiml(from, &SecretString::from(bad)).is_none(),
+            dial_twiml(from, &SecretString::from(bad), status).is_none(),
             "{bad}"
         );
     }

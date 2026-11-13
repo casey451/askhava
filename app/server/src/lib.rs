@@ -32,6 +32,7 @@ use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
 
+pub mod call_status;
 pub mod catalog_start;
 pub mod checkin;
 pub mod inbound_retry;
@@ -145,7 +146,9 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241) and the placed calls' status and safety-key routes
 /// (`voice_status`, CALL-022, OPS-028, T378); `None` adds none. `voice` ([`voice_hooks`]) adds the
-/// pool numbers' signature-checked voice webhook (`inbound_voice`, SEC-016, SEC-017, T262).
+/// pool numbers' signature-checked voice webhook (`inbound_voice`, SEC-016, SEC-017, T262) and
+/// the dialed leg's status callbacks (`call_status`, CALL-008, T271), which applies the refusal
+/// layer itself (D-3525).
 /// `pick_keys` ([`pick_code_keys`])
 /// let the page pick send its code and store the pick (T246, D-1516); `None` keeps the page's
 /// "Nothing was picked" lines. `stripe` ([`release_sink::stripe_webhook`]) adds `payments`' Stripe
@@ -173,6 +176,9 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .clone()
         .map_or_else(Router::new, |h| refused(voice_status::routes(h)));
     let twilio = webhooks.map_or_else(Router::new, |h| refused(inbound_text::routes(h)));
+    let dialed = voice.as_ref().map_or_else(Router::new, |v| {
+        call_status::routes(Arc::clone(&v.hooks), refusals.clone())
+    });
     let voice = voice.map_or_else(Router::new, |v| refused(inbound_voice::routes(v)));
     let stripe = stripe.map_or_else(Router::new, |s| refused(stripe_webhook_routes(s)));
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
@@ -184,6 +190,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(checkin)
         .merge(twilio)
         .merge(voice)
+        .merge(dialed)
         .merge(calls)
         .merge(stripe)
         .merge(static_files::router(&statics))
@@ -635,6 +642,7 @@ where
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
     register_unreachable(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
+    register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {
         register_inbound_retry(
             &mut registry,
@@ -857,6 +865,30 @@ async fn run_safety_call(
         .await
         .map(|_| ())
         .map_err(|_| SAFETY_FAILED)
+}
+
+/// T318 (TXT-027, QH-004, D-1687): with both vault keys, `calls.whos_calling`
+/// (`calls::api::run_whos_calling`) with the `ID_SECRET` as outbox key and the vault for her send
+/// window; without them (dev and CI) nothing is registered and the tasks wait, as `vault_from`
+/// allows.
+fn register_whos_calling(
+    registry: &mut Registry,
+    settings: &Settings,
+    (id_secret, clock): (&SecretString, &Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let Some(vault) = vault_from(settings, pairs)? else {
+        return Ok(());
+    };
+    let keys = Arc::new((vault, id_secret.clone()));
+    let clock = Arc::clone(clock);
+    registry.register(askhava_calls::api::WHOS_CALLING_KIND, move |pool, task| {
+        let (keys, now) = (Arc::clone(&keys), clock.now());
+        async move {
+            askhava_calls::api::run_whos_calling(pool, (&keys.0, &keys.1), task, now).await
+        }
+    });
+    Ok(())
 }
 
 /// T330 (CALL-019, CALL-022, D-2288, D-3134): registers `calls.safety_call` inside the Twilio
@@ -1214,8 +1246,8 @@ fn register_purge_handlers(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     );
 }
 
-/// PRIV-007 to PRIV-009, TXT-020, D-2641: the daily body cut and the daily purge sweep (with
-/// `intake`'s request sweep) at `clock`'s now; a run's last failed attempt raises one
+/// PRIV-007 to PRIV-009, TXT-020, D-2641, D-1840: the daily body cut, the daily cut of kept
+/// problem words and the daily purge sweep (with `intake`'s request sweep) at `clock`'s now; a run's last failed attempt raises one
 /// `privacy.purge_failed` alert, and the next day's run is already queued.
 fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     let at = Arc::clone(clock);
@@ -1223,6 +1255,14 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
         let now = at.now();
         async move {
             let outcome = askhava_messaging::api::run_cut_at(pool.clone(), task.clone(), now);
+            alert_if_last(&pool, &task, outcome.await).await
+        }
+    });
+    let at = Arc::clone(clock);
+    registry.register(askhava_privacy::api::CUT_WORDS_KIND, move |pool, task| {
+        let now = at.now();
+        async move {
+            let outcome = askhava_privacy::api::run_words_cut_at(pool.clone(), task.clone(), now);
             alert_if_last(&pool, &task, outcome.await).await
         }
     });
@@ -1286,8 +1326,8 @@ async fn stage_step(
     askhava_privacy::api::run_purge_due_after_at(pool.clone(), task.clone(), (queued, now)).await
 }
 
-/// PRIV-007, PRIV-008, D-491: one `privacy.purge` task at `now`: `intake`'s rows, `quotes`' text
-/// and, on the text stage, the feedback words' step.
+/// PRIV-007, PRIV-008, D-491, D-1840: one `privacy.purge` task at `now`: `intake`'s rows,
+/// `quotes`' text, `privacy`'s kept problem words and, on the text stage, the feedback words' step.
 async fn purge_step(
     pool: &PgPool,
     task: &askhava_core::api::Claimed,
@@ -1295,6 +1335,7 @@ async fn purge_step(
 ) -> Result<(), askhava_core::api::HandlerError> {
     askhava_intake::api::run_purge_at(pool.clone(), task.clone(), now).await?;
     askhava_quotes::api::run_text_purge(pool.clone(), task.clone()).await?;
+    askhava_privacy::api::run_words_purge(pool.clone(), task.clone()).await?;
     match askhava_privacy::api::purge_target(task)? {
         (job, askhava_privacy::api::PurgeStage::Text) => feedback_step(pool, job, now).await,
         _ => Ok(()),
