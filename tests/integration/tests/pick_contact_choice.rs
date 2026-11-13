@@ -84,7 +84,10 @@ struct Page {
 
 impl Page {
     fn new(pool: &PgPool, token: String) -> Self {
-        let terms = ("2026-11-01".to_owned(), "Sample homeowner terms for tests only.");
+        let terms = (
+            "2026-11-01".to_owned(),
+            "Sample homeowner terms for tests only.",
+        );
         let keys = PickCodeKeys::new(FakeVerify, vault(), secret(), terms);
         let clock = Arc::new(ManualClock::new(ts(DAY)));
         let app = pick_flow_routes(pool.clone(), clock, Some(keys));
@@ -116,7 +119,9 @@ impl Page {
 
     /// The final Pick of quote 1, then "Finish my pick" with `code` and the choice `reach`.
     async fn finish(&self, code: &str, reach: &str) -> (StatusCode, String) {
-        let (status, body) = self.post("/pick", &[("quote", "1"), ("share", "yes")]).await;
+        let (status, body) = self
+            .post("/pick", &[("quote", "1"), ("share", "yes")])
+            .await;
         assert_eq!(status, StatusCode::OK, "{body}");
         let mut form = vec![("quote", "1"), ("code", code), ("reach", reach)];
         if reach == "email" {
@@ -161,13 +166,7 @@ async fn ready(db: &mut PgConnection) -> (Uuid, Uuid, String) {
     let Ok(Opened::Created(job)) = begin_job(db, &start).await else {
         panic!("a new job");
     };
-    askhava_catalog::api::load_embedded(db)
-        .await
-        .expect("catalog");
-    let types = ["leak repair".to_owned()];
-    record_job_facts(db, job, "plumbing_repair", &types)
-        .await
-        .expect("job facts");
+    facts(db, job).await;
     for step in [
         (JobStatus::Intake, JobStatus::Open),
         (JobStatus::Open, JobStatus::QuotesReady),
@@ -175,6 +174,25 @@ async fn ready(db: &mut PgConnection) -> (Uuid, Uuid, String) {
         let moved = move_to(db, job, step, ts(DAY), Actor::System).await;
         assert!(moved.expect("move").applied().is_some());
     }
+    quote(db, job).await;
+    let link = IdSecret::new(1, secret()).expect("id");
+    let token = issue(db, &link, job, ts(DAY)).await.expect("token");
+    (her, job, token.as_str().to_owned())
+}
+
+/// Stores the catalog and records `job`'s facts, plumbing repair and leak repair (D-3118).
+async fn facts(db: &mut PgConnection, job: Uuid) {
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["leak repair".to_owned()];
+    record_job_facts(db, job, "plumbing_repair", &types)
+        .await
+        .expect("job facts");
+}
+
+/// One confirmed fake quote on `job`.
+async fn quote(db: &mut PgConnection, job: Uuid) {
     sqlx::query(
         "INSERT INTO quotes.quote (job_id, business_id, format, amount_cents, confirm_on_site, \
          notes, original, ai_read, confirmed, received_at) \
@@ -186,9 +204,6 @@ async fn ready(db: &mut PgConnection) -> (Uuid, Uuid, String) {
     .execute(&mut *db)
     .await
     .expect("quote");
-    let link = IdSecret::new(1, secret()).expect("id");
-    let token = issue(db, &link, job, ts(DAY)).await.expect("token");
-    (her, job, token.as_str().to_owned())
 }
 
 /// The job's stored contact choices: pick and word.

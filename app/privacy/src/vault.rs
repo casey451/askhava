@@ -946,26 +946,31 @@ mod shared_email_tests {
         assert!(matches!(unknown, Err(VaultError::NotFound)));
         let id = contact(&mut db, &vault, "928-555-0192").await;
         // The migrator role may update the contact but write no audit row (D-3352).
-        for grant in [
-            "GRANT USAGE ON SCHEMA privacy TO askhava_migrator",
-            "GRANT SELECT, UPDATE ON privacy.contact TO askhava_migrator",
-            "SET ROLE askhava_migrator",
-        ] {
-            sqlx::raw_sql(grant).execute(&mut *db).await.expect("role");
-        }
+        sqlx::query!("GRANT USAGE ON SCHEMA privacy TO askhava_migrator")
+            .execute(&mut *db)
+            .await
+            .expect("usage");
+        sqlx::query!("GRANT SELECT, UPDATE ON privacy.contact TO askhava_migrator")
+            .execute(&mut *db)
+            .await
+            .expect("grant");
+        sqlx::query!("SET ROLE askhava_migrator")
+            .execute(&mut *db)
+            .await
+            .expect("role");
         let failed = store_shared_email(&mut db, &vault, id, &mail).await;
         assert!(matches!(failed, Err(VaultError::Audit)));
-        sqlx::raw_sql("RESET ROLE; SET default_transaction_read_only = on")
+        sqlx::query!("RESET ROLE")
             .execute(&mut *db)
             .await
             .expect("reset");
-        let broken = store_shared_email(&mut db, &vault, id, &mail).await;
-        assert!(matches!(broken, Err(VaultError::Database)));
-        sqlx::raw_sql("SET default_transaction_read_only = off")
-            .execute(&mut *db)
-            .await
-            .expect("writable");
         assert!(shared(&mut db).await.is_empty());
         assert_eq!(email(&mut db, &vault, id).await, None);
+        sqlx::query!("SET default_transaction_read_only = on")
+            .execute(&mut *db)
+            .await
+            .expect("read only");
+        let broken = store_shared_email(&mut db, &vault, id, &mail).await;
+        assert!(matches!(broken, Err(VaultError::Database)));
     }
 }

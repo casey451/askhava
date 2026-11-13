@@ -1026,10 +1026,9 @@ async fn store<V>(
     (job, quote): (Uuid, usize),
     (owner, asked): (JobHomeowner, &Asked),
 ) -> Result<bool, StatusCode> {
-    let browser = &asked.browser;
     let now = flow.clock.now();
     let mut tx = flow.pool.begin().await.map_err(|_| failed("begin"))?;
-    if !share_ticked(&mut tx, (job, quote), browser)
+    if !share_ticked(&mut tx, (job, quote), &asked.browser)
         .await
         .map_err(|_| failed("share"))?
     {
@@ -1039,30 +1038,35 @@ async fn store<V>(
         .await
         .map_err(|_| failed("pause"))?;
     let actor = Actor::Homeowner(owner.contact);
-    let pick = match page_pick(&mut tx, (job, paused), quote, actor, now).await {
-        Ok(PagePick::Picked(pick)) => pick,
-        Ok(PagePick::Same(pick)) => {
-            let kept = (asked, owner.contact, &keys.vault);
-            bind(&mut tx, ((job, quote), pick), kept, now).await?;
-            tx.commit().await.map_err(|_| failed("commit"))?;
-            return Ok(true);
-        }
+    let (pick, new) = match page_pick(&mut tx, (job, paused), quote, actor, now).await {
+        Ok(PagePick::Picked(pick)) => (pick, true),
+        Ok(PagePick::Same(pick)) => (pick, false),
         Ok(PagePick::Taken) | Err(askhava_picks::api::PicksError::MovedOn) => return Ok(false),
         Err(_) => return Err(failed("pick")),
     };
-    bind(
-        &mut tx,
-        ((job, quote), pick),
-        (asked, owner.contact, &keys.vault),
-        now,
-    )
-    .await?;
+    let kept = (asked, owner.contact, &keys.vault);
+    bind(&mut tx, ((job, quote), pick), kept, now).await?;
+    if new {
+        accept_terms(&mut tx, keys, (owner.conversation, pick), now).await?;
+    }
+    tx.commit().await.map_err(|_| failed("commit"))?;
+    Ok(true)
+}
+
+/// The terms acceptance stored with a new page pick: channel `quote_page`, the line shown beside
+/// the final Pick and the published Terms (PICK-016, TERMS-016, D-1516).
+async fn accept_terms<V>(
+    tx: &mut sqlx::PgConnection,
+    keys: &PickCodeKeys<V>,
+    (conversation, pick): (Uuid, Uuid),
+    now: jiff::Timestamp,
+) -> Result<(), StatusCode> {
     // The review step is shown in English only until the page reads the request's language
     // (D-1249), so the acceptance stores the English line it showed, not `owner.language`.
     let (_, lead, link) = PageLanguage::En.terms();
     let assent = format!("{lead} {link}");
     let acceptance = TermsAcceptance {
-        conversation: owner.conversation,
+        conversation,
         pick,
         document: "homeowner_terms",
         version: &keys.terms.0,
@@ -1072,11 +1076,10 @@ async fn store<V>(
         assent_line: &assent,
         accepted_at: now,
     };
-    record_terms_acceptance(&mut tx, &acceptance)
+    record_terms_acceptance(tx, &acceptance)
         .await
         .map_err(|_| failed("terms"))?;
-    tx.commit().await.map_err(|_| failed("commit"))?;
-    Ok(true)
+    Ok(())
 }
 
 /// What "Finish my pick" asked for besides the pick: the browser (its backup and share tick) and
