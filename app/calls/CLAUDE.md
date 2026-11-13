@@ -20,7 +20,7 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - Migration `0174_calls_readback_line.sql` (T311): `calls.pin_call.readback_line`, the line a try read back, inserted with the try's row (try 2 only; no UPDATE grant). `src/pins.rs` binds it: `judged_count` and `count_once` store it, the crate-private `readback_line`, `still_bound` and `read_back_bound` read and check it (D-2201, D-2491).
 - `src/link_request.rs` (T390, D-3167 to D-3169): `link_after_dial(db, vault, call_sid, caller, now)` and `LINK_REQUEST_LIFE` (24 hours). Migration `0185_calls_link_request.sql`: `calls.link_request` (one pending link per line: business, `requested_at`, `expires_at`, `used_at`; UPDATE of `used_at` and DELETE), `calls.link_request_digest` (the blocked phone's `sender-dir` digests per index version; DELETE) and `calls.link_reply_refusal` (T391's refused LINK replies per phone digest and Arizona day, at most 3; UPDATE of `refused`).
 - `src/models.rs`: `CallsError` (T262 adds `NoFreePin`) and the crate-private queries.
-- `src/api.rs`: the only public surface; T254 adds `job_had_line(db, job)` (any line of the job, open or closed), which `picks`' line retry reads so a closed line is never reopened (D-1688). `sqlx.toml`: `timestamptz` as jiff timestamps.
+- `src/api.rs`: the only public surface; T254 adds `job_had_line(db, job)` (any line of the job, open or closed), which `picks`' line retry reads so a closed line is never reopened (D-1688). T281 adds `job_line(db, job)` (the job's newest line, open or closed, as its ID and pool number), which `picks`' unreachable steps read for `call_log` and the missed-call text (D-3486). `sqlx.toml`: `timestamptz` as jiff timestamps.
 
 ## Rules it enforces
 

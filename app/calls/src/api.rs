@@ -76,3 +76,24 @@ pub async fn job_had_line(
     .await
     .map_err(|_| CallsError::Database)
 }
+
+/// Job `job`'s newest masked line, open or closed: its ID (for [`call_log`]) and its pool number
+/// (CALL-001, FEE-022, TXT-030, D-3486); `None` when the job never had one. `picks`' unreachable
+/// steps read it to gather the call log and to name the number in the missed-call text.
+///
+/// # Errors
+///
+/// [`CallsError::Database`].
+pub async fn job_line(
+    db: &mut sqlx::PgConnection,
+    job: sqlx::types::Uuid,
+) -> Result<Option<(sqlx::types::Uuid, String)>, CallsError> {
+    sqlx::query!(
+        "SELECT id, pool_number FROM calls.number_pool WHERE job_id = $1 ORDER BY seq DESC LIMIT 1",
+        job
+    )
+    .fetch_optional(db)
+    .await
+    .map(|row| row.map(|r| (r.id, r.pool_number)))
+    .map_err(|_| CallsError::Database)
+}

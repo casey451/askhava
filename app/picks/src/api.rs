@@ -59,6 +59,9 @@
 //! [`missed_call_text`] and [`queue_reminders`] send TXT-030 and TXT-026; [`no_call_at_72_hours`]
 //! returns a call-contact job (JOB-013); [`dispute_auto_submit`] (FEE-050) and [`fraud_warning`]
 //! (FEE-052).
+//! T281: [`run_unreachable_step`] runs those steps from the queue ([`UNREACHABLE_STEP_KIND`],
+//! [`schedule_steps`] at the release, [`step_task`] for T271 and T277) and [`run_fraud_warning`]
+//! runs `payments`' `picks.fraud_warning` task (D-1845).
 //!
 //! T209: [`auto_confirm`] makes the PICK-048 off-session charge for a pick proven by a Verify code
 //! or a portal session ([`PickProof`]) of a ticked quote, by the pure [`auto_confirm_plan`], or
@@ -148,6 +151,11 @@ pub use crate::unreachable_refund::{
     ReleasedPick, UNREACHABLE_CLOSED_TEMPLATE, auto_submits, call_record, decide_at_96_hours,
     decision_template, dispute_auto_submit, fraud_warning, missed_call_at, missed_call_text,
     no_call_at_72_hours, queue_reminders, reminder_template, reminder_times, send_at,
+};
+pub use crate::unreachable_steps::{
+    EMAILED_NO_ACTION, EMAILED_QUESTION_TEMPLATE, EMAILED_YES_ACTION, RELEASE_STEPS, RERUN_AFTER,
+    Step, StepParts, UNREACHABLE_STEP_KIND, run_fraud_warning, run_unreachable_step,
+    schedule_steps, step_task,
 };
 
 /// The pure pick rules, for other crates and property tests.

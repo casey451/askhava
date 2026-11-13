@@ -2702,3 +2702,8 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## One shared email per homeowner, for now (D-3459, November 13)
 
 - When a homeowner picks on the quote page and chooses to be reached by email, the address is stored once on her record, not once per job. If she later shares a different address on a new job, the new one replaces the old one everywhere: a business she picked on the earlier job would then see the new address, and emails about the earlier job would go there too. Both addresses are hers and only businesses she picked see them, but the earlier business sees one she did not share with it. We accepted this for now; keeping a separate address per pick is a follow-up. Nothing needs you now unless you want that follow-up done before launch.
+
+## The unreachable-homeowner steps now run (D-3486 to D-3490, November 13)
+
+- After a business is given a homeowner's details, the worker now sends the "no call yet" reminders at 24 and 48 hours, returns a job whose business never called at 72 hours, asks an email-contact homeowner at 72 hours whether the business emailed her, and decides the automatic refund at 96 hours, retrying an hour later while the refund is still waiting on Stripe. The missed-call text waits for 8 a.m. unless the job is an emergency, and a number that can't be texted gets it by email.
+- For now these homeowner messages from the steps go in English: the step cannot read the language of her request yet (D-3489). Spanish conversations are off at launch, so nothing changes today; a follow-up should pass her language along before Spanish is switched on.
