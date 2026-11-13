@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T05:29:23Z by runner 58922c9e6509 (actions).
+Updated 2026-11-13T05:36:11Z by runner 58922c9e6509 (actions).
 
-**Idle since 05:08Z; 273 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 05:35Z; 274 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 273 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 274 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 05:08Z (no task in progress)
+- **Lane:** idle since 05:35Z (no task in progress)
 - **Week:** 13% used, 170.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:29Z, 0 min before this update
+- **Last run:** 05:29Z, 6 min before this update
 - **Keeper:** last ran 05:29Z, next wake 11:09Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-13T05:29:23Z by runner 58922c9e6509 (actions).
 | T215 | businesses and ops: pest identity by the city list plus atte | MERGE_PENDING | 1 | 22 min | 05:08Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 20 min | 04:22Z |  |
 | T371 | licensing and server: the worker fetches and records the dai | done | 1 | 70 min | 04:18Z |  |
-| T427 | WORD-022 phrases catch both brand names in the spec trace, t | MERGE_PENDING | 1 | 29 min | 03:17Z |  |
+| T427 | WORD-022 phrases catch both brand names in the spec trace, t | done | 1 | 29 min | 03:17Z |  |
 | T429 | Copy, voice and AI-smell docs name Laftly | done | 1 | 22 min | 03:13Z |  |
 | T430 | payments: a Confirm needs the current card-authorization wor | done | 1 | 39 min | 03:13Z |  |
 | T426 | Brand rename prep: notice-address and sign-in security tests | done | 1 | 35 min | 02:49Z |  |
@@ -89,7 +89,6 @@ Updated 2026-11-13T05:29:23Z by runner 58922c9e6509 (actions).
 | T339 | jobs: each job keeps its category code and remaining candida | done | 1 | 18 min | 07:13Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 71 min | 06:06Z |  |
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | done | 1 | 51 min | 06:05Z |  |
-| T356 | messaging and server (harness): the worker sends queued text | done | 1 | 86 min | 05:31Z |  |
 
 ### Plan and harness merges on main
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
@@ -120,8 +119,8 @@ Updated 2026-11-13T05:29:23Z by runner 58922c9e6509 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 230 of 733 (31.4%) · partial 340 · unstarted 163
-**Tasks merged (throughput only):** 273 of 415
+**Requirements verified:** 230 of 733 (31.4%) · partial 341 · unstarted 162
+**Tasks merged (throughput only):** 274 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -144,7 +143,7 @@ Updated 2026-11-13T05:29:23Z by runner 58922c9e6509 (actions).
 | security | 8 | 42 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 7 | 24 | 32 |
+| wording | 1 | 8 | 23 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -156,7 +155,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 153 of 197 done
+- stage 4: 154 of 197 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
