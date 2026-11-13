@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T07:41:19Z by runner bee96646639a (actions).
+Updated 2026-11-13T07:43:49Z by runner bee96646639a (actions).
 
-**Idle since 07:40Z; 276 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T255 in progress since 07:43Z; 276 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 276 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 07:40Z (no task in progress)
+- **Lane:** lane 2: T255 claimed 07:43Z, lease until 10:43Z
 - **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:41Z, 0 min before this update
+- **Last run:** 07:41Z, 2 min before this update
 - **Keeper:** last ran 07:41Z, next wake 08:01Z
 
 ## Needs attention
@@ -85,7 +85,6 @@ Updated 2026-11-13T07:41:19Z by runner bee96646639a (actions).
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 2 | 4 min | 08:47Z |  |
 | T322 | businesses: a backup notice address is checked again at conf | done | 1 | 35 min | 08:36Z |  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | BLOCKED | 1 | 3 min | 08:17Z |  |
-| T360 | messaging: the opt-out confirmation email while texting is o | done | 1 | 43 min | 07:42Z |  |
 
 ### Plan and harness merges on main
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
@@ -143,7 +142,7 @@ Updated 2026-11-13T07:41:19Z by runner bee96646639a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T06:54:44Z (week)): week: 26.0M used, 168.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T06:53:53Z.
+- Pacing (session_reading 2026-11-13T07:40:56Z (week)): week: 26.0M used, 168.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T07:37:37Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -159,6 +158,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T255 (lease until 2026-11-13T10:43:44Z)
 
 ## Last usage reading
 - {"task": "T428", "at": "2026-11-13T07:40:28Z", "cache_creation_input_tokens": 266287, "input_tokens": 214, "cache_read_input_tokens": 9797509, "output_tokens": 39919}
