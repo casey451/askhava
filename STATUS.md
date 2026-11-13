@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:36:36Z by runner 09bfaf2c02fd (actions).
+Updated 2026-11-13T22:38:33Z by runner 09bfaf2c02fd (actions).
 
 **Building: T355 in progress since 22:11Z; 297 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T22:36:36Z by runner 09bfaf2c02fd (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 4: T391 claimed 22:36Z, lease until 01:36Z
 - **Week:** 29% used, 128.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:34Z, 2 min before this update
+- **Last run:** 22:37Z, 1 min before this update
 - **Keeper:** last ran 22:33Z, next wake 01:07Z
 
 ## Needs attention
@@ -80,7 +80,6 @@ Updated 2026-11-13T22:36:36Z by runner 09bfaf2c02fd (actions).
 | T347 | licensing (harness): remove the handyman split-job check; ea | done | 1 | 52 min | 23:24Z |  |
 | T162 | intake: the one intake order for the five paths and the Span | done | 1 | 36 min | 23:01Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | done | 3 | 30 min | 22:57Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T419 | calls (harness): TD-CALL-23's no-plaintext scan reads only t | done | 1 | 24 min | 22:37Z |  |
 
 ### Plan and harness merges on main
 - 21:01Z Plan: fewer smoke runs, scoped fix rounds, batched reads, decision excerpts (D-3530) (#698)
