@@ -629,6 +629,11 @@ jobs:
           outcome=tests_failed log="session ended without handing in"
           if [ -n "${EXECUTION_FILE:-}" ] && [ -f "${EXECUTION_FILE:-}" ] && python3 -m runner.usage_reading --at-limit "$EXECUTION_FILE"; then
             outcome=usage_limit log="session stopped at the plan's usage limit"
+          # A session an Anthropic API error killed (its last result is_error, naming API 401, 403, 429 or 5xx,
+          # authentication_failed or overloaded_error; only a safe label is printed) hands in `api_error`: with
+          # nothing handed in or pushed it goes back to the queue at no attempt cost, at most 2 in a row (D-3443).
+          elif [ -n "${EXECUTION_FILE:-}" ] && [ -f "${EXECUTION_FILE:-}" ] && sig="$(python3 -m runner.api_death "$EXECUTION_FILE")"; then
+            outcome=api_error log="session died of an Anthropic API error: ${sig}"
           fi
           out="$(python3 -m runner --after --outcome "$outcome" --log "$log" 2>&1 || true)"
           echo "$out"

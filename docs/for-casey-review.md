@@ -2664,6 +2664,11 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 
 - T255's last attempt ended after 26 minutes because the AI service refused the worker's login (a 403 error at its front door), not because of anything in the task. Fable, deciding for you overnight, gave the attempt back once. If the retry fails for any reason, T255 waits for you. A later change will make this kind of outage not use up an attempt automatically. Nothing needs you now.
 
+## An AI-service outage no longer uses up a task's attempts (D-3443, November 13)
+
+- This morning three tasks each lost an attempt because the AI service refused the worker's login, not because of anything in the work. Now, when a worker's session is cut off by an error from the AI service itself (a refused login, an overloaded or failing service) before it handed anything in or pushed anything, the task simply goes back in the queue with its attempts untouched. A task gets this at most twice in a row; a third such cut-off counts as usual, so nothing can loop forever.
+- If three sessions are cut off this way within an hour, you get an outbox note: that usually means the build's AI login needs a look or the service is down. Nothing needs you now.
+
 ## Cheaper fix rounds, tighter output, two tasks per area again (D-3444, November 13)
 
 - You asked for anything that saves tokens and build time without hurting quality. Three changes. First, when the reviewer finds problems, the helper that fixes them now starts from the reviewer's list, the first helper's summary and a list of the changed files, and opens only the files the problems point to, instead of rereading the whole task from scratch; it runs the full checks once at the end. Second, every helper keeps each command's printed output shorter (half the old limit) and reads files in smaller pieces, never the same part twice. Third, two tasks may again work in the same area of the app at once: the clashes that made us drop to one all came from a one-off tidy-up of three of those notes files while work was running there, so tidy-ups now wait until no task is working in that area. The reviewer and every check still run on every task, and if more than 1 merge in 5 needs a redo over the next 10, it goes back to one per area. Nothing needs you now.

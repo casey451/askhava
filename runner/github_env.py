@@ -2019,6 +2019,14 @@ class GitHubEnv:
             raise RuntimeError(f"git fetch of {branch} failed")
         return tip
 
+    def remote_tip_now(self, branch: str) -> str | None:
+        """origin's tip of `branch` now: its SHA, '' when origin has no such branch, None when git cannot say
+        (`--after --outcome api_error`, D-3443)."""
+        try:
+            return self._remote_tip(branch) or ""
+        except RuntimeError:
+            return None
+
     def _runner_closed(self, task_id: str) -> list[int]:
         """The pull requests the runner closed itself to drop auto-merge (`runner_closed_prs`, D-583)."""
         return [int(n) for n in st.entry(self.last_state or {"tasks": []}, task_id).get("runner_closed_prs") or []]
