@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T08:19:43Z by runner bee96646639a (actions).
+Updated 2026-11-13T08:20:02Z by runner bee96646639a (actions).
 
 **Building: T249 in progress since 07:51Z; 276 of 415 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-13T08:19:43Z by runner bee96646639a (actions).
 - **Lane:** lane 1: T249 claimed 07:51Z, lease until 10:51Z
 - **Week:** 14% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:19Z, 0 min before this update
-- **Keeper:** last ran 08:15Z, next wake 10:54Z
+- **Keeper:** last ran 08:20Z, next wake 10:54Z
 
 ## Needs attention
 - BLOCKED T255: plan gap reported: PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address cannot reach the release with T255's files. picks::release reads the address only from the proof's contact (release.rs:347, privacy/src/api.rs:257); the sink mints the proof for the phone contact (release_sink.rs:101-133); take_name_address stores the address as a separate phone-less vault contact (conversation.rs:408-421); privacy has no public setter for a stored contact (vault.rs, only private reseal). Minting for the address-only contact would give the masked line a homeo; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T255 --plan-fix D-### --reason "..."` (D-2859)
