@@ -34,6 +34,9 @@
 //! T278 (JOB-015, D-1842): the claim's transaction also queues the day-3 and day-14 check-ins of
 //! a Connected job, from the release and the picked quote's earliest visit
 //! ([`check_ins_at_release`]).
+//!
+//! T281 (D-1845): the claim's transaction also queues the unreachable-homeowner steps 24, 48, 72
+//! and 96 hours after it (`unreachable_steps::schedule_steps`), each once per pick.
 
 use askhava_adapters::api::MaskedPool;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
@@ -55,6 +58,7 @@ use crate::models::{self, PicksError, ReleaseTarget};
 use crate::money_notices::BUSINESS_NOTICE_KIND;
 use crate::settle::LINE_RETRY_KIND;
 use crate::status::release_status;
+use crate::unreachable_steps::schedule_steps;
 
 /// The release email's template (PICK-024, D-454): job number and sign-in link only.
 pub const RELEASE_TEMPLATE: &str = "release_notice";
@@ -442,6 +446,7 @@ async fn record(
         return Ok(false);
     }
     check_ins_at_release(&mut tx, (job, business), at).await?;
+    schedule_steps(&mut tx, pick, at).await?;
     let to = notice_addresses(&mut tx, business, NoticePurpose::PicksAndRelease)
         .await
         .map_err(|_| PicksError::Database)?;

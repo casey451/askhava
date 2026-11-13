@@ -634,6 +634,7 @@ where
     register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
+    register_unreachable(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {
         register_inbound_retry(
             &mut registry,
@@ -719,6 +720,67 @@ fn register_opted_out_live(
         run_opted_out_live(pool, sender.clone(), task)
     });
     Ok(())
+}
+
+/// T281 (FEE-022, FEE-052, TXT-030, D-1845, D-3490): `picks.unreachable_step` and
+/// `picks.fraud_warning`, always registered, over `picks::api::StepParts`: the Stripe client of
+/// the Stripe webhook's settings (`release_sink::stripe_webhook`, read by [`stripe_wanted`]: unset
+/// in dev and CI, required in test and live), `ID_SECRET`, the vault and the footer postal line when set; a step
+/// that needs a missing part fails and is retried, then dead-lettered with its alert.
+fn register_unreachable(
+    registry: &mut Registry,
+    settings: &Settings,
+    (id_secret, clock): (&SecretString, &Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    use askhava_messaging::api::{MailboxKind, PostalAddress};
+    use askhava_picks::api::{StepParts, UNREACHABLE_STEP_KIND, run_fraud_warning};
+    use secrecy::ExposeSecret;
+    let hooks = if stripe_wanted(settings, &pairs) {
+        let lazy = PgPool::connect_lazy(settings.database_url().expose_secret())
+            .map_err(|_| io::Error::other("setting ASKHAVA_DATABASE_URL has an invalid value"))?;
+        release_sink::stripe_webhook(settings, lazy, pairs.clone())?
+    } else {
+        None
+    };
+    let postal = settings.postal_address().ok().and_then(|line| {
+        PostalAddress::new(line, MailboxKind::PoBox)
+            .or_else(|_| PostalAddress::new(line, MailboxKind::PrivateMailbox))
+            .ok()
+    });
+    let parts = Arc::new(StepParts {
+        stripe: hooks.map(|h| h.stripe.clone()),
+        secret: id_secret.clone(),
+        vault: vault_from(settings, pairs)?,
+        postal,
+    });
+    let (step_parts, step_clock) = (Arc::clone(&parts), Arc::clone(clock));
+    registry.register(UNREACHABLE_STEP_KIND, move |pool, task| {
+        askhava_picks::api::run_unreachable_step(
+            pool,
+            Arc::clone(&step_parts),
+            task,
+            step_clock.now(),
+        )
+    });
+    let fraud_clock = Arc::clone(clock);
+    registry.register(
+        askhava_payments::api::FRAUD_WARNING_KIND,
+        move |pool, task| run_fraud_warning(pool, Arc::clone(&parts), task, fraud_clock.now()),
+    );
+    Ok(())
+}
+
+/// Whether the Stripe webhook's settings are read for the worker: in test and live always (they
+/// are required there), elsewhere only when its signing secret is set.
+fn stripe_wanted(settings: &Settings, pairs: &[(String, String)]) -> bool {
+    let set = pairs
+        .iter()
+        .any(|(k, v)| k == release_sink::WEBHOOK_SECRET && !v.trim().is_empty());
+    set || matches!(
+        settings.environment(),
+        Environment::Test | Environment::Live
+    )
 }
 
 /// The safety voice call switch, read on every `calls.safety_call` run, so the registration holds
@@ -1114,6 +1176,7 @@ fn register_accepted_quote(registry: &mut Registry) {
 fn register_purge_handlers(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     register_daily_purges(registry, clock);
     register_purge_stages(registry, clock);
+    register_daily_sweeps(registry, clock);
     let at = Arc::clone(clock);
     registry.register(
         askhava_businesses::api::COMPLAINT_HOLD_KIND,
@@ -1165,6 +1228,23 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
             alert_if_last(&pool, &task, outcome.await).await
         }
     });
+}
+
+/// SEC-004, SEC-014, SEC-040, D-2207, D-2306 (T436): `portals`' daily sweep of sessions expired
+/// more than a day earlier and `core`'s daily prune of rate-limit windows older than the longest
+/// window plus a day, both at `clock`'s now; each queues the next day's run first, and
+/// `schedule_start` in `worker.rs` seeds both.
+fn register_daily_sweeps(registry: &mut Registry, clock: &Arc<dyn Clock>) {
+    let at = Arc::clone(clock);
+    registry.register(
+        askhava_portals::api::SESSION_SWEEP_KIND,
+        move |pool, task| askhava_portals::api::run_session_sweep_at(pool, task, at.now()),
+    );
+    let at = Arc::clone(clock);
+    registry.register(
+        askhava_core::api::RATE_LIMIT_PRUNE_KIND,
+        move |pool, task| askhava_core::api::run_rate_limit_prune_at(pool, task, at.now()),
+    );
 }
 
 /// PRIV-007 to PRIV-009, D-1799, D-2641: `jobs`' stage tasks and `privacy`'s re-check at `clock`'s

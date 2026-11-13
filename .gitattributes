@@ -1,1 +1,2 @@
 docs/decisions.md merge=union
+app/*/NOTES.md merge=union
