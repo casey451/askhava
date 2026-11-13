@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-13T20:23:05Z by runner 6cc0b1c3ccc3 (actions).
+Updated 2026-11-13T20:24:19Z by runner 900e97dabbc9 (actions).
 
-**Building: T357 in progress since 20:16Z; 290 of 424 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T357 in progress since 20:16Z; 290 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 290 of 424 build tasks (owner gates not counted)
+- **Tasks done:** 290 of 427 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T357 claimed 20:16Z, lease until 23:16Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
 - **Week:** 28% used, 128.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:22Z, 0 min before this update
+- **Last run:** 20:23Z, 1 min before this update
 - **Keeper:** last ran 20:23Z, next wake 22:30Z
 
 ## Needs attention
 - BLOCKED T438: plan gap reported: PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {"start": ..., "tokens": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: "message_id"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {"start": ..., "tokens": 2000, "counting": "message_id"}, logged in docs/decisions.md under; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T438 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+181 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -77,7 +77,6 @@ Updated 2026-11-13T20:23:05Z by runner 6cc0b1c3ccc3 (actions).
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 3 | 40 min | 22:16Z |  |
 | T162 | intake: the one intake order for the five paths and the Span | resync | 1 | 22 min | 21:57Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | done | 3 | 28 min | 20:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T251 | intake and quotes: the ZIP question, the job location, and t | done | 2 | 82 min | 20:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - 19:27Z Plan: pre-flight 15, split T341 and T361 (D-3497) (#691)
@@ -109,7 +108,7 @@ Updated 2026-11-13T20:23:05Z by runner 6cc0b1c3ccc3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 279 of 733 (38.1%) · partial 294 · unstarted 160
-**Tasks merged (throughput only):** 290 of 424
+**Tasks merged (throughput only):** 290 of 427
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
