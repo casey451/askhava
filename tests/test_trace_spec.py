@@ -137,6 +137,7 @@ def test_repository_spec_is_traceable() -> None:
         "The portal shows \"Booked until Friday\".",
         "The page says \"Hire through us.\"",
         "The page says \"Businesses work through Ask Hava.\"",
+        "The page says \"Hire through Laftly.\"",
         "The email says \"Job assigned to you.\"",
         "The page says \"Our network of service providers.\"",
         "The terms say \"We guarantee the work.\"",
@@ -149,7 +150,7 @@ def test_repository_spec_is_traceable() -> None:
 )
 def test_not_a_contractor_wording_fails(tmp_path: Path, text: str) -> None:
     errors = errors_for(tmp_path, f"- **TST-001** {text} Source: `src.md:3`.\n")
-    assert any("implies Ask Hava is a contractor (WORD-022)" in e for e in errors), errors
+    assert any("implies the brand is a contractor (WORD-022)" in e for e in errors), errors
 
 
 def test_quote_relay_wording_passes(tmp_path: Path) -> None:
@@ -160,6 +161,21 @@ def test_quote_relay_wording_passes(tmp_path: Path) -> None:
         "businesses.\" Source: `src.md:3`.\n"
     )
     assert errors_for(tmp_path, body) == []
+
+
+def test_brand_web_address_is_not_the_brand(tmp_path: Path) -> None:
+    """WORD-022 (D-3402): "help through laftly.com/help" names a page; the brand name alone fails."""
+    body = "- **TST-001** Homeowners get help through laftly.com/help. Source: `src.md:3`.\n"
+    assert errors_for(tmp_path / "page", body) == []
+    errors = errors_for(tmp_path / "brand", body.replace("laftly.com/help", "Laftly"))
+    assert any("implies the brand is a contractor (WORD-022)" in e for e in errors), errors
+
+
+def test_banned_word_in_web_address_path_still_fails(tmp_path: Path) -> None:
+    """WORD-022 (D-3402): only the brand inside a domain name is excused; a path word still fails."""
+    body = "- **TST-001** Businesses pay at laftly.com/assigned-jobs. Source: `src.md:3`.\n"
+    errors = errors_for(tmp_path, body)
+    assert any("implies the brand is a contractor (WORD-022): 'assigned'" in e for e in errors), errors
 
 
 def test_wording_rules_may_quote_banned_phrases(tmp_path: Path) -> None:

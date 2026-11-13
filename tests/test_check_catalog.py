@@ -349,6 +349,7 @@ def test_missing_files_fail(tmp_path: Path, capsys: pytest.CaptureFixture[str]) 
         "We'll send a plumber",
         "Book a repair",
         "Hire through Ask Hava",
+        "hire through Laftly",
         "Job assigned",
         "Ask Hava service provider",
         "nuestros profesionales",
@@ -362,7 +363,7 @@ def test_not_a_contractor_wording_fails(tmp_path: Path, phrase: str) -> None:
         'review: "R-8 or R-34 per changes file :209. Confirmed K2b."',
         f'review: "R-8 or R-34 per changes file :209. Confirmed K2b. {phrase}"',
     )
-    expected = "implies Ask Hava is a contractor (WORD-022)"
+    expected = "implies the brand is a contractor (WORD-022)"
     assert any(expected in e for e in errors), errors
 
 
@@ -527,7 +528,7 @@ def test_pest_may_be_off_with_no_decision(tmp_path: Path) -> None:
             "question_bank.yaml",
             "es: \"¿Qué tipo de sistema es?\"",
             "es: \"¿Qué tipo de sistema es? Book a tech\"",
-            "implies Ask Hava is a contractor (WORD-022)",
+            "implies the brand is a contractor (WORD-022)",
         ),
     ],
 )
