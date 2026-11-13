@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T17:52:44Z by runner 183c06a7dd69 (actions).
+Updated 2026-11-13T17:57:10Z by runner 5918a2604c7c (actions).
 
-**Building: T357 in progress since 16:24Z; 287 of 421 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T357 in progress since 16:24Z; 287 of 423 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 287 of 421 build tasks (owner gates not counted)
+- **Tasks done:** 287 of 423 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:55Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z
 - **Week:** 25% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:52Z, 0 min before this update
+- **Last run:** 17:52Z, 4 min before this update
 - **Keeper:** last ran 17:52Z, next wake 19:30Z
 
 ## Needs attention
@@ -77,7 +77,6 @@ Updated 2026-11-13T17:52:44Z by runner 183c06a7dd69 (actions).
 | T251 | intake and quotes: the ZIP question, the job location, and t | resync | 2 | 87 min | 18:46Z |  |
 | T376 | ai and stand-in (harness): the intake schema sent to Claude  | done | 1 | 35 min | 18:40Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 2 | 60 min | 18:26Z |  |
-| T366 | jobs and server: every dead-lettered task alerts, and a dail | done | 1 | 26 min | 17:53Z |  |
 
 ### Plan and harness merges on main
 - 17:36Z Plan: count usage once per message, prove fix rounds were re-reviewed (D-3475) (#685)
@@ -110,7 +109,7 @@ Updated 2026-11-13T17:52:44Z by runner 183c06a7dd69 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 573 · unstarted 160
-**Tasks merged (throughput only):** 287 of 421
+**Tasks merged (throughput only):** 287 of 423
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|

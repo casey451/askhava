@@ -46703,7 +46703,8 @@
      "at": "2026-11-13T17:16:32Z"
     }
    ],
-   "last_failure": "merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891)"
+   "last_failure": "merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891)",
+   "merge_turn_since": "2026-11-13T17:57:05Z"
   },
   {
    "id": "T433",
@@ -49549,7 +49550,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T17:52:44Z",
+ "updated_at": "2026-11-13T17:57:10Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -49647,7 +49648,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "183c06a7dd6932ad01a334a8fe92f390112506e5",
+ "runner_sha": "5918a2604c7cb72321c7977aba2145e17831690d",
  "starter": "actions",
  "smoke_runs": [
   {
