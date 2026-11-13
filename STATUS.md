@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T15:09:35Z by runner 038eb34810f7 (actions).
+Updated 2026-11-13T15:12:15Z by runner 038eb34810f7 (actions).
 
 **Building: T319 in progress since 14:57Z; 282 of 421 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T15:09:35Z by runner 038eb34810f7 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T319 claimed 14:57Z, lease until 17:57Z; lane 5: T266 claimed 14:42Z, lease until 17:42Z
 - **Week:** 20% used, 148.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:09Z, 0 min before this update
+- **Last run:** 15:12Z, 0 min before this update
 - **Keeper:** last ran 15:09Z, next wake 17:45Z
 
 ## Needs attention
@@ -73,7 +73,6 @@ Updated 2026-11-13T15:09:35Z by runner 038eb34810f7 (actions).
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 1 | 32 min | 17:52Z |  |
 | T315 | jobs and portals: feedback words are blanked by the 3-year p | done | 1 | 66 min | 16:18Z |  |
 | T370 | intake (harness): the night count the homeowner hears counts | done | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
-| T389 | licensing: a homeowner's wrong-license report pauses a pest  | done | 1 | 31 min | 15:11Z |  |
 
 ### Plan and harness merges on main
 - 15:02Z Plan: split T328 and trim T321 to fit the context limit (D-3468) (#676)
