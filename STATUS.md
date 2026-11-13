@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-13T09:17:06Z by runner f11e5ea2d96c (actions).
+Updated 2026-11-13T09:21:51Z by runner 553bd9eb54c3 (actions).
 
-**Building: T431 in progress since 09:02Z; 276 of 417 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T431 in progress since 09:02Z; 277 of 417 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 276 of 417 build tasks (owner gates not counted)
+- **Tasks done:** 277 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T431 claimed 09:02Z, lease until 12:02Z
 - **Week:** 14% used, 161.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:16Z, 0 min before this update
+- **Last run:** 09:17Z, 4 min before this update
 - **Keeper:** last ran 09:17Z, next wake 12:05Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+149 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+150 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T249 | quotes and portals: radius matching by ZIP centroid, the cov | MERGE_PENDING | 1 | 71 min | 09:03Z |  |
+| T249 | quotes and portals: radius matching by ZIP centroid, the cov | done | 1 | 71 min | 09:03Z |  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 2 | 3 min | 07:47Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | BLOCKED | 1 | 40 min | 07:40Z | PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switc |
 | T420 | Brand rename prep: intake and ai unit tests take the brand f | done | 1 | 28 min | 06:38Z |  |
@@ -108,8 +108,8 @@ Updated 2026-11-13T09:17:06Z by runner f11e5ea2d96c (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 233 of 733 (31.8%) · partial 339 · unstarted 161
-**Tasks merged (throughput only):** 276 of 417
+**Requirements verified:** 233 of 733 (31.8%) · partial 340 · unstarted 160
+**Tasks merged (throughput only):** 277 of 417
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -120,7 +120,7 @@ Updated 2026-11-13T09:17:06Z by runner f11e5ea2d96c (actions).
 | consent | 11 | 20 | 4 | 35 |
 | fees | 13 | 38 | 1 | 52 |
 | intake | 23 | 17 | 3 | 43 |
-| job-cards | 12 | 11 | 1 | 24 |
+| job-cards | 12 | 12 | 0 | 24 |
 | licensing | 26 | 22 | 0 | 48 |
 | lifecycle | 19 | 9 | 0 | 28 |
 | messaging | 20 | 23 | 2 | 45 |
@@ -144,7 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 156 of 199 done
+- stage 4: 157 of 199 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
