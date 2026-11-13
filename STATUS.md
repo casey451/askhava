@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T20:24:19Z by runner 900e97dabbc9 (actions).
+Updated 2026-11-13T20:24:41Z by runner 900e97dabbc9 (actions).
 
 **Building: T357 in progress since 20:16Z; 290 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-13T20:24:19Z by runner 900e97dabbc9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T357 claimed 20:16Z, lease until 23:16Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
 - **Week:** 28% used, 128.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:23Z, 1 min before this update
-- **Keeper:** last ran 20:23Z, next wake 22:30Z
+- **Last run:** 20:24Z, 0 min before this update
+- **Keeper:** last ran 20:24Z, next wake 22:29Z
 
 ## Needs attention
 - BLOCKED T438: plan gap reported: PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {"start": ..., "tokens": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: "message_id"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {"start": ..., "tokens": 2000, "counting": "message_id"}, logged in docs/decisions.md under; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T438 --plan-fix D-### --reason "..."` (D-2859)
