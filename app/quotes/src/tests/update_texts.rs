@@ -2,6 +2,7 @@
 //! carry her page link and list no quote details outside the LIST reply. Fake request numbers and
 //! links only. TXT-041's Spanish line (the entry's other case) is T162's.
 
+use askhava_core::api::brand;
 use askhava_messaging::api::{Audience, Language, Registry};
 
 use crate::api::{
@@ -10,12 +11,20 @@ use crate::api::{
 };
 use crate::update_texts::{sentences, words};
 
-const LINK: &str = "https://askhava.com/q/sample-token";
+const LINK: &str = "https://{domain}/q/sample-token";
+
+/// `text` with its English brand tokens filled from the brand file (WORD-001, WORD-008, D-1932);
+/// every other placeholder stays.
+fn fill(text: &str) -> String {
+    brand().fill(text, false).expect("the brand fills")
+}
 
 /// A text of one sentence of `n` words, with the opening and the link.
 fn planted(n: usize) -> String {
     let words = vec!["word"; n].join(" ");
-    format!("Ask Hava: {words}. See them here: {{link}}")
+    fill(&format!(
+        "{{brand_short}}: {words}. See them here: {{link}}"
+    ))
 }
 
 /// TD-TXT-25: every listed template, in English and Spanish, passes the scan.
@@ -49,31 +58,36 @@ fn td_txt_25_planted_21_word_sentence_fails_20_passes() {
 /// the request number, counts and link lists a quote detail; the LIST reply may do both.
 #[test]
 fn td_txt_25_link_required_and_no_quote_details() {
-    let bare = "Ask Hava: You now have {quoted} quotes for request {job}.";
-    assert_eq!(check(bare, Shape::Update), vec![Problem::NoLink]);
-    let amount = "Ask Hava: A quote for $190 is in. See it here: {link}";
-    assert_eq!(check(amount, Shape::Update), vec![Problem::Details]);
-    let named = "Ask Hava: {business} quoted request {job}. See it here: {link}";
-    assert_eq!(check(named, Shape::Fixed), vec![Problem::Details]);
-    let list = "Ask Hava: Your quotes for request {job}:\n1. {business}: $190.";
-    assert_eq!(check(list, Shape::List), Vec::new());
-    let closed = "Ask Hava: Request {job} is closed. Text us any time to start a new one.";
-    assert_eq!(check(closed, Shape::Capped), Vec::new());
+    let bare = fill("{brand_short}: You now have {quoted} quotes for request {job}.");
+    assert_eq!(check(&bare, Shape::Update), vec![Problem::NoLink]);
+    let amount = fill("{brand_short}: A quote for $190 is in. See it here: {link}");
+    assert_eq!(check(&amount, Shape::Update), vec![Problem::Details]);
+    let named = fill("{brand_short}: {business} quoted request {job}. See it here: {link}");
+    assert_eq!(check(&named, Shape::Fixed), vec![Problem::Details]);
+    let list = fill("{brand_short}: Your quotes for request {job}:\n1. {business}: $190.");
+    assert_eq!(check(&list, Shape::List), Vec::new());
+    let closed =
+        fill("{brand_short}: Request {job} is closed. Text us any time to start a new one.");
+    assert_eq!(check(&closed, Shape::Capped), Vec::new());
 }
 
 /// TD-TXT-25: a rendered update links to her quote page; a Terms or help link, or the page
 /// address with no token, is not her page link.
 #[test]
 fn td_txt_25_rendered_link_is_her_quote_page() {
-    let page = format!("Ask Hava: You have 2 quotes for request 1234. See them here: {LINK}");
+    let page = fill(&format!(
+        "{{brand_short}}: You have 2 quotes for request 1234. See them here: {LINK}"
+    ));
     assert_eq!(check(&page, Shape::Update), Vec::new());
     for other in [
-        "https://askhava.com/terms",
-        "https://askhava.com/help",
-        "https://askhava.com/q/",
-        "https://askhava.com/q/sample-token/pick",
+        "https://{domain}/terms",
+        "https://{domain}/help",
+        "https://{domain}/q/",
+        "https://{domain}/q/sample-token/pick",
     ] {
-        let text = format!("Ask Hava: You have 2 quotes for request 1234. See them here: {other}");
+        let text = fill(&format!(
+            "{{brand_short}}: You have 2 quotes for request 1234. See them here: {other}"
+        ));
         assert_eq!(
             check(&text, Shape::Update),
             vec![Problem::NoLink],
@@ -86,8 +100,8 @@ fn td_txt_25_rendered_link_is_her_quote_page() {
 /// does not end a sentence.
 #[test]
 fn td_txt_25_sentences_and_words() {
-    let text = "Ask Hava: Two words. See askhava.com/terms now? Last {link}\nNext line";
-    let found = sentences(text);
+    let text = fill("{brand_short}: Two words. See {domain}/terms now? Last {link}\nNext line");
+    let found = sentences(&text);
     assert_eq!(found.len(), 4);
     let counts: Vec<usize> = found.iter().map(|s| words(s)).collect();
     assert_eq!(counts, vec![2, 3, 2, 2]);
@@ -101,14 +115,14 @@ fn td_txt_25_rendered_update_texts_pass() {
             wanted,
             spanish_on: true,
         };
-        let first = first_quote_text(reader, "1234", LINK).expect("first");
+        let first = first_quote_text(reader, "1234", &fill(LINK)).expect("first");
         assert_eq!(check(&first, Shape::Fixed), Vec::new());
         let counts = Counts {
             job: "1234",
             quoted: 3,
             sent: 7,
         };
-        let update = update_text(reader, counts, LINK).expect("update");
+        let update = update_text(reader, counts, &fill(LINK)).expect("update");
         assert_eq!(check(&update, Shape::Update), Vec::new());
     }
 }

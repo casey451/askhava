@@ -1,6 +1,6 @@
-# Ask Hava voice guide
+# Laftly voice guide
 
-How Ask Hava's texts and emails sound (WORD-024, D-406). This is a style guide only. Every rule in `docs/spec/` wins over style: no hype, no pressure, no ranking, no banned words (WORD-003, WORD-019 to WORD-023), and every text starts "Ask Hava:" (WORD-008). Nobody is named, quoted or imitated in any customer copy.
+How Laftly's texts and emails sound (WORD-024, D-406). This is a style guide only. Every rule in `docs/spec/` wins over style: no hype, no pressure, no ranking, no banned words (WORD-003, WORD-019 to WORD-023), and every text starts "Laftly:" (WORD-008). Nobody is named, quoted or imitated in any customer copy.
 
 ## The register
 
@@ -26,20 +26,20 @@ The "after" column is the spec text. Spanish follows once the English is settled
 
 | Message | Before | After |
 |---|---|---|
-| Coverage (INT-017) | (none) | "Ask Hava: Got it. We'll send this to the 5 pool cleaning businesses on Ask Hava." |
-| Not covered (INT-017) | "...isn't a category we cover..." | "Ask Hava: We don't cover tree trimming jobs yet. We've noted your request so we can add businesses. Text us any time." |
-| Cards sent (TXT-032) | "Ask Hava: Your request went to 4 local businesses that take plumbing jobs. ... Quotes are open until 4 p.m. Thursday, Arizona time. ..." | "Ask Hava: Request 1042 is out to 4 plumbing businesses. Not every business answers. We'll text you when the first quote comes in." |
-| First quote (TXT-016) | "...site visit needed, $89 trip fee, earliest visit today, evening. More may come..." | "Ask Hava: Your first quote for request 1042 is in, and more may come. Free for you. The business you pick pays Ask Hava a set introduction fee. Can't open links? Reply LIST to get your quotes by text. See them here: <link> Terms (18+): askhava.com/terms" |
-| No quotes yet (JOB-010) | "...Small or unusual jobs can take longer. A few more details often help..." | "Ask Hava: No quotes yet for request 1042. A few more details or a photo often help a business price it. Reply 1 to add details, 2 to keep waiting, or 3 to close." |
-| Pick lapsed (PICK-046) | "Ask Hava: <Business> didn't confirm in time. Businesses get picks by email and sometimes miss the window. ..." | "Ask Hava: <Business> couldn't take it this time. You still have other quotes: ..." |
-| Backup choice used (PICK-047) | "...didn't confirm in time, so your backup choice... They have until <time> to confirm." | "Ask Hava: <Business> couldn't take it, so your backup, <Business 2>, has your pick now. We'll text you when they accept." |
-| Pick made (PICK-045) | "Ask Hava: Done. <Business> has your pick by email and has until <time> to confirm. ..." | "Ask Hava: Done. <Business> has your pick. We'll text you when they accept. You can still pick another quote on your page." |
-| Intake closed (INT-019) | "...Text us any time to restart" | "Ask Hava: We closed request 1042 because we didn't hear back. No problem. Text us any time and we'll start again." |
+| Coverage (INT-017) | (none) | "Laftly: Got it. We'll send this to the 5 pool cleaning businesses on Laftly." |
+| Not covered (INT-017) | "...isn't a category we cover..." | "Laftly: We don't cover tree trimming jobs yet. We've noted your request so we can add businesses. Text us any time." |
+| Cards sent (TXT-032) | "Laftly: Your request went to 4 local businesses that take plumbing jobs. ... Quotes are open until 4 p.m. Thursday, Arizona time. ..." | "Laftly: Request 1042 is out to 4 plumbing businesses. Not every business answers. We'll text you when the first quote comes in." |
+| First quote (TXT-016) | "...site visit needed, $89 trip fee, earliest visit today, evening. More may come..." | "Laftly: Your first quote for request 1042 is in, and more may come. Free for you. The business you pick pays Laftly a set introduction fee. Can't open links? Reply LIST to get your quotes by text. See them here: <link> Terms (18+): laftly.com/terms" |
+| No quotes yet (JOB-010) | "...Small or unusual jobs can take longer. A few more details often help..." | "Laftly: No quotes yet for request 1042. A few more details or a photo often help a business price it. Reply 1 to add details, 2 to keep waiting, or 3 to close." |
+| Pick lapsed (PICK-046) | "Laftly: <Business> didn't confirm in time. Businesses get picks by email and sometimes miss the window. ..." | "Laftly: <Business> couldn't take it this time. You still have other quotes: ..." |
+| Backup choice used (PICK-047) | "...didn't confirm in time, so your backup choice... They have until <time> to confirm." | "Laftly: <Business> couldn't take it, so your backup, <Business 2>, has your pick now. We'll text you when they accept." |
+| Pick made (PICK-045) | "Laftly: Done. <Business> has your pick by email and has until <time> to confirm. ..." | "Laftly: Done. <Business> has your pick. We'll text you when they accept. You can still pick another quote on your page." |
+| Intake closed (INT-019) | "...Text us any time to restart" | "Laftly: We closed request 1042 because we didn't hear back. No problem. Text us any time and we'll start again." |
 | Pick email body (PICK-037) | Subject only | "A homeowner picked your quote for job 1042 (AC repair, Lake Havasu City). One step left: tap Confirm and pay $75 by 2:15 p.m. Then you get their first name and address." |
-| Last reminder (PICK-037) | "Ask Hava: Last reminder: confirm job <n> by <time>, or the homeowner may choose another quote." | "Ask Hava: Last reminder: job 1042 has 1 hour to confirm. After 2:15 p.m. the homeowner can choose another quote." |
+| Last reminder (PICK-037) | "Laftly: Last reminder: confirm job <n> by <time>, or the homeowner may choose another quote." | "Laftly: Last reminder: job 1042 has 1 hour to confirm. After 2:15 p.m. the homeowner can choose another quote." |
 | When the fee is owed (BIZ-030) | "It's a fixed introduction fee, never a share of the job, and it doesn't depend on the work being done or paid for." (kept) | Added first: "You pay one fixed fee when you confirm a pick: $25, $75 or $199 by job size. It's not a share of the job. If you call twice inside the homeowner's window and can't reach them, the refund rule gives the fee back without you asking." |
-| Missed cards (BIZ-044) | "Ask Hava: Last month: 6 job requests, 2 quoted, 4 ended without a quote. ..." | "Ask Hava: Last month you got 6 job requests and quoted 2. 4 closed before you quoted. If our emails land in Spam or Promotions, this 1-minute fix moves them to your inbox: <link>. Or add a second address: <link>." |
-| Another quote picked (PICK-026) | "The homeowner picked another quote for job 1042. ..." | "Ask Hava: Job 1042 went to another business this time. 4 businesses quoted; the picked quote was lower than yours. No action needed. Thanks for quoting." |
+| Missed cards (BIZ-044) | "Laftly: Last month: 6 job requests, 2 quoted, 4 ended without a quote. ..." | "Laftly: Last month you got 6 job requests and quoted 2. 4 closed before you quoted. If our emails land in Spam or Promotions, this 1-minute fix moves them to your inbox: <link>. Or add a second address: <link>." |
+| Another quote picked (PICK-026) | "The homeowner picked another quote for job 1042. ..." | "Laftly: Job 1042 went to another business this time. 4 businesses quoted; the picked quote was lower than yours. No action needed. Thanks for quoting." |
 
 The HELP reply (CON-018) is unchanged: carriers need its contact details, and the legal-document check uses its reply-time sentence.
 
