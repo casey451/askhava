@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-13T05:36:49Z by runner 58922c9e6509 (actions).
+Updated 2026-11-13T05:51:59Z by runner f7189ec863bb (actions).
 
-**Idle since 05:35Z; 274 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 05:50Z; 275 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 274 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 275 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 05:35Z (no task in progress)
+- **Lane:** idle since 05:50Z (no task in progress)
 - **Week:** 13% used, 170.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:36Z, 0 min before this update
+- **Last run:** 05:37Z, 14 min before this update
 - **Keeper:** last ran 05:36Z, next wake 05:56Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+146 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+148 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T215 | businesses and ops: pest identity by the city list plus atte | MERGE_PENDING | 1 | 22 min | 05:08Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T215 | businesses and ops: pest identity by the city list plus atte | done | 1 | 22 min | 05:08Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 20 min | 04:22Z |  |
 | T371 | licensing and server: the worker fetches and records the dai | done | 1 | 70 min | 04:18Z |  |
 | T427 | WORD-022 phrases catch both brand names in the spec trace, t | done | 1 | 29 min | 03:17Z |  |
@@ -119,23 +119,23 @@ Updated 2026-11-13T05:36:49Z by runner 58922c9e6509 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 230 of 733 (31.4%) · partial 341 · unstarted 162
-**Tasks merged (throughput only):** 274 of 415
+**Requirements verified:** 234 of 733 (31.9%) · partial 338 · unstarted 161
+**Tasks merged (throughput only):** 275 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 14 | 6 | 35 |
 | ai | 8 | 16 | 5 | 29 |
-| businesses | 16 | 39 | 3 | 58 |
+| businesses | 17 | 38 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
 | consent | 11 | 20 | 4 | 35 |
 | fees | 13 | 38 | 1 | 52 |
-| intake | 22 | 18 | 3 | 43 |
+| intake | 24 | 16 | 3 | 43 |
 | job-cards | 12 | 11 | 1 | 24 |
-| licensing | 25 | 23 | 0 | 48 |
+| licensing | 26 | 22 | 0 | 48 |
 | lifecycle | 19 | 9 | 0 | 28 |
 | messaging | 20 | 23 | 2 | 45 |
-| ops-recovery | 2 | 7 | 45 | 54 |
+| ops-recovery | 2 | 8 | 44 | 54 |
 | privacy | 6 | 23 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 29 | 26 | 1 | 56 |
@@ -155,7 +155,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 154 of 197 done
+- stage 4: 155 of 197 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
