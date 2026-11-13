@@ -19,7 +19,10 @@
 //! TD-CON-04 (`tests::optout_words`), TD-CON-05, TD-CON-13 and TD-CON-20
 //! (`tests/integration/tests/optout_flow.rs`).
 
+use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+
+use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue as enqueue_task};
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
 use askhava_ops::api::{NewAlert, Severity, Switch, is_paused, raise_alert};
@@ -27,9 +30,13 @@ use askhava_privacy::api::{IndexPurpose, Vault, normalize_phone};
 use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
-use sqlx::{Connection, PgConnection};
+use sqlx::{Connection, PgConnection, PgPool};
 
+use crate::mode_state::load_lines;
 use crate::models::{self, OptOutEvent, OutboxError};
+use crate::optout_email::{
+    OptOutEmailSender, queue_optout_confirmation_email, queue_optout_wrote_again,
+};
 use crate::rules::{self, CONFIRMATION_TEMPLATE, Classified, ProviderKeyword};
 use crate::service::{self, NewText, Relation, To};
 use crate::templates::{Language, Registry};
@@ -109,7 +116,8 @@ pub enum Outcome {
     OptedOut {
         /// The queued confirmation, if any.
         confirmation: Option<Uuid>,
-        /// Confirm by email if one is on file (T094's email).
+        /// Confirm by email if one is on file: texting is paused by the owner, or the homeowner
+        /// line is switched off, suspended or restored and waiting (T360's email, D-2629).
         email: bool,
         /// The critical alert raised, if the message carried the emergency flag (CON-017): the
         /// number cannot be texted back once this message lists it (D-870).
@@ -157,7 +165,7 @@ pub async fn on_inbound_text(
             )
             .await?;
             let spanish = detected.is_some_and(rules::Detected::spanish);
-            let answered = by_provider || listed || !added;
+            let answered = (by_provider, listed || !added);
             let (confirmation, email) =
                 confirm(&mut tx, secret, msg, (event, spanish, answered)).await?;
             Outcome::OptedOut {
@@ -188,21 +196,26 @@ pub async fn on_inbound_text(
     Ok(outcome)
 }
 
-/// The app's part of the one confirmation (CON-009, CON-030): none when the provider answered or
-/// the number was listed already or by a concurrent opt-out (`answered`), none while texting is
-/// paused (email instead: `(None, true)`), else the CON-009 text queued once under opt-out
-/// `event`, in Spanish for a Spanish phrase: `(Some(row), false)`.
+/// The app's part of the one confirmation (CON-009, CON-030): none when the number was listed
+/// already or by a concurrent opt-out (`answered.1`, a repeat); while texting is paused or the
+/// line is closed, the email for every new opt-out, a provider word included, since CON-030 makes
+/// no word-type exception (`(None, true)`, D-3479); else none when the provider answered
+/// (`answered.0`), or the CON-009 text queued once under opt-out `event`, in Spanish for a
+/// Spanish phrase: `(Some(row), false)`.
 async fn confirm(
     db: &mut PgConnection,
     secret: &SecretString,
     msg: &InboundText<'_>,
-    (event, spanish, answered): (Uuid, bool, bool),
+    (event, spanish, (by_provider, repeat)): (Uuid, bool, (bool, bool)),
 ) -> Result<(Option<Uuid>, bool), OutboxError> {
-    if answered {
+    if repeat {
         return Ok((None, false));
     }
-    if texting_paused(db).await? {
+    if texting_paused(db).await? || line_closed(db, msg.relation).await? {
         return Ok((None, true));
+    }
+    if by_provider {
+        return Ok((None, false));
     }
     let language = if spanish { Language::Es } else { Language::En };
     let body = Registry::embedded()
@@ -217,6 +230,21 @@ async fn confirm(
     };
     let (id, _) = service::enqueue(db, secret, &text).await?;
     Ok((Some(id), false))
+}
+
+/// CON-030, TXT-021, D-2629: whether a homeowner's line is closed by the facts `send_on_line`
+/// reads (`mode_state`'s stored homeowner line: texting switched off, the number suspended, or
+/// restored and waiting for Casey), so a confirmation queued now would never go. A business
+/// sender keeps the ops pause alone.
+async fn line_closed(db: &mut PgConnection, relation: Relation) -> Result<bool, OutboxError> {
+    if relation == Relation::Business {
+        return Ok(false);
+    }
+    let line = load_lines(db, (None, None))
+        .await
+        .map_err(|_| OutboxError::Database)?
+        .homeowner;
+    Ok(!line.texting_on || line.state.paused())
 }
 
 /// Whether the owner paused texting, alone or with everything (OPS-003, CON-030).
@@ -357,6 +385,35 @@ pub async fn send_checked(
     Err(OutboxError::Blocked)
 }
 
+/// CON-028, D-3480: whether inbox row `inbox` is the text whose opt-out put `phone` on the list
+/// it is on now, so a repeat STOP from a listed number (`Outcome::OptedOut` with nothing added)
+/// is told apart from the opt-out that listed it, and its caller sends no second "still open"
+/// email. A resend of that same text still answers `true`.
+///
+/// # Errors
+///
+/// [`OutboxError::BadPhone`] or [`OutboxError::Database`].
+pub async fn listed_by(
+    db: &mut PgConnection,
+    vault: &Vault,
+    phone: &str,
+    inbox: Uuid,
+) -> Result<bool, OutboxError> {
+    let digests = digests(vault, phone)?;
+    let Some(listing) = models::listing(db, &digests).await? else {
+        return Ok(false);
+    };
+    sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM messaging.optout_event WHERE id = $1 AND inbox_id = $2) \
+         AS \"listed!\"",
+        listing.event,
+        inbox
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| OutboxError::Database)
+}
+
 /// The digests of `phone` under the homeowner-phone index key, one per key version, active first,
 /// so a number matches during a rotation (PRIV-024).
 fn digests(vault: &Vault, phone: &str) -> Result<Vec<(u16, [u8; 32])>, OutboxError> {
@@ -392,4 +449,129 @@ impl<C: SmsAdapter + Sync> SmsAdapter for Watch<'_, C> {
         }
         sent
     }
+}
+
+/// The `core.task` kind of an inbound opt-out's email follow-up (CON-016, CON-030, D-2629,
+/// D-3118): payload `{"inbox", "contact", "language", "follow_up"}`, IDs and codes only.
+pub const OPTOUT_FOLLOWUP_KIND: &str = "messaging.optout_followup";
+
+/// Which email an inbound opt-out text is followed up with (D-2629).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FollowUp {
+    /// CON-030: the opt-out was recorded while texting was off or suspended; confirm by email.
+    Confirmation,
+    /// CON-016: a listed homeowner wrote again without START.
+    WroteAgain,
+}
+
+impl FollowUp {
+    /// The payload code.
+    fn code(self) -> &'static str {
+        match self {
+            Self::Confirmation => "confirmation",
+            Self::WroteAgain => "wrote_again",
+        }
+    }
+}
+
+/// CON-016, CON-030, JOB-005, SEC-018, D-3118: queues one [`OPTOUT_FOLLOWUP_KIND`] task in the
+/// caller's (the delivery's) transaction for homeowner `contact`'s inbox row `inbox`, in
+/// `language` (the caller's choice: a Spanish opt-out phrase's confirmation, else TXT-039),
+/// deduped per inbox row and follow-up; `true` when new. No address, phone or body in it.
+///
+/// # Errors
+///
+/// [`OutboxError::Database`].
+pub async fn queue_optout_followup(
+    db: &mut PgConnection,
+    (inbox, contact, language): (Uuid, Uuid, Language),
+    follow_up: FollowUp,
+    now: Timestamp,
+) -> Result<bool, OutboxError> {
+    let code = if language == Language::Es { "es" } else { "en" };
+    let payload = serde_json::json!({
+        "inbox": inbox, "contact": contact, "language": code, "follow_up": follow_up.code(),
+    });
+    let mut task = NewTask::new(OPTOUT_FOLLOWUP_KIND, payload, now);
+    task.dedupe_key = Some(format!(
+        "{OPTOUT_FOLLOWUP_KIND}:{inbox}:{}",
+        follow_up.code()
+    ));
+    enqueue_task(db, &task)
+        .await
+        .map(|id| id.is_some())
+        .map_err(|_| OutboxError::Database)
+}
+
+/// The [`OPTOUT_FOLLOWUP_KIND`] handler (CON-016, CON-030, D-2629, D-3118). Without a sender (no
+/// footer postal line or vault keys: dev and CI) it sends nothing and is done. Else, at the inbox
+/// row's arrival: a confirmation finds the opt-out event the text recorded (`inbox_id`, migration
+/// 0128) and calls `queue_optout_confirmation_email`; a wrote-again calls
+/// `queue_optout_wrote_again`. Her email is read only through the vault inside those functions,
+/// never logged or put in a payload. Safe to run twice: both are keyed.
+///
+/// # Errors
+///
+/// A fixed sentence for a malformed payload or a failed step (the queue tries again).
+pub async fn run_optout_followup(
+    pool: PgPool,
+    sender: Option<Arc<OptOutEmailSender>>,
+    task: Claimed,
+) -> Result<(), HandlerError> {
+    const FAILED: HandlerError = HandlerError("opt-out follow-up could not be stored");
+    let id = |k: &str| {
+        task.payload[k]
+            .as_str()
+            .and_then(|s| Uuid::parse_str(s).ok())
+    };
+    let follow_up = match task.payload["follow_up"].as_str() {
+        Some("confirmation") => FollowUp::Confirmation,
+        Some("wrote_again") => FollowUp::WroteAgain,
+        _ => return Err(HandlerError("opt-out follow-up is malformed")),
+    };
+    let (Some(inbox), Some(contact)) = (id("inbox"), id("contact")) else {
+        return Err(HandlerError("opt-out follow-up is malformed"));
+    };
+    let language = match task.payload["language"].as_str() {
+        Some("es") => Language::Es,
+        _ => Language::En,
+    };
+    let Some(sender) = sender else {
+        return Ok(());
+    };
+    let mut db = pool.acquire().await.map_err(|_| FAILED)?;
+    let Some((event, at)) = optout_event_of(&mut db, inbox).await? else {
+        return Ok(());
+    };
+    let her = (contact, language);
+    match (follow_up, event) {
+        (FollowUp::Confirmation, Some(event)) => {
+            queue_optout_confirmation_email(&mut db, &sender, her, event, at)
+                .await
+                .map(|_| ())
+        }
+        (FollowUp::Confirmation, None) => Ok(()),
+        (FollowUp::WroteAgain, _) => queue_optout_wrote_again(&mut db, &sender, her, inbox, at)
+            .await
+            .map(|_| ()),
+    }
+    .map_err(|_| FAILED)
+}
+
+/// Inbox row `inbox`'s arrival time, which every follow-up is dated by, and the opt-out event it
+/// recorded (none for a wrote-again text); `None` when the row is unknown (nothing to do).
+async fn optout_event_of(
+    db: &mut PgConnection,
+    inbox: Uuid,
+) -> Result<Option<(Option<Uuid>, Timestamp)>, HandlerError> {
+    let row = sqlx::query!(
+        r#"SELECT i.received_at, e.id AS "event?" FROM messaging.inbox i
+           LEFT JOIN messaging.optout_event e ON e.inbox_id = i.id AND e.action = 'opt_out'
+           WHERE i.id = $1 ORDER BY e.effective_at LIMIT 1"#,
+        inbox
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| HandlerError("opt-out follow-up could not be read"))?;
+    Ok(row.map(|r| (r.event, jiff_sqlx::Timestamp::to_jiff(r.received_at))))
 }

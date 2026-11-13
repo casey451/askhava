@@ -111,6 +111,7 @@ pub use crate::disputes::{
     evidence_pack, list_disputes, mark_auto_submit, record_dispute, record_owner_submission,
     run_dispute_submit,
 };
+pub use crate::fee_facts::{FeeFactsError, JobCodes, JobFeeFacts, resolve_fee_facts};
 pub use crate::flags::{
     FlagError, LAST_BASES, TIER_EDGES, TierEdgeFlag, TierEdgeRule, tier_edge_flag,
 };

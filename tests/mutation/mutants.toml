@@ -9,6 +9,8 @@
 # nightly-main runs them all and fails on a survivor or a stale `find` (BUILD_BRIEF.md:472).
 # The task that writes rule code adds its mutants here (T056 stage 2, T073 the money rules and
 # the license check at pick, TD-PICK-09, D-479).
+# Every mutant is also killed by a deterministic listed test (it dies with PROPTEST_CASES=0), so an
+# unlucky property-test draw never lets one survive the night (D-3499, D-3531).
 #
 # TD-LIC-13 (LIC-033): the license filter mutants below, with tests/coverage_floor.json's 95%
 # branch floors on app/licensing/ and app/privacy/ (PRIV-022).
@@ -30,7 +32,7 @@ cargo_mutants_files = [
 rule = "License filter"
 file = "app/quotes/src/rules.rs"
 package = "askhava-quotes"
-tests = ["tests::matching_examples", "tests::prop_matching_props"]
+tests = ["tests::matching_examples", "tests::prop_matching_props", "tests::radius_matching"]
 mutants = [
   { name = "covers every candidate job type -> covers any", find = "            Eligibility::NoCard(reason) => return CardDecision::Skip(Skip::NotCovered(reason)),", replace = "            Eligibility::NoCard(reason) if !job.candidates.iter().any(|c| { let mut h = business.licenses.clone(); h.roc_covers = map.covers(&classes, &c.category, &c.job_type); !matches!(eligibility_for_request(c, &h, &request), Eligibility::NoCard(_)) }) => return CardDecision::Skip(Skip::NotCovered(reason)),\n            Eligibility::NoCard(_) => {}" },
   { name = "ticked-job-type check dropped", find = "if checklist && !job.candidates", replace = "if false && checklist && !job.candidates" },
@@ -49,7 +51,7 @@ mutants = [
 rule = "License filter"
 file = "app/licensing/src/rules.rs"
 package = "askhava-licensing"
-tests = ["tests::agency_rules", "tests::prop_rules", "tests::scope_examples", "tests::prop_handyman_never_gas"]
+tests = ["tests::agency_rules", "tests::prop_rules", "tests::scope_examples", "tests::prop_handyman_never_gas", "tests::handyman"]
 mutants = [
   { name = "handyman_allowed ignored", find = "if !(job.handyman_allowed && holder.handyman) {", replace = "if !(holder.handyman) {" },
   { name = "handyman on a pending city list gets the card", find = "        CityListStanding::Pending => Eligibility::NoCard(NoCardReason::CityListPending),\n    }\n}", replace = "        CityListStanding::Pending => Eligibility::HandymanCard,\n    }\n}" },
@@ -232,7 +234,7 @@ mutants = [
 rule = "Consent and opt-out"
 file = "app/intake/src/service.rs"
 package = "askhava-intake"
-tests = ["tests::prop_optout_no_close"]
+tests = ["tests::prop_optout_no_close", "tests::prop_optout_no_close::td_con_06_an_opt_out_changes_no_job_status"]
 mutants = [
   { name = "a sole-word CANCEL with a live job not pausing the job", find = "matches!(fold(words).as_str(), \"cancel\" | \"cancelar\")", replace = "matches!(fold(words).as_str(), \"cancel-x\" | \"cancelar-x\")" },
   { name = "a job card sent before consent", find = "Ok(!models::consent_records(db, conversation).await?.is_empty())", replace = "Ok(models::consent_records(db, conversation).await.is_ok())", package = "askhava-integration", target = "--test consent_records", tests = ["td_con_03"] },
