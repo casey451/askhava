@@ -7,6 +7,10 @@
 //! T184: [`send_job_cards`] records the full match (owner pauses, "jobs nobody else covers"),
 //! [`send_late_cards`] gives a business that became eligible its card while the job is Open or No
 //! quotes yet (CARD-018, D-042) and [`coverage`] counts it for intake (INT-017, INT-032).
+//!
+//! T249 (CARD-024, D-1519): [`send_job_cards_in_reach`], [`send_late_cards_in_reach`] and
+//! [`coverage_in_reach`] carry a [`Reach`], so a business whose radius reaches the job's ZIP
+//! centroid is matched too; the functions without the suffix pass the empty `Reach` (towns only).
 
 use askhava_jobs::api::current;
 use askhava_licensing::api::ClassMap;
@@ -14,7 +18,7 @@ use jiff::Timestamp;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
-use crate::models::{self, CardBusiness, CardJob, Coverage, Pool, QuotesError, Recipient};
+use crate::models::{self, CardBusiness, CardJob, Coverage, Pool, QuotesError, Reach, Recipient};
 use crate::rules;
 
 /// CARD-001, CARD-002, CARD-003: chooses every business that receives the job's card, with no cap,
@@ -61,8 +65,24 @@ pub async fn send_job_cards(
     pool: &Pool<'_>,
     now: Timestamp,
 ) -> Result<Vec<Recipient>, QuotesError> {
+    send_job_cards_in_reach(db, map, job_id, (job, pool, &Reach::default()), now).await
+}
+
+/// CARD-024, CARD-001, CARD-004, CARD-016, D-1519: [`send_job_cards`] with the job's location and
+/// the businesses' reach, so a business in reach by its radius gets its card too.
+///
+/// # Errors
+///
+/// [`QuotesError::Database`].
+pub async fn send_job_cards_in_reach(
+    db: &mut PgConnection,
+    map: &ClassMap,
+    job_id: Uuid,
+    (job, pool, reach): (&CardJob, &Pool<'_>, &Reach),
+    now: Timestamp,
+) -> Result<Vec<Recipient>, QuotesError> {
     let holders = models::card_holders(db, job_id).await?;
-    let new: Vec<Recipient> = rules::match_job_held(map, job, pool, &holders)
+    let new: Vec<Recipient> = rules::match_job_held_in_reach(map, job, pool, &holders, reach)
         .into_iter()
         .filter(|r| holders.binary_search(&r.business).is_err())
         .collect();
@@ -88,6 +108,22 @@ pub async fn send_late_cards(
     pool: &Pool<'_>,
     now: Timestamp,
 ) -> Result<Vec<Recipient>, QuotesError> {
+    send_late_cards_in_reach(db, map, job_id, (job, pool, &Reach::default()), now).await
+}
+
+/// CARD-024, CARD-018, D-042, D-1519: [`send_late_cards`] with the job's location and the
+/// businesses' reach.
+///
+/// # Errors
+///
+/// [`QuotesError::Job`] or [`QuotesError::Database`]; nothing is kept on an error.
+pub async fn send_late_cards_in_reach(
+    db: &mut PgConnection,
+    map: &ClassMap,
+    job_id: Uuid,
+    (job, pool, reach): (&CardJob, &Pool<'_>, &Reach),
+    now: Timestamp,
+) -> Result<Vec<Recipient>, QuotesError> {
     let mut tx = db.begin().await.map_err(|_| QuotesError::Database)?;
     let status = current(&mut tx, job_id)
         .await
@@ -96,7 +132,7 @@ pub async fn send_late_cards(
     if !status.takes_late_cards() {
         return Ok(Vec::new());
     }
-    let sent = send_job_cards(&mut tx, map, job_id, job, pool, now).await?;
+    let sent = send_job_cards_in_reach(&mut tx, map, job_id, (job, pool, reach), now).await?;
     tx.commit().await.map_err(|_| QuotesError::Database)?;
     Ok(sent)
 }
@@ -108,6 +144,20 @@ pub async fn send_late_cards(
 ///
 /// [`QuotesError::LicenseMap`] when the shipped map did not load.
 pub fn coverage(job: &CardJob, pool: &Pool<'_>) -> Result<Coverage, QuotesError> {
+    coverage_in_reach(job, pool, &Reach::default())
+}
+
+/// CARD-024, INT-017, INT-032, D-1519: [`coverage`] by the same in-reach test as
+/// [`send_job_cards_in_reach`], so the count and the recipients agree.
+///
+/// # Errors
+///
+/// [`QuotesError::LicenseMap`] when the shipped map did not load.
+pub fn coverage_in_reach(
+    job: &CardJob,
+    pool: &Pool<'_>,
+    reach: &Reach,
+) -> Result<Coverage, QuotesError> {
     let map = ClassMap::shipped().map_err(|_| QuotesError::LicenseMap)?;
-    Ok(rules::coverage(map, job, pool))
+    Ok(rules::coverage_in_reach(map, job, pool, reach))
 }

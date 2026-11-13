@@ -34,9 +34,14 @@
 //! T214: [`cant_take_page`] is the "Can't take it" page the pick notice links to
 //! (`picks::api::cant_take_link`) and [`cant_take_pick`] its button: the pick ends at once with no
 //! fee and moves to the homeowner's backup (PICK-050, PICK-047). The route is T306's.
+//! T249: [`service_area_settings_page`] and [`change_service_area`] let the owner or a "Confirm
+//! and billing" member change the base ZIP and radius (BIZ-010, BIZ-058, CARD-024) with sign-up's
+//! checks and messages; the save is audited by field name only. The route is T306's.
 
 use askama::Template;
-use askhava_businesses::api::{Acting, LargestJob, offer_sample_pick};
+use askhava_businesses::api::{
+    Acting, LargestJob, ServiceArea, ServiceAreaProblem, offer_sample_pick, save_service_area,
+};
 use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_intake::api::paused_by_homeowner;
 use askhava_messaging::api::{notice_log, record_first_open};
@@ -64,6 +69,7 @@ use crate::action_links::{
 };
 use crate::business_auth::{BusinessPrincipal, Need};
 use crate::business_portal::{SensitiveChange, StepUpError, require_step_up};
+use crate::business_signup::{area_field, area_message};
 use crate::confirm_pay::{FEE_FREE_LINE, money};
 use crate::email_check::{MailApp, sample_pick_page};
 use crate::session::PortalsError;
@@ -166,6 +172,7 @@ struct ActionsView<'a> {
     page: Option<JobView<'a>>,
     price: Option<&'a PriceForm<'a>>,
     price_error: bool,
+    area: Option<&'a AreaSettings<'a>>,
     csrf: &'a str,
 }
 
@@ -256,6 +263,7 @@ fn render_job(
         page: Some(view),
         price: None,
         price_error: false,
+        area: None,
         csrf: "",
     }
     .render()
@@ -297,6 +305,7 @@ pub fn action_page(facts: &ActionFacts<'_>) -> Result<String, askama::Error> {
         page: None,
         price: None,
         price_error: false,
+        area: None,
         csrf: facts.csrf,
     }
     .render()
@@ -328,6 +337,7 @@ pub fn cant_take_page(job_number: &str, csrf: &str) -> Result<String, askama::Er
         page: None,
         price: None,
         price_error: false,
+        area: None,
         csrf,
     }
     .render()
@@ -806,6 +816,7 @@ fn render_form(
         page: None,
         price,
         price_error: price.is_some_and(PriceForm::has_error),
+        area: None,
         csrf,
     }
     .render()
@@ -1208,4 +1219,92 @@ pub async fn set_auto_confirm(
             QuotesAutoError::NoQuote | QuotesAutoError::BadField => AutoConfirmBoxError::NotOffered,
             QuotesAutoError::Database => AutoConfirmBoxError::Database,
         })
+}
+
+/// BIZ-010, BIZ-058: where the service-area settings form posts; T306 serves it.
+pub const SERVICE_AREA_SETTINGS_ROUTE: &str = "/b/settings/service-area";
+
+/// What the service-area settings form shows (BIZ-010, BIZ-058, A11Y-030): the stored or typed
+/// base ZIP and radius, kept after a refusal, the problems from `ServiceArea::parse` and whether a
+/// save just went through.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct AreaSettings<'a> {
+    /// The base ZIP shown in the field.
+    pub base_zip: &'a str,
+    /// The radius shown in the field.
+    pub radius: &'a str,
+    /// The refused fields, in page order; empty when nothing was refused.
+    pub problems: &'a [ServiceAreaProblem],
+    /// The change was just saved.
+    pub saved: bool,
+}
+
+impl AreaSettings<'_> {
+    /// The message by `field`, if it was refused (A11Y-030); the same words as sign-up.
+    fn error_for(&self, field: &str) -> Option<&'static str> {
+        let found = self.problems.iter().find(|p| area_field(**p) == field);
+        found.map(|p| area_message(*p))
+    }
+}
+
+/// BIZ-010, BIZ-058, A11Y-010 to A11Y-013, A11Y-030: the settings page that changes the base ZIP
+/// and radius: labels and hints before the inputs; after a refusal an "Error: " title, a focused
+/// summary linking each field and the same message by it, values kept; a status line after a save.
+///
+/// # Errors
+/// The template's render error.
+pub fn service_area_settings_page(
+    area: &AreaSettings<'_>,
+    csrf: &str,
+) -> Result<String, askama::Error> {
+    ActionsView {
+        action: None,
+        form: None,
+        warning: None,
+        auto_box: None,
+        page: None,
+        price: None,
+        price_error: false,
+        area: Some(area),
+        csrf,
+    }
+    .render()
+}
+
+/// Why a service-area change was not saved (BIZ-010, BIZ-058). No variant carries a typed value.
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+pub enum AreaChangeError {
+    /// Not the owner or a "Confirm and billing" member of the business.
+    #[error("only the owner or a Confirm and billing member changes the service area")]
+    NotAllowed,
+    /// A field failed sign-up's checks; nothing was stored.
+    #[error("the service area was refused")]
+    Refused(Vec<ServiceAreaProblem>),
+    /// The save failed.
+    #[error("the service area could not be stored")]
+    Database,
+}
+
+/// BIZ-010, BIZ-058, PRIV-028, CARD-024, D-1519: stores `principal`'s business's new base ZIP and
+/// radius after sign-up's checks (`ServiceArea::parse`), for the owner or a "Confirm and billing"
+/// member only; `businesses::api::save_service_area` writes one audit row per field naming the
+/// field only, never the value, and touches no other business. New cards match by it at once.
+///
+/// # Errors
+/// [`AreaChangeError`]; nothing is stored on any error.
+pub async fn change_service_area(
+    db: &mut PgConnection,
+    principal: &BusinessPrincipal,
+    (base_zip, radius): (&str, &str),
+    now: Timestamp,
+) -> Result<ServiceArea, AreaChangeError> {
+    if !principal.may(principal.business, Need::ConfirmAndBilling) {
+        return Err(AreaChangeError::NotAllowed);
+    }
+    let area = ServiceArea::parse(base_zip, radius).map_err(AreaChangeError::Refused)?;
+    let by = (Actor::Business(principal.business), now);
+    save_service_area(db, principal.business, &area, by)
+        .await
+        .map_err(|_| AreaChangeError::Database)?;
+    Ok(area)
 }
