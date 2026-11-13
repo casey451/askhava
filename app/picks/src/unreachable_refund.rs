@@ -11,6 +11,11 @@
 //! `payments::api::refund_state` reads the pick's refund as `Succeeded`, whatever the refund call
 //! answered; T333 (D-2303, D-3018): the 96-hour "refunded" email goes only when
 //! `payments::api::refund_in_full` answers `true`; the no-show ends a `paid` or `free` pick, and a pick in neither rolls the move back.
+//!
+//! T355 (FEE-052, PICK-022, PRIV-005, D-2627, D-3118): [`fraud_warning`] first decides "released"
+//! under the pick's row lock (a `picks.release` row, or the caller's `true`) and, for a pick not
+//! released, commits one `picks.fraud_hold` row that the release claim refuses, before the refund
+//! is asked for; `end_pick` keeps its status-only guard for the other ends.
 
 use askhava_adapters::api::PaymentsAdapter;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
@@ -526,7 +531,9 @@ pub async fn dispute_auto_submit(
 /// when `payments::api::refund_state` then reads an unreleased pick's refund as `Succeeded` its
 /// job returns from Payment pending to Quotes ready and the pick ends as fraud-refunded, together;
 /// a refund in flight, blocked or failed, or a job no longer in Payment pending, changes nothing.
-/// `true` when moved. Only a `paid` pick ends (FEE-052 never applies to a fee-free pick).
+/// `true` when moved. Only a `paid` pick ends (FEE-052 never applies to a fee-free pick). Before
+/// any of it, [`hold_unreleased`] decides `released` under the pick's row lock and holds an
+/// unreleased pick against a later release, so a refunded charge is never also released (D-2627).
 ///
 /// # Errors
 /// `Database`, `Job`; `MovedOn` when the pick is no longer `paid` (the move is rolled back).
@@ -536,6 +543,7 @@ pub async fn fraud_warning(
     (pick, job, released): (Uuid, Uuid, bool),
     now: Timestamp,
 ) -> Result<bool, PicksError> {
+    let released = hold_unreleased(pool, pick, released, now).await?;
     early_fraud_warning(pool, stripe, secret, (pick, released), now)
         .await
         .map_err(|_| PicksError::Database)?;
@@ -553,4 +561,48 @@ pub async fn fraud_warning(
     end_pick(&mut tx, paid, PickStatus::FraudRefunded, now).await?;
     tx.commit().await.map_err(|_| PicksError::Database)?;
     Ok(true)
+}
+
+/// FEE-052, PICK-022, PRIV-005, D-2627, D-3118: one short transaction that locks pick `pick`'s row
+/// (`SELECT ... FOR UPDATE`, the lock the release claim takes first), then, in a separate
+/// statement, reads whether it has a `picks.release` row; it counts as released when that row
+/// exists or the caller's `released` says so (stricter only: a caller's `true` stays `true`). A
+/// pick not released gets one `picks.fraud_hold` row (idempotent, a second warning adds none) that
+/// commits before the refund is asked for, so the claim refuses it from then on. An unknown pick
+/// holds nothing. Returns the `released` the refund is decided on.
+async fn hold_unreleased(
+    pool: &PgPool,
+    pick: Uuid,
+    released: bool,
+    now: Timestamp,
+) -> Result<bool, PicksError> {
+    let mut tx = pool.begin().await.map_err(|_| PicksError::Database)?;
+    let locked = sqlx::query_scalar!("SELECT id FROM picks.pick WHERE id = $1 FOR UPDATE", pick)
+        .fetch_optional(&mut *tx)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    if locked.is_none() {
+        return Ok(released);
+    }
+    let row = sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM picks.release WHERE pick_id = $1) AS "released!""#,
+        pick
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| PicksError::Database)?;
+    let released = released || row;
+    if !released {
+        sqlx::query!(
+            "INSERT INTO picks.fraud_hold (pick_id, held_at) VALUES ($1, $2) \
+             ON CONFLICT (pick_id) DO NOTHING",
+            pick,
+            now.to_sqlx() as _,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    }
+    tx.commit().await.map_err(|_| PicksError::Database)?;
+    Ok(released)
 }

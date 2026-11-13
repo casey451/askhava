@@ -12,6 +12,8 @@
     "opus": 1.6
   },
   "calibrate_after": 3,
+  "pre_dedupe_factor": 0.6,
+  "pre_dedupe_factor_note": "D-3475: usage.by_task entries recorded before T438 counted every transcript line, about 1.65 times each reply's real usage (T319: 27.6M recorded against about 16.5M, 0.60; T249: 45.2M against about 26.6M, 0.59). scripts/pacing.py calibrated() multiplies an unmarked DONE entry's weighted tokens by this factor; an entry marked usage_counting message_id is used as recorded. The ledger windows are never scaled (D-3536). Without this key the factor is 1.0.",
   "weights": {
     "input_tokens": 1.0,
     "output_tokens": 1.0,

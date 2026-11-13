@@ -8,7 +8,9 @@ the task's owned files that exist, its `reads` and its prompt (kit/prompts/T###.
 (haiku 1.0, sonnet 1.3, opus 1.6) and the turn factor (3.0: read, write, test loops) are defaults
 in kit/pacing.json. **Calibration:** once usage.by_task holds `calibrate_after` (3) DONE tasks
 of one model with an estimate recorded, that model's tokens-per-byte becomes the median of
-measured / estimated_bytes, replacing bytes_per_token, multiplier and turn factor together.
+measured / estimated_bytes, replacing bytes_per_token, multiplier and turn factor together. Measured
+figures count each reply once (D-3475): an entry recorded before that change (no `usage_counting`
+marker) counted every transcript line and is scaled by `pre_dedupe_factor` first.
 
 **Weighted tokens (an assumption, stated):** the plan's limits are not published in tokens. The
 ledger counts input + output + cache writes at weight 1 and cache reads at 0.1 (kit/pacing.json
@@ -127,6 +129,14 @@ def task_bytes(task: dict[str, Any], root: Path = ROOT) -> int:
     return sum(_size(root / p) for p in paths if p and not p.startswith("/") and ".." not in p.split("/"))
 
 
+def deduped(entry: dict[str, Any], cfg: dict[str, Any]) -> float:
+    """A by_task entry's weighted tokens counting each reply once (D-3475): a marked entry
+    (`usage_counting` "message_id") as recorded, an unmarked, per-line one times `pre_dedupe_factor` (1.0 without it)."""
+    if entry.get("usage_counting") == "message_id":
+        return float(weighted(entry, cfg))
+    return weighted(entry, cfg) * float(cfg.get("pre_dedupe_factor", 1.0))
+
+
 def calibrated(state: State, cfg: dict[str, Any]) -> dict[str, float]:
     """Model alias -> measured tokens per estimated byte (median), once enough DONE tasks exist."""
     status = {t["id"]: t.get("status") for t in state.get("tasks", [])}
@@ -134,7 +144,7 @@ def calibrated(state: State, cfg: dict[str, Any]) -> dict[str, float]:
     for tid, entry in ((state.get("usage") or {}).get("by_task") or {}).items():
         size = int(entry.get("estimated_bytes", 0) or 0)
         if size > 0 and status.get(tid) == "DONE" and entry.get("last_model"):
-            ratios.setdefault(alias(str(entry["last_model"])), []).append(weighted(entry, cfg) / size)
+            ratios.setdefault(alias(str(entry["last_model"])), []).append(deduped(entry, cfg) / size)
     return {m: statistics.median(r) for m, r in ratios.items() if len(r) >= int(cfg["calibrate_after"])}
 
 
