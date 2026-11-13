@@ -12,6 +12,11 @@
 //! `VAULT_KEY` with associated data naming its job and photo ID before the `storage` adapter writes
 //! it; [`issue_link`] gives a token for the path `/photos/<token>` that [`open_link`] honours for
 //! [`LINK_TTL_SECS`]. The photo-ask wording and the texting provider's media delete are T212's.
+//!
+//! Key rotation: [`rotate_photos`] re-seals photos under an older `VAULT_KEY` version as new
+//! objects and moves each row in a fenced update, deleting the old object only after it commits, so
+//! the drill (run `rotate_batch` and `rotate_photos` until both return 0, then drop the old key)
+//! leaves every photo readable (PRIV-023, PRIV-024, D-2626, D-3542).
 
 use std::collections::BTreeMap;
 use std::io::Cursor;
@@ -19,7 +24,7 @@ use std::time::Duration;
 
 use aes_gcm::aead::{Aead, Generate, KeyInit, Nonce, Payload};
 use aes_gcm::{Aes256Gcm, Key};
-use askhava_adapters::api::{IdempotencyKey, StorageAdapter};
+use askhava_adapters::api::{IdempotencyKey, StorageAdapter, StorageDelete};
 use askhava_core::api::{IdSecret, LinkKind, LinkSalt, LinkToken, link_token};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use base64::Engine as _;
@@ -278,6 +283,29 @@ impl PhotoSeal {
         Ok(Self { keys })
     }
 
+    /// The active (highest) key version (PRIV-024).
+    fn active_version(&self) -> Result<u16, PhotoError> {
+        self.keys
+            .last_key_value()
+            .map(|(version, _)| *version)
+            .ok_or(PhotoError::Sealed)
+    }
+
+    /// Opens `sealed` for `photo` of `job` only when its header names `key_version`, the version its
+    /// `privacy.photo` row records, so the row's version binds the object as the AAD does (PRIV-023,
+    /// D-3542).
+    fn open_as_row(
+        &self,
+        (job, photo, key_version): (Uuid, Uuid, i32),
+        sealed: &[u8],
+    ) -> Result<Vec<u8>, PhotoError> {
+        let head = sealed.get(..VERSION_LEN).ok_or(PhotoError::Sealed)?;
+        if i32::from(u16::from_be_bytes([head[0], head[1]])) != key_version {
+            return Err(PhotoError::Sealed);
+        }
+        self.open(job, photo, sealed)
+    }
+
     /// Seals `photo` of `job` under the active key: key version, random nonce, ciphertext.
     pub(crate) fn seal(&self, job: Uuid, photo: Uuid, plain: &[u8]) -> Result<Vec<u8>, PhotoError> {
         let (version, cipher) = self.keys.last_key_value().ok_or(PhotoError::Sealed)?;
@@ -439,7 +467,7 @@ pub async fn open_link<S: StorageAdapter>(
     }
     let hash = token.hash();
     let row = sqlx::query!(
-        "SELECT p.id, p.job_id, p.storage_key FROM privacy.photo_link l \
+        "SELECT p.id, p.job_id, p.key_version, p.storage_key FROM privacy.photo_link l \
          JOIN privacy.photo p ON p.id = l.photo_id \
          WHERE l.token_hash = $1 AND l.expires_at > $2",
         hash.as_slice(),
@@ -453,11 +481,114 @@ pub async fn open_link<S: StorageAdapter>(
         .read_object(&row.storage_key)
         .await
         .map_err(|_| PhotoError::Storage)?;
-    let plain = seal.open(row.job_id, row.id, &sealed)?;
+    let plain = seal.open_as_row((row.job_id, row.id, row.key_version), &sealed)?;
     let mut tx = db.begin().await.map_err(db_err)?;
     record(&mut tx, row.id, "privacy.photo_opened").await?;
     tx.commit().await.map_err(db_err)?;
     Ok(CleanPhoto(plain))
+}
+
+/// Re-seals up to `limit` photos whose `key_version` is below the active `VAULT_KEY` version and
+/// returns how many rows moved; run it with `rotate_batch` until both return 0 before the old key
+/// is dropped (PRIV-023, PRIV-024, D-2626, D-3542). Each photo is read, opened under its row's
+/// version and AAD, sealed under the active version and AAD and written as a new `photos/<random>`
+/// object; then one statement moves the row to that object and version only while it still holds
+/// the version and object it was read with, with a `privacy.photo_resealed` audit row, and the old
+/// object is deleted only after that commits. A row moved meanwhile is left alone and the new
+/// object is an orphan; a crash at any step leaves a readable photo and at most one orphan, which
+/// the orphan sweep removes (D-1793). No plaintext is logged or kept, and no open audit is written:
+/// nothing reaches a reader. A connection inside a transaction is refused first: the old object is
+/// deleted after the move commits, so an outer rollback must never undo the move (D-3545).
+///
+/// # Errors
+///
+/// [`PhotoError::InTransaction`], [`PhotoError::Storage`], [`PhotoError::Sealed`] or
+/// [`PhotoError::Database`].
+pub async fn rotate_photos<S: StorageDelete + Sync>(
+    db: &mut PgConnection,
+    keys: (&PhotoSeal, &S, &SecretString),
+    limit: i64,
+) -> Result<u64, PhotoError> {
+    if in_transaction(db).await.map_err(db_err)? {
+        return Err(PhotoError::InTransaction);
+    }
+    let active = keys.0.active_version()?;
+    let rows = sqlx::query_as!(
+        OldPhoto,
+        "SELECT id, job_id, key_version, storage_key FROM privacy.photo \
+         WHERE key_version < $1 ORDER BY id LIMIT $2",
+        i32::from(active),
+        limit,
+    )
+    .fetch_all(&mut *db)
+    .await
+    .map_err(db_err)?;
+    let mut moved = 0;
+    for row in &rows {
+        if reseal_photo(db, keys, row).await? {
+            moved += 1;
+        }
+    }
+    Ok(moved)
+}
+
+/// A `privacy.photo` row as [`rotate_photos`] read it.
+struct OldPhoto {
+    id: Uuid,
+    job_id: Uuid,
+    key_version: i32,
+    storage_key: String,
+}
+
+/// Re-seals one photo as a new object and moves its row if it still holds what was read; `false`
+/// when it had moved meanwhile (PRIV-023, PRIV-024, D-3542).
+async fn reseal_photo<S: StorageDelete + Sync>(
+    db: &mut PgConnection,
+    (seal, storage, id_secret): (&PhotoSeal, &S, &SecretString),
+    row: &OldPhoto,
+) -> Result<bool, PhotoError> {
+    let old = storage
+        .read_object(&row.storage_key)
+        .await
+        .map_err(|_| PhotoError::Storage)?;
+    let plain =
+        zeroize::Zeroizing::new(seal.open_as_row((row.job_id, row.id, row.key_version), &old)?);
+    let sealed = seal.seal(row.job_id, row.id, &plain)?;
+    let version = i32::from(u16::from_be_bytes([sealed[0], sealed[1]]));
+    let random = LinkSalt::generate().map_err(|_| PhotoError::Sealed)?;
+    let name = format!(
+        "photos/{}",
+        Builder::from_random_bytes(*random.as_bytes()).into_uuid()
+    );
+    let key = IdempotencyKey::derive(id_secret, "photo.put", &[&name]);
+    storage
+        .put_object(&key, &name, sealed)
+        .await
+        .map_err(|_| PhotoError::Storage)?;
+    let mut tx = db.begin().await.map_err(db_err)?;
+    let updated = sqlx::query!(
+        "UPDATE privacy.photo SET key_version = $1, storage_key = $2 \
+         WHERE id = $3 AND key_version = $4 AND storage_key = $5",
+        version,
+        name,
+        row.id,
+        row.key_version,
+        row.storage_key,
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    if updated.rows_affected() == 0 {
+        return Ok(false);
+    }
+    record(&mut tx, row.id, "privacy.photo_resealed").await?;
+    tx.commit().await.map_err(db_err)?;
+    let key = IdempotencyKey::derive(id_secret, "photo.delete", &[&row.storage_key]);
+    storage
+        .delete_object(&key, &row.storage_key)
+        .await
+        .map_err(|_| PhotoError::Storage)?;
+    Ok(true)
 }
 
 /// The audit row for `action` on `photo`, by the system; it names the photo ID only (PRIV-028).
