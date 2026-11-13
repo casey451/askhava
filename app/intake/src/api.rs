@@ -97,7 +97,7 @@ pub use crate::question_bank::{
     SMELL_ES, asks_smell_kind, keyword_answer, starts_now,
 };
 pub use crate::replies::{Reply, receive_reply};
-pub use crate::resubscribe::restart_after_start;
+pub use crate::resubscribe::{pause_on_repeat_cancel, restart_after_start};
 pub use crate::routing::{
     COUNT_MANY_TEMPLATE, COUNT_ONE_TEMPLATE, NOT_COVERED_KIND, NOT_COVERED_TEMPLATE,
     OUT_OF_AREA_TEMPLATE, Outcome, PEST_CONTROL, PEST_OFF_TEMPLATE, Request, Routing,
@@ -118,9 +118,9 @@ pub use crate::service::{
     NEEDED_BY_TEMPLATE, OPTED_OUT_LIVE_KIND, OptOutJobs, PublishedTerms, Queued, Screened,
     TermsAcceptance, TermsChannel, TextIn, Trade, answer_choice, answer_how_soon, answer_text_pick,
     ask_how_soon, card_allowed, consent_records, conversation, disclosure, emergency_events,
-    how_soon, may_text, offer_emergency_choice, on_opt_out, pause_on_repeat_cancel,
-    paused_by_homeowner, receive_answer, receive_text, record_terms_acceptance, release_emergency,
-    safe_hold, sole_cancel, terms_acceptances,
+    how_soon, may_text, offer_emergency_choice, on_opt_out, paused_by_homeowner, receive_answer,
+    receive_text, record_terms_acceptance, release_emergency, safe_hold, sole_cancel,
+    terms_acceptances,
 };
 pub use crate::summary_step::{
     APPROVED_ACTION, AUTO_SEND_AFTER, AUTO_SENT_ACTION, CARD_EDIT_TEMPLATE, CARD_LINK_TEMPLATE,
