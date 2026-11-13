@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T14:31:24Z by runner 79a7b6c06892 (actions).
+Updated 2026-11-13T14:31:35Z by runner ae799a921ac7 (actions).
 
 **Building: T266 in progress since 13:35Z; 281 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,14 +9,14 @@ Updated 2026-11-13T14:31:24Z by runner 79a7b6c06892 (actions).
 - **Lane:** lane 4: T266 claimed 13:35Z, lease until 16:35Z
 - **Week:** 19% used, 151.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:31Z, 0 min before this update
-- **Keeper:** last ran 14:31Z, next wake 16:38Z
+- **Keeper:** last ran 14:31Z, next wake 16:37Z
 
 ## Needs attention
 - BLOCKED T386: plan gap reported: PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a fixed placeholder allowlist (slots, lines 231-241) for en.json/es.json that lacks {cant_take}, which T386 must add to pick_notice and pick_notice_emergency. The file is owned by T080/T271/T378/T383/T425, not T386. Evidence: cargo test -p askhava-integration --test voice_calls td_call_06 exit=101, panicked at voice_calls.rs:250:13: {cant_take} in en. Reviewer confirmed (kit/tasks.json ownership, prompt line 9 wording). Smallest plan change: let T386 own voice_calls.rs to add "; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T386 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T319 (since 2026-11-13T13:50:53Z, no attempt used; a plan change fixes it): T319: tests/budget.rs is named by D-3445, but no task owns it and it does not exist
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T436 (since 2026-11-13T13:50:53Z, no attempt used; a plan change fixes it): T436: tests/budget.rs is named by D-3445, but no task owns it and it does not exist
-- Strict plan check red: 27 problem(s) on tasks still to run (+158 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+155 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
