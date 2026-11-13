@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T04:51:27Z by runner 7772c1d47f57 (actions).
+Updated 2026-11-13T04:59:03Z by runner 7772c1d47f57 (actions).
 
 **Building: T215 in progress since 04:45Z; 273 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T04:51:27Z by runner 7772c1d47f57 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 04:45Z, lease until 07:45Z
 - **Week:** 12% used, 170.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:51Z, 0 min before this update
+- **Last run:** 04:55Z, 3 min before this update
 - **Keeper:** last ran 04:51Z, next wake 07:48Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ Updated 2026-11-13T04:51:27Z by runner 7772c1d47f57 (actions).
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 71 min | 06:06Z |  |
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | done | 1 | 51 min | 06:05Z |  |
 | T356 | messaging and server (harness): the worker sends queued text | done | 1 | 86 min | 05:31Z |  |
-| T405 | payments and adapters (harness): each charged pick's 3-D Sec | resync | 1 | 33 min | 04:56Z |  |
 
 ### Plan and harness merges on main
 - 04:27Z Harness: safety hand-in reports unreleased leases (D-3419) (#654)
