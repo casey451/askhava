@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T02:46:19Z by runner fe45a7107588 (actions).
+Updated 2026-11-13T02:48:46Z by runner fe45a7107588 (actions).
 
-**Building: T426 in progress since 02:14Z; 266 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T426 in progress since 02:14Z; 267 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 266 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 267 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T426 claimed 02:14Z, lease until 05:14Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T430 claimed 02:33Z, lease until 05:33Z
 - **Week:** 11% used, 161.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:46Z, 0 min before this update
+- **Last run:** 02:46Z, 2 min before this update
 - **Keeper:** last ran 02:46Z, next wake 03:04Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-13T02:46:19Z by runner fe45a7107588 (actions).
 | T423 | Brand rename prep: integration tests (first-quote move to si | done | 1 | 66 min | 01:47Z |  |
 | T422 | Brand rename prep: integration tests (accepted-quote email t | done | 1 | 44 min | 01:20Z |  |
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | MERGE_PENDING | 1 | 26 min | 01:18Z |  |
-| T424 | Brand rename prep: integration tests (open-cards digest to s | MERGE_PENDING | 1 | 32 min | 01:15Z |  |
+| T424 | Brand rename prep: integration tests (open-cards digest to s | done | 1 | 32 min | 01:15Z |  |
 | T372 | businesses and licensing: each recorded ROC list re-applies  | done | 1 | 81 min | 01:07Z |  |
 | T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 1 | 2 min | 23:48Z | PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclea |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | done | 1 | 57 min | 23:46Z |  |
@@ -123,7 +123,7 @@ Updated 2026-11-13T02:46:19Z by runner fe45a7107588 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 339 · unstarted 164
-**Tasks merged (throughput only):** 266 of 415
+**Tasks merged (throughput only):** 267 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -158,7 +158,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 146 of 197 done
+- stage 4: 147 of 197 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
