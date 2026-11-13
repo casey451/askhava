@@ -4,12 +4,17 @@
   "1": null,
   "2": null,
   "3": null,
-  "4": null,
+  "4": {
+   "task": "T319",
+   "session": "actions-43459319320",
+   "expires": "2026-11-13T19:23:00Z",
+   "lane": "4"
+  },
   "5": null,
   "6": null,
   "7": null
  },
- "seq": 3765,
+ "seq": 3766,
  "runner_sha": "6dfa812afb951dbf42531ebb0d5891a58a7fd8b7",
- "starter": "manual"
+ "starter": "actions"
 }
