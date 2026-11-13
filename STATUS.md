@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T02:56:29Z by runner bfc45ca4a80b (actions).
+Updated 2026-11-13T02:56:44Z by runner bfc45ca4a80b (actions).
 
 **Building: T429 in progress since 02:50Z; 267 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -90,7 +90,6 @@ Updated 2026-11-13T02:56:29Z by runner bfc45ca4a80b (actions).
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | done | 1 | 12 min | 03:22Z |  |
 | T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z |  |
 | T400 | server: the web process stores the catalog file at start-up, | done | 1 | 21 min | 03:07Z |  |
-| T248 | catalog and businesses: markets as reviewed data, Arizona ZI | resync | 1 | 67 min | 02:56Z |  |
 
 ### Plan and harness merges on main
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
