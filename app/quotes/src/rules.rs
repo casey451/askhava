@@ -14,6 +14,12 @@
 //! aside (CARD-004, D-1018); and [`coverage`] counts the same match for the INT-017 line or
 //! offers INT-032's SPLIT (D-1019). [`match_job_held`] is the rerun: a card holder whose checklist
 //! covers the job keeps overflow off.
+//!
+//! T249 added radius matching (CARD-024, D-1519): each `_in_reach` twin takes a [`Reach`], and a
+//! business passes the town test when it serves an offered Arizona town or, for a job whose own
+//! town is in Arizona, the job's ZIP centroid is within its radius of its base ZIP centroid
+//! (inclusive). Every other check is unchanged, so a radius only adds reach. The functions without
+//! the suffix are their twin with the empty `Reach`: towns only.
 
 use std::collections::BTreeSet;
 
@@ -22,14 +28,26 @@ use askhava_licensing::api::{ClassMap, Eligibility, Job, JobRequest, eligibility
 use sqlx::types::Uuid;
 
 use crate::models::{
-    CardBusiness, CardDecision, CardJob, Coverage, OwnerPauses, Pool, Recipient, Skip,
+    CardBusiness, CardDecision, CardJob, Coverage, OwnerPauses, Pool, Reach, Recipient, Skip,
 };
 
 /// CARD-001, CARD-002, LIC-035, LIC-043: whether `business` receives `job`'s card, and as a
 /// handyman when any candidate is a handyman card. Checks run in the order of [`Skip`].
 #[must_use]
 pub fn card_for(map: &ClassMap, job: &CardJob, business: &CardBusiness) -> CardDecision {
-    gate(map, job, business, true)
+    card_for_in_reach(map, job, business, &Reach::default())
+}
+
+/// CARD-024, CARD-001, CARD-002: [`card_for`] where `reach` may also put the business in reach of
+/// the job by its radius.
+#[must_use]
+pub fn card_for_in_reach(
+    map: &ClassMap,
+    job: &CardJob,
+    business: &CardBusiness,
+    reach: &Reach,
+) -> CardDecision {
+    gate(map, job, business, true, reach)
 }
 
 /// CARD-016, CARD-001, CARD-004: [`card_for`] under the owner pauses; with `overflow` the ticks
@@ -41,10 +59,21 @@ pub fn card_under(
     pauses: &OwnerPauses,
     (business, overflow): (&CardBusiness, bool),
 ) -> CardDecision {
+    under_in_reach(map, job, pauses, (business, overflow), &Reach::default())
+}
+
+/// CARD-016, CARD-024: [`card_under`] with the radius side of the town test.
+fn under_in_reach(
+    map: &ClassMap,
+    job: &CardJob,
+    pauses: &OwnerPauses,
+    (business, overflow): (&CardBusiness, bool),
+    reach: &Reach,
+) -> CardDecision {
     if owner_paused(pauses, job, business) {
         return CardDecision::Skip(Skip::OwnerPaused);
     }
-    gate(map, job, business, !overflow)
+    gate(map, job, business, !overflow, reach)
 }
 
 /// CARD-001, CARD-003, CARD-004, CARD-016: every business that receives the card: the checklist
@@ -66,6 +95,19 @@ pub fn match_job_held(
     pool: &Pool<'_>,
     held: &[Uuid],
 ) -> Vec<Recipient> {
+    match_job_held_in_reach(map, job, pool, held, &Reach::default())
+}
+
+/// CARD-024, CARD-004, D-1018, D-1519: [`match_job_held`] where `reach` may also put a business
+/// in reach of the job by its radius, for the checklist match, overflow and the holder check.
+#[must_use]
+pub fn match_job_held_in_reach(
+    map: &ClassMap,
+    job: &CardJob,
+    pool: &Pool<'_>,
+    held: &[Uuid],
+    reach: &Reach,
+) -> Vec<Recipient> {
     let under = |overflow: bool| {
         pool.businesses
             .iter()
@@ -73,7 +115,7 @@ pub fn match_job_held(
             .filter_map(move |p| {
                 chosen(
                     &p.card,
-                    card_under(map, job, pool.pauses, (&p.card, overflow)),
+                    under_in_reach(map, job, pool.pauses, (&p.card, overflow), reach),
                 )
             })
             .collect::<Vec<_>>()
@@ -82,7 +124,7 @@ pub fn match_job_held(
     let covered_by_holder = || {
         pool.businesses
             .iter()
-            .any(|p| held.contains(&p.card.id) && checklist_covers(map, job, &p.card))
+            .any(|p| held.contains(&p.card.id) && checklist_covers(map, job, &p.card, reach))
     };
     if checklist.is_empty() && !covered_by_holder() {
         under(true)
@@ -93,12 +135,12 @@ pub fn match_job_held(
 
 /// CARD-004, D-1018: the business's checklist covers the job whatever its status or the owner
 /// pauses: verified, serving an offer town, licensed and ticking a candidate.
-fn checklist_covers(map: &ClassMap, job: &CardJob, business: &CardBusiness) -> bool {
+fn checklist_covers(map: &ClassMap, job: &CardJob, business: &CardBusiness, reach: &Reach) -> bool {
     let active = CardBusiness {
         status: AccountStatus::Active,
         ..business.clone()
     };
-    chosen(business, gate(map, job, &active, true)).is_some()
+    chosen(business, gate(map, job, &active, true, reach)).is_some()
 }
 
 /// INT-017, INT-032, D-1019: how many businesses [`match_job`] reaches; when none, SPLIT only if
@@ -107,14 +149,27 @@ fn checklist_covers(map: &ClassMap, job: &CardJob, business: &CardBusiness) -> b
 /// trade's part alone reaches a business; otherwise not covered.
 #[must_use]
 pub fn coverage(map: &ClassMap, job: &CardJob, pool: &Pool<'_>) -> Coverage {
-    let n = match_job(map, job, pool).len();
+    coverage_in_reach(map, job, pool, &Reach::default())
+}
+
+/// CARD-024, INT-017, INT-032, D-1519: [`coverage`] counted by the same in-reach test as
+/// [`match_job_held_in_reach`], so the count equals the recipients of a first send.
+#[must_use]
+pub fn coverage_in_reach(
+    map: &ClassMap,
+    job: &CardJob,
+    pool: &Pool<'_>,
+    reach: &Reach,
+) -> Coverage {
+    let reached = |j: &CardJob| match_job_held_in_reach(map, j, pool, &[], reach);
+    let n = reached(job).len();
     if n > 0 {
         return Coverage::Send(n);
     }
     let one_license_covers_all = pool
         .businesses
         .iter()
-        .any(|p| chosen(&p.card, gate(map, job, &p.card, false)).is_some());
+        .any(|p| chosen(&p.card, gate(map, job, &p.card, false, reach)).is_some());
     if one_license_covers_all {
         return Coverage::NotCovered;
     }
@@ -129,7 +184,7 @@ pub fn coverage(map: &ClassMap, job: &CardJob, pool: &Pool<'_>) -> Coverage {
                 .collect(),
             ..job.clone()
         };
-        !match_job(map, &part, pool).is_empty()
+        !reached(&part).is_empty()
     };
     if trades.len() > 1 && trades.iter().any(part_reaches) {
         Coverage::Split
@@ -162,14 +217,20 @@ fn owner_paused(pauses: &OwnerPauses, job: &CardJob, business: &CardBusiness) ->
 }
 
 /// The checks of CARD-001 in the order of [`Skip`]; `checklist` false leaves out the ticks.
-fn gate(map: &ClassMap, job: &CardJob, business: &CardBusiness, checklist: bool) -> CardDecision {
+fn gate(
+    map: &ClassMap,
+    job: &CardJob,
+    business: &CardBusiness,
+    checklist: bool,
+    reach: &Reach,
+) -> CardDecision {
     if !business.status.receives_cards() {
         return CardDecision::Skip(Skip::NotActive);
     }
     if !business.verified {
         return CardDecision::Skip(Skip::NotVerified);
     }
-    if !serves(job, business) {
+    if !in_reach(job, business, reach) {
         return CardDecision::Skip(Skip::OutOfTown);
     }
     if job.candidates.is_empty() {
@@ -208,7 +269,19 @@ fn chosen(business: &CardBusiness, decision: CardDecision) -> Option<Recipient> 
 fn serves(job: &CardJob, business: &CardBusiness) -> bool {
     job.towns
         .iter()
-        .any(|t| t.state.trim().eq_ignore_ascii_case("AZ") && business.towns.contains(&t.code))
+        .any(|t| arizona(&t.state) && business.towns.contains(&t.code))
+}
+
+/// CARD-024, CARD-002, INT-022, D-1519: the business serves an offered Arizona town, or the job's
+/// own town is in Arizona and its location is within the business's radius (inclusive).
+fn in_reach(job: &CardJob, business: &CardBusiness, reach: &Reach) -> bool {
+    serves(job, business)
+        || (job.towns.first().is_some_and(|t| arizona(&t.state)) && reach.reaches(business.id))
+}
+
+/// INT-022: the state is Arizona.
+fn arizona(state: &str) -> bool {
+    state.trim().eq_ignore_ascii_case("AZ")
 }
 
 /// CARD-001, BIZ-004: the business ticked this job type in this category.
