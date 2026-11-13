@@ -2681,3 +2681,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Shorter critical path, legacy dependency edges dropped (D-3446, November 13)
 
 - You asked whether we can work faster without problems. The build's speed is now set by the longest chain of tasks that must run one after another, not by how many helpers we have. We traced that chain and removed a handful of ordering links that were left over from an earlier plan or were simply wrong, keeping every link where one task truly needs another's code or data, and every point where the build waits for you, including the war-games go. The longest chain of tasks that must run one after another went from 51 to 49, which lets more work happen side by side. Every task keeps its tests and its Opus review, and the automatic checks confirm the plan is still correctly ordered. Nothing needs you now.
+
+## A withdrawn pick now tells its business; the opt-out "still open" email; the safety call's task (T330, D-3462 to D-3466, November 13)
+
+- When a homeowner picks a different quote, or texts CANCEL while a pick waits, the first business's owner and "Confirm and billing" people now get one notice: "Laftly: The homeowner withdrew their pick for job 1042, so there's nothing to accept. You weren't charged." (Spanish draft too.) These words are new and have not been through the copy panel yet; please read them.
+- A homeowner who opts out while a request is still open now gets, by email only and only if we have her email, "Your request 1042 is still open. Close it on your quote page." Nothing is texted.
+- The safety voice call's task now has a home in the worker. The switch is off, as it must be until you record the attorney's approval (T407 builds that), so no call is ever placed today. A new optional setting, `ASKHAVA_MAIN_NUMBER`, will hold the Laftly main number the call reads as its callback; none is set.

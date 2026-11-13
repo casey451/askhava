@@ -29,6 +29,7 @@ const REQUEST_TIMEOUT_SECS: &str = "ASKHAVA_REQUEST_TIMEOUT_SECS";
 const POSTAL_ADDRESS: &str = "ASKHAVA_POSTAL_ADDRESS";
 const STATIC_DIR: &str = "ASKHAVA_STATIC_DIR";
 const LICENSE_BASE_URL: &str = "ASKHAVA_LICENSE_BASE_URL";
+const MAIN_NUMBER: &str = "ASKHAVA_MAIN_NUMBER";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -52,6 +53,8 @@ const KEYS: &[&str] = &[
     // The license lists' and records' base URL, optional here; the composition that builds the
     // license source requires it in `test` and `live` (T385, SEC-032, D-2954).
     LICENSE_BASE_URL,
+    // The Laftly main number, read as the safety call's callback (T330, CALL-022, D-3134).
+    MAIN_NUMBER,
     "ASKHAVA_TWILIO_ACCOUNT_SID",
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",
@@ -260,6 +263,7 @@ pub struct Settings {
     postal_address: Option<String>,
     static_dir: Option<String>,
     license_base_url: Option<String>,
+    main_number: Option<String>,
 }
 
 impl Settings {
@@ -304,6 +308,7 @@ impl Settings {
             postal_address: raw.remove(POSTAL_ADDRESS).map(|p| p.trim().to_owned()),
             static_dir: raw.remove(STATIC_DIR).map(|d| d.trim().to_owned()),
             license_base_url,
+            main_number: main_number(raw.remove(MAIN_NUMBER))?,
         })
     }
 
@@ -406,6 +411,13 @@ impl Settings {
     #[must_use]
     pub fn license_base_url(&self) -> Option<&str> {
         self.license_base_url.as_deref()
+    }
+
+    /// The Laftly main number (`ASKHAVA_MAIN_NUMBER`, E.164, trimmed), which the safety voice call
+    /// reads as its callback number and must not call from (CALL-022, D-3134); `None` while unset.
+    #[must_use]
+    pub fn main_number(&self) -> Option<&str> {
+        self.main_number.as_deref()
     }
 }
 
@@ -602,6 +614,24 @@ fn request_timeout_secs(raw: Option<String>) -> Result<u64, SettingsError> {
     match raw.trim().parse::<u64>() {
         Ok(secs @ 10..=300) => Ok(secs),
         _ => Err(SettingsError::Invalid(REQUEST_TIMEOUT_SECS)),
+    }
+}
+
+/// CALL-022: `ASKHAVA_MAIN_NUMBER`, if set, is `+` and 8 to 15 digits, the first not 0 (E.164);
+/// a bad value is refused by key only.
+fn main_number(raw: Option<String>) -> Result<Option<String>, SettingsError> {
+    let Some(raw) = raw else {
+        return Ok(None);
+    };
+    let number = raw.trim();
+    let digits = number.strip_prefix('+').unwrap_or_default();
+    let e164 = (8..=15).contains(&digits.len())
+        && digits.bytes().all(|b| b.is_ascii_digit())
+        && !digits.starts_with('0');
+    if e164 {
+        Ok(Some(number.to_owned()))
+    } else {
+        Err(SettingsError::Invalid(MAIN_NUMBER))
     }
 }
 

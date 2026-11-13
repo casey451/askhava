@@ -255,3 +255,21 @@ pub async fn inbox_after(
     .map_err(|_| InboxError::Database)?;
     Ok(rows.into_iter().map(|r| (r.id, r.message_sid)).collect())
 }
+
+/// CON-028, PRIV-004, D-2288 (T330): whether homeowner `contact` has an email on file, read under
+/// `messaging`'s send grant and dropped at once, so a module above can store an email "only when
+/// one is on file" without seeing the address. Call it outside a transaction (the vault refuses a
+/// read inside one).
+///
+/// # Errors
+///
+/// [`EmailError::NoAddress`] when the contact cannot be read; the caller retries.
+pub async fn homeowner_has_email(
+    db: &mut sqlx::PgConnection,
+    vault: &askhava_privacy::api::Vault,
+    contact: sqlx::types::Uuid,
+) -> Result<bool, EmailError> {
+    crate::email::homeowner_email(db, vault, contact)
+        .await
+        .map(|email| email.is_some())
+}

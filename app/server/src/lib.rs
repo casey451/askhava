@@ -462,13 +462,7 @@ where
         askhava_payments::api::RECEIPT_KIND,
         askhava_picks::api::run_receipt_notice,
     );
-    registry.register(askhava_picks::api::PICK_MADE_KIND, move |pool, task| {
-        askhava_picks::api::run_pick_notice(pool, confirm, task)
-    });
-    registry.register(
-        askhava_picks::api::CONFIRM_ENDS_KIND,
-        askhava_picks::api::run_confirm_ends,
-    );
+    register_pick_notices(&mut registry, confirm);
     registry.register(
         askhava_payments::api::PAUSE_KIND,
         |pool, _task| async move {
@@ -484,6 +478,22 @@ where
         });
     }
     registry
+}
+
+/// `picks`' notices to the business: the pick notice with the worker's Confirm window and its end
+/// (PICK-019, PICK-037, T063) and the withdrawn-pick notice (PICK-032, CON-029, T330).
+fn register_pick_notices(registry: &mut Registry, confirm: askhava_picks::api::ConfirmSettings) {
+    registry.register(askhava_picks::api::PICK_MADE_KIND, move |pool, task| {
+        askhava_picks::api::run_pick_notice(pool, confirm, task)
+    });
+    registry.register(
+        askhava_picks::api::CONFIRM_ENDS_KIND,
+        askhava_picks::api::run_confirm_ends,
+    );
+    registry.register(
+        askhava_picks::api::PICK_WITHDRAWN_KIND,
+        askhava_picks::api::run_pick_withdrawn,
+    );
 }
 
 /// Registers `jobs`' daily timer backstop (`jobs.timer_backstop`) on the worker clock: it revives
@@ -574,9 +584,11 @@ fn register_daily_lists(
 /// ([`register_license_reapply`], T372), `licensing`'s daily ROC and city list run
 /// ([`register_daily_lists`], T371) and, with the Twilio settings in `pairs`
 /// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027), `picks`'
-/// masked-line retry (CALL-001) and, with the vault keys too, `messaging`'s outbox sender
+/// masked-line retry (CALL-001), the safety voice call ([`register_safety_call`], T330, D-3134)
+/// and, with the vault keys too, `messaging`'s outbox sender
 /// (`messaging.send_due`, [`outbox_sender`], T356, D-2628); with both vault keys, `intake`'s card
-/// sender ([`register_card_sender`], T251). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
+/// sender ([`register_card_sender`], T251); and `intake`'s opt-out event
+/// ([`register_opted_out_live`], T330). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
 /// checks every queued kind against it (TD-OPS-36).
 ///
 /// # Errors
@@ -609,21 +621,22 @@ where
         id_secret.clone(),
         photo_clock,
     );
-    let safety = Arc::new(askhava_messaging::api::SafetySender::call_list_only());
-    registry.register(
-        askhava_messaging::api::PAUSED_SAFETY_KIND,
-        move |pool, task| {
-            askhava_messaging::api::run_paused_safety(pool, Arc::clone(&safety), task)
-        },
-    );
+    register_paused_safety(&mut registry);
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
     register_timer_backstop(&mut registry, Arc::clone(&clock));
     register_license_reapply(&mut registry, Arc::clone(&clock));
     let pairs: Vec<(String, String)> = pairs.into_iter().collect();
     register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
+    register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {
         register_inbound_retry(
+            &mut registry,
+            settings,
+            (&twilio, &id_secret, &clock),
+            pairs.clone(),
+        )?;
+        register_safety_call(
             &mut registry,
             settings,
             (&twilio, &id_secret, &clock),
@@ -644,6 +657,17 @@ where
     Ok(registry)
 }
 
+/// `messaging`'s paused-emergency follow-up on the call list only (TXT-023, T279, D-2186).
+fn register_paused_safety(registry: &mut Registry) {
+    let safety = Arc::new(askhava_messaging::api::SafetySender::call_list_only());
+    registry.register(
+        askhava_messaging::api::PAUSED_SAFETY_KIND,
+        move |pool, task| {
+            askhava_messaging::api::run_paused_safety(pool, Arc::clone(&safety), task)
+        },
+    );
+}
+
 /// The handlers that open a masked line: `picks.line_retry` (`picks::api::retry_line`, D-1688,
 /// T254) and, with both vault keys, `intake.address_in`'s re-release (T255, D-1739).
 fn register_masked(
@@ -656,6 +680,130 @@ fn register_masked(
     release_sink::register_address_in(registry, settings, (masked.clone(), at), pairs)?;
     registry.register(askhava_picks::api::LINE_RETRY_KIND, move |pool, task| {
         askhava_picks::api::retry_line(pool, masked.clone(), task, clock.now())
+    });
+    Ok(())
+}
+
+/// T330 (CON-028, CON-029, D-2288): `intake.opted_out_live_job` ([`askhava_intake::api::run_opted_out_live`]),
+/// always registered, so a CANCEL's waiting picks are withdrawn; the CON-028 email's sender only
+/// with the footer postal line and both vault keys (required in test and live), else none.
+fn register_opted_out_live(
+    registry: &mut Registry,
+    settings: &Settings,
+    id_secret: &SecretString,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    use askhava_intake::api::{OPTED_OUT_LIVE_KIND, StillOpenSender, run_opted_out_live};
+    use askhava_messaging::api::{MailboxKind, PostalAddress};
+    let vault = vault_from(settings, pairs)?;
+    let sender = match (settings.postal_address(), vault) {
+        (Ok(postal), Some(vault)) => {
+            let kind = match PostalAddress::new(postal, MailboxKind::PoBox) {
+                Ok(_) => MailboxKind::PoBox,
+                Err(_) => MailboxKind::PrivateMailbox,
+            };
+            let sender =
+                StillOpenSender::new(id_secret.clone(), (postal, kind), vault).map_err(|_| {
+                    io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value")
+                })?;
+            Some(Arc::new(sender))
+        }
+        _ => None,
+    };
+    registry.register(OPTED_OUT_LIVE_KIND, move |pool, task| {
+        run_opted_out_live(pool, sender.clone(), task)
+    });
+    Ok(())
+}
+
+/// The safety voice call switch, read on every `calls.safety_call` run, so the registration holds
+/// no value (CALL-019, D-3134): off, the launch state (D-384), until T407 replaces this body with
+/// the stored owner-portal switch and Casey's recorded approval.
+fn safety_switch() -> askhava_calls::api::SafetySwitch {
+    askhava_calls::api::SafetySwitch::off()
+}
+
+/// What the `calls.safety_call` handler dials with (CALL-019, CALL-022, D-3134): the Twilio voice
+/// client and masked pool of the Twilio settings, `ASKHAVA_MAIN_NUMBER`, the `ID_SECRET`, the
+/// public base URL, the vault (both vault keys) and the worker clock; none of it is read while
+/// the switch is off.
+struct SafetyParts {
+    voice: askhava_adapters::api::TwilioVoice,
+    pool: askhava_adapters::api::MaskedPool,
+    main: Option<String>,
+    secret: SecretString,
+    public_base: Option<String>,
+    vault: Option<Vault>,
+    clock: Arc<dyn Clock>,
+}
+
+const SAFETY_FAILED: askhava_core::api::HandlerError =
+    askhava_core::api::HandlerError("the safety call step failed");
+
+/// The `calls.safety_call` handler (CALL-019, CALL-022, D-1705, D-3134): reads the switch first;
+/// off (the default), no call is placed and the task completes. On, it dials from the first pool
+/// number that is not the main number through `calls::api::place_safety_call`, which re-checks
+/// the switch, the 30 minutes, the calling number and the suppression list and dials at most once
+/// per alert; a missing main number, public base URL or vault fails the task, never dials.
+async fn run_safety_call(
+    pool: PgPool,
+    parts: Arc<SafetyParts>,
+    task: askhava_core::api::Claimed,
+) -> Result<(), askhava_core::api::HandlerError> {
+    use askhava_calls::api::{SafetyCall, SafetyDialer, place_safety_call};
+    let call = SafetyCall::from_payload(&task.payload).ok_or(askhava_core::api::HandlerError(
+        "safety call payload is malformed",
+    ))?;
+    let switch = safety_switch();
+    if !switch.is_on() {
+        return Ok(());
+    }
+    let p = &*parts;
+    let (Some(main), Some(public_base), Some(vault)) = (&p.main, &p.public_base, &p.vault) else {
+        return Err(SAFETY_FAILED);
+    };
+    let numbers = p.pool.numbers();
+    let from = numbers
+        .iter()
+        .find(|n| n.as_str() != main)
+        .or(numbers.first());
+    let from = from.ok_or(SAFETY_FAILED)?;
+    let dialer = SafetyDialer {
+        voice: &p.voice,
+        from,
+        main,
+        switch,
+        secret: &p.secret,
+        public_base,
+    };
+    let mut db = pool.acquire().await.map_err(|_| SAFETY_FAILED)?;
+    place_safety_call(&mut db, vault, &dialer, &call, p.clock.now())
+        .await
+        .map(|_| ())
+        .map_err(|_| SAFETY_FAILED)
+}
+
+/// T330 (CALL-019, CALL-022, D-2288, D-3134): registers `calls.safety_call` inside the Twilio
+/// settings branch, over the same settings as `picks.line_retry`, with [`SafetyParts`] built once;
+/// the switch is not captured ([`safety_switch`] is read on each run).
+fn register_safety_call(
+    registry: &mut Registry,
+    settings: &Settings,
+    (twilio, id_secret, clock): (&TwilioConfig, &SecretString, &Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let (_, voice, _) = twilio_clients(twilio).map_err(io::Error::other)?;
+    let parts = Arc::new(SafetyParts {
+        voice,
+        pool: twilio.pool().clone(),
+        main: settings.main_number().map(str::to_owned),
+        secret: id_secret.clone(),
+        public_base: settings.public_base_url().map(str::to_owned),
+        vault: vault_from(settings, pairs)?,
+        clock: Arc::clone(clock),
+    });
+    registry.register(askhava_calls::api::SAFETY_CALL_KIND, move |pool, task| {
+        run_safety_call(pool, Arc::clone(&parts), task)
     });
     Ok(())
 }

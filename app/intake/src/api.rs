@@ -22,7 +22,9 @@
 //! window (JOB-010 to JOB-012, TXT-042, QH-001, QH-006, QH-007, T240); the dispatcher of a reply
 //! inside an open request, [`receive_reply`] (TXT-031, INT-019, D-999, T241); the rate limits:
 //! [`admit_new_request`] and the shared [`admit`] (SEC-014, SEC-015, SEC-040, T089); the
-//! accepted-quote email after a Confirm, [`run_accepted_quote`] (PICK-042, T388).
+//! accepted-quote email after a Confirm, [`run_accepted_quote`] (PICK-042, T388); the handler of the
+//! opt-out event, [`run_opted_out_live`]: a CANCEL's waiting picks withdrawn and the "still open"
+//! email (CON-028, CON-029, T330).
 
 pub use crate::accepted_quote::run_accepted_quote;
 pub use crate::address_wait::{ADDRESS_IN_KIND, AskedAgain, ask_again, run_address_needed};
@@ -76,6 +78,7 @@ pub use crate::models::{
     ConsentRecordRow, ConversationRow, EmergencyEventRow, GoldenResultRow, HomeownerRow,
     IntakeAnswerRow, IntakeError, PropertyRow, RecruitingDemandRow, TermsAcceptanceRow,
 };
+pub use crate::opted_out_live::{STILL_OPEN_EMAIL, StillOpenSender, run_opted_out_live};
 pub use crate::order::{
     CardIn, Path, SPANISH_NOT_YET_TEMPLATE, Step, answer_narrowing, choose_with_card, keep_words,
     order, show_built_card, spanish_line,

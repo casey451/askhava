@@ -409,6 +409,12 @@
     "segments": 1,
     "text": "{brand_short}: {number}. Confirme y pague aquí: {link}."
   },
+  "pick_withdrawn": {
+    "audience": "business",
+    "draft": true,
+    "segments": 2,
+    "text": "{brand_short}: El cliente retiró su elección para el trabajo {job}, así que no hay nada que aceptar. No se le cobró nada."
+  },
   "pick_expired": {
     "audience": "business",
     "draft": true,
