@@ -12,7 +12,8 @@
 //! staff-phone approval gate, the LINK request and the Ask Hava number's greeting (CALL-009 to
 //! CALL-012, CALL-018, CALL-020). T080: relay-friendly PIN prompts, the homeowner's code call, the
 //! safety voice call behind its switch and Casey's bridge to a homeowner (CALL-013 to CALL-016,
-//! CALL-019, CALL-022, CALL-023, OPS-028). Other crates reach it only through [`api`].
+//! CALL-019, CALL-022, CALL-023, OPS-028). T318: the who's-calling text after a release (TXT-027,
+//! QH-004, `whos_calling`). Other crates reach it only through [`api`].
 
 pub mod api;
 mod handlers;
@@ -26,3 +27,4 @@ mod service;
 #[cfg(test)]
 mod tests;
 mod voice;
+mod whos_calling;
