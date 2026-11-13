@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-13T13:37:42Z by runner 480741987da0 (actions).
+Updated 2026-11-13T13:41:02Z by runner 480741987da0 (actions).
 
-**Building: T386 in progress since 13:24Z; 281 of 420 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T367 in progress since 13:22Z; 281 of 420 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 281 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T386 claimed 13:24Z, lease until 16:24Z; lane 3: T367 claimed 13:22Z, lease until 16:22Z; lane 4: T266 claimed 13:35Z, lease until 16:35Z
+- **Lane:** lane 3: T367 claimed 13:22Z, lease until 16:22Z; lane 4: T266 claimed 13:35Z, lease until 16:35Z
 - **Week:** 18% used, 150.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:37Z, 0 min before this update
+- **Last run:** 13:37Z, 3 min before this update
 - **Keeper:** last ran 13:37Z, next wake 16:24Z
 
 ## Needs attention
+- BLOCKED T386: plan gap reported: PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a fixed placeholder allowlist (slots, lines 231-241) for en.json/es.json that lacks {cant_take}, which T386 must add to pick_notice and pick_notice_emergency. The file is owned by T080/T271/T378/T383/T425, not T386. Evidence: cargo test -p askhava-integration --test voice_calls td_call_06 exit=101, panicked at voice_calls.rs:250:13: {cant_take} in en. Reviewer confirmed (kit/tasks.json ownership, prompt line 9 wording). Smallest plan change: let T386 own voice_calls.rs to add "; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T386 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 26 problem(s) on tasks still to run (+155 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z | PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T312 | intake: a street address written in lower case never trips t | done | 2 | 51 min | 12:32Z | session ended without handing in |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | done | 3 | 46 min | 11:14Z | session ended without handing in |
@@ -148,9 +150,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T386 (lease until 2026-11-13T16:24:29Z)
 - lane 3: T367 (lease until 2026-11-13T16:22:08Z)
 - lane 4: T266 (lease until 2026-11-13T16:35:19Z)
 
 ## Last usage reading
-- {"task": "T255", "at": "2026-11-13T12:52:00Z", "cache_creation_input_tokens": 821539, "input_tokens": 662, "cache_read_input_tokens": 68470483, "output_tokens": 217225}
+- {"task": "T386", "at": "2026-11-13T13:41:02Z", "input_tokens": 112, "cache_read_input_tokens": 2796233, "cache_creation_input_tokens": 122395, "output_tokens": 24370}
