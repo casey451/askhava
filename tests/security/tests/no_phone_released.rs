@@ -63,9 +63,14 @@ fn td_pick_10_the_release_email_and_text_carry_no_homeowner_detail() {
         }
         if lang == "en" {
             let words = |id: &str| all[id]["text"].as_str().unwrap_or_default().to_owned();
-            let email = "Ask Hava: Job {job} is confirmed. Sign in to see the homeowner's details.";
-            assert!(words(RELEASE_TEMPLATE).starts_with(email));
-            let text = "Ask Hava: Job {job} is confirmed. The details are at askhava.com/business.";
+            let brand = |text: &str| askhava_core::api::brand().fill(text, false).expect("fill");
+            let email = brand(
+                "{brand_short}: Job {job} is confirmed. Sign in to see the homeowner's details.",
+            );
+            assert!(words(RELEASE_TEMPLATE).starts_with(&email));
+            let text = brand(
+                "{brand_short}: Job {job} is confirmed. The details are at {domain}/business.",
+            );
             assert_eq!(words(RELEASE_TEXT_TEMPLATE), text);
         }
     }
