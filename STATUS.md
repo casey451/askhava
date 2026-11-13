@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T17:52:09Z by runner 62fcdb1690a3 (actions).
+Updated 2026-11-13T17:52:21Z by runner 62fcdb1690a3 (actions).
 
 **Building: T357 in progress since 16:24Z; 287 of 423 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 287 of 423 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:55Z; lane 3: T436 claimed 17:18Z, lease until 20:18Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z
+- **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:55Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z
 - **Week:** 24% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:45Z, 6 min before this update
 - **Keeper:** last ran 17:45Z, next wake 19:30Z
@@ -18,8 +18,9 @@ Updated 2026-11-13T17:52:09Z by runner 62fcdb1690a3 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T436 | portals, core and server: expired sessions are swept and old | MERGE_PENDING | 1 | 34 min | 17:52Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T273 | privacy: a photo's plaintext is returned only after its open | done | 1 | 41 min | 17:10Z |  |
-| T436 | portals, core and server: expired sessions are swept and old | resync | 1 | 28 min | 16:53Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T436 | portals, core and server: expired sessions are swept and old | resync | 1 | 28 min | 16:53Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | done | 2 | 22 min | 16:46Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T319 | portals and server: security-event rows are capped per addre | done | 1 | 17 min | 16:40Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | resync | 2 | 35 min | 16:03Z |  |
@@ -154,8 +155,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T357 (lease until 2026-11-13T19:55:42Z)
-- lane 3: T436 (lease until 2026-11-13T20:18:01Z)
 - lane 5: T281 (lease until 2026-11-13T19:27:55Z)
 
 ## Last usage reading
-- {"task": "T273", "at": "2026-11-13T17:10:11Z", "cache_creation_input_tokens": 180239, "cache_read_input_tokens": 4263071, "input_tokens": 164, "output_tokens": 53846}
+- {"task": "T436", "at": "2026-11-13T17:52:08Z", "cache_creation_input_tokens": 78254, "output_tokens": 15049, "cache_read_input_tokens": 886697, "input_tokens": 66}
