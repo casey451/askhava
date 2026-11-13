@@ -2659,3 +2659,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 
 - The task that sends an emergency job's details once the homeowner texts her address late was stuck again: her name and address were saved as a separate record that the release, the call read-back and the 180-day deletion never look at. Now they are saved on her own record, the one that already holds her phone, so the business gets her name and address once, only after the confirmed, paid pick, never her phone, and the deletion clears them on time. An answer for a request the deletion may already have cleared is not saved.
 - A new task, T432, connects the live path: today nothing in the running app asks her for her name and address or passes her answer on, so the question and her answer are wired in after T255.
+
+## T255 gets back an attempt lost to an outage (D-3442, November 13)
+
+- T255's last attempt ended after 26 minutes because the AI service refused the worker's login (a 403 error at its front door), not because of anything in the task. Fable, deciding for you overnight, gave the attempt back once. If the retry fails for any reason, T255 waits for you. A later change will make this kind of outage not use up an attempt automatically. Nothing needs you now.
