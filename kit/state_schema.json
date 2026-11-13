@@ -655,6 +655,12 @@
               },
               "reviewer_turns": {
                 "type": "integer"
+              },
+              "usage_counting": {
+                "type": "string",
+                "enum": [
+                  "message_id"
+                ]
               }
             }
           }

@@ -117,8 +117,14 @@ USAGE_FIELDS = ("input_tokens", "output_tokens", "cache_read_input_tokens", "cac
 
 
 def usage_in_transcript(lines: Iterable[str]) -> dict[str, int]:
-    """Token totals from `message.usage` of a session transcript, for usage.by_task (BUILD_BRIEF.md:510)."""
-    totals = dict.fromkeys(USAGE_FIELDS, 0)
+    """Token totals from `message.usage` of a session transcript, for usage.by_task (BUILD_BRIEF.md:510).
+
+    Each reply counts once (D-3475): Claude Code writes one line per content block of a reply, each
+    repeating its `message.id` and `usage`, so the last such line of each string id gives that reply's
+    usage, and a line without a string id counts once on its own. Bad JSON, non-object and usage-less
+    lines count nothing."""
+    replies: dict[str, dict[str, Any]] = {}
+    anonymous: list[dict[str, Any]] = []
     for line in lines:
         try:
             record = json.loads(line)
@@ -126,10 +132,17 @@ def usage_in_transcript(lines: Iterable[str]) -> dict[str, int]:
             continue
         message = record.get("message") if isinstance(record, dict) else None
         usage = message.get("usage") if isinstance(message, dict) else None
-        if isinstance(usage, dict):
-            for key in USAGE_FIELDS:
-                value = usage.get(key)
-                totals[key] += value if isinstance(value, int) else 0
+        if not isinstance(usage, dict):
+            continue
+        if isinstance(message.get("id"), str):
+            replies[message["id"]] = usage
+        else:
+            anonymous.append(usage)
+    totals = dict.fromkeys(USAGE_FIELDS, 0)
+    for usage in [*replies.values(), *anonymous]:
+        for key in USAGE_FIELDS:
+            value = usage.get(key)
+            totals[key] += value if isinstance(value, int) else 0
     return totals
 
 
