@@ -2728,3 +2728,5 @@ Two runner fixes are queued first. The runner was counting tokens about 1.65 tim
 ## Two more queued tasks split; splitting alone does not save tokens (D-3497, November 13)
 
 Two large queued tasks were each split in two: the homeowner choosing a package on a tiered quote (T341, now with T440 for the pages) and a quote keeping its number once shown (T361, now with T441 for the pages). Each half has its own tests and review, nothing in the product changes, and no requirement or test was dropped. Measuring last week's finished tasks showed that splitting does not by itself cut the total tokens, because every task carries the same start-up, rules and review cost; it makes each attempt shorter, a failed attempt cheaper, and lets the halves run beside other work. So two other candidates were left whole. Nothing needs you.
+
+- **T438 plan gap (D-3536):** the usage-count fix hit a test it was not allowed to touch; the fallback usage ledger is now left as it is (it only matters when no fresh reading exists), so the test passes unchanged; T438 is re-queued for one more try.
