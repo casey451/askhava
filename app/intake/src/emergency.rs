@@ -194,12 +194,66 @@ const STREET_SUFFIXES: &[&str] = &[
 ];
 /// At most this many name words are removed before a street suffix (D-982).
 const MAX_STREET_WORDS: usize = 3;
-/// Words never taken as part of a street name: small joining words and hazard words, so "GAS
-/// LEAK AT HOUSE ON MAIN ST" keeps its hazard (D-982).
+/// Words never taken as part of a street name, whatever their case: small joining words (English
+/// and Spanish), so "gas leak at house on main st" keeps its hazard (D-982, D-2202). Never a
+/// street name of any market (national-ready: market values come from data).
 const NOT_STREET_WORDS: &[&str] = &[
-    "on", "at", "by", "near", "in", "of", "the", "from", "to", "off", "and", "a", "is", "en", "de",
-    "la", "el", "gas", "propane", "smoke", "smoking", "fire", "flames", "sparking", "burning",
-    "leak", "leaking", "smell", "alarm", "outlet", "panel", "breaker", "line", "wire",
+    "on", "at", "by", "near", "in", "of", "the", "from", "to", "off", "and", "a", "an", "is",
+    "are", "my", "our", "your", "her", "his", "their", "this", "that", "it", "its", "i", "we",
+    "there", "here", "with", "for", "next", "behind", "over", "under", "outside", "inside", "en",
+    "de", "del", "la", "las", "el", "los", "y", "con", "por", "cerca", "mi", "un", "una",
+];
+/// Hazard stems beside the matcher's own lists (`HAZARD_LISTS`) that a street name without a
+/// house number never takes: fire, a loud, sounding or ringing alarm, llamas, caído, a line or
+/// wire (D-3438).
+const HAZARD_STEMS: &[&str] = &[
+    "fire", "loud", "sound", "ring", "llama", "caid", "line", "wire",
+];
+/// The endings a hazard stem may carry and still be a hazard word ("whistl" + "ing", "chispa" +
+/// "s", "quema" + "ndo"); any other ending is a street name ("smoketree", D-3438).
+const HAZARD_ENDINGS: &[&str] = &[
+    "", "s", "es", "e", "ed", "d", "t", "ing", "y", "ey", "ly", "a", "o", "as", "os", "do", "da",
+    "ndo", "ido",
+];
+/// The stems of a hazard word (D-3438).
+const HAZARD_LISTS: &[&[&str]] = &[
+    GAS_WORDS,
+    GAS_SIGNS,
+    ALARM_WORDS,
+    BEEP_WORDS,
+    FIRE_STEMS,
+    ELECTRIC_PARTS,
+    ELECTRIC_STEMS,
+    BURNING,
+    HAZARD_STEMS,
+];
+#[cfg(test)]
+/// Every word list of the matcher, so a test can check that no street name was written into one
+/// (TD-INT-40, D-2202).
+pub(crate) const WORD_LISTS: &[&[&str]] = &[
+    GAS_WORDS,
+    GAS_SIGNS,
+    GAS_PHRASES,
+    ALARM_WORDS,
+    GOING_OFF,
+    CHIRP_WORDS,
+    BEEP_WORDS,
+    BATTERY_WORDS,
+    NOT_SMOKE,
+    NOT_SMOKE_WORDS,
+    FIRE_PHRASES,
+    FIRE_STEMS,
+    ELECTRIC_PARTS,
+    NOT_ELECTRIC,
+    ELECTRIC_STEMS,
+    BURNING,
+    NOT_HOME_ALARM,
+    POWER_LINE,
+    NOT_POWER_LINE,
+    STREET_SUFFIXES,
+    NOT_STREET_WORDS,
+    HAZARD_STEMS,
+    HAZARD_ENDINGS,
 ];
 
 /// The 911-list check of one message (INT-002, INT-037, D-165, D-361, D-436): `address_answer`
@@ -251,45 +305,65 @@ fn hazard(text: &Folded) -> Option<Hazard> {
     None
 }
 
-/// Removes street-address patterns (D-165, D-982): a street suffix after a capitalized word, up to
-/// [`MAX_STREET_WORDS`] capitalized name words before it (never a joining or hazard word) and a
-/// house number, so "100 Smoketree Test Ave" or "Burst Test Ln" is never a hazard while "GAS
-/// LEAK AT HOUSE ON MAIN ST" still is.
+/// Removes street-address patterns (INT-002, D-165, D-982, D-2202, D-3438): a street suffix and
+/// the street name before it, in any case. After a house number the name is up to
+/// [`MAX_STREET_WORDS`] words, hazard words too ("Flame Tree" after a house number); without one
+/// it is only the non-hazard words just before the suffix, and nothing when a hazard word comes
+/// right before them, so "gas meter whistling elm st" and "fire pit lane" keep their words.
 fn strip_addresses(words: &str) -> String {
     let mut kept: Vec<&str> = Vec::new();
     for token in words.split_whitespace() {
         let bare = token.trim_matches(|c: char| !c.is_alphanumeric());
         let is_suffix = STREET_SUFFIXES.contains(&bare.to_lowercase().as_str());
-        if !(is_suffix && kept.last().is_some_and(|w| street_word(w))) {
-            kept.push(token);
-            continue;
-        }
-        let mut taken = 0;
-        while taken < MAX_STREET_WORDS && kept.last().is_some_and(|w| street_word(w)) {
-            kept.pop();
-            taken += 1;
-        }
-        if kept
-            .last()
-            .is_some_and(|w| w.chars().all(|c| c.is_ascii_digit()))
-        {
-            kept.pop();
+        match is_suffix.then(|| street_start(&kept)).flatten() {
+            Some(start) => kept.truncate(start),
+            None => kept.push(token),
         }
     }
     kept.join(" ")
 }
 
-/// Whether a word can be part of a street name: capitalized, and not a joining or hazard word.
+/// Where the street address ending at a suffix starts in `kept`, if the words before the suffix
+/// are one (D-165, D-3438).
+fn street_start(kept: &[&str]) -> Option<usize> {
+    let named = trailing(kept, street_word).min(MAX_STREET_WORDS);
+    let numbered = kept.len() - named;
+    if named > 0 && numbered > 0 && kept[numbered - 1].chars().all(|c| c.is_ascii_digit()) {
+        return Some(numbered - 1);
+    }
+    let plain = trailing(kept, |w| street_word(w) && !hazard_word(w)).min(MAX_STREET_WORDS);
+    let start = kept.len() - plain;
+    let after_hazard = start > 0 && hazard_word(kept[start - 1]);
+    (plain > 0 && !after_hazard).then_some(start)
+}
+
+/// How many words at the end of `kept` pass `test`.
+fn trailing(kept: &[&str], test: impl Fn(&str) -> bool) -> usize {
+    kept.iter().rev().take_while(|w| test(w)).count()
+}
+
+/// Whether a word can be part of a street name, whatever its case (D-2202): it holds a letter (a
+/// bare number is the house number) and is not a joining word (`NOT_STREET_WORDS`).
 fn street_word(word: &str) -> bool {
     let bare = word
         .trim_matches(|c: char| !c.is_alphanumeric())
         .to_lowercase();
-    capitalized(word) && !NOT_STREET_WORDS.contains(&bare.as_str())
+    bare.chars().any(char::is_alphabetic) && !NOT_STREET_WORDS.contains(&bare.as_str())
 }
 
-/// Whether a word starts with a capital letter (a street name word).
-fn capitalized(word: &str) -> bool {
-    word.chars().next().is_some_and(char::is_uppercase)
+/// Whether a word is a hazard word (INT-002, D-3438): a stem of `HAZARD_LISTS` with at most one
+/// of `HAZARD_ENDINGS` after it, so "whistling", "chispas" and "caído" are while "smoketree" is
+/// not.
+fn hazard_word(word: &str) -> bool {
+    Folded::new(word).words().any(|w| {
+        HAZARD_LISTS
+            .iter()
+            .flat_map(|list| list.iter())
+            .any(|stem| {
+                w.strip_prefix(stem)
+                    .is_some_and(|end| HAZARD_ENDINGS.contains(&end))
+            })
+    })
 }
 
 /// A message folded for matching: lower case, accents folded, apostrophes dropped, every other
