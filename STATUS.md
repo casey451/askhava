@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T09:32:55Z by runner 8f0fc362e3aa (actions).
+Updated 2026-11-13T09:33:17Z by runner 8f0fc362e3aa (actions).
 
-**Building: T431 in progress since 09:02Z; 277 of 416 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T255 in progress since 09:22Z; 277 of 416 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 277 of 416 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T431 claimed 09:02Z, lease until 12:02Z; lane 3: T255 claimed 09:22Z, lease until 12:22Z
+- **Lane:** lane 3: T255 claimed 09:22Z, lease until 12:22Z
 - **Week:** 15% used, 165.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:29Z, 3 min before this update
+- **Last run:** 09:29Z, 4 min before this update
 - **Keeper:** last ran 09:29Z, next wake 12:05Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-13T09:32:55Z by runner 8f0fc362e3aa (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T431 | Brand rename prep: the legal-docs version case and five paym | MERGE_PENDING | 1 | 30 min | 09:32Z |  |
 | T249 | quotes and portals: radius matching by ZIP centroid, the cov | done | 1 | 71 min | 09:03Z |  |
 | T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 2 | 3 min | 07:47Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | BLOCKED | 1 | 40 min | 07:40Z | PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switc |
@@ -151,8 +152,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T431 (lease until 2026-11-13T12:02:06Z)
 - lane 3: T255 (lease until 2026-11-13T12:22:11Z)
 
 ## Last usage reading
-- {"task": "T249", "at": "2026-11-13T09:03:39Z", "output_tokens": 215790, "cache_read_input_tokens": 44095436, "cache_creation_input_tokens": 833016, "input_tokens": 675}
+- {"task": "T431", "at": "2026-11-13T09:32:54Z", "cache_read_input_tokens": 3434781, "input_tokens": 164, "output_tokens": 32044, "cache_creation_input_tokens": 131776}
