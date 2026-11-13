@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T01:49:30Z by runner 4ce270481192 (manual).
+Updated 2026-11-13T01:59:25Z by runner 9901076ee397 (actions).
 
 **Building: T215 in progress since 23:45Z; 264 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-13T01:49:30Z by runner 4ce270481192 (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
 - **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:48Z, 0 min before this update
+- **Last run:** 01:55Z, 3 min before this update
 - **Keeper:** last ran 01:48Z, next wake 02:47Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+140 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+139 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -94,6 +94,7 @@ Updated 2026-11-13T01:49:30Z by runner 4ce270481192 (manual).
 | T368 | businesses (harness): the capability checklist offers every  | done | 1 | 17 min | 02:06Z |  |
 
 ### Plan and harness merges on main
+- 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
 - 01:29Z Harness: fail CI, smoke and prehandin on leftover merge-conflict markers (D-3307) (#619)
 - 01:16Z Plan: T255 follow-ups (D-3384) and pre-flight 12, T426 owns the legal-docs test (D-3385) (#640)
 - 00:30Z Plan: rename Ask Hava to Laftly (Laftly LLC, laftly.com), D-3347 (#631)
@@ -122,7 +123,6 @@ Updated 2026-11-13T01:49:30Z by runner 4ce270481192 (manual).
 - 03:24Z Harness: claim order prefers tasks in crates no other lane is writing (D-3082) (#523)
 - 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
 - 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
-- 01:55Z Plan: owner approval before a team-linked phone works (BIZ-033, IC-95) — T396–T399 (D-3081) (#531)
 
 ## Progress (requirements verified)
 
