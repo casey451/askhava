@@ -27573,7 +27573,17 @@
    "attempts": 0,
    "slug": "pick-contact-choice",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-13T13:09:16Z",
+    "problems": [
+     "T266: dependency T255 is DONE but its owned file app/intake/src/address_wait.rs is not on main",
+     "T266: dependency T255 is DONE but its owned file app/payments/src/reclear.rs is not on main",
+     "T266: dependency T255 is DONE but its owned file app/picks/src/address_wait_check.rs is not on main",
+     "T266: dependency T255 is DONE but its owned file app/server/tests/address_rerelease.rs is not on main",
+     "T266: dependency T255 is DONE but its owned file app/privacy/src/contact_fields.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T268",
@@ -48136,7 +48146,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T13:09:21Z",
+ "updated_at": "2026-11-13T13:16:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
