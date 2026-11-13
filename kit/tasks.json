@@ -24659,8 +24659,7 @@
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/security.md",
-    "docs/spec/accessibility.md",
-    "docs/brains/rust-production.md"
+    "docs/spec/accessibility.md"
    ],
    "requirements": [
     "SEC-004",
