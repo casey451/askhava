@@ -16,7 +16,7 @@
 // numbers are fictional and every key is random per run.
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
 import { createHash, createHmac, randomBytes } from "node:crypto";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Page } from "@playwright/test";
@@ -30,7 +30,11 @@ const PUBLIC_BASE = "https://j1.example.test";
 const TWILIO_SID = `AC${"0".repeat(32)}`;
 const TWILIO_TOKEN = randomBytes(20).toString("hex");
 const HOMEOWNER = "+19285550142";
-const CON_031_START = "Ask Hava: Got it. Next, a few quick questions.";
+/** The brand file the app embeds (app/core/data/brand.json, D-1932): expected brand words come from it. */
+const BRAND = JSON.parse(readFileSync(join(ROOT, "app", "core", "data", "brand.json"), "utf8")) as {
+  short_name: string;
+};
+const CON_031_START = `${BRAND.short_name}: Got it. Next, a few quick questions.`;
 
 test.describe.configure({ mode: "serial" });
 
