@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T04:18:45Z by runner 9120e378d5c8 (actions).
+Updated 2026-11-13T04:18:55Z by runner 9120e378d5c8 (actions).
 
-**Building: T371 in progress since 03:08Z; 272 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T215 in progress since 04:02Z; 272 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 272 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T371 claimed 03:08Z, lease until 06:08Z; lane 7: T215 claimed 04:02Z, lease until 07:02Z
+- **Lane:** lane 7: T215 claimed 04:02Z, lease until 07:02Z
 - **Week:** 12% used, 166.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:18Z, 0 min before this update
 - **Keeper:** last ran 04:18Z, next wake 06:10Z
@@ -18,6 +18,7 @@ Updated 2026-11-13T04:18:45Z by runner 9120e378d5c8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T371 | licensing and server: the worker fetches and records the dai | MERGE_PENDING | 1 | 70 min | 04:18Z |  |
 | T427 | WORD-022 phrases catch both brand names in the spec trace, t | MERGE_PENDING | 1 | 29 min | 03:17Z |  |
 | T429 | Copy, voice and AI-smell docs name Laftly | done | 1 | 22 min | 03:13Z |  |
 | T430 | payments: a Confirm needs the current card-authorization wor | done | 1 | 39 min | 03:13Z |  |
@@ -163,8 +164,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T371 (lease until 2026-11-13T06:08:00Z)
 - lane 7: T215 (lease until 2026-11-13T07:02:46Z)
 
 ## Last usage reading
-- {"task": "T427", "at": "2026-11-13T03:17:37Z", "cache_creation_input_tokens": 218711, "output_tokens": 51904, "input_tokens": 197, "cache_read_input_tokens": 4285449}
+- {"task": "T371", "at": "2026-11-13T04:18:28Z", "cache_read_input_tokens": 29209213, "cache_creation_input_tokens": 882518, "output_tokens": 254524, "input_tokens": 536}
