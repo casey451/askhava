@@ -744,7 +744,8 @@ const SAFETY_FAILED: askhava_core::api::HandlerError =
 /// off (the default), no call is placed and the task completes. On, it dials from the first pool
 /// number that is not the main number through `calls::api::place_safety_call`, which re-checks
 /// the switch, the 30 minutes, the calling number and the suppression list and dials at most once
-/// per alert; a missing main number, public base URL or vault fails the task, never dials.
+/// per alert; a missing main number, public base URL or vault, or no pool number other than the
+/// main number, fails the task, never dials.
 async fn run_safety_call(
     pool: PgPool,
     parts: Arc<SafetyParts>,
@@ -766,8 +767,7 @@ async fn run_safety_call(
     let from = numbers
         .iter()
         .find(|n| n.as_str() != main)
-        .or(numbers.first());
-    let from = from.ok_or(SAFETY_FAILED)?;
+        .ok_or(SAFETY_FAILED)?;
     let dialer = SafetyDialer {
         voice: &p.voice,
         from,
