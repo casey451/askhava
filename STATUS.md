@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T14:41:51Z by runner ae799a921ac7 (actions).
+Updated 2026-11-13T14:43:04Z by runner ae799a921ac7 (actions).
 
 **Building: T330 in progress since 14:41Z; 282 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 282 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T330 claimed 14:41Z, lease until 17:41Z
-- **Week:** 19% used, 156.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:40Z, 1 min before this update
+- **Lane:** lane 2: T330 claimed 14:41Z, lease until 17:41Z; lane 5: T266 claimed 14:42Z, lease until 17:42Z
+- **Week:** 19% used, 152.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 14:42Z, 0 min before this update
 - **Keeper:** last ran 14:39Z, next wake 14:59Z
 
 ## Needs attention
@@ -77,7 +77,6 @@ Updated 2026-11-13T14:41:51Z by runner ae799a921ac7 (actions).
 | T370 | intake (harness): the night count the homeowner hears counts | done | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T389 | licensing: a homeowner's wrong-license report pauses a pest  | done | 1 | 31 min | 15:11Z |  |
 | T362 | server: the built static files are served at /static/<crate> | BLOCKED | 2 | 21 min | 15:06Z |  |
-| T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 1 | 38 min | 14:42Z |  |
 
 ### Plan and harness merges on main
 - 13:45Z Plan: shorten the critical path, drop legacy dependency edges (D-3446) (#671)
@@ -138,7 +137,7 @@ Updated 2026-11-13T14:41:51Z by runner ae799a921ac7 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T14:38:38Z (week)): week: 38.0M used, 156.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T19:05:46Z.
+- Pacing (session_reading 2026-11-13T14:38:38Z (week)): week: 41.6M used, 152.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T19:07:19Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -155,6 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T330 (lease until 2026-11-13T17:41:21Z)
+- lane 5: T266 (lease until 2026-11-13T17:42:55Z)
 
 ## Last usage reading
 - {"task": "T330", "at": "2026-11-13T14:30:29Z", "cache_creation_input_tokens": 821176, "cache_read_input_tokens": 43723133, "input_tokens": 522, "output_tokens": 171690}

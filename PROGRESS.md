@@ -3758,3 +3758,4 @@
 - 2026-11-13T14:40:36Z runner ae799a921ac7 (actions): {"T367": "MERGE_PENDING -> DONE"}
 - 2026-11-13T14:41:29Z runner ae799a921ac7 (actions): {"T330": "MERGE_PENDING -> QUEUED"}
 - 2026-11-13T14:41:51Z runner ae799a921ac7 (actions): {"T330": "QUEUED -> IN_PROGRESS"}; T330 estimated 3.6M tokens (calibrated); week has 156.0M left (no five-hour budget, D-3056) (session_reading 2026-11-13T14:38:38Z (week)); claimed
+- 2026-11-13T14:43:04Z runner ae799a921ac7 (actions): {"T266": "QUEUED -> IN_PROGRESS"}; T266 estimated 3.7M tokens (calibrated); week has 152.4M left (no five-hour budget, D-3056) after 3.6M still running in another lane (session_reading 2026-11-13T14:38:38Z (week)); claimed
