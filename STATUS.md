@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-13T01:08:22Z by runner 0b4b84f93392 (actions).
+Updated 2026-11-13T01:15:15Z by runner e3ca79a08538 (actions).
 
-**Building: T215 in progress since 23:45Z; 263 of 404 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T215 in progress since 23:45Z; 263 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 263 of 404 build tasks (owner gates not counted)
+- **Tasks done:** 263 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 2: T421 claimed 00:52Z, lease until 03:52Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 5: T424 claimed 00:42Z, lease until 03:42Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
 - **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:08Z, 0 min before this update
+- **Last run:** 01:08Z, 6 min before this update
 - **Keeper:** last ran 01:08Z, next wake 02:47Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 21 problem(s) on tasks still to run (+134 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+138 on DONE tasks); first: T321: stored context_pct 41% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -89,7 +89,6 @@ Updated 2026-11-13T01:08:22Z by runner 0b4b84f93392 (actions).
 | T313 | messaging and server: an EMERGENCY card notice goes at night | done | 1 | 19 min | 02:07Z |  |
 | T368 | businesses (harness): the capability checklist offers every  | done | 1 | 17 min | 02:06Z |  |
 | T325 | server: an inbound text stopped by a module error raises a b | done | 1 | 30 min | 01:42Z |  |
-| T368 | businesses (harness): the capability checklist offers every  | resync | 1 | 25 min | 01:13Z |  |
 
 ### Plan and harness merges on main
 - 00:30Z Plan: rename Ask Hava to Laftly (Laftly LLC, laftly.com), D-3347 (#631)
@@ -122,8 +121,8 @@ Updated 2026-11-13T01:08:22Z by runner 0b4b84f93392 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 233 of 733 (31.8%) · partial 336 · unstarted 164
-**Tasks merged (throughput only):** 263 of 404
+**Requirements verified:** 230 of 733 (31.4%) · partial 339 · unstarted 164
+**Tasks merged (throughput only):** 263 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -141,12 +140,12 @@ Updated 2026-11-13T01:08:22Z by runner 0b4b84f93392 (actions).
 | ops-recovery | 2 | 7 | 45 | 54 |
 | privacy | 6 | 23 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 31 | 24 | 1 | 56 |
+| quotes-pick | 29 | 26 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 8 | 42 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 5 | 25 | 32 |
+| wording | 1 | 6 | 25 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
