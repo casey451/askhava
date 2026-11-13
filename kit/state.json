@@ -44346,7 +44346,7 @@
     "T167",
     "T209"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "brand-switch-laftly",
    "type": "harness",
@@ -44359,8 +44359,8 @@
     3428,
     3429
    ],
-   "reason": "plan gap reported: PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switch.rs:67, fee_fixed_at_pick.rs:334, coverage_email.rs:249, pest_identity.rs:278. With the brand switched to Laftly and AUTHORIZATION_VERSION 2 they fail (old sms-terms version line; TERMS version 1; switch writes 3; terms_version 1 vs 2; hard-coded \"Ask Hava: \"). T428's line that fee_fixed_at_pick.rs passes unchanged contradicts the version-2 floor. Reviewer confirmed each by reading. Fix: give these files an owner or a harness task before T428.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T428 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switch.rs:67, fee_fixed_at_pick.rs:334, coverage_email.rs:249, pest_identity.rs:278. With the brand switched to Laftly and AUTHORIZATION_VERSION 2 they fail (old sms-terms version line; TERMS version 1; switch writes 3; terms_version 1 vs 2; hard-coded \"Ask Hava: \"). T428's line that fee_fixed_at_pick.rs passes unchanged contradicts the version-2 floor. Reviewer confirmed each by reading. Fix: give these files an owner or a harness task before T428.",
+   "reason": null,
+   "last_failure": "PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switch.rs:67, fee_fixed_at_pick.rs:334, coverage_email.rs:249, pest_identity.rs:278. With the brand switched to Laftly and AUTHORIZATION_VERSION 2 they fail (old sms-terms version line; TERMS version 1; switch writes 3; terms_version 1 vs 2; hard-coded \"Ask Hava: \"). T428's line that fee_fixed_at_pick.rs passes unchanged contradicts the version-2 floor. Reviewer confirmed each by reading. Fix: give these files an owner or a harness task before T428.\nre-queued after plan fix D-3430: Plan gap fixed by D-3430 (#659): new harness task T431 owns the six pinned tests and runs before T428",
    "history": [
     {
      "attempt": 1,
@@ -44384,6 +44384,21 @@
        "turns": 9
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-13T08:58:05Z",
+     "reason": "Plan gap fixed by D-3430 (#659): new harness task T431 owns the six pinned tests and runs before T428",
+     "by": "manual-9112542bf659",
+     "was": "plan gap reported: PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switch.rs:67, fee_fixed_at_pick.rs:334, coverage_email.rs:249, pest_identity.rs:278. With the brand switched to Laftly and AUTHORIZATION_VERSION 2 they fail (old sms-terms version line; TERMS version 1; switch writes 3; terms_version 1 vs 2; hard-coded \"Ask Hava: \"). T428's line that fee_fixed_at_pick.rs passes unchanged contradicts the version-2 floor. Reviewer confirmed each by reading. Fix: give these files an owner or a harness task before T428.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T428 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3430",
+     "plan_since": "2026-11-13T07:00:00Z",
+     "plan_base": "bee96646639a786cdb7e05b11b9bdbb2d68084b2",
+     "plan_head": "ca8b6b621c5e1714c8116eaa639b1fa04845df35",
+     "plan_then": "c23d4daeee1980facf79e0fb8bed92df8c4c865fbb594f99b0d5fd5d6b46b56b",
+     "plan_now": "4b429ebb932feefede7fd9b55bb6faff837a5287cc19a50d85c00d1350d093de"
     }
    ]
   },
@@ -47221,7 +47236,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T08:57:39Z",
+ "updated_at": "2026-11-13T08:58:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -47319,8 +47334,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "bee96646639a786cdb7e05b11b9bdbb2d68084b2",
- "starter": "actions",
+ "runner_sha": "ca8b6b621c5e1714c8116eaa639b1fa04845df35",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "dae8c6443b4f29a2b72d558ac349c5d778388eb3",

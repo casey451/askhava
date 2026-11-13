@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-13T08:57:39Z by runner bee96646639a (actions).
+Updated 2026-11-13T08:58:05Z by runner ca8b6b621c5e (manual).
 
-**Building: T249 in progress since 07:51Z; 276 of 415 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T249 in progress since 07:51Z; 276 of 416 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 276 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 276 of 416 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T249 claimed 07:51Z, lease until 10:51Z
 - **Week:** 14% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -13,7 +13,6 @@ Updated 2026-11-13T08:57:39Z by runner bee96646639a (actions).
 
 ## Needs attention
 - BLOCKED T255: plan gap reported: PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address cannot reach the release with T255's files. picks::release reads the address only from the proof's contact (release.rs:347, privacy/src/api.rs:257); the sink mints the proof for the phone contact (release_sink.rs:101-133); take_name_address stores the address as a separate phone-less vault contact (conversation.rs:408-421); privacy has no public setter for a stored contact (vault.rs, only private reseal). Minting for the address-only contact would give the masked line a homeo; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T255 --plan-fix D-### --reason "..."` (D-2859)
-- BLOCKED T428: plan gap reported: PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switch.rs:67, fee_fixed_at_pick.rs:334, coverage_email.rs:249, pest_identity.rs:278. With the brand switched to Laftly and AUTHORIZATION_VERSION 2 they fail (old sms-terms version line; TERMS version 1; switch writes 3; terms_version 1 vs 2; hard-coded "Ask Hava: "). T428's line that fee_fixed_at_pick.rs passes unchanged contradicts the version-2 floor. Reviewer confirmed each by reading. Fix: give these files an owner or a harness task before T428.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T428 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 26 problem(s) on tasks still to run (+149 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
@@ -113,7 +112,7 @@ Updated 2026-11-13T08:57:39Z by runner bee96646639a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 234 of 733 (31.9%) · partial 338 · unstarted 161
-**Tasks merged (throughput only):** 276 of 415
+**Tasks merged (throughput only):** 276 of 416
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
