@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T09:04:37Z by runner bee96646639a (actions).
+Updated 2026-11-13T09:06:53Z by runner f11e5ea2d96c (actions).
 
-**Building: T431 in progress since 09:02Z; 276 of 415 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T431 in progress since 09:02Z; 276 of 417 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 276 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 276 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T431 claimed 09:02Z, lease until 12:02Z
 - **Week:** 14% used, 161.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:04Z, 0 min before this update
+- **Last run:** 09:04Z, 2 min before this update
 - **Keeper:** last ran 09:04Z, next wake 12:04Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-13T09:04:37Z by runner bee96646639a (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T249 | quotes and portals: radius matching by ZIP centroid, the cov | MERGE_PENDING | 1 | 71 min | 09:03Z |  |
-| T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 2 | 3 min | 07:47Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
+| T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 2 | 3 min | 07:47Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | BLOCKED | 1 | 40 min | 07:40Z | PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switc |
 | T420 | Brand rename prep: intake and ai unit tests take the brand f | done | 1 | 28 min | 06:38Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | done | 1 | 22 min | 05:08Z |  |
@@ -35,7 +35,7 @@ Updated 2026-11-13T09:04:37Z by runner bee96646639a (actions).
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | done | 1 | 26 min | 01:18Z |  |
 | T424 | Brand rename prep: integration tests (open-cards digest to s | done | 1 | 32 min | 01:15Z |  |
 | T372 | businesses and licensing: each recorded ROC list re-applies  | done | 1 | 81 min | 01:07Z |  |
-| T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 1 | 2 min | 23:48Z |  |
+| T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 1 | 2 min | 23:48Z |  |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | done | 1 | 57 min | 23:46Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z |  |
 | T418 | Performance: lab Core Web Vitals and Ci's warn-only performa | done | 1 | 50 min | 23:24Z |  |
@@ -81,7 +81,6 @@ Updated 2026-11-13T09:04:37Z by runner bee96646639a (actions).
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 21 min | 09:38Z |  |
 | T358 | messaging: the Canadian area codes for the HELP roaming line | done | 1 | 40 min | 09:32Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z |  |
-| T406 | quotes: a quote's PICK-040 facts are stored with it and read | done | 1 | 41 min | 09:05Z |  |
 
 ### Plan and harness merges on main
 - 09:02Z Plan: T255 plan gap 2, the address is written onto the homeowner's own contact (D-3431) (#660)
@@ -111,8 +110,8 @@ Updated 2026-11-13T09:04:37Z by runner bee96646639a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 234 of 733 (31.9%) · partial 338 · unstarted 161
-**Tasks merged (throughput only):** 276 of 415
+**Requirements verified:** 233 of 733 (31.8%) · partial 339 · unstarted 161
+**Tasks merged (throughput only):** 276 of 417
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -122,7 +121,7 @@ Updated 2026-11-13T09:04:37Z by runner bee96646639a (actions).
 | calls | 10 | 14 | 1 | 25 |
 | consent | 11 | 20 | 4 | 35 |
 | fees | 13 | 38 | 1 | 52 |
-| intake | 24 | 16 | 3 | 43 |
+| intake | 23 | 17 | 3 | 43 |
 | job-cards | 12 | 11 | 1 | 24 |
 | licensing | 26 | 22 | 0 | 48 |
 | lifecycle | 19 | 9 | 0 | 28 |
@@ -147,7 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 156 of 198 done
+- stage 4: 156 of 199 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
