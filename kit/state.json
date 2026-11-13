@@ -19083,7 +19083,7 @@
     "T338",
     "T339",
     "T340",
-    "T341",
+    "T440",
     "T342",
     "T343",
     "T344",
@@ -19133,7 +19133,8 @@
     "T428",
     "T430",
     "T432",
-    "T437"
+    "T437",
+    "T442"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19638,7 +19639,7 @@
     "T320",
     "T321",
     "T324",
-    "T361",
+    "T441",
     "T363",
     "T364",
     "T373",
@@ -28278,7 +28279,7 @@
     "T433",
     "T337",
     "T340",
-    "T341",
+    "T440",
     "T348",
     "T359",
     "T362",
@@ -32131,7 +32132,7 @@
     "T164",
     "T232",
     "T388",
-    "T341"
+    "T440"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -38700,7 +38701,7 @@
   {
    "id": "T363",
    "deps": [
-    "T361",
+    "T441",
     "T089",
     "T317"
    ],
@@ -42290,7 +42291,7 @@
    "id": "T393",
    "deps": [
     "T316",
-    "T341",
+    "T440",
     "T374",
     "T406"
    ],
@@ -47154,6 +47155,68 @@
    "slug": "crate-notes-shared-and-full-by-bytes",
    "type": "harness",
    "stage": "4"
+  },
+  {
+   "id": "T440",
+   "deps": [
+    "T341",
+    "T340",
+    "T342",
+    "T157",
+    "T214",
+    "T266",
+    "T164",
+    "T232",
+    "T388",
+    "T294",
+    "T384",
+    "T421",
+    "T431"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "tier-choice-pages",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T441",
+   "deps": [
+    "T361",
+    "T249",
+    "T342",
+    "T340",
+    "T341",
+    "T344",
+    "T295",
+    "T318",
+    "T266",
+    "T157",
+    "T214",
+    "T164",
+    "T232",
+    "T388",
+    "T308",
+    "T384",
+    "T440"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pick-forms-carry-business",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T442",
+   "deps": [
+    "T249",
+    "T073"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "mutant-deterministic-kills",
+   "type": "harness",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -50011,7 +50074,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T19:36:36Z",
+ "updated_at": "2026-11-13T19:41:37Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -50109,7 +50172,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6cc0b1c3ccc3c3fd9296b07e37ccf8fabab34216",
+ "runner_sha": "c309142e35506675f496348394489dcee073a78f",
  "starter": "actions",
  "smoke_runs": [
   {
