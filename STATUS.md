@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-13T21:35:40Z by runner 58eef26515d0 (actions).
+Updated 2026-11-13T21:35:59Z by runner 58eef26515d0 (actions).
 
-**Building: T354 in progress since 20:29Z; 293 of 428 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T354 in progress since 20:29Z; 294 of 428 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 293 of 428 build tasks (owner gates not counted)
+- **Tasks done:** 294 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T354 claimed 20:29Z, lease until 23:29Z
 - **Week:** 28% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -19,9 +19,9 @@ Updated 2026-11-13T21:35:40Z by runner 58eef26515d0 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T335 | adapters, payments and stand-in (harness): the reconcile's p | MERGE_PENDING | 1 | 59 min | 21:20Z |  |
-| T412 | privacy: each business member's sign-in address and texting  | MERGE_PENDING | 1 | 111 min | 21:18Z |  |
+| T412 | privacy: each business member's sign-in address and texting  | done | 1 | 111 min | 21:18Z |  |
 | T442 | mutation (harness): every named mutant is killed by a determ | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
-| T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 1 | 23 min | 20:39Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
+| T357 | server, messaging and intake: START into an open request res | check_failed | 1 | 23 min | 20:39Z | Ci: failure; Lint and slow tests: failure / Lint and slow tests failed at step: Rust format and lint (clippy once, befor |
 | T271 | server and calls (harness): the dialed leg asks for status c | done | 1 | 53 min | 20:22Z |  |
 | T318 | calls, picks and quotes: the who's-calling text goes out at  | done | 1 | 52 min | 20:18Z |  |
 | T277 | intake and privacy: a check-in reply reaches its job, and a  | done | 1 | 45 min | 20:13Z |  |
@@ -111,7 +111,7 @@ Updated 2026-11-13T21:35:40Z by runner 58eef26515d0 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 280 of 733 (38.2%) · partial 293 · unstarted 160
-**Tasks merged (throughput only):** 293 of 428
+**Tasks merged (throughput only):** 294 of 428
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -146,7 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 173 of 208 done
+- stage 4: 174 of 208 done
 - stage 5: 0 of 66 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
