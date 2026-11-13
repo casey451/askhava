@@ -21,6 +21,8 @@
 //! `receive_text` (`replies`, D-999).
 //! T089 added the rate limits on new requests and the shared limit check (`limits`, SEC-014,
 //! SEC-015, SEC-040).
+//! T330 added the opt-out event's handler: a CANCEL's waiting picks withdrawn and the CON-028
+//! "still open" email (`opted_out_live`).
 //! Other crates reach it only through [`api`].
 
 mod accepted_quote;
@@ -38,6 +40,7 @@ mod job_texts;
 mod limits;
 mod matching;
 mod models;
+mod opted_out_live;
 mod order;
 mod photos;
 mod purge;

@@ -334,6 +334,11 @@
     "segments": 1,
     "text": "{brand_short}: {number}. Confirm and pay here: {link}."
   },
+  "pick_withdrawn": {
+    "audience": "business",
+    "segments": 1,
+    "text": "{brand_short}: The homeowner withdrew their pick for job {job}, so there's nothing to accept. You weren't charged."
+  },
   "pick_expired": {
     "audience": "business",
     "segments": 1,

@@ -70,6 +70,9 @@
 //! [`cant_take_job`] and [`cant_take`] end a pick at once with no fee, [`cant_take_link`] is its
 //! page (PICK-050).
 //!
+//! T330: [`run_pick_withdrawn`] tells the business its waiting pick was withdrawn, once per pick,
+//! with [`WITHDRAWN_TEMPLATE`] (PICK-032, CON-029).
+//!
 //! T228: [`waiting_picks_of`] and [`end_for_leaving`] end a leaving business's waiting picks with
 //! no fee and move each to the homeowner's backup (BIZ-051, PICK-047).
 
@@ -122,6 +125,7 @@ pub use crate::money_notices::{
 pub use crate::open_cards_email::{
     ComposedEmail, OpenCard, WaitingPick, chosen_minutes, missed_cards_line, open_cards_email,
 };
+pub use crate::pick_withdrawn::{WITHDRAWN_TEMPLATE, run_pick_withdrawn};
 pub use crate::release::{
     ADDRESS_NEEDED_KIND, EMAIL_CHOSEN_FIELDS, RELEASE_FIELDS, RELEASE_LINE_FAILED_ALERT,
     RELEASE_NO_RECIPIENT_ALERT, RELEASE_TEMPLATE, RELEASE_TEXT_TEMPLATE, ReleaseFacts, ReleaseStep,
