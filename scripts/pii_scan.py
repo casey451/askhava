@@ -8,8 +8,9 @@ Fake data only (BUILD_BRIEF.md:66; D-109). Flags, outside sources/:
            name that is not on the fake-name list
   key      a string shaped like a vendor key, token or private key
   email    an email address outside example.com, example.org and the reserved
-           .test, .example and .invalid domains (PRIV-019), other than Ask Hava's
-           own role addresses, vendor test sinks and the listed placeholders
+           .test, .example and .invalid domains (PRIV-019), other than the brand's
+           own role addresses (and askhava.com's and laftly.com's, D-3347), vendor
+           test sinks and the listed placeholders
   image    an image under tests/ or docs/design/ whose EXIF carries GPS or camera
            device fields (make, model, serial, lens, owner); read with the
            standard library so Ci needs no imaging library
@@ -77,7 +78,7 @@ KEY_PATTERNS = {
 }
 
 
-# Email (PRIV-019, D-485): only reserved example domains, Ask Hava's own role addresses,
+# Email (PRIV-019, D-485): only reserved example domains, the brand's own role addresses,
 # vendor test sinks and instruction placeholders. A real person's address never passes.
 EMAIL = re.compile(r"(?<![\w.+-])([A-Za-z0-9._%+-]+)@((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})(?![\w-])")
 EXAMPLE_DOMAINS = ("example.com", "example.org")
@@ -104,6 +105,10 @@ def own_domains() -> tuple[str, ...]:
             sys.path.remove(here)
 
 
+# The rename (D-3347: Ask Hava became Laftly on Nov 12, 2026): the former domain's role addresses stay in
+# the decision log, handoffs, prompts and tests written before it, and the spec names the new domain's
+# before the brand file switches to it; neither is ever a person's inbox.
+RENAME_DOMAINS = ("askhava.com", "laftly.com")
 OWN_DOMAINS = own_domains()
 SERVICE_DOMAINS = ("users.noreply.github.com",)  # GitHub's no-reply commit identities, never a person's inbox
 VENDOR_TEST_SINKS = frozenset({"delivered@resend.dev", "bounced@resend.dev", "complained@resend.dev"})
@@ -170,13 +175,14 @@ def _key_findings(line: str) -> Iterator[str]:
 
 
 def email_allowed(local: str, domain: str) -> bool:
-    """True for a reserved example domain, Ask Hava's own domain, a vendor sink or a placeholder."""
+    """True for a reserved example domain, the brand's own or a rename domain, a vendor sink or a placeholder."""
     domain = domain.lower()
     address = f"{local.lower()}@{domain}"
     tld = domain.rsplit(".", 1)[-1]
     if tld in FILE_EXTENSIONS or tld in RESERVED_TLDS:
         return True  # "plaster@2x.jpg" is a file name, not an address
-    if any(domain == d or domain.endswith(f".{d}") for d in EXAMPLE_DOMAINS + OWN_DOMAINS + SERVICE_DOMAINS):
+    allowed = EXAMPLE_DOMAINS + OWN_DOMAINS + RENAME_DOMAINS + SERVICE_DOMAINS
+    if any(domain == d or domain.endswith(f".{d}") for d in allowed):
         return True
     if address in VENDOR_TEST_SINKS or address in PLACEHOLDER_EMAILS:
         return True

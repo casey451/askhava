@@ -1,4 +1,4 @@
-# Ask Hava build constitution
+# Laftly build constitution
 
 The principles every task in this build must follow. Written in kit step K1 (`BUILD_BRIEF.md:594`; `sources/02_build_plan/Kit_Plan_Before_Coding.md:29`).
 
@@ -25,7 +25,7 @@ The full table is `docs/sources.md:38`–`docs/sources.md:53`. The ones most lik
 |---|---|---|
 | Ongoing services count as 2 months | **4 months** ($150/month pool account counts as $600, fee $75) | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:60` |
 | Fees $45 / $59 / $149 | **$25** under $500; **$75** for $500–$1,500; **$199** over $1,500; no percentage cap | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:59` |
-| Brand "Havasu Home Quotes" | **Ask Hava** and **Ask Hava for Business**; legal entity Ask Hava LLC | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:24` |
+| Brand "Havasu Home Quotes", then "Ask Hava" | **Laftly** and **Laftly for Business** (Spanish too); legal entity Laftly LLC; domain laftly.com (Casey, Nov 12, 2026, D-3347) | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:24`; D-3347 |
 | Directory plus quotes | Old directory **deleted**; quote service only | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:26` |
 | Free first win for everyone | Only for businesses joining in the **first 90 days** | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:67` |
 | Up to 4 contractors per trade | No cap: every qualified opted-in business gets every matching card | `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:13` |
@@ -81,7 +81,7 @@ The full table is `docs/sources.md:38`–`docs/sources.md:53`. The ones most lik
 | 1 | Hands-on task only a human can do | One issue with exact taps, sent only after Claude checked it can't do it itself | `BUILD_BRIEF.md:547` |
 | 2 | **Account checkpoint** (end of Phase 1) | Runner sets `WAITING_FOR_OWNER`, opens "Your turn: set up accounts" with `docs/account-checklist.md`, puts it atop STATUS.md, stops. Resumes on Casey's "accounts done". Claude never creates accounts or accepts terms | `BUILD_BRIEF.md:174`–`BUILD_BRIEF.md:178`, `BUILD_BRIEF.md:186`, `BUILD_BRIEF.md:548` |
 | 3 | Real texts to Casey's own phone (Phase 2) | Only if Twilio test credentials can't be used, and only after he answers "yes" to that exact question in an `owner` issue. No other real phone receives anything before Gate C | `BUILD_BRIEF.md:190`, `BUILD_BRIEF.md:549` |
-| 4 | **Stage 0.5, the askhava.com page** | Casey's separate go; it publishes something. Comes after the account checkpoint | `BUILD_BRIEF.md:201`, `BUILD_BRIEF.md:550`; `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:267` |
+| 4 | **Stage 0.5, the laftly.com page** | Casey's separate go; it publishes something. Comes after the account checkpoint | `BUILD_BRIEF.md:201`, `BUILD_BRIEF.md:550`; `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:267` |
 | — | **War-games go** (T243; added on Casey's instruction, D-1339, D-1473) | After the pre-war-games review (T242), the runner sends the review, its plan and the P0 list and waits; only the exact reply 'war games go' starts the war games, and P0 items Casey names are added by a plan change before T234 | `BUILD_BRIEF.md:196`, `BUILD_BRIEF.md:552` |
 | — | **Gate B** (not a stop; Casey's own review) | Casey's guided click-through plus his VoiceOver check; his alone, after "Finished: ready for your review". Nothing waits on it except Gate C | `BUILD_BRIEF.md:55`, `BUILD_BRIEF.md:199`, `BUILD_BRIEF.md:427` |
 | 6 | **Gate C** | After the business accounts; Casey enters live keys and says "go live"; real-phone rehearsal on his phone | `BUILD_BRIEF.md:203`, `BUILD_BRIEF.md:551` |
@@ -101,14 +101,14 @@ The full table is `docs/sources.md:38`–`docs/sources.md:53`. The ones most lik
 **The legal gate.** Every item in changes-file §7 is built in; items marked **gate** must also be cleared before any business signs, any live charge or any real homeowner request. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:155`) Every item in changes-file §3, §7 and §7.1 is required. (`BUILD_BRIEF.md:431`)
 
 Gate items and other pre-launch requirements:
-- **Business consent:** sign-up checkbox with written E-SIGN consent to job-card emails (and texts only while business texting is on, TXT-035); no consent to automated calls is asked for, because Ask Hava never calls businesses (D-344, D-477); version and timestamp stored. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:181`)
-- **Business setup:** LLC via a commercial registered agent with a Maricopa County address; Lake Havasu City business license (home-occupation if run from home; never publish the home address); USPTO search for "Ask Hava" and "Hava" in Classes 35 and 42 before brand spending. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:226`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:229`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:254`)
+- **Business consent:** sign-up checkbox with written E-SIGN consent to job-card emails (and texts only while business texting is on, TXT-035); no consent to automated calls is asked for, because Laftly never calls businesses (D-344, D-477); version and timestamp stored. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:181`)
+- **Business setup:** LLC via a commercial registered agent with a Maricopa County address; Lake Havasu City business license (home-occupation if run from home; never publish the home address); USPTO search for "Laftly" in Classes 35 and 42 (D-3347) before brand spending. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:226`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:229`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:254`)
 - **Recruiting:** mostly self-serve from hand-written, disclosed Facebook group posts; a few visits; never texts or calls (BIZ-048, D-456, `docs/decisions.md:620`). D-181's in-person launch-week sign-ups are superseded.
 - **Insurance:** later, after the business is fully working (Casey, D-426, `docs/decisions.md:575`); the changes file's "before Gate C" line (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:247`) is superseded by that decision.
 - **Sales tax:** fees are tax-included; an 8.6% set-aside until an ADOR private taxpayer ruling is filed, requested after the LLC exists; no TPT license taken only "in case" (D-444, `docs/decisions.md:598`). This supersedes the changes file's TPT-license line (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:248`).
 - **Before launch:** read the ROC website terms; file a commercial-purpose statement if required. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:250`)
 
-**Not a contractor.** Ask Hava never prices, bids, negotiates, schedules, supervises or guarantees work; refusals are worded as eligibility rules. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:237`)
+**Not a contractor.** Laftly never prices, bids, negotiates, schedules, supervises or guarantees work; refusals are worded as eligibility rules. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:237`)
 
 **License rules (per category).**
 - Each category stores its license rule: none (city license list plus identity chain), ROC class, or other state agency. Adding a category is a settings change. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:35`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:39`)
@@ -135,12 +135,12 @@ Gate items and other pre-launch requirements:
 **Terms.** Homeowners must be 18 or older; no arbitration clause and no class waiver; acceptance at the pick only ("By picking, you agree to the Terms"), logged with time, terms version and request ID; texting in is the opt-in to texts, and no reply OK is asked for (Casey's decision D-419 and D-420 replace the source's "Reply OK" step). (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:213`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:244`) Business terms state refund triggers exactly as coded (a test checks they match), non-discrimination, and the card authorization. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:212`; `BUILD_BRIEF.md:465`)
 
 **Copy and claims** (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:188`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:197`; `BUILD_BRIEF.md:451`–`BUILD_BRIEF.md:455`):
-- "Ask Hava is not a contractor and does not perform, bid on or supervise work."
+- "Laftly is not a contractor and does not perform, bid on or supervise work."
 - "Every eligible quote shown, in the order received." "Insurance (business-reported): Yes/No."
 - Never "vetted," "background-checked" or "best"; no rankings; say exactly what's checked.
-- Hava is not a person; service voice only; truthful answer if asked whether it's a person (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:28`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:197`).
+- Laftly is not a person; service voice only; truthful answer if asked whether it's a person (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:28`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:197`).
 - Business-side claims without a cited source on the page are dropped (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:193`).
-- The safety text stays generic and says Ask Hava is not an emergency service (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:196`).
+- The safety text stays generic and says Laftly is not an emergency service (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:196`).
 - "Your number is never shared" plus "Your first name and address go only to the business you pick." (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:191`)
 - License line: "ROC #___ showed Active on the ROC website when we checked on [date]. Check it yourself." (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:192`)
 - Key terms (fee, STOP/HELP, privacy) also appear in Spanish wherever Spanish copy markets the service. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:195`)
@@ -174,7 +174,7 @@ Gate items and other pre-launch requirements:
 - Consent, opt-in wording version, STOP/HELP/START events and message logs kept 5 years after the last message to a number. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:183`; `BUILD_BRIEF.md:447`)
 
 **Opt-out**
-- A text that is only *stop, stopall, quit, end, revoke, opt out, optout, cancel* or *unsubscribe* (any case, D-477), or Spanish *parar, alto, cancelar, baja*, opts out of all texts; honored at once; the reply says "To use Ask Hava again, text START." (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:158`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:114`; `BUILD_BRIEF.md:443`)
+- A text that is only *stop, stopall, quit, end, revoke, opt out, optout, cancel* or *unsubscribe* (any case, D-477), or Spanish *parar, alto, cancelar, baja*, opts out of all texts; honored at once; the reply says "To use Laftly again, text START." (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:158`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:114`; `BUILD_BRIEF.md:443`)
 - A message that merely contains "stop" is not an opt-out. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:188`)
 - One confirmation only. (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:261`)
 - A STOP returner who texts again is treated as a new request. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:95`)
@@ -186,9 +186,9 @@ Gate items and other pre-launch requirements:
 - Texts held overnight are dropped if the job closed, except the text that announces the close itself, sent at the next allowed window (QH-007, D-461). (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:212`)
 
 **Registration and content**
-- Register the Twilio campaign only when the full site is live; never use "leads," "lead generation," "referral network," "marketplace of providers" or "connect you with"; sample messages are real Ask Hava texts. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:173`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:175`)
+- Register the Twilio campaign only when the full site is live; never use "leads," "lead generation," "referral network," "marketplace of providers" or "connect you with"; sample messages are real Laftly texts. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:173`–`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:175`)
 - Never a second number to get around a suspension; fallback is the status banner, web chat and email (web-and-email mode behind a switch). (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:267`; `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:75`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:177`)
-- Links inside texts stay on askhava.com; never a public link shortener. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:29`; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:263`)
+- Links inside texts stay on laftly.com; never a public link shortener. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:29`; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:263`)
 - Homeowner job descriptions are screened for carrier-restricted content before going on a card. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:185`)
 - No voice call is ever placed to a business (BIZ-046): identity codes go by text to a record phone that gets texts, by email to the record address or by letter; the source line's identity voice call is superseded (D-344, D-366). (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:182`)
 - Every text kind has a Spanish template. (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:88`; `BUILD_BRIEF.md:416`)
@@ -257,7 +257,7 @@ Full list in `BUILD_BRIEF.md:384`–`BUILD_BRIEF.md:427`; target also in `source
 
 From the AI legal-research memos (Memo 1 Part V.B and R-14, Memo 4 Part F), adopted in fix round 12 (`docs/decisions.md:499`). Changing any of these needs a new logged decision citing a fresh legal review.
 
-1. No payment handling for the work: no escrow, deposits, invoices or Ask Hava-branded receipts for the work.
+1. No payment handling for the work: no escrow, deposits, invoices or Laftly-branded receipts for the work.
 2. No guarantee, protection, warranty, home warranty or service contract; no paying for or arranging redo work (LIC-042, D-376, `docs/decisions.md:506`).
 3. No choosing for the homeowner: no auto-assign, ranking, "recommended" label, or sorting by price or score.
 4. No price advice: no estimates, re-bid or "beat this price" requests, and no showing one business another's amount (PICK-026 stays coarse, or goes).
