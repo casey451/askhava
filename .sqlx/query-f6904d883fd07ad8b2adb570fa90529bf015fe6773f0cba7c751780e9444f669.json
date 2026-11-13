@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.zip FROM intake.property p JOIN intake.conversation c ON c.homeowner_id = p.homeowner_id WHERE c.id = $1 AND p.town = $2 ORDER BY p.created_at DESC, p.id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "zip",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.property",
+            "name": "zip"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "f6904d883fd07ad8b2adb570fa90529bf015fe6773f0cba7c751780e9444f669"
+}
