@@ -29173,7 +29173,7 @@
      }
     }
    ],
-   "reviewed_sha": "3178f882e07a1cde27b466ce3e9f5338c4c36f0c",
+   "reviewed_sha": "21e603123575d1c10c61d37df48df565d1c22ea8",
    "review_lease": {
     "task": "T273",
     "session": "actions-43459332028",
@@ -29193,10 +29193,22 @@
      "main": "183c06a7dd6932ad01a334a8fe92f390112506e5",
      "how": "hand-in",
      "at": "2026-11-13T17:10:12Z"
+    },
+    {
+     "from": "3178f882e07a1cde27b466ce3e9f5338c4c36f0c",
+     "to": "21e603123575d1c10c61d37df48df565d1c22ea8",
+     "main": "fe3f0367425d95ba3b905e79b96fa667a5cf5137",
+     "how": "runner",
+     "checks": {
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-13T17:16:32Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-13T17:16:32Z"
   },
   {
    "id": "T274",
@@ -46485,7 +46497,7 @@
    "deps": [
     "T317"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 0,
    "slug": "session-sweep-and-rate-limit-prune",
    "type": "build",
@@ -46505,13 +46517,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 96,
      "head_sha": "4095f078e24182c49c492eb4041fa799e265f2e9",
-     "pr": null,
-     "checks": null,
+     "pr": 684,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-13T16:25:24Z",
      "ended_at": "2026-11-13T16:53:49Z",
-     "result": "MERGE_PENDING",
+     "result": "resync",
      "usage": {
       "worker": {
        "tokens": 10564175,
@@ -46536,7 +46593,34 @@
     "enabled": true,
     "why": "auto-merge on #684 (gh pr merge)",
     "head": "4095f078e24182c49c492eb4041fa799e265f2e9"
-   }
+   },
+   "merge_turn_since": "2026-11-13T17:16:32Z",
+   "runner_closed_prs": [
+    684
+   ],
+   "resync": {
+    "attempt": 1,
+    "from": "4095f078e24182c49c492eb4041fa799e265f2e9",
+    "main": "fe3f0367425d95ba3b905e79b96fa667a5cf5137",
+    "paths": [
+     "app/portals/CLAUDE.md"
+    ],
+    "at": "2026-11-13T17:16:32Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 1,
+     "from": "4095f078e24182c49c492eb4041fa799e265f2e9",
+     "main": "fe3f0367425d95ba3b905e79b96fa667a5cf5137",
+     "paths": [
+      "app/portals/CLAUDE.md"
+     ],
+     "at": "2026-11-13T17:16:32Z"
+    }
+   ],
+   "last_failure": "merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891)",
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T433",
@@ -49356,7 +49440,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T17:16:21Z",
+ "updated_at": "2026-11-13T17:16:55Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -49454,7 +49538,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fe3f0367425d95ba3b905e79b96fa667a5cf5137",
+ "runner_sha": "183c06a7dd6932ad01a334a8fe92f390112506e5",
  "starter": "actions",
  "smoke_runs": [
   {
