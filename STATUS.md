@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T18:26:36Z by runner f8a76096fe4a (actions).
+Updated 2026-11-13T18:26:51Z by runner f8a76096fe4a (actions).
 
-**Building: T357 in progress since 16:24Z; 288 of 421 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 18:26Z; 288 of 421 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 288 of 421 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T357 claimed 16:24Z, lease until 21:25Z
+- **Lane:** idle since 18:26Z (no task in progress)
 - **Week:** 25% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:25Z, 0 min before this update
+- **Last run:** 18:25Z, 1 min before this update
 - **Keeper:** last ran 18:25Z, next wake 19:58Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-13T18:26:36Z by runner f8a76096fe4a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 1 | 2 h 1 min | 18:26Z |  |
 | T281 | picks: the unreachable-homeowner steps run at 24, 48, 72 and | MERGE_PENDING | 1 | 107 min | 18:15Z |  |
 | T436 | portals, core and server: expired sessions are swept and old | done | 1 | 34 min | 17:52Z |  |
 | T273 | privacy: a photo's plaintext is returned only after its open | done | 1 | 41 min | 17:10Z |  |
@@ -77,7 +78,6 @@ Updated 2026-11-13T18:26:36Z by runner f8a76096fe4a (actions).
 | T346 | portals: every homeowner Verify code is bound to its purpose | done | 1 | 40 min | 18:57Z |  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | resync | 2 | 87 min | 18:46Z |  |
 | T376 | ai and stand-in (harness): the intake schema sent to Claude  | done | 1 | 35 min | 18:40Z |  |
-| T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 2 | 60 min | 18:26Z |  |
 
 ### Plan and harness merges on main
 - 17:36Z Plan: count usage once per message, prove fix rounds were re-reviewed (D-3475) (#685)
@@ -150,7 +150,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T357 (lease until 2026-11-13T21:25:42Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T281", "at": "2026-11-13T18:15:40Z", "input_tokens": 1032, "output_tokens": 321589, "cache_creation_input_tokens": 1320276, "cache_read_input_tokens": 62499597}
+- {"task": "T357", "at": "2026-11-13T18:26:34Z", "input_tokens": 732, "cache_read_input_tokens": 33678702, "output_tokens": 206682, "cache_creation_input_tokens": 1267043}
