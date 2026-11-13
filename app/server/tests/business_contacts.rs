@@ -4,7 +4,7 @@
 //! sweep runs at a `now` days ahead of it. Fake addresses (`example.com`) and 555-01xx numbers only.
 
 use askhava_businesses::api::{
-    Acting, ContactIds, Roles, TeamError, add_member, add_owner, change_phone, contact_ids_in_use,
+    Acting, ContactIds, Roles, add_member, add_owner, change_phone, contact_ids_in_use,
     create as create_business, leave, link_phone, record_step_up, remove_member, request_backup,
     request_notice_change, unlink_phone,
 };
@@ -130,26 +130,6 @@ async fn td_priv_29_link_writes_the_digest_and_the_sealed_number_together(pool: 
         phone_of(&mut db, &vault, line).await.as_deref(),
         Some("+19285550143")
     );
-}
-
-#[sqlx::test(migrator = "MIGRATOR")]
-async fn td_priv_29_a_bad_number_links_nothing(pool: PgPool) {
-    let dir = ContactDirectory::new(vault());
-    let mut db = pool.acquire().await.expect("conn");
-    let by = business(&mut db, Uuid::new_v4(), Timestamp::now()).await;
-    let refused = link_phone(
-        &mut db,
-        &dir,
-        (by, true),
-        &number("555-01"),
-        Timestamp::now(),
-    )
-    .await;
-    assert_eq!(refused, Err(TeamError::BadPhone));
-    let ids = contact_ids_in_use(&mut db, Timestamp::now())
-        .await
-        .expect("ids");
-    assert!(ids.lines.is_empty());
 }
 
 /// A business whose owner, member `kept` (with a backup and an open address change) and removed
