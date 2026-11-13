@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT job_id, words, safety FROM privacy.message_body WHERE inbox_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "privacy.message_body",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "words",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "privacy.message_body",
+            "name": "words"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "safety",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "privacy.message_body",
+            "name": "safety"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "bd2bace2b30ce0cf4af64a65ce9ded82fc5dd6d58259951666bf7475366e896e"
+}
