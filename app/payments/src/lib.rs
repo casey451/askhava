@@ -48,6 +48,7 @@
 
 pub mod api;
 mod charge;
+mod dispute_http;
 mod disputes;
 mod flags;
 mod free_wins;
@@ -62,6 +63,7 @@ mod purge;
 mod receipts;
 mod reclear;
 mod reconcile;
+mod reconcile_http;
 mod refund_rules;
 mod refund_state;
 mod refund_stripe;
