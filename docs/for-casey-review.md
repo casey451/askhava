@@ -2635,3 +2635,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Back to one task per code area at a time (D-3386)
 
 - On November 12 we let two tasks work in the same code area at once to keep more lanes busy, with a rule to undo it if more than 1 merge in 5 needed redoing. 3 of the next 10 did, all over the same notes file, so it is back to one. Nothing needs you now.
+
+## Runner: a lane whose worker's machine died is freed in about 10 minutes, not 3 hours (D-3417, November 13)
+
+- **What happened.** Twice in the last 48 hours a worker's GitHub machine was lost mid-task, so its safety hand-in never ran and the lane sat idle until its 3-hour lease ran out (T215: about 2 hours, T249: about 2 hours 45 minutes; about 7 idle lane-hours in all).
+- **What changed.** Each cycle now asks GitHub whether a lane's worker run is still alive. When that run has been finished for 10 minutes without handing in, the lane is freed exactly as an expired lease frees it: the task goes back to the queue with no attempt used, and a change it already finished and had reviewed is picked up as before. Any doubt (GitHub unreadable, a re-run in progress) keeps the lane held as before. Nothing cancels a run.
+- **Decided for you (by Fable under your standing rule).** Yes, with those conditions. A separate case, where the safety hand-in ran but still did not free the lane (T327), is a later follow-up.
+- **Nothing needs you now.**

@@ -1659,6 +1659,17 @@ class GitHubEnv:
         """The tree SHA of a commit, read through REST so a PR head no longer on any branch is still found (D-3156)."""
         return str(self.gh_json(f"repos/{self.repo}/git/commits/{sha}")["tree"]["sha"] or "")
 
+    def run_status(self, run_id: int) -> tuple[str, str, str] | None:
+        """(status, conclusion, updated_at) of a GitHub Actions run (`actions/runs/<id>`, REST, read only),
+        which GitHub reports for the run's latest attempt, so a re-run shows as queued or in progress again;
+        None on any API error or a missing field, which keeps the lease (`cycle.dead_sessions`, D-3417)."""
+        try:
+            run = self.gh_json(f"repos/{self.repo}/actions/runs/{int(run_id)}")
+            return str(run["status"] or ""), str(run.get("conclusion") or ""), str(run["updated_at"] or "")
+        except (RuntimeError, ValueError, KeyError, TypeError, AttributeError) as exc:
+            self.log.append(f"run {run_id} unreadable: {str(exc)[:200]}")
+            return None
+
     def checks_on(self, sha: str) -> dict[str, str] | None:
         """{check name: conclusion, or "running"} for the required checks on a commit, each from its
         latest run (REST, read only, the job token); None when the check runs cannot be read (D-630)."""
