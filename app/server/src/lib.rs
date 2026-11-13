@@ -43,6 +43,7 @@ pub mod release_sink;
 pub mod request_timeout;
 pub mod static_files;
 pub mod voice_status;
+pub mod webhook_refusals;
 
 use request_timeout::RequestTimeout;
 use static_files::StaticRoot;
@@ -164,12 +165,16 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
     let checkin = checkin::routes(pool.clone());
+    // Each 403 of these four is a source or signature refusal, recorded as a capped
+    // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
+    let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));
+    let refused = |router| webhook_refusals::layer(router, refusals.clone());
     let calls = webhooks
         .clone()
-        .map_or_else(Router::new, voice_status::routes);
-    let twilio = webhooks.map_or_else(Router::new, inbound_text::routes);
-    let voice = voice.map_or_else(Router::new, inbound_voice::routes);
-    let stripe = stripe.map_or_else(Router::new, stripe_webhook_routes);
+        .map_or_else(Router::new, |h| refused(voice_status::routes(h)));
+    let twilio = webhooks.map_or_else(Router::new, |h| refused(inbound_text::routes(h)));
+    let voice = voice.map_or_else(Router::new, |v| refused(inbound_voice::routes(v)));
+    let stripe = stripe.map_or_else(Router::new, |s| refused(stripe_webhook_routes(s)));
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
         .merge(test_control)

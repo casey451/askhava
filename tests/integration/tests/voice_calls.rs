@@ -230,6 +230,7 @@ fn td_call_06_no_route_lets_a_business_text_a_homeowner() {
     let read = |p: &str| std::fs::read_to_string(format!("{root}/{p}")).expect("file");
     let slots = [
         "{business}",
+        "{cant_take}",
         "{count}",
         "{job}",
         "{link}",

@@ -155,7 +155,11 @@ fn td_word_38_texts_take_the_fake_brand() {
         assert!(consent.body.starts_with("Testbrand:"), "{}", consent.body);
         rebranded("homeowner text", &consent.body);
         assert!(consent.body.contains("tb.example/terms"));
-        let values = [("job", "1042"), ("time", "3:00 p.m.")];
+        let values = [
+            ("job", "1042"),
+            ("time", "3:00 p.m."),
+            ("cant_take", "tb.example/b/picks/x/cant-take"),
+        ];
         let notice = render("pick_notice", language, true, &values).expect("pick notice");
         assert_eq!(notice.language, language);
         assert!(notice.body.starts_with(&format!("{}:", b.short_name())));
