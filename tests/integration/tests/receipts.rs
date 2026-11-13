@@ -6,7 +6,7 @@
 //! receipt is a Dashboard setting (payments brain section 13), so only the receipt's line saying it
 //! comes is checked here. All IDs, amounts and addresses are fake.
 
-use askhava_core::api::{Claimed, MIGRATOR};
+use askhava_core::api::{Claimed, MIGRATOR, brand};
 use askhava_messaging::api::{
     Audience, Language, MailboxKind, Notice, PostalAddress, RECEIPT_EMAIL_KIND, ReceiptSender,
     Recipient, WHY_CHARGED_PREFIX, render_email, render_receipt, run_receipt_email,
@@ -23,6 +23,13 @@ use serde_json::{Value, json};
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 use std::sync::Arc;
+
+/// `text` with the brand file's names for its `{brand...}` and `{domain}` tokens, the Spanish
+/// names when `spanish`: expected brand words come from the brand file (WORD-001, WORD-008,
+/// D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("the brand fills")
+}
 
 const PICK: Uuid = Uuid::from_u128(0x7068_0001);
 const BUSINESS: Uuid = Uuid::from_u128(0x7068_0002);
@@ -142,7 +149,10 @@ async fn td_fee_17_a_receipt_email_per_charge_names_the_request_number(pool: PgP
     let asks = tasks(&pool, RECEIPT_EMAIL_KIND).await;
     assert_eq!(asks.len(), 1, "one email request per pick");
     let number = asks[0]["values"]["job"].as_i64().expect("job number");
-    let line = format!("Ask Hava introduction service, job {number}");
+    let line = format!(
+        "{} introduction service, job {number}",
+        brand().display_name()
+    );
     assert_eq!(asks[0]["values"]["line"], line.as_str());
     assert_eq!(asks[0]["values"]["fee_cents"], 2500);
     assert_eq!(
@@ -165,7 +175,10 @@ async fn td_fee_17_a_receipt_email_per_charge_names_the_request_number(pool: PgP
     .await
     .expect("outbox");
     assert_eq!(rows.len(), 1, "one receipt per recipient and charge");
-    assert_eq!(rows[0].0, format!("Ask Hava: Receipt for job {number}"));
+    assert_eq!(
+        rows[0].0,
+        format!("{}: Receipt for job {number}", brand().short_name())
+    );
     assert!(rows[0].1.contains(&format!("{line}: $25.00")));
     assert_eq!(rows[0].2, ADDRESS);
 }
@@ -267,7 +280,8 @@ async fn td_fee_34_the_receipt_says_tax_included_and_links_why(pool: PgPool) {
     assert_eq!(
         link,
         format!(
-            "https://askhava.com{}",
+            "https://{}{}",
+            brand().domain(),
             WHY_CHARGED_ROUTE.replace("{pick}", &PICK.to_string())
         )
     );
@@ -282,7 +296,7 @@ async fn td_fee_34_the_receipt_says_tax_included_and_links_why(pool: PgPool) {
         id: ADDRESS,
         audience: Audience::Business,
         language: Language::En,
-        manage_url: "https://askhava.com/b",
+        manage_url: &branded("https://{domain}/b", false),
     };
     let postal = PostalAddress::new(POSTAL, MailboxKind::PoBox).expect("postal");
     let footer = render_email(&postal, &to, Notice::StillOpen(1)).expect("footer");
@@ -326,7 +340,10 @@ async fn td_fee_34_the_why_page_shows_job_quote_tier_basis_and_refunds(pool: PgP
     let page = why_charged_page(&facts).expect("page");
     for words in [
         "Why was I charged for job 1001?",
-        "Ask Hava introduction service, job 1001: $25.00. Tax included.",
+        &branded(
+            "{brand} introduction service, job 1001: $25.00. Tax included.",
+            false,
+        ),
         "Your quote: $480.00, fixed price",
         "Introduction fee by job size: $25.00 (small job).",
         "The fee basis from your quote is $480.00. That is under $500.00, so this is a small job.",

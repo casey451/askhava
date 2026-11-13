@@ -7,6 +7,7 @@
 //! business stored them, the cards-out text with its Arizona-time clocks, and a stored amount that
 //! only the business's own edit changes.
 
+use askhava_core::api::brand;
 use askhava_jobs::api::{JobStatus, create, move_to};
 use askhava_licensing::api::LicenseKind;
 use askhava_messaging::api::Language;
@@ -32,6 +33,13 @@ const ES: Reader = Reader {
     wanted: Language::Es,
     spanish_on: true,
 };
+
+/// `text` with the brand file's names for its `{brand...}` and `{domain}` tokens, the Spanish
+/// names when `spanish`: expected brand words come from the brand file (WORD-001, WORD-008,
+/// D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("the brand fills")
+}
 
 fn at(text: &str) -> Timestamp {
     format!("2026-11-{text}-07:00").parse().expect("time")
@@ -131,16 +139,17 @@ async fn td_txt_06_first_quote_then_updates_at_most_every_three_hours(mut db: Db
 #[test]
 fn td_txt_11_first_quote_and_update_texts() {
     let en = first_quote_text(EN, "1234", LINK).expect("text");
-    assert!(
-        en.starts_with("Ask Hava: Your first quote for request 1234 is in, and more may come.")
-    );
+    assert!(en.starts_with(&branded(
+        "{brand_short}: Your first quote for request 1234 is in, and more may come.",
+        false
+    )));
     assert!(en.contains("Free for you."));
     let (list, link) = (
         en.find("Reply LIST").expect("list"),
         en.find(LINK).expect("link"),
     );
     assert!(list < link);
-    assert!(en.ends_with("Terms (18+): askhava.com/terms"));
+    assert!(en.ends_with(&branded("Terms (18+): {domain}/terms", false)));
     assert!(!en.contains('$'));
     let es = first_quote_text(ES, "1234", LINK).expect("text");
     assert!(es.contains("Responda LISTA"));
@@ -186,7 +195,10 @@ async fn td_txt_11_list_pages_in_arrival_order(mut db: Db) {
     assert_eq!((numbered(&texts[0]), numbered(&texts[1])), (10, 2));
     assert!(texts[0].contains("1. Sample Business 12: $101."));
     assert!(texts[1].contains("11. Sample Business 2:"));
-    let tail = "To pick, reply the number and YES, for example 2 YES. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: askhava.com/terms";
+    let tail = &branded(
+        "To pick, reply the number and YES, for example 2 YES. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: {domain}/terms",
+        false,
+    );
     assert!(texts.iter().all(|t| t.ends_with(tail)));
     let es = list_texts(&mut db, (job, "1234"), ES, &names(12))
         .await
@@ -273,8 +285,11 @@ fn td_txt_20_cards_out_text() {
         slow_at_most: SLOW_AT_MOST,
     };
     let plain = cards_out_text(EN, &out, &[]).expect("text");
-    assert!(plain.starts_with("Ask Hava: Request 1234 is out to 2 plumbing businesses. Not every business answers. We'll text you when the first quote comes in."));
-    assert!(plain.ends_with("Quotes may be slow with only 2 on Ask Hava so far."));
+    assert!(plain.starts_with(&branded("{brand_short}: Request 1234 is out to 2 plumbing businesses. Not every business answers. We'll text you when the first quote comes in.", false)));
+    assert!(plain.ends_with(&branded(
+        "Quotes may be slow with only 2 on {brand} so far.",
+        false
+    )));
     let three = cards_out_text(EN, &CardsOut { count: 3, ..out }, &[]).expect("text");
     assert!(!three.contains("slow"));
     let held = CardsOut {
@@ -286,7 +301,7 @@ fn td_txt_20_cards_out_text() {
     let text = cards_out_text(EN, &held, &["America/Chicago".to_owned()]).expect("text");
     assert!(text.contains("It goes out at 8 a.m. Arizona time (9 a.m. Central)."));
     assert!(text.contains("You can pick as soon as the first quote arrives. If it can't wait, it's fine to call a company you know too."));
-    assert_eq!(text.matches("Ask Hava:").count(), 1);
+    assert_eq!(text.matches(&branded("{brand_short}:", false)).count(), 1);
     let es = cards_out_text(ES, &held, &[]).expect("text");
     assert!(es.contains("Sale a las 8 a.m. hora de Arizona."));
 }
