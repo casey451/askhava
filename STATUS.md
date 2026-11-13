@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T01:07:21Z by runner e59912000c68 (actions).
+Updated 2026-11-13T01:07:41Z by runner e59912000c68 (actions).
 
 **Building: T215 in progress since 23:45Z; 263 of 404 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 263 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 2: T421 claimed 00:52Z, lease until 03:52Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 5: T424 claimed 00:42Z, lease until 03:42Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
+- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 2: T421 claimed 00:52Z, lease until 03:52Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 5: T424 claimed 00:42Z, lease until 03:42Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
 - **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:02Z, 4 min before this update
+- **Last run:** 01:02Z, 5 min before this update
 - **Keeper:** last ran 00:48Z, next wake 02:47Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-13T01:07:21Z by runner e59912000c68 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T372 | businesses and licensing: each recorded ROC list re-applies  | MERGE_PENDING | 1 | 81 min | 01:07Z |  |
 | T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 1 | 2 min | 23:48Z | PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclea |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | done | 1 | 57 min | 23:46Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -167,11 +168,10 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T215 (lease until 2026-11-13T02:45:19Z)
 - lane 2: T421 (lease until 2026-11-13T03:52:45Z)
-- lane 3: T372 (lease until 2026-11-13T02:46:03Z)
 - lane 4: T422 (lease until 2026-11-13T03:36:38Z)
 - lane 5: T424 (lease until 2026-11-13T03:42:22Z)
 - lane 6: T249 (lease until 2026-11-13T03:01:54Z)
 - lane 7: T423 (lease until 2026-11-13T03:40:54Z)
 
 ## Last usage reading
-- {"task": "T255", "at": "2026-11-12T23:48:10Z", "output_tokens": 18261, "cache_read_input_tokens": 2887666, "input_tokens": 101, "cache_creation_input_tokens": 272582}
+- {"task": "T372", "at": "2026-11-13T01:07:19Z", "input_tokens": 546, "output_tokens": 176077, "cache_read_input_tokens": 35111502, "cache_creation_input_tokens": 702685}
