@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T14:38:39Z by runner 69b338517e8d (actions).
+Updated 2026-11-13T14:38:56Z by runner 69b338517e8d (actions).
 
-**Building: T266 in progress since 13:35Z; 281 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 14:38Z; 281 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 281 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T266 claimed 13:35Z, lease until 16:35Z
+- **Lane:** idle since 14:38Z (no task in progress)
 - **Week:** 19% used, 151.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:37Z, 0 min before this update
+- **Last run:** 14:38Z, 0 min before this update
 - **Keeper:** last ran 14:37Z, next wake 16:37Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-13T14:38:39Z by runner 69b338517e8d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z | session ended without handing in |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | MERGE_PENDING | 1 | 39 min | 14:30Z |  |
 | T367 | jobs, messaging, privacy, intake and payments: the daily swe | MERGE_PENDING | 1 | 60 min | 14:23Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z | PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a  |
@@ -79,6 +80,7 @@ Updated 2026-11-13T14:38:39Z by runner 69b338517e8d (actions).
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 1 | 38 min | 14:42Z |  |
 
 ### Plan and harness merges on main
+- 13:45Z Plan: shorten the critical path, drop legacy dependency edges (D-3446) (#671)
 - 12:32Z Plan: pre-flight 14, split three oversized build tasks; T111/T113 brand note (D-3445) (#668)
 - 11:32Z Harness: fix-round hand-off, tighter output caps, crate_cap 2 (D-3444) (#665)
 - 11:16Z Harness: an API error session death does not use an attempt (D-3443) (#664)
@@ -152,7 +154,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T266 (lease until 2026-11-13T16:35:19Z)
 
 ## Last usage reading
 - {"task": "T330", "at": "2026-11-13T14:30:29Z", "cache_creation_input_tokens": 821176, "cache_read_input_tokens": 43723133, "input_tokens": 522, "output_tokens": 171690}
