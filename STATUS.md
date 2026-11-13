@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T18:54:40Z by runner ac135e636d92 (actions).
+Updated 2026-11-13T19:03:26Z by runner 6cc0b1c3ccc3 (manual).
 
-**Idle since 18:29Z; 289 of 423 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 18:29Z; 289 of 424 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 289 of 423 build tasks (owner gates not counted)
+- **Tasks done:** 289 of 424 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 18:29Z (no task in progress)
 - **Week:** 25% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:54Z, 0 min before this update
+- **Last run:** 18:54Z, 8 min before this update
 - **Keeper:** last ran 18:54Z, next wake 00:34Z
 
 ## Needs attention
@@ -74,10 +74,9 @@ Updated 2026-11-13T18:54:40Z by runner ac135e636d92 (actions).
 | T416 | Performance: database pool and query measurements (PERF-004) | done | 1 | 54 min | 19:59Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 2 | 15 min | 19:11Z |  |
 | T350 | privacy: an opt-out, HELP or START word is never taken or re | done | 1 | 103 min | 19:09Z |  |
-| T362 | server: the built static files are served at /static/<crate> | done | 3 | 26 min | 19:03Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
-| T346 | portals: every homeowner Verify code is bound to its purpose | done | 1 | 40 min | 18:57Z |  |
 
 ### Plan and harness merges on main
+- 19:02Z Plan: report-only symbol pre-flight in plan_health (D-3496) (#688)
 - 18:48Z Plan: crate guides to ≤8 KB, detail one entry per line in NOTES.md (D-3474) (#687)
 - 17:36Z Plan: count usage once per message, prove fix rounds were re-reviewed (D-3475) (#685)
 - 15:02Z Plan: split T328 and trim T321 to fit the context limit (D-3468) (#676)
@@ -105,7 +104,7 @@ Updated 2026-11-13T18:54:40Z by runner ac135e636d92 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 573 · unstarted 160
-**Tasks merged (throughput only):** 289 of 423
+**Tasks merged (throughput only):** 289 of 424
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
