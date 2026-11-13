@@ -1,9 +1,9 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.1 (draft) · October 28, 2026
+Version 0.2 (draft) · November 13, 2026
 
-# Ask Hava legal document drafts
+# Laftly legal document drafts
 
-Plain-English drafts for the Ask Hava owner's review (TERMS-015, TERMS-028, D-389). They were written from the spec in `docs/spec/` and the AI legal-research memos (outside this repository, in `/home/claude/hhq/outputs/legal/`). No lawyer has reviewed them. None is in effect or published; publishing waits for the owner's go (WEB-013, WEB-017).
+Plain-English drafts for the Laftly owner's review (TERMS-015, TERMS-028, D-389). They were written from the spec in `docs/spec/` and the AI legal-research memos (outside this repository, in `/home/claude/hhq/outputs/legal/`). No lawyer has reviewed them. None is in effect or published; publishing waits for the owner's go (WEB-013, WEB-017).
 
 | Document | For | Spec it follows |
 |---|---|---|
