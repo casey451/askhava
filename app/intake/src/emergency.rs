@@ -194,12 +194,45 @@ const STREET_SUFFIXES: &[&str] = &[
 ];
 /// At most this many name words are removed before a street suffix (D-982).
 const MAX_STREET_WORDS: usize = 3;
-/// Words never taken as part of a street name: small joining words and hazard words, so "GAS
-/// LEAK AT HOUSE ON MAIN ST" keeps its hazard (D-982).
+/// Words never taken as part of a street name, whatever their case: small joining words (English
+/// and Spanish) and hazard words, so "gas leak at house on main st" keeps its hazard (D-982,
+/// D-2202). Never a street name of any market (national-ready: market values come from data).
 const NOT_STREET_WORDS: &[&str] = &[
-    "on", "at", "by", "near", "in", "of", "the", "from", "to", "off", "and", "a", "is", "en", "de",
-    "la", "el", "gas", "propane", "smoke", "smoking", "fire", "flames", "sparking", "burning",
-    "leak", "leaking", "smell", "alarm", "outlet", "panel", "breaker", "line", "wire",
+    "on", "at", "by", "near", "in", "of", "the", "from", "to", "off", "and", "a", "an", "is",
+    "are", "my", "our", "your", "her", "his", "their", "this", "that", "it", "its", "i", "we",
+    "there", "here", "with", "for", "next", "behind", "over", "under", "outside", "inside", "en",
+    "de", "del", "la", "las", "el", "los", "y", "con", "por", "cerca", "mi", "un", "una", "gas",
+    "propane", "propano", "smoke", "smokes", "smoking", "smoky", "fire", "fires", "flame",
+    "flames", "spark", "sparks", "sparking", "sparked", "burn", "burns", "burning", "burned",
+    "burnt", "leak", "leaks", "leaking", "leaked", "smell", "smells", "smelling", "odor", "odour",
+    "fumes", "hiss", "hissing", "alarm", "detector", "outlet", "outlets", "plug", "cord", "switch",
+    "panel", "breaker", "line", "wire", "down", "humo", "fuego", "incendio", "chispa", "fuga",
+];
+#[cfg(test)]
+/// Every word list of the matcher, so a test can check that no street name was written into one
+/// (TD-INT-40, D-2202).
+pub(crate) const WORD_LISTS: &[&[&str]] = &[
+    GAS_WORDS,
+    GAS_SIGNS,
+    GAS_PHRASES,
+    ALARM_WORDS,
+    GOING_OFF,
+    CHIRP_WORDS,
+    BEEP_WORDS,
+    BATTERY_WORDS,
+    NOT_SMOKE,
+    NOT_SMOKE_WORDS,
+    FIRE_PHRASES,
+    FIRE_STEMS,
+    ELECTRIC_PARTS,
+    NOT_ELECTRIC,
+    ELECTRIC_STEMS,
+    BURNING,
+    NOT_HOME_ALARM,
+    POWER_LINE,
+    NOT_POWER_LINE,
+    STREET_SUFFIXES,
+    NOT_STREET_WORDS,
 ];
 
 /// The 911-list check of one message (INT-002, INT-037, D-165, D-361, D-436): `address_answer`
@@ -251,10 +284,10 @@ fn hazard(text: &Folded) -> Option<Hazard> {
     None
 }
 
-/// Removes street-address patterns (D-165, D-982): a street suffix after a capitalized word, up to
-/// [`MAX_STREET_WORDS`] capitalized name words before it (never a joining or hazard word) and a
-/// house number, so "100 Smoketree Test Ave" or "Burst Test Ln" is never a hazard while "GAS
-/// LEAK AT HOUSE ON MAIN ST" still is.
+/// Removes street-address patterns (INT-002, D-165, D-982, D-2202): a street suffix after a
+/// street-name word, up to [`MAX_STREET_WORDS`] name words before it and a house number, in any
+/// case, so "100 smoketree test ave" or "Burst Test Ln" is never a hazard while "gas leak at house
+/// on main st" still is.
 fn strip_addresses(words: &str) -> String {
     let mut kept: Vec<&str> = Vec::new();
     for token in words.split_whitespace() {
@@ -279,17 +312,13 @@ fn strip_addresses(words: &str) -> String {
     kept.join(" ")
 }
 
-/// Whether a word can be part of a street name: capitalized, and not a joining or hazard word.
+/// Whether a word can be part of a street name, whatever its case (D-2202): it holds a letter (a
+/// bare number is the house number) and is not a joining or hazard word (`NOT_STREET_WORDS`).
 fn street_word(word: &str) -> bool {
     let bare = word
         .trim_matches(|c: char| !c.is_alphanumeric())
         .to_lowercase();
-    capitalized(word) && !NOT_STREET_WORDS.contains(&bare.as_str())
-}
-
-/// Whether a word starts with a capital letter (a street name word).
-fn capitalized(word: &str) -> bool {
-    word.chars().next().is_some_and(char::is_uppercase)
+    bare.chars().any(char::is_alphabetic) && !NOT_STREET_WORDS.contains(&bare.as_str())
 }
 
 /// A message folded for matching: lower case, accents folded, apostrophes dropped, every other
