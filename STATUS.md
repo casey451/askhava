@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T12:34:22Z by runner 48645fc04c5f (actions).
+Updated 2026-11-13T12:34:39Z by runner 48645fc04c5f (actions).
 
 **Building: T255 in progress since 11:40Z; 279 of 417 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-13T12:34:22Z by runner 48645fc04c5f (actions).
 - **Lane:** lane 1: T255 claimed 11:40Z, lease until 14:40Z
 - **Week:** 17% used, 157.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:34Z, 0 min before this update
-- **Keeper:** last ran 12:33Z, next wake 14:43Z
+- **Keeper:** last ran 12:34Z, next wake 14:43Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -74,7 +74,6 @@ Updated 2026-11-13T12:34:22Z by runner 48645fc04c5f (actions).
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z |  |
 | T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z |  |
 | T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
-| T378 | adapters, calls and stand-in (harness): every outbound call  | done | 1 | 45 min | 12:34Z |  |
 
 ### Plan and harness merges on main
 - 12:32Z Plan: pre-flight 14, split three oversized build tasks; T111/T113 brand note (D-3445) (#668)
