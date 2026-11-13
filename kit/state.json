@@ -38115,11 +38115,11 @@
      }
     }
    ],
-   "reviewed_sha": "328daa17c723fd412cf9d9966227c272362191b6",
+   "reviewed_sha": "c43c8331dcd74e80cc8e3cef84d5f9b1e3019d22",
    "review_lease": {
     "task": "T357",
-    "session": "actions-43451704807",
-    "expires": "2026-11-13T21:25:42Z"
+    "session": "actions-43488336320",
+    "expires": "2026-11-13T22:21:01Z"
    },
    "branch": "claude/task/T357-inbound-optout-start-followups",
    "auto_merge": {
@@ -38127,18 +38127,6 @@
     "why": "auto-merge on #693 (gh pr merge)",
     "head": "328daa17c723fd412cf9d9966227c272362191b6"
    },
-   "update_merges": [
-    {
-     "from": "f8a76096fe4a0a10b464be283c05a62459909bab",
-     "to": "328daa17c723fd412cf9d9966227c272362191b6",
-     "main": "53256149fffcc53d38bb9efaac78a406241d8002",
-     "how": "hand-in",
-     "at": "2026-11-13T18:26:36Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-13T18:33:01Z",
    "runner_closed_prs": [
     693
    ],
@@ -38162,7 +38150,19 @@
      "at": "2026-11-13T18:33:01Z"
     }
    ],
-   "last_failure": "merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891)"
+   "last_failure": "merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891)",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "0638caf3f8572ef82610ab5ba0d814e45a541a38",
+     "to": "c43c8331dcd74e80cc8e3cef84d5f9b1e3019d22",
+     "main": "c309142e35506675f496348394489dcee073a78f",
+     "how": "hand-in",
+     "at": "2026-11-13T20:09:02Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T358",
@@ -50146,7 +50146,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T20:03:22Z",
+ "updated_at": "2026-11-13T20:09:02Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -50244,7 +50244,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c309142e35506675f496348394489dcee073a78f",
+ "runner_sha": "0638caf3f8572ef82610ab5ba0d814e45a541a38",
  "starter": "actions",
  "smoke_runs": [
   {
