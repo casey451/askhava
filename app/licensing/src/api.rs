@@ -44,7 +44,15 @@
 //! once at sign-up into [`OwnRecord`], nothing kept (BIZ-002, LIC-008, LIC-010); [`names_agree`]
 //! is BIZ-016's name check; [`city_match_number`] and [`bound_roc_number`] give the number it is
 //! read under (LIC-011, LIC-048).
+//!
+//! The class changes (T372, D-2705): [`roc_lists`] and [`class_changes`] give each license
+//! number whose Active classes on a recorded ROC list differ from those on the last earlier list
+//! it had any on (D-3355; a missing or lapsed number is no change); [`bound_businesses`] and
+//! [`latest_check_active`] read the daily checks (BIZ-050, LIC-043, CARD-015).
 
+pub use crate::class_changes::{
+    ClassChange, RocList, bound_businesses, class_changes, latest_check_active, roc_lists,
+};
 pub use crate::class_map::{
     ClassMap, ClassMapError, JobTypeKey, Opening, ProjectLimitRefusal, RequestIntake,
     STRUCTURAL_JOB_TYPES, SignUpOutcome, request_intake,

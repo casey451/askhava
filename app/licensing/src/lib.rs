@@ -26,9 +26,13 @@
 //! T385 added the sign-up read of a business's own record, its name check and the numbers it is
 //! read under (BIZ-002, BIZ-016, LIC-008, LIC-010, LIC-011, LIC-048) in `own_record`.
 //!
+//! T372 added the class changes between recorded ROC lists that `businesses`' daily re-apply
+//! reads (BIZ-050, LIC-043, D-2705) in `class_changes`.
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
+mod class_changes;
 mod class_map;
 mod handlers;
 mod handyman;
