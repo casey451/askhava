@@ -45,7 +45,7 @@ pub use crate::capability::{
     Capability, CapabilityAnswers, CapabilitySaved, LARGEST_JOB_MAX_CENTS, LICENSE_CHANGE_KIND,
     LargestJob, OfferRow, Reapplied, TradeOffer, capabilities, checklist_offer, holder_offer,
     is_recurring, kept_ticks, license_change, license_change_words, offer_for, pre_ticked,
-    reapply_license, save_capability, stored_enabled, whole_dollars,
+    reapply_license, save_capability, save_job_types, stored_enabled, whole_dollars,
 };
 pub use crate::channel_preference::{
     ChannelError, NoticeChannel, NoticeRecipient, notice_channel, notice_recipients,
@@ -95,6 +95,10 @@ pub use crate::identity::{
 pub use crate::leaving::{
     AskedBy, LeaveReason, OTHER_MAX, PAUSE_ASK_AFTER_DAYS, ReasonAnswer, leave, pause_ask_due,
     reason_asked, record_reason,
+};
+pub use crate::license_reapply::{
+    BATCH as REAPPLY_BATCH, LIST_APPLIED, REAPPLY_KIND, RUN_HOUR, apply_lists, run_reapply,
+    schedule_reapply,
 };
 pub use crate::links::{
     BusinessNames, CITY_LICENSE_MAX, GOOGLE_HOSTS, GOOGLE_SHAPES, GuardedOpener, LINK_MAX,

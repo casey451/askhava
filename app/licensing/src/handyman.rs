@@ -1,13 +1,12 @@
 //! The handyman limits: the $1,000 construction limit judged on the top of any range, the
 //! certification box, the gas, smoke-alarm, sprinkler and permit-type block that overrides the AI,
-//! the split-job check and the handyman card line (AI-012, LIC-019 to LIC-025, LIC-036).
+//! and the handyman card line (AI-012, LIC-019 to LIC-025, LIC-036). There is no split-job check:
+//! each handyman job is judged only by its own price (LIC-023, D-2407).
 //!
-//! Pure functions, no database. `quotes` calls [`check_quote`] and [`split_job`] when a quote is
-//! submitted and [`never_handyman`] (through `rules::eligibility_for_request`) when it chooses
+//! Pure functions, no database. `quotes` calls [`check_quote`] when a quote is submitted and [`never_handyman`] (through `rules::eligibility_for_request`) when it chooses
 //! recipients. Every refusal is a [`QuoteRefusal`] variant; the words a business reads are the
 //! portal's (T148). Amounts are whole cents; nothing here holds a homeowner's detail.
 
-use std::collections::BTreeSet;
 use std::sync::LazyLock;
 
 use serde::Deserialize;
@@ -17,15 +16,13 @@ use crate::models::LicenseKind;
 /// The handyman limit in cents: a quote must be under $1,000.00 (LIC-019, D-035).
 pub const HANDYMAN_LIMIT_CENTS: u64 = 100_000;
 
-/// The split-job window's default, in days; the caller passes the setting (LIC-023, D-027).
-pub const SPLIT_JOB_WINDOW_DAYS: i64 = 30;
-
 /// The line every handyman quote card shows, word for word from LIC-024.
 pub const HANDYMAN_CARD_LINE: &str =
     "Not a licensed contractor. Only for jobs under $1,000 total with no permit.";
 
-/// Job types that are never handyman work at any price: hardwired smoke alarms and fire
-/// sprinklers (LIC-021), matched as words inside a candidate job type.
+/// Work that is never handyman work at any price: hardwired smoke alarms and fire sprinklers
+/// (LIC-021), matched as words inside the request text or a candidate job type ("fire" is
+/// required, so a lawn sprinkler passes; D-2637).
 const NEVER_AT_ANY_PRICE: [(&str, NeverHandyman); 6] = [
     ("smoke alarm", NeverHandyman::SmokeAlarm),
     ("smoke alarms", NeverHandyman::SmokeAlarm),
@@ -44,6 +41,17 @@ const PERMIT_TYPE: [&str; 6] = [
     "new circuit",
     "re-roof",
     "wall removal",
+];
+
+/// Permit-type phrases matched as words inside the request text (LIC-022, D-2637); the bare
+/// "panel" stays a candidate-only match, so a fence panel in the text passes.
+const PERMIT_PHRASES: [&str; 6] = [
+    "wall removal",
+    "remove the wall",
+    "remove a wall",
+    "panel upgrade",
+    "new circuit",
+    "re-roof",
 ];
 
 /// The compiled-in gas keyword list (AI-012, D-157).
@@ -98,9 +106,10 @@ pub struct JobRequest<'a> {
     pub candidates: &'a [String],
 }
 
-/// AI-012, LIC-021, LIC-022: whether a request is work no handyman may take, read from the
-/// request text and every candidate job type, never from the AI's handyman reading. Gas comes
-/// first; when the gas list cannot be read every request counts as gas (fail closed).
+/// AI-012, LIC-021, LIC-022, D-2637: whether a request is work no handyman may take, read from
+/// the request text and every candidate job type, never from the AI's handyman reading. Gas comes
+/// first; when the gas list cannot be read every request counts as gas (fail closed). Smoke
+/// alarms, fire sprinklers and permit phrases are read in the text as well as the candidates.
 #[must_use]
 pub fn never_handyman(request: &JobRequest<'_>) -> Option<NeverHandyman> {
     let texts: Vec<Vec<String>> = std::iter::once(request.text)
@@ -116,18 +125,21 @@ pub fn never_handyman(request: &JobRequest<'_>) -> Option<NeverHandyman> {
     {
         return Some(NeverHandyman::Gas);
     }
-    let candidates = &texts[1..];
     let at_any_price = NEVER_AT_ANY_PRICE.iter().find(|(phrase, _)| {
         let phrase = words(phrase);
-        candidates.iter().any(|c| contains(c, &phrase))
+        texts.iter().any(|text| contains(text, &phrase))
     });
     if let Some((_, reason)) = at_any_price {
         return Some(*reason);
     }
-    let permit = request.candidates.iter().any(|c| {
-        let c = words(c).join(" ");
-        PERMIT_TYPE.iter().any(|p| words(p).join(" ") == c)
-    });
+    let in_text = PERMIT_PHRASES
+        .iter()
+        .any(|p| contains(&texts[0], &words(p)));
+    let permit = in_text
+        || request.candidates.iter().any(|c| {
+            let c = words(c).join(" ");
+            PERMIT_TYPE.iter().any(|p| words(p).join(" ") == c)
+        });
     permit.then_some(NeverHandyman::PermitType)
 }
 
@@ -182,9 +194,6 @@ pub enum QuoteRefusal {
     /// $1,000.00 or more, top of any range, for construction work under the exemption: the portal
     /// explains Arizona's handyman limit (LIC-019, D-035).
     OverHandymanLimit,
-    /// Another handyman job of the same business at the same address within the window shares a
-    /// job type or together reaches $1,000 (LIC-023).
-    SplitJob,
 }
 
 /// LIC-019, LIC-020, LIC-024, LIC-025, LIC-036, D-035, D-186: a handyman quote needs the
@@ -203,43 +212,6 @@ pub fn check_quote(quote: &QuoteSubmission) -> Result<(), QuoteRefusal> {
     match quote.price.top() {
         Some(top) if limited && top >= HANDYMAN_LIMIT_CENTS => Err(QuoteRefusal::OverHandymanLimit),
         Some(_) | None => Ok(()),
-    }
-}
-
-/// One handyman job of a business at an address, for the split-job check (LIC-023).
-#[derive(Debug, Clone)]
-pub struct HandymanJob {
-    /// Its job types.
-    pub job_types: BTreeSet<String>,
-    /// Its price; a trip fee counts as nothing toward the $1,000.
-    pub price: QuotePrice,
-    /// When its quote was submitted, in seconds since 1970 (UTC).
-    pub submitted_at: i64,
-}
-
-/// LIC-023, D-027, D-081, D-154: run when `new` is submitted, over the same business's other
-/// handyman jobs at the same address (`quotes` selects them). Blocked when one lies less than
-/// `window_days` away and shares a job type, or the two tops together reach $1,000.
-///
-/// # Errors
-///
-/// [`QuoteRefusal::SplitJob`] when an earlier job blocks it.
-pub fn split_job(
-    new: &HandymanJob,
-    others: &[HandymanJob],
-    window_days: i64,
-) -> Result<(), QuoteRefusal> {
-    let window = window_days.saturating_mul(86_400);
-    let total = |job: &HandymanJob| job.price.top().unwrap_or(0);
-    let blocks = |other: &HandymanJob| {
-        let near = new.submitted_at.abs_diff(other.submitted_at) < window.unsigned_abs();
-        let shared = !new.job_types.is_disjoint(&other.job_types);
-        near && (shared || total(new).saturating_add(total(other)) >= HANDYMAN_LIMIT_CENTS)
-    };
-    if others.iter().any(blocks) {
-        Err(QuoteRefusal::SplitJob)
-    } else {
-        Ok(())
     }
 }
 
