@@ -98,6 +98,16 @@ def test_the_charge_page_carries_fee_refund_and_dispute(base: str) -> None:
     assert [(d["id"], d["charge"], d["amount"]) for d in found] == [(dispute["id"], charge["id"], 7500)]
 
 
+def test_the_charge_retrieve_is_the_listed_charge(base: str) -> None:
+    """TD-FEE-61 (FEE-029, D-3538): `GET /v1/charges/{id}` serves the listed object; 404 if none."""
+    pi = paid(base, "pick-fake-335r")
+    listed = call(base, "GET", f"charges?created[gte]=0&limit=10&{EXPAND}")["data"][0]
+    one = call(base, "GET", f"charges/{listed['id']}?expand[]=balance_transaction")
+    assert one == listed and one["payment_intent"] == pi
+    assert call(base, "GET", f"charges/{listed['id']}")["balance_transaction"] == listed["balance_transaction"]["id"]
+    assert refused(base, "GET", "charges/ch_fake404") == 404
+
+
 def test_the_pages_follow_starting_after_to_the_end(base: str) -> None:
     """TD-FEE-61 (FEE-029): newest first, `limit` per page, `has_more` until the last page."""
     intents = [paid(base, f"pick-fake-335-{n}", 2500 + n) for n in range(5)]

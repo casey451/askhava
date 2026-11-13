@@ -7,7 +7,8 @@
 //! charge becomes a [`StripeCharge`]: a pick ID that is not a UUID is no pick, and a missing
 //! PaymentIntent or balance transaction becomes an empty ID, which
 //! [`StripeCharge::is_well_formed`] refuses, so the reconcile raises its mismatch alert rather
-//! than guessing. `fetch_charge` keeps the trait's provided body.
+//! than guessing. `fetch_charge` overrides the trait's provided body (which would page the whole
+//! history per open charge) with the adapter's `GET /v1/charges/{id}` (D-3538).
 
 use askhava_adapters::api::{AdapterError, ListedCharge, StripePayments};
 use jiff::Timestamp;
@@ -60,6 +61,11 @@ impl ReconcileStripe for StripePayments {
             charges: page.charges.into_iter().map(charge_of).collect(),
             next: page.next,
         })
+    }
+
+    /// FEE-029, FEE-051, D-1872, D-3538: one retrieve call, never the whole list.
+    async fn fetch_charge(&self, id: &str) -> Result<Option<StripeCharge>, AdapterError> {
+        Ok(StripePayments::fetch_charge(self, id).await?.map(charge_of))
     }
 }
 
@@ -183,7 +189,7 @@ pub(crate) mod tests {
             .list_charges_page(since, Some(&after), 1)
             .await
             .expect("two");
-        let charge = &two.charges[0];
+        let charge = two.charges[0].clone();
         assert_eq!(two.next, None);
         assert_eq!(
             (
@@ -201,6 +207,10 @@ pub(crate) mod tests {
         assert_eq!(all, [one.charges, two.charges].concat());
         let later = Timestamp::now() + jiff::SignedDuration::from_hours(1);
         assert!(stripe.list_charges(later).await.expect("none").is_empty());
+        let fetched = ReconcileStripe::fetch_charge(&stripe, &charge.id).await;
+        assert_eq!(fetched.expect("read"), Some(charge));
+        let missing = ReconcileStripe::fetch_charge(&stripe, "ch_fake404").await;
+        assert_eq!(missing.expect("no such charge"), None);
     }
 
     /// FEE-030: a listed charge missing its balance transaction is malformed, never guessed.

@@ -360,6 +360,16 @@ class FakeStripe:
             charge["balance_transaction"] = dict(self.objects[charge["balance_transaction"]])
         return 200, {"object": "list", "url": "/v1/charges", "data": page, "has_more": len(charges) > limit}
 
+    def fetch_charge(self, charge_id: str, expand: bool) -> Reply:
+        """The stored charge object; `expand` swaps its balance transaction ID for the object."""
+        charge = self.objects.get(charge_id)
+        if charge is None or charge.get("object") != "charge":
+            return error("invalid_request_error", "resource_missing", "No such charge", 404, "id")
+        found = dict(charge)
+        if expand:
+            found["balance_transaction"] = dict(self.objects[found["balance_transaction"]])
+        return 200, found
+
     def list_disputes(self, charge: str | None) -> Reply:
         data = [dict(o) for o in self.objects.values() if o.get("object") == "dispute" and charge in (None, o["charge"])]
         return 200, {"object": "list", "url": "/v1/disputes", "data": data[::-1][:LIST_MAX], "has_more": False}

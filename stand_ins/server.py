@@ -338,6 +338,11 @@ def stripe_charges(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     return (*s.stripe.list_charges(int(since), int(limit), req.query.get("starting_after"), expand), {})
 
 
+def stripe_charge(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """One stored charge, with `expand[]=balance_transaction` (D-3538)."""
+    return (*s.stripe.fetch_charge(m.group("id"), req.query.get("expand[]") == "balance_transaction"), {})
+
+
 def stripe_disputes(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     return (*s.stripe.list_disputes(req.query.get("charge")), {})
 
@@ -394,6 +399,7 @@ ROUTES: list[tuple[str, re.Pattern[str], Handler]] = [
         ("GET", r"/stripe/v1/(payment_intents|setup_intents|customers|refunds)/(?P<id>\w+)", stripe_fetch),
         ("GET", r"/stripe/v1/events", stripe_events),
         ("GET", r"/stripe/v1/charges", stripe_charges),
+        ("GET", r"/stripe/v1/charges/(?P<id>(ch|py)_\w+)", stripe_charge),
         ("GET", r"/stripe/v1/disputes", stripe_disputes),
         ("POST", r"/stripe/v1/disputes/(?P<id>dp_\w+)", stripe_dispute_update),
         ("POST", r"/resend/emails", resend_send),
