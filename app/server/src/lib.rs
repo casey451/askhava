@@ -635,6 +635,7 @@ where
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
     register_unreachable(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
+    register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {
         register_inbound_retry(
             &mut registry,
@@ -857,6 +858,30 @@ async fn run_safety_call(
         .await
         .map(|_| ())
         .map_err(|_| SAFETY_FAILED)
+}
+
+/// T318 (TXT-027, QH-004, D-1687): with both vault keys, `calls.whos_calling`
+/// (`calls::api::run_whos_calling`) with the `ID_SECRET` as outbox key and the vault for her send
+/// window; without them (dev and CI) nothing is registered and the tasks wait, as `vault_from`
+/// allows.
+fn register_whos_calling(
+    registry: &mut Registry,
+    settings: &Settings,
+    (id_secret, clock): (&SecretString, &Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let Some(vault) = vault_from(settings, pairs)? else {
+        return Ok(());
+    };
+    let keys = Arc::new((vault, id_secret.clone()));
+    let clock = Arc::clone(clock);
+    registry.register(askhava_calls::api::WHOS_CALLING_KIND, move |pool, task| {
+        let (keys, now) = (Arc::clone(&keys), clock.now());
+        async move {
+            askhava_calls::api::run_whos_calling(pool, (&keys.0, &keys.1), task, now).await
+        }
+    });
+    Ok(())
 }
 
 /// T330 (CALL-019, CALL-022, D-2288, D-3134): registers `calls.safety_call` inside the Twilio
