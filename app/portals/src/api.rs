@@ -155,10 +155,14 @@ pub use crate::quote_page::{
 pub use crate::receipts_page::{Basis, WHY_CHARGED_ROUTE, WhyCharged, why_charged_page};
 pub use crate::security::{
     ButtonForm, CONTENT_SECURITY_POLICY, CsrfField, CsrfForm, EVENTS_PER_HOUR_ALERT,
-    PERMISSIONS_POLICY, STRICT_TRANSPORT_SECURITY, SecurityEvent, SecurityEventKind, WebSecurity,
-    is_cross_site, no_store, record_security_event, refuse_cross_site, security_headers,
+    PERMISSIONS_POLICY, SECURITY_EVENT_CAP_FLOOR, STRICT_TRANSPORT_SECURITY, SecurityEvent,
+    SecurityEventKind, WebSecurity, admit_security_event, configure_security_events, is_cross_site,
+    no_store, record_security_event, refuse_cross_site, security_event_cap, security_event_client,
+    security_headers,
 };
 pub use crate::session::{
-    PRE_SESSION_COOKIE, PortalsError, Realm, SESSION_COOKIE, Session, csrf_matches, csrf_token,
-    current_session, ensure_pre_session, start_session,
+    PRE_SESSION_COOKIE, PortalsError, Realm, SESSION_COOKIE, SWEEP_BATCH as SESSION_SWEEP_BATCH,
+    SWEEP_KIND as SESSION_SWEEP_KIND, Session, csrf_matches, csrf_token, current_session,
+    ensure_pre_session, run_session_sweep_at, schedule_session_sweep, start_session,
+    sweep_batch as session_sweep_batch,
 };
