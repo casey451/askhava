@@ -2133,13 +2133,17 @@ def _free_marks(record: dict[str, Any], res: WorkerResult, before: dict[str, Any
 def _record_usage(state: State, tid: str, model: str, res: WorkerResult, now: datetime, cfg: Config) -> State:
     """Add the attempt's transcript token totals to usage.by_task and the pacing windows (BUILD_BRIEF.md:510),
     and each role's tokens and model calls as `worker_tokens`, `worker_turns`, `reviewer_tokens` and
-    `reviewer_turns` (D-3305; the pacing windows take only the token fields)."""
+    `reviewer_turns` (D-3305; the pacing windows take only the token fields). An entry with no token field
+    yet (none, or only the claim's `estimated_*`) is marked `usage_counting: "message_id"`: its figures count
+    each reply once (verify.usage_in_transcript), and the pacer scales only unmarked ones (D-3475)."""
     if not res.usage:
         return state
     if cfg.on_usage is not None:
         state = cfg.on_usage(state, res.usage, now)
     usage = copy.deepcopy(state.get("usage") or {})
     mine = usage.setdefault("by_task", {}).setdefault(tid, {})
+    if not any(key in mine for key in verify.USAGE_FIELDS):
+        mine["usage_counting"] = "message_id"
     for key, value in res.usage.items():
         mine[key] = int(mine.get(key, 0)) + int(value)
     for role, reading in res.usage_split.items():
