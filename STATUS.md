@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T13:35:24Z by runner 480741987da0 (actions).
+Updated 2026-11-13T13:37:22Z by runner 480741987da0 (actions).
 
 **Building: T386 in progress since 13:24Z; 281 of 420 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T13:35:24Z by runner 480741987da0 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T386 claimed 13:24Z, lease until 16:24Z; lane 3: T367 claimed 13:22Z, lease until 16:22Z; lane 4: T266 claimed 13:35Z, lease until 16:35Z
 - **Week:** 18% used, 150.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:31Z, 3 min before this update
+- **Last run:** 13:37Z, 0 min before this update
 - **Keeper:** last ran 13:31Z, next wake 16:24Z
 
 ## Needs attention
@@ -73,7 +73,6 @@ Updated 2026-11-13T13:35:24Z by runner 480741987da0 (actions).
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 1 | 38 min | 14:42Z |  |
 | T370 | intake (harness): the night count the homeowner hears counts | check_failed | 1 | 22 min | 14:29Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z |  |
-| T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z |  |
 
 ### Plan and harness merges on main
 - 12:32Z Plan: pre-flight 14, split three oversized build tasks; T111/T113 brand note (D-3445) (#668)
