@@ -7,8 +7,8 @@
 //! is audited and counted under `vault_read.server.<purpose>`, refused inside a transaction, and a
 //! phone read under any purpose but `SignInCode` refused with one High alert; that `forget_unused`
 //! keeps what is in use or recent and is safe to repeat; and that a key rotation leaves every value
-//! readable and findable, a duplicate address skipped and reported. The module logs nothing, so no log line can hold a value. All data and
-//! keys are fake.
+//! readable and findable, a duplicate address skipped, its read still audited and counted, and
+//! reported. The module logs nothing, so no log line can hold a value. All data and keys are fake.
 
 use askhava_integration::set_app_role;
 use askhava_privacy::api::{
@@ -217,9 +217,23 @@ async fn index_under_v1(conn: &mut PgConnection, id: Uuid) {
     .expect("index");
 }
 
+/// Mailbox `id`'s rotation audit rows and the rotation read count of every row (PRIV-003, SEC-047).
+async fn rotation_reads(conn: &mut PgConnection, id: Uuid) -> (i64, i64) {
+    let rows = "SELECT count(*) FROM ops.audit_log \
+                WHERE action = 'vault_read.privacy.rotation' AND subject_id = $1::uuid";
+    let counted = "SELECT coalesce(sum(reads), 0)::int8 FROM privacy.read_count \
+                   WHERE action = 'vault_read.privacy.rotation' AND length($1) > 0";
+    let id = id.to_string();
+    (
+        scalar_i64(conn, rows, &id).await,
+        scalar_i64(conn, counted, &id).await,
+    )
+}
+
 /// TD-PRIV-28: when a mailbox indexed under the old key shares its address with one indexed under
 /// the active key (two servers mid-deploy), the rotation skips it, still findable, moves every
-/// other row, then reports `DuplicateAddress` until one of the pair is removed (D-3516, D-3517).
+/// other row, then reports `DuplicateAddress` until one of the pair is removed; each skipped read
+/// keeps its audit row and count (D-3516, D-3517, D-3518).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_priv_28_a_rotation_refuses_a_duplicate_address(pool: PgPool) {
     let mut conn = app_conn(&pool).await;
@@ -245,9 +259,15 @@ async fn td_priv_28_a_rotation_refuses_a_duplicate_address(pool: PgPool) {
         Ok(both.clone())
     );
     assert_eq!(rotate_business_batch(&mut conn, &vault, 10).await, Ok(2));
+    assert_eq!(rotation_reads(&mut conn, old).await, (1, 3), "skip audited");
     assert_eq!(
         rotate_business_batch(&mut conn, &vault, 10).await,
         Err(BusinessContactError::DuplicateAddress)
+    );
+    assert_eq!(
+        rotation_reads(&mut conn, old).await,
+        (2, 4),
+        "each skip audited"
     );
     assert_eq!(mailboxes_of(&mut conn, &vault, ADDRESS).await, Ok(both));
     let read = read_business_mailbox(&mut conn, &vault, BusinessPurpose::PhoneApproval, other);

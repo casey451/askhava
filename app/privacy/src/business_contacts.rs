@@ -510,7 +510,9 @@ async fn rotate_mailboxes(
 }
 
 /// Opens, audits and re-seals row `id` of `table` under the active key in one transaction, a
-/// mailbox's digests rebuilt under the active index key (PRIV-024).
+/// mailbox's digests rebuilt under the active index key in a savepoint: on `DuplicateAddress`
+/// only the move rolls back, and the read's audit row and count still commit (PRIV-003, PRIV-024,
+/// SEC-047, D-3518).
 async fn reseal(
     db: &mut PgConnection,
     vault: &Vault,
@@ -532,13 +534,22 @@ async fn reseal(
         .await
         .map_err(db_fail)?;
     } else {
-        reindex(&mut tx, vault, id, (&resealed, plain.expose_secret())).await?;
+        let mut inner = tx.begin().await.map_err(db_fail)?;
+        if let Err(error) = reindex(&mut inner, vault, id, (&resealed, plain.expose_secret())).await
+        {
+            inner.rollback().await.map_err(db_fail)?;
+            if error == BusinessContactError::DuplicateAddress {
+                tx.commit().await.map_err(db_fail)?;
+            }
+            return Err(error);
+        }
+        inner.commit().await.map_err(db_fail)?;
     }
     tx.commit().await.map_err(db_fail)
 }
 
 /// Writes mailbox `id`'s re-sealed address and replaces its digests with the active one; fails
-/// with `DuplicateAddress` (rolling the move back) when another mailbox already holds that
+/// with `DuplicateAddress` (its caller rolls the move back) when another mailbox already holds that
 /// digest, so a duplicate address shows up instead of leaving this mailbox unfindable (PRIV-024).
 async fn reindex(
     db: &mut PgConnection,
@@ -594,6 +605,9 @@ mod tests {
         assert_eq!(E::from(VaultError::Sealed), E::Sealed);
         assert_eq!(E::from(VaultError::Audit), E::Audit);
         assert_eq!(E::from(VaultError::NotFound), E::Database);
+        let duplicate = E::DuplicateAddress.to_string();
+        assert!(duplicate.contains("shares its sign-in address"));
+        assert!(!duplicate.contains('@'), "the message names no address");
     }
 
     #[test]
