@@ -225,6 +225,45 @@ async fn td_con_33_start_into_an_open_request_gets_the_consent_text_again(pool: 
     assert_eq!(count(&pool, record, start).await, 1, "recorded as sent");
 }
 
+/// TD-CON-33 (CON-001, CON-015, D-3480): a START delivery retried after its first try lifted the
+/// listing (the number is no longer listed when the retry runs) still restarts the open request
+/// with the consent text and is no intake answer.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_33_a_retried_start_still_gets_the_consent_text(pool: PgPool) {
+    text(&pool, 4, LEAK, None).await;
+    text(&pool, 5, "STOP", Some("STOP")).await;
+    sqlx::query("DELETE FROM messaging.suppression")
+        .execute(&pool)
+        .await
+        .expect("lift committed by the first try");
+    let start = text(&pool, 6, "START", Some("START")).await;
+    let consent = "SELECT count(*) FROM messaging.outbox \
+                   WHERE template_id = 'consent' AND $1 = ANY(subject_ids)";
+    assert_eq!(count(&pool, consent, start).await, 1, "one consent text");
+    let answers = "SELECT count(*) FROM intake.intake_answer WHERE inbox_id = $1";
+    assert_eq!(count(&pool, answers, start).await, 0, "START is no answer");
+}
+
+/// TD-CON-33 (CON-030, D-3479): a provider-word STOP while the homeowner line is suspended, email
+/// on file: one confirmation email, and no text.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_33_a_provider_stop_on_a_suspended_line_is_confirmed_by_email(pool: PgPool) {
+    let contact = her(&pool, true).await;
+    let mut db = pool.acquire().await.expect("conn");
+    let owner = (Uuid::from_u128(0x357), at());
+    record_suspension(&mut db, Audience::Homeowner, at(), owner)
+        .await
+        .expect("suspended");
+    drop(db);
+    text(&pool, 12, "STOP", Some("STOP")).await;
+    assert_eq!(count_kind(&pool, OPTOUT_FOLLOWUP_KIND).await, 1);
+    run_followups(&pool).await;
+    let confirmation = emails(&pool, OPTOUT_CONFIRMATION_EMAIL, contact).await;
+    assert_eq!(confirmation, 1, "one confirmation email");
+    let texts = "SELECT count(*) FROM messaging.outbox WHERE recipient_id = $1";
+    assert_eq!(count(&pool, texts, contact).await, 0, "no text");
+}
+
 /// TD-CON-33 (CON-030): a phrase opt-out while the homeowner line is suspended, email on file:
 /// one follow-up task, then one confirmation email, and no text at all.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -253,14 +292,43 @@ async fn td_con_33_cancel_with_a_waiting_pick_pauses_the_job(pool: PgPool) {
     let contact = her(&pool, false).await;
     text(&pool, 21, LEAK, None).await;
     let job = quoted_job(&pool, contact).await;
+    let mut waiting = None;
     for minute in [10, 11] {
-        pick(&pool, contact, minute).await;
+        waiting = pick(&pool, contact, minute).await.or(waiting);
     }
+    let waiting = waiting.expect("a pick waits for Confirm");
+    let status = "SELECT count(*) FROM picks.pick WHERE id = $1 AND status = 'awaiting_confirm'";
+    assert_eq!(
+        count(&pool, status, waiting).await,
+        1,
+        "waiting before CANCEL"
+    );
     let later = at() + jiff::SignedDuration::from_mins(12);
     text_at(&pool, (22, "CANCEL", Some("STOP")), later).await;
     let pauses = "SELECT count(*) FROM intake.homeowner_pause WHERE job_id = $1";
     assert_eq!(count(&pool, pauses, job).await, 1, "paused");
     assert_eq!(count_kind(&pool, OPTED_OUT_LIVE_KIND).await, 1);
+}
+
+/// TD-CON-33 (CON-028, D-3480): a repeat STOP from a listed number with a live job queues no
+/// second `intake.opted_out_live_job`, so no second "still open" email.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_33_a_repeat_stop_queues_no_second_still_open_notice(pool: PgPool) {
+    let contact = her(&pool, true).await;
+    text(&pool, 31, LEAK, None).await;
+    quoted_job(&pool, contact).await;
+    text(&pool, 32, "STOP", Some("STOP")).await;
+    assert_eq!(
+        count_kind(&pool, OPTED_OUT_LIVE_KIND).await,
+        1,
+        "first STOP"
+    );
+    text(&pool, 33, "STOP", Some("STOP")).await;
+    assert_eq!(
+        count_kind(&pool, OPTED_OUT_LIVE_KIND).await,
+        1,
+        "repeat adds none"
+    );
 }
 
 /// One plumbing job on her open request in Quotes ready, quoted by one business; the job.
@@ -321,8 +389,8 @@ async fn quote(db: &mut sqlx::PgConnection, job: Uuid) {
     .expect("quote");
 }
 
-/// Her "1 YES" text pick at `minute` past [`at`].
-async fn pick(pool: &PgPool, contact: Uuid, minute: i64) {
+/// Her "1 YES" text pick at `minute` past [`at`]; the pick it left waiting for Confirm, if any.
+async fn pick(pool: &PgPool, contact: Uuid, minute: i64) -> Option<Uuid> {
     let msg = TextIn {
         inbox_id: Uuid::from_u128(0x357_0100 + u128::from(minute.unsigned_abs())),
         contact,
@@ -339,7 +407,8 @@ async fn pick(pool: &PgPool, contact: Uuid, minute: i64) {
     let secret = SecretString::from(ID_SECRET.to_owned());
     answer_text_pick(&mut db, &secret, &msg, (IntakeSettings::default(), &TERMS))
         .await
-        .expect("text pick");
+        .expect("text pick")
+        .and_then(|done| done.pick)
 }
 
 /// TD-CON-33 (CON-016, CON-017): a listed homeowner who writes again is emailed once with an

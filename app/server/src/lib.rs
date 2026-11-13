@@ -587,8 +587,9 @@ fn register_daily_lists(
 /// masked-line retry (CALL-001), the safety voice call ([`register_safety_call`], T330, D-3134)
 /// and, with the vault keys too, `messaging`'s outbox sender
 /// (`messaging.send_due`, [`outbox_sender`], T356, D-2628); with both vault keys, `intake`'s card
-/// sender ([`register_card_sender`], T251); and `intake`'s opt-out event
-/// ([`register_opted_out_live`], T330). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
+/// sender ([`register_card_sender`], T251); `intake`'s opt-out event
+/// ([`register_opted_out_live`], T330); and `messaging`'s opt-out follow-up emails
+/// ([`register_optout_followup`], T357). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
 /// checks every queued kind against it (TD-OPS-36).
 ///
 /// # Errors
@@ -695,21 +696,11 @@ fn register_opted_out_live(
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     use askhava_intake::api::{OPTED_OUT_LIVE_KIND, StillOpenSender, run_opted_out_live};
-    use askhava_messaging::api::{MailboxKind, PostalAddress};
-    let vault = vault_from(settings, pairs)?;
-    let sender = match (settings.postal_address(), vault) {
-        (Ok(postal), Some(vault)) => {
-            let kind = match PostalAddress::new(postal, MailboxKind::PoBox) {
-                Ok(_) => MailboxKind::PoBox,
-                Err(_) => MailboxKind::PrivateMailbox,
-            };
-            let sender =
-                StillOpenSender::new(id_secret.clone(), (postal, kind), vault).map_err(|_| {
-                    io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value")
-                })?;
-            Some(Arc::new(sender))
-        }
-        _ => None,
+    let sender = match email_parts(settings, pairs)? {
+        Some((postal, vault)) => Some(Arc::new(
+            StillOpenSender::new(id_secret.clone(), postal, vault).map_err(|_| bad_postal())?,
+        )),
+        None => None,
     };
     registry.register(OPTED_OUT_LIVE_KIND, move |pool, task| {
         run_opted_out_live(pool, sender.clone(), task)
@@ -727,28 +718,43 @@ fn register_optout_followup(
     id_secret: &SecretString,
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
-    use askhava_messaging::api::{
-        MailboxKind, OPTOUT_FOLLOWUP_KIND, OptOutEmailSender, PostalAddress, run_optout_followup,
-    };
-    let vault = vault_from(settings, pairs)?;
-    let sender = match (settings.postal_address(), vault) {
-        (Ok(postal), Some(vault)) => {
-            let kind = match PostalAddress::new(postal, MailboxKind::PoBox) {
-                Ok(_) => MailboxKind::PoBox,
-                Err(_) => MailboxKind::PrivateMailbox,
-            };
-            let sender =
-                OptOutEmailSender::new(id_secret.clone(), (postal, kind), vault).map_err(|_| {
-                    io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value")
-                })?;
-            Some(Arc::new(sender))
-        }
-        _ => None,
+    use askhava_messaging::api::{OPTOUT_FOLLOWUP_KIND, OptOutEmailSender, run_optout_followup};
+    let sender = match email_parts(settings, pairs)? {
+        Some((postal, vault)) => Some(Arc::new(
+            OptOutEmailSender::new(id_secret.clone(), postal, vault).map_err(|_| bad_postal())?,
+        )),
+        None => None,
     };
     registry.register(OPTOUT_FOLLOWUP_KIND, move |pool, task| {
         run_optout_followup(pool, sender.clone(), task)
     });
     Ok(())
+}
+
+/// The footer postal line with its mailbox kind (a P.O. box when it reads as one, else a private
+/// mailbox) and the vault, for the opt-out emails' senders (CON-028, CON-030, D-3463); `None`
+/// unless `ASKHAVA_POSTAL_ADDRESS` and both vault keys are set.
+fn email_parts(
+    settings: &Settings,
+    pairs: Vec<(String, String)>,
+) -> io::Result<Option<((&str, askhava_messaging::api::MailboxKind), Vault)>> {
+    use askhava_messaging::api::{MailboxKind, PostalAddress};
+    let vault = vault_from(settings, pairs)?;
+    Ok(match (settings.postal_address(), vault) {
+        (Ok(postal), Some(vault)) => {
+            let kind = match PostalAddress::new(postal, MailboxKind::PoBox) {
+                Ok(_) => MailboxKind::PoBox,
+                Err(_) => MailboxKind::PrivateMailbox,
+            };
+            Some(((postal, kind), vault))
+        }
+        _ => None,
+    })
+}
+
+/// The start error for a postal line a sender refuses, naming the key, never its value.
+fn bad_postal() -> io::Error {
+    io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value")
 }
 
 /// The safety voice call switch, read on every `calls.safety_call` run, so the registration holds

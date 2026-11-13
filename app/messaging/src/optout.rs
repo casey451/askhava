@@ -165,7 +165,7 @@ pub async fn on_inbound_text(
             )
             .await?;
             let spanish = detected.is_some_and(rules::Detected::spanish);
-            let answered = by_provider || listed || !added;
+            let answered = (by_provider, listed || !added);
             let (confirmation, email) =
                 confirm(&mut tx, secret, msg, (event, spanish, answered)).await?;
             Outcome::OptedOut {
@@ -196,21 +196,26 @@ pub async fn on_inbound_text(
     Ok(outcome)
 }
 
-/// The app's part of the one confirmation (CON-009, CON-030): none when the provider answered or
-/// the number was listed already or by a concurrent opt-out (`answered`), none while texting is
-/// paused (email instead: `(None, true)`), else the CON-009 text queued once under opt-out
-/// `event`, in Spanish for a Spanish phrase: `(Some(row), false)`.
+/// The app's part of the one confirmation (CON-009, CON-030): none when the number was listed
+/// already or by a concurrent opt-out (`answered.1`, a repeat); while texting is paused or the
+/// line is closed, the email for every new opt-out, a provider word included, since CON-030 makes
+/// no word-type exception (`(None, true)`, D-3479); else none when the provider answered
+/// (`answered.0`), or the CON-009 text queued once under opt-out `event`, in Spanish for a
+/// Spanish phrase: `(Some(row), false)`.
 async fn confirm(
     db: &mut PgConnection,
     secret: &SecretString,
     msg: &InboundText<'_>,
-    (event, spanish, answered): (Uuid, bool, bool),
+    (event, spanish, (by_provider, repeat)): (Uuid, bool, (bool, bool)),
 ) -> Result<(Option<Uuid>, bool), OutboxError> {
-    if answered {
+    if repeat {
         return Ok((None, false));
     }
     if texting_paused(db).await? || line_closed(db, msg.relation).await? {
         return Ok((None, true));
+    }
+    if by_provider {
+        return Ok((None, false));
     }
     let language = if spanish { Language::Es } else { Language::En };
     let body = Registry::embedded()
@@ -378,6 +383,35 @@ pub async fn send_checked(
     models::block(&mut tx, id).await?;
     tx.commit().await.map_err(|_| OutboxError::Database)?;
     Err(OutboxError::Blocked)
+}
+
+/// CON-028, D-3480: whether inbox row `inbox` is the text whose opt-out put `phone` on the list
+/// it is on now, so a repeat STOP from a listed number (`Outcome::OptedOut` with nothing added)
+/// is told apart from the opt-out that listed it, and its caller sends no second "still open"
+/// email. A resend of that same text still answers `true`.
+///
+/// # Errors
+///
+/// [`OutboxError::BadPhone`] or [`OutboxError::Database`].
+pub async fn listed_by(
+    db: &mut PgConnection,
+    vault: &Vault,
+    phone: &str,
+    inbox: Uuid,
+) -> Result<bool, OutboxError> {
+    let digests = digests(vault, phone)?;
+    let Some(listing) = models::listing(db, &digests).await? else {
+        return Ok(false);
+    };
+    sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM messaging.optout_event WHERE id = $1 AND inbox_id = $2) \
+         AS \"listed!\"",
+        listing.event,
+        inbox
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| OutboxError::Database)
 }
 
 /// The digests of `phone` under the homeowner-phone index key, one per key version, active first,

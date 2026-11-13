@@ -67,8 +67,9 @@ use askhava_messaging::api::{
     APP_OPT_OUT_WORDS, Detected, EmergencyFacts, FollowUp, HelpSettings, InboundText, InboxError,
     Language, ModeStateError, NewText, OutboxError, Outcome, PROVIDER_OPT_OUT_WORDS,
     ProviderKeyword, RESUBSCRIBE_WORDS, Relation, SendingNumber, detect_opt_out, emergency_plan,
-    enqueue, keyword, load_lines, on_inbound_text, queue_optout_followup, queue_paused_safety,
-    raise_emergency, receive_inbound, receive_status, render, reply_to_help, sender_business,
+    enqueue, keyword, listed_by, load_lines, on_inbound_text, queue_optout_followup,
+    queue_paused_safety, raise_emergency, receive_inbound, receive_status, render, reply_to_help,
+    sender_business,
 };
 use askhava_ops::api::{
     Actor, AuditEntry, BannerBy, Change, NewAlert, OpsError, Severity, Switch, audit, is_paused,
@@ -639,6 +640,9 @@ async fn intake(
 }
 
 /// The read of her open request, the count and `receive_reply`, inside [`intake`]'s savepoint.
+/// A provider START (`OptOutType=START`) with an open request restarts it with the consent text
+/// and ends (CON-001, CON-015): decided from the keyword, not only from `resubscribed`, so a
+/// retry of a START whose lift already committed is still never heard as an answer (D-3480).
 async fn intake_steps(
     h: &Ctx<'_>,
     db: &mut PgConnection,
@@ -658,7 +662,7 @@ async fn intake_steps(
         inbound,
         received_at: now,
     };
-    if resubscribed {
+    if resubscribed || msg.provider == ProviderKeyword::Start {
         let restarted = restart_after_start(db, h.id_secret, &reply, h.intake).await;
         if restarted.map_err(intake_halt)?.is_some() {
             return Err(Halt::Ends("restarted"));
@@ -734,7 +738,7 @@ async fn screen(
                     .await
                     .map_err(|e| settled(consent_halt(e)))?;
             } else {
-                homeowner_opted_out(db, msg, email, now)
+                homeowner_opted_out(db, (h.vault, msg), email, now)
                     .await
                     .map_err(settled)?;
             }
@@ -769,10 +773,12 @@ async fn screen(
 /// transaction: with `email` (texting off, suspended or paused, so no text confirmed it) one
 /// confirmation follow-up task, in Spanish for a Spanish opt-out (CON-009); then
 /// `intake::api::on_opt_out`, which pauses her live jobs on a sole CANCEL (withdrawing a waiting
-/// pick) and queues `intake.opted_out_live_job` for T330's handler.
+/// pick) and queues `intake.opted_out_live_job` for T330's handler, only when this text is the
+/// one that listed her (`messaging::api::listed_by`), so a repeat STOP queues no second "still
+/// open" email (CON-028, D-3480).
 async fn homeowner_opted_out(
     db: &mut PgConnection,
-    msg: &InboundText<'_>,
+    (vault, msg): (&Vault, &InboundText<'_>),
     email: bool,
     now: Timestamp,
 ) -> Step<()> {
@@ -783,6 +789,12 @@ async fn homeowner_opted_out(
         queue_optout_followup(db, her, FollowUp::Confirmation, now)
             .await
             .map_err(outbox_halt)?;
+    }
+    if !listed_by(db, vault, msg.phone, msg.inbox_id)
+        .await
+        .map_err(outbox_halt)?
+    {
+        return Ok(());
     }
     let inbound = Inbound {
         words: msg.text,
