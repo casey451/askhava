@@ -26,6 +26,38 @@ const FIXTURE_STREETS: &[&str] = &[
     "5th",
     "elm",
     "palm",
+    "oak",
+    "maple",
+    "flame tree",
+    "burnt store",
+    "smoky hill",
+    "tree",
+    "store",
+    "hill",
+    "pit",
+];
+
+/// Hazard words right before a street name with no house number, each with the entry it must
+/// still match (D-3438).
+const HAZARD_BEFORE_STREET: &[(&str, Hazard)] = &[
+    ("gas meter whistling elm st", Hazard::Gas),
+    ("propane tank stinks maple dr", Hazard::Gas),
+    ("co alarm ringing nonstop, oak st", Hazard::CoAlarm),
+    ("co alarm sounding upstairs oak st", Hazard::CoAlarm),
+    ("smoke alarm loud elm st", Hazard::CoAlarm),
+    ("el enchufe echando chispas 5th st", Hazard::Electrical),
+    ("el enchufe se esta quemando elm st", Hazard::Electrical),
+    ("la casa en llamas oak st", Hazard::SmokeFire),
+    ("cable caido elm st", Hazard::PowerLine),
+];
+
+/// Number-led addresses whose street name is made of hazard words, in messages naming no hazard
+/// (D-3438).
+const HAZARD_WORD_ADDRESSES: &[&str] = &[
+    "my outlet stopped working, i'm at 100 flame tree dr",
+    "outlet dead at 12 burnt store rd",
+    "cord frayed 9 smoky hill rd",
+    "fire pit lane",
 ];
 
 /// The lower-case, all-capitals, word-capitalized and mixed-case forms of a message.
@@ -91,6 +123,28 @@ fn td_int_40_lower_case_hazard_beside_an_address_matches() {
         check("leaking faucet on burst test ln", false),
         Check::Clear
     );
+}
+
+/// TD-INT-40 (D-3438): a hazard word right before a street name keeps the hazard in every case
+/// form.
+#[test]
+fn td_int_40_hazard_word_before_a_street_matches_in_any_case() {
+    for (lower, hazard) in HAZARD_BEFORE_STREET {
+        for form in case_forms(lower) {
+            assert_eq!(check(&form, false), Check::Match(*hazard), "{form}");
+        }
+    }
+}
+
+/// TD-INT-40 (D-165, D-3438): a number-led address made of hazard words, and a not-a-hazard
+/// phrase before a suffix, are no hazard in any case form.
+#[test]
+fn td_int_40_hazard_word_addresses_are_not_hazards_in_any_case() {
+    for message in HAZARD_WORD_ADDRESSES {
+        for form in case_forms(message) {
+            assert_eq!(check(&form, false), Check::Clear, "{form}");
+        }
+    }
 }
 
 /// TD-INT-40 (D-2202): no street name of any market is written in the matcher's word lists.
