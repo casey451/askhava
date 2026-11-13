@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T11:01:05Z by runner 07cc7ea488ef (actions).
+Updated 2026-11-13T11:05:07Z by runner 07cc7ea488ef (actions).
 
 **Building: T428 in progress since 10:27Z; 278 of 417 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T11:01:05Z by runner 07cc7ea488ef (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T428 claimed 10:27Z, lease until 13:27Z
 - **Week:** 16% used, 164.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:00Z, 0 min before this update
+- **Last run:** 11:05Z, 0 min before this update
 - **Keeper:** last ran 11:01Z, next wake 13:30Z
 
 ## Needs attention
@@ -78,7 +78,6 @@ Updated 2026-11-13T11:01:05Z by runner 07cc7ea488ef (actions).
 | T345 | harness: every external GitHub Actions `uses:` in every work | done | 3 | 27 min | 11:16Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
 | T377 | adapters and stand-in (harness): every text asks Twilio for  | done | 1 | 28 min | 11:15Z |  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 1 | 8 min | 11:14Z | PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to l |
-| T268 | portals, businesses and messaging: the sign-up consent box,  | done | 1 | 24 min | 11:05Z |  |
 
 ### Plan and harness merges on main
 - 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
