@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T01:21:08Z by runner 79c768ce7ac1 (actions).
+Updated 2026-11-13T01:21:16Z by runner 79c768ce7ac1 (actions).
 
 **Building: T215 in progress since 23:45Z; 263 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 263 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
+- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
 - **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:21Z, 0 min before this update
 - **Keeper:** last ran 01:20Z, next wake 02:47Z
@@ -18,6 +18,7 @@ Updated 2026-11-13T01:21:08Z by runner 79c768ce7ac1 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T422 | Brand rename prep: integration tests (accepted-quote email t | MERGE_PENDING | 1 | 44 min | 01:20Z |  |
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | MERGE_PENDING | 1 | 26 min | 01:18Z |  |
 | T424 | Brand rename prep: integration tests (open-cards digest to s | MERGE_PENDING | 1 | 32 min | 01:15Z |  |
 | T372 | businesses and licensing: each recorded ROC list re-applies  | MERGE_PENDING | 1 | 81 min | 01:07Z |  |
@@ -169,9 +170,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T215 (lease until 2026-11-13T02:45:19Z)
-- lane 4: T422 (lease until 2026-11-13T03:36:38Z)
 - lane 6: T249 (lease until 2026-11-13T03:01:54Z)
 - lane 7: T423 (lease until 2026-11-13T03:40:54Z)
 
 ## Last usage reading
-- {"task": "T421", "at": "2026-11-13T01:18:52Z", "cache_creation_input_tokens": 382305, "input_tokens": 229, "output_tokens": 57967, "cache_read_input_tokens": 9977536}
+- {"task": "T422", "at": "2026-11-13T01:20:56Z", "cache_creation_input_tokens": 414068, "cache_read_input_tokens": 14347684, "input_tokens": 319, "output_tokens": 87554}
