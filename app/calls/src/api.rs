@@ -16,12 +16,14 @@
 //! the stored per-day PIN tries and the inbound voice turn ([`voice_turn`], [`voice_confirm`],
 //! [`readback_twiml`], [`hangup_twiml`]) (CALL-003 to CALL-005, CALL-025, SEC-017, D-1755).
 //! T282: [`call_start_confirmed`] and each logged call's `started_at` (FEE-022, D-1836).
+//! T271: [`DIALED_STATUS_PATH`], [`voice_turn_reporting`], [`voice_confirm_reporting`],
+//! [`dialed_line`] and [`line_parties`], the dialed leg's status callbacks (CALL-008, D-3118).
 //! T390: [`link_after_dial`], the LINK notice and one pending link after a blocked call connected
 //! a line, and [`LINK_REQUEST_LIFE`] (CALL-011, CALL-003, D-3079).
 
 pub use crate::handlers::{
-    FinishedCall, LoggedCall, call_log, call_start_confirmed, dial_twiml, finished_call,
-    log_finished_call,
+    DIALED_STATUS_PATH, FinishedCall, LoggedCall, call_log, call_start_confirmed, dial_twiml,
+    finished_call, line_parties, log_finished_call,
 };
 pub use crate::lifecycle::{
     BUSINESS_NOTICE_KIND, CANCELLED_TEMPLATE, CloseReason, LINE_DAYS, LINK_TEMPLATE, LINK_TEXT_TO,
@@ -32,7 +34,8 @@ pub use crate::link_request::{LINK_REQUEST_LIFE, link_after_dial};
 pub use crate::models::CallsError;
 pub use crate::pins::{
     PIN_DRAWS, PIN_TRY_LABEL, VoiceCall, VoiceKeys, VoiceReply, arizona_day, call_start,
-    caller_digest, pin_tries_today, stored_pin, voice_confirm, voice_turn,
+    caller_digest, dialed_line, pin_tries_today, stored_pin, voice_confirm,
+    voice_confirm_reporting, voice_turn, voice_turn_reporting,
 };
 pub use crate::routing::{
     Answer, Attestation, CallTurn, IncomingCall, JobPin, PIN_ALERT, PIN_GOODBYE, PIN_PROMPT,

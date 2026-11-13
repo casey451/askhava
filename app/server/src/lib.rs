@@ -32,6 +32,7 @@ use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
 
+pub mod call_status;
 pub mod catalog_start;
 pub mod checkin;
 pub mod inbound_retry;
@@ -145,7 +146,9 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241) and the placed calls' status and safety-key routes
 /// (`voice_status`, CALL-022, OPS-028, T378); `None` adds none. `voice` ([`voice_hooks`]) adds the
-/// pool numbers' signature-checked voice webhook (`inbound_voice`, SEC-016, SEC-017, T262).
+/// pool numbers' signature-checked voice webhook (`inbound_voice`, SEC-016, SEC-017, T262) and
+/// the dialed leg's status callbacks (`call_status`, CALL-008, T271), which applies the refusal
+/// layer itself (D-3525).
 /// `pick_keys` ([`pick_code_keys`])
 /// let the page pick send its code and store the pick (T246, D-1516); `None` keeps the page's
 /// "Nothing was picked" lines. `stripe` ([`release_sink::stripe_webhook`]) adds `payments`' Stripe
@@ -173,6 +176,9 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .clone()
         .map_or_else(Router::new, |h| refused(voice_status::routes(h)));
     let twilio = webhooks.map_or_else(Router::new, |h| refused(inbound_text::routes(h)));
+    let dialed = voice.as_ref().map_or_else(Router::new, |v| {
+        call_status::routes(Arc::clone(&v.hooks), refusals.clone())
+    });
     let voice = voice.map_or_else(Router::new, |v| refused(inbound_voice::routes(v)));
     let stripe = stripe.map_or_else(Router::new, |s| refused(stripe_webhook_routes(s)));
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
@@ -184,6 +190,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(checkin)
         .merge(twilio)
         .merge(voice)
+        .merge(dialed)
         .merge(calls)
         .merge(stripe)
         .merge(static_files::router(&statics))

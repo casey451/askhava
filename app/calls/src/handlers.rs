@@ -8,6 +8,8 @@
 //! call with its start. T282 (FEE-022, D-1836, D-2129): [`call_start_confirmed`] joins the dialed
 //! leg's SID to the start T262's voice webhook stored in `calls.call_start` (or stores the start
 //! when that write was lost), and [`call_log`] joins each logged call to it by the dialed SID.
+//! T271 (D-3118): [`dial_twiml`] asks for the dialed leg's status callbacks at
+//! [`DIALED_STATUS_PATH`], which `server`'s `call_status` route serves.
 
 use askhava_adapters::api::PoolNumber;
 use jiff::{SignedDuration, Timestamp};
@@ -19,25 +21,57 @@ use sqlx::types::Uuid;
 use crate::models::CallsError;
 use crate::rules::{AnsweredBy, Caller, answered_by, reached_report_mark};
 
+/// Where Twilio posts the dialed leg's `initiated` and final status callbacks, under the public
+/// base URL (CALL-008, FEE-022, D-1836, D-3118): `server`'s `call_status` route serves it.
+pub const DIALED_STATUS_PATH: &str = "/webhooks/twilio/voice/dialed-status";
+
 /// CALL-006, CALL-008: the TwiML that dials `to` from the pool number `caller_id`, never recorded,
-/// with the provider's machine detection so the log can say who answered (D-1690). The TwiML
-/// carries no status callback attributes, because TD-CALL-03's test in `no_recording.rs` checks
-/// the exact `<Dial>` and `<Number>` tags; adding them is a plan gap D-2129 records. `None` when
-/// `to` is not E.164, so nothing but digits reaches the XML. The result holds a phone number: send
-/// it only as the webhook's reply, never log it (PRIV-016).
+/// with the provider's machine detection so the log can say who answered (D-1690), and the dialed
+/// leg's `initiated` and final status callbacks posted to `status_url` (the public base plus
+/// [`DIALED_STATUS_PATH`], D-3118). No whisper `url` (CALL-023). `None` when `to` is not E.164 or
+/// `status_url` holds a character that would need escaping in XML, so nothing else reaches it.
+/// The result holds a phone number: send it only as the webhook's reply, never log it (PRIV-016).
 #[must_use]
-pub fn dial_twiml(caller_id: &PoolNumber, to: &SecretString) -> Option<SecretString> {
+pub fn dial_twiml(
+    caller_id: &PoolNumber,
+    to: &SecretString,
+    status_url: &str,
+) -> Option<SecretString> {
     let to = to.expose_secret();
     let digits = to.strip_prefix('+')?;
     if !(8..=15).contains(&digits.len()) || !digits.bytes().all(|b| b.is_ascii_digit()) {
         return None;
     }
+    if status_url.is_empty() || status_url.contains(['"', '\'', '<', '>', '&']) {
+        return None;
+    }
     let from = caller_id.as_str();
     Some(SecretString::from(format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial callerId=\"{from}\" \
-         record=\"do-not-record\"><Number machineDetection=\"Enable\">{to}</Number></Dial>\
-         </Response>"
+         record=\"do-not-record\"><Number machineDetection=\"Enable\" \
+         statusCallback=\"{status_url}\" statusCallbackMethod=\"POST\" \
+         statusCallbackEvent=\"initiated completed\">{to}</Number></Dial></Response>"
     )))
+}
+
+/// The `calls.number_pool` line `line`'s job and business, open or closed; `None` for an unknown
+/// line (TXT-030, D-1814): the status route finds the pick a logged business call is about.
+///
+/// # Errors
+///
+/// [`CallsError::Database`].
+pub async fn line_parties(
+    db: &mut PgConnection,
+    line: Uuid,
+) -> Result<Option<(Uuid, Uuid)>, CallsError> {
+    sqlx::query!(
+        "SELECT job_id, business_id FROM calls.number_pool WHERE id = $1",
+        line
+    )
+    .fetch_optional(db)
+    .await
+    .map(|row| row.map(|r| (r.job_id, r.business_id)))
+    .map_err(|_| CallsError::Database)
 }
 
 /// One finished masked call: its line, who called, who answered and its length (CALL-008).

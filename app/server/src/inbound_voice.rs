@@ -17,6 +17,9 @@
 //! T390 (CALL-011, D-3079, D-3169): after a turn answered with the dial, `calls::api::link_after_dial`
 //! queues the LINK notice and stores one pending link when the caller was an unlinked phone; its
 //! failure is one warn line naming the error variant only and never changes the dial.
+//! T271 (CALL-008, D-3118): each turn runs `voice_turn_reporting` or `voice_confirm_reporting`, so
+//! a dial asks for the dialed leg's status callbacks at `ASKHAVA_PUBLIC_BASE_URL` plus
+//! `calls::api::DIALED_STATUS_PATH`, which `call_status` serves.
 
 use std::sync::Arc;
 
@@ -24,9 +27,9 @@ use askhava_adapters::api::{
     Delivery, MaskedPool, VerifiedWebhook, WebhookVendor, refuse, verify_webhook,
 };
 use askhava_calls::api::{
-    Attestation, CallsError, IncomingCall, JobPin, PinWait, TRIES_PER_CALL, VoiceCall, VoiceKeys,
-    VoiceReply, hangup_twiml, link_after_dial, pin_prompt_twiml, readback_twiml, voice_confirm,
-    voice_turn,
+    Attestation, CallsError, DIALED_STATUS_PATH, IncomingCall, JobPin, PinWait, TRIES_PER_CALL,
+    VoiceCall, VoiceKeys, VoiceReply, hangup_twiml, link_after_dial, pin_prompt_twiml,
+    readback_twiml, voice_confirm_reporting, voice_turn_reporting,
 };
 use axum::Router;
 use axum::body::Bytes;
@@ -119,8 +122,9 @@ async fn voice(
     }
 }
 
-/// The delivery checked against the URL Twilio signed: the public base, path and query (SEC-016).
-fn verified(
+/// The delivery checked against the URL Twilio signed: the public base, path and query (SEC-016);
+/// `call_status` checks its callbacks the same way.
+pub(crate) fn verified(
     h: &Webhooks,
     uri: &Uri,
     head: &HeaderMap,
@@ -174,11 +178,6 @@ async fn answer(v: &VoiceHooks, hook: &VerifiedWebhook, turn: Turn) -> Result<St
             .then(|| field("Digits").and_then(JobPin::parse))
             .flatten(),
     };
-    let keys = VoiceKeys {
-        id_secret: &v.hooks.id_secret,
-        version: ID_SECRET_VERSION,
-        pool: v.pool.numbers(),
-    };
     let mut db = v
         .hooks
         .pool
@@ -186,17 +185,34 @@ async fn answer(v: &VoiceHooks, hook: &VerifiedWebhook, turn: Turn) -> Result<St
         .await
         .map_err(|_| CallsError::Database)?;
     let (vault, now) = (&v.hooks.vault, v.hooks.clock.now());
-    let reply = match turn {
-        Turn::Confirm(_) => {
-            let pressed = field("Digits") == Some("1");
-            voice_confirm(&mut db, vault, &keys, &call, (pressed, now)).await?
-        }
-        Turn::First | Turn::Try(_) => voice_turn(&mut db, vault, &keys, &call, now).await?,
-    };
+    let pressed = field("Digits") == Some("1");
+    let reply = run_turn(&mut db, v, (turn, pressed), &call, now).await?;
     if matches!(reply, VoiceReply::Dial(_)) {
         after_dial(&mut db, vault, (sid, &caller), now).await;
     }
     Ok(render(v.wait, turn, reply))
+}
+
+/// Runs `turn` of `call` (`pressed`: the confirm key was 1); a dial asks for the dialed leg's
+/// status callbacks at the public base plus `DIALED_STATUS_PATH` (CALL-008, D-3118, D-3526).
+async fn run_turn(
+    db: &mut sqlx::PgConnection,
+    v: &VoiceHooks,
+    (turn, pressed): (Turn, bool),
+    call: &VoiceCall<'_>,
+    now: jiff::Timestamp,
+) -> Result<VoiceReply, CallsError> {
+    let keys = VoiceKeys {
+        id_secret: &v.hooks.id_secret,
+        version: ID_SECRET_VERSION,
+        pool: v.pool.numbers(),
+    };
+    let status_url = format!("{}{DIALED_STATUS_PATH}", v.hooks.public_base);
+    let (vault, dialing) = (&v.hooks.vault, (&keys, status_url.as_str()));
+    match turn {
+        Turn::Confirm(_) => voice_confirm_reporting(db, vault, dialing, call, (pressed, now)).await,
+        Turn::First | Turn::Try(_) => voice_turn_reporting(db, vault, dialing, call, now).await,
+    }
 }
 
 /// CALL-011, D-3079: the LINK step after a dial; a failure is one log line naming the error variant
