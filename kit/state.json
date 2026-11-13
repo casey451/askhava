@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T249",
+ "current": "T422",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -42081,11 +42081,20 @@
     "T150",
     "T313"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "brand-tests-integration-a",
    "type": "harness",
-   "stage": "4"
+   "stage": "4",
+   "attempt_started_at": "2026-11-13T00:36:38Z",
+   "lane": "4",
+   "decision_ids": [
+    3364,
+    3365,
+    3366,
+    3367,
+    3368
+   ]
   },
   {
    "id": "T423",
@@ -42302,7 +42311,7 @@
    "input_tokens": 101,
    "cache_creation_input_tokens": 272582
   },
-  "source": "session_reading 2026-11-13T00:00:45Z (week)",
+  "source": "session_reading 2026-11-13T00:31:43Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -44750,6 +44759,10 @@
    "T249": {
     "estimated_bytes": 802408,
     "estimated_tokens": 4168375
+   },
+   "T422": {
+    "estimated_bytes": 328477,
+    "estimated_tokens": 1706383
    }
   },
   "windows": {
@@ -44770,7 +44783,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T00:36:39Z",
+ "updated_at": "2026-11-13T00:37:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -44871,14 +44884,6 @@
  "runner_sha": "7ae5f9a704c4147d547436823e15818817c0ab1a",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "ef5a3860ab5e7ec8a777d83d5d0f0d7cc3fb8184",
-   "ok": true,
-   "at": "2026-11-12T18:36:22Z",
-   "why": "start routine (ancestry reuse of eccfd35b9e3a, 2026-11-12T17:11:48Z)",
-   "reused": "2026-11-12T17:11:48Z",
-   "base": "eccfd35b9e3afdbb5218cac61564c3468831bb4e"
-  },
   {
    "sha": "c5c20728e51e1a83051f2633584ec1ad69ab8e30",
    "ok": true,
@@ -45023,24 +45028,32 @@
    "why": "start routine (ancestry reuse of dae8c6443b4f, 2026-11-12T23:46:03Z)",
    "reused": "2026-11-12T23:46:03Z",
    "base": "dae8c6443b4f29a2b72d558ac349c5d778388eb3"
+  },
+  {
+   "sha": "7ae5f9a704c4147d547436823e15818817c0ab1a",
+   "ok": true,
+   "at": "2026-11-13T00:36:38Z",
+   "why": "start routine (ancestry reuse of dae8c6443b4f, 2026-11-12T23:46:03Z)",
+   "reused": "2026-11-12T23:46:03Z",
+   "base": "dae8c6443b4f29a2b72d558ac349c5d778388eb3"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T249 estimated 4.2M tokens (calibrated); week has 170.9M left (no five-hour budget, D-3056) after 7.1M still running in another lane (session_reading 2026-11-13T00:00:45Z (week)); claimed",
-  "at": "2026-11-13T00:01:54Z",
+  "last": "T422 estimated 1.7M tokens (calibrated); week has 164.7M left (no five-hour budget, D-3056) after 11.3M still running in another lane (session_reading 2026-11-13T00:31:43Z (week)); claimed",
+  "at": "2026-11-13T00:36:38Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 23106578,
+    "used": 29274953,
     "budget": 194000000,
-    "left": 170893422,
+    "left": 164725047,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 625295883,
-  "projected_finish": "2026-12-05T13:31:30Z"
+  "remaining_estimate": 638895574,
+  "projected_finish": "2026-12-06T01:52:51Z"
  },
  "main_red_history": [
   {
@@ -45137,7 +45150,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3364,
+ "next_decision": 3369,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",

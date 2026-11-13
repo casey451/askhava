@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-13T00:36:39Z by runner 7ae5f9a704c4 (actions).
+Updated 2026-11-13T00:37:04Z by runner 7ae5f9a704c4 (actions).
 
 **Building: T215 in progress since 23:45Z; 262 of 415 done; week 9% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 262 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
-- **Week:** 9% used, 170.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
+- **Week:** 9% used, 164.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:32Z, 4 min before this update
 - **Keeper:** last ran 00:32Z, next wake 02:48Z
 
@@ -152,7 +152,7 @@ Updated 2026-11-13T00:36:39Z by runner 7ae5f9a704c4 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T00:00:45Z (week)): week: 23.1M used, 170.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-05T13:31:30Z.
+- Pacing (session_reading 2026-11-13T00:31:43Z (week)): week: 29.3M used, 164.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T01:52:51Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -169,6 +169,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T215 (lease until 2026-11-13T02:45:19Z)
 - lane 3: T372 (lease until 2026-11-13T02:46:03Z)
+- lane 4: T422 (lease until 2026-11-13T03:36:38Z)
 - lane 6: T249 (lease until 2026-11-13T03:01:54Z)
 
 ## Last usage reading
