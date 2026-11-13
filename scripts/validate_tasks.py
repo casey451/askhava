@@ -497,8 +497,11 @@ def check_crate_notes(task: Task) -> list[str]:
     """D-3474: the optional 'crate_notes' names each other `app/` crate whose CLAUDE.md the task's goal
     updates (beyond its module and the crates of its owned paths), so the runner counts the task as writing
     that crate (runner/lanes.py task_crates) and no second task edits the file meanwhile. Each entry is a
-    crate module, listed once, and never the task's own module."""
+    crate module, listed once, and never the task's own module. A value that is not a list of strings is
+    left to `check_shape` to report."""
     notes = task.get("crate_notes", [])
+    if not isinstance(notes, list) or not all(isinstance(c, str) for c in notes):
+        return []
     errors = [f"{where(task)}: crate_notes names {c}, which is not an app crate" for c in notes if c not in CRATE_MODULES]
     errors += [f"{where(task)}: crate_notes lists {c} twice" for c in sorted(set(notes)) if notes.count(c) > 1]
     if task.get("module") in notes:

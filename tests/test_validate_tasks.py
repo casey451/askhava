@@ -683,6 +683,16 @@ def test_crate_notes_names_other_app_crates_once(tmp_path: Path) -> None:
     assert_error(errors_for(tmp_path, tasks), "'crate_notes' must list strings")
 
 
+def test_crate_notes_of_the_wrong_shape_is_reported_not_raised(tmp_path: Path) -> None:
+    """D-3474 review round 2: a string or a list of non-strings, with module None, reaches the shape check."""
+    assert vt.check_crate_notes({"id": "T001", "slug": "x", "module": None, "crate_notes": "portals"}) == []
+    assert vt.check_crate_notes({"id": "T001", "slug": "x", "module": None, "crate_notes": [7]}) == []
+    tasks = valid_tasks()
+    task(tasks, "T001")["module"] = None
+    task(tasks, "T001")["crate_notes"] = "portals"
+    assert_error(errors_for(tmp_path, tasks), "'crate_notes' must be list")
+
+
 def test_v5_goal_must_not_repeat_the_title(tmp_path: Path) -> None:
     tasks = valid_tasks()
     task(tasks, "T001")["goal"] = task(tasks, "T001")["title"]
