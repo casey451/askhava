@@ -231,6 +231,32 @@ pub async fn audited(
     .map_err(|_| OpsError::Database)
 }
 
+/// BIZ-009, D-969, D-970 (T372, D-3354): true when the newest audit row about `subject` that is
+/// either a status change or a change of `field` is the field change; false when it is a status
+/// change or there is none. `businesses` reads with it whether a rule's pause replaced the owner's
+/// own pause (`pause_reason` changed with no status row after it).
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn field_changed_last(
+    db: &mut PgConnection,
+    subject: (&str, Uuid),
+    field: &str,
+) -> Result<bool, OpsError> {
+    let latest = sqlx::query_scalar!(
+        "SELECT field FROM ops.audit_log WHERE subject_kind = $1 AND subject_id = $2 \
+         AND (to_status IS NOT NULL OR field = $3) ORDER BY id DESC LIMIT 1",
+        subject.0,
+        subject.1,
+        field,
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    Ok(latest.flatten().as_deref() == Some(field))
+}
+
 /// The ID of the newest audit row below `id`, the row the off-database chain links `id` to
 /// (PRIV-029, D-735); none when `id` is the first. One indexed lookup, however far below it is.
 ///
@@ -332,6 +358,50 @@ pub async fn raise_alert_once(
     .await
     .map_err(|_| OpsError::Database)?;
     if alert_open(&mut tx, kind, subject).await? {
+        return Ok(None);
+    }
+    let id = raise_alert(&mut tx, &alert).await?;
+    tx.commit().await.map_err(|_| OpsError::Database)?;
+    Ok(Some(id))
+}
+
+/// LIC-008, D-2954: raises a subject-less `kind` alert unless one of that kind was already raised
+/// this Arizona day (UTC-7, by the database clock), checking and raising in one transaction under
+/// an advisory lock on the kind, so two raises at once give one alert; returns the new alert's ID,
+/// or `None` when today's was already raised.
+///
+/// # Errors
+///
+/// [`OpsError::NotACodeName`] (nothing is written), or [`OpsError::Database`].
+pub async fn raise_alert_once_a_day(
+    db: &mut PgConnection,
+    kind: &'static str,
+    severity: Severity,
+) -> Result<Option<Uuid>, OpsError> {
+    let alert = NewAlert {
+        kind,
+        severity,
+        subject: None,
+    };
+    let mut tx = db.begin().await.map_err(|_| OpsError::Database)?;
+    let key = format!("ops.alert_day:{kind}");
+    sqlx::query_scalar!(
+        r#"SELECT 1 AS "locked!" FROM (SELECT pg_advisory_xact_lock(hashtextextended($1::text, 21))) AS lock"#,
+        key,
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    let raised = sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM ops.alert WHERE kind = $1 AND subject_kind IS NULL
+           AND ((raised_at AT TIME ZONE 'UTC') - interval '7 hours')::date
+             = ((now() AT TIME ZONE 'UTC') - interval '7 hours')::date) AS "raised!""#,
+        kind,
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    if raised {
         return Ok(None);
     }
     let id = raise_alert(&mut tx, &alert).await?;

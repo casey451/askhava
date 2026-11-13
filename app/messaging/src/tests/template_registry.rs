@@ -1,6 +1,8 @@
 //! The template registry (TD-TXT-01; TXT-001 to TXT-004, TXT-039, TXT-044, BIZ-018, WORD-008).
 //! Fake data only.
 
+use askhava_core::api::brand;
+
 use crate::api::{
     Audience, Encoding, Language, Registry, TemplateError, count_segments, render, template_ids,
 };
@@ -30,7 +32,11 @@ fn every_kind_has_both_languages_and_begins_ask_hava() {
     for id in &ids {
         for wanted in [Language::En, Language::Es] {
             let text = render(id, wanted, true, VALUES).expect("renders");
-            assert!(text.body.starts_with("Ask Hava:"), "{id}");
+            let short = match wanted {
+                Language::En => brand().short_name(),
+                Language::Es => brand().es().short_name(),
+            };
+            assert!(text.body.starts_with(&format!("{short}:")), "{id}");
             assert!(!text.body.contains('{'), "{id}");
             assert_eq!(text.draft, wanted == Language::Es, "{id}");
         }
@@ -40,14 +46,14 @@ fn every_kind_has_both_languages_and_begins_ask_hava() {
 /// A planted registry of generic kinds, so the behaviour tests do not hang on later tasks' keys.
 fn planted() -> Registry {
     let en = r#"{
-      "plain": {"audience":"homeowner","segments":1,"text":"Ask Hava: Job {job} plain."},
-      "stays": {"audience":"homeowner","segments":1,"text":"Ask Hava: Job {job} stays."},
-      "notice": {"audience":"business","segments":1,"text":"Ask Hava: Job {job} notice."}
+      "plain": {"audience":"homeowner","segments":1,"text":"{brand_short}: Job {job} plain."},
+      "stays": {"audience":"homeowner","segments":1,"text":"{brand_short}: Job {job} stays."},
+      "notice": {"audience":"business","segments":1,"text":"{brand_short}: Job {job} notice."}
     }"#;
     let es = r#"{
-      "plain": {"audience":"homeowner","segments":1,"draft":true,"text":"Ask Hava: Trabajo {job} normal."},
-      "stays": {"audience":"homeowner","segments":1,"draft":true,"spanish_stays_on":true,"text":"Ask Hava: Trabajo {job} sigue."},
-      "notice": {"audience":"business","segments":1,"draft":true,"text":"Ask Hava: Trabajo {job} aviso."}
+      "plain": {"audience":"homeowner","segments":1,"draft":true,"text":"{brand_short}: Trabajo {job} normal."},
+      "stays": {"audience":"homeowner","segments":1,"draft":true,"spanish_stays_on":true,"text":"{brand_short}: Trabajo {job} sigue."},
+      "notice": {"audience":"business","segments":1,"draft":true,"text":"{brand_short}: Trabajo {job} aviso."}
     }"#;
     Registry::parse(en, es).expect("planted registry is valid")
 }
@@ -118,12 +124,16 @@ fn rendering_is_fixed_and_strict() {
     let text = reg
         .render("plain", Language::En, true, &[("job", "{job}")])
         .expect("renders");
-    assert_eq!(text.body, "Ask Hava: Job {job} plain.");
+    let plain = brand()
+        .fill("{brand_short}: Job {job} plain.", false)
+        .expect("the brand fills");
+    assert_eq!(text.body, plain);
 }
 
 fn pair(id: &str, es_extra: &str, es_draft: &str) -> (String, String) {
-    let en =
-        format!(r#"{{"{id}": {{"audience":"homeowner","segments":1,"text":"Ask Hava: Hi."}}}}"#);
+    let en = format!(
+        r#"{{"{id}": {{"audience":"homeowner","segments":1,"text":"{{brand_short}}: Hi."}}}}"#
+    );
     let es = format!(
         r#"{{"{id}": {{"audience":"homeowner","segments":1,"draft":{es_draft},"text":"{es_extra}"}}}}"#
     );
@@ -134,10 +144,10 @@ fn pair(id: &str, es_extra: &str, es_draft: &str) -> (String, String) {
 /// begin "Ask Hava:" is refused at load.
 #[test]
 fn a_registry_that_breaks_a_rule_is_refused() {
-    let (en, es) = pair("a", "Ask Hava: Hola.", "true");
+    let (en, es) = pair("a", "{brand_short}: Hola.", "true");
     assert!(Registry::parse(&en, &es).is_ok());
     assert!(Registry::parse(&en, "{}").is_err());
-    let (_, not_draft) = pair("a", "Ask Hava: Hola.", "false");
+    let (_, not_draft) = pair("a", "{brand_short}: Hola.", "false");
     assert!(Registry::parse(&en, &not_draft).is_err());
     let (_, no_prefix) = pair("a", "Hola.", "true");
     assert!(Registry::parse(&en, &no_prefix).is_err());

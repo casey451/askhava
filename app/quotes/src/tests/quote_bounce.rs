@@ -92,7 +92,6 @@ fn td_pick_03_no_bounce_line_or_debug_holds_a_value() {
         Bounce::Amounts,
         Bounce::Handyman(QuoteRefusal::NotCertified),
         Bounce::Handyman(QuoteRefusal::OverHandymanLimit),
-        Bounce::Handyman(QuoteRefusal::SplitJob),
     ];
     for bounce in every {
         let line = bounce.message().to_lowercase();

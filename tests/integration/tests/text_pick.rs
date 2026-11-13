@@ -27,7 +27,11 @@ use sqlx::types::Uuid;
 
 type Db = sqlx::pool::PoolConnection<sqlx::Postgres>;
 
-const TERMS_LINE: &str = "By picking, you agree to the Terms: askhava.com/terms";
+/// The assent line every pick text ends with, on the brand file's domain.
+fn terms_line() -> String {
+    let domain = askhava_core::api::brand().domain();
+    format!("By picking, you agree to the Terms: {domain}/terms")
+}
 const TERMS: PublishedTerms<'static> = PublishedTerms {
     version: "2026-11-01",
     text: "Sample homeowner terms for tests only.",
@@ -178,7 +182,7 @@ async fn td_pick_40_terms_line_first_then_the_text_pick(mut db: Db) {
     let (template, body) = sent.last().expect("terms text");
     assert_eq!(template, TERMS_TEMPLATE);
     assert!(body.contains("Reply 2 YES again to pick."));
-    assert!(body.ends_with(TERMS_LINE));
+    assert!(body.ends_with(&terms_line()));
     let version: String =
         sqlx::query_scalar("SELECT template_version FROM picks.terms_line WHERE job_id = $1")
             .bind(job)
@@ -209,7 +213,7 @@ async fn td_pick_40_terms_line_first_then_the_text_pick(mut db: Db) {
         accepted[0].inbox_id,
         Some(text(her, "", 11, false).inbox_id)
     );
-    assert_eq!(accepted[0].assent_line, TERMS_LINE);
+    assert_eq!(accepted[0].assent_line, terms_line());
 }
 
 /// TD-PICK-07 (PICK-015, PICK-031, D-068): from another phone nothing happens; with two jobs in
@@ -231,7 +235,7 @@ async fn td_pick_07_another_phone_and_two_jobs(mut db: Db) {
     );
     let (template, body) = texts(&mut db, her).await.last().cloned().expect("which");
     assert_eq!(template, WHICH_TEMPLATE);
-    assert!(body.ends_with(TERMS_LINE));
+    assert!(body.ends_with(&terms_line()));
     assert!(body.contains(&format!("{} 2 YES", numbers[0])));
     assert!(body.contains(&format!("requests {} and {}.", numbers[0], numbers[1])));
     for job in &jobs {

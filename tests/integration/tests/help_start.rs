@@ -12,6 +12,7 @@
 use std::sync::{Arc, Mutex};
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
+use askhava_core::api::brand;
 use askhava_messaging::api::{
     HelpSettings, HelpSettingsError, InboundText, Keyword, Language, NewText, OutboxError, Outcome,
     ProviderKeyword, Registry, Relation, To, enqueue, help_text, keyword, on_inbound_text,
@@ -62,6 +63,12 @@ fn vault() -> Vault {
     let key = |b: u8| SecretString::from(format!("1:{}", STANDARD.encode([b; 32])));
     let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
     Vault::new(&key(0x52), &key(0x62), &url).expect("vault")
+}
+
+/// `text` with the brand file's names (Spanish when `spanish`) in place of its `{brand}`,
+/// `{brand_short}` and `{domain}` tokens (WORD-001, WORD-008, D-1932).
+fn filled(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("brand tokens")
 }
 
 fn night() -> Timestamp {
@@ -143,12 +150,12 @@ async fn td_con_07_help_info_ayuda_at_night(pool: PgPool) {
         let body = answer((&mut db, &vault), &carrier, (her, ARIZONA), word).await;
         let body = body.expect("a reply");
         for part in [
-            "Ask Hava:",
-            "help@askhava.com",
-            "askhava.com/help",
-            "Reply STOP",
+            filled("{brand_short}:", false),
+            filled("help@{domain}", false),
+            filled("{domain}/help", false),
+            "Reply STOP".to_owned(),
         ] {
-            assert!(body.contains(part), "{word}: {part}");
+            assert!(body.contains(&part), "{word}: {part}");
         }
         assert!(body.contains("usually replies"));
     }
@@ -175,7 +182,10 @@ async fn td_con_07_help_from_an_opted_out_number_and_start(pool: PgPool) {
         .await
         .expect("stop");
     let body = answer((&mut db, &vault), &carrier, (her, ARIZONA), "AYUDA").await;
-    assert!(body.expect("a reply").contains("askhava.com/help"));
+    assert!(
+        body.expect("a reply")
+            .contains(&filled("{domain}/help", true))
+    );
     let other = NewText {
         template_id: "first_quote",
         subject: &[Uuid::from_u128(7)],
@@ -241,19 +251,29 @@ fn td_con_19_the_reply_is_the_d_371_text_with_roaming_for_canada() {
 #[test]
 fn td_con_15_the_reply_holds_the_fixed_sentences_and_follows_the_settings() {
     let en = help_text(&settings(2, None), Language::En, ARIZONA).expect("text");
-    let wording = "Tell us what's wrong in one text. The Ask Hava owner gets HELP messages right \
+    let wording = filled(
+        "Tell us what's wrong in one text. The {brand} owner gets HELP messages right \
         away and usually replies within 2 days, or within 24 hours if your job is urgent. This \
-        number is text-only. If anyone is in danger, call 911.";
+        number is text-only. If anyone is in danger, call 911.",
+        false,
+    );
+    let (mail, page) = (
+        filled("help@{domain}", false),
+        filled("{domain}/help", false),
+    );
     let list = "Can't open links? Reply LIST to get your quotes by text.";
-    for part in [wording, list, "help@askhava.com", "askhava.com/help"] {
+    for part in [wording.as_str(), list, &mail, &page] {
         assert!(en.contains(part), "{part}");
     }
     let es = help_text(&settings(2, None), Language::Es, ARIZONA).expect("text");
-    let palabras = "Díganos qué pasa en un solo texto. El dueño de Ask Hava recibe los mensajes de \
+    let palabras = filled(
+        "Díganos qué pasa en un solo texto. El dueño de {brand} recibe los mensajes de \
         AYUDA de inmediato y normalmente responde en 2 días, o en 24 horas si su trabajo es \
-        urgente. Este número es solo para textos. Si alguien está en peligro, llame al 911.";
+        urgente. Este número es solo para textos. Si alguien está en peligro, llame al 911.",
+        true,
+    );
     let lista = "¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto.";
-    for part in [palabras, lista, "help@askhava.com", "askhava.com/help"] {
+    for part in [palabras.as_str(), lista, &mail, &page] {
         assert!(es.contains(part), "{part}");
     }
     for body in [&en, &es] {

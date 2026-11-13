@@ -32,7 +32,7 @@ use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, led
 use crate::models::{
     AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, CustomerId, SavedCard,
 };
-use crate::pick_fee::{fee_terms_in_force, pick_fee};
+use crate::pick_fee::{authorized, fee_terms_in_force, pick_fee, required_version};
 use crate::rules::{FeeMode, FeeTerms};
 
 /// The idempotency action for a business's Stripe customer (SEC-018): the key is derived from the
@@ -215,8 +215,8 @@ pub enum ConfirmError {
 
 /// FEE-007, D-072, D-1871: switches the fee mode in force to `to`, in its own transaction on
 /// `conn`: the stored terms row is locked, the switch logged with the owner as actor (JOB-005) and
-/// `payments.fee_terms` updated to the new terms (the next authorization version), which it
-/// returns. Choosing the mode in force logs and stores nothing and returns none. A pick fixing its
+/// `payments.fee_terms` updated to the new terms (the version after [`required_version`] of the
+/// stored one, so it is above every version a card save stored, D-3397), which it returns. Choosing the mode in force logs and stores nothing and returns none. A pick fixing its
 /// fee holds the row's share lock, so a switch waits for it (and it for the switch).
 ///
 /// # Errors
@@ -238,7 +238,8 @@ pub async fn switch_fee_mode(
     } else {
         FeeMode::Tiers
     };
-    let Some(next) = FeeTerms::new(from, row.authorization_version).switched(to) else {
+    let Some(next) = FeeTerms::new(from, required_version(row.authorization_version)).switched(to)
+    else {
         return Ok(None);
     };
     let entry = AuditEntry {
@@ -328,8 +329,9 @@ impl Authorized {
 
 /// FEE-005, FEE-007, D-072, D-1871: `business` may confirm `pick`, and be charged, only when the
 /// pick's stored fee was fixed under the fee mode in force (read here, never passed in) and the
-/// business has accepted the authorization version those terms need; after any fee-mode change it
-/// can't confirm until then. The Confirm step calls this before any PaymentIntent is opened or
+/// business has accepted the authorization version those terms need and the current
+/// [`AUTHORIZATION_TEXT`] (D-3397, checked by `authorized`); after any fee-mode change or wording
+/// change it can't confirm until then. The Confirm step calls this before any PaymentIntent is opened or
 /// confirmed, never after, and passes the returned [`Authorized`] to [`record_fee_at_confirm`].
 ///
 /// # Errors
@@ -353,14 +355,18 @@ pub async fn may_confirm(
     if terms.mode() != stored.mode {
         return Err(ConfirmError::FeeModeChanged);
     }
-    let accepted = sqlx::query_scalar!(
-        "SELECT max(version) FROM payments.card_authorization WHERE business_id = $1",
+    let rows = sqlx::query!(
+        "SELECT version, text FROM payments.card_authorization WHERE business_id = $1",
         business.0,
     )
-    .fetch_one(conn)
+    .fetch_all(conn)
     .await
     .map_err(|_| ConfirmError::Database)?;
-    if accepted.is_some_and(|version| version >= terms.authorization_version()) {
+    let accepted: Vec<(i32, &str)> = rows
+        .iter()
+        .map(|row| (row.version, row.text.as_str()))
+        .collect();
+    if authorized(&accepted, terms.authorization_version(), AUTHORIZATION_TEXT) {
         Ok(Authorized {
             pick,
             business,

@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COALESCE(status = 'paused' AND pause_reason = 'no_covered_job_type', false)\n           AS \"bare!\" FROM businesses.business WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "bare!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d5fce0819fb0b98e863582ae81c56e89c78bcca1cc93b821b4348ccbd4f53301"
+}

@@ -483,13 +483,23 @@ fn register_timer_backstop(registry: &mut Registry, clock: Arc<dyn Clock>) {
     });
 }
 
+/// Registers `businesses`' daily license-map re-apply (`businesses.license_reapply`, T372,
+/// BIZ-050, D-2705) on the worker clock; `worker.rs`'s `schedule_start` seeds it.
+fn register_license_reapply(registry: &mut Registry, clock: Arc<dyn Clock>) {
+    registry.register(askhava_businesses::api::REAPPLY_KIND, move |pool, _task| {
+        let now = clock.now();
+        async move { askhava_businesses::api::run_reapply(&pool, now).await }
+    });
+}
+
 /// The production worker's whole registry (T327, D-2285): [`register_handlers`], then what only
 /// the worker adds: `privacy`'s sealed photo delete over the stream's store (PRIV-009, T276),
 /// `messaging`'s paused-emergency follow-up on the call list (TXT-023, T279), with the footer
 /// postal setting (required in test and live) `messaging`'s business notices and charge receipts
 /// ([`register_notice_senders`], T313), the hourly
 /// dead-letter check ([`no_handler_alert`], OPS-004), `jobs`' daily timer backstop
-/// ([`register_timer_backstop`], T366) and, with the Twilio settings in `pairs`
+/// ([`register_timer_backstop`], T366), `businesses`' daily license-map re-apply
+/// ([`register_license_reapply`], T372) and, with the Twilio settings in `pairs`
 /// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027), `picks`'
 /// masked-line retry (CALL-001) and, with the vault keys too, `messaging`'s outbox sender
 /// (`messaging.send_due`, [`outbox_sender`], T356, D-2628); with both vault keys, `intake`'s card
@@ -535,6 +545,7 @@ where
     );
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
     register_timer_backstop(&mut registry, Arc::clone(&clock));
+    register_license_reapply(&mut registry, Arc::clone(&clock));
     let pairs: Vec<(String, String)> = pairs.into_iter().collect();
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {

@@ -22,7 +22,8 @@
 //! BIZ-049, CARD-001; T374); the business's own names and its checked Google and Yelp links
 //! (BIZ-022, BIZ-052, PICK-041, SEC-041; T165); the public business name read for the LIST reply
 //! and the who's-calling text, [`public_names`] (PICK-041, BIZ-022, TXT-031, D-2943; T316);
-//! leaving and the optional BIZ-054 reason (BIZ-051, BIZ-054; T228).
+//! leaving and the optional BIZ-054 reason (BIZ-051, BIZ-054; T228); the sign-up read of the
+//! business's own record, [`signup_record`] (BIZ-002, BIZ-016, LIC-008, LIC-011; T385, D-2954).
 
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -44,7 +45,7 @@ pub use crate::capability::{
     Capability, CapabilityAnswers, CapabilitySaved, LARGEST_JOB_MAX_CENTS, LICENSE_CHANGE_KIND,
     LargestJob, OfferRow, Reapplied, TradeOffer, capabilities, checklist_offer, holder_offer,
     is_recurring, kept_ticks, license_change, license_change_words, offer_for, pre_ticked,
-    reapply_license, save_capability, stored_enabled, whole_dollars,
+    reapply_license, save_capability, save_job_types, stored_enabled, whole_dollars,
 };
 pub use crate::channel_preference::{
     ChannelError, NoticeChannel, NoticeRecipient, notice_channel, notice_recipients,
@@ -98,6 +99,10 @@ pub use crate::leaving::{
     AskedBy, LeaveReason, OTHER_MAX, PAUSE_ASK_AFTER_DAYS, ReasonAnswer, leave, pause_ask_due,
     reason_asked, record_reason,
 };
+pub use crate::license_reapply::{
+    BATCH as REAPPLY_BATCH, LIST_APPLIED, REAPPLY_KIND, RUN_HOUR, apply_lists, run_reapply,
+    schedule_reapply,
+};
 pub use crate::links::{
     BusinessNames, CITY_LICENSE_MAX, GOOGLE_HOSTS, GOOGLE_SHAPES, GuardedOpener, LINK_MAX,
     LinkOpener, LinkRefusal, LinksError, NAME_MAX, NameRefusal, ReviewLinks, ReviewSite,
@@ -129,6 +134,7 @@ pub use crate::signup::{
     review_target, review_target_line, review_told, sign_up, stored_category_list, trade_count,
     waiting_on_record, waitlist_line, waitlisted,
 };
+pub use crate::signup_record::{RecordFound, SignupRecord, signup_record};
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{
     Acting, MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember,

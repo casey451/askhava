@@ -121,6 +121,10 @@ jobs:
         run: |
           python3 scripts/pii_scan.py
 
+      - name: No git conflict markers in tracked files (D-3307)
+        run: |
+          python3 scripts/check_conflict_markers.py
+
       - name: Plan lock and change rules (docs/governance.md)
         env:
           HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
@@ -640,7 +644,7 @@ jobs:
           base="$(git merge-base origin/main HEAD)"
           run=false
           git diff --no-renames --name-only "$base" HEAD \
-            | grep -Eq '^(app/|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|stand_ins/|tests/(e2e|a11y)/|package(-lock)?\.json|tsconfig|Cargo\.(toml|lock)|rust-toolchain\.toml|\.sqlx/|\.github/workflows/(ci|a11y)\.yml)' && run=true
+            | grep -Eq '^(app/|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|stand_ins/|tests/(e2e|a11y|perf)/|perf/|package(-lock)?\.json|tsconfig|Cargo\.(toml|lock)|rust-toolchain\.toml|\.sqlx/|\.github/workflows/(ci|a11y)\.yml)' && run=true
           echo "run=$run" >> "$GITHUB_OUTPUT"; echo "run=$run"
 
       - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
@@ -741,6 +745,24 @@ jobs:
         if: steps.changes.outputs.run == 'true'
         run: |
           npx playwright test --config tests/e2e/playwright.config.ts tests/e2e
+
+      - name: The feature-on test-control tests (no other Ci step builds them with the feature, T418)
+        if: steps.changes.outputs.run == 'true'
+        timeout-minutes: 10
+        run: |
+          cargo test -p askhava-security --locked --test perf_db_route --test control_router_absent --features askhava-core/test-control
+
+      - name: Performance report (lab figures; warns only, never fails Ci, D-3292)
+        if: steps.changes.outputs.run == 'true'
+        continue-on-error: true
+        timeout-minutes: 6
+        env:
+          PERF_VITALS_OUT: ${{ runner.temp }}/web-vitals.json
+        run: |
+          # Each part may fail on its own: the comparison still reports what was measured, and warns.
+          python3 -m perf.bench --quick --out "$RUNNER_TEMP/bench.json" || echo "::warning title=Performance::the quick benchmark did not finish"
+          npx playwright test --config tests/perf/playwright.config.ts || echo "::warning title=Performance::the web vitals spec did not finish"
+          python3 perf/compare.py --bench "$RUNNER_TEMP/bench.json" --vitals "$PERF_VITALS_OUT"
 
   ci:
     # The required check. Green only when Checks, Lint and slow tests, Python, Coverage and E2e all are (a skipped

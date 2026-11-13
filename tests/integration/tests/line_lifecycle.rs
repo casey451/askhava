@@ -380,7 +380,10 @@ fn td_call_07_the_ask_hava_number_plays_the_greeting_and_hangs_up() {
     let en = twiml.find(&greeting_en()).expect("English");
     let es = twiml.find(&greeting_es()).expect("Spanish");
     assert!(en < es && twiml.ends_with("<Hangup/></Response>"));
-    assert!(greeting_en().starts_with("This is Ask Hava LLC. We work by text."));
+    assert!(greeting_en().starts_with(&format!(
+        "This is {}. We work by text.",
+        brand().legal_name()
+    )));
     assert!(greeting_en().ends_with("If this is an emergency, hang up and call 911."));
     for verb in [
         "<Record",
@@ -402,13 +405,19 @@ fn td_call_07_the_ask_hava_number_plays_the_greeting_and_hangs_up() {
 fn td_word_35_the_voice_lines_come_from_the_brand_and_are_unchanged() {
     assert_eq!(
         greeting_en(),
-        "This is Ask Hava LLC. We work by text. To start a request, text this number. For help, \
-         text HELP. If this is an emergency, hang up and call 911."
+        format!(
+            "This is {}. We work by text. To start a request, text this number. For help, \
+         text HELP. If this is an emergency, hang up and call 911.",
+            brand().legal_name()
+        )
     );
     assert_eq!(
         greeting_es(),
-        "Habla Ask Hava LLC. Trabajamos por mensaje de texto. Para hacer una solicitud, mande un \
-         texto a este número. Para ayuda, mande AYUDA. Si es una emergencia, cuelgue y llame al 911."
+        format!(
+            "Habla {}. Trabajamos por mensaje de texto. Para hacer una solicitud, mande un \
+         texto a este número. Para ayuda, mande AYUDA. Si es una emergencia, cuelgue y llame al 911.",
+            brand().es().legal_name()
+        )
     );
     assert!(greeting_en().starts_with(&format!("This is {}.", brand().legal_name())));
     assert!(greeting_es().starts_with(&format!("Habla {}.", brand().es().legal_name())));
@@ -416,9 +425,13 @@ fn td_word_35_the_voice_lines_come_from_the_brand_and_are_unchanged() {
     let script = safety_script("+19285550100", &pool).expect("script");
     assert_eq!(
         script,
-        "This is Ask Hava L L C. You sent us a message about a danger. Leave the building now \
-         and call 9 1 1. Ask Hava is not an emergency service. To call us back, dial \
-         9 2 8, 5 5 5, 0 1 0 0. Press 9 to stop all calls from Ask Hava."
+        format!(
+            "This is {}. You sent us a message about a danger. Leave the building now \
+         and call 9 1 1. {name} is not an emergency service. To call us back, dial \
+         9 2 8, 5 5 5, 0 1 0 0. Press 9 to stop all calls from {name}.",
+            brand().spoken_legal_name(),
+            name = brand().display_name()
+        )
     );
     assert!(script.starts_with(&format!("This is {}.", brand().spoken_legal_name())));
     let code = SecretString::from("1234".to_owned());

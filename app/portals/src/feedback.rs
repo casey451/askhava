@@ -355,6 +355,13 @@ mod tests {
 
     use super::{FeedbackView, Kept, MAX_CHARS, Problem, check, keep, share_label};
 
+    /// `text` with its English brand tokens filled from the brand file (WORD-001, D-1932).
+    fn fill(text: &str) -> String {
+        askhava_core::api::brand()
+            .fill(text, false)
+            .expect("the brand fills")
+    }
+
     type Db = sqlx::pool::PoolConnection<sqlx::Postgres>;
 
     const TOKEN: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
@@ -380,7 +387,7 @@ mod tests {
         let html = form().render().expect("form renders");
         assert_eq!(
             share_label(),
-            "Ask Hava may show what I wrote on askhava.com with my first name and town"
+            fill("{brand} may show what I wrote on {domain} with my first name and town")
         );
         assert!(html.contains(&format!(
             "<label for=\"feedback-share\">{}</label>",
@@ -569,6 +576,33 @@ mod brand_tests {
     use sqlx::types::Uuid;
 
     use super::{FeedbackView, share_label};
+
+    /// `text` with its brand tokens filled from the brand file, in Spanish when `spanish`
+    /// (WORD-001, D-1932).
+    fn fill_in(text: &str, spanish: bool) -> String {
+        askhava_core::api::brand()
+            .fill(text, spanish)
+            .expect("the brand fills")
+    }
+
+    /// `text` with its English brand tokens filled from the brand file.
+    fn fill(text: &str) -> String {
+        fill_in(text, false)
+    }
+
+    /// `text` percent-encoded as Askama's `urlencode_strict` writes it: every byte but ASCII
+    /// letters, digits and `-_.~`.
+    fn strict(text: &str) -> String {
+        text.bytes()
+            .map(|b| {
+                if b.is_ascii_alphanumeric() || b"-_.~".contains(&b) {
+                    char::from(b).to_string()
+                } else {
+                    format!("%{b:02X}")
+                }
+            })
+            .collect()
+    }
     use crate::business_auth::site;
     use crate::business_signup::notice_line;
     use crate::pick_flow::{PageLanguage, result_page};
@@ -582,12 +616,14 @@ mod brand_tests {
         let html = FeedbackView::form(1042, TOKEN.to_owned(), "csrf-sample".to_owned())
             .render()
             .expect("form renders");
-        assert!(html.contains("<title>Feedback on request 1042 | Ask Hava</title>"));
-        assert!(html.contains("<header>\n<p><a href=\"/\">Ask Hava</a></p>\n</header>"));
-        assert!(html.contains("<label for=\"feedback-share\">Ask Hava may show what I wrote on askhava.com with my first name and town</label>"));
+        assert!(html.contains(&fill("<title>Feedback on request 1042 | {brand}</title>")));
+        assert!(html.contains(&fill(
+            "<header>\n<p><a href=\"/\">{brand}</a></p>\n</header>"
+        )));
+        assert!(html.contains(&fill("<label for=\"feedback-share\">{brand} may show what I wrote on {domain} with my first name and town</label>")));
         assert_eq!(
             share_label(),
-            "Ask Hava may show what I wrote on askhava.com with my first name and town"
+            fill("{brand} may show what I wrote on {domain} with my first name and town")
         );
     }
 
@@ -595,15 +631,22 @@ mod brand_tests {
     #[test]
     fn td_word_37_contact_card_link_is_todays() {
         let html = result_page(1042, 2, TOKEN.to_owned(), None).expect("result renders");
-        assert!(html.contains(
-            "<p><a href=\"data:text/vcard;charset=utf-8,BEGIN%3AVCARD%0D%0AVERSION%3A3.0%0D%0AFN%3AAsk%20Hava%0D%0AORG%3AAsk%20Hava%20LLC%0D%0AURL%3Ahttps%3A%2F%2Faskhava.com%0D%0AEND%3AVCARD%0D%0A\" download=\"ask-hava.vcf\">Add Ask Hava to your contacts</a></p>\n<p>Know someone who needs quotes? Send them askhava.com.</p>"
-        ));
+        let brand = askhava_core::api::brand();
+        let (name, legal, domain) = (
+            strict(brand.display_name()),
+            strict(brand.legal_name()),
+            strict(brand.domain()),
+        );
+        let file = brand.display_name().to_lowercase().replace(' ', "-");
+        assert!(html.contains(&fill(&format!(
+            "<p><a href=\"data:text/vcard;charset=utf-8,BEGIN%3AVCARD%0D%0AVERSION%3A3.0%0D%0AFN%3A{name}%0D%0AORG%3A{legal}%0D%0AURL%3Ahttps%3A%2F%2F{domain}%0D%0AEND%3AVCARD%0D%0A\" download=\"{file}.vcf\">Add {{brand}} to your contacts</a></p>\n<p>Know someone who needs quotes? Send them {{domain}}.</p>"
+        ))));
     }
 
     /// TD-WORD-37 (SEC-025): the emailed sign-in link is on the brand's domain only.
     #[test]
     fn td_word_37_sign_in_site_is_the_brand_domain() {
-        assert_eq!(site(), "https://askhava.com");
+        assert_eq!(site(), fill("https://{domain}"));
     }
 
     /// TD-WORD-37 (WORD-001): the sign-up notice lines while texting is on, English and Spanish.
@@ -612,14 +655,19 @@ mod brand_tests {
         assert_eq!(
             notice_line(true, PageLanguage::En),
             (
-                "Choose how you get job requests and picks: email, text or both. Ask Hava never calls you with a recording.".to_owned(),
+                fill(
+                    "Choose how you get job requests and picks: email, text or both. {brand} never calls you with a recording."
+                ),
                 "en"
             )
         );
         assert_eq!(
             notice_line(true, PageLanguage::Es),
             (
-                "Elija cómo recibir las solicitudes de trabajo y las selecciones: correo electrónico, texto o ambos. Ask Hava nunca le llama con una grabación.".to_owned(),
+                fill_in(
+                    "Elija cómo recibir las solicitudes de trabajo y las selecciones: correo electrónico, texto o ambos. {brand} nunca le llama con una grabación.",
+                    true
+                ),
                 "es"
             )
         );
@@ -642,9 +690,9 @@ mod brand_tests {
             basis: Basis::OnSite,
         };
         let html = why_charged_page(&facts).expect("page renders");
-        assert!(html.contains("You set your price after seeing the job, so Ask Hava used the usual visit fee for this kind of work. That makes it a small job."));
-        assert!(html.contains(
-            "<li>Ask Hava is not a contractor and does not perform, bid on or supervise work.</li>"
-        ));
+        assert!(html.contains(&fill("You set your price after seeing the job, so {brand} used the usual visit fee for this kind of work. That makes it a small job.")));
+        assert!(html.contains(&fill(
+            "<li>{brand} is not a contractor and does not perform, bid on or supervise work.</li>"
+        )));
     }
 }
