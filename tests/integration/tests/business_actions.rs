@@ -5,6 +5,7 @@
 //!
 //! Every job number, price, ID and date is fake.
 
+use askhava_core::api::brand;
 use askhava_payments::api::{FeeError, FeeJob, PeriodJob, RecurringCap, Service, Tier, VisitTier};
 use askhava_portals::api::{
     ActionFacts, ActionKind, ChargeAsked, FactProblem, FactsForm, HELP_REQUEST_KIND,
@@ -458,7 +459,9 @@ fn td_biz_15_ask_about_a_charge_answers_with_the_charge_details() {
     assert!(answer.contains("$75 for job 1042, the introduction fee for a medium job."));
     assert!(answer.contains("https://askhava.com/b/why/fake"));
     assert!(answer.ends_with(
-        "The Ask Hava owner gets charge questions right away and usually replies within 2 days."
+        &brand()
+            .fill("The {brand} owner gets charge questions right away and usually replies within 2 days.", false)
+            .expect("known brand tokens")
     ));
     assert!(
         charge_answer("7", Tier::Small, "x")

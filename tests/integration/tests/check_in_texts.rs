@@ -11,7 +11,7 @@ use std::collections::BTreeSet;
 use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_businesses::api::AccountStatus;
 use askhava_calls::api::{AnsweredBy, Caller, LoggedCall};
-use askhava_core::api::{IdSecret, LinkToken};
+use askhava_core::api::{IdSecret, LinkToken, brand};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     JOB_TEXT_TEMPLATES, JobStart, JobTextKeys, JobTextStep, Opened, TextIn, begin_job,
@@ -48,8 +48,10 @@ const DAY: &str = "2026-11-02T17:00:00Z";
 const PHONE: &str = "+19285550151";
 const OTHER_PHONE: &str = "+19285550152";
 const BUSINESS_NAME: &str = "Fake Plumbing";
+/// The fixed line of the problem-report texts, with the brand file's tokens (D-3347).
+const THANKS_LINE: &str = "{brand_short}: Thanks. The {brand} owner reads every problem report";
 /// JOB-015's first line, word for word, after the opening.
-const FIRST_LINE: &str = "Ask Hava: Reply DONE, PROBLEM, or NO if they never reached you. Not done yet? Reply LATER. More answers: reply MORE.";
+const FIRST_LINE: &str = "{brand_short}: Reply DONE, PROBLEM, or NO if they never reached you. Not done yet? Reply LATER. More answers: reply MORE.";
 /// The seven templates T278 makes sendable (`problem_reply` was T097's, D-1811).
 const NEW: [&str; 7] = [
     "check_in_day3",
@@ -60,6 +62,17 @@ const NEW: [&str; 7] = [
     "unreachable_closed",
     "emailed_question",
 ];
+
+/// `text` with the brand file's names in place of its `{brand...}` and `{domain}` tokens, so an
+/// expected line follows a brand switch (WORD-001, D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("known brand tokens")
+}
+
+/// The opening every text the app composes starts with, `<short_name>: ` (WORD-008).
+fn opening(spanish: bool) -> String {
+    branded("{brand_short}: ", spanish)
+}
 
 fn ts(s: &str) -> Timestamp {
     s.parse().expect("instant")
@@ -284,7 +297,8 @@ fn td_job_13_the_new_templates_render_in_both_languages() {
         let text = parse_job_text(&payload).expect("a known template");
         for language in [Language::En, Language::Es] {
             let body = job_text_body(&text, language, Some(link)).expect("rendered");
-            assert!(body.starts_with("Ask Hava: "), "{template}");
+            let es = language == Language::Es;
+            assert!(body.starts_with(&opening(es)), "{template}");
             assert!(!body.contains('{'), "{template}: {body}");
             let shape = UPDATE_TEXTS.iter().find(|(id, _)| *id == template);
             let shape = shape.map_or(Shape::Capped, |(_, s)| *s);
@@ -292,16 +306,18 @@ fn td_job_13_the_new_templates_render_in_both_languages() {
         }
         let english = job_text_body(&text, Language::En, Some(link)).expect("en");
         let fixed = match template {
-            "check_in_day3" | "check_in_day14" => FIRST_LINE.to_owned(),
+            "check_in_day3" | "check_in_day14" => branded(FIRST_LINE, false),
             "unreachable_closed" => format!(
-                "Ask Hava: {BUSINESS_NAME} couldn't reach you. Text us any time to start again."
+                "{}: {BUSINESS_NAME} couldn't reach you. Text us any time to start again.",
+                brand().short_name()
             ),
             "emailed_question" => format!(
-                "Ask Hava: Did {BUSINESS_NAME} email you and agree a time? Text back YES or NO."
+                "{}: Did {BUSINESS_NAME} email you and agree a time? Text back YES or NO.",
+                brand().short_name()
             ),
             "feedback_request" => link.to_owned(),
             "check_in_more" => "OTHER: you hired someone else.".to_owned(),
-            _ => "Ask Hava: Thanks. The Ask Hava owner reads every problem report".to_owned(),
+            _ => branded(THANKS_LINE, false),
         };
         assert!(english.contains(&fixed), "{template}: {english}");
     }
@@ -338,14 +354,14 @@ async fn td_job_13_the_sender_sends_each_new_template(pool: PgPool) {
             .fetch_one(&mut *db)
             .await
             .expect("body");
-        assert!(body.starts_with("Ask Hava: "), "{template}");
+        assert!(body.starts_with(&opening(false)), "{template}");
         let link = body.split_whitespace().find(|w| w.starts_with("https://"));
         if template != "feedback_request" {
             assert_eq!(link, None, "{template}");
             continue;
         }
         let token = link
-            .and_then(|l| l.strip_prefix("https://askhava.com/f/"))
+            .and_then(|l| l.strip_prefix(&branded("https://{domain}/f/", false)))
             .expect("feedback link");
         let token = LinkToken::parse(token).expect("token");
         assert_eq!(resolve(&mut db, &token).await.expect("resolve"), Some(job));
