@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T02:24:58Z by runner 878f71e08df1 (actions).
+Updated 2026-11-13T02:27:16Z by runner 878f71e08df1 (actions).
 
 **Building: T215 in progress since 23:45Z; 265 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T02:24:58Z by runner 878f71e08df1 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T425 claimed 02:11Z, lease until 05:11Z; lane 4: T426 claimed 02:14Z, lease until 05:14Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
 - **Week:** 11% used, 164.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:24Z, 0 min before this update
+- **Last run:** 02:27Z, 0 min before this update
 - **Keeper:** last ran 02:24Z, next wake 02:47Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ Updated 2026-11-13T02:24:58Z by runner 878f71e08df1 (actions).
 | T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z |  |
 | T400 | server: the web process stores the catalog file at start-up, | done | 1 | 21 min | 03:07Z |  |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | resync | 1 | 67 min | 02:56Z |  |
-| T334 | payments: the nightly reconcile catches up after an outage f | done | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
