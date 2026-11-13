@@ -1,25 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-13T09:02:30Z by runner ca8b6b621c5e (actions).
+Updated 2026-11-13T09:02:49Z by runner f11e5ea2d96c (manual).
 
-**Building: T249 in progress since 07:51Z; 276 of 416 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T249 in progress since 07:51Z; 276 of 417 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 276 of 416 build tasks (owner gates not counted)
+- **Tasks done:** 276 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T249 claimed 07:51Z, lease until 10:51Z; lane 2: T431 claimed 09:02Z, lease until 12:02Z
 - **Week:** 14% used, 161.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:58Z, 4 min before this update
+- **Last run:** 09:02Z, 0 min before this update
 - **Keeper:** last ran 08:57Z, next wake 10:54Z
 
 ## Needs attention
-- BLOCKED T255: plan gap reported: PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address cannot reach the release with T255's files. picks::release reads the address only from the proof's contact (release.rs:347, privacy/src/api.rs:257); the sink mints the proof for the phone contact (release_sink.rs:101-133); take_name_address stores the address as a separate phone-less vault contact (conversation.rs:408-421); privacy has no public setter for a stored contact (vault.rs, only private reseal). Minting for the address-only contact would give the masked line a homeo; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T255 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 26 problem(s) on tasks still to run (+149 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 2 | 3 min | 07:47Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
+| T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 2 | 3 min | 07:47Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | BLOCKED | 1 | 40 min | 07:40Z | PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switc |
 | T420 | Brand rename prep: intake and ai unit tests take the brand f | done | 1 | 28 min | 06:38Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | done | 1 | 22 min | 05:08Z |  |
@@ -35,7 +34,7 @@ Updated 2026-11-13T09:02:30Z by runner ca8b6b621c5e (actions).
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | done | 1 | 26 min | 01:18Z |  |
 | T424 | Brand rename prep: integration tests (open-cards digest to s | done | 1 | 32 min | 01:15Z |  |
 | T372 | businesses and licensing: each recorded ROC list re-applies  | done | 1 | 81 min | 01:07Z |  |
-| T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 1 | 2 min | 23:48Z |  |
+| T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 1 | 2 min | 23:48Z |  |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | done | 1 | 57 min | 23:46Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z |  |
 | T418 | Performance: lab Core Web Vitals and Ci's warn-only performa | done | 1 | 50 min | 23:24Z |  |
@@ -84,6 +83,7 @@ Updated 2026-11-13T09:02:30Z by runner ca8b6b621c5e (actions).
 | T406 | quotes: a quote's PICK-040 facts are stored with it and read | done | 1 | 41 min | 09:05Z |  |
 
 ### Plan and harness merges on main
+- 09:02Z Plan: T255 plan gap 2, the address is written onto the homeowner's own contact (D-3431) (#660)
 - 08:55Z Plan: T428 plan gap, new prep task owns the six pinned tests (D-3430) (#659)
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
 - 04:59Z Harness: release a dead worker's lease early (D-3417) (#651)
@@ -110,8 +110,8 @@ Updated 2026-11-13T09:02:30Z by runner ca8b6b621c5e (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 234 of 733 (31.9%) · partial 338 · unstarted 161
-**Tasks merged (throughput only):** 276 of 416
+**Requirements verified:** 233 of 733 (31.8%) · partial 339 · unstarted 161
+**Tasks merged (throughput only):** 276 of 417
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -121,7 +121,7 @@ Updated 2026-11-13T09:02:30Z by runner ca8b6b621c5e (actions).
 | calls | 10 | 14 | 1 | 25 |
 | consent | 11 | 20 | 4 | 35 |
 | fees | 13 | 38 | 1 | 52 |
-| intake | 24 | 16 | 3 | 43 |
+| intake | 23 | 17 | 3 | 43 |
 | job-cards | 12 | 11 | 1 | 24 |
 | licensing | 26 | 22 | 0 | 48 |
 | lifecycle | 19 | 9 | 0 | 28 |

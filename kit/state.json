@@ -26274,7 +26274,7 @@
     "T162",
     "T337"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "emergency-address-rerelease",
    "type": "build",
@@ -26288,8 +26288,8 @@
     3351,
     3352
    ],
-   "reason": "plan gap reported: PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address cannot reach the release with T255's files. picks::release reads the address only from the proof's contact (release.rs:347, privacy/src/api.rs:257); the sink mints the proof for the phone contact (release_sink.rs:101-133); take_name_address stores the address as a separate phone-less vault contact (conversation.rs:408-421); privacy has no public setter for a stored contact (vault.rs, only private reseal). Minting for the address-only contact would give the masked line a homeo; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T255 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address cannot reach the release with T255's files. picks::release reads the address only from the proof's contact (release.rs:347, privacy/src/api.rs:257); the sink mints the proof for the phone contact (release_sink.rs:101-133); take_name_address stores the address as a separate phone-less vault contact (conversation.rs:408-421); privacy has no public setter for a stored contact (vault.rs, only private reseal). Minting for the address-only contact would give the masked line a homeowner with no phone (release.rs:226-243). Fix needs either a privacy setter (T255 co-owns app/privacy/src/vault.rs and api.rs) or release.rs reading a second address contact named in the proof. Reviewer confirmed all five points.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address cannot reach the release with T255's files. picks::release reads the address only from the proof's contact (release.rs:347, privacy/src/api.rs:257); the sink mints the proof for the phone contact (release_sink.rs:101-133); take_name_address stores the address as a separate phone-less vault contact (conversation.rs:408-421); privacy has no public setter for a stored contact (vault.rs, only private reseal). Minting for the address-only contact would give the masked line a homeowner with no phone (release.rs:226-243). Fix needs either a privacy setter (T255 co-owns app/privacy/src/vault.rs and api.rs) or release.rs reading a second address contact named in the proof. Reviewer confirmed all five points.\nre-queued after plan fix D-3431: Plan gap 2 fixed by D-3431 (#660): address written onto the homeowner's own contact via privacy::api::set_name_address (Fable option A)",
    "history": [
     {
      "attempt": 1,
@@ -26351,6 +26351,19 @@
      "plan_head": "90d5556300973896efdf6698352640a27bf8615f",
      "plan_then": "d863d4466314721eb6ebe428ced50cbb5f951340ec3c06df415a12dcbd6e7a3b",
      "plan_now": "596dbfb40e8e34935f4856e0c800689e0a221b1631394e262af819bd7dfd9d2f"
+    },
+    {
+     "at": "2026-11-13T09:02:49Z",
+     "reason": "Plan gap 2 fixed by D-3431 (#660): address written onto the homeowner's own contact via privacy::api::set_name_address (Fable option A)",
+     "by": "manual-8e944c63fc33",
+     "was": "plan gap reported: PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address cannot reach the release with T255's files. picks::release reads the address only from the proof's contact (release.rs:347, privacy/src/api.rs:257); the sink mints the proof for the phone contact (release_sink.rs:101-133); take_name_address stores the address as a separate phone-less vault contact (conversation.rs:408-421); privacy has no public setter for a stored contact (vault.rs, only private reseal). Minting for the address-only contact would give the masked line a homeo; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T255 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-3431",
+     "plan_since": "2026-11-13T07:43:44Z",
+     "plan_base": "bee96646639a786cdb7e05b11b9bdbb2d68084b2",
+     "plan_head": "f11e5ea2d96c25246d460280f132e98b2517a18d",
+     "plan_then": "8d36c2cd8df0e35a02ac8cff007659390a911c3d0087da8b0b73ab937bb54465",
+     "plan_now": "1bb5ab49b564790ead30636fc039018b8d2b815dd95f81f453aea52c49872912"
     }
    ]
   },
@@ -47265,7 +47278,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T09:02:30Z",
+ "updated_at": "2026-11-13T09:02:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -47363,8 +47376,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ca8b6b621c5e1714c8116eaa639b1fa04845df35",
- "starter": "actions",
+ "runner_sha": "f11e5ea2d96c25246d460280f132e98b2517a18d",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "dae8c6443b4f29a2b72d558ac349c5d778388eb3",
