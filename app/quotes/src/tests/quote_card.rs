@@ -1,6 +1,7 @@
 //! The quote card's pure cases (TD-PICK-18, TD-PICK-29, TD-PICK-44; PICK-003, PICK-004,
 //! PICK-005, PICK-040, PICK-041, PICK-044). Made-up businesses and quotes only.
 
+use askhava_core::api::brand;
 use askhava_licensing::api::{CardLanguage, CardLine};
 use jiff::civil::date;
 
@@ -10,6 +11,12 @@ use crate::api::{
 };
 
 const ORIGINAL: &str = "Replace the kitchen faucet, 285 parts and labor";
+
+/// `text` with its brand tokens filled from the brand file, in Spanish when `spanish` (WORD-001,
+/// D-1932).
+fn fill(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("the brand fills")
+}
 
 fn facts(trip_fee: TripFee) -> QuoteFacts {
     QuoteFacts {
@@ -52,9 +59,12 @@ fn td_pick_18_facts_in_fixed_order_in_both_languages() {
     assert_eq!(en[0], "Desert Sample Plumbing");
     assert_eq!(
         en[2],
-        "Ask Hava doesn't rank businesses; check it yourself."
+        fill("{brand} doesn't rank businesses; check it yourself.", false)
     );
-    assert_eq!(en[3], "Independent business, not affiliated with Ask Hava.");
+    assert_eq!(
+        en[3],
+        fill("Independent business, not affiliated with {brand}.", false)
+    );
     let want = [
         "Trip fee counts toward the repair: Yes",
         "Parts and materials: Included",
@@ -169,16 +179,13 @@ fn td_pick_29_summary_off_by_default_and_never_adds_a_claim() {
     assert!(c.summary.is_some());
     let en = texts(&c, CardLanguage::English);
     assert_eq!(en[11], format!("The business's own words: {ORIGINAL}"));
-    assert_eq!(
-        en[12],
-        format!(
-            "Summary by Ask Hava's software. The business's own words above control. {faithful}"
-        )
-    );
+    let summary = "Summary by {brand}'s software. The business's own words above control. ";
+    assert_eq!(en[12], format!("{}{faithful}", fill(summary, false)));
     let es = texts(&c, CardLanguage::Spanish);
-    assert!(es[12].starts_with(
-        "Resumen hecho por el software de Ask Hava. Las palabras del negocio arriba son las que valen."
-    ));
+    assert!(es[12].starts_with(&fill(
+        "Resumen hecho por el software de {brand}. Las palabras del negocio arriba son las que valen.",
+        true
+    )));
 }
 
 /// TD-PICK-29: the setting switches on only with Casey's recorded decision and a published policy

@@ -7,6 +7,7 @@
 //! `stand_ins/provider_optout.json` (T167's), which has no YES; and the confirmation template is
 //! the bare CON-009 text in both languages.
 
+use askhava_core::api::brand;
 use jiff::{SignedDuration, Timestamp};
 use serde_json::Value;
 use sqlx::types::Uuid;
@@ -18,8 +19,14 @@ use crate::api::{
 };
 
 const PROVIDER: &str = include_str!("../../../../stand_ins/provider_optout.json");
-const CON_009_EN: &str = "Ask Hava: You're unsubscribed. You won't get more texts or automated calls from Ask Hava at this number. To use Ask Hava again, text START.";
-const CON_009_ES: &str = "Ask Hava: Se canceló su suscripción. No recibirá más textos ni llamadas automáticas de Ask Hava en este número. Para volver a usar Ask Hava, envíe START.";
+const CON_009_EN: &str = "{brand_short}: You're unsubscribed. You won't get more texts or automated calls from {brand} at this number. To use {brand} again, text START.";
+const CON_009_ES: &str = "{brand_short}: Se canceló su suscripción. No recibirá más textos ni llamadas automáticas de {brand} en este número. Para volver a usar {brand}, envíe START.";
+
+/// The CON-009 text in English or Spanish, its brand words filled from the brand file
+/// (WORD-001, WORD-008, D-1932).
+fn con_009(template: &str, spanish: bool) -> String {
+    brand().fill(template, spanish).expect("the brand fills")
+}
 
 fn list(value: &Value) -> Vec<String> {
     let words = value.as_array().expect("a list of words");
@@ -122,8 +129,8 @@ fn td_con_20_word_lists_equal_the_provider_settings() {
     );
     assert_eq!(list(&file["opt_in"]["keywords"]), RESUBSCRIBE_WORDS);
     assert!(!list(&file["opt_in"]["keywords"]).contains(&"yes".to_owned()));
-    assert_eq!(file["opt_out"]["reply"]["en"], CON_009_EN);
-    assert_eq!(file["opt_out"]["reply"]["es"], CON_009_ES);
+    assert_eq!(file["opt_out"]["reply"]["en"], con_009(CON_009_EN, false));
+    assert_eq!(file["opt_out"]["reply"]["es"], con_009(CON_009_ES, true));
     for word in APP_OPT_OUT_WORDS {
         assert!(
             !PROVIDER_OPT_OUT_WORDS.contains(&word),
@@ -136,9 +143,13 @@ fn td_con_20_word_lists_equal_the_provider_settings() {
 #[test]
 fn td_con_20_the_confirmation_is_the_bare_con_009_text() {
     let en = render(CONFIRMATION_TEMPLATE, Language::En, false, &[]).expect("en");
-    assert_eq!(en.body, CON_009_EN);
+    assert_eq!(en.body, con_009(CON_009_EN, false));
     let es = render(CONFIRMATION_TEMPLATE, Language::Es, false, &[]).expect("es");
-    assert_eq!(es.body, CON_009_ES, "the Spanish one stays on");
+    assert_eq!(
+        es.body,
+        con_009(CON_009_ES, true),
+        "the Spanish one stays on"
+    );
 }
 
 /// TD-CON-20, CON-015, CON-030: only the provider's START or UNSTOP match (`OptOutType=START`)
