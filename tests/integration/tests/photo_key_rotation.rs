@@ -4,7 +4,8 @@
 //! drill (`rotate_batch` and `rotate_photos` with `2:K2,1:K1` until both return 0) once only `2:K2`
 //! is left; a run with no old photo moves nothing; a re-seal stopped after its new object is
 //! written leaves the photo readable from its old row; the new object opens only under its row's
-//! version and its own job and photo ID. The fixture is a made-up 2 by 2 PNG, the keys are fake.
+//! version and its own job and photo ID; a failed old-object delete leaves the row moved; a row moved
+//! meanwhile is left alone; a connection inside a transaction is refused. The fixture is a made-up 2 by 2 PNG, the keys are fake.
 
 use askhava_adapters::api::{
     AdapterError, IdempotencyKey, LocalStorage, StorageAdapter, StorageDelete,
@@ -92,6 +93,56 @@ impl StorageDelete for StopsAfterPut<'_> {
     }
 }
 
+/// Storage whose delete fails (`FailsDelete`) or which, before each write, points the photo's row
+/// at another object as the owner (`MovesRow`): a row moved while it is being re-sealed.
+enum Fault<'a> {
+    FailsDelete(&'a LocalStorage),
+    MovesRow(&'a LocalStorage, &'a PgPool, Uuid),
+}
+
+impl Fault<'_> {
+    fn store(&self) -> &LocalStorage {
+        match self {
+            Self::FailsDelete(store) | Self::MovesRow(store, ..) => store,
+        }
+    }
+}
+
+impl StorageAdapter for Fault<'_> {
+    async fn put_object(
+        &self,
+        key: &IdempotencyKey,
+        name: &str,
+        bytes: Vec<u8>,
+    ) -> Result<(), AdapterError> {
+        if let Self::MovesRow(_, pool, photo) = self {
+            sqlx::query("UPDATE privacy.photo SET storage_key = 'photos/elsewhere' WHERE id = $1")
+                .bind(photo)
+                .execute(*pool)
+                .await
+                .expect("move the row");
+        }
+        self.store().put_object(key, name, bytes).await
+    }
+
+    async fn read_object(&self, name: &str) -> Result<Vec<u8>, AdapterError> {
+        self.store().read_object(name).await
+    }
+}
+
+impl StorageDelete for Fault<'_> {
+    async fn delete_object(&self, key: &IdempotencyKey, name: &str) -> Result<(), AdapterError> {
+        match self {
+            Self::FailsDelete(_) => Err(AdapterError::OutcomeUnknown),
+            Self::MovesRow(store, ..) => store.delete_object(key, name).await,
+        }
+    }
+
+    async fn list_objects(&self, prefix: &str) -> Result<Vec<String>, AdapterError> {
+        self.store().list_objects(prefix).await
+    }
+}
+
 fn fixture() -> Vec<u8> {
     let hex: String = PNG_HEX.split_whitespace().collect();
     (0..hex.len())
@@ -143,6 +194,16 @@ async fn row(pool: &PgPool, photo: Uuid) -> (i32, String) {
         .expect("photo row")
 }
 
+/// How many `ops.audit_log` rows name `photo` with `action`, read by the owner.
+async fn audits(pool: &PgPool, photo: Uuid, action: &str) -> i64 {
+    sqlx::query_scalar("SELECT count(*) FROM ops.audit_log WHERE subject_id = $1 AND action = $2")
+        .bind(photo)
+        .bind(action)
+        .fetch_one(pool)
+        .await
+        .expect("audit count")
+}
+
 /// TD-PRIV-24, PRIV-023, PRIV-024: a v1 photo, the drill with `2:K2,1:K1` until `rotate_batch` and
 /// `rotate_photos` both return 0, then `2:K2` alone: the link opens the same bytes and the v1
 /// object is gone. Fails on a `main` without `rotate_photos`.
@@ -176,6 +237,12 @@ async fn a_v1_photo_opens_after_the_drill_drops_the_old_key(pool: PgPool) {
     assert_eq!(version, 2);
     assert_ne!(name, format!("photos/{id}"));
     assert!(store.1.read_object(&format!("photos/{id}")).await.is_err());
+    assert_eq!(audits(&pool, id, "privacy.photo_resealed").await, 1);
+    assert_eq!(
+        audits(&pool, id, "privacy.photo_opened").await,
+        0,
+        "a re-seal is no open"
+    );
     let after = opened(&mut conn, &key(2, 0x12), &store.1, id).await;
     assert_eq!(after.expect("opens under v2 alone"), bytes);
 }
@@ -247,4 +314,68 @@ async fn the_new_object_opens_only_under_its_rows_version_and_aad(pool: PgPool) 
         .expect("set the row back to v1");
     let stale = opened(&mut conn, &both(), &store.1, id).await;
     assert!(matches!(stale, Err(PhotoError::Sealed)));
+}
+
+/// TD-PRIV-24, PRIV-023, D-1793: a failed delete of the old object returns `Storage` with the row
+/// already on v2 and its new object, which opens under `2:K2` alone; the old object is an orphan.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_failed_old_object_delete_leaves_the_row_moved(pool: PgPool) {
+    let store = dir("nodelete");
+    let mut conn = app(&pool).await;
+    let (id, bytes) = stored(&mut conn, &key(1, 0x11), &store.1).await;
+    let fails = Fault::FailsDelete(&store.1);
+    let deps = (&seal(&both()), &fails, &secret(ID_SECRET));
+    let failed = rotate_photos(&mut conn, deps, 10).await;
+    assert!(matches!(failed, Err(PhotoError::Storage)));
+    let (version, name) = row(&pool, id).await;
+    assert_eq!(version, 2);
+    assert_ne!(name, format!("photos/{id}"));
+    assert!(store.1.read_object(&format!("photos/{id}")).await.is_ok());
+    let after = opened(&mut conn, &key(2, 0x12), &store.1, id).await;
+    assert_eq!(after.expect("opens under v2 alone"), bytes);
+}
+
+/// TD-PRIV-24, PRIV-023, D-3542: a row moved to another object while it is re-sealed is left alone:
+/// the run returns 0, the row keeps v1 and the other object, the old object stays, and the new
+/// object is one extra orphan.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_row_moved_meanwhile_is_left_alone(pool: PgPool) {
+    let store = dir("moved");
+    let mut conn = app(&pool).await;
+    let (id, _) = stored(&mut conn, &key(1, 0x11), &store.1).await;
+    let moves = Fault::MovesRow(&store.1, &pool, id);
+    let deps = (&seal(&both()), &moves, &secret(ID_SECRET));
+    assert_eq!(rotate_photos(&mut conn, deps, 10).await.expect("run"), 0);
+    assert_eq!(row(&pool, id).await, (1, "photos/elsewhere".to_owned()));
+    assert!(store.1.read_object(&format!("photos/{id}")).await.is_ok());
+    assert_eq!(
+        store.1.list_objects("photos/").await.expect("list").len(),
+        2
+    );
+    assert_eq!(audits(&pool, id, "privacy.photo_resealed").await, 0);
+}
+
+/// TD-PRIV-24, PRIV-023, D-3545: a connection inside a transaction is refused before any row or
+/// object changes, so an outer rollback can never undo a move whose old object is gone.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_connection_inside_a_transaction_is_refused(pool: PgPool) {
+    let store = dir("intx");
+    let mut conn = app(&pool).await;
+    let (id, _) = stored(&mut conn, &key(1, 0x11), &store.1).await;
+    sqlx::query("BEGIN")
+        .execute(&mut conn)
+        .await
+        .expect("begin");
+    let deps = (&seal(&both()), &store.1, &secret(ID_SECRET));
+    let refused = rotate_photos(&mut conn, deps, 10).await;
+    assert!(matches!(refused, Err(PhotoError::InTransaction)));
+    sqlx::query("ROLLBACK")
+        .execute(&mut conn)
+        .await
+        .expect("rollback");
+    assert_eq!(row(&pool, id).await, (1, format!("photos/{id}")));
+    assert_eq!(
+        store.1.list_objects("photos/").await.expect("list").len(),
+        1
+    );
 }

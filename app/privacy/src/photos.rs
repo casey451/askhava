@@ -497,16 +497,21 @@ pub async fn open_link<S: StorageAdapter>(
 /// object is deleted only after that commits. A row moved meanwhile is left alone and the new
 /// object is an orphan; a crash at any step leaves a readable photo and at most one orphan, which
 /// the orphan sweep removes (D-1793). No plaintext is logged or kept, and no open audit is written:
-/// nothing reaches a reader.
+/// nothing reaches a reader. A connection inside a transaction is refused first: the old object is
+/// deleted after the move commits, so an outer rollback must never undo the move (D-3545).
 ///
 /// # Errors
 ///
-/// [`PhotoError::Storage`], [`PhotoError::Sealed`] or [`PhotoError::Database`].
+/// [`PhotoError::InTransaction`], [`PhotoError::Storage`], [`PhotoError::Sealed`] or
+/// [`PhotoError::Database`].
 pub async fn rotate_photos<S: StorageDelete + Sync>(
     db: &mut PgConnection,
     keys: (&PhotoSeal, &S, &SecretString),
     limit: i64,
 ) -> Result<u64, PhotoError> {
+    if in_transaction(db).await.map_err(db_err)? {
+        return Err(PhotoError::InTransaction);
+    }
     let active = keys.0.active_version()?;
     let rows = sqlx::query_as!(
         OldPhoto,
