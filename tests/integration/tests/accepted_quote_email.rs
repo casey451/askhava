@@ -8,7 +8,7 @@ use std::collections::BTreeSet;
 use std::sync::Arc;
 
 use askhava_businesses::api::AccountStatus;
-use askhava_core::api::{Claimed, IdSecret, LinkToken, MIGRATOR, ManualClock};
+use askhava_core::api::{Claimed, IdSecret, LinkToken, MIGRATOR, ManualClock, brand};
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer, TextIn, receive_text, record_answer, run_accepted_quote};
 use askhava_jobs::api::quote_token::issue;
@@ -37,6 +37,12 @@ use tower::ServiceExt;
 /// 10:00 Arizona.
 const NOW: i64 = 1_793_638_800;
 const WORDS: &str = "Swap the capacitor and check the coil, parts and labor included";
+
+/// `text` with the brand file's names in place of its `{brand...}` and `{domain}` tokens, so an
+/// expected line follows a brand switch (WORD-001, D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("known brand tokens")
+}
 
 fn now() -> Timestamp {
     Timestamp::from_second(NOW).expect("time")
@@ -278,7 +284,7 @@ async fn td_pick_42_the_email_holds_the_quote_and_the_contacts_offer(pool: PgPoo
                 "Firm price",
                 "$325",
                 "Nov 9",
-                "Add Ask Hava to your contacts",
+                "Add {brand} to your contacts",
             ],
         ),
         (
@@ -287,7 +293,7 @@ async fn td_pick_42_the_email_holds_the_quote_and_the_contacts_offer(pool: PgPoo
                 "Precio fijo",
                 "$325",
                 "9 nov",
-                "Agregue Ask Hava a sus contactos",
+                "Agregue {brand} a sus contactos",
             ],
         ),
     ] {
@@ -307,7 +313,7 @@ async fn td_pick_42_the_email_holds_the_quote_and_the_contacts_offer(pool: PgPoo
         assert_eq!(stored.len(), usize::from(es) + 1, "one email per pick");
         for part in [html, plain] {
             for line in lines.iter().chain([&WORDS]) {
-                assert!(part.contains(line), "{line}: {part}");
+                assert!(part.contains(&branded(line, es)), "{line}: {part}");
             }
             let lower = part.to_lowercase();
             for reward in ["reward", "discount", "credit", "recompensa", "descuento"] {
@@ -315,7 +321,10 @@ async fn td_pick_42_the_email_holds_the_quote_and_the_contacts_offer(pool: PgPoo
             }
             assert!(!part.contains("dana@example.com") && !part.contains("Dana"));
         }
-        assert!(subject.starts_with("Ask Hava:"), "{subject}");
+        assert!(
+            subject.starts_with(&format!("{}:", brand().short_name())),
+            "{subject}"
+        );
     }
 }
 
@@ -372,9 +381,9 @@ async fn td_pick_42_the_page_shows_the_accepted_quote_until_the_token_expires(po
         "Amount: $325",
         "Earliest visit: Nov 9",
         WORDS,
-        "Add Ask Hava to your contacts",
+        "Add {brand} to your contacts",
     ] {
-        assert!(after.contains(line), "{line}");
+        assert!(after.contains(&branded(line, false)), "{line}");
     }
     assert!(!after.contains("Dana") && !after.contains("5550188"));
     let closed = now() + SignedDuration::from_hours(1);

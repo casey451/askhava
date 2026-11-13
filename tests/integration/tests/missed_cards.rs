@@ -7,6 +7,7 @@
 //! pressure word. Your numbers' "cards that ended without a quote" is T085's page (BIZ-025); the
 //! owner health page's share is TD-OPS-02's (D-491).
 
+use askhava_core::api::brand;
 use askhava_messaging::api::{
     Language, MissedSettings, MonthCards, first_of_month, missed_email_due,
 };
@@ -34,6 +35,12 @@ const LINKS: (&str, &str) = (
     "https://askhava.com/b/inbox-check",
     "https://askhava.com/b/notices",
 );
+
+/// `text` with the brand file's names (Spanish when `spanish`) in place of its `{brand_short}`
+/// tokens (WORD-008, D-1932).
+fn filled(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("brand tokens")
+}
 
 /// TD-BIZ-20 (BIZ-044, D-331): who gets it and when.
 #[test]
@@ -65,10 +72,16 @@ fn td_pick_33_the_missed_cards_line_equals_the_spec() {
     let en = missed_cards_line(month(6, 3), LINKS, Language::En);
     assert_eq!(
         en,
-        "Ask Hava: Last month you got 6 job requests and quoted 3. 3 closed before you quoted. If our emails land in Spam or Promotions, this 1-minute fix moves them to your inbox: https://askhava.com/b/inbox-check. Or add a second address: https://askhava.com/b/notices."
+        filled(
+            "{brand_short}: Last month you got 6 job requests and quoted 3. 3 closed before you quoted. If our emails land in Spam or Promotions, this 1-minute fix moves them to your inbox: https://askhava.com/b/inbox-check. Or add a second address: https://askhava.com/b/notices.",
+            false
+        )
     );
     let es = missed_cards_line(month(6, 3), LINKS, Language::Es);
-    assert!(es.starts_with("Ask Hava: El mes pasado recibió 6 solicitudes"));
+    assert!(es.starts_with(&filled(
+        "{brand_short}: El mes pasado recibió 6 solicitudes",
+        true
+    )));
     assert!(es.contains(LINKS.0) && es.contains(LINKS.1));
     let pressure = [
         "hurry",

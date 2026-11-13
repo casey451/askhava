@@ -22,7 +22,7 @@ use askhava_businesses::api::{
     set_emergency_emails, set_job_types, set_towns, welcome_sent,
 };
 use askhava_core::api::{
-    Clock, Lease, ManualClock, NewTask, Registry, Settings, WorkerId, claim, enqueue,
+    Clock, Lease, ManualClock, NewTask, Registry, Settings, WorkerId, brand, claim, enqueue,
 };
 use askhava_messaging::api::{
     BUSINESS_NOTICE_KIND, DailyLimit, EmailTo, RECEIPT_EMAIL_KIND, send_email,
@@ -57,6 +57,12 @@ const NOTICE: CardNotice<'static> = CardNotice {
     town: "Lake Havasu City",
     card: "AC not cooling. How soon: today.",
 };
+
+/// `text` with the brand file's names in place of its `{brand...}` and `{domain}` tokens, so an
+/// expected line follows a brand switch (WORD-001, D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("known brand tokens")
+}
 
 fn az(time: &str) -> Timestamp {
     time.parse().expect("time")
@@ -284,7 +290,10 @@ async fn td_card_15_emergency_card_goes_at_night_and_ordinary_waits(pool: PgPool
     let subject = emergency_card_subject("HVAC", "Lake Havasu City");
     assert_eq!(
         subject,
-        "Ask Hava: EMERGENCY HVAC job in Lake Havasu City. Quote as soon as you can."
+        branded(
+            "{brand_short}: EMERGENCY HVAC job in Lake Havasu City. Quote as soon as you can.",
+            false
+        )
     );
     let at_night = mail.taken();
     assert_eq!(at_night.len(), 1, "only the switched-on owner at 22:40");
@@ -309,8 +318,10 @@ async fn td_card_15_emergency_card_goes_at_night_and_ordinary_waits(pool: PgPool
     run_due(&pool, &registry, &clock).await;
     deliver(&pool, &mail, eight()).await;
     let all = mail.taken();
-    let ordinary_subject =
-        "Ask Hava: New HVAC job in Lake Havasu City. Quote by 8 a.m. Arizona time.";
+    let ordinary_subject: &str = &branded(
+        "{brand_short}: New HVAC job in Lake Havasu City. Quote by 8 a.m. Arizona time.",
+        false,
+    );
     let member = address(Uuid::from_u128(0xe1));
     let owner = address(Uuid::from_u128(0xe0));
     let mut got: Vec<(&str, &str)> = all
@@ -414,7 +425,9 @@ async fn td_fee_55_a_receipt_reaches_the_provider_once(pool: PgPool) {
     assert_eq!(taken.len(), 1);
     assert_eq!(taken[0].0, address(owner));
     assert!(
-        taken[0].1.starts_with("Ask Hava: Receipt for job "),
+        taken[0]
+            .1
+            .starts_with(&branded("{brand_short}: Receipt for job ", false)),
         "{}",
         taken[0].1
     );
