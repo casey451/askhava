@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T14:23:07Z by runner e813c2aaa54c (actions).
+Updated 2026-11-13T14:23:23Z by runner e813c2aaa54c (actions).
 
 **Building: T330 in progress since 13:50Z; 281 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 281 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T330 claimed 13:50Z, lease until 16:50Z; lane 3: T367 claimed 13:22Z, lease until 16:22Z; lane 4: T266 claimed 13:35Z, lease until 16:35Z
+- **Lane:** lane 1: T330 claimed 13:50Z, lease until 16:50Z; lane 4: T266 claimed 13:35Z, lease until 16:35Z
 - **Week:** 19% used, 151.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:22Z, 0 min before this update
 - **Keeper:** last ran 14:22Z, next wake 16:24Z
@@ -21,6 +21,7 @@ Updated 2026-11-13T14:23:07Z by runner e813c2aaa54c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T367 | jobs, messaging, privacy, intake and payments: the daily swe | MERGE_PENDING | 1 | 60 min | 14:23Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z | PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T312 | intake: a street address written in lower case never trips t | done | 2 | 51 min | 12:32Z | session ended without handing in |
@@ -152,8 +153,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T330 (lease until 2026-11-13T16:50:53Z)
-- lane 3: T367 (lease until 2026-11-13T16:22:08Z)
 - lane 4: T266 (lease until 2026-11-13T16:35:19Z)
 
 ## Last usage reading
-- {"task": "T386", "at": "2026-11-13T13:41:02Z", "input_tokens": 112, "cache_read_input_tokens": 2796233, "cache_creation_input_tokens": 122395, "output_tokens": 24370}
+- {"task": "T367", "at": "2026-11-13T14:23:06Z", "cache_creation_input_tokens": 588442, "input_tokens": 387, "output_tokens": 124038, "cache_read_input_tokens": 17767545}
