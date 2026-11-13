@@ -194,9 +194,9 @@ def test_the_line_count_is_read_from_origin_main_not_the_checked_out_branch(tmp_
     assert full("pay", 0) is False and entry.crate_doc_text(tmp_path, "pay") == "line\n" * 10
 
 
-def test_the_repository_sets_a_cap_of_one_with_the_guardrail_and_the_entry_point_passes_it() -> None:
+def test_the_repository_sets_a_cap_of_two_with_the_guardrail_and_the_entry_point_passes_it() -> None:
     raw = json.loads((ROOT / "kit" / "runner.json").read_text(encoding="utf-8"))
-    assert raw.get("crate_cap") == 1 and raw.get("exclusive_crates") is True and raw.get("prefer_disjoint_crates") is True
+    assert raw.get("crate_cap") == 2 and raw.get("exclusive_crates") is True and raw.get("prefer_disjoint_crates") is True
     assert "D-3303" in raw["crate_cap_note"] and "1 merge in 5" in raw["crate_cap_note"]
     source = inspect.getsource(entry.build)
     assert 'crate_cap=crate_cap(ROOT / "kit" / "runner.json")' in source and "crate_full=crate_doc_full(ROOT)" in source
