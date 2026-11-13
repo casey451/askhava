@@ -1,23 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-13T04:23:20Z by runner f5757405157a (actions).
+Updated 2026-11-13T04:23:25Z by runner 8d5543f1d410 (actions).
 
-**Building: T215 in progress since 04:02Z; 272 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 04:22Z; 272 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 272 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 7: T215 claimed 04:02Z, lease until 07:02Z
+- **Lane:** idle since 04:22Z (no task in progress)
 - **Week:** 12% used, 166.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:23Z, 0 min before this update
 - **Keeper:** last ran 04:23Z, next wake 07:05Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+141 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+142 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T215 | businesses and ops: pest identity by the city list plus atte | MERGE_PENDING | 1 | 20 min | 04:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T371 | licensing and server: the worker fetches and records the dai | MERGE_PENDING | 1 | 70 min | 04:18Z |  |
 | T427 | WORD-022 phrases catch both brand names in the spec trace, t | MERGE_PENDING | 1 | 29 min | 03:17Z |  |
 | T429 | Copy, voice and AI-smell docs name Laftly | done | 1 | 22 min | 03:13Z |  |
@@ -31,7 +32,7 @@ Updated 2026-11-13T04:23:20Z by runner f5757405157a (actions).
 | T372 | businesses and licensing: each recorded ROC list re-applies  | done | 1 | 81 min | 01:07Z |  |
 | T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 1 | 2 min | 23:48Z | PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclea |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | done | 1 | 57 min | 23:46Z |  |
-| T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z |  |
 | T418 | Performance: lab Core Web Vitals and Ci's warn-only performa | done | 1 | 50 min | 23:24Z |  |
 | T347 | licensing (harness): remove the handyman split-job check; ea | done | 1 | 52 min | 23:24Z |  |
 | T162 | intake: the one intake order for the five paths and the Span | done | 1 | 36 min | 23:01Z |  |
@@ -164,7 +165,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 7: T215 (lease until 2026-11-13T07:02:46Z)
 
 ## Last usage reading
-- {"task": "T371", "at": "2026-11-13T04:18:28Z", "cache_read_input_tokens": 29209213, "cache_creation_input_tokens": 882518, "output_tokens": 254524, "input_tokens": 536}
+- {"task": "T215", "at": "2026-11-13T04:22:58Z", "input_tokens": 73, "output_tokens": 13034, "cache_creation_input_tokens": 61452, "cache_read_input_tokens": 824985}
