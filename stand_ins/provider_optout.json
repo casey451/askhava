@@ -4,14 +4,14 @@
     "keywords": ["stop", "stopall", "unsubscribe", "cancel", "end", "revoke", "optout", "quit", "parar", "alto", "cancelar", "baja"],
     "spanish_keywords": ["parar", "alto", "cancelar", "baja"],
     "reply": {
-      "en": "Ask Hava: You're unsubscribed. You won't get more texts or automated calls from Ask Hava at this number. To use Ask Hava again, text START.",
-      "es": "Ask Hava: Se canceló su suscripción. No recibirá más textos ni llamadas automáticas de Ask Hava en este número. Para volver a usar Ask Hava, envíe START."
+      "en": "Laftly: You're unsubscribed. You won't get more texts or automated calls from Laftly at this number. To use Laftly again, text START.",
+      "es": "Laftly: Se canceló su suscripción. No recibirá más textos ni llamadas automáticas de Laftly en este número. Para volver a usar Laftly, envíe START."
     }
   },
   "opt_in": {
     "keywords": ["start", "unstop"],
     "reply": {
-      "en": "Ask Hava: You can text us again. Send your request to start. Msg & data rates may apply. Reply HELP for help, STOP to opt out."
+      "en": "Laftly: You can text us again. Send your request to start. Msg & data rates may apply. Reply HELP for help, STOP to opt out."
     }
   }
 }

@@ -71,7 +71,7 @@ The layer-0 crate every module may call: settings, the database pool and guarded
 - A new table in any schema gets SELECT, INSERT only for the app role; a table that needs UPDATE or DELETE gets an explicit `GRANT ... TO askhava_app` in the migration that creates it, and a new schema writes its default as `GRANT SELECT, INSERT ON TABLES` (D-1520): `tests/integration/tests/schema_grants.rs` (TD-SEC-34) pins every non-payments table's privileges, checks every schema's default and holds a later table to SELECT, INSERT plus its explicit GRANTs.
 
 - Customer-visible code never writes the brand: it reads `brand()` or a template token; `tests/docs/test_brand_literals.py` fails on any literal under `app/`; since T295 there is no baseline, and a `tests/brand_literal_baseline.json` file fails the guard (D-1933, D-2833).
-- The brand file is a protected path: a rename is a harness change with its decision, and the legal drafts in `docs/legal/` must be re-issued under the new name (`scripts/check_legal_docs.py` fails until they are, TERMS-016).
+- The brand file is a protected path: a rename is a harness change with its decision, and the legal drafts in `docs/legal/` must be re-issued under the new name (`scripts/check_legal_docs.py` fails until they are, TERMS-016). T428 (D-3347, D-3425 to D-3428) switched it to Laftly (Laftly LLC, `laftly.com`, `jobs@notify.laftly.com`, prefix LAFTLY), with `forbidden_alone` still `["Hava"]`; the same change re-issued the drafts, raised `payments`' `AUTHORIZATION_VERSION` and `quotes`' `AUTO_CONFIRM_VERSION` to 2 and reworded `stand_ins/provider_optout.json`'s replies. A later rename repeats all four in one harness change.
 
 ## How to change
 
