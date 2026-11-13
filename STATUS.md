@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T07:46:38Z by runner bee96646639a (actions).
+Updated 2026-11-13T07:46:58Z by runner bee96646639a (actions).
 
 **Building: T255 in progress since 07:43Z; 276 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-13T07:46:38Z by runner bee96646639a (actions).
 - **Lane:** lane 2: T255 claimed 07:43Z, lease until 10:43Z
 - **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:46Z, 0 min before this update
-- **Keeper:** last ran 07:41Z, next wake 08:01Z
+- **Keeper:** last ran 07:46Z, next wake 10:45Z
 
 ## Needs attention
 - BLOCKED T428: plan gap reported: PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switch.rs:67, fee_fixed_at_pick.rs:334, coverage_email.rs:249, pest_identity.rs:278. With the brand switched to Laftly and AUTHORIZATION_VERSION 2 they fail (old sms-terms version line; TERMS version 1; switch writes 3; terms_version 1 vs 2; hard-coded "Ask Hava: "). T428's line that fee_fixed_at_pick.rs passes unchanged contradicts the version-2 floor. Reviewer confirmed each by reading. Fix: give these files an owner or a harness task before T428.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T428 --plan-fix D-### --reason "..."` (D-2859)
