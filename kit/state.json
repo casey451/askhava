@@ -23201,12 +23201,12 @@
      }
     }
    ],
-   "reviewed_sha": "e5edba19585b4c324456fcf244a49f620cb004ad",
+   "reviewed_sha": "d1efac020ec045c498fa8cf8e8a48956012ad374",
    "review_lease": {
     "task": "T215",
-    "session": "actions-43319210977",
-    "expires": "2026-11-13T01:29:12Z",
-    "lane": "5"
+    "session": "actions-43360492123",
+    "expires": "2026-11-13T07:02:46Z",
+    "lane": "7"
    },
    "branch": "claude/task/T215-pest-identity-coverage-email",
    "auto_merge": {
@@ -23235,15 +23235,25 @@
     }
    ],
    "last_failure": "merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891)",
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "stale_leases": [
     {
      "task": "T215",
      "session": "actions-43326253728",
      "expires": "2026-11-13T02:45:19Z"
     }
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "8d5543f1d410e4fc54165c7c65d14e9d0f7e5a0a",
+     "to": "d1efac020ec045c498fa8cf8e8a48956012ad374",
+     "main": "f5757405157ae2338742788b6870f37dff5a2a15",
+     "how": "hand-in",
+     "at": "2026-11-13T04:23:09Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T166",
@@ -46604,7 +46614,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T04:22:49Z",
+ "updated_at": "2026-11-13T04:23:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -46702,7 +46712,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f5757405157ae2338742788b6870f37dff5a2a15",
+ "runner_sha": "8d5543f1d410e4fc54165c7c65d14e9d0f7e5a0a",
  "starter": "actions",
  "smoke_runs": [
   {
