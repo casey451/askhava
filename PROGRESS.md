@@ -3953,3 +3953,4 @@
 - 2026-11-13T19:42:08Z runner c309142e3550 (actions): {"T442": "QUEUED -> IN_PROGRESS"}; T442 estimated 403k tokens (calibrated); week has 120.5M left (no five-hour budget, D-3056) after 21.5M still running in another lane (session_reading 2026-11-13T19:36:16Z (week)); claimed
 - 2026-11-13T19:47:40Z runner c309142e3550 (manual): {}
 - 2026-11-13T19:56:35Z runner fb25e09988bd (actions): {}
+- 2026-11-13T19:56:53Z runner fb25e09988bd (actions): {"T314": "IN_PROGRESS -> MERGE_PENDING"}

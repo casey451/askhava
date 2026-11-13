@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T19:56:35Z by runner fb25e09988bd (actions).
+Updated 2026-11-13T19:56:53Z by runner fb25e09988bd (actions).
 
 **Building: T357 in progress since 19:21Z; 289 of 425 done; week 26% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 289 of 425 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T357 claimed 19:21Z, lease until 22:21Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T277 claimed 19:27Z, lease until 22:27Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 5: T314 claimed 19:26Z, lease until 22:26Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z; lane 7: T318 claimed 19:26Z, lease until 22:26Z
+- **Lane:** lane 1: T357 claimed 19:21Z, lease until 22:21Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T277 claimed 19:27Z, lease until 22:27Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z; lane 7: T318 claimed 19:26Z, lease until 22:26Z
 - **Week:** 26% used, 120.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:47Z, 8 min before this update
 - **Keeper:** last ran 19:36Z, next wake 22:23Z
@@ -19,6 +19,7 @@ Updated 2026-11-13T19:56:35Z by runner fb25e09988bd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T314 | payments and picks: a dispute's auto-submit mark and its tas | MERGE_PENDING | 1 | 29 min | 19:56Z |  |
 | T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 2 h 1 min | 18:26Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T281 | picks: the unreachable-homeowner steps run at 24, 48, 72 and | done | 1 | 107 min | 18:15Z |  |
@@ -153,9 +154,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T412 (lease until 2026-11-13T22:27:09Z)
 - lane 3: T277 (lease until 2026-11-13T22:27:41Z)
 - lane 4: T442 (lease until 2026-11-13T22:41:31Z)
-- lane 5: T314 (lease until 2026-11-13T22:26:40Z)
 - lane 6: T271 (lease until 2026-11-13T22:28:27Z)
 - lane 7: T318 (lease until 2026-11-13T22:26:14Z)
 
 ## Last usage reading
-- {"task": "T438", "at": "2026-11-13T19:35:35Z", "input_tokens": 86, "output_tokens": 31500, "cache_creation_input_tokens": 99312, "cache_read_input_tokens": 2421933}
+- {"task": "T314", "at": "2026-11-13T19:56:34Z", "input_tokens": 271, "output_tokens": 94651, "cache_creation_input_tokens": 329884, "cache_read_input_tokens": 10864259}
