@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T11:14:53Z by runner 8e77719e45c9 (actions).
+Updated 2026-11-13T11:15:02Z by runner 8e77719e45c9 (actions).
 
-**Building: T428 in progress since 10:27Z; 278 of 417 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 11:14Z; 278 of 417 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 278 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T428 claimed 10:27Z, lease until 13:27Z
+- **Lane:** idle since 11:14Z (no task in progress)
 - **Week:** 16% used, 164.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:14Z, 0 min before this update
 - **Keeper:** last ran 11:10Z, next wake 13:30Z
@@ -18,8 +18,9 @@ Updated 2026-11-13T11:14:53Z by runner 8e77719e45c9 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T428 | Switch the brand file to Laftly and re-issue the legal recor | MERGE_PENDING | 3 | 46 min | 11:14Z | session ended without handing in |
 | T312 | intake: a street address written in lower case never trips t | QUEUED | 1 | 24 min | 10:17Z | session ended without handing in |
-| T428 | Switch the brand file to Laftly and re-issue the legal recor | QUEUED | 2 | 22 min | 10:15Z | session ended without handing in |
+| T428 | Switch the brand file to Laftly and re-issue the legal recor | QUEUED | 2 | 22 min | 10:15Z |  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 3 | 26 min | 09:48Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T431 | Brand rename prep: the legal-docs version case and five paym | done | 1 | 30 min | 09:32Z |  |
 | T249 | quotes and portals: radius matching by ZIP centroid, the cov | done | 1 | 71 min | 09:03Z |  |
@@ -149,7 +150,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T428 (lease until 2026-11-13T13:27:51Z)
 
 ## Last usage reading
-- {"task": "T431", "at": "2026-11-13T09:32:54Z", "cache_read_input_tokens": 3434781, "input_tokens": 164, "output_tokens": 32044, "cache_creation_input_tokens": 131776}
+- {"task": "T428", "at": "2026-11-13T11:14:44Z", "input_tokens": 234, "output_tokens": 44459, "cache_creation_input_tokens": 242847, "cache_read_input_tokens": 7673790}
