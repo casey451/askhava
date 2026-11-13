@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T01:47:31Z by runner ea2a763a98ad (actions).
+Updated 2026-11-13T01:47:51Z by runner ea2a763a98ad (actions).
 
 **Building: T215 in progress since 23:45Z; 263 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 263 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
+- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
 - **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:45Z, 2 min before this update
 - **Keeper:** last ran 01:44Z, next wake 02:47Z
@@ -18,6 +18,7 @@ Updated 2026-11-13T01:47:31Z by runner ea2a763a98ad (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T423 | Brand rename prep: integration tests (first-quote move to si | MERGE_PENDING | 1 | 66 min | 01:47Z |  |
 | T422 | Brand rename prep: integration tests (accepted-quote email t | MERGE_PENDING | 1 | 44 min | 01:20Z |  |
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | MERGE_PENDING | 1 | 26 min | 01:18Z |  |
 | T424 | Brand rename prep: integration tests (open-cards digest to s | MERGE_PENDING | 1 | 32 min | 01:15Z |  |
@@ -171,7 +172,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T215 (lease until 2026-11-13T02:45:19Z)
 - lane 6: T249 (lease until 2026-11-13T03:01:54Z)
-- lane 7: T423 (lease until 2026-11-13T03:40:54Z)
 
 ## Last usage reading
-- {"task": "T422", "at": "2026-11-13T01:20:56Z", "cache_creation_input_tokens": 414068, "cache_read_input_tokens": 14347684, "input_tokens": 319, "output_tokens": 87554}
+- {"task": "T423", "at": "2026-11-13T01:47:29Z", "cache_creation_input_tokens": 380554, "cache_read_input_tokens": 10886153, "input_tokens": 266, "output_tokens": 50388}
