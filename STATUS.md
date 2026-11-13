@@ -1,20 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-13T21:54:11Z by runner 4bc0aa878dc0 (actions).
+Updated 2026-11-13T21:54:25Z by runner 4bc0aa878dc0 (actions).
 
-**Building: T438 in progress since 21:51Z; 295 of 428 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T280 in progress since 21:54Z; 295 of 428 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 295 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T438 claimed 21:51Z, lease until 00:51Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
-- **Week:** 28% used, 132.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:53Z, 0 min before this update
+- **Lane:** lane 1: T280 claimed 21:54Z, lease until 00:54Z; lane 2: T438 claimed 21:51Z, lease until 00:51Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
+- **Week:** 28% used, 128.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 21:53Z, 1 min before this update
 - **Keeper:** last ran 21:43Z, next wake 22:03Z
 
 ## Needs attention
-- PLAN GAP T280 (since 2026-11-13T21:43:04Z, no attempt used; a plan change fixes it): T280: dependency T412 is DONE but its owned file migrations/0188_privacy_business_contacts.sql is not on main; T280: dependency T412 is DONE but its owned file app/privacy/src/business_contacts.rs is not on main; T280: dependency T412 is DONE but its owned file tests/integration/tests/business_contacts.rs is not on main; T280: dependency T412 is DONE but its owned file tests/security/tests/business_contact_readers.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T415 (since 2026-11-13T21:43:04Z, no attempt used; a plan change fixes it): T415: dependency T412 is DONE but its owned file migrations/0188_privacy_business_contacts.sql is not on main; T415: dependency T412 is DONE but its owned file app/privacy/src/business_contacts.rs is not on main; T415: dependency T412 is DONE but its owned file tests/integration/tests/business_contacts.rs is not on main; T415: dependency T412 is DONE but its owned file tests/security/tests/business_contact_readers.rs is not on main
 - Strict plan check red: 26 problem(s) on tasks still to run (+186 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
@@ -142,7 +140,7 @@ Updated 2026-11-13T21:54:11Z by runner 4bc0aa878dc0 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T21:43:30Z (week)): week: 61.3M used, 132.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T22:17:07Z.
+- Pacing (session_reading 2026-11-13T21:43:30Z (week)): week: 65.2M used, 128.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T20:08:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -157,7 +155,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T280 (lease until 2026-11-14T00:54:03Z)
 - lane 2: T438 (lease until 2026-11-14T00:51:05Z)
 - lane 6: T357 (lease until 2026-11-14T00:52:50Z)
 - lane 7: T340 (lease until 2026-11-14T00:52:00Z)
