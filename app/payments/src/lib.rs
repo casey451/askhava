@@ -49,6 +49,7 @@
 pub mod api;
 mod charge;
 mod disputes;
+mod fee_facts;
 mod flags;
 mod free_wins;
 mod handlers;
