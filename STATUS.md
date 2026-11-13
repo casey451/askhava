@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-13T11:35:52Z by runner adb37e15746b (actions).
+Updated 2026-11-13T11:40:49Z by runner 67d6f23a8fa8 (actions).
 
-**Idle since 11:14Z; 278 of 417 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T255 in progress since 11:40Z; 278 of 417 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 278 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 11:14Z (no task in progress)
-- **Week:** 16% used, 164.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:35Z, 0 min before this update
+- **Lane:** lane 1: T255 claimed 11:40Z, lease until 14:40Z
+- **Week:** 16% used, 162.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:36Z, 4 min before this update
 - **Keeper:** last ran 11:35Z, next wake 17:15Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+150 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+152 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -134,7 +134,7 @@ Updated 2026-11-13T11:35:52Z by runner adb37e15746b (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T10:17:09Z (week)): week: 30.0M used, 164.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T12:00:11Z.
+- Pacing (session_reading 2026-11-13T11:35:35Z (week)): week: 32.0M used, 162.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T15:03:12Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -149,7 +149,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T255 (lease until 2026-11-13T14:40:39Z)
 
 ## Last usage reading
 - {"task": "T428", "at": "2026-11-13T11:14:44Z", "input_tokens": 234, "output_tokens": 44459, "cache_creation_input_tokens": 242847, "cache_read_input_tokens": 7673790}
