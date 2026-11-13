@@ -10290,18 +10290,16 @@
   {
    "id": "T398",
    "slug": "phone-approval-gate",
-   "title": "calls, server and businesses: calls, texts and notice texts act for the business only through an approved phone, and a member's number change emails the owner again",
-   "goal": "Register row IC-95, the gate behind the hold (D-3081; BIZ-033, CALL-012; D-1695, D-3079). After T396 (`messaging::api::sender_line`, `businesses::api::phone_standing`, `staff_phone.approved_at` and `number_set_at`), T326 (the last earlier owner of `app/calls/src/routing.rs`; T365 left the graph, D-3106), T391 (of `app/server/src/inbound_text.rs`), T147 (of `app/businesses/src/channel_preference.rs`) and T293 (of `app/businesses/src/complaints.rs`). T396 keeps a waiting phone's digests out of the sender directory; this task makes both routes check the phone's standing as well, so a waiting phone's digest left in the directory by any path still cannot act as the business, and gives the pure `calls::lifecycle::phone_works` and `gate` (`app/calls/src/lifecycle.rs:241`, `:248`, today called only by tests) their production caller. (1) `app/calls/src/routing.rs`: `party_of` (`:419`, the one party lookup of routing and both PIN paths) resolves a directory hit through `sender_line`, reads `phone_standing` and, for a staff phone row, applies `gate` with `PhoneStanding { linked_by_owner: false, owner_approved }` (`owner_approved` is that standing; the owner's links are stored approved, so one fact decides): a phone whose row is not approved (`Some(false)`) is `Party::Unlinked` and hears the PIN prompt. A directory line with no staff phone row (`None`) keeps today's answer: no production path makes one (every link writes the row whose ID is the line, and unlink, reject and member removal drop the digests with it), and the DONE route tests link a phone with `messaging::api::sender_add` alone (`app/server/tests/inbound_voice.rs:103`, `voice_confirm_line.rs:158`, `:339`, `tests/integration/tests/pin_routing.rs:273`, `link_request.rs:125`), so the waiting phone is refused and those tests pass unchanged (D-3263). (2) `app/server/src/inbound_text.rs`: a text whose sender the directory names is the business's (`Relation::Business`: `phone_stopped`, the auto-reply, T391's LINK reply) unless `phone_standing` is `Some(false)`, which takes the path of an unknown number, so a waiting phone's STOP, LINK or other text never acts for the business; `None` (a directory line with no staff phone row, as in `tests/integration/tests/inbound_first_contact.rs:234` and `inbound_text_route.rs:252`) keeps today's answer, as in (1) (D-3263). Read in the delivery's transaction; a database error is 500 and the delivery rolls back, as today. (3) `app/businesses/src/channel_preference.rs`: `notice_recipients` (`:142`, the one list every business notice text reads its phones from, `quotes::card_notices` and `quotes::emergency_card_notice` among them) lists only phones with `approved_at` set (T396's column defaults to the insert time, so `tests/integration/tests/business_notices.rs`, which inserts rows without it, passes unchanged), so a waiting phone gets no job card or other notice text and a member whose only phones are waiting gets the email instead (its `email` flag follows the filtered list). (4) `app/businesses/src/complaints.rs`: `phone_link_notice` (`:502`) keys its task by phone and `number_set_at` (`businesses.phone_linked.<line>.<number_set_at in microseconds>`, was the phone alone, `:521`) and adds `number_set_at` to the payload, and `businesses::api::change_phone` (the shared `api.rs`) wraps `team::change_phone` as `api::link_phone` wraps the link: a number change by a member who is not the owner queues a fresh owner email in the same transaction, so the owner is told of every number they are asked to approve. (5) Tests: `tests/integration/tests/phone_approval_routes.rs` (TD-CALL-25), signed fake Twilio voice and text requests through the served routes and `calls::api::answer_call`, and `tests/integration/tests/phone_approval_notices.rs` (TD-BIZ-53) through `businesses::api` and `quotes`' card notice step, fake numbers only. Update the `calls`, `server` and `businesses` `CLAUDE.md` files and `docs/decisions.md`.",
+   "title": "businesses: notice texts go only to approved phones, and a member's number change emails the owner again",
+   "goal": "Plan change D-3445 split T398 in two: this task is the `businesses` half; T435 makes the call and text routes check the phone's standing. Register row IC-95, the gate behind the hold (D-3081; BIZ-033; D-1695, D-3079). After T396 (`businesses::api::phone_standing`, `staff_phone.approved_at` and `number_set_at`), T147 (of `app/businesses/src/channel_preference.rs`) and T293 (of `app/businesses/src/complaints.rs`). (1) `app/businesses/src/channel_preference.rs`: `notice_recipients` (`:142`, the one list every business notice text reads its phones from, `quotes::card_notices` and `quotes::emergency_card_notice` among them) lists only phones with `approved_at` set (T396's column defaults to the insert time, so `tests/integration/tests/business_notices.rs`, which inserts rows without it, passes unchanged), so a waiting phone gets no job card or other notice text and a member whose only phones are waiting gets the email instead (its `email` flag follows the filtered list). (2) `app/businesses/src/complaints.rs`: `phone_link_notice` (`:502`) keys its task by phone and `number_set_at` (`businesses.phone_linked.<line>.<number_set_at in microseconds>`, was the phone alone, `:521`) and adds `number_set_at` to the payload, and `businesses::api::change_phone` (the shared `api.rs`) wraps `team::change_phone` as `api::link_phone` wraps the link: a number change by a member who is not the owner queues a fresh owner email in the same transaction, so the owner is told of every number they are asked to approve. (3) Tests: `tests/integration/tests/phone_approval_notices.rs` (TD-BIZ-53) through `businesses::api` and `quotes`' card notice step, fake numbers only. Update the `businesses` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
-   "module": "calls",
+   "module": "businesses",
    "deps": [
     "T396",
-    "T391",
     "T147",
-    "T293",
-    "T326"
+    "T293"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10310,9 +10308,6 @@
     "security"
    ],
    "owns": [
-    "app/calls/src/routing.rs",
-    "app/server/src/inbound_text.rs",
-    "tests/integration/tests/phone_approval_routes.rs",
     "app/businesses/src/channel_preference.rs",
     "app/businesses/src/complaints.rs",
     "tests/integration/tests/phone_approval_notices.rs"
@@ -10326,12 +10321,10 @@
    ],
    "requirements": [
     "BIZ-033",
-    "CALL-012",
     "BIZ-019",
     "BIZ-037"
    ],
    "tests": [
-    "TD-CALL-25",
     "TD-BIZ-53"
    ],
    "decisions": [
@@ -10339,12 +10332,13 @@
     "D-1695",
     "D-3079",
     "D-3106",
-    "D-3263"
+    "D-3263",
+    "D-3445"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
-    "lines": 560,
+    "files": 3,
+    "lines": 260,
     "context_pct": 19
    },
    "checks": [
@@ -10354,7 +10348,68 @@
    ],
    "branch": "claude/task/T398-phone-approval-gate",
    "prompt": "kit/prompts/T398.md",
-   "acceptance": "TD-CALL-25 and TD-BIZ-53 pass through the served routes and `businesses::api`, each case failing on `main` with T396 merged and the matching check removed; TD-CALL-07, TD-CALL-08, TD-CALL-14, TD-CALL-24, TD-BIZ-39, TD-BIZ-03 and every other voice, inbound text, notice and complaint case passes unchanged, `app/server/tests/inbound_voice.rs`, `voice_confirm_line.rs`, `tests/integration/tests/inbound_first_contact.rs`, `inbound_text_route.rs`, `link_request.rs`, `pin_routing.rs` and `business_notices.rs` among them."
+   "acceptance": "TD-BIZ-53 passes through `businesses::api` and `quotes`' card notice step, each case failing on `main` with T396 merged and the matching check removed; TD-BIZ-39, TD-BIZ-03 and every other notice and complaint case passes unchanged, `tests/integration/tests/business_notices.rs` among them."
+  },
+  {
+   "id": "T435",
+   "slug": "phone-approval-gate-routes",
+   "title": "calls and server: calls and texts act for the business only through an approved phone",
+   "goal": "Plan change D-3445 split T398 in two: T398 limited notice texts to approved phones and keyed the owner's email by number change in `businesses`; this task gates the call and text routes. Register row IC-95, the gate behind the hold (D-3081; CALL-012, BIZ-033; D-1695, D-3079). After T396 (`messaging::api::sender_line`, `businesses::api::phone_standing`), T326 (the last earlier owner of `app/calls/src/routing.rs`; T365 left the graph, D-3106), T391 (of `app/server/src/inbound_text.rs`) and T398. T396 keeps a waiting phone's digests out of the sender directory; this task makes both routes check the phone's standing as well, so a waiting phone's digest left in the directory by any path still cannot act as the business, and gives the pure `calls::lifecycle::phone_works` and `gate` (`app/calls/src/lifecycle.rs:241`, `:248`, today called only by tests) their production caller. (1) `app/calls/src/routing.rs`: `party_of` (`:419`, the one party lookup of routing and both PIN paths) resolves a directory hit through `sender_line`, reads `phone_standing` and, for a staff phone row, applies `gate` with `PhoneStanding { linked_by_owner: false, owner_approved }` (`owner_approved` is that standing; the owner's links are stored approved, so one fact decides): a phone whose row is not approved (`Some(false)`) is `Party::Unlinked` and hears the PIN prompt. A directory line with no staff phone row (`None`) keeps today's answer: no production path makes one (every link writes the row whose ID is the line, and unlink, reject and member removal drop the digests with it), and the DONE route tests link a phone with `messaging::api::sender_add` alone (`app/server/tests/inbound_voice.rs:103`, `voice_confirm_line.rs:158`, `:339`, `tests/integration/tests/pin_routing.rs:273`, `link_request.rs:125`), so the waiting phone is refused and those tests pass unchanged (D-3263). (2) `app/server/src/inbound_text.rs`: a text whose sender the directory names is the business's (`Relation::Business`: `phone_stopped`, the auto-reply, T391's LINK reply) unless `phone_standing` is `Some(false)`, which takes the path of an unknown number, so a waiting phone's STOP, LINK or other text never acts for the business; `None` (a directory line with no staff phone row, as in `tests/integration/tests/inbound_first_contact.rs:234` and `inbound_text_route.rs:252`) keeps today's answer, as in (1) (D-3263). Read in the delivery's transaction; a database error is 500 and the delivery rolls back, as today. (3) Tests: `tests/integration/tests/phone_approval_routes.rs` (TD-CALL-25), signed fake Twilio voice and text requests through the served routes and `calls::api::answer_call`, fake numbers only. Update the `calls` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "calls",
+   "deps": [
+    "T398",
+    "T391",
+    "T326"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/calls/src/routing.rs",
+    "app/server/src/inbound_text.rs",
+    "tests/integration/tests/phone_approval_routes.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/calls.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CALL-012"
+   ],
+   "tests": [
+    "TD-CALL-25"
+   ],
+   "decisions": [
+    "D-3081",
+    "D-1695",
+    "D-3079",
+    "D-3106",
+    "D-3263",
+    "D-3445"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 320,
+    "context_pct": 19
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T435-phone-approval-gate-routes",
+   "prompt": "kit/prompts/T435.md",
+   "acceptance": "TD-CALL-25 passes through the served routes, each case failing on `main` with T396 merged and the matching check removed; TD-CALL-07, TD-CALL-08, TD-CALL-14, TD-CALL-24 and every other voice and inbound text case passes unchanged, `app/server/tests/inbound_voice.rs`, `voice_confirm_line.rs`, `tests/integration/tests/inbound_first_contact.rs`, `inbound_text_route.rs`, `link_request.rs` and `pin_routing.rs` among them."
   },
   {
    "id": "T397",
@@ -10512,7 +10567,7 @@
     "T255",
     "T103",
     "T162",
-    "T236",
+    "T433",
     "T370",
     "T151",
     "T299",
@@ -11794,7 +11849,7 @@
     "T277",
     "T357",
     "T391",
-    "T398"
+    "T435"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -13848,7 +13903,7 @@
    "id": "T151",
    "slug": "help-requests",
    "title": "ops and messaging: HELP requests with one owner notification each and the plain-word auto-answers",
-   "goal": "Each HELP request produces one owner notification by alert email within the hourly and daily limits, its body scrubbed of contact details, inbound help emails arrive only through the signed webhook into `privacy`, and plain-word questions after HELP get the fixed auto-answers (CON-034, OPS-036, PRIV-026, PRIV-030). The `ops.help_request` and `ops.help_message` tables of architecture section 3 are created by this task's migration in the `ops` schema and written only through `app/ops/src/help_requests.rs` and `ops::api`; the owner's reply box and its link are T200's (TD-OPS-23); the HELP lines with their due dates are added to the digest's `digest_flags.rs` (T204's, extended here) (D-491). `messaging` cannot read `jobs`, `quotes` or `intake`, so `intake`'s inbound handler (`app/intake/src/handlers.rs`, T048's, extended here) puts the job fields the help texts and notification need (status, the LIST line from `quotes::api`, the quote-page link, trade, town, urgency) into the HELP event, and `messaging` composes from the event only. A business's \"Ask about a charge\" (T148) arrives as the `core.task` event `help_request_opened`, which this task's handler turns into one help request (D-492). It also corrects the module doc of `app/intake/src/handlers.rs` (lines 13 to 20), which says `answer_list` has no caller although T241's `receive_reply` calls it, and names `queue_call_back`'s callers as they now stand (fourth external audit F17, D-2206). Plan change D-3155: (a) no file this task owned saw a HELP text: `app/server/src/inbound_text.rs` answers HELP with `messaging::api::reply_to_help` and then halts (`Halt::Ends(\"help\")`, `:492` to `:501`) before intake, and plain follow-ups reach `intake::api::receive_reply` (`app/intake/src/replies.rs:43` to `:66`), never `handlers.rs`. So it also owns those two files (after T241, T277, T336, T357, T391 and T398, before T402 and T407): after `reply_to_help` answers, `inbound_text.rs` calls one new `intake::api` function in `handlers.rs` that gathers the job fields and opens or joins the help request (`ops::api`, notification by `messaging`, as above); a business text (\"why was I charged?\") takes the same call; and `receive_reply` first asks a new `handlers.rs` function whether the number's HELP was answered in the last 24 hours and, for a plain-word question (TD-CON-17), sends the fixed auto-answer and returns, the rest following today's path. (b) The opt-out half of TD-CON-17 (help email, quote-email reply, help-form \"no more texts\", owner-recorded request) is tested at `messaging::api::suppress` with `RevokeChannel::Email`, `EmailReply`, `HelpForm` and `Owner`: listed at once, channel and time logged, no text queued; the help form's detector and on-screen confirmation are T200's, the owner's record T108's, and the inbound-email route T133's (stage 6), which hands each email `privacy` has read to this task's entry point; until then the email cases (TD-OPS-11's automatic reply, TD-PRIV-11's sentinel body) run on `privacy::api::read_inbound_email`'s output, not over HTTP. (c) TD-OPS-20's notification half is this task's; its docs half (the Gate C checklist) is T122's. (d) The migration is `0192_help_requests.sql` (T321 needs two numbers before T109's 0195; moved up one by D-3262 and one more by D-3263).",
+   "goal": "Each HELP request produces one owner notification by alert email within the hourly and daily limits, its body scrubbed of contact details, inbound help emails arrive only through the signed webhook into `privacy`, and plain-word questions after HELP get the fixed auto-answers (CON-034, OPS-036, PRIV-026, PRIV-030). The `ops.help_request` and `ops.help_message` tables of architecture section 3 are created by this task's migration in the `ops` schema and written only through `app/ops/src/help_requests.rs` and `ops::api`; the owner's reply box and its link are T200's (TD-OPS-23); the HELP lines with their due dates are added to the digest's `digest_flags.rs` (T204's, extended here) (D-491). `messaging` cannot read `jobs`, `quotes` or `intake`, so `intake`'s inbound handler (`app/intake/src/handlers.rs`, T048's, extended here) puts the job fields the help texts and notification need (status, the LIST line from `quotes::api`, the quote-page link, trade, town, urgency) into the HELP event, and `messaging` composes from the event only. A business's \"Ask about a charge\" (T148) arrives as the `core.task` event `help_request_opened`, which this task's handler turns into one help request (D-492). It also corrects the module doc of `app/intake/src/handlers.rs` (lines 13 to 20), which says `answer_list` has no caller although T241's `receive_reply` calls it, and names `queue_call_back`'s callers as they now stand (fourth external audit F17, D-2206). Plan change D-3155: (a) no file this task owned saw a HELP text: `app/server/src/inbound_text.rs` answers HELP with `messaging::api::reply_to_help` and then halts (`Halt::Ends(\"help\")`, `:492` to `:501`) before intake, and plain follow-ups reach `intake::api::receive_reply` (`app/intake/src/replies.rs:43` to `:66`), never `handlers.rs`. So it also owns those two files (after T241, T277, T336, T357, T391 and T435, before T402 and T407): after `reply_to_help` answers, `inbound_text.rs` calls one new `intake::api` function in `handlers.rs` that gathers the job fields and opens or joins the help request (`ops::api`, notification by `messaging`, as above); a business text (\"why was I charged?\") takes the same call; and `receive_reply` first asks a new `handlers.rs` function whether the number's HELP was answered in the last 24 hours and, for a plain-word question (TD-CON-17), sends the fixed auto-answer and returns, the rest following today's path. (b) The opt-out half of TD-CON-17 (help email, quote-email reply, help-form \"no more texts\", owner-recorded request) is tested at `messaging::api::suppress` with `RevokeChannel::Email`, `EmailReply`, `HelpForm` and `Owner`: listed at once, channel and time logged, no text queued; the help form's detector and on-screen confirmation are T200's, the owner's record T108's, and the inbound-email route T133's (stage 6), which hands each email `privacy` has read to this task's entry point; until then the email cases (TD-OPS-11's automatic reply, TD-PRIV-11's sentinel body) run on `privacy::api::read_inbound_email`'s output, not over HTTP. (c) TD-OPS-20's notification half is this task's; its docs half (the Gate C checklist) is T122's. (d) The migration is `0192_help_requests.sql` (T321 needs two numbers before T109's 0195; moved up one by D-3262 and one more by D-3263).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13922,13 +13977,14 @@
     "D-2206",
     "D-3155",
     "D-3262",
-    "D-3263"
+    "D-3263",
+    "D-3445"
    ],
    "cites": [],
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 32
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -14261,7 +14317,7 @@
     "T316",
     "T317",
     "T318",
-    "T319",
+    "T436",
     "T322",
     "T323",
     "T325",
@@ -14319,7 +14375,7 @@
     "T393",
     "T400",
     "T396",
-    "T398",
+    "T435",
     "T416",
     "T417",
     "T418",
@@ -16060,7 +16116,7 @@
    "id": "T111",
    "slug": "terms-homeowner-business",
    "title": "Draft homeowner and business terms with every required clause",
-   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030). The homeowner terms describe both ways of picking (the quote page and a \"<number> YES\" text pick, TERMS-001); both terms end with the TERMS-035 General section (severability, entire agreement, no waiver, transfer, notices, the 14-day business change notice and the homeowner rule that a change applies only to later requests), and the business terms add the 30-day write-first step and the TERMS-036 account-ending clause and no-promise sentence (D-492). The new summary file fails `scripts/check_legal_docs.py` until it is listed (`DOCUMENTS`, `:45`; any other `.md` under `docs/legal/` is an error, `:460`), so this task adds `business-terms-summary-es.md` to `DOCUMENTS` and to `BUSINESS_DOCUMENTS`, and moves `tests/test_check_legal_docs.py:53`'s count from 9 to 10; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) and DONE T291's, and the test belongs to no task (D-3263). The summary starts, as every draft does, with the English draft note line and a version line naming an English month (`check_header`, `scripts/check_legal_docs.py:360`), its body in Spanish.",
+   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030). The homeowner terms describe both ways of picking (the quote page and a \"<number> YES\" text pick, TERMS-001); both terms end with the TERMS-035 General section (severability, entire agreement, no waiver, transfer, notices, the 14-day business change notice and the homeowner rule that a change applies only to later requests), and the business terms add the 30-day write-first step and the TERMS-036 account-ending clause and no-promise sentence (D-492). The new summary file fails `scripts/check_legal_docs.py` until it is listed (`DOCUMENTS`, `:45`; any other `.md` under `docs/legal/` is an error, `:460`), so this task adds `business-terms-summary-es.md` to `DOCUMENTS` and to `BUSINESS_DOCUMENTS`, and moves `tests/test_check_legal_docs.py:53`'s count from 9 to 10; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) and DONE T291's, and the test belongs to no task (D-3263). The summary starts, as every draft does, with the English draft note line and a version line naming an English month (`check_header`, `scripts/check_legal_docs.py:360`), its body in Spanish. Brand: the brand is Laftly (Laftly LLC, laftly.com, D-3347, T428). Every 'Ask Hava', 'askhava.com' or 'Ask Hava:' text prefix in the decision quotes, research notes and examples of this prompt is historical and is written as 'Laftly', 'laftly.com' and 'Laftly:' (taken from core::api::brand() or app/core/data/brand.json) in every file this task owns; a test or checklist line that names the old brand is read as the Laftly one.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -16155,7 +16211,8 @@
     "D-465",
     "D-490",
     "D-492",
-    "D-3263"
+    "D-3263",
+    "D-3445"
    ],
    "cites": [],
    "budget": {
@@ -16280,7 +16337,7 @@
    "id": "T113",
    "slug": "twilio-campaign",
    "title": "Draft the Twilio campaign description from the real templates",
-   "goal": "`docs/legal/twilio-campaign.md` drafts the homeowner texting campaign from the real templates (sample messages that are exact templates, the consent text, no business traffic, the toll-free fallback only with Casey's go), and a docs test fails when a sample differs from its template (TERMS-002 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-015, TERMS-018, CON-033). After T111 (through T112), which listed the Spanish summary: this task adds `twilio-campaign.md` to `scripts/check_legal_docs.py`'s `DOCUMENTS` (an unlisted `.md` under `docs/legal/` fails it, `:460`) and moves `tests/test_check_legal_docs.py`'s count from 10 to 11; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) (D-3263).",
+   "goal": "`docs/legal/twilio-campaign.md` drafts the homeowner texting campaign from the real templates (sample messages that are exact templates, the consent text, no business traffic, the toll-free fallback only with Casey's go), and a docs test fails when a sample differs from its template (TERMS-002 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-015, TERMS-018, CON-033). After T111 (through T112), which listed the Spanish summary: this task adds `twilio-campaign.md` to `scripts/check_legal_docs.py`'s `DOCUMENTS` (an unlisted `.md` under `docs/legal/` fails it, `:460`) and moves `tests/test_check_legal_docs.py`'s count from 10 to 11; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) (D-3263). Brand: the brand is Laftly (Laftly LLC, laftly.com, D-3347, T428). Every 'Ask Hava', 'askhava.com' or 'Ask Hava:' text prefix in the decision quotes, research notes and examples of this prompt is historical and is written as 'Laftly', 'laftly.com' and 'Laftly:' (taken from core::api::brand() or app/core/data/brand.json) in every file this task owns; a test or checklist line that names the old brand is read as the Laftly one.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -16345,7 +16402,8 @@
     "D-490",
     "D-492",
     "D-1143",
-    "D-3263"
+    "D-3263",
+    "D-3445"
    ],
    "cites": [],
    "budget": {
@@ -17035,7 +17093,7 @@
    "deps": [
     "T122",
     "T158",
-    "T210",
+    "T434",
     "T161",
     "T166",
     "T216",
@@ -17094,7 +17152,7 @@
     "T121",
     "T203",
     "T158",
-    "T210",
+    "T434",
     "T161",
     "T166",
     "T216",
@@ -17173,7 +17231,7 @@
     "T123",
     "T125",
     "T200",
-    "T210",
+    "T434",
     "T161",
     "T216",
     "T170",
@@ -17808,7 +17866,7 @@
    "deps": [
     "T134",
     "T303",
-    "T319"
+    "T436"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -18483,15 +18541,14 @@
   {
    "id": "T236",
    "slug": "ai-call-budgets",
-   "title": "AI-call budgets per conversation and per job, and no AI call before the area check",
-   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0202_ai_call_budget.sql` (V9, D-2707).",
+   "title": "ai: the AI-call budget rules, reservations, settings and migration, and the atomic daily admission (no caller yet)",
+   "goal": "Plan change D-3445 split T236 in two: this task builds the AI-call budget module, its settings and its migration, with no caller in the call path yet; T433 wires them into the call path and builds intake's first reading caller. Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. `app/ai/src/budget.rs` holds these rules as pure functions (each step's limit, the backstops with the card call always reserved, quote reads outside the job's budget, the verified session sharing its phone's budget and an unverified one getting none, the 1,600-character cut) and the reservations: every AI-028 budget check is a single-statement reservation made only while the budget has room, and the AI-021 daily cap becomes an atomic admission (a counter row per Arizona day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation), each on its own short transaction so the call path can make it with no connection held across a provider await (AI-029, D-2038, D-1757); a retry of one logical call uses its reservation, and an abandoned or timed-out reservation still counts for that day. `app/ai/src/models.rs`: the budgets are settings in `AiConfig`; `CallRow` and `insert_call` carry the conversation, job, step and business columns; `models::calls_today` excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. The migration `0202_ai_call_budget.sql` (V9, D-2707) adds the `budget` outcome, the conversation, job, step and business columns to `ai.call_stat` and the per-day admission counter, with explicit grants for what the code writes. Tests in `app/ai/src/tests/budget.rs`, real PostgreSQL and fake data only: for each step its last budgeted reservation is granted and the next refused (the 3rd reading of one message, a 2nd and a 9th reword, a 2nd follow-up, a 4th EDIT's card call, a 5th concept prompt, a 7th photo-screening call or a 4th photo); the 40 and 60 backstops, and a new Arizona day resets the conversation's; with every budget spent the card call is still granted; a verified session and its phone share one budget; quote reads stay outside the job's budget; the 1,600 cut keeps the full text for the card; `budget` rows are not counted by `calls_today`; 20 concurrent reservations of one message's readings grant exactly 2 and 20 concurrent admissions with one slot left grant exactly one. `IntakeCall`, `app/ai/src/service.rs`, `app/ai/src/switch.rs` and the `intake` caller are T433's, which proves TD-AI-18 end to end. Update the `ai` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
    "module": "ai",
    "deps": [
     "T295",
-    "T370",
     "T296",
     "T243"
    ],
@@ -18502,14 +18559,10 @@
     "security"
    ],
    "owns": [
+    "migrations/0202_ai_call_budget.sql",
     "app/ai/src/budget.rs",
     "app/ai/src/tests/budget.rs",
-    "app/ai/src/service.rs",
-    "app/ai/src/models.rs",
-    "app/ai/src/switch.rs",
-    "migrations/0202_ai_call_budget.sql",
-    "tests/integration/tests/ai_budget.rs",
-    "app/intake/src/service.rs"
+    "app/ai/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -18521,7 +18574,74 @@
     "docs/spec/quotes-pick.md"
    ],
    "requirements": [
-    "AI-028",
+    "AI-028"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1154",
+    "D-811",
+    "D-1757",
+    "D-1933",
+    "D-2038",
+    "D-2703",
+    "D-2707",
+    "D-3262",
+    "D-3263",
+    "D-3445"
+   ],
+   "cites": [
+    "BUILD_BRIEF.md:196",
+    "BUILD_BRIEF.md:66"
+   ],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T236-ai-call-budgets",
+   "prompt": "kit/prompts/T236.md",
+   "acceptance": "`app/ai/src/tests/budget.rs` passes against real PostgreSQL: each step's last budgeted reservation is granted and the next refused, the 40 and 60 backstops hold with the card call still granted, a new Arizona day resets the conversation's count, `calls_today` ignores `budget` rows, and 20 concurrent reservations grant exactly the room left (2 readings of one message; 1 admission with one slot left); every existing `ai` test passes unchanged."
+  },
+  {
+   "id": "T433",
+   "slug": "ai-call-budgets-wiring",
+   "title": "ai and intake: the budgeted AI call path with no connection held, and intake's first reading caller",
+   "goal": "Plan change D-3445 split T236 in two: T236 built the budget rules, the single-statement reservations, the per-day admission, the `AiConfig` settings, the `ai.call_stat` columns and the `budget` outcome (`app/ai/src/budget.rs`, `models.rs`, `0202_ai_call_budget.sql`); this task wires them into the call path. Credit-drain defense for the war games (D-1154, AI-028): no AI call before the consent text and the area check; past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. `IntakeCall` (`app/ai/src/service.rs`) carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, T236's single-statement admission reserves a slot for this Arizona day on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check goes through T236's single-statement reservations, so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703), and after T236. Tests: `tests/integration/tests/ai_budget.rs` (TD-AI-20, TD-AI-21) and TD-AI-18's cases through the entry the app calls, against the stand-in AI (zero adapter calls before the consent text or the area check, each refused step on the AI-off path with nothing said, the card call still made with every budget spent, the verified and unverified web-chat sessions, the 1,600-character cut on the wire). Update the `ai` and `intake` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "ai",
+   "deps": [
+    "T236",
+    "T370"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/ai/src/service.rs",
+    "app/ai/src/switch.rs",
+    "app/intake/src/service.rs",
+    "tests/integration/tests/ai_budget.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ai.md",
+    "docs/spec/intake.md",
+    "docs/brains/ai-intake.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/quotes-pick.md"
+   ],
+   "requirements": [
     "AI-021",
     "AI-029"
    ],
@@ -18539,15 +18659,16 @@
     "D-2703",
     "D-2707",
     "D-3262",
-    "D-3263"
+    "D-3263",
+    "D-3445"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
     "BUILD_BRIEF.md:66"
    ],
    "budget": {
-    "files": 8,
-    "lines": 600,
+    "files": 4,
+    "lines": 360,
     "context_pct": 21
    },
    "checks": [
@@ -18555,28 +18676,28 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T236-ai-call-budgets",
-   "prompt": "kit/prompts/T236.md",
+   "branch": "claude/task/T433-ai-call-budgets-wiring",
+   "prompt": "kit/prompts/T433.md",
    "acceptance": "TD-AI-18, TD-AI-20 and TD-AI-21 pass; with a pool of one connection, a slow stand-in AI call in flight through the entry the app calls leaves that connection free for another task; 20 concurrent readings of one message make exactly 2 transport calls; no app code calls a `read_intake` form that takes a held connection."
   },
   {
    "id": "T299",
    "slug": "ai-intake-wiring",
    "title": "server and intake: the AI client built once per process and the AI reading called from texts and web chat",
-   "goal": "IC-23's second half (D-2065): T236 builds the first intake caller of the AI reading (in `app/intake/src/service.rs`, through the gated `read_intake` taking the pool, with no connection held across the provider await, AI-029) and T298 the AI endpoint settings and the real Claude client, but nothing builds the client in a running process (`app/server/src/main.rs` and `app/server/src/bin/worker.rs` build no AI client today) or calls the reading from a homeowner's text or web chat, so the app would run AI-off for ever and the war games would never exercise the AI. (1) In `app/server/src/ai_client.rs`, build from the settings one `ai::api::AdapterTransport` over T298's client (one reused HTTP client) with its `ai::api::AiConfig` (the AI-023 reply budget T296 set, the AI-024 model, the AI-021 cap), once per process at start-up and shared by reference: in the web process, and in the worker if the text path's AI turn runs there (below); a settings error stops start-up naming the key, except T298's AI-off endpoint in live (no key set), with which the process starts, every step takes the AI-off path with no request made, and one high owner alert and one log line name the missing setting, never a value (D-2065); with no AI keys in dev and ci it is the stand-in; start-up makes no AI call. (2) The text path: in `app/server/src/inbound_text.rs` the webhook's transaction commits its durable record of the text before any AI call is made for it and never awaits the AI inside it (AI-029's webhook half, which T236 left to this task); the AI turn then runs off that transaction, either in the request after the commit or in a `core.task` queued in that transaction and run by the worker. Choose, log the reason in `docs/decisions.md`, and make sure a process stopped between the commit and the turn never loses the step (at worst it is asked on the AI-off path). The homeowner's wait is end to end: if the worker runs the turn, the queue and poll wait before it counts inside AI-023's 3-second reply budget (the AI call gets only what is left, and none left means the AI-off path at once) and inside the time to the next question that T234 and T297 measure, never only the AI call's own time. The AI-008 case through the real inbound route needs the route to know its environment: use the `Environment` T317 adds to the route's state (`Webhooks` in `app/server/src/inbound_text.rs`, set from the settings in `main.rs`; D-2206) and pass it to the gated entry; add no other field to `Webhooks`, since the done tests that build it are T317's (D-2206). The turn (`app/intake/src/ai_turn.rs`) calls T236's caller at each step of the INT-043 order that makes an AI call as the code then stands (the intake reading today) and sends the next step through the outbox: the one the applied reading leads to, or the fixed question-bank question at once (INT-021, INT-039) when the AI-008 switch is off, the AI-023 budget runs out, an AI-028 budget or the AI-021 cap refuses the call, or the reading fails or is discarded; steps that make no AI call never wait on one. (3) The web-chat path (T103's `app/intake/src/web_chat.rs` and `app/site/src/chat.rs`): no AI call before the session's phone code is verified (AI-021); after it, the same turn, the page showing the next question within the reply budget (AI-023). On both paths only `ScrubbedText` reaches `ai` (AI-004), no call is made before the consent text went and the ZIP and area check passed (AI-028), and no database connection or open transaction is held while the AI is awaited (AI-029). The AI writing calls (reword, follow-up, card, project file; D-990) are not this task's: IC-53 tracks them. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/architecture.md` (shared), and name in the hand-in the commit and the tests that close IC-23 for the next plan change.",
+   "goal": "IC-23's second half (D-2065): T433 (T236's wiring half, D-3445) builds the first intake caller of the AI reading (in `app/intake/src/service.rs`, through the gated `read_intake` taking the pool, with no connection held across the provider await, AI-029) and T298 the AI endpoint settings and the real Claude client, but nothing builds the client in a running process (`app/server/src/main.rs` and `app/server/src/bin/worker.rs` build no AI client today) or calls the reading from a homeowner's text or web chat, so the app would run AI-off for ever and the war games would never exercise the AI. (1) In `app/server/src/ai_client.rs`, build from the settings one `ai::api::AdapterTransport` over T298's client (one reused HTTP client) with its `ai::api::AiConfig` (the AI-023 reply budget T296 set, the AI-024 model, the AI-021 cap), once per process at start-up and shared by reference: in the web process, and in the worker if the text path's AI turn runs there (below); a settings error stops start-up naming the key, except T298's AI-off endpoint in live (no key set), with which the process starts, every step takes the AI-off path with no request made, and one high owner alert and one log line name the missing setting, never a value (D-2065); with no AI keys in dev and ci it is the stand-in; start-up makes no AI call. (2) The text path: in `app/server/src/inbound_text.rs` the webhook's transaction commits its durable record of the text before any AI call is made for it and never awaits the AI inside it (AI-029's webhook half, which T433 left to this task); the AI turn then runs off that transaction, either in the request after the commit or in a `core.task` queued in that transaction and run by the worker. Choose, log the reason in `docs/decisions.md`, and make sure a process stopped between the commit and the turn never loses the step (at worst it is asked on the AI-off path). The homeowner's wait is end to end: if the worker runs the turn, the queue and poll wait before it counts inside AI-023's 3-second reply budget (the AI call gets only what is left, and none left means the AI-off path at once) and inside the time to the next question that T234 and T297 measure, never only the AI call's own time. The AI-008 case through the real inbound route needs the route to know its environment: use the `Environment` T317 adds to the route's state (`Webhooks` in `app/server/src/inbound_text.rs`, set from the settings in `main.rs`; D-2206) and pass it to the gated entry; add no other field to `Webhooks`, since the done tests that build it are T317's (D-2206). The turn (`app/intake/src/ai_turn.rs`) calls T433's caller at each step of the INT-043 order that makes an AI call as the code then stands (the intake reading today) and sends the next step through the outbox: the one the applied reading leads to, or the fixed question-bank question at once (INT-021, INT-039) when the AI-008 switch is off, the AI-023 budget runs out, an AI-028 budget or the AI-021 cap refuses the call, or the reading fails or is discarded; steps that make no AI call never wait on one. (3) The web-chat path (T103's `app/intake/src/web_chat.rs` and `app/site/src/chat.rs`): no AI call before the session's phone code is verified (AI-021); after it, the same turn, the page showing the next question within the reply budget (AI-023). On both paths only `ScrubbedText` reaches `ai` (AI-004), no call is made before the consent text went and the ZIP and area check passed (AI-028), and no database connection or open transaction is held while the AI is awaited (AI-029). The AI writing calls (reword, follow-up, card, project file; D-990) are not this task's: IC-53 tracks them. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/architecture.md` (shared), and name in the hand-in the commit and the tests that close IC-23 for the next plan change.",
    "type": "build",
    "phase": 2,
    "stage": "6",
    "module": "intake",
    "deps": [
-    "T236",
+    "T433",
     "T298",
     "T317",
     "T325",
     "T336",
     "T357",
     "T391",
-    "T398",
+    "T435",
     "T432"
    ],
    "model": "claude-opus-5-5",
@@ -18622,13 +18743,14 @@
     "D-2038",
     "D-2054",
     "D-2065",
-    "D-2206"
+    "D-2206",
+    "D-3445"
    ],
    "cites": [],
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -19106,7 +19228,7 @@
    "id": "T305",
    "slug": "owner-reports-served",
    "title": "server and portals: the scorecard, the intake report, the money view and the owner help page are served",
-   "goal": "T158 and T210 build the owner's scorecard, intake report and money view (with its expense-entry `POST`), and T200 the owner help page with its reply box, as portals pages no route serves (D-2128); the business Get help form is T309's. (1) `app/server/src/owner_reports.rs` builds them behind T303's owner session (none or another realm gets a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_reports_route.rs` (TD-SEC-48) and `tests/e2e/owner_reports_served.spec.ts`, which takes the browser half of TD-OPS-15 (T158's row), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
+   "goal": "T158, T210 and T434 build the owner's scorecard, intake report and money view (with its expense-entry `POST`), and T200 the owner help page with its reply box, as portals pages no route serves (D-2128); the business Get help form is T309's. (1) `app/server/src/owner_reports.rs` builds them behind T303's owner session (none or another realm gets a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_reports_route.rs` (TD-SEC-48) and `tests/e2e/owner_reports_served.spec.ts`, which takes the browser half of TD-OPS-15 (T158's row), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19114,7 +19236,7 @@
    "deps": [
     "T303",
     "T158",
-    "T210",
+    "T434",
     "T200",
     "T348"
    ],
@@ -19152,13 +19274,14 @@
    ],
    "decisions": [
     "D-2128",
-    "D-2440"
+    "D-2440",
+    "D-3445"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 14
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -19167,7 +19290,7 @@
    ],
    "branch": "claude/task/T305-owner-reports-served",
    "prompt": "kit/prompts/T305.md",
-   "acceptance": "TD-SEC-48 and the browser half of TD-OPS-15 pass against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T158, T210 and T200 case still passes."
+   "acceptance": "TD-SEC-48 and the browser half of TD-OPS-15 pass against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T158, T210, T434 and T200 case still passes."
   },
   {
    "id": "T306",
@@ -19542,7 +19665,7 @@
    "stage": "6",
    "module": null,
    "deps": [
-    "T236",
+    "T433",
     "T297",
     "T299",
     "T379",
@@ -20008,7 +20131,7 @@
     "T171",
     "T234",
     "T235",
-    "T236",
+    "T433",
     "T237",
     "T238",
     "T239",
@@ -20052,7 +20175,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 47
+    "context_pct": 57
    },
    "checks": [
     "Ci",
@@ -21579,12 +21702,12 @@
   {
    "id": "T210",
    "slug": "intake-report-money-view",
-   "title": "ops and payments: the monthly intake accuracy report and the money view's sales-tax set-aside and expenses",
-   "goal": "The monthly report lists no-quote cards and \"need more info\" quotes by category and question set with the golden-set share; and the money view shows the 8.6% sales-tax set-aside and Casey's manual expenses beside the ledger totals, never entering the ledger (OPS-040, FEE-046). The manual expenses list is its own table `payments.expense` (this task's migration; architecture section 3 names it, D-491). The money view's page and the expense-entry POST are the portals route `app/portals/src/money_view.rs` rendering `money_view.html` from `payments::api` (`app/payments/src/money_view.rs` computes the figures); the intake report's words sit in `intake_report.html` (D-492). The golden-set share comes from the stored runs T156 makes (`intake::api`) (D-493). A new `payments` table gets SELECT and INSERT only from the schema default (D-1495, T245): any wider privilege this task's code needs is an explicit `GRANT ... ON payments.<table> TO askhava_app` in its own migration, which T245's `tests/integration/tests/payments_grants.rs` reads and checks (TD-SEC-33). T305 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`. Plan change D-3155 (owner call put to a Fable agent under Casey's Nov 11 standing rule): OPS-040's quotes that \"said the business needed more information\" are derived, not stored: a quote counts when `quotes.quote.confirm_on_site` is true or its `format` is `diagnostic_visit` (`migrations/0070_quotes_quote.sql:19`, `:30`); free-text notes are never parsed; a withdrawn quote (`withdrawn_at` set) is treated as in the no-quote list: only quotes not withdrawn count in either list. No column or table is added for it.",
+   "title": "payments: the money view's sales-tax set-aside and manual expenses, outside the ledger",
+   "goal": "Plan change D-3445 split T210 in two: this task is the `payments` half (the money view's figures, the expenses table and its migration); T434 builds the portals pages (the money view page with its expense-entry `POST`, and the monthly intake report). The money view shows the 8.6% sales-tax set-aside and Casey's manual expenses beside the ledger totals, never entering the ledger (FEE-046). The manual expenses list is its own table `payments.expense` (this task's migration `0198_payments_expenses.sql`; architecture section 3 names it, D-491). A new `payments` table gets SELECT and INSERT only from the schema default (D-1495, T245): any wider privilege this task's code needs is an explicit `GRANT ... ON payments.<table> TO askhava_app` in its own migration, which T245's `tests/integration/tests/payments_grants.rs` reads and checks (TD-SEC-33). `app/payments/src/money_view.rs` computes the figures behind `payments::api`: the set-aside line is 8.6% (a setting) of fees collected, to the cent, until the ADOR ruling is filed; an expense entered through `payments::api` (the call T434's expense-entry `POST` makes) is stored in `payments.expense` and never becomes a ledger entry; collected, set aside, expenses and left add up; the monthly CSV rows carry those columns; the ledger lines, dispute and processing fee lines come only from the ledger as T067's `MoneyView` does (FEE-050 to FEE-052); the Stripe reconcile (FEE-030) is unchanged (D-410, D-444). Tests in `app/payments/src/tests/money_view.rs`, real PostgreSQL and fake data only (TD-FEE-29; TD-FEE-16's and TD-FEE-33's money-view cases). No portals file, page or route is this task's. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
-   "module": "portals",
+   "module": "payments",
    "deps": [
     "T106",
     "T067",
@@ -21599,30 +21722,21 @@
     "security"
    ],
    "owns": [
-    "app/portals/src/intake_report.rs",
-    "app/payments/src/money_view.rs",
-    "tests/integration/tests/intake_report.rs",
-    "app/payments/src/tests/money_view.rs",
-    "app/portals/templates/money_view.html",
     "migrations/0198_payments_expenses.sql",
-    "app/portals/src/money_view.rs",
-    "app/portals/templates/intake_report.html"
+    "app/payments/src/money_view.rs",
+    "app/payments/src/tests/money_view.rs"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/fees.md",
-    "docs/spec/calls.md",
-    "docs/design/DESIGN_SPEC.md",
     "docs/brains/rust-production.md"
    ],
    "requirements": [
-    "OPS-040",
     "FEE-046"
    ],
    "tests": [
-    "TD-OPS-16",
     "TD-FEE-29",
     "TD-FEE-16",
     "TD-FEE-33"
@@ -21635,12 +21749,13 @@
     "D-1495",
     "D-3155",
     "D-3262",
-    "D-3263"
+    "D-3263",
+    "D-3445"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
-    "lines": 400,
+    "files": 3,
+    "lines": 200,
     "context_pct": 18
    },
    "checks": [
@@ -21649,7 +21764,74 @@
     "Ally"
    ],
    "branch": "claude/task/T210-intake-report-money-view",
-   "prompt": "kit/prompts/T210.md",
+   "prompt": "kit/prompts/T210.md"
+  },
+  {
+   "id": "T434",
+   "slug": "intake-report-money-view-pages",
+   "title": "portals: the monthly intake accuracy report page and the money view page with its expense entry",
+   "goal": "Plan change D-3445 split T210 in two: T210 built the money view's figures, `payments.expense` and its migration in `payments`; this task builds the portals pages. The monthly report lists no-quote cards and \"need more info\" quotes by category and question set with the golden-set share (OPS-040). The money view's page and the expense-entry POST are the portals route `app/portals/src/money_view.rs` rendering `money_view.html` from T210's `payments::api` figures (set-aside, expenses, collected, left and the monthly CSV), computing no figure itself (FEE-046); the intake report is `app/portals/src/intake_report.rs` and its words sit in `intake_report.html` (D-492). The golden-set share comes from the stored runs T156 makes (`intake::api`) (D-493). T305 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`. Plan change D-3155 (owner call put to a Fable agent under Casey's Nov 11 standing rule): OPS-040's quotes that \"said the business needed more information\" are derived, not stored: a quote counts when `quotes.quote.confirm_on_site` is true or its `format` is `diagnostic_visit` (`migrations/0070_quotes_quote.sql:19`, `:30`); free-text notes are never parsed; a withdrawn quote (`withdrawn_at` set) is treated as in the no-quote list: only quotes not withdrawn count in either list. No column or table is added for it. Tests: `tests/integration/tests/intake_report.rs` (TD-OPS-16), which also drives the money view page and its expense-entry `POST` against real PostgreSQL, fake data only. Update the `portals` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T210"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "accessibility",
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/intake_report.rs",
+    "app/portals/templates/intake_report.html",
+    "app/portals/src/money_view.rs",
+    "app/portals/templates/money_view.html",
+    "tests/integration/tests/intake_report.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/fees.md",
+    "docs/spec/calls.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "OPS-040"
+   ],
+   "tests": [
+    "TD-OPS-16"
+   ],
+   "decisions": [
+    "D-395",
+    "D-410",
+    "D-444",
+    "D-492",
+    "D-1495",
+    "D-3155",
+    "D-3262",
+    "D-3263",
+    "D-3445"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 280,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T434-intake-report-money-view-pages",
+   "prompt": "kit/prompts/T434.md",
    "copy": true
   },
   {
@@ -26661,8 +26843,8 @@
   {
    "id": "T319",
    "slug": "security-event-cap-and-webhook-refusals",
-   "title": "portals and server: security-event rows are capped per address, webhook refusals are security events, and expired sessions are swept",
-   "goal": "Fourth external audit F14, F5 and F7 (D-2207; SEC-048, SEC-016, SEC-004): (1) `portals::security`'s refusal (`app/portals/src/security.rs:96`) takes a pool connection and writes a security-event row before any limit, so a flood of cross-site or bad-CSRF requests turns each into a database write. An in-process counter, checked before the pool is touched, writes at most N rows per (event kind, client address as SEC-040 takes it, route) per minute and only counts the rest, logged as one line per minute with the count and no address; the 403 answer is unchanged. N is a setting in the shared `app/core/src/settings.rs` whose default is `EVENTS_PER_HOUR_ALERT` (50, `app/portals/src/security.rs:59`) and which is clamped up to it (a lower value is raised to it and logged at start-up), because the burst alert counts stored rows over the last hour (`security.rs:318`), so a cap below the threshold would stop it from ever firing. `WebSecurity::new(pool, clock)` is called in seven files this task does not own (`feedback.rs`, `pick_flow.rs`, `checkin.rs`, `quote_page.rs`, `business_auth.rs` in `app/portals/src/`, and `tests/security/tests/link_scanners.rs`, `cookies_csrf.rs`), so its signature does not change: N reaches the counter through a process-wide setter in `security.rs` called once from the shared `app/server/src/main.rs` at start-up, the default holding when it is never called (tests) (D-3134). Until T135 proves that the edge overwrites the client-address header, a forged header must not buy a fresh cap: the counter also keeps a per-(kind, route) ceiling of N rows per minute across all addresses, so a flood with a new forged address on each request still writes at most N rows a minute per kind and route (the burst alert fires from those). (2) The Stripe, Twilio text and Twilio voice webhook routes answer a source or signature refusal 403 with a log line and record no security event, so SEC-048's hourly alert never sees them and a rotated Stripe address list fails silently. `app/server/src/webhook_refusals.rs` is a layer the shared `app/server/src/lib.rs` puts on those three routers only: each 403 they answer records one `webhook_signature_failed` event (route and request ID, no actor) through `portals::api::record_security_event`, under the same cap; first check that those routes answer 403 for nothing else, and if one does, tell the cases apart without reading the body. (3) Expired sessions are never removed (`app/portals/src/session.rs:165` deletes only a replaced cookie's row): a daily `portals.session_sweep` task, registered in the shared `app/server/src/lib.rs` and queued once a day like the purge sweep, deletes `portals.session` rows expired more than a day earlier, in batches. (4) Sixth audit U-08 (D-2306; SEC-014, SEC-040): `core.rate_limit` rows are never deleted (`prune`, `app/core/src/rate_limit.rs:230`, has no production caller) and their bucket names hold client addresses. A daily `core.rate_limit_prune` task, registered in the shared `app/server/src/lib.rs` and seeded in `worker.rs`'s `schedule_start` under a per-day dedupe key, deletes rows whose window started more than the longest configured window plus one day ago, in batches of at most 5,000 rows each in its own short statement (`prune_batch`, added to `rate_limit.rs`); it is registered, not deferred, in T327's registry. No index is added: once pruned daily the table holds a few days of windows. Tests in `tests/security/tests/security_event_cap.rs` (TD-SEC-53) and `tests/integration/tests/session_sweep.rs` (TD-SEC-54, TD-SEC-58); every existing security-event and session test passes unchanged. Update the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "title": "portals and server: security-event rows are capped per address, and webhook refusals are security events",
+   "goal": "Plan change D-3445 split T319 in two: this task caps security-event rows and makes webhook refusals security events; T436 adds the daily session sweep and the rate-limit prune. Fourth external audit F14 and F5 (D-2207; SEC-048, SEC-016): (1) `portals::security`'s refusal (`app/portals/src/security.rs:96`) takes a pool connection and writes a security-event row before any limit, so a flood of cross-site or bad-CSRF requests turns each into a database write. An in-process counter, checked before the pool is touched, writes at most N rows per (event kind, client address as SEC-040 takes it, route) per minute and only counts the rest, logged as one line per minute with the count and no address; the 403 answer is unchanged. N is a setting in the shared `app/core/src/settings.rs` whose default is `EVENTS_PER_HOUR_ALERT` (50, `app/portals/src/security.rs:59`) and which is clamped up to it (a lower value is raised to it and logged at start-up), because the burst alert counts stored rows over the last hour (`security.rs:318`), so a cap below the threshold would stop it from ever firing. `WebSecurity::new(pool, clock)` is called in seven files this task does not own (`feedback.rs`, `pick_flow.rs`, `checkin.rs`, `quote_page.rs`, `business_auth.rs` in `app/portals/src/`, and `tests/security/tests/link_scanners.rs`, `cookies_csrf.rs`), so its signature does not change: N reaches the counter through a process-wide setter in `security.rs` called once from the shared `app/server/src/main.rs` at start-up, the default holding when it is never called (tests) (D-3134). Until T135 proves that the edge overwrites the client-address header, a forged header must not buy a fresh cap: the counter also keeps a per-(kind, route) ceiling of N rows per minute across all addresses, so a flood with a new forged address on each request still writes at most N rows a minute per kind and route (the burst alert fires from those). (2) The Stripe, Twilio text and Twilio voice webhook routes answer a source or signature refusal 403 with a log line and record no security event, so SEC-048's hourly alert never sees them and a rotated Stripe address list fails silently. `app/server/src/webhook_refusals.rs` is a layer the shared `app/server/src/lib.rs` puts on those three routers only: each 403 they answer records one `webhook_signature_failed` event (route and request ID, no actor) through `portals::api::record_security_event`, under the same cap; first check that those routes answer 403 for nothing else, and if one does, tell the cases apart without reading the body. Tests in `tests/security/tests/security_event_cap.rs` (TD-SEC-53); every existing security-event test passes unchanged. Update the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26679,11 +26861,8 @@
    ],
    "owns": [
     "app/portals/src/security.rs",
-    "app/portals/src/session.rs",
     "app/server/src/webhook_refusals.rs",
-    "tests/security/tests/security_event_cap.rs",
-    "tests/integration/tests/session_sweep.rs",
-    "app/core/src/rate_limit.rs"
+    "tests/security/tests/security_event_cap.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -26694,27 +26873,23 @@
    ],
    "requirements": [
     "SEC-048",
-    "SEC-016",
-    "SEC-004",
-    "SEC-014",
-    "SEC-040"
+    "SEC-016"
    ],
    "tests": [
-    "TD-SEC-53",
-    "TD-SEC-54",
-    "TD-SEC-58"
+    "TD-SEC-53"
    ],
    "decisions": [
     "D-2207",
     "D-709",
     "D-480",
     "D-2306",
-    "D-3134"
+    "D-3134",
+    "D-3445"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
-    "lines": 550,
+    "files": 3,
+    "lines": 320,
     "context_pct": 26
    },
    "checks": [
@@ -26724,6 +26899,67 @@
    ],
    "branch": "claude/task/T319-security-event-cap-and-webhook-refusals",
    "prompt": "kit/prompts/T319.md"
+  },
+  {
+   "id": "T436",
+   "slug": "session-sweep-and-rate-limit-prune",
+   "title": "portals, core and server: expired sessions are swept and old rate-limit windows pruned daily",
+   "goal": "Plan change D-3445 split T319 in two: T319 capped security-event rows and made webhook refusals security events; this task adds the two daily sweeps, after T319 because both edit `portals` and the shared `app/server/src/lib.rs`. Fourth external audit F7 (D-2207; SEC-004): (3) Expired sessions are never removed (`app/portals/src/session.rs:165` deletes only a replaced cookie's row): a daily `portals.session_sweep` task, registered in the shared `app/server/src/lib.rs` and queued once a day like the purge sweep, deletes `portals.session` rows expired more than a day earlier, in batches. (2) Sixth audit U-08 (D-2306; SEC-014, SEC-040): `core.rate_limit` rows are never deleted (`prune`, `app/core/src/rate_limit.rs:230`, has no production caller) and their bucket names hold client addresses. A daily `core.rate_limit_prune` task, registered in the shared `app/server/src/lib.rs` and seeded in `worker.rs`'s `schedule_start` under a per-day dedupe key, deletes rows whose window started more than the longest configured window plus one day ago, in batches of at most 5,000 rows each in its own short statement (`prune_batch`, added to `rate_limit.rs`); it is registered, not deferred, in T327's registry. No index is added: once pruned daily the table holds a few days of windows. Tests in `tests/integration/tests/session_sweep.rs` (TD-SEC-54, TD-SEC-58); every existing session and rate-limit test passes unchanged. Update the `portals`, `core` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "portals",
+   "deps": [
+    "T319"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/session.rs",
+    "app/core/src/rate_limit.rs",
+    "tests/integration/tests/session_sweep.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/threat-model.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "SEC-004",
+    "SEC-014",
+    "SEC-040"
+   ],
+   "tests": [
+    "TD-SEC-54",
+    "TD-SEC-58"
+   ],
+   "decisions": [
+    "D-2207",
+    "D-709",
+    "D-480",
+    "D-2306",
+    "D-3134",
+    "D-3445"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 260,
+    "context_pct": 26
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T436-session-sweep-and-rate-limit-prune",
+   "prompt": "kit/prompts/T436.md"
   },
   {
    "id": "T322",
@@ -28304,7 +28540,7 @@
     "T108",
     "T205",
     "T310",
-    "T398",
+    "T435",
     "T361",
     "T151",
     "T432"
@@ -29702,14 +29938,14 @@
    "id": "T394",
    "slug": "ai-writing-calls",
    "title": "ai and intake (harness): the AI writing calls (reword, follow-up, job card, project file) wired through the scrub, check and budget rules",
-   "goal": "Register row IC-53 (D-990, D-2065, D-3080; AI-010, AI-019, AI-021, AI-028, AI-029, INT-039, CARD-010): T163 built the pure last step (`ai::api::accept_question` and `accept_document`, `app/ai/src/writer.rs`) and the question bank already passes a reworded question through `accept_question` (`app/intake/src/question_bank.rs:325`), but `INSTRUCTIONS` holds only the intake reading (`app/ai/src/models.rs:95`), so with the AI on nothing ever asks for a reword, the follow-up, the job card or the project file and the homeowner always gets the AI-off text. AI-010 and AI-019 put them in launch scope, so this task wires them after T299's turn and before the war games (T237). (1) `app/ai/src/writing.rs`: four versioned `Instruction`s added to `INSTRUCTIONS` (reword the next bank question, the one follow-up the set's brief allows, the job card, the project file), each with a request builder beside `intake_request`: only `ScrubbedText` goes in (AI-004), inside the AI-025 tag with its name escaped and the instruction saying the tag's content is data; no tools (AI-006); the reply schema-validated (AI-005, AI-010) as the task decides against AI-022's one committed schema and logs in `docs/decisions.md` (`schemas/intake_reading.json` is owned here for that), anything failing it discarded; then `accept_question` or `accept_document` (AI-019 and AI-021's checks, the CARD-010 screen, the URL ban, the length cap), falling back to the template or her own scrubbed words on any hit. Each call goes through the gated, budgeted entry T236 built for the reading: the AI-008 switch, the AI-021 admission and its AI-028 step budget (1 reword per bank question and at most 8, 1 follow-up, card and project file 1 each plus 1 per EDIT and at most 3, the card call reserved), no database connection held across the provider await (AI-029), inside AI-023's reply budget, and the AI-off path at once when any of them refuses. (2) `intake`: T299's turn (`app/intake/src/ai_turn.rs`) asks for the reword before a bank question and the follow-up where the brief allows one (INT-039), and the card step (`app/intake/src/summary_step.rs`) asks for the card and the project file before the card is shown; a step past its budget, timed out or refused takes the AI-off path with nothing said (INT-021). (3) The stand-in AI (`stand_ins/ai.py`) answers a writing request deterministically under its schema, and its plants give an added fact, a link and a screened word for the fallback cases. Photo descriptions (AI-016, only after zero retention) and the INT-046 concept prompt are not this task's. Tests in `app/ai/src/tests/writing.rs` and `tests/integration/tests/ai_writing.rs` (TD-AI-29), fake data only; every existing `ai`, `intake`, `ai_budget` and `ai_wiring` test passes unchanged. Update `app/ai/CLAUDE.md`, `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`, and name in the hand-in the commit and tests that close IC-53.",
+   "goal": "Register row IC-53 (D-990, D-2065, D-3080; AI-010, AI-019, AI-021, AI-028, AI-029, INT-039, CARD-010): T163 built the pure last step (`ai::api::accept_question` and `accept_document`, `app/ai/src/writer.rs`) and the question bank already passes a reworded question through `accept_question` (`app/intake/src/question_bank.rs:325`), but `INSTRUCTIONS` holds only the intake reading (`app/ai/src/models.rs:95`), so with the AI on nothing ever asks for a reword, the follow-up, the job card or the project file and the homeowner always gets the AI-off text. AI-010 and AI-019 put them in launch scope, so this task wires them after T299's turn and before the war games (T237). (1) `app/ai/src/writing.rs`: four versioned `Instruction`s added to `INSTRUCTIONS` (reword the next bank question, the one follow-up the set's brief allows, the job card, the project file), each with a request builder beside `intake_request`: only `ScrubbedText` goes in (AI-004), inside the AI-025 tag with its name escaped and the instruction saying the tag's content is data; no tools (AI-006); the reply schema-validated (AI-005, AI-010) as the task decides against AI-022's one committed schema and logs in `docs/decisions.md` (`schemas/intake_reading.json` is owned here for that), anything failing it discarded; then `accept_question` or `accept_document` (AI-019 and AI-021's checks, the CARD-010 screen, the URL ban, the length cap), falling back to the template or her own scrubbed words on any hit. Each call goes through the gated, budgeted entry T236 and T433 built (D-3445) for the reading: the AI-008 switch, the AI-021 admission and its AI-028 step budget (1 reword per bank question and at most 8, 1 follow-up, card and project file 1 each plus 1 per EDIT and at most 3, the card call reserved), no database connection held across the provider await (AI-029), inside AI-023's reply budget, and the AI-off path at once when any of them refuses. (2) `intake`: T299's turn (`app/intake/src/ai_turn.rs`) asks for the reword before a bank question and the follow-up where the brief allows one (INT-039), and the card step (`app/intake/src/summary_step.rs`) asks for the card and the project file before the card is shown; a step past its budget, timed out or refused takes the AI-off path with nothing said (INT-021). (3) The stand-in AI (`stand_ins/ai.py`) answers a writing request deterministically under its schema, and its plants give an added fact, a link and a screened word for the fallback cases. Photo descriptions (AI-016, only after zero retention) and the INT-046 concept prompt are not this task's. Tests in `app/ai/src/tests/writing.rs` and `tests/integration/tests/ai_writing.rs` (TD-AI-29), fake data only; every existing `ai`, `intake`, `ai_budget` and `ai_wiring` test passes unchanged. Update `app/ai/CLAUDE.md`, `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`, and name in the hand-in the commit and tests that close IC-53.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
    "module": "ai",
    "deps": [
     "T299",
-    "T236",
+    "T433",
     "T420"
    ],
    "model": "claude-opus-5-5",
@@ -29758,7 +29994,8 @@
    "decisions": [
     "D-990",
     "D-2065",
-    "D-3080"
+    "D-3080",
+    "D-3445"
    ],
    "cites": [],
    "budget": {
