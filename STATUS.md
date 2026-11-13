@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T11:47:57Z by runner 67d6f23a8fa8 (actions).
+Updated 2026-11-13T11:53:10Z by runner 67d6f23a8fa8 (actions).
 
-**Building: T255 in progress since 11:40Z; 278 of 417 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T255 in progress since 11:40Z; 279 of 417 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 278 of 417 build tasks (owner gates not counted)
+- **Tasks done:** 279 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T255 claimed 11:40Z, lease until 14:40Z; lane 4: T312 claimed 11:41Z, lease until 14:41Z
 - **Week:** 16% used, 157.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:47Z, 0 min before this update
+- **Last run:** 11:48Z, 5 min before this update
 - **Keeper:** last ran 11:47Z, next wake 14:42Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-13T11:47:57Z by runner 67d6f23a8fa8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T428 | Switch the brand file to Laftly and re-issue the legal recor | MERGE_PENDING | 3 | 46 min | 11:14Z | session ended without handing in |
+| T428 | Switch the brand file to Laftly and re-issue the legal recor | done | 3 | 46 min | 11:14Z | session ended without handing in |
 | T312 | intake: a street address written in lower case never trips t | QUEUED | 1 | 24 min | 10:17Z | session ended without handing in |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | QUEUED | 2 | 22 min | 10:15Z |  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 3 | 26 min | 09:48Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
@@ -74,7 +74,6 @@ Updated 2026-11-13T11:47:57Z by runner 67d6f23a8fa8 (actions).
 | T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z |  |
 | T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
 | T378 | adapters, calls and stand-in (harness): every outbound call  | done | 1 | 45 min | 12:34Z |  |
-| T323 | ai: a new capitalized name at the start of a sentence counts | done | 1 | 24 min | 11:47Z |  |
 
 ### Plan and harness merges on main
 - 11:32Z Harness: fix-round hand-off, tighter output caps, crate_cap 2 (D-3444) (#665)
@@ -105,7 +104,7 @@ Updated 2026-11-13T11:47:57Z by runner 67d6f23a8fa8 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 233 of 733 (31.8%) · partial 340 · unstarted 160
-**Tasks merged (throughput only):** 278 of 417
+**Tasks merged (throughput only):** 279 of 417
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -140,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 158 of 199 done
+- stage 4: 159 of 199 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
