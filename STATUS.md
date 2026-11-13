@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-13T02:09:46Z by runner 4ce270481192 (actions).
+Updated 2026-11-13T02:12:45Z by runner 9901076ee397 (actions).
 
 **Building: T215 in progress since 23:45Z; 264 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 264 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
-- **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:09Z, 0 min before this update
+- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T425 claimed 02:11Z, lease until 05:11Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
+- **Week:** 10% used, 166.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 02:11Z, 1 min before this update
 - **Keeper:** last ran 02:09Z, next wake 02:47Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+140 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+139 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -119,7 +119,6 @@ Updated 2026-11-13T02:09:46Z by runner 4ce270481192 (actions).
 - 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
 - 03:50Z Plan: pre-flight fixes round 6 — T355, T340, T341, T249, T273, T271, T277, T357, T314; new T405 (D-3118) (#542)
 - 03:24Z Harness: claim order prefers tasks in crates no other lane is writing (D-3082) (#523)
-- 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
 
 ## Progress (requirements verified)
 
@@ -152,7 +151,7 @@ Updated 2026-11-13T02:09:46Z by runner 4ce270481192 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T00:48:25Z (week)): week: 35.8M used, 158.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-05T17:28:22Z.
+- Pacing (session_reading 2026-11-13T02:09:26Z (week)): week: 28.0M used, 166.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-05T22:53:33Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -168,6 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T215 (lease until 2026-11-13T02:45:19Z)
+- lane 3: T425 (lease until 2026-11-13T05:11:11Z)
 - lane 6: T249 (lease until 2026-11-13T03:01:54Z)
 
 ## Last usage reading
