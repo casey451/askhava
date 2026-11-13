@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T04:59:22Z by runner 7772c1d47f57 (actions).
+Updated 2026-11-13T05:05:58Z by runner 28395994ffe1 (actions).
 
 **Building: T215 in progress since 04:45Z; 273 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-13T04:59:22Z by runner 7772c1d47f57 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 04:45Z, lease until 07:45Z
 - **Week:** 12% used, 170.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:59Z, 0 min before this update
+- **Last run:** 04:59Z, 6 min before this update
 - **Keeper:** last ran 04:59Z, next wake 07:48Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+145 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+146 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -91,6 +91,7 @@ Updated 2026-11-13T04:59:22Z by runner 7772c1d47f57 (actions).
 | T356 | messaging and server (harness): the worker sends queued text | done | 1 | 86 min | 05:31Z |  |
 
 ### Plan and harness merges on main
+- 04:59Z Harness: release a dead worker's lease early (D-3417) (#651)
 - 04:27Z Harness: safety hand-in reports unreleased leases (D-3419) (#654)
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
 - 01:29Z Harness: fail CI, smoke and prehandin on leftover merge-conflict markers (D-3307) (#619)
@@ -116,7 +117,6 @@ Updated 2026-11-13T04:59:22Z by runner 7772c1d47f57 (actions).
 - 06:05Z Plan: pre-flight fixes round 8 — stage 5: T101, T102, T105, T202, T320, T106, T364; new T408 (D-3144) (#551)
 - 05:28Z Harness: stop backup-runner caches evicting CI's Rust caches (D-3143) (#553)
 - 05:16Z Harness: run lint and the slow compile-fail/prompt-injection tests in a parallel CI job (D-3142) (#550)
-- 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
 
 ## Progress (requirements verified)
 
