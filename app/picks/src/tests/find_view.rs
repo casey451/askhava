@@ -7,10 +7,10 @@
 
 use askhava_adapters::api::{MaskedPool, TwilioConfig};
 use askhava_calls::api::{WHOS_CALLING_KIND, job_had_line};
-use askhava_core::api::Settings;
+use askhava_core::api::{Settings, WorkerId, claim};
 use askhava_ops::api::Actor;
 use askhava_privacy::api::ReleaseBasis;
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
@@ -115,14 +115,19 @@ async fn paid_pick(db: &mut PgConnection, claimed: bool) -> (Uuid, Uuid) {
     (pick, job)
 }
 
-/// The `calls.whos_calling` tasks queued for `pick`.
-async fn whos_calling_tasks(db: &mut PgConnection, pick: Uuid) -> i64 {
-    sqlx::query_scalar("SELECT count(*) FROM core.task WHERE kind = $1 AND payload->>'pick' = $2")
-        .bind(WHOS_CALLING_KIND)
-        .bind(pick.to_string())
-        .fetch_one(db)
+/// The `calls.whos_calling` tasks for `pick` newly due within two days, claimed through `core`'s
+/// API, so each is counted once and a later call counts only tasks queued since.
+async fn new_whos_calling_tasks(pool: &PgPool, pick: Uuid) -> usize {
+    let owner = WorkerId::new(pool).await.expect("worker");
+    let by = Timestamp::now() + SignedDuration::from_hours(48);
+    let claimed = claim(pool, owner, by, SignedDuration::from_hours(1), 100)
         .await
-        .expect("count")
+        .expect("claim");
+    let pick = pick.to_string();
+    claimed
+        .iter()
+        .filter(|t| t.kind == WHOS_CALLING_KIND && t.payload["pick"].as_str() == Some(&pick))
+        .count()
 }
 
 /// Runs `release`'s follow-up for `pick` as `release` does after `show`.
@@ -139,9 +144,13 @@ async fn td_txt_29_a_shown_release_queues_one_whos_calling_task(pool: PgPool) {
     let (pick, job) = paid_pick(&mut db, true).await;
     follow(&pool, pick, Shown::Yes).await;
     assert!(job_had_line(&mut db, job).await.expect("line"));
-    assert_eq!(whos_calling_tasks(&mut db, pick).await, 1);
+    assert_eq!(new_whos_calling_tasks(&pool, pick).await, 1);
     follow(&pool, pick, Shown::Yes).await;
-    assert_eq!(whos_calling_tasks(&mut db, pick).await, 1, "no second task");
+    assert_eq!(
+        new_whos_calling_tasks(&pool, pick).await,
+        0,
+        "no second task"
+    );
 }
 
 /// TD-TXT-29 (TXT-027, D-3508): a release that failed after its claim committed (the vault read)
@@ -151,10 +160,10 @@ async fn td_txt_29_a_failed_release_queues_the_task_only_once_claimed(pool: PgPo
     let mut db = pool.acquire().await.expect("db");
     let (claimed, _) = paid_pick(&mut db, true).await;
     follow(&pool, claimed, Shown::Failed).await;
-    assert_eq!(whos_calling_tasks(&mut db, claimed).await, 1);
+    assert_eq!(new_whos_calling_tasks(&pool, claimed).await, 1);
     let (unclaimed, _) = paid_pick(&mut db, false).await;
     follow(&pool, unclaimed, Shown::Failed).await;
-    assert_eq!(whos_calling_tasks(&mut db, unclaimed).await, 0);
+    assert_eq!(new_whos_calling_tasks(&pool, unclaimed).await, 0);
 }
 
 /// TD-TXT-29 (TXT-027): `Already`, `WaitingForAddress` and `MovedOn` queue nothing, so a repeated
@@ -164,5 +173,5 @@ async fn td_txt_29_a_quiet_release_queues_nothing(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
     let (pick, _) = paid_pick(&mut db, true).await;
     follow(&pool, pick, Shown::No).await;
-    assert_eq!(whos_calling_tasks(&mut db, pick).await, 0);
+    assert_eq!(new_whos_calling_tasks(&pool, pick).await, 0);
 }
