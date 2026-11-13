@@ -3761,3 +3761,4 @@
 - 2026-11-13T14:43:04Z runner ae799a921ac7 (actions): {"T266": "QUEUED -> IN_PROGRESS"}; T266 estimated 3.7M tokens (calibrated); week has 152.4M left (no five-hour budget, D-3056) after 3.6M still running in another lane (session_reading 2026-11-13T14:38:38Z (week)); claimed
 - 2026-11-13T14:44:42Z runner ae799a921ac7 (actions): {}
 - 2026-11-13T14:45:02Z runner ae799a921ac7 (actions): {}
+- 2026-11-13T14:47:21Z runner b0f6fb3a71c8 (manual): {"T386": "BLOCKED -> QUEUED"}
