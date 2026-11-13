@@ -1,22 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:48:38Z by runner 09bfaf2c02fd (actions).
+Updated 2026-11-13T22:56:42Z by runner 31c17d5aa447 (actions).
 
 **Building: T355 in progress since 22:11Z; 298 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 298 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 4: T391 claimed 22:36Z, lease until 01:36Z
-- **Week:** 29% used, 128.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:48Z, 0 min before this update
+- **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 4: T391 claimed 22:36Z, lease until 01:36Z; lane 7: T328 claimed 22:56Z, lease until 01:56Z
+- **Week:** 29% used, 125.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:48Z, 7 min before this update
 - **Keeper:** last ran 22:48Z, next wake 01:08Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smalles; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T328 (since 2026-11-13T22:47:42Z, no attempt used; a plan change fixes it): T328: dependency T340 is DONE but its owned file app/payments/src/fee_facts.rs is not on main; T328: dependency T340 is DONE but its owned file tests/integration/tests/fee_facts_at_pick.rs is not on main
-- PLAN GAP T341 (since 2026-11-13T22:47:42Z, no attempt used; a plan change fixes it): T341: dependency T340 is DONE but its owned file app/payments/src/fee_facts.rs is not on main; T341: dependency T340 is DONE but its owned file tests/integration/tests/fee_facts_at_pick.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+192 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 28 problem(s) on tasks still to run (+196 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -140,7 +138,7 @@ Updated 2026-11-13T22:48:38Z by runner 09bfaf2c02fd (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T22:33:35Z (week)): week: 65.2M used, 128.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T22:09:46Z.
+- Pacing (session_reading 2026-11-13T22:48:18Z (week)): week: 68.4M used, 125.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T19:21:51Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -158,6 +156,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T355 (lease until 2026-11-14T01:11:47Z)
 - lane 3: T415 (lease until 2026-11-14T01:05:51Z)
 - lane 4: T391 (lease until 2026-11-14T01:36:08Z)
+- lane 7: T328 (lease until 2026-11-14T01:56:22Z)
 
 ## Last usage reading
 - {"task": "T340", "at": "2026-11-13T22:32:45Z", "input_tokens": 307, "cache_read_input_tokens": 12561916, "output_tokens": 111508, "cache_creation_input_tokens": 358321}
