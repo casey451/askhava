@@ -1,21 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-13T20:20:00Z by runner 6cc0b1c3ccc3 (actions).
+Updated 2026-11-13T20:20:51Z by runner 900e97dabbc9 (actions).
 
-**Building: T357 in progress since 20:16Z; 290 of 424 done; week 27% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T357 in progress since 20:16Z; 290 of 427 done; week 27% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 290 of 424 build tasks (owner gates not counted)
+- **Tasks done:** 290 of 427 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T357 claimed 20:16Z, lease until 23:16Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z
-- **Week:** 27% used, 128.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:19Z, 0 min before this update
+- **Lane:** lane 1: T357 claimed 20:16Z, lease until 23:16Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z
+- **Week:** 27% used, 128.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 20:20Z, 0 min before this update
 - **Keeper:** last ran 20:20Z, next wake 22:30Z
 
 ## Needs attention
 - BLOCKED T438: plan gap reported: PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {"start": ..., "tokens": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: "message_id"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {"start": ..., "tokens": 2000, "counting": "message_id"}, logged in docs/decisions.md under; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T438 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T335 (since 2026-11-13T20:16:02Z, no attempt used; a plan change fixes it): T335: dependency T314 is DONE but its owned file app/picks/src/dispute_steps.rs is not on main; T335: dependency T314 is DONE but its owned file tests/integration/tests/dispute_submit.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+181 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -109,7 +108,7 @@ Updated 2026-11-13T20:20:00Z by runner 6cc0b1c3ccc3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 279 of 733 (38.1%) · partial 294 · unstarted 160
-**Tasks merged (throughput only):** 290 of 424
+**Tasks merged (throughput only):** 290 of 427
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -137,7 +136,7 @@ Updated 2026-11-13T20:20:00Z by runner 6cc0b1c3ccc3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T20:14:15Z (week)): week: 65.3M used, 128.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-07T01:51:44Z.
+- Pacing (session_reading 2026-11-13T20:19:42Z (week)): week: 65.5M used, 128.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-07T03:00:10Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -155,6 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T357 (lease until 2026-11-13T23:16:02Z)
 - lane 2: T412 (lease until 2026-11-13T22:27:09Z)
 - lane 4: T442 (lease until 2026-11-13T22:41:31Z)
+- lane 5: T335 (lease until 2026-11-13T23:20:34Z)
 - lane 6: T271 (lease until 2026-11-13T22:28:27Z)
 
 ## Last usage reading
