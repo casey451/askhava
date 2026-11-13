@@ -3875,3 +3875,4 @@
 - 2026-11-13T17:16:55Z runner 183c06a7dd69 (actions): {"T436": "MERGE_PENDING -> QUEUED"}
 - 2026-11-13T17:17:12Z runner 183c06a7dd69 (actions): {}
 - 2026-11-13T17:17:32Z runner 183c06a7dd69 (actions): {}
+- 2026-11-13T17:18:14Z runner 183c06a7dd69 (actions): {"T436": "QUEUED -> IN_PROGRESS"}; T436 estimated 3.3M tokens (calibrated); week has 138.7M left (no five-hour budget, D-3056) after 7.3M still running in another lane (session_reading 2026-11-13T17:17:11Z (week)); claimed
