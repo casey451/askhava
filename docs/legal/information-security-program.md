@@ -1,13 +1,13 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.3 (draft, D-492) · October 29, 2026 · Internal document
+Version 0.4 (draft, D-492) · November 13, 2026 · Internal document
 
-# Ask Hava Written Information Security Program
+# Laftly Written Information Security Program
 
-A short written program for Ask Hava LLC, modeled on the FTC Safeguards Rule (16 C.F.R. Part 314) in its small-business form. Memo 2 (V.B) found it uncertain whether that rule applies to a quote-request service; Ask Hava follows this light version anyway because most of the controls are already in the build. The incident steps are in the Ask Hava Incident Response Plan.
+A short written program for Laftly LLC, modeled on the FTC Safeguards Rule (16 C.F.R. Part 314) in its small-business form. Memo 2 (V.B) found it uncertain whether that rule applies to a quote-request service; Laftly follows this light version anyway because most of the controls are already in the build. The incident steps are in the Laftly Incident Response Plan.
 
 ## 1. Who is responsible
 
-- **Qualified individual:** the Ask Hava owner. There is no other staff and no backup person (OPS-002).
+- **Qualified individual:** the Laftly owner. There is no other staff and no backup person (OPS-002).
 - The owner reviews this program once a year, by [date one year after launch], and after any incident or any change to the systems or vendors below.
 
 ## 2. What we protect
@@ -17,7 +17,7 @@ A short written program for Ask Hava LLC, modeled on the FTC Safeguards Rule (16
 | Homeowner names, phone numbers, emails, addresses, on-site contacts, photos and message text | The contact vault only (PRIV-001) | Field-by-field AES-GCM encryption under a key kept apart from the database credentials (PRIV-002); every read logged (PRIV-003); only the messaging and release code can read it (PRIV-004) |
 | Job descriptions with contact details removed | Job records | No contact details (PRIV-006, PRIV-008) |
 | Business and team records | Business records | Signed-in, per-person access (SEC-004); every change logged (SEC-024) |
-| Card data | Stripe only | Never touches Ask Hava's servers (FEE-014) |
+| Card data | Stripe only | Never touches Laftly's servers (FEE-014) |
 | Consent and opt-out records | Consent log | Phone number encrypted; kept 5 years (CON-022, PRIV-007) |
 | Ledger, payment and audit records | Ledger and audit log | Append-only (FEE-028, OPS-010); kept 7 years (PRIV-010) |
 
@@ -39,7 +39,7 @@ Each review lists the main risks and checks each control below still works. The 
 
 ## 4a. Does the FTC Safeguards Rule apply? (reviewed yearly)
 
-Ask Hava closely matches the rule's "finder" example (16 C.F.R. 314.2(h)(2)(xiii)), so it is treated as a financial institution. Whether a homeowner with one request is a "customer" with a continuing relationship is unclear, so this program follows the rule anyway. With fewer than 5,000 consumers' information, 16 C.F.R. 314.6 removes only four requirements: the written risk assessment's details (314.4(b)(1)), continuous monitoring or yearly penetration tests and twice-yearly vulnerability scans (314.4(d)(2)), the written incident-response plan (314.4(h)) and the yearly report (314.4(i)). Every other part of 314.4 still applies. Ask Hava keeps the risk assessment, the incident plan and the yearly report anyway; those are voluntary controls kept as policy. This review is repeated yearly and whenever the service changes.
+Laftly closely matches the rule's "finder" example (16 C.F.R. 314.2(h)(2)(xiii)), so it is treated as a financial institution. Whether a homeowner with one request is a "customer" with a continuing relationship is unclear, so this program follows the rule anyway. With fewer than 5,000 consumers' information, 16 C.F.R. 314.6 removes only four requirements: the written risk assessment's details (314.4(b)(1)), continuous monitoring or yearly penetration tests and twice-yearly vulnerability scans (314.4(d)(2)), the written incident-response plan (314.4(h)) and the yearly report (314.4(i)). Every other part of 314.4 still applies. Laftly keeps the risk assessment, the incident plan and the yearly report anyway; those are voluntary controls kept as policy. This review is repeated yearly and whenever the service changes.
 
 ## 4b. Data inventory
 
@@ -65,7 +65,7 @@ Ask Hava closely matches the rule's "finder" example (16 C.F.R. 314.2(h)(2)(xiii
 | Lob | Identity letters | Same |
 | Anthropic | AI reading (only once switched on) | Same, plus the zero-retention agreement or the recorded API terms (AI-008) |
 
-Each provider gets only what it needs. A new provider is added to this list before it receives any data. Before a provider handles customer information, Ask Hava checks it can keep the information safe, uses terms that require it to do so where the Safeguards Rule applies, and reviews it again yearly based on how sensitive the information is. Google is added for the hand-run test.
+Each provider gets only what it needs. A new provider is added to this list before it receives any data. Before a provider handles customer information, Laftly checks it can keep the information safe, uses terms that require it to do so where the Safeguards Rule applies, and reviews it again yearly based on how sensitive the information is. Google is added for the hand-run test.
 
 ## 6. Training
 
