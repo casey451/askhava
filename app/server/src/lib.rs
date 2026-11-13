@@ -722,8 +722,8 @@ fn register_opted_out_live(
     Ok(())
 }
 
-/// T281 (FEE-022, FEE-052, TXT-030, D-1845, D-3490): `picks.unreachable_step` and
-/// `picks.fraud_warning`, always registered, over `picks::api::StepParts`: the Stripe client of
+/// T281 (FEE-022, FEE-052, TXT-030, D-1845, D-3490): `picks.unreachable_step`,
+/// `picks.fraud_warning` and T314's `picks.dispute_opened` (FEE-050, D-2204), always registered, over `picks::api::StepParts`: the Stripe client of
 /// the Stripe webhook's settings (`release_sink::stripe_webhook`, read by [`stripe_wanted`]: unset
 /// in dev and CI, required in test and live), `ID_SECRET`, the vault and the footer postal line when set; a step
 /// that needs a missing part fails and is retried, then dead-lettered with its alert.
@@ -734,7 +734,9 @@ fn register_unreachable(
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     use askhava_messaging::api::{MailboxKind, PostalAddress};
-    use askhava_picks::api::{StepParts, UNREACHABLE_STEP_KIND, run_fraud_warning};
+    use askhava_picks::api::{
+        StepParts, UNREACHABLE_STEP_KIND, run_dispute_opened, run_fraud_warning,
+    };
     use secrecy::ExposeSecret;
     let hooks = if stripe_wanted(settings, &pairs) {
         let lazy = PgPool::connect_lazy(settings.database_url().expose_secret())
@@ -763,6 +765,13 @@ fn register_unreachable(
             step_clock.now(),
         )
     });
+    let (dispute_parts, dispute_clock) = (Arc::clone(&parts), Arc::clone(clock));
+    registry.register(
+        askhava_payments::api::DISPUTE_OPENED_KIND,
+        move |pool, task| {
+            run_dispute_opened(pool, Arc::clone(&dispute_parts), task, dispute_clock.now())
+        },
+    );
     let fraud_clock = Arc::clone(clock);
     registry.register(
         askhava_payments::api::FRAUD_WARNING_KIND,
@@ -1205,8 +1214,8 @@ fn register_purge_handlers(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     );
 }
 
-/// PRIV-007 to PRIV-009, TXT-020, D-2641: the daily body cut and the daily purge sweep (with
-/// `intake`'s request sweep) at `clock`'s now; a run's last failed attempt raises one
+/// PRIV-007 to PRIV-009, TXT-020, D-2641, D-1840: the daily body cut, the daily cut of kept
+/// problem words and the daily purge sweep (with `intake`'s request sweep) at `clock`'s now; a run's last failed attempt raises one
 /// `privacy.purge_failed` alert, and the next day's run is already queued.
 fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     let at = Arc::clone(clock);
@@ -1214,6 +1223,14 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
         let now = at.now();
         async move {
             let outcome = askhava_messaging::api::run_cut_at(pool.clone(), task.clone(), now);
+            alert_if_last(&pool, &task, outcome.await).await
+        }
+    });
+    let at = Arc::clone(clock);
+    registry.register(askhava_privacy::api::CUT_WORDS_KIND, move |pool, task| {
+        let now = at.now();
+        async move {
+            let outcome = askhava_privacy::api::run_words_cut_at(pool.clone(), task.clone(), now);
             alert_if_last(&pool, &task, outcome.await).await
         }
     });
@@ -1277,8 +1294,8 @@ async fn stage_step(
     askhava_privacy::api::run_purge_due_after_at(pool.clone(), task.clone(), (queued, now)).await
 }
 
-/// PRIV-007, PRIV-008, D-491: one `privacy.purge` task at `now`: `intake`'s rows, `quotes`' text
-/// and, on the text stage, the feedback words' step.
+/// PRIV-007, PRIV-008, D-491, D-1840: one `privacy.purge` task at `now`: `intake`'s rows,
+/// `quotes`' text, `privacy`'s kept problem words and, on the text stage, the feedback words' step.
 async fn purge_step(
     pool: &PgPool,
     task: &askhava_core::api::Claimed,
@@ -1286,6 +1303,7 @@ async fn purge_step(
 ) -> Result<(), askhava_core::api::HandlerError> {
     askhava_intake::api::run_purge_at(pool.clone(), task.clone(), now).await?;
     askhava_quotes::api::run_text_purge(pool.clone(), task.clone()).await?;
+    askhava_privacy::api::run_words_purge(pool.clone(), task.clone()).await?;
     match askhava_privacy::api::purge_target(task)? {
         (job, askhava_privacy::api::PurgeStage::Text) => feedback_step(pool, job, now).await,
         _ => Ok(()),
