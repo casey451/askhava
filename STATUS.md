@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-13T19:35:39Z by runner c309142e3550 (manual).
+Updated 2026-11-13T19:35:56Z by runner 7dd6ca1e8125 (actions).
 
-**Building: T357 in progress since 19:21Z; 289 of 427 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T357 in progress since 19:21Z; 289 of 425 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 289 of 427 build tasks (owner gates not counted)
+- **Tasks done:** 289 of 425 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T357 claimed 19:21Z, lease until 22:21Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T277 claimed 19:27Z, lease until 22:27Z; lane 4: T438 claimed 19:25Z, lease until 22:25Z; lane 5: T314 claimed 19:26Z, lease until 22:26Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z; lane 7: T318 claimed 19:26Z, lease until 22:26Z
+- **Lane:** lane 1: T357 claimed 19:21Z, lease until 22:21Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T277 claimed 19:27Z, lease until 22:27Z; lane 5: T314 claimed 19:26Z, lease until 22:26Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z; lane 7: T318 claimed 19:26Z, lease until 22:26Z
 - **Week:** 25% used, 124.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:28Z, 6 min before this update
+- **Last run:** 19:35Z, 0 min before this update
 - **Keeper:** last ran 19:05Z, next wake 00:45Z
 
 ## Needs attention
+- BLOCKED T438: plan gap reported: PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {"start": ..., "tokens": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: "message_id"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {"start": ..., "tokens": 2000, "counting": "message_id"}, logged in docs/decisions.md under; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T438 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 2 h 1 min | 18:26Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T281 | picks: the unreachable-homeowner steps run at 24, 48, 72 and | done | 1 | 107 min | 18:15Z |  |
 | T436 | portals, core and server: expired sessions are swept and old | done | 1 | 34 min | 17:52Z |  |
@@ -104,7 +106,7 @@ Updated 2026-11-13T19:35:39Z by runner c309142e3550 (manual).
 ## Progress (requirements verified)
 
 **Requirements verified:** 279 of 733 (38.1%) · partial 294 · unstarted 160
-**Tasks merged (throughput only):** 289 of 427
+**Tasks merged (throughput only):** 289 of 425
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -150,10 +152,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - T357 (lease until 2026-11-13T22:21:01Z)
 - lane 2: T412 (lease until 2026-11-13T22:27:09Z)
 - lane 3: T277 (lease until 2026-11-13T22:27:41Z)
-- lane 4: T438 (lease until 2026-11-13T22:25:17Z)
 - lane 5: T314 (lease until 2026-11-13T22:26:40Z)
 - lane 6: T271 (lease until 2026-11-13T22:28:27Z)
 - lane 7: T318 (lease until 2026-11-13T22:26:14Z)
 
 ## Last usage reading
-- {"task": "T357", "at": "2026-11-13T18:26:34Z", "input_tokens": 732, "cache_read_input_tokens": 33678702, "output_tokens": 206682, "cache_creation_input_tokens": 1267043}
+- {"task": "T438", "at": "2026-11-13T19:35:35Z", "input_tokens": 86, "output_tokens": 31500, "cache_creation_input_tokens": 99312, "cache_read_input_tokens": 2421933}

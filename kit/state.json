@@ -47084,8 +47084,8 @@
     "T170",
     "T285"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "usage-dedupe",
    "type": "harness",
    "stage": "4",
@@ -47097,6 +47097,33 @@
     3502,
     3503,
     3504
+   ],
+   "reason": "plan gap reported: PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {\"start\": ..., \"tokens\": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: \"message_id\"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {\"start\": ..., \"tokens\": 2000, \"counting\": \"message_id\"}, logged in docs/decisions.md under; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T438 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {\"start\": ..., \"tokens\": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: \"message_id\"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {\"start\": ..., \"tokens\": 2000, \"counting\": \"message_id\"}, logged in docs/decisions.md under BUILD_BRIEF.md:69. Confirmed by the reviewer subagent (ran the test; ownership in kit/tasks.json). Work is uncommitted in the worker tree; nothing was run green on smoke or prehandin.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 68,
+     "head_sha": "7dd6ca1e8125ad2ed9b6610464e258fc1e202619",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-13T19:25:17Z",
+     "ended_at": "2026-11-13T19:35:35Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 2364329,
+       "turns": 39
+      },
+      "reviewer": {
+       "tokens": 188502,
+       "turns": 6
+      }
+     }
+    }
    ]
   },
   {
@@ -47154,12 +47181,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T357",
-   "at": "2026-11-13T18:26:34Z",
-   "input_tokens": 732,
-   "cache_read_input_tokens": 33678702,
-   "output_tokens": 206682,
-   "cache_creation_input_tokens": 1267043
+   "task": "T438",
+   "at": "2026-11-13T19:35:35Z",
+   "input_tokens": 86,
+   "output_tokens": 31500,
+   "cache_creation_input_tokens": 99312,
+   "cache_read_input_tokens": 2421933
   },
   "source": "session_reading 2026-11-13T19:05:04Z (week)",
   "by_task": {
@@ -49929,7 +49956,17 @@
    },
    "T438": {
     "estimated_bytes": 269725,
-    "estimated_tokens": 1431796
+    "estimated_tokens": 1431796,
+    "usage_counting": "message_id",
+    "input_tokens": 86,
+    "output_tokens": 31500,
+    "cache_creation_input_tokens": 99312,
+    "cache_read_input_tokens": 2421933,
+    "worker_tokens": 2364329,
+    "worker_turns": 39,
+    "reviewer_tokens": 188502,
+    "reviewer_turns": 6,
+    "last_model": "claude-opus-5-5"
    },
    "T318": {
     "estimated_bytes": 691129,
@@ -49955,11 +49992,15 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-13T15:05:59Z",
-    "tokens": 24586805
+    "tokens": 15125174,
+    "scaled_by": 0.6,
+    "counting": "message_id"
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 93887836
+    "tokens": 56705792,
+    "scaled_by": 0.6,
+    "counting": "message_id"
    }
   },
   "session_reading": {
@@ -49970,7 +50011,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T19:35:39Z",
+ "updated_at": "2026-11-13T19:35:56Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -50068,8 +50109,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c309142e35506675f496348394489dcee073a78f",
- "starter": "manual",
+ "runner_sha": "7dd6ca1e8125ad2ed9b6610464e258fc1e202619",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "480741987da0eae3c6d01075667201910ec25160",
