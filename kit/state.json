@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T386",
+ "current": "T319",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -29138,16 +29138,7 @@
    "attempts": 0,
    "slug": "photo-open-audit",
    "type": "build",
-   "stage": "4",
-   "plan_gap": {
-    "at": "2026-11-13T16:08:58Z",
-    "problems": [
-     "T273: dependency T266 is DONE but its owned file app/picks/src/contact_choice.rs is not on main",
-     "T273: dependency T266 is DONE but its owned file migrations/0166_picks_contact_choice.sql is not on main",
-     "T273: dependency T266 is DONE but its owned file tests/integration/tests/pick_contact_choice.rs is not on main",
-     "T273: dependency T266 is DONE but its owned file app/server/tests/release_contact_choice.rs is not on main"
-    ]
-   }
+   "stage": "4"
   },
   {
    "id": "T274",
@@ -29859,16 +29850,7 @@
    "attempts": 0,
    "slug": "unreachable-steps-run",
    "type": "build",
-   "stage": "4",
-   "plan_gap": {
-    "at": "2026-11-13T16:08:58Z",
-    "problems": [
-     "T281: dependency T266 is DONE but its owned file app/picks/src/contact_choice.rs is not on main",
-     "T281: dependency T266 is DONE but its owned file migrations/0166_picks_contact_choice.sql is not on main",
-     "T281: dependency T266 is DONE but its owned file tests/integration/tests/pick_contact_choice.rs is not on main",
-     "T281: dependency T266 is DONE but its owned file app/server/tests/release_contact_choice.rs is not on main"
-    ]
-   }
+   "stage": "4"
   },
   {
    "id": "T287",
@@ -33146,13 +33128,13 @@
    "deps": [
     "T317"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "security-event-cap-and-webhook-refusals",
    "type": "build",
    "stage": "4",
-   "attempt_started_at": "2026-11-13T14:57:14Z",
-   "lane": "3",
+   "attempt_started_at": "2026-11-13T16:23:00Z",
+   "lane": "4",
    "decision_ids": [
     3469,
     3470,
@@ -46299,7 +46281,7 @@
    "cache_creation_input_tokens": 310910,
    "output_tokens": 37851
   },
-  "source": "session_reading 2026-11-13T15:19:18Z (week)",
+  "source": "session_reading 2026-11-13T16:04:16Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -49001,8 +48983,8 @@
     "last_model": "claude-opus-5-5"
    },
    "T319": {
-    "estimated_bytes": 604334,
-    "estimated_tokens": 3201978,
+    "estimated_bytes": 607499,
+    "estimated_tokens": 3250505,
     "cache_creation_input_tokens": 662931,
     "input_tokens": 462,
     "output_tokens": 157089,
@@ -49032,7 +49014,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T16:22:28Z",
+ "updated_at": "2026-11-13T16:23:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -49131,16 +49113,8 @@
   ]
  },
  "runner_sha": "6dfa812afb951dbf42531ebb0d5891a58a7fd8b7",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "7772c1d47f57c12179d3169f865d067dae6d765b",
-   "ok": true,
-   "at": "2026-11-13T04:45:41Z",
-   "why": "start routine (ancestry reuse of 394341cd00e8, 2026-11-13T04:02:46Z)",
-   "reused": "2026-11-13T04:02:46Z",
-   "base": "394341cd00e82d0a5b7eb5f34df5f7c0840d2be1"
-  },
   {
    "sha": "f7189ec863bb2c70d0aa58e6d38349330bc41879",
    "ok": true,
@@ -49287,24 +49261,31 @@
    "why": "start routine (ancestry reuse of 480741987da0, 2026-11-13T13:22:08Z)",
    "reused": "2026-11-13T13:22:08Z",
    "base": "480741987da0eae3c6d01075667201910ec25160"
+  },
+  {
+   "sha": "6dfa812afb951dbf42531ebb0d5891a58a7fd8b7",
+   "ok": true,
+   "at": "2026-11-13T16:23:00Z",
+   "why": "start routine (pre-session)",
+   "seconds": 558
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T386 estimated 3.9M tokens (calibrated); week has 147.1M left (no five-hour budget, D-3056) after 6.9M still running in another lane (session_reading 2026-11-13T15:19:18Z (week)); claimed",
-  "at": "2026-11-13T15:27:45Z",
+  "last": "T319 estimated 3.3M tokens (calibrated); week has 152.0M left (no five-hour budget, D-3056) (session_reading 2026-11-13T16:04:16Z (week)); claimed",
+  "at": "2026-11-13T16:23:00Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 46911459,
+    "used": 42000000,
     "budget": 194000000,
-    "left": 147088541,
+    "left": 152000000,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 646594597,
-  "projected_finish": "2026-12-06T23:24:00Z"
+  "remaining_estimate": 649836332,
+  "projected_finish": "2026-12-07T03:07:42Z"
  },
  "main_red_history": [
   {

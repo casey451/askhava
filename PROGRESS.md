@@ -3820,3 +3820,4 @@
 - 2026-11-13T16:09:10Z runner 9d7e3b884c94 (actions): {"T319": "MERGE_PENDING -> QUEUED", "T386": "MERGE_PENDING -> QUEUED"}
 - 2026-11-13T16:16:27Z runner 9d7e3b884c94 (actions): {}
 - 2026-11-13T16:22:28Z runner 6dfa812afb95 (manual): {}
+- 2026-11-13T16:23:07Z runner 6dfa812afb95 (actions): {"T319": "QUEUED -> IN_PROGRESS"}; T319 estimated 3.3M tokens (calibrated); week has 152.0M left (no five-hour budget, D-3056) (session_reading 2026-11-13T16:04:16Z (week)); claimed
