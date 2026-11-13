@@ -71,6 +71,7 @@ const VALUES: &[(&str, &str)] = &[
     ("number", "the masked number"),
     ("time", "5 p.m."),
     ("reply_time", "2 days"),
+    ("cant_take", "example.com/b/picks/x/cant-take"),
 ];
 
 /// TD-INT-08, TD-AI-12 (INT-021, AI-008, D-492): no step holds the homeowner with a "we have your
