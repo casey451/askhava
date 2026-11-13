@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-13T18:27:21Z by runner 9d7e3b884c94 (actions).
+Updated 2026-11-13T18:30:21Z by runner ac135e636d92 (actions).
 
-**Idle since 18:26Z; 288 of 421 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 18:29Z; 289 of 423 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 288 of 421 build tasks (owner gates not counted)
+- **Tasks done:** 289 of 423 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 18:26Z (no task in progress)
+- **Lane:** idle since 18:29Z (no task in progress)
 - **Week:** 25% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:27Z, 0 min before this update
+- **Last run:** 18:27Z, 2 min before this update
 - **Keeper:** last ran 18:27Z, next wake 18:47Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 24 problem(s) on tasks still to run (+159 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 1 | 2 h 1 min | 18:26Z |  |
-| T281 | picks: the unreachable-homeowner steps run at 24, 48, 72 and | MERGE_PENDING | 1 | 107 min | 18:15Z |  |
+| T281 | picks: the unreachable-homeowner steps run at 24, 48, 72 and | done | 1 | 107 min | 18:15Z |  |
 | T436 | portals, core and server: expired sessions are swept and old | done | 1 | 34 min | 17:52Z |  |
 | T273 | privacy: a photo's plaintext is returned only after its open | done | 1 | 41 min | 17:10Z |  |
 | T436 | portals, core and server: expired sessions are swept and old | resync | 1 | 28 min | 16:53Z |  |
@@ -107,7 +107,7 @@ Updated 2026-11-13T18:27:21Z by runner 9d7e3b884c94 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 573 · unstarted 160
-**Tasks merged (throughput only):** 288 of 421
+**Tasks merged (throughput only):** 289 of 423
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -142,7 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 168 of 204 done
+- stage 4: 169 of 204 done
 - stage 5: 0 of 65 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
