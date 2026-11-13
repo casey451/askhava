@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T05:16:19Z by runner 28395994ffe1 (actions).
+Updated 2026-11-13T05:20:30Z by runner 28395994ffe1 (actions).
 
 **Idle since 05:08Z; 273 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T05:16:19Z by runner 28395994ffe1 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 05:08Z (no task in progress)
 - **Week:** 13% used, 170.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:16Z, 0 min before this update
+- **Last run:** 05:16Z, 4 min before this update
 - **Keeper:** last ran 05:16Z, next wake 05:36Z
 
 ## Needs attention
@@ -92,6 +92,7 @@ Updated 2026-11-13T05:16:19Z by runner 28395994ffe1 (actions).
 | T356 | messaging and server (harness): the worker sends queued text | done | 1 | 86 min | 05:31Z |  |
 
 ### Plan and harness merges on main
+- 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
 - 04:59Z Harness: release a dead worker's lease early (D-3417) (#651)
 - 04:27Z Harness: safety hand-in reports unreleased leases (D-3419) (#654)
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
@@ -117,7 +118,6 @@ Updated 2026-11-13T05:16:19Z by runner 28395994ffe1 (actions).
 - 07:12Z Harness: close merged tasks before the smoke so their lanes free ~20 min sooner (D-3141) (#552)
 - 06:05Z Plan: pre-flight fixes round 8 — stage 5: T101, T102, T105, T202, T320, T106, T364; new T408 (D-3144) (#551)
 - 05:28Z Harness: stop backup-runner caches evicting CI's Rust caches (D-3143) (#553)
-- 05:16Z Harness: run lint and the slow compile-fail/prompt-injection tests in a parallel CI job (D-3142) (#550)
 
 ## Progress (requirements verified)
 
