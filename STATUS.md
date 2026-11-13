@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:58:26Z by runner 85f85991bd6f (manual).
+Updated 2026-11-13T00:00:45Z by runner 85f85991bd6f (actions).
 
 **Building: T215 in progress since 23:45Z; 261 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T23:58:26Z by runner 85f85991bd6f (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z
 - **Week:** 8% used, 167.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:52Z, 6 min before this update
+- **Last run:** 00:00Z, 0 min before this update
 - **Keeper:** last ran 23:51Z, next wake 02:47Z
 
 ## Needs attention
@@ -121,7 +121,6 @@ Updated 2026-11-12T23:58:26Z by runner 85f85991bd6f (manual).
 - 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
 - 01:55Z Plan: owner approval before a team-linked phone works (BIZ-033, IC-95) — T396–T399 (D-3081) (#531)
 - 00:38Z Plan: T261 pre-flight fix and catalog loaded at start-up (T400, IC-96) (D-3100) (#534)
-- 00:00Z Plan: pre-flight fixes round 3 — T360, T368, T350, T358, T366, T385 (D-3094) (#528)
 
 ## Progress (requirements verified)
 
