@@ -31,6 +31,14 @@ def load_script() -> ModuleType:
 check_legal_docs = load_script()
 
 
+def sms_terms_version_line() -> str:
+    """The real SMS terms draft's version line, through its date (D-3430, TERMS-028)."""
+    second = (REPO_ROOT / LEGAL / "sms-terms.md").read_text(encoding="utf-8").splitlines()[1]
+    match = check_legal_docs.VERSION_LINE.match(second.strip())
+    assert match is not None, second
+    return match.group(0)
+
+
 def copy_repo(tmp_path: Path) -> Path:
     """The parts the check reads: the drafts and the spec's requirement texts."""
     for rel in (LEGAL, Path("docs/spec")):
@@ -72,7 +80,7 @@ def test_every_draft_starts_with_the_note() -> None:
         ),
         (
             "sms-terms.md",
-            "Version 0.3 (draft, consent by texting in) · October 28, 2026",
+            sms_terms_version_line(),
             "Version draft",
             "second line must be",
         ),

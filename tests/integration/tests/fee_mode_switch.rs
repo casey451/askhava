@@ -6,10 +6,10 @@
 //! are fake.
 
 use askhava_payments::api::{
-    AUTHORIZATION_TEXT, BusinessId, ConfirmError, Confirmed, FEE_MODE_ACTION, FEE_MODE_ID, FeeJob,
-    FeeMode, FeeQuote, FeeTerms, PeriodJob, PickedFee, RecurringCap, Service, VisitTier,
-    accept_authorization, fee_at_pick, fix_fee_at_pick, may_confirm, record_fee_at_confirm,
-    switch_fee_mode,
+    AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, ConfirmError, Confirmed,
+    FEE_MODE_ACTION, FEE_MODE_ID, FeeJob, FeeMode, FeeQuote, FeeTerms, PeriodJob, PickedFee,
+    RecurringCap, Service, VisitTier, accept_authorization, fee_at_pick, fix_fee_at_pick,
+    may_confirm, record_fee_at_confirm, switch_fee_mode,
 };
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -18,7 +18,8 @@ use sqlx::types::Uuid;
 
 const BUSINESS: BusinessId = BusinessId(Uuid::from_u128(0xb060_0006));
 const OWNER: Uuid = Uuid::from_u128(0x0a06_0006);
-const START: FeeTerms = FeeTerms::new(FeeMode::Tiers, 1);
+/// The starting terms: tiers at the current FEE-015 authorization version (D-3430).
+const START: FeeTerms = FeeTerms::new(FeeMode::Tiers, AUTHORIZATION_VERSION);
 /// A pick made in tiers mode and one made after the switch to flat (D-1871).
 const TIERS_PICK: Uuid = Uuid::from_u128(0x0c06_0006);
 const FLAT_PICK: Uuid = Uuid::from_u128(0x0c06_0007);
@@ -64,7 +65,13 @@ async fn td_fee_06_the_switch_is_logged(pool: PgPool) {
     let same = switch_fee_mode(&mut db, OWNER, FeeMode::Tiers).await;
     assert_eq!(same, Ok(None));
     let flat = switch_fee_mode(&mut db, OWNER, FeeMode::Flat).await;
-    assert_eq!(flat, Ok(Some(FeeTerms::new(FeeMode::Flat, 2))));
+    assert_eq!(
+        flat,
+        Ok(Some(FeeTerms::new(
+            FeeMode::Flat,
+            AUTHORIZATION_VERSION + 1
+        )))
+    );
     let rows: Vec<AuditRow> = sqlx::query_as(
         "SELECT actor_kind, actor_id, action, subject_id, from_status, to_status \
              FROM ops.audit_log WHERE subject_kind = 'payments.fee_mode'",
