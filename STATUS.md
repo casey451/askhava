@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T23:41:45Z by runner dd258e06710f (actions).
+Updated 2026-11-13T23:45:10Z by runner a409b1914d2f (actions).
 
 **Idle since 23:40Z; 301 of 428 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T23:41:45Z by runner dd258e06710f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 23:40Z (no task in progress)
 - **Week:** 30% used, 123.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:28Z, 13 min before this update
+- **Last run:** 23:41Z, 3 min before this update
 - **Keeper:** last ran 23:25Z, next wake 23:45Z
 
 ## Needs attention
@@ -82,7 +82,6 @@ Updated 2026-11-13T23:41:45Z by runner dd258e06710f (actions).
 | T372 | businesses and licensing: each recorded ROC list re-applies  | done | 1 | 81 min | 01:07Z |  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 1 | 2 min | 23:48Z |  |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | done | 1 | 57 min | 23:46Z |  |
-| T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z |  |
 
 ### Plan and harness merges on main
 - 21:01Z Plan: fewer smoke runs, scoped fix rounds, batched reads, decision excerpts (D-3530) (#698)
