@@ -47,6 +47,7 @@ mod photos;
 mod purge;
 mod question_bank;
 mod replies;
+mod resubscribe;
 mod routing;
 mod routing_confidence;
 mod rules;
