@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T09:48:50Z by runner f11e5ea2d96c (actions).
+Updated 2026-11-13T09:49:48Z by runner 553bd9eb54c3 (actions).
 
-**Idle since 09:48Z; 277 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 09:49Z; 278 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 277 of 417 build tasks (owner gates not counted)
+- **Tasks done:** 278 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 09:48Z (no task in progress)
+- **Lane:** idle since 09:49Z (no task in progress)
 - **Week:** 15% used, 165.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:48Z, 0 min before this update
 - **Keeper:** last ran 09:48Z, next wake 10:08Z
@@ -14,13 +14,13 @@ Updated 2026-11-13T09:48:50Z by runner f11e5ea2d96c (actions).
 ## Needs attention
 - BLOCKED T255: session ended without handing in
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+150 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+150 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 3 | 26 min | 09:48Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
-| T431 | Brand rename prep: the legal-docs version case and five paym | MERGE_PENDING | 1 | 30 min | 09:32Z |  |
+| T431 | Brand rename prep: the legal-docs version case and five paym | done | 1 | 30 min | 09:32Z |  |
 | T249 | quotes and portals: radius matching by ZIP centroid, the cov | done | 1 | 71 min | 09:03Z |  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 2 | 3 min | 07:47Z |  |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | BLOCKED | 1 | 40 min | 07:40Z | PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switc |
@@ -108,7 +108,7 @@ Updated 2026-11-13T09:48:50Z by runner f11e5ea2d96c (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 233 of 733 (31.8%) · partial 340 · unstarted 160
-**Tasks merged (throughput only):** 277 of 417
+**Tasks merged (throughput only):** 278 of 417
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -143,7 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 157 of 199 done
+- stage 4: 158 of 199 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
