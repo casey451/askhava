@@ -171,6 +171,13 @@ def test_brand_web_address_is_not_the_brand(tmp_path: Path) -> None:
     assert any("implies the brand is a contractor (WORD-022)" in e for e in errors), errors
 
 
+def test_banned_word_in_web_address_path_still_fails(tmp_path: Path) -> None:
+    """WORD-022 (D-3402): only the brand inside a domain name is excused; a path word still fails."""
+    body = "- **TST-001** Businesses pay at laftly.com/assigned-jobs. Source: `src.md:3`.\n"
+    errors = errors_for(tmp_path, body)
+    assert any("implies the brand is a contractor (WORD-022): 'assigned'" in e for e in errors), errors
+
+
 def test_wording_rules_may_quote_banned_phrases(tmp_path: Path) -> None:
     """The rules that ban the phrases (D-360) quote them without failing the check."""
     body = '- **WORD-022** No page says "our pros" or "book". Source: `src.md:3`.\n'

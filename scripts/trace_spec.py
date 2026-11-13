@@ -84,9 +84,10 @@ NOT_A_CONTRACTOR: tuple[tuple[re.Pattern[str], str], ...] = tuple(
     (re.compile(p, re.IGNORECASE), "implies the brand is a contractor (WORD-022)")
     for p in _NOT_A_CONTRACTOR_PATTERNS
 )
-# A web address in spec text ("laftly.com/help") is a page, not the brand (D-3402); only the
-# spec check blanks it, so the catalog check and the AI screen still refuse "through laftly.com".
-WEB_ADDRESS = re.compile(r"\b[\w-]+(?:\.[\w-]+)*\.(?:com|net|org)\b\S*", re.IGNORECASE)
+# A match followed by ".com", ".net" or ".org" ends inside a domain name ("through laftly.com/help"
+# names a page, not the brand; D-3402); only the spec check excuses it, so the catalog
+# check and the AI screen still refuse "through laftly.com". The path stays visible to every pattern.
+DOMAIN_ENDING = re.compile(r"\.(?:com|net|org)\b", re.IGNORECASE)
 # Rules that quote the banned phrases in order to ban them (D-360).
 WORDING_RULE_IDS = frozenset(
     {"WORD-011", "WORD-020", "WORD-022", "WORD-023", "TERMS-012", "TERMS-026", "TERMS-027"}
@@ -258,10 +259,10 @@ def check_superseded(reqs: list[Requirement]) -> list[str]:
     ]
 
 
-def without_web_addresses(text: str) -> str:
-    """The text with each web address blanked, so "help through laftly.com/help" names a page,
-    not the brand (WORD-022, D-3402)."""
-    return WEB_ADDRESS.sub(" ", text)
+def first_claim(pat: re.Pattern[str], text: str) -> re.Match[str] | None:
+    """The first match of pat in text that is not the start of a domain name, so "help through
+    laftly.com/help" passes while "laftly.com/assigned-jobs" still fails (WORD-022, D-3402)."""
+    return next((m for m in pat.finditer(text) if not DOMAIN_ENDING.match(text, m.end())), None)
 
 
 def check_not_a_contractor(reqs: list[Requirement]) -> list[str]:
@@ -271,7 +272,7 @@ def check_not_a_contractor(reqs: list[Requirement]) -> list[str]:
         for req in reqs
         if req.req_id not in WORDING_RULE_IDS
         for pat, label in NOT_A_CONTRACTOR
-        for match in [pat.search(without_web_addresses(req.text))]
+        for match in [first_claim(pat, req.text)]
         if match
     ]
 

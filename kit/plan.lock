@@ -70,7 +70,7 @@
   "scripts/run_named_mutants.py": "325ff572d79be0e8e1a23026cbfd81cd50b7671f743f1f550390bd4569ac4f59",
   "scripts/smoke.sh": "d421a89871bf22b4cc39eb38fea4dd9446b4fd7ced65762bac80d6b897ee792d",
   "scripts/stage_exit.py": "a7e2c2760b1651658e9e71d6af07f5920b9c8ee75c02b979e64e756ca9c03274",
-  "scripts/trace_spec.py": "1e15133e8c398e72f853a233b616be6662b63afde0f0825715c68c972c3f134e",
+  "scripts/trace_spec.py": "b02fc82e47428091cf86b6413fe86d782c23a81f45923aec1dec67b93701aacd",
   "scripts/validate_tasks.py": "26b78ed44724a58ec119822246e81ea2605a2367d163ed2096e437527b2e316f"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
