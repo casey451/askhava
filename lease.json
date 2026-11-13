@@ -12,9 +12,14 @@
   "4": null,
   "5": null,
   "6": null,
-  "7": null
+  "7": {
+   "task": "T340",
+   "session": "actions-43503895835",
+   "expires": "2026-11-14T00:52:00Z",
+   "lane": "7"
+  }
  },
- "seq": 3974,
+ "seq": 3975,
  "runner_sha": "4a8b6490731dd532871a4f1be1e1929b58768d0e",
  "starter": "actions"
 }
