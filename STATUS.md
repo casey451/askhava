@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:01:09Z by runner 343fd3e7c696 (actions).
+Updated 2026-11-13T22:01:31Z by runner 343fd3e7c696 (actions).
 
-**Building: T438 in progress since 21:51Z; 295 of 428 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T438 in progress since 21:51Z; 295 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 295 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T438 claimed 21:51Z, lease until 00:51Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
-- **Week:** 28% used, 128.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:54Z, 6 min before this update
+- **Week:** 29% used, 128.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:01Z, 0 min before this update
 - **Keeper:** last ran 21:43Z, next wake 22:03Z
 
 ## Needs attention
@@ -108,7 +108,6 @@ Updated 2026-11-13T22:01:09Z by runner 343fd3e7c696 (actions).
 - 00:30Z Plan: rename Ask Hava to Laftly (Laftly LLC, laftly.com), D-3347 (#631)
 - 00:14Z Plan: T255 plan gap: re-clear builds Releasable from the stored success (D-3358) (#638)
 - 22:08Z Plan: T340, T271, T126 under their context limits (D-3325) (#623)
-- 22:01Z plan: T419 fixes the flaky TD-CALL-23 no-plaintext scan, claimed first (D-3324) (#622)
 
 ## Progress (requirements verified)
 
