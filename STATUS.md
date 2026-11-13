@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T16:06:06Z by runner 9d7e3b884c94 (actions).
+Updated 2026-11-13T16:09:10Z by runner 9d7e3b884c94 (actions).
 
 **Idle since 16:05Z; 284 of 421 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T16:06:06Z by runner 9d7e3b884c94 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:05Z (no task in progress)
 - **Week:** 21% used, 147.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:04Z, 1 min before this update
+- **Last run:** 16:06Z, 2 min before this update
 - **Keeper:** last ran 16:04Z, next wake 16:24Z
 
 ## Needs attention
@@ -18,8 +18,8 @@ Updated 2026-11-13T16:06:06Z by runner 9d7e3b884c94 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T386 | messaging (harness): the pick notice's "Can't take it" line  | MERGE_PENDING | 2 | 35 min | 16:03Z | PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a  |
-| T319 | portals and server: security-event rows are capped per addre | MERGE_PENDING | 1 | 54 min | 15:51Z |  |
+| T386 | messaging (harness): the pick notice's "Can't take it" line  | resync | 2 | 35 min | 16:03Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
+| T319 | portals and server: security-event rows are capped per addre | resync | 1 | 54 min | 15:51Z | merging main into the reviewed head conflicts in app/core/CLAUDE.md, app/core/src/settings.rs; a resync merges it in on  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | done | 2 | 66 min | 15:48Z | session ended without handing in |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | done | 1 | 24 min | 15:05Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z |  |
