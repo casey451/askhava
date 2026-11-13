@@ -21,6 +21,7 @@ mod accepted_quote_email;
 pub mod api;
 mod business_notices;
 mod checkin_email;
+mod coverage_email;
 mod email;
 mod email_timing;
 mod handlers;
