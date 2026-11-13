@@ -77,8 +77,9 @@ impl Shape {
 }
 
 /// TXT-040: every homeowner update template after intake about her quotes, and its shape, then
-/// the other texts after intake held to the 20-word limit only (D-1293, D-1842).
-pub const UPDATE_TEXTS: [(&str, Shape); 22] = [
+/// the other texts after intake held to the 20-word limit only (D-1293, D-1842); the
+/// who's-calling texts are `Capped`: TXT-027 fixes their words (T318, TD-TXT-29).
+pub const UPDATE_TEXTS: [(&str, Shape); 24] = [
     ("first_quote", Shape::Fixed),
     ("quote_update", Shape::Update),
     ("all_quotes_in", Shape::Fixed),
@@ -101,6 +102,8 @@ pub const UPDATE_TEXTS: [(&str, Shape); 22] = [
     ("feedback_request", Shape::Capped),
     ("unreachable_closed", Shape::Capped),
     ("emailed_question", Shape::Capped),
+    ("whos_calling", Shape::Capped),
+    ("whos_calling_email", Shape::Capped),
 ];
 
 /// The homeowner templates outside TXT-040's scan, each for a reason (D-1293): the consent,
