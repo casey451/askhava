@@ -172,8 +172,28 @@ def test_the_real_env_reads_the_runs_latest_attempt_and_fails_closed(tmp_path: P
         return {"status": "completed", "conclusion": None, "updated_at": ENDED, "run_attempt": 2}
 
     env.gh_json = answer  # type: ignore[method-assign]  # reason: no network in tests
-    assert env.run_status(101) == ("completed", "", ENDED) and paths == ["repos/fake-owner/fake-repo/actions/runs/101"]
+    assert env.run_status(101) == ("completed", "", ENDED) and paths == ["repos/fake-owner/fake-repo/actions/runs/101?exclude_pull_requests=true"]
     env.gh_json = lambda path: {"status": "completed"}  # type: ignore[method-assign]  # reason: a run with no updated_at
     assert env.run_status(101) is None
     env.gh_json = lambda path: (_ for _ in ()).throw(RuntimeError("HTTP 404"))  # type: ignore[method-assign]  # reason: no such run
     assert env.run_status(101) is None and "run 101 unreadable" in env.log[-1]
+
+
+def test_the_run_read_uses_the_job_token_and_routes_nothing_else(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The run read goes with RUNNER_CHECKS_TOKEN, as the check-run and job reads do (D-502, D-582); no other
+    `actions/runs` path, workflow-runs listing or cache call is routed to it, and without the job token
+    nothing is."""
+    path = "repos/o/r/actions/runs/101?exclude_pull_requests=true"
+    call = ["gh", "api", "-H", "Accept: application/vnd.github+json", path]
+    monkeypatch.delenv("RUNNER_CHECKS_TOKEN", raising=False)
+    assert ge._env_for(call) is None
+    monkeypatch.setenv("RUNNER_CHECKS_TOKEN", "fake-job-token")
+    monkeypatch.setenv("RUNNER_PUSH_TOKEN", "fake-push-token")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
+    env = ge._env_for(call)
+    assert env is not None and env["GH_TOKEN"] == "fake-job-token" and ge._long_token_args(call) is None
+    for other in ("repos/o/r/actions/runs/77", "repos/o/r/actions/workflows/backup-runner.yml/runs?status=completed",
+                  "repos/o/r/actions/runs?status=in_progress", "repos/o/r/actions/runs/101/cancel",
+                  "repos/o/r/actions/runs/101?exclude_pull_requests=true&x=1", "repos/o/r/actions/caches?key=k"):
+        assert ge._env_for(["gh", "api", other]) is None, other
+    assert ge._env_for(["gh", "api", "-X", "POST", "repos/o/r/actions/runs/101/cancel"]) is None
