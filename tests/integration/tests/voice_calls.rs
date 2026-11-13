@@ -372,7 +372,8 @@ fn td_call_09_the_safety_script_is_short_and_generic() {
 fn td_call_09_a_bridged_call_plays_nothing_to_the_homeowner() {
     let from = pool_number();
     let her = SecretString::from(HER_PHONE.to_owned());
-    let bridged = dial_twiml(&from, &her).expect("dial");
+    let status_url = "https://hooks.example.test/webhooks/twilio/voice/dialed-status";
+    let bridged = dial_twiml(&from, &her, status_url).expect("dial");
     let bridged = bridged.expose_secret();
     for verb in ["url=", "<Say", "<Play", "<Gather"] {
         assert!(!bridged.contains(verb), "{verb}");
