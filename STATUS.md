@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T10:15:57Z by runner fce428953ad0 (actions).
+Updated 2026-11-13T10:17:10Z by runner e47304f7b675 (actions).
 
 **Building: T312 in progress since 09:53Z; 278 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-13T10:15:57Z by runner fce428953ad0 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T312 claimed 09:53Z, lease until 12:53Z
 - **Week:** 15% used, 162.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:15Z, 0 min before this update
+- **Last run:** 10:16Z, 1 min before this update
 - **Keeper:** last ran 10:15Z, next wake 12:55Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+150 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+150 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -82,7 +82,6 @@ Updated 2026-11-13T10:15:57Z by runner fce428953ad0 (actions).
 | T343 | harness: the DONE pick tests' fixtures record each job's fac | done | 1 | 24 min | 10:23Z |  |
 
 ### Plan and harness merges on main
-- 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
 - 09:02Z Plan: T255 plan gap 2, the address is written onto the homeowner's own contact (D-3431) (#660)
 - 08:55Z Plan: T428 plan gap, new prep task owns the six pinned tests (D-3430) (#659)
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
