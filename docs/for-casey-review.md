@@ -2636,6 +2636,17 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 
 - On November 12 we let two tasks work in the same code area at once to keep more lanes busy, with a rule to undo it if more than 1 merge in 5 needed redoing. 3 of the next 10 did, all over the same notes file, so it is back to one. Nothing needs you now.
 
+## A wrong "lease freed" report after a stopped session (D-3419)
+
+- On November 11 a stopped session's clean-up step said it had freed its task when it had not, so a follow-up run started for nothing. The step now reports those cases correctly. A second idea, stopping old check runs when a newer change arrives, is on hold because an existing test forbids it; nothing needs you now.
+
+## Runner: a lane whose worker's machine died is freed at the next runner cycle, not after 3 hours (D-3417, November 13)
+
+- **What happened.** Twice in the last 48 hours a worker's GitHub machine was lost mid-task, so its safety hand-in never ran and the lane sat idle until its 3-hour lease ran out (T215: about 2 hours, T249: about 2 hours 45 minutes; about 7 idle lane-hours in all).
+- **What changed.** Each cycle now asks GitHub whether a lane's worker run is still alive. When that run has been finished for at least 10 minutes without handing in, the next runner cycle frees the lane exactly as an expired lease frees it (cycles start on merges, on other lanes' runs and on the hourly schedule, so typically within about an hour instead of the 3-hour expiry): the task goes back to the queue with no attempt used, and a change it already finished and had reviewed is picked up as before. Any doubt (GitHub unreadable, a re-run in progress) keeps the lane held as before. Nothing cancels a run.
+- **Decided for you (by Fable under your standing rule).** Yes, with those conditions. A lane where the safety hand-in ran but still did not free it (T327's case) is freed by the same rule too; finding out why that happened is a separate follow-up.
+- **Nothing needs you now.**
+
 ## Pull requests now wait their turn to catch up with main (D-3418)
 
 - When one task merged, the runner used to bring every other waiting task up to date at once, which restarted all their checks; only one could merge next, so about 2 check runs per merge were thrown away. Now only the oldest waiting task is brought up to date, and the next one gets its turn when it merges or drops out. Nothing needs you now.

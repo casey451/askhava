@@ -49,7 +49,9 @@ async fn main() -> io::Result<()> {
         .map(Arc::new);
     let confirm = askhava_picks::api::ConfirmSettings::from_pairs(std::env::vars())
         .map_err(io::Error::other)?;
-    schedule_start(&pool, clock.now()).await?;
+    let lists = askhava_licensing::api::DailyListSettings::from_pairs(std::env::vars())
+        .map_err(io::Error::other)?;
+    schedule_start(&pool, clock.now(), lists).await?;
     let parts = (texts, confirm);
     let registry = askhava_server::worker_registry(&settings, stream, parts, std::env::vars())?;
     let worker = Worker {
@@ -67,9 +69,13 @@ async fn main() -> io::Result<()> {
 
 /// Queues the daily tasks at start (the chain check, the retention sweep, the body cut, the
 /// photo orphan sweep, the day-31 body scan, this hour's dead-letter check, the job timer
-/// backstop, the license-map re-apply and the outbox sender's
+/// backstop, the license-map re-apply, each daily license list (T371) and the outbox sender's
 /// first run) and runs the intake golden set once.
-async fn schedule_start(pool: &sqlx::PgPool, now: jiff::Timestamp) -> io::Result<()> {
+async fn schedule_start(
+    pool: &sqlx::PgPool,
+    now: jiff::Timestamp,
+    lists: askhava_licensing::api::DailyListSettings,
+) -> io::Result<()> {
     let mut conn = pool.acquire().await.map_err(io::Error::other)?;
     schedule_verify(&mut conn, now)
         .await
@@ -93,6 +99,9 @@ async fn schedule_start(pool: &sqlx::PgPool, now: jiff::Timestamp) -> io::Result
         .await
         .map_err(io::Error::other)?;
     askhava_businesses::api::schedule_reapply(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_licensing::api::schedule_daily_lists(&mut conn, now, lists)
         .await
         .map_err(io::Error::other)?;
     askhava_messaging::api::schedule_send_due(&mut conn, now)
