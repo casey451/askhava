@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T01:35:44Z by runner c9290eb86fd4 (actions).
+Updated 2026-11-13T01:44:19Z by runner c9290eb86fd4 (actions).
 
 **Building: T215 in progress since 23:45Z; 263 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T01:35:44Z by runner c9290eb86fd4 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
 - **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:35Z, 0 min before this update
+- **Last run:** 01:44Z, 0 min before this update
 - **Keeper:** last ran 01:35Z, next wake 02:47Z
 
 ## Needs attention
@@ -91,7 +91,6 @@ Updated 2026-11-13T01:35:44Z by runner c9290eb86fd4 (actions).
 | T334 | payments: the nightly reconcile catches up after an outage f | done | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T313 | messaging and server: an EMERGENCY card notice goes at night | done | 1 | 19 min | 02:07Z |  |
 | T368 | businesses (harness): the capability checklist offers every  | done | 1 | 17 min | 02:06Z |  |
-| T325 | server: an inbound text stopped by a module error raises a b | done | 1 | 30 min | 01:42Z |  |
 
 ### Plan and harness merges on main
 - 01:29Z Harness: fail CI, smoke and prehandin on leftover merge-conflict markers (D-3307) (#619)
