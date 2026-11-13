@@ -89,6 +89,9 @@ async fn schedule_start(
     askhava_privacy::api::schedule_orphan_sweep(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
+    askhava_privacy::api::schedule_words_cut(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
     askhava_messaging::api::schedule_body_scan(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
