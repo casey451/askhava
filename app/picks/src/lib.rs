@@ -58,6 +58,7 @@ mod settle;
 mod share_consent;
 mod status;
 mod unreachable_refund;
+mod unreachable_steps;
 
 #[cfg(test)]
 mod tests;

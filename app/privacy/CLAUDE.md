@@ -12,6 +12,7 @@ The layer-2 crate that holds every homeowner contact detail (name, phone, email,
 - A homeowner session reads only its own record; a release never opens the phone: `src/api.rs` `realm_tests`.
 - No `Debug` on `Vault`; every plaintext is a `SecretString`; `VaultError` carries no value (PRIV-016).
 - Only `realm_tests::the_session_mint_is_taken_once` calls `session_mint()` in this crate's unit tests, and only T192's test calls `release_mint()` (D-751).
+- A photo's bytes leave `open_link` only after its open audit committed, never inside a caller's transaction: `tests/integration/tests/photo_open_audit.rs` (TD-PRIV-17).
 - A sealed photo opens only under its own job and photo ID, the bucket holds no readable photo, and an expired link opens nothing: `src/tests/photo_checks.rs`, `tests/integration/tests/photo_links.rs`.
 - No crate but `privacy` builds `ScrubbedText`: `tests/security/tests/scrubbed_text_compile_fail.rs`.
 - An opt-out phrase after a stated name survives the scrub, and `NEVER_A_NAME` holds every word of messaging's opt-out, HELP and START lists: `tests/integration/tests/optout_after_name.rs` (TD-CON-32). `privacy` may not depend on `messaging`, so a word added there is added here.

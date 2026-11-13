@@ -161,6 +161,8 @@ pub use crate::security::{
     security_headers,
 };
 pub use crate::session::{
-    PRE_SESSION_COOKIE, PortalsError, Realm, SESSION_COOKIE, Session, csrf_matches, csrf_token,
-    current_session, ensure_pre_session, start_session,
+    PRE_SESSION_COOKIE, PortalsError, Realm, SESSION_COOKIE, SWEEP_BATCH as SESSION_SWEEP_BATCH,
+    SWEEP_KIND as SESSION_SWEEP_KIND, Session, csrf_matches, csrf_token, current_session,
+    ensure_pre_session, run_session_sweep_at, schedule_session_sweep, start_session,
+    sweep_batch as session_sweep_batch,
 };

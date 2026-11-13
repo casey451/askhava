@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM core.rate_limit WHERE (bucket, window_start) IN (SELECT bucket, window_start FROM core.rate_limit WHERE window_start < $1 LIMIT $2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8b2a393abfecad4f9eca416c0c25d4c835ff8b7080c6266e348835d640f160ed"
+}
