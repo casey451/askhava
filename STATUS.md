@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T04:28:56Z by runner f5757405157a (actions).
+Updated 2026-11-13T04:29:05Z by runner f5757405157a (actions).
 
 **Idle since 04:22Z; 272 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-13T04:28:56Z by runner f5757405157a (actions).
 - **Lane:** idle since 04:22Z (no task in progress)
 - **Week:** 12% used, 166.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:28Z, 0 min before this update
-- **Keeper:** last ran 04:28Z, next wake 04:48Z
+- **Keeper:** last ran 04:28Z, next wake 10:08Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
