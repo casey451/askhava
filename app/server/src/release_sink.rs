@@ -11,10 +11,11 @@
 //! pick that left awaiting confirm (cancelled, expired) is not moved and nothing is released. The
 //! homeowner's contact is the one `intake::api::job_homeowner` names (T246's page pick reads the
 //! same); the proof is minted with [`release_minter`] and `picks::api::release` gets the vault
-//! and the masked pool. `email_chosen` is the homeowner's PICK-018 choice stored with her page pick,
-//! `picks::api::contact_choice` (T266, D-1761): email opens the address she shared, a call or a
-//! text pick (no stored choice) is a masked call. `Already`, `MovedOn` and `WaitingForAddress` are success to the route; a
-//! database or vault failure is `ReleaseError::Database`, its 500, so Stripe sends the event again.
+//! and the masked pool. `email_chosen` is the homeowner's PICK-018 choice stored with her page
+//! pick, `picks::api::contact_choice` (T266, D-1761): email opens the address she shared, a call
+//! or a text pick (no stored choice) is a masked call. `Already`, `MovedOn` and
+//! `WaitingForAddress` are success to the route; a database or vault failure is
+//! `ReleaseError::Database`, its 500, so Stripe sends the event again.
 //!
 //! [`stripe_webhook`] builds the route's `StripeWebhook` from the settings (SEC-036, SEC-039,
 //! SEC-049): the Stripe client, the `whsec_…` signing secret, the configured account and mode,

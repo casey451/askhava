@@ -393,8 +393,9 @@ pub const SHARED_AT_PICK: &str = "shared_at_pick";
 
 /// Seals `email`, the address the homeowner chose to share at the page pick, into contact
 /// `contact`'s vault `email` field under the active key version, bound to that contact and column,
-/// replacing any earlier one, with one [`SHARED_AT_PICK`] audit row naming her as the actor and the
-/// `email` field (PICK-018, PICK-042, PRIV-001 to PRIV-003; T266, D-1761). One transaction (a
+/// replacing any earlier one for every job of that contact (D-3459), with one [`SHARED_AT_PICK`]
+/// audit row naming her as the actor and the `email` field (PICK-018, PICK-042, PRIV-001 to
+/// PRIV-003; T266, D-1761). One transaction (a
 /// savepoint inside the caller's, so the page pick's rollback takes it too); nothing is read,
 /// returned, indexed or logged.
 ///

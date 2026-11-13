@@ -26,7 +26,7 @@ use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
 use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::{ExposeSecret, SecretString};
 use sha2::{Digest, Sha256};
@@ -80,6 +80,7 @@ impl VerifyAdapter for FakeVerify {
 struct Page {
     app: Router,
     token: String,
+    clock: Arc<ManualClock>,
 }
 
 impl Page {
@@ -90,8 +91,8 @@ impl Page {
         );
         let keys = PickCodeKeys::new(FakeVerify, vault(), secret(), terms);
         let clock = Arc::new(ManualClock::new(ts(DAY)));
-        let app = pick_flow_routes(pool.clone(), clock, Some(keys));
-        Self { app, token }
+        let app = pick_flow_routes(pool.clone(), clock.clone(), Some(keys));
+        Self { app, token, clock }
     }
 
     async fn post(&self, tail: &str, pairs: &[(&str, &str)]) -> (StatusCode, String) {
@@ -174,7 +175,7 @@ async fn ready(db: &mut PgConnection) -> (Uuid, Uuid, String) {
         let moved = move_to(db, job, step, ts(DAY), Actor::System).await;
         assert!(moved.expect("move").applied().is_some());
     }
-    quote(db, job).await;
+    quote(db, job, 0xb266).await;
     let link = IdSecret::new(1, secret()).expect("id");
     let token = issue(db, &link, job, ts(DAY)).await.expect("token");
     (her, job, token.as_str().to_owned())
@@ -191,15 +192,15 @@ async fn facts(db: &mut PgConnection, job: Uuid) {
         .expect("job facts");
 }
 
-/// One confirmed fake quote on `job`.
-async fn quote(db: &mut PgConnection, job: Uuid) {
+/// One confirmed fake quote on `job` from fake business `business`.
+async fn quote(db: &mut PgConnection, job: Uuid, business: u128) {
     sqlx::query(
         "INSERT INTO quotes.quote (job_id, business_id, format, amount_cents, confirm_on_site, \
          notes, original, ai_read, confirmed, received_at) \
          VALUES ($1, $2, 'firm', 19000, false, '', 'Sample wording', false, true, $3)",
     )
     .bind(job)
-    .bind(Uuid::from_u128(0xb266))
+    .bind(Uuid::from_u128(business))
     .bind(ts(DAY).to_sqlx())
     .execute(&mut *db)
     .await
@@ -325,6 +326,40 @@ async fn td_pick_52_a_code_error_or_a_rollback_stores_nothing(pool: PgPool) {
     assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
     assert!(choices(&mut db, job).await.is_empty());
     assert_eq!(vaulted(&mut db, her).await, (None, Vec::new()));
+}
+
+/// TD-PICK-52 (PICK-018, PICK-032, D-3458): picking the waiting quote again after a backup change
+/// (`PagePick::Same`, the code passed) keeps the first choice and its vault email; the second
+/// address is sealed nowhere and no second `shared_at_pick` row is written.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_52_a_re_pick_keeps_the_first_choice_and_email(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let (her, job, token) = ready(&mut db).await;
+    let page = Page::new(&pool, token);
+    let (_, body) = page.finish(CODE, "email").await;
+    assert!(body.contains(DONE), "{body}");
+    quote(&mut db, job, 0xb267).await;
+    page.clock.advance(SignedDuration::from_mins(1));
+    let review = [("quote", "1"), ("share", "yes"), ("backup", "2")];
+    let (status, body) = page.post("/pick", &review).await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let other = "testb.t266@example.com";
+    let form = [
+        ("quote", "1"),
+        ("code", CODE),
+        ("reach", "email"),
+        ("email", other),
+        ("send", "pick"),
+    ];
+    let (status, body) = page.post("/code", &form).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.contains(DONE), "{body}");
+    let stored = choices(&mut db, job).await;
+    assert_eq!(stored.len(), 1);
+    assert_eq!(stored[0].1, "email");
+    let (email, shared) = vaulted(&mut db, her).await;
+    assert_eq!(email.as_deref(), Some(EMAIL));
+    assert_eq!(shared, [("homeowner".to_owned(), "email".to_owned())]);
 }
 
 /// Every log line's message and fields, for the test's thread.
