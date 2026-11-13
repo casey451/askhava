@@ -6,7 +6,7 @@
 //! the loss notices are the `messaging.business_notice` tasks queued for the others.
 
 use askhava_businesses::api::{add_owner, create};
-use askhava_core::api::Guarded;
+use askhava_core::api::{Guarded, brand};
 use askhava_jobs::api::{JobStatus, move_to};
 use askhava_messaging::api::{Language, render};
 use askhava_ops::api::Actor;
@@ -20,6 +20,13 @@ use jiff_sqlx::ToSqlx;
 use serde_json::Value;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
+
+/// `text` with the brand file's names for its `{brand...}` and `{domain}` tokens, the Spanish
+/// names when `spanish`: expected brand words come from the brand file (WORD-001, WORD-008,
+/// D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("the brand fills")
+}
 
 /// A fake quote's price columns: format, amount, low and high, tier prices.
 type Columns = (
@@ -406,7 +413,10 @@ async fn td_pick_11_a_business_asking_about_a_live_pick_gets_the_confirm_link(po
 /// text in English, has a Spanish template, and holds no amount or business name.
 #[test]
 fn td_pick_33_the_loss_texts_equal_the_spec() {
-    let first = "Ask Hava: Job 1042 went to another business this time.";
+    let first = branded(
+        "{brand_short}: Job 1042 went to another business this time.",
+        false,
+    );
     let tail = " No action needed. Thanks for quoting.";
     let line =
         |k: &str, how: &str| format!("{first} {k} quoted; the picked quote was {how} yours.{tail}");
@@ -433,7 +443,10 @@ fn td_pick_33_the_loss_texts_equal_the_spec() {
         ),
         (
             "job_no_longer_active",
-            "Ask Hava: Job 1042. This job is no longer active.".to_owned(),
+            branded(
+                "{brand_short}: Job 1042. This job is no longer active.",
+                false,
+            ),
         ),
     ];
     let values = [

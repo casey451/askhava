@@ -7,12 +7,20 @@
 //! are unchanged.
 
 use askhava_businesses::api::{OpenCardsTime, OpenCardsTimes};
+use askhava_core::api::brand;
 use askhava_messaging::api::{DigestFacts, Language, MIN_LEFT, digest_goes, listable, slot_due};
 use askhava_picks::api::{OpenCard, WaitingPick, chosen_minutes, open_cards_email};
 use jiff::civil::date;
 use jiff::{SignedDuration, Timestamp};
 use sqlx::PgPool;
 use sqlx::types::Uuid;
+
+/// `text` with the brand file's names for its `{brand...}` and `{domain}` tokens, the Spanish
+/// names when `spanish`: expected brand words come from the brand file (WORD-001, WORD-008,
+/// D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("the brand fills")
+}
 
 /// Arizona wall-clock time on November 9, 2026 (UTC-7 all year).
 fn az(hour: i8, minute: i8) -> Timestamp {
@@ -64,7 +72,10 @@ async fn td_card_10_the_default_5_pm_email_lists_both_cards(pool: PgPool) {
     ));
     let cards = [card("Plumbing", ends[0]), card("Electrical", ends[1])];
     let email = open_cards_email((&cards, &[]), az(17, 0), MIN_LEFT, Language::En).expect("email");
-    assert_eq!(email.subject, "Ask Hava: Your job requests still open");
+    assert_eq!(
+        email.subject,
+        branded("{brand_short}: Your job requests still open", false)
+    );
     assert_eq!(
         email.lines,
         [
@@ -149,7 +160,10 @@ fn td_card_10_a_waiting_pick_comes_first() {
         open_cards_email((&cards, &[pick]), az(17, 0), MIN_LEFT, Language::En).expect("email");
     assert_eq!(
         email.subject,
-        "Ask Hava: Pick waiting: confirm job 1042 by 7 p.m."
+        branded(
+            "{brand_short}: Pick waiting: confirm job 1042 by 7 p.m.",
+            false
+        )
     );
     assert_eq!(
         email.lines[0],
@@ -166,6 +180,11 @@ fn td_card_10_a_waiting_pick_comes_first() {
 fn az_on(days: i8, hour: i8, minute: i8) -> Timestamp {
     az(hour, minute) + SignedDuration::from_hours(24 * i64::from(days))
 }
+
+/// The subjects naming a pick due at 1 p.m. tomorrow, with the brand's `{brand_short}` token.
+const TOMORROW_EN: &str = "{brand_short}: Pick waiting: confirm job 1042 by 1 p.m. tomorrow";
+const TOMORROW_ES: &str =
+    "{brand_short}: Selección en espera: confirme el trabajo 1042 antes de la 1 p.m. de mañana";
 
 /// CARD-022, D-345: an end beyond tomorrow names its weekday or date, never "tomorrow"; Spanish
 /// says "la 1 p.m."; a pick whose Confirm window already ended is not listed or named.
@@ -188,10 +207,7 @@ fn td_card_10_end_days_spanish_one_oclock_and_ended_picks() {
         card("Electrical", az_on(11, 13, 30)),
     ];
     let en = open_cards_email((&cards, &picks), az(17, 0), MIN_LEFT, Language::En).expect("en");
-    assert_eq!(
-        en.subject,
-        "Ask Hava: Pick waiting: confirm job 1042 by 1 p.m. tomorrow"
-    );
+    assert_eq!(en.subject, branded(TOMORROW_EN, false));
     assert_eq!(
         en.lines,
         [
@@ -208,10 +224,7 @@ fn td_card_10_end_days_spanish_one_oclock_and_ended_picks() {
         "an ended pick"
     );
     let es = open_cards_email((&cards, &picks), az(17, 0), MIN_LEFT, Language::Es).expect("es");
-    assert_eq!(
-        es.subject,
-        "Ask Hava: Selección en espera: confirme el trabajo 1042 antes de la 1 p.m. de mañana"
-    );
+    assert_eq!(es.subject, branded(TOMORROW_ES, true));
     assert!(es.lines[1].contains("antes de las 9 a.m. del miércoles"));
     assert!(es.lines[3].contains("antes de la 1:30 p.m. del 20 de noviembre"));
     let only_ended = open_cards_email((&[], &[ended]), az(17, 0), MIN_LEFT, Language::En);

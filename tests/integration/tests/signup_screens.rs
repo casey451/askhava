@@ -14,6 +14,7 @@ use askhava_businesses::api::{
     number_is_old, resume_on_new_record, review_target, review_target_line, send_code, sign_up,
     waiting_on_record,
 };
+use askhava_core::api::brand;
 use askhava_jobs::api::{JobStatus, create, move_to};
 use askhava_licensing::api::ClassMap;
 use askhava_messaging::api::{Language, Registry};
@@ -27,6 +28,13 @@ use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
+
+/// `text` with the brand file's names for its `{brand...}` and `{domain}` tokens, the Spanish
+/// names when `spanish`: expected brand words come from the brand file (WORD-001, WORD-008,
+/// D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("the brand fills")
+}
 
 const PHONE: &str = "+15555550142";
 const NEW_PHONE: &str = "+15555550199";
@@ -230,7 +238,10 @@ async fn td_biz_07_number_old_waits_and_a_new_record_resumes(pool: PgPool) {
         .expect("en");
     assert_eq!(
         en,
-        "Ask Hava: We see your updated record. Tap to finish sign-up: {link}."
+        branded(
+            "{brand_short}: We see your updated record. Tap to finish sign-up: {link}.",
+            false
+        )
     );
     assert!(
         registry
@@ -352,13 +363,19 @@ fn td_biz_27_fee_box_lines_and_numbers_follow_the_settings() {
         "It's an introduction fee for a homeowner who chose you.",
         "You pay one fixed fee when you confirm a pick: $25, $75 or $199 by job size. It's not a share of the job. If you call twice inside the homeowner's window and can't reach them, the refund rule gives the fee back without you asking.",
         "It's a fixed introduction fee, never a share of the job, and it doesn't depend on the work being done or paid for.",
-        "Ask Hava is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; Ask Hava doesn't direct, schedule, supervise or pay for the work.",
+        &branded(
+            "{brand} is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; {brand} doesn't direct, schedule, supervise or pay for the work.",
+            false,
+        ),
         "The homeowner sees every quote and picks one business: you. It isn't shared with anyone else.",
         "A new fee never applies until you accept it.",
         "Repeat picks from the same homeowner are free for 180 days after the job closes.",
         "Fees follow the published schedule, and a change needs your OK first.",
         "Statements download as CSV.",
-        "If many picks in your trade end without a hire, the Ask Hava owner reviews it and may add a credit.",
+        &branded(
+            "If many picks in your trade end without a hire, the {brand} owner reviews it and may add a credit.",
+            false,
+        ),
     ] {
         assert!(lines.contains(&want.to_owned()), "missing: {want}");
     }
@@ -431,7 +448,7 @@ fn td_biz_10_notice_line_follows_the_texting_switch() {
         (
             true,
             PageLanguage::Es,
-            "Ask Hava nunca le llama con una grabación.",
+            &branded("{brand} nunca le llama con una grabación.", true),
         ),
     ];
     for (on, language, want) in cases {
