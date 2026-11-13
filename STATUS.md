@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T23:46:47Z by runner a409b1914d2f (manual).
+Updated 2026-11-13T23:57:47Z by runner dd258e06710f (actions).
 
-**Idle since 23:40Z; 301 of 428 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T437 in progress since 23:57Z; 301 of 428 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 301 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 23:40Z (no task in progress)
-- **Week:** 30% used, 123.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:46Z, 0 min before this update
+- **Lane:** lane 1: T437 claimed 23:57Z, lease until 02:57Z
+- **Week:** 30% used, 134.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 23:54Z, 3 min before this update
 - **Keeper:** last ran 23:45Z, next wake 00:05Z
 
 ## Needs attention
@@ -80,7 +80,6 @@ Updated 2026-11-13T23:46:47Z by runner a409b1914d2f (manual).
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | done | 1 | 26 min | 01:18Z |  |
 | T424 | Brand rename prep: integration tests (open-cards digest to s | done | 1 | 32 min | 01:15Z |  |
 | T372 | businesses and licensing: each recorded ROC list re-applies  | done | 1 | 81 min | 01:07Z |  |
-| T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 1 | 2 min | 23:48Z |  |
 
 ### Plan and harness merges on main
 - 21:01Z Plan: fewer smoke runs, scoped fix rounds, batched reads, decision excerpts (D-3530) (#698)
@@ -110,36 +109,36 @@ Updated 2026-11-13T23:46:47Z by runner a409b1914d2f (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 7 of 733 (1.0%) · partial 566 · unstarted 160
+**Requirements verified:** 281 of 733 (38.3%) · partial 292 · unstarted 160
 **Tasks merged (throughput only):** 301 of 428
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 29 | 6 | 35 |
-| ai | 0 | 24 | 5 | 29 |
-| businesses | 1 | 54 | 3 | 58 |
-| calls | 0 | 24 | 1 | 25 |
-| consent | 0 | 31 | 4 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 2 | 38 | 3 | 43 |
-| job-cards | 2 | 22 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 1 | 42 | 2 | 45 |
-| ops-recovery | 0 | 10 | 44 | 54 |
-| privacy | 0 | 29 | 2 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 55 | 1 | 56 |
-| recurring | 0 | 8 | 3 | 11 |
-| security | 1 | 49 | 5 | 55 |
+| accessibility | 15 | 14 | 6 | 35 |
+| ai | 11 | 13 | 5 | 29 |
+| businesses | 20 | 35 | 3 | 58 |
+| calls | 10 | 14 | 1 | 25 |
+| consent | 14 | 17 | 4 | 35 |
+| fees | 14 | 37 | 1 | 52 |
+| intake | 27 | 13 | 3 | 43 |
+| job-cards | 19 | 5 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 23 | 5 | 0 | 28 |
+| messaging | 24 | 19 | 2 | 45 |
+| ops-recovery | 2 | 8 | 44 | 54 |
+| privacy | 9 | 20 | 2 | 31 |
+| quiet-hours | 7 | 2 | 0 | 9 |
+| quotes-pick | 36 | 19 | 1 | 56 |
+| recurring | 6 | 2 | 3 | 11 |
+| security | 9 | 41 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 0 | 9 | 23 | 32 |
+| wording | 2 | 7 | 23 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T23:01:25Z (week)): week: 70.4M used, 123.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T15:33:22Z.
+- Pacing (session_reading 2026-11-13T23:45:34Z (week)): week: 60.0M used, 134.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T11:54:50Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -154,7 +153,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T437 (lease until 2026-11-14T02:57:41Z)
 
 ## Last usage reading
 - {"task": "T391", "at": "2026-11-13T23:23:57Z", "input_tokens": 376, "output_tokens": 146899, "cache_read_input_tokens": 13160064, "cache_creation_input_tokens": 482702}
