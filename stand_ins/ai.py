@@ -19,6 +19,7 @@ an object without `additionalProperties: false` gets the API's 400 (AI-022, AI-0
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import re
 from pathlib import Path
@@ -47,10 +48,26 @@ FAULTS: dict[str, tuple[int, str, str]] = {
     "401": (401, "authentication_error", "invalid x-api-key"),
     "403": (403, "permission_error", "Your API key does not have permission to use the specified resource."),
 }
+BRAND_SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "brand.py"
+PLANT_CHARS = 600  # the "long" plant: over AI-021's 320-character question cap
+
+
+def _short_name() -> str:
+    """The brand's short name every text opens with, from app/core/data/brand.json through
+    scripts/brand.py (WORD-008, D-1932)."""
+    spec = importlib.util.spec_from_file_location("brand", BRAND_SCRIPT)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot load {BRAND_SCRIPT}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return str(module.load()["short_name"])
+
+
+OPENING = f"{_short_name()}: "
 PLANTS = {
-    "restricted-word": "Ask Hava: Your plumber also sells cannabis and tobacco.",
-    "url": "Ask Hava: See https://example.com/offer for details.",
-    "long": "Ask Hava: " + "x" * 590,
+    "restricted-word": OPENING + "Your plumber also sells cannabis and tobacco.",
+    "url": OPENING + "See https://example.com/offer for details.",
+    "long": OPENING + "x" * (PLANT_CHARS - len(OPENING)),
 }
 UNSUPPORTED = (
     "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf",

@@ -18,11 +18,19 @@ use crate::api::{
 };
 use crate::rules::{CONSENT_TEMPLATE, Inbound, SAFETY_TEMPLATE, Send, Settings, Then, plan};
 
-const INT_004_EN: &str = "Ask Hava: Ask Hava isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe.";
-const INT_004_ES: &str = "Ask Hava: Ask Hava no es un servicio de emergencia. Si huele a gas, ve humo o fuego, suena una alarma de CO o hay un cable de luz caído, saque a todos y llame al 911 desde afuera. Responda SEGURO cuando esté a salvo.";
+const INT_004_EN: &str = "{brand_short}: {brand} isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe.";
+const INT_004_ES: &str = "{brand_short}: {brand} no es un servicio de emergencia. Si huele a gas, ve humo o fuego, suena una alarma de CO o hay un cable de luz caído, saque a todos y llame al 911 desde afuera. Responda SEGURO cuando esté a salvo.";
 /// Advice D-436 removed: no cause, symptom, health, heat, water, shutoff, utility or appliance line.
 const NO_ADVICE: &str = "211|cooling|heat|water|shutoff|shut off|breaker|utility|unisource|epcor|\
     propane company|symptom|headache|dizzy|doctor|window|appliance|agua|calor|enfriamiento|llave";
+
+/// `text` with the brand file's names in place of its brand tokens, the Spanish names when
+/// `spanish` (WORD-001, WORD-008, D-1932).
+fn branded(text: &str, spanish: bool) -> String {
+    askhava_core::api::brand()
+        .fill(text, spanish)
+        .expect("the brand fills")
+}
 
 fn emergency(words: &str) -> Inbound<'_> {
     Inbound {
@@ -40,7 +48,13 @@ fn emergency(words: &str) -> Inbound<'_> {
 fn td_int_17_safety_text_equals_its_templates() {
     let en = safety_text(Language::En).expect("en");
     let es = safety_text(Language::Es).expect("es");
-    assert_eq!((en.as_str(), es.as_str()), (INT_004_EN, INT_004_ES));
+    assert_eq!(
+        (en.as_str(), es.as_str()),
+        (
+            branded(INT_004_EN, false).as_str(),
+            branded(INT_004_ES, true).as_str()
+        )
+    );
     let counted = count_segments(&en);
     assert_eq!((counted.encoding, counted.segments), (Encoding::Gsm7, 2));
     for text in [&en, &es] {
@@ -63,8 +77,8 @@ fn td_int_17_safety_text_equals_its_templates() {
 fn td_int_17_spanish_safety_text_stays_on_while_spanish_is_off() {
     let off = render(SAFETY_TEMPLATE, Language::Es, false, &[]).expect("es off");
     assert_eq!(
-        (off.language, off.body.as_str()),
-        (Language::Es, INT_004_ES)
+        (off.language, off.body),
+        (Language::Es, branded(INT_004_ES, true))
     );
     let on = render(SAFETY_TEMPLATE, Language::Es, true, &[]).expect("es on");
     assert_eq!(on.body, safety_text(Language::Es).expect("es"));
@@ -122,8 +136,15 @@ fn td_con_26_safety_then_consent_then_question() {
     assert_eq!(huele.texts, [Send::Safety(Language::Es), consent_en]);
     assert_eq!(huele.then, Then::FirstQuestion);
     let consent = render(CONSENT_TEMPLATE, Language::En, false, &[]).expect("consent");
-    assert!(consent.body.starts_with("Ask Hava: Got it."));
-    assert_eq!(safety_text(Language::Es).expect("es"), INT_004_ES);
+    assert!(
+        consent
+            .body
+            .starts_with(&branded("{brand_short}: Got it.", false))
+    );
+    assert_eq!(
+        safety_text(Language::Es).expect("es"),
+        branded(INT_004_ES, true)
+    );
 }
 
 fn secret() -> SecretString {

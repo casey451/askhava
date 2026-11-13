@@ -145,6 +145,14 @@ fn td_job_05_number_named_picks_an_open_number() {
     assert_eq!(number_named("cancel", &open), None);
 }
 
+/// `text` with the brand file's names in place of its brand tokens, the Spanish names when
+/// `spanish` (WORD-001, WORD-008, D-1932).
+fn branded(text: &str, spanish: bool) -> String {
+    askhava_core::api::brand()
+        .fill(text, spanish)
+        .expect("the brand fills")
+}
+
 /// TD-JOB-05 (JOB-021 to JOB-023): the JOB-023 line equals the spec; "Close which?" lists the
 /// numbers with an ALL option; every text has a Spanish template.
 #[test]
@@ -157,11 +165,18 @@ fn td_job_05_texts_equal_the_spec() {
     );
     assert_eq!(
         mention.expect("en").body,
-        "Ask Hava: To close request 1042, reply CLOSE 1042."
+        branded(
+            "{brand_short}: To close request 1042, reply CLOSE 1042.",
+            false
+        )
     );
     let list = [("job", "1042 and 1043")];
     let which = render(CLOSE_WHICH_TEMPLATE, Language::En, false, &list).expect("en");
-    assert!(which.body.starts_with("Ask Hava: Close which?"));
+    assert!(
+        which
+            .body
+            .starts_with(&branded("{brand_short}: Close which?", false))
+    );
     assert!(which.body.contains("1042 and 1043") && which.body.contains("CLOSE ALL"));
     for id in [
         CLOSE_MENTION_TEMPLATE,
