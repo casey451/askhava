@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T13:31:21Z by runner bf75098f9a71 (actions).
+Updated 2026-11-13T13:31:43Z by runner bf75098f9a71 (actions).
 
 **Building: T386 in progress since 13:24Z; 281 of 420 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-13T13:31:21Z by runner bf75098f9a71 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T386 claimed 13:24Z, lease until 16:24Z; lane 3: T367 claimed 13:22Z, lease until 16:22Z
 - **Week:** 18% used, 156.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:30Z, 0 min before this update
-- **Keeper:** last ran 13:30Z, next wake 16:24Z
+- **Last run:** 13:31Z, 0 min before this update
+- **Keeper:** last ran 13:31Z, next wake 16:24Z
 
 ## Needs attention
 - PLAN GAP T266 (since 2026-11-13T13:09:16Z, no attempt used; a plan change fixes it): T266: dependency T255 is DONE but its owned file app/intake/src/address_wait.rs is not on main; T266: dependency T255 is DONE but its owned file app/payments/src/reclear.rs is not on main; T266: dependency T255 is DONE but its owned file app/picks/src/address_wait_check.rs is not on main; T266: dependency T255 is DONE but its owned file app/server/tests/address_rerelease.rs is not on main; T266: dependency T255 is DONE but its owned file app/privacy/src/contact_fields.rs is not on main
