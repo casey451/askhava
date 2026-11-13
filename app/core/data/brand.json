@@ -1,18 +1,18 @@
 {
-  "display_name": "Ask Hava",
-  "business_name": "Ask Hava for Business",
-  "short_name": "Ask Hava",
-  "legal_name": "Ask Hava LLC",
-  "spoken_legal_name": "Ask Hava L L C",
-  "domain": "askhava.com",
-  "email_from_name": "Ask Hava",
-  "email_from_address": "jobs@notify.askhava.com",
-  "statement_prefix": "ASKHAVA",
+  "display_name": "Laftly",
+  "business_name": "Laftly for Business",
+  "short_name": "Laftly",
+  "legal_name": "Laftly LLC",
+  "spoken_legal_name": "Laftly L L C",
+  "domain": "laftly.com",
+  "email_from_name": "Laftly",
+  "email_from_address": "jobs@notify.laftly.com",
+  "statement_prefix": "LAFTLY",
   "forbidden_alone": ["Hava"],
   "es": {
-    "display_name": "Ask Hava",
-    "business_name": "Ask Hava for Business",
-    "short_name": "Ask Hava",
-    "legal_name": "Ask Hava LLC"
+    "display_name": "Laftly",
+    "business_name": "Laftly for Business",
+    "short_name": "Laftly",
+    "legal_name": "Laftly LLC"
   }
 }
