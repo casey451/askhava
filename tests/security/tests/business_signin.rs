@@ -11,7 +11,7 @@ use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_businesses::api::{Acting, Roles, add_member, add_owner, create, remove_member};
-use askhava_core::api::{Claimed, ManualClock};
+use askhava_core::api::{Claimed, ManualClock, brand};
 use askhava_portals::api::{
     BUSINESS_SESSION_LIFE, CookieJar, LINK_LIFE, LINKS_PER_LIFE, Need, PortalsError, Realm,
     SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail, business_principal,
@@ -76,7 +76,8 @@ impl SignInMail for FakeMail {
         to: SignInAddress,
         link: &SecretString,
     ) -> Result<(), PortalsError> {
-        let path = link.expose_secret().replace("https://askhava.com", "");
+        let ours = format!("https://{}", brand().domain());
+        let path = link.expose_secret().replace(&ours, "");
         let mut sent = self.sent.lock().unwrap_or_else(PoisonError::into_inner);
         sent.push((to, path));
         Ok(())
