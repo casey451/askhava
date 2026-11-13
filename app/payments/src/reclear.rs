@@ -85,13 +85,13 @@ mod tests {
         .expect("end");
     }
 
-    async fn attempt(db: &mut PgConnection, pick: Uuid, try_no: i32, status: &str) {
+    async fn attempt(db: &mut PgConnection, pick: Uuid, try_no: i32, code: &str) {
         sqlx::query!(
             "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at) \
              VALUES ($1, $2, gen_random_uuid(), $3, now())",
             pick,
             try_no,
-            status
+            code
         )
         .execute(&mut *db)
         .await
