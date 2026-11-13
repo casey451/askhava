@@ -414,6 +414,7 @@ fn td_word_36_consent_welcome_and_sign_up_lines_are_unchanged_under_the_embedded
         waitlist_line(),
         business_statement(),
     ];
+    assert_eq!(got.len(), SIGN_UP_PINS.len());
     for (got, want) in got.iter().zip(SIGN_UP_PINS) {
         assert_eq!(*got, branded(want, false));
     }
@@ -490,6 +491,7 @@ fn td_word_36_complaint_about_us_and_banner_lines_are_unchanged_under_the_embedd
         AboutUsRefusal::Contact.reason(),
         AboutUsRefusal::Channel.reason(),
     ];
+    assert_eq!(got.len(), COMPLAINT_PINS.len());
     for (got, (want, spanish)) in got.iter().zip(COMPLAINT_PINS) {
         assert_eq!(*got, branded(want, spanish));
     }
