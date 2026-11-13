@@ -59,8 +59,8 @@ pub use crate::scrub::{
 };
 pub use crate::scrub_context::read_inbound_for;
 pub use crate::vault::{
-    BASELINE_FLOOR, BASELINE_HOURS, RATE_MULTIPLE, Vault, check_read_rates, find_by_phone,
-    rotate_batch, store_contact,
+    BASELINE_FLOOR, BASELINE_HOURS, RATE_MULTIPLE, SHARED_AT_PICK, Vault, check_read_rates,
+    find_by_phone, rotate_batch, store_contact, store_shared_email,
 };
 
 static RELEASE_MINT_TAKEN: AtomicBool = AtomicBool::new(false);

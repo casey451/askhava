@@ -388,6 +388,54 @@ pub async fn store_contact(
     Ok(id)
 }
 
+/// The audit action of [`store_shared_email`]: the email was shared at the pick (PICK-018).
+pub const SHARED_AT_PICK: &str = "shared_at_pick";
+
+/// Seals `email`, the address the homeowner chose to share at the page pick, into contact
+/// `contact`'s vault `email` field under the active key version, bound to that contact and column,
+/// replacing any earlier one for every job of that contact (D-3459), with one [`SHARED_AT_PICK`]
+/// audit row naming her as the actor and the `email` field (PICK-018, PICK-042, PRIV-001 to
+/// PRIV-003; T266, D-1761). One transaction (a
+/// savepoint inside the caller's, so the page pick's rollback takes it too); nothing is read,
+/// returned, indexed or logged.
+///
+/// # Errors
+/// [`VaultError::NotFound`] for an unknown contact (nothing changed, no audit row);
+/// [`VaultError::Sealed`]; [`VaultError::Audit`] when the audit row cannot be written (the update
+/// is rolled back); [`VaultError::Database`].
+pub async fn store_shared_email(
+    db: &mut PgConnection,
+    vault: &Vault,
+    contact: Uuid,
+    email: &SecretString,
+) -> Result<(), VaultError> {
+    let sealed = vault.seal(Field::Email.column(), contact, email.expose_secret())?;
+    let mut tx = db.begin().await.map_err(db_err)?;
+    let updated = sqlx::query!(
+        "UPDATE privacy.contact SET email = $2 WHERE id = $1",
+        contact,
+        sealed
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(db_err)?
+    .rows_affected();
+    if updated == 0 {
+        return Err(VaultError::NotFound);
+    }
+    let entry = AuditEntry {
+        actor: Actor::Homeowner(contact),
+        action: SHARED_AT_PICK,
+        subject_kind: "privacy.contact",
+        subject_id: contact,
+        change: Change::Field("email"),
+    };
+    audit(&mut tx, &entry)
+        .await
+        .map_err(|_| VaultError::Audit)?;
+    tx.commit().await.map_err(db_err)
+}
+
 /// Replaces contact `id`'s phone digests with one under the active index key.
 async fn index_phone(
     db: &mut PgConnection,
@@ -821,4 +869,109 @@ pub async fn check_read_rates(db: &mut PgConnection, hour: Timestamp) -> Result<
     }
     tx.commit().await.map_err(db_err)?;
     Ok(spikes.len())
+}
+
+/// TD-PICK-52 vault cases (T266, D-1761): fake data only.
+#[cfg(test)]
+mod shared_email_tests {
+    use askhava_ops::api::export_audit;
+    use base64::Engine as _;
+    use base64::engine::general_purpose::STANDARD;
+    use secrecy::{ExposeSecret, SecretString};
+    use sqlx::types::Uuid;
+    use sqlx::{PgConnection, PgPool};
+
+    use super::{SHARED_AT_PICK, Vault, store_contact, store_shared_email};
+    use crate::api::{Field, NewContact, Purpose, Reader, read_contact};
+    use crate::models::VaultError;
+
+    fn vault() -> Vault {
+        let key = |b: u8| SecretString::from(format!("1:{}", STANDARD.encode([b; 32])));
+        let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
+        Vault::new(&key(0x52), &key(0x62), &url).expect("keys")
+    }
+
+    fn s(v: &str) -> SecretString {
+        SecretString::from(v.to_owned())
+    }
+
+    async fn contact(db: &mut PgConnection, vault: &Vault, phone: &str) -> Uuid {
+        let new = NewContact {
+            phone: Some(s(phone)),
+            ..NewContact::default()
+        };
+        store_contact(db, vault, &new).await.expect("store")
+    }
+
+    async fn shared(db: &mut PgConnection) -> Vec<(String, Uuid, Option<String>)> {
+        let rows = export_audit(db, 0, 1000).await.expect("export");
+        rows.into_iter()
+            .filter(|r| r.action == SHARED_AT_PICK)
+            .map(|r| (r.actor_kind, r.subject_id, r.field))
+            .collect()
+    }
+
+    async fn email(db: &mut PgConnection, vault: &Vault, id: Uuid) -> Option<String> {
+        let gate = (Reader::Messaging, Purpose::Send);
+        let read = read_contact(db, vault, gate, id, &[Field::Email]).await;
+        read.expect("read")
+            .email
+            .map(|e| e.expose_secret().to_owned())
+    }
+
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn td_pick_52_the_email_is_sealed_in_her_contact_with_one_row(pool: PgPool) {
+        let (vault, mut db) = (vault(), pool.acquire().await.expect("connection"));
+        let id = contact(&mut db, &vault, "928-555-0191").await;
+        let mail = s("testa.shared@example.com");
+        store_shared_email(&mut db, &vault, id, &mail)
+            .await
+            .expect("store");
+        let raw = sqlx::query_scalar!("SELECT email FROM privacy.contact WHERE id = $1", id)
+            .fetch_one(&mut *db)
+            .await
+            .expect("raw")
+            .expect("sealed");
+        assert!(!String::from_utf8_lossy(&raw).contains("testa.shared"));
+        let want = ("homeowner".to_owned(), id, Some("email".to_owned()));
+        assert_eq!(shared(&mut db).await, [want]);
+        let got = email(&mut db, &vault, id).await;
+        assert_eq!(got.as_deref(), Some("testa.shared@example.com"));
+    }
+
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn td_pick_52_an_unknown_contact_or_a_failed_audit_stores_nothing(pool: PgPool) {
+        let (vault, mut db) = (vault(), pool.acquire().await.expect("connection"));
+        let mail = s("testa.shared@example.com");
+        let unknown = store_shared_email(&mut db, &vault, Uuid::from_u128(0x52), &mail).await;
+        assert!(matches!(unknown, Err(VaultError::NotFound)));
+        let id = contact(&mut db, &vault, "928-555-0192").await;
+        // The migrator role may update the contact but write no audit row (D-3352).
+        sqlx::query!("GRANT USAGE ON SCHEMA privacy TO askhava_migrator")
+            .execute(&mut *db)
+            .await
+            .expect("usage");
+        sqlx::query!("GRANT SELECT, UPDATE ON privacy.contact TO askhava_migrator")
+            .execute(&mut *db)
+            .await
+            .expect("grant");
+        sqlx::query!("SET ROLE askhava_migrator")
+            .execute(&mut *db)
+            .await
+            .expect("role");
+        let failed = store_shared_email(&mut db, &vault, id, &mail).await;
+        assert!(matches!(failed, Err(VaultError::Audit)));
+        sqlx::query!("RESET ROLE")
+            .execute(&mut *db)
+            .await
+            .expect("reset");
+        assert!(shared(&mut db).await.is_empty());
+        assert_eq!(email(&mut db, &vault, id).await, None);
+        sqlx::query!("SET default_transaction_read_only = on")
+            .execute(&mut *db)
+            .await
+            .expect("read only");
+        let broken = store_shared_email(&mut db, &vault, id, &mail).await;
+        assert!(matches!(broken, Err(VaultError::Database)));
+    }
 }

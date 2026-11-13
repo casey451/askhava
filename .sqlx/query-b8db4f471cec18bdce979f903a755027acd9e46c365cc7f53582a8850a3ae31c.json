@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT choice FROM picks.contact_choice WHERE pick_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "choice",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "picks.contact_choice",
+            "name": "choice"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "b8db4f471cec18bdce979f903a755027acd9e46c365cc7f53582a8850a3ae31c"
+}
