@@ -83,8 +83,6 @@ SECTION_CITE = re.compile(r"architecture(?:\.md`?)? sections? (\d+(?:(?:, | and 
 PASTED_READS = ("docs/spec/", "docs/test-design.md", "docs/decisions.md", "docs/brains/")
 BRAINS_DIR = "docs/brains/"
 BRAINS_NOTE = "none (this task lists no brain under its reads)."
-CRATE_RULES_NOTE = "none (this task writes no app/ crate that has a CLAUDE.md yet)."
-CRATE_PATH = re.compile(r"^app/([a-z0-9_-]+)/")
 REQUIRED_KEYS = (
     "id",
     "slug",
@@ -364,38 +362,6 @@ def paste_brains(root: Path, task: dict[str, Any]) -> str:
     return "\n\n".join(parts) or BRAINS_NOTE
 
 
-def task_crates(task: dict[str, Any]) -> list[str]:
-    """The app/ crates a task writes: its module, then the crates of its owned paths, once each."""
-    found = [task["module"]] if task.get("module") else []
-    found += [m.group(1) for m in (CRATE_PATH.match(p) for p in task["owns"]) if m]
-    return list(dict.fromkeys(found))
-
-
-def never_break(text: str) -> str:
-    """The `## Never break` list of a crate CLAUDE.md, without its heading."""
-    for heading, lines in brain_sections(text):
-        if heading == "Never break":
-            return "\n".join(line for line in lines if line.strip())
-    return ""
-
-
-def paste_crate_rules(root: Path, task: dict[str, Any]) -> str:
-    """The `## Never break` list of the task's module crate (D-3474), so its invariants are in the prompt
-    before the worker opens a file; each other crate it writes gets a pointer, since Claude Code loads that
-    crate's CLAUDE.md on its own when the worker reads a file there. The detail stays in NOTES.md."""
-    parts, others = [], []
-    for crate in task_crates(task):
-        doc = root / "app" / crate / "CLAUDE.md"
-        rules = never_break(doc.read_text(encoding="utf-8")) if doc.is_file() else ""
-        if rules and not parts and crate == task.get("module"):
-            parts.append(f"From `app/{crate}/CLAUDE.md` (detail: grep `app/{crate}/NOTES.md` by requirement ID):\n\n{rules}")
-        elif rules:
-            others.append(f"`app/{crate}/CLAUDE.md`")
-    if others:
-        parts.append(f"Also keep the `## Never break` lists of {', '.join(others)} (each loads when you open a file in its crate).")
-    return "\n\n".join(parts) or CRATE_RULES_NOTE
-
-
 def test_command(path: str) -> str | None:
     """The command that runs one owned test file, or None for a file run through another."""
     crate = re.match(r"^app/(?P<crate>[a-z_]+)/src/tests/(?P<name>[a-z0-9_]+)\.rs$", path)
@@ -461,7 +427,6 @@ def render(template: Template, task: dict[str, Any], src: Sources | None = None)
         "decisions": paste_decisions(src, task["decisions"]),
         "cites": paste_cites(src, task["cites"]),
         "brains": paste_brains(src.root, task),
-        "crate_rules": paste_crate_rules(src.root, task),
         "run_tests": run_tests_block(task),
         "copy_step": COPY_STEPS if copy else COPY_SKIP,
         "copy_done": COPY_DONE if copy else COPY_DONE_SKIP,

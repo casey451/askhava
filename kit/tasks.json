@@ -877,7 +877,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -1514,7 +1514,7 @@
    "budget": {
     "files": 8,
     "lines": 350,
-    "context_pct": 34
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -2012,7 +2012,7 @@
    "budget": {
     "files": 8,
     "lines": 550,
-    "context_pct": 35
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -2514,7 +2514,7 @@
    "budget": {
     "files": 4,
     "lines": 550,
-    "context_pct": 24
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -2781,7 +2781,7 @@
    "budget": {
     "files": 2,
     "lines": 250,
-    "context_pct": 21
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -2984,7 +2984,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 19
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -3035,7 +3035,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -3376,7 +3376,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -3730,7 +3730,7 @@
    "budget": {
     "files": 4,
     "lines": 550,
-    "context_pct": 30
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -3919,7 +3919,7 @@
    "budget": {
     "files": 4,
     "lines": 250,
-    "context_pct": 21
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -3989,7 +3989,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 25
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -4119,7 +4119,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 25
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -4835,7 +4835,7 @@
    "budget": {
     "files": 5,
     "lines": 250,
-    "context_pct": 28
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -6135,7 +6135,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 24
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -6510,7 +6510,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 39
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -7202,7 +7202,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 32
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -7418,7 +7418,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 26
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -9683,7 +9683,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 23
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -9819,7 +9819,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 28
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -10096,7 +10096,7 @@
    "budget": {
     "files": 4,
     "lines": 320,
-    "context_pct": 27
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -10251,6 +10251,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/code-docs.md",
     "docs/spec/businesses.md",
     "docs/spec/calls.md",
     "docs/brains/rust-production.md"
@@ -10275,7 +10276,7 @@
    "budget": {
     "files": 10,
     "lines": 800,
-    "context_pct": 50
+    "context_pct": 46
    },
    "checks": [
     "Ci",
@@ -10741,7 +10742,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -11629,7 +11630,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 24
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -12189,7 +12190,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 22
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -12390,7 +12391,7 @@
    "budget": {
     "files": 6,
     "lines": 350,
-    "context_pct": 48
+    "context_pct": 44
    },
    "checks": [
     "Ci",
@@ -13533,7 +13534,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 33
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -13787,7 +13788,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 33
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -14198,7 +14199,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 19
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -15043,7 +15044,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 7
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -17591,7 +17592,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 18
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -17915,7 +17916,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 7
    },
    "checks": [
     "Ci",
@@ -18857,7 +18858,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 22
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -19862,7 +19863,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 12
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -20954,7 +20955,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 41
+    "context_pct": 37
    },
    "checks": [
     "Ci",
@@ -21102,7 +21103,7 @@
    "budget": {
     "files": 7,
     "lines": 300,
-    "context_pct": 40
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -21168,7 +21169,7 @@
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 29
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -24124,7 +24125,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 25
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -24319,7 +24320,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 24
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -25025,7 +25026,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 26
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -28023,7 +28024,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 18
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -28087,7 +28088,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 24
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -28371,7 +28372,7 @@
    "budget": {
     "files": 8,
     "lines": 550,
-    "context_pct": 37
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -29192,7 +29193,7 @@
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 24
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -29670,7 +29671,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 14
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -30480,7 +30481,7 @@
    "id": "T437",
    "slug": "crate-notes-shared-and-full-by-bytes",
    "title": "harness: a crate NOTES.md is a shared path wherever its CLAUDE.md is, the runner's crate-full signal also counts the D-3474 byte budget, and the legacy crate-doc headings go",
-   "goal": "Crate notes, runner side (D-3474; D-3303, D-3444, D-473): D-3474 split every crate `CLAUDE.md` into a short guide (`## Purpose`, `## Never break`, `## Detail`) of at most `scripts/check_code_docs.py` `MAX_CRATE_DOC_BYTES` (8,192) bytes and a greppable `app/<crate>/NOTES.md`, where every task now adds its entries, one line each (union-merged through `.gitattributes`). Four changes, nothing else. (1) `runner/verify.py` `check_paths`: a changed path `app/<crate>/NOTES.md` counts as shared exactly when `app/<crate>/CLAUDE.md` is in `shared`, so every task may add its lines there without a new `kit/tasks.json` shared path or a change to `scripts/validate_tasks.py`'s allowlist; name `NOTES.md` in a module-level constant or pattern with a comment citing D-3474 (the task template tells workers that NOTES.md is shared once `runner/verify.py` names it). Any other path keeps today's rules, and a NOTES.md under a protected path or `NEVER_TOUCH` is still refused. (2) `runner/__main__.py` `crate_doc_full`: a crate is also full when its `CLAUDE.md` on origin's `main` (`crate_doc_text`, unchanged), in UTF-8 bytes, plus `(held + 1) * check_code_docs.CRATE_DOC_TASK_BYTES` (400, one `## Never break` bullet for each task in flight and for the next one) is over `check_code_docs.MAX_CRATE_DOC_BYTES`. The guides are about 15 to 45 lines, so the 120-line count (D-3303) alone can no longer reach its limit, while two tasks that each add a bullet near the byte budget would merge into a file the check refuses, which costs a resync. Keep the line rule, keep a missing or unreadable file full, read both constants with `getattr` and fall back to the line rule alone when the runner's copy of the check lacks them; update the docstring. (3) `scripts/check_code_docs.py` still accepts the six pre-D-3474 headings (`LEGACY_HEADINGS`) only because the protected fixture `HEADS` in `tests/test_runner_crate_merge.py` uses them: change that fixture to the three headings `check_code_docs.HEADINGS` names (reading the constant, so it cannot drift again), then delete `LEGACY_HEADINGS` and its branch in `check_crate_doc`; every other assertion in that file stays. (4) `tests/docs/test_brand_literals.py` `SKIP_NAMES` also skips `NOTES.md` (a crate's notes, like its `CLAUDE.md`, are never shown to a customer; D-3474), with a planted case showing a brand word in `app/<crate>/NOTES.md` passes while the same word in an `app/` source file still fails; until then the split left the ten brand-naming entries after the `## Detail` paragraph of their crate's `CLAUDE.md`, and a later task near the byte budget moves them with `python3 scripts/split_crate_doc.py --sweep` (not this task, so it rewrites no crate doc under a running task). Tests (keep every other existing test unchanged): in `tests/test_runner_logic.py`, a task touching `app/<crate>/NOTES.md` passes when that crate's `CLAUDE.md` is shared and fails as not owned when it is not, and a NOTES.md under a protected path is still refused for a build task; in `tests/test_runner_crate_cap.py`, a guide well under the byte budget is not full at held 0, one whose bytes plus one task's room pass the budget is full at held 0, held tasks count 400 bytes each, and a check module without the two constants falls back to the line rule. Update the `docs/architecture.md` lines that describe the path check and `crate_doc_full` (D-3303) and add your entry to `docs/decisions.md`.",
+   "goal": "Crate notes, runner side (D-3474; D-3303, D-3444, D-473): D-3474 split every crate `CLAUDE.md` into a short guide (`## Purpose`, `## Never break`, `## Detail`) of at most `scripts/check_code_docs.py` `MAX_CRATE_DOC_BYTES` (8,192) bytes and a greppable `app/<crate>/NOTES.md`, where every task now adds its entries, one line each (union-merged through `.gitattributes`). Four changes, nothing else. (1) `runner/verify.py` `check_paths`: a changed path `app/<crate>/NOTES.md` counts as shared exactly when `app/<crate>/CLAUDE.md` is in `shared`, so every task may add its lines there without a new `kit/tasks.json` shared path or a change to `scripts/validate_tasks.py`'s allowlist; name `NOTES.md` in a module-level constant or pattern with a comment citing D-3474 (the task template tells workers that NOTES.md is shared once `runner/verify.py` names it). Any other path keeps today's rules, and a NOTES.md under a protected path or `NEVER_TOUCH` is still refused. (2) `runner/__main__.py` `crate_doc_full`: a crate is also full when its `CLAUDE.md` on origin's `main` (`crate_doc_text`, unchanged), in UTF-8 bytes, plus `(held + 1) * check_code_docs.CRATE_DOC_TASK_BYTES` (400, one `## Never break` bullet for each task in flight and for the next one) is over `check_code_docs.MAX_CRATE_DOC_BYTES`. The guides are about 15 to 45 lines, so the 120-line count (D-3303) alone can no longer reach its limit, while two tasks that each add a bullet near the byte budget would merge into a file the check refuses, which costs a resync. Keep the line rule, keep a missing or unreadable file full, read both constants with `getattr` and fall back to the line rule alone when the runner's copy of the check lacks them; update the docstring. (3) `scripts/check_code_docs.py` still accepts the six pre-D-3474 headings (`LEGACY_HEADINGS`) only because the protected fixture `HEADS` in `tests/test_runner_crate_merge.py` uses them: change that fixture to the three headings `check_code_docs.HEADINGS` names (reading the constant, so it cannot drift again), then delete `LEGACY_HEADINGS` and its branch in `check_crate_doc`; every other assertion in that file stays. (4) `tests/docs/test_brand_literals.py` `SKIP_NAMES` also skips `NOTES.md` (a crate's notes, like its `CLAUDE.md`, are never shown to a customer; D-3474), with a planted case showing a brand word in `app/<crate>/NOTES.md` passes while the same word in an `app/` source file still fails; until then the split left the ten brand-naming entries after the `## Detail` paragraph of their crate's `CLAUDE.md`, which this task moves at its end (step 5). (5) Last, once (1) to (4) pass: run `python3 scripts/split_crate_doc.py --sweep`, which moves every entry line under a crate `CLAUDE.md`'s `## Detail` paragraph (the ten brand-naming entries and any interim lines tasks added before this task) to the end of that crate's `NOTES.md`, and commit the moved lines with no other change to those files; `python3 scripts/check_code_docs.py` and the brand guard must pass after it. The crate docs and NOTES files this touches are shared paths, as are `docs/architecture.md`, `docs/decisions.md` and `kit/plan.lock`, so they sit outside the owned-file budget (scripts/validate_tasks.py requires `files` to equal the owned count); the line budget covers them. Tests (keep every other existing test unchanged): in `tests/test_runner_logic.py`, a task touching `app/<crate>/NOTES.md` passes when that crate's `CLAUDE.md` is shared and fails as not owned when it is not, and a NOTES.md under a protected path is still refused for a build task; in `tests/test_runner_crate_cap.py`, a guide well under the byte budget is not full at held 0, one whose bytes plus one task's room pass the budget is full at held 0, held tasks count 400 bytes each, and a check module without the two constants falls back to the line rule. Update the `docs/architecture.md` lines that describe the path check and `crate_doc_full` (D-3303) and add your entry to `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -30518,7 +30519,7 @@
    "cites": [],
    "budget": {
     "files": 7,
-    "lines": 260,
+    "lines": 320,
     "context_pct": 20
    },
    "checks": [
@@ -30528,7 +30529,7 @@
    ],
    "branch": "claude/task/T437-crate-notes-shared-and-full-by-bytes",
    "prompt": "kit/prompts/T437.md",
-   "acceptance": "`python3 -m pytest tests/test_runner_logic.py tests/test_runner_crate_cap.py tests/test_runner_crate_merge.py tests/test_crate_notes.py` passes and the whole runner suite passes; every existing test in the two owned test files is unchanged; `grep -q NOTES.md runner/verify.py` succeeds; `python3 scripts/check_pr_change.py` accepts a task branch that adds a line to its crate's NOTES.md; `crate_doc_full` reports a crate full by the byte rule or the line rule and falls back to the line rule when the constants are missing; `LEGACY_HEADINGS` no longer exists and `tests/test_runner_crate_merge.py` builds its crate doc from `check_code_docs.HEADINGS`; `tests/docs/test_brand_literals.py` passes with `NOTES.md` skipped; no other runner file changes."
+   "acceptance": "`python3 -m pytest tests/test_runner_logic.py tests/test_runner_crate_cap.py tests/test_runner_crate_merge.py tests/test_crate_notes.py` passes and the whole runner suite passes; every existing test in the two owned test files is unchanged; `grep -q NOTES.md runner/verify.py` succeeds; `python3 scripts/check_pr_change.py` accepts a task branch that adds a line to its crate's NOTES.md; `crate_doc_full` reports a crate full by the byte rule or the line rule and falls back to the line rule when the constants are missing; `LEGACY_HEADINGS` no longer exists and `tests/test_runner_crate_merge.py` builds its crate doc from `check_code_docs.HEADINGS`; `tests/docs/test_brand_literals.py` passes with `NOTES.md` skipped; no other runner file changes; no crate `CLAUDE.md` has an entry line after its `## Detail` paragraph."
   }
  ]
 }

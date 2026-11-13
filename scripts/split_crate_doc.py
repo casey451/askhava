@@ -38,11 +38,15 @@ import check_code_docs as ccd  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 CHUNK = 400  # characters of original text per NOTES.md entry (D-3474)
-TARGET_BYTES = 7_000  # what a split aims at, under ccd.MAX_CRATE_DOC_BYTES, so tasks can still add invariants
+ROOM = 1_600  # two tasks in flight (crate_cap 2) adding two 400-byte interim lines each, before T437
+TARGET_BYTES = 6_000  # what a split aims at: 2,192 bytes under ccd.MAX_CRATE_DOC_BYTES leave room for two tasks in
+# flight to add two 400-byte interim lines each before T437 (crate_cap 2), with margin for a Never-break bullet
 TAGS = {"Purpose": "purpose", "What it owns": "owns", "Rules it enforces": "rules", "Never break": "never",
         "How to change": "change", "Tests that guard it": "tests"}
 CUTS = (re.compile(r"(?<=[.;]) (?=\S)"), re.compile(r"(?<=,) (?=\S)"), re.compile(r" (?=\S)"))
-MORE = re.compile(r" More: `\(never \d+\)` in NOTES\.md\.$")
+# A guarding test named in a Never-break item: a test file or a test function in backticks.
+TEST_REF = re.compile(r"`[^`]*(?:tests?/|test_|::td_|td_[a-z0-9]+_|_test\b|\.spec\.ts|\.rs\b)[^`]*`")
+MORE = re.compile(r"(?: Guarded by `[^`]*`\.)? More: `\(never \d+\)` in NOTES\.md\.$")
 ENTRY = re.compile(r"^- \[[^\]]*\] \([a-z]+(?: \d+)?\) ")
 
 
@@ -120,16 +124,29 @@ def guide(title: str, purpose: str, never: list[str], crate: str) -> str:
     return f"{title}\n\n## Purpose\n{purpose}\n\n## Never break\n{items}\n{detail(crate)}"
 
 
+def guard_note(kept: list[str], rest: list[str]) -> str:
+    """" Guarded by `<test>`." with the first test the dropped chunks name, when the kept ones name none,
+    so every trimmed Never-break item still shows its guarding test in the guide."""
+    if any(TEST_REF.search(c) for c in kept):
+        return ""
+    found = next((m.group(0) for c in rest for m in [TEST_REF.search(c)] if m), "")
+    return f" Guarded by {found}." if found else ""
+
+
 def fit_never(items: list[list[str]], fixed: int) -> list[int]:
     """How many chunks of each Never-break item stay in CLAUDE.md: all, unless the guide would pass
-    TARGET_BYTES; then the item with the most kept bytes gives up its last chunk, until it fits."""
+    TARGET_BYTES; then the item with the most kept bytes gives up its last chunk, until it fits (a trimmed
+    item without a test left in its kept chunks gets `guard_note`)."""
     kept = [len(c) for c in items]
+
     def size() -> int:
-        return fixed + sum(len(" ".join(c[:k]).encode()) + 40 for c, k in zip(items, kept))
+        return fixed + sum(len((" ".join(c[:k]) + guard_note(c[:k], c[k:])).encode()) + 40 for c, k in zip(items, kept))
     while size() > TARGET_BYTES:
         cands = [i for i, k in enumerate(kept) if k > 1]
         if not cands:
-            raise SystemExit("Never break does not fit even at one sentence per item")
+            if size() > ccd.MAX_CRATE_DOC_BYTES - ROOM:
+                raise SystemExit("Never break does not fit even at one sentence per item")
+            break
         worst = max(cands, key=lambda i: len(" ".join(items[i][:kept[i]])))
         kept[worst] -= 1
     return kept
@@ -153,10 +170,10 @@ def split(crate: str, text: str, known: set[str], hold: Callable[[str], bool] = 
                 never_items.append(chunks(unit))
             else:
                 notes += entries(tag, unit, known)
-    fixed = len(guide(title, purpose, [], crate).encode())
+    fixed = len(guide(title, purpose, [], crate).encode()) + sum(len(n.encode()) + 1 for n in notes[1:] if hold(n))
     for n, (cs, k) in enumerate(zip(never_items, fit_never(never_items, fixed)), 1):
         head = " ".join(cs[:k])
-        never_lines.append(head if k == len(cs) else f"{head} More: `(never {n})` in NOTES.md.")
+        never_lines.append(head if k == len(cs) else f"{head}{guard_note(cs[:k], cs[k:])} More: `(never {n})` in NOTES.md.")
         notes += [e for c in cs[k:] for e in entries(f"never {n}", c, known)]
     held = [n for n in notes[1:] if hold(n)]
     notes = [n for n in notes if n not in held]

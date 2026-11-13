@@ -32,6 +32,7 @@ MAX_CRATE_DOC_LINES = 120
 # stays small; the detail goes in NOTES.md, which a session greps by requirement ID.
 MAX_CRATE_DOC_BYTES = 8_192
 CRATE_DOC_TASK_BYTES = 400  # room one task in flight may take in a crate CLAUDE.md: one Never-break bullet (T437)
+NOTE_SAME_OPENING = 80  # characters of entry text that mark two entries as versions of one (note_duplicates)
 MAX_NOTE_LINE_CHARS = 600  # one NOTES.md entry: its ID prefix and section tag plus at most 400 characters of text
 NOTE_ENTRY = re.compile(r"^- \[(?:-|[A-Z][A-Z0-9]{1,5}-\d{3}(?: [A-Z][A-Z0-9]{1,5}-\d{3})*)\] \([a-z]+(?: \d+)?\) \S")
 REQ_DEF = re.compile(r"^- \*\*([A-Z0-9]+-\d{3})\*\*", re.MULTILINE)
@@ -88,11 +89,37 @@ def check_crate_notes(root: Path, crate: Path) -> list[str]:
     rel = path.relative_to(root).as_posix()
     lines = path.read_text(encoding="utf-8").splitlines()
     problems = [] if lines and lines[0].startswith("# ") else [f"{rel}: line 1 must be a `# ` title"]
+    return problems + note_line_problems(rel, lines) + note_duplicates(rel, lines)
+
+
+def note_line_problems(rel: str, lines: list[str]) -> list[str]:
+    """Each NOTES.md line after the title: an entry, at most MAX_NOTE_LINE_CHARS long."""
+    problems: list[str] = []
     for number, line in enumerate(lines[1:], 2):
         if line.strip() and not NOTE_ENTRY.match(line):
             problems.append(f"{rel}:{number}: not an entry `- [REQ-IDS or -] (section) text`")
         elif len(line) > MAX_NOTE_LINE_CHARS:
             problems.append(f"{rel}:{number}: {len(line)} characters, limit {MAX_NOTE_LINE_CHARS}; make it two entries")
+    return problems
+
+
+def note_duplicates(rel: str, lines: list[str]) -> list[str]:
+    """Errors for an entry repeated exactly, or two entries with the same IDs and section whose text opens
+    with the same NOTE_SAME_OPENING characters but differs: the shape git's union merge (.gitattributes) leaves
+    when two tasks edit one entry, keeping both versions (D-3474). The task that merged them keeps one."""
+    problems: list[str] = []
+    seen: dict[str, int] = {}
+    for number, line in enumerate(lines[1:], 2):
+        match = NOTE_ENTRY.match(line)
+        if not match:
+            continue
+        head, text = line[: match.end() - 1], line[match.end() - 1 :]
+        key = head + text[:NOTE_SAME_OPENING]
+        if key in seen:
+            kind = "repeats" if lines[seen[key] - 1] == line else "is another version of"
+            problems.append(f"{rel}:{number}: {kind} line {seen[key]}; keep one entry")
+        else:
+            seen[key] = number
     return problems
 
 

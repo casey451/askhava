@@ -18,7 +18,7 @@ import split_crate_doc as scd  # noqa: E402
 GOOD_DOC = "# x\n\n## Purpose\nFees.\n\n## Never break\n- Fees never fall: `t.rs`.\n\n## Detail\nSee NOTES.md.\n"
 OLD_DOC = (
     "# askhava-payments: money\n\n## Purpose\nAll money moves here (FEE-001). T058 added fees.\n\n"
-    "## What it owns\n- `src/rules.rs`: `fee_for` (FEE-001); " + "a long list of names, " * 40 + "the end.\n\n"
+    "## What it owns\n- `src/rules.rs`: `fee_for` (FEE-001); " + "".join(f"name number {i} of a long list, " for i in range(40)) + "the end.\n\n"
     "## Rules it enforces\n- FEE-039: `recurring_basis`.\n\n"
     "## Never break\n- The fee never falls (FEE-001): `prop.rs`. " + "Another guarded fact. " * 30 + "\n\n"
     "## How to change\n- Change a fee: edit the catalog.\n\n## Tests that guard it\n- `tests/fees.rs`.\n"
@@ -113,3 +113,20 @@ def test_sweep_moves_detail_entries_to_notes(tmp_path: Path, monkeypatch) -> Non
     assert scd.main(["--sweep", "app/payments"]) == 0
     assert (base / "CLAUDE.md").read_text(encoding="utf-8") == guide
     assert (base / "NOTES.md").read_text(encoding="utf-8").endswith("- [FEE-001] (rules) A later task's entry.\n")
+
+
+def test_notes_entry_repeated_or_kept_in_two_versions_fails(tmp_path: Path) -> None:
+    same = "- [FEE-001] (rules) `fee_for` applies FEE-001 to every quote kind and never lowers a tier as the basis rises"
+    root = crate(tmp_path, notes=f"# n\n{same}.\n{same}.\n{same}, now also for visits.\n- [FEE-001] (rules) Other.\n")
+    problems = ccd.run(root)
+    assert problems == ["app/payments/NOTES.md:3: repeats line 2; keep one entry",
+                        "app/payments/NOTES.md:4: is another version of line 2; keep one entry"]
+
+
+def test_trimmed_never_break_item_keeps_a_guarding_test(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    doc = OLD_DOC.replace("- The fee never falls (FEE-001): `prop.rs`. ", "- The fee never falls (FEE-001). ").replace(
+        "Another guarded fact. " * 30, "Another guarded fact. " * 30 + "Pinned by `tests/fees.rs`.")
+    monkeypatch.setattr(scd, "TARGET_BYTES", 1000)
+    guide, notes = scd.split("payments", doc, {"FEE-001", "FEE-039"})
+    assert "Guarded by `tests/fees.rs`. More: `(never 1)` in NOTES.md." in guide
+    assert scd.lost(doc, guide, notes) == []

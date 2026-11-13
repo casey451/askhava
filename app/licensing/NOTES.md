@@ -83,3 +83,4 @@
 - [-] (tests) a list back before the run hour): `cargo test -p askhava-integration --test daily_license_lists`.
 - [-] (tests) `tests/integration/tests/license_reapply_daily.rs` (database, T372): TD-BIZ-48 through `class_changes`: a removed, added, unchanged and missing number, lists applied in order: `cargo test -p askhava-integration --test license_reapply_daily`.
 - [-] (tests) `tests/integration/tests/license_imports.rs` (database): the imports with planted malformed rows, the read-back, the daily check and card gate, the city match and append-only tables.
+- [-] (never 21) A failing run commits that transaction before any lookup, and the seed never queues beside a live chain: `td_lic_28_hanging_lookups_never_lose_the_next_run_or_the_alerts`, `td_lic_28_a_list_never_recorded_alerts_from_its_first_failure`.
