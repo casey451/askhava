@@ -41,6 +41,7 @@ mod business_left;
 mod cant_take;
 mod confirm;
 mod confirm_reminders;
+mod contact_choice;
 mod email_code;
 mod emergency_emails;
 mod handlers;

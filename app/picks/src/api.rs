@@ -64,6 +64,8 @@
 //! or a portal session ([`PickProof`]) of a ticked quote, by the pure [`auto_confirm_plan`], or
 //! voids the tick with its [`AUTO_CONFIRM_VOID_KIND`] event (PICK-048, PICK-056).
 //!
+//! T266: [`record_contact_choice`] stores the PICK-018 choice with the page pick and
+//! [`contact_choice`] answers the release ([`ContactChoice`], D-1761).
 //! T214: [`tick_share`], [`share_ticked`] and [`bind_share`] log the PICK-049 share box;
 //! [`cant_take_job`] and [`cant_take`] end a pick at once with no fee, [`cant_take_link`] is its
 //! page (PICK-050).
@@ -105,6 +107,7 @@ pub use crate::confirm_reminders::{
     lapse_plan, lapse_text, member_confirmed_line, owner_told, reminder_lines, reminders,
     window_open,
 };
+pub use crate::contact_choice::{ContactChoice, contact_choice, record_contact_choice};
 pub use crate::email_code::{
     CodeRoute, ConversationEmail, EmailFrom, OptedOutYes, Texting, check_email_code, code_route,
     opted_out_yes, send_email_code,

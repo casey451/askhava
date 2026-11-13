@@ -11,8 +11,9 @@
 //! pick that left awaiting confirm (cancelled, expired) is not moved and nothing is released. The
 //! homeowner's contact is the one `intake::api::job_homeowner` names (T246's page pick reads the
 //! same); the proof is minted with [`release_minter`] and `picks::api::release` gets the vault
-//! and the masked pool. `email_chosen` is false, a masked call: the PICK-018 choice is not stored
-//! yet (D-1264, D-1740). `Already`, `MovedOn` and `WaitingForAddress` are success to the route; a
+//! and the masked pool. `email_chosen` is the homeowner's PICK-018 choice stored with her page pick,
+//! `picks::api::contact_choice` (T266, D-1761): email opens the address she shared, a call or a
+//! text pick (no stored choice) is a masked call. `Already`, `MovedOn` and `WaitingForAddress` are success to the route; a
 //! database or vault failure is `ReleaseError::Database`, its 500, so Stripe sends the event again.
 //!
 //! [`stripe_webhook`] builds the route's `StripeWebhook` from the settings (SEC-036, SEC-039,
@@ -39,7 +40,7 @@ use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use askhava_payments::api::{
     Releasable, ReleaseError, ReleaseSink, StripeAccount, StripeWebhook, reclear_release,
 };
-use askhava_picks::api::{Released, Settled, awaiting_address, release, settle};
+use askhava_picks::api::{Released, Settled, awaiting_address, contact_choice, release, settle};
 use askhava_privacy::api::Vault;
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -113,7 +114,9 @@ impl PickReleaser {
 }
 
 /// Mints and releases a settled clearing: `MovedOn` for a pick the settle left, else the
-/// release for the job's homeowner contact (PICK-022, PRIV-005, D-1739).
+/// release for the job's homeowner contact with her stored contact choice as `email_chosen`
+/// (PICK-018, PICK-022, PICK-042, PRIV-005, D-1739, D-1761); the first release and T255's
+/// re-release both come here.
 async fn release_settled(
     pool: &PgPool,
     (vault, masked): (&Vault, &MaskedPool),
@@ -127,10 +130,21 @@ async fn release_settled(
     let Some(contact) = contact_of(pool, cleared.pick(), job).await? else {
         return Ok(Released::MovedOn);
     };
+    let email_chosen = email_chosen(pool, cleared.pick()).await?;
     let proof = release_minter().mint(cleared, contact);
-    release(pool, (vault, masked), (proof, false), at)
+    release(pool, (vault, masked), (proof, email_chosen), at)
         .await
         .map_err(|_| ReleaseError::Database)
+}
+
+/// Whether the homeowner chose email at the page pick (`picks::api::contact_choice`; PICK-018,
+/// D-1761); a text pick is a masked call.
+async fn email_chosen(pool: &PgPool, pick: Uuid) -> Result<bool, ReleaseError> {
+    let mut conn = pool.acquire().await.map_err(|_| ReleaseError::Database)?;
+    let choice = contact_choice(&mut conn, pick)
+        .await
+        .map_err(|_| ReleaseError::Database)?;
+    Ok(choice.email_chosen())
 }
 
 /// The job's homeowner contact through `intake` (D-1602); with none, one High
