@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T18:48:18Z by runner ac135e636d92 (actions).
+Updated 2026-11-13T18:54:27Z by runner ac135e636d92 (actions).
 
 **Idle since 18:29Z; 289 of 423 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T18:48:18Z by runner ac135e636d92 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 18:29Z (no task in progress)
 - **Week:** 25% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:48Z, 0 min before this update
+- **Last run:** 18:52Z, 2 min before this update
 - **Keeper:** last ran 18:48Z, next wake 00:28Z
 
 ## Needs attention
@@ -78,6 +78,7 @@ Updated 2026-11-13T18:48:18Z by runner ac135e636d92 (actions).
 | T346 | portals: every homeowner Verify code is bound to its purpose | done | 1 | 40 min | 18:57Z |  |
 
 ### Plan and harness merges on main
+- 18:48Z Plan: crate guides to ≤8 KB, detail one entry per line in NOTES.md (D-3474) (#687)
 - 17:36Z Plan: count usage once per message, prove fix rounds were re-reviewed (D-3475) (#685)
 - 15:02Z Plan: split T328 and trim T321 to fit the context limit (D-3468) (#676)
 - 14:47Z Plan: fix T386 and D-3445 plan gaps (D-3467) (#673)
