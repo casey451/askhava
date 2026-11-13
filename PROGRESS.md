@@ -3217,3 +3217,4 @@
 - 2026-11-13T00:00:45Z runner 85f85991bd6f (actions): {}
 - 2026-11-13T00:01:04Z runner 85f85991bd6f (actions): {}
 - 2026-11-13T00:02:01Z runner 85f85991bd6f (actions): {"T351": "MERGE_PENDING -> DONE"}
+- 2026-11-13T00:02:18Z runner 85f85991bd6f (actions): {"T249": "QUEUED -> IN_PROGRESS"}; T249 estimated 4.2M tokens (calibrated); week has 170.9M left (no five-hour budget, D-3056) after 7.1M still running in another lane (session_reading 2026-11-13T00:00:45Z (week)); claimed
