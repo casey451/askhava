@@ -60,14 +60,15 @@ use askhava_intake::api::rules::{
 };
 use askhava_intake::api::{
     Admission, IntakeError, LimitError, SafetyCallAsk, TextIn, admit_new_request,
-    enqueue_safety_call, list_ask, open_request_jobs, receive_reply,
+    enqueue_safety_call, list_ask, on_opt_out, open_request_jobs, receive_reply,
+    restart_after_start,
 };
 use askhava_messaging::api::{
-    APP_OPT_OUT_WORDS, EmergencyFacts, HelpSettings, InboundText, InboxError, Language,
-    ModeStateError, NewText, OutboxError, Outcome, PROVIDER_OPT_OUT_WORDS, ProviderKeyword,
-    RESUBSCRIBE_WORDS, Relation, SendingNumber, emergency_plan, enqueue, keyword, load_lines,
-    on_inbound_text, queue_paused_safety, raise_emergency, receive_inbound, receive_status, render,
-    reply_to_help, sender_business,
+    APP_OPT_OUT_WORDS, Detected, EmergencyFacts, FollowUp, HelpSettings, InboundText, InboxError,
+    Language, ModeStateError, NewText, OutboxError, Outcome, PROVIDER_OPT_OUT_WORDS,
+    ProviderKeyword, RESUBSCRIBE_WORDS, Relation, SendingNumber, detect_opt_out, emergency_plan,
+    enqueue, keyword, load_lines, on_inbound_text, queue_optout_followup, queue_paused_safety,
+    raise_emergency, receive_inbound, receive_status, render, reply_to_help, sender_business,
 };
 use askhava_ops::api::{
     Actor, AuditEntry, BannerBy, Change, NewAlert, OpsError, Severity, Switch, audit, is_paused,
@@ -644,18 +645,6 @@ async fn intake_steps(
     (msg, read): (&InboundText<'_>, &Read),
     (resubscribed, now): (bool, Timestamp),
 ) -> Step<()> {
-    let names = match open_request_jobs(db, msg.contact)
-        .await
-        .map_err(intake_halt)?
-    {
-        Some(jobs) if list_ask(msg.text).is_some() => list_names(db, &jobs).await?,
-        Some(_) => Vec::new(),
-        None if resubscribed || msg.emergency => Vec::new(),
-        None => {
-            admitted(db, msg.contact, now).await?;
-            Vec::new()
-        }
-    };
     let inbound = Inbound {
         words: msg.text,
         opt_out: read.flags.opt_out,
@@ -668,6 +657,24 @@ async fn intake_steps(
         contact: msg.contact,
         inbound,
         received_at: now,
+    };
+    if resubscribed {
+        let restarted = restart_after_start(db, h.id_secret, &reply, h.intake).await;
+        if restarted.map_err(intake_halt)?.is_some() {
+            return Err(Halt::Ends("restarted"));
+        }
+    }
+    let names = match open_request_jobs(db, msg.contact)
+        .await
+        .map_err(intake_halt)?
+    {
+        Some(jobs) if list_ask(msg.text).is_some() => list_names(db, &jobs).await?,
+        Some(_) => Vec::new(),
+        None if resubscribed || msg.emergency => Vec::new(),
+        None => {
+            admitted(db, msg.contact, now).await?;
+            Vec::new()
+        }
     };
     receive_reply(db, h.id_secret, &reply, (h.intake, names.as_slice()))
         .await
@@ -721,11 +728,15 @@ async fn screen(
         .await
         .map_err(outbox_halt)?;
     let listed = match outcome {
-        Outcome::OptedOut { .. } => {
+        Outcome::OptedOut { email, .. } => {
             if msg.relation == Relation::Business {
                 phone_stopped(db, msg.contact, msg.inbox_id, now)
                     .await
                     .map_err(|e| settled(consent_halt(e)))?;
+            } else {
+                homeowner_opted_out(db, msg, email, now)
+                    .await
+                    .map_err(settled)?;
             }
             paused_emergency(h, db, msg, (to, now), true)
                 .await
@@ -736,12 +747,58 @@ async fn screen(
             paused_emergency(h, db, msg, (to, now), true)
                 .await
                 .map_err(settled)?;
+            if msg.relation != Relation::Business && keyword(msg.text).is_none() {
+                let language = match wanted_language(msg.text, None) {
+                    Language::Es if h.intake.spanish_conversations_on => Language::Es,
+                    _ => Language::En,
+                };
+                let her = (msg.inbox_id, msg.contact, language);
+                queue_optout_followup(db, her, FollowUp::WroteAgain, now)
+                    .await
+                    .map_err(|e| settled(outbox_halt(e)))?;
+            }
             true
         }
         Outcome::Resubscribed | Outcome::Open => false,
     };
     help(h, db, msg, (to, listed)).await?;
     Ok(outcome == Outcome::Resubscribed)
+}
+
+/// A homeowner's opt-out (CON-028, CON-029, CON-030, D-1229, D-2629), in the delivery's
+/// transaction: with `email` (texting off, suspended or paused, so no text confirmed it) one
+/// confirmation follow-up task, in Spanish for a Spanish opt-out (CON-009); then
+/// `intake::api::on_opt_out`, which pauses her live jobs on a sole CANCEL (withdrawing a waiting
+/// pick) and queues `intake.opted_out_live_job` for T330's handler.
+async fn homeowner_opted_out(
+    db: &mut PgConnection,
+    msg: &InboundText<'_>,
+    email: bool,
+    now: Timestamp,
+) -> Step<()> {
+    if email {
+        let spanish = detect_opt_out(msg.text).is_some_and(Detected::spanish);
+        let language = if spanish { Language::Es } else { Language::En };
+        let her = (msg.inbox_id, msg.contact, language);
+        queue_optout_followup(db, her, FollowUp::Confirmation, now)
+            .await
+            .map_err(outbox_halt)?;
+    }
+    let inbound = Inbound {
+        words: msg.text,
+        opt_out: true,
+        help: false,
+        emergency: msg.emergency,
+        ai_spanish: None,
+    };
+    let opt_out = TextIn {
+        inbox_id: msg.inbox_id,
+        contact: msg.contact,
+        inbound,
+        received_at: now,
+    };
+    on_opt_out(db, &opt_out).await.map_err(intake_halt)?;
+    Ok(())
 }
 
 /// The HELP reply (CON-018, D-131) and the listed number's end (CON-016); a module error for a

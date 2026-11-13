@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT i.received_at, e.id AS \"event?\" FROM messaging.inbox i\n           LEFT JOIN messaging.optout_event e ON e.inbox_id = i.id AND e.action = 'opt_out'\n           WHERE i.id = $1 ORDER BY e.effective_at LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "received_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "messaging.inbox",
+            "name": "received_at"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "event?",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.optout_event",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "22155d089f0995ee9eeae52f048f164fe5356351fd9c0af7b32f8b346754dfb2"
+}

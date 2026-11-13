@@ -629,6 +629,7 @@ where
     register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
+    register_optout_followup(&mut registry, settings, &id_secret, pairs.clone())?;
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {
         register_inbound_retry(
             &mut registry,
@@ -712,6 +713,40 @@ fn register_opted_out_live(
     };
     registry.register(OPTED_OUT_LIVE_KIND, move |pool, task| {
         run_opted_out_live(pool, sender.clone(), task)
+    });
+    Ok(())
+}
+
+/// T357 (CON-016, CON-030, D-2629, D-3118): `messaging.optout_followup`
+/// ([`askhava_messaging::api::run_optout_followup`]), always registered (TD-OPS-36); its
+/// `OptOutEmailSender` is built from `ASKHAVA_ID_SECRET`, the footer postal line and both vault
+/// keys only when all are set, else none and each run sends nothing and is done (dev and CI).
+fn register_optout_followup(
+    registry: &mut Registry,
+    settings: &Settings,
+    id_secret: &SecretString,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    use askhava_messaging::api::{
+        MailboxKind, OPTOUT_FOLLOWUP_KIND, OptOutEmailSender, PostalAddress, run_optout_followup,
+    };
+    let vault = vault_from(settings, pairs)?;
+    let sender = match (settings.postal_address(), vault) {
+        (Ok(postal), Some(vault)) => {
+            let kind = match PostalAddress::new(postal, MailboxKind::PoBox) {
+                Ok(_) => MailboxKind::PoBox,
+                Err(_) => MailboxKind::PrivateMailbox,
+            };
+            let sender =
+                OptOutEmailSender::new(id_secret.clone(), (postal, kind), vault).map_err(|_| {
+                    io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value")
+                })?;
+            Some(Arc::new(sender))
+        }
+        _ => None,
+    };
+    registry.register(OPTOUT_FOLLOWUP_KIND, move |pool, task| {
+        run_optout_followup(pool, sender.clone(), task)
     });
     Ok(())
 }
