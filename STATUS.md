@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T05:21:05Z by runner 28395994ffe1 (actions).
+Updated 2026-11-13T05:28:48Z by runner 58922c9e6509 (actions).
 
 **Idle since 05:08Z; 273 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T05:21:05Z by runner 28395994ffe1 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 05:08Z (no task in progress)
 - **Week:** 13% used, 170.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:20Z, 0 min before this update
+- **Last run:** 05:21Z, 7 min before this update
 - **Keeper:** last ran 05:21Z, next wake 11:01Z
 
 ## Needs attention
@@ -117,7 +117,6 @@ Updated 2026-11-13T05:21:05Z by runner 28395994ffe1 (actions).
 - 08:32Z Harness: smoke ancestry reuse accepts squash commits whose identical tree passed Ci, Twin and Ally (D-3156) (#560)
 - 07:12Z Harness: close merged tasks before the smoke so their lanes free ~20 min sooner (D-3141) (#552)
 - 06:05Z Plan: pre-flight fixes round 8 — stage 5: T101, T102, T105, T202, T320, T106, T364; new T408 (D-3144) (#551)
-- 05:28Z Harness: stop backup-runner caches evicting CI's Rust caches (D-3143) (#553)
 
 ## Progress (requirements verified)
 
