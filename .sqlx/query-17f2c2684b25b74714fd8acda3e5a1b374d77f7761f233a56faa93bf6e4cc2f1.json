@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT number FROM privacy.staff_phone WHERE line_id = $1 FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "number",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "privacy.staff_phone",
+            "name": "number"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "17f2c2684b25b74714fd8acda3e5a1b374d77f7761f233a56faa93bf6e4cc2f1"
+}

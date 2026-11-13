@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO privacy.staff_phone (line_id, number) VALUES ($1, $2) ON CONFLICT (line_id) DO UPDATE SET number = EXCLUDED.number, set_at = clock_timestamp()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bytea"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0ec39dc1c4a0ec645e4cd5ac8bfb61e4086b0e1102e00aa95552ba56af5fc883"
+}

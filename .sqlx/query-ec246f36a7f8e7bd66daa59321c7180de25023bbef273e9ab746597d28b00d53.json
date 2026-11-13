@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM privacy.business_mailbox WHERE touched_at < $2::timestamptz AND NOT (id = ANY($1))",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ec246f36a7f8e7bd66daa59321c7180de25023bbef273e9ab746597d28b00d53"
+}

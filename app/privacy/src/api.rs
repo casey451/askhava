@@ -20,6 +20,11 @@ use sqlx::types::Uuid;
 
 use crate::vault;
 
+pub use crate::business_contacts::{
+    BusinessContactError, BusinessPurpose, MAX_ADDRESS_LEN, forget_unused, mailbox_for,
+    mailboxes_of, read_business_mailbox, read_staff_phone, rotate_business_batch,
+    store_staff_phone,
+};
 pub use crate::contact_fields::{CONTACT_FIELDS_SET, set_name_address};
 pub use crate::handlers::{
     PURGE_KIND, RECHECK_KIND, purge_target, run_complaint_hold, run_complaint_hold_at,

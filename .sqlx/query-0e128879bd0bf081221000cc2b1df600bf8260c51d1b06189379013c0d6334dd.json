@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO privacy.business_mailbox_index (purpose, key_version, digest, mailbox_id) VALUES ('email', $1, $2, $3) ON CONFLICT DO NOTHING RETURNING mailbox_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "mailbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "privacy.business_mailbox_index",
+            "name": "mailbox_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Bytea",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "0e128879bd0bf081221000cc2b1df600bf8260c51d1b06189379013c0d6334dd"
+}
