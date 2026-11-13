@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T00:02:18Z by runner 85f85991bd6f (actions).
+Updated 2026-11-13T00:03:53Z by runner 85f85991bd6f (actions).
 
 **Building: T215 in progress since 23:45Z; 262 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T00:02:18Z by runner 85f85991bd6f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
 - **Week:** 8% used, 170.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:01Z, 1 min before this update
+- **Last run:** 00:02Z, 1 min before this update
 - **Keeper:** last ran 00:01Z, next wake 02:48Z
 
 ## Needs attention
@@ -92,7 +92,6 @@ Updated 2026-11-13T00:02:18Z by runner 85f85991bd6f (actions).
 | T325 | server: an inbound text stopped by a module error raises a b | done | 1 | 30 min | 01:42Z |  |
 | T368 | businesses (harness): the capability checklist offers every  | resync | 1 | 25 min | 01:13Z |  |
 | T317 | server and intake: the inbound text route applies SEC-014's  | done | 2 | 53 min | 00:16Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
-| T313 | messaging and server: an EMERGENCY card notice goes at night | resync | 1 | 35 min | 00:03Z |  |
 
 ### Plan and harness merges on main
 - 22:08Z Plan: T340, T271, T126 under their context limits (D-3325) (#623)
