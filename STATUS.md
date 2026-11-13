@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T01:16:17Z by runner 7ae5f9a704c4 (actions).
+Updated 2026-11-13T01:18:54Z by runner 0846387c9299 (actions).
 
 **Building: T215 in progress since 23:45Z; 263 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-13T01:16:17Z by runner 7ae5f9a704c4 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 2: T421 claimed 00:52Z, lease until 03:52Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
 - **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:16Z, 0 min before this update
+- **Last run:** 01:16Z, 2 min before this update
 - **Keeper:** last ran 01:16Z, next wake 02:48Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 20 problem(s) on tasks still to run (+138 on DONE tasks); first: T321: stored context_pct 41% but it measures 45%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+139 on DONE tasks); first: T321: stored context_pct 41% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -92,6 +92,7 @@ Updated 2026-11-13T01:16:17Z by runner 7ae5f9a704c4 (actions).
 | T325 | server: an inbound text stopped by a module error raises a b | done | 1 | 30 min | 01:42Z |  |
 
 ### Plan and harness merges on main
+- 01:16Z Plan: T255 follow-ups (D-3384) and pre-flight 12, T426 owns the legal-docs test (D-3385) (#640)
 - 00:30Z Plan: rename Ask Hava to Laftly (Laftly LLC, laftly.com), D-3347 (#631)
 - 00:14Z Plan: T255 plan gap: re-clear builds Releasable from the stored success (D-3358) (#638)
 - 22:08Z Plan: T340, T271, T126 under their context limits (D-3325) (#623)
