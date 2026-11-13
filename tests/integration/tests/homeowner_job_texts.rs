@@ -6,7 +6,7 @@
 //! `jobs` queues its `jobs.homeowner_text` events the real way; each case runs
 //! `job_text_step` at a chosen instant and reads the outbox and the task queue.
 
-use askhava_core::api::{IdSecret, LinkToken, WorkerId, claim, finish};
+use askhava_core::api::{IdSecret, LinkToken, WorkerId, brand, claim, finish};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     JobStart, JobText, JobTextKeys, JobTextSkip, JobTextStep, Opened, TextIn, begin_job,
@@ -28,7 +28,16 @@ use sqlx::{PgConnection, PgPool};
 
 const ARIZONA: &str = "+19285550141";
 const PACIFIC: &str = "+12135550142";
-const PAGE: &str = "https://askhava.com/q/";
+
+/// Her quote page's link prefix on the brand file's domain (`https://<domain>/q/`, D-1932).
+fn page() -> String {
+    format!("https://{}/q/", brand().domain())
+}
+
+/// `text` with the brand file's English names in place of its `{brand_short}` tokens (D-1932).
+fn filled(text: &str) -> String {
+    brand().fill(text, false).expect("brand tokens")
+}
 
 fn ts(s: &str) -> Timestamp {
     s.parse().expect("instant")
@@ -123,7 +132,10 @@ async fn event(db: &mut PgConnection, job: Uuid, template: &str) -> JobText {
     .fetch_one(db)
     .await
     .expect("event");
-    assert!(!payload.to_string().contains(PAGE), "no link in a payload");
+    assert!(
+        !payload.to_string().contains(&page()),
+        "no link in a payload"
+    );
     parse_job_text(&payload).expect("parsed")
 }
 
@@ -174,10 +186,12 @@ async fn td_job_03_all_quotes_in_held_to_8_am_then_sent_once_with_her_link(pool:
     let sent = bodies(&mut db, her).await;
     assert_eq!(sent.len(), 1);
     let body = &sent[0].1;
-    let first = "Ask Hava: All quotes are in for request 1001: 2 of 3 businesses quoted. ";
-    assert!(body.starts_with(first), "{body}");
+    let first =
+        filled("{brand_short}: All quotes are in for request 1001: 2 of 3 businesses quoted. ");
+    assert!(body.starts_with(&first), "{body}");
     let token = body[first.len()..].split(' ').next().expect("link");
-    let token = LinkToken::parse(token.strip_prefix(PAGE).expect("page link")).expect("token");
+    let token =
+        LinkToken::parse(token.strip_prefix(page().as_str()).expect("page link")).expect("token");
     assert_eq!(resolve(&mut db, &token).await.expect("resolve"), Some(job));
     let again = step(&mut db, &text, MORNING).await;
     assert_eq!(again, JobTextStep::Skipped(JobTextSkip::AlreadyQueued));
@@ -229,8 +243,10 @@ async fn td_job_03_a_held_text_is_dropped_after_the_close_but_the_close_text_goe
     let JobTextStep::Queued(_) = step(&mut db, &close, "2026-11-13T15:00:00Z").await else {
         panic!("the close text goes");
     };
-    let expected = "Ask Hava: Request 1001 is closed because no quote was picked. Text us any \
-                    time to start a new one.";
+    let expected = filled(
+        "{brand_short}: Request 1001 is closed because no quote was picked. Text us any \
+         time to start a new one.",
+    );
     let sent = bodies(&mut db, her).await;
     assert_eq!(sent, [("closed_no_pick".to_owned(), expected.to_owned())]);
 }
