@@ -97,6 +97,7 @@ pub use crate::question_bank::{
     SMELL_ES, asks_smell_kind, keyword_answer, starts_now,
 };
 pub use crate::replies::{Reply, receive_reply};
+pub use crate::resubscribe::{pause_on_repeat_cancel, restart_after_start};
 pub use crate::routing::{
     COUNT_MANY_TEMPLATE, COUNT_ONE_TEMPLATE, NOT_COVERED_KIND, NOT_COVERED_TEMPLATE,
     OUT_OF_AREA_TEMPLATE, Outcome, PEST_CONTROL, PEST_OFF_TEMPLATE, Request, Routing,
