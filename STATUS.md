@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T16:04:40Z by runner 9d7e3b884c94 (actions).
+Updated 2026-11-13T16:06:06Z by runner 9d7e3b884c94 (actions).
 
-**Idle since 16:03Z; 283 of 421 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 16:05Z; 284 of 421 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 283 of 421 build tasks (owner gates not counted)
+- **Tasks done:** 284 of 421 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 16:03Z (no task in progress)
+- **Lane:** idle since 16:05Z (no task in progress)
 - **Week:** 21% used, 147.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:04Z, 0 min before this update
+- **Last run:** 16:04Z, 1 min before this update
 - **Keeper:** last ran 16:04Z, next wake 16:24Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-13T16:04:40Z by runner 9d7e3b884c94 (actions).
 |---|---|---|---|---|---|---|
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | MERGE_PENDING | 2 | 35 min | 16:03Z | PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a  |
 | T319 | portals and server: security-event rows are capped per addre | MERGE_PENDING | 1 | 54 min | 15:51Z |  |
-| T266 | portals, picks and privacy: the homeowner's contact choice a | MERGE_PENDING | 2 | 66 min | 15:48Z | session ended without handing in |
+| T266 | portals, picks and privacy: the homeowner's contact choice a | done | 2 | 66 min | 15:48Z | session ended without handing in |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | done | 1 | 24 min | 15:05Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z |  |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | resync | 1 | 39 min | 14:30Z |  |
@@ -107,7 +107,7 @@ Updated 2026-11-13T16:04:40Z by runner 9d7e3b884c94 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 233 of 733 (31.8%) · partial 340 · unstarted 160
-**Tasks merged (throughput only):** 283 of 421
+**Tasks merged (throughput only):** 284 of 421
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -142,7 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 163 of 202 done
+- stage 4: 164 of 202 done
 - stage 5: 0 of 65 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
