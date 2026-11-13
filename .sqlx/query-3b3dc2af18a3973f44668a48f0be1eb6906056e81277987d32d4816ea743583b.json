@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE privacy.business_mailbox SET touched_at = clock_timestamp() WHERE id = (SELECT mailbox_id FROM privacy.business_mailbox_index WHERE purpose = 'email' AND (key_version, digest) IN (SELECT * FROM unnest($1::int4[], $2::bytea[])) ORDER BY mailbox_id LIMIT 1) RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "privacy.business_mailbox",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "ByteaArray"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3b3dc2af18a3973f44668a48f0be1eb6906056e81277987d32d4816ea743583b"
+}

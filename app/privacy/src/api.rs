@@ -20,6 +20,11 @@ use sqlx::types::Uuid;
 
 use crate::vault;
 
+pub use crate::business_contacts::{
+    BusinessContactError, BusinessPurpose, MAX_ADDRESS_LEN, forget_unused, mailbox_for,
+    mailboxes_of, read_business_mailbox, read_staff_phone, rotate_business_batch,
+    store_staff_phone,
+};
 pub use crate::contact_fields::{CONTACT_FIELDS_SET, set_name_address};
 pub use crate::handlers::{
     PURGE_KIND, RECHECK_KIND, purge_target, run_complaint_hold, run_complaint_hold_at,
@@ -41,8 +46,8 @@ pub use crate::models::{
 };
 pub use crate::photos::{
     CleanPhoto, DECODE_PERMITS, DECODE_TIMEOUT, LINK_TTL_SECS, MAX_ALLOC, MAX_PHOTO_BYTES,
-    MAX_PIXELS, MAX_SIDE, PhotoKind, PhotoSeal, clean, issue_link, open_link, photo_path, sniff,
-    store_photo,
+    MAX_PIXELS, MAX_SIDE, PhotoKind, PhotoSeal, clean, issue_link, open_link, photo_path,
+    rotate_photos, sniff, store_photo,
 };
 pub use crate::purge::{
     DELETE_CONFIRMATION, ORPHAN_MIN_AGE, ORPHAN_SWEEP_KIND, PHOTO_DELETE_FAILED_ALERT,
