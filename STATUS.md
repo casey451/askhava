@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:14:02Z by runner 231943016e57 (actions).
+Updated 2026-11-13T22:14:26Z by runner 231943016e57 (actions).
 
 **Building: T355 in progress since 22:11Z; 295 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 295 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
+- **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
 - **Week:** 29% used, 124.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:11Z, 2 min before this update
+- **Last run:** 22:14Z, 0 min before this update
 - **Keeper:** last ran 22:11Z, next wake 00:54Z
 
 ## Needs attention
@@ -19,13 +19,14 @@ Updated 2026-11-13T22:14:02Z by runner 231943016e57 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 2 | 21 min | 22:14Z | Ci: failure; Lint and slow tests: failure / Lint and slow tests failed at step: Rust format and lint (clippy once, befor |
 | T438 | Token usage counts each reply once: dedupe transcript usage  | MERGE_PENDING | 2 | 19 min | 22:10Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 2 | 7 min | 22:01Z | PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no p |
 | T354 | privacy: key rotation re-seals stored photos too, so droppin | done | 1 | 69 min | 21:39Z |  |
 | T335 | adapters, payments and stand-in (harness): the reconcile's p | MERGE_PENDING | 1 | 59 min | 21:20Z |  |
 | T412 | privacy: each business member's sign-in address and texting  | done | 1 | 111 min | 21:18Z |  |
 | T442 | mutation (harness): every named mutant is killed by a determ | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
-| T357 | server, messaging and intake: START into an open request res | check_failed | 1 | 23 min | 20:39Z | Ci: failure; Lint and slow tests: failure / Lint and slow tests failed at step: Rust format and lint (clippy once, befor |
+| T357 | server, messaging and intake: START into an open request res | check_failed | 1 | 23 min | 20:39Z |  |
 | T271 | server and calls (harness): the dialed leg asks for status c | done | 1 | 53 min | 20:22Z |  |
 | T318 | calls, picks and quotes: the who's-calling text goes out at  | done | 1 | 52 min | 20:18Z |  |
 | T277 | intake and privacy: a check-in reply reaches its job, and a  | done | 1 | 45 min | 20:13Z |  |
@@ -157,8 +158,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T355 (lease until 2026-11-14T01:11:47Z)
 - lane 3: T415 (lease until 2026-11-14T01:05:51Z)
-- lane 6: T357 (lease until 2026-11-14T00:52:50Z)
 - lane 7: T340 (lease until 2026-11-14T00:52:00Z)
 
 ## Last usage reading
-- {"task": "T438", "at": "2026-11-13T22:10:20Z", "cache_creation_input_tokens": 90283, "input_tokens": 75, "cache_read_input_tokens": 1659349, "output_tokens": 21015}
+- {"task": "T357", "at": "2026-11-13T22:14:00Z", "output_tokens": 20786, "input_tokens": 77, "cache_read_input_tokens": 1564625, "cache_creation_input_tokens": 136320}
