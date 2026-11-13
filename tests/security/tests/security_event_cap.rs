@@ -7,10 +7,11 @@
 //! (`app/server/src/webhook_refusals.rs`, compiled here by `#[path]` as `offdb_stream.rs` is in
 //! `sentinel_db_logs.rs`, since no test crate depends on `askhava-server`) records each Stripe
 //! and Twilio refusal as one `webhook_signature_failed` event with route and request ID and no
-//! actor, under the same cap, and a valid delivery records none. The Stripe cases run the real
-//! `payments` route; the Twilio cases run routes that refuse exactly as `server`'s
-//! `inbound_text` and `inbound_voice` do (the adapter's `verify_webhook` then `refuse`), and a
-//! source check pins the layer on all three routers in `build_router`. Every value is fake.
+//! actor, under the same cap, and a valid delivery records none. The routes under the layer
+//! refuse exactly as `payments`' Stripe route and `server`'s `inbound_text` and `inbound_voice`
+//! do (the adapter's `check_webhook_source` for Stripe, `verify_webhook`, then `refuse`; only
+//! `payments` may build its route's Stripe client, FEE-032), and a source check pins the layer
+//! on all three routers in `build_router`. Every value is fake.
 
 #[path = "../../../app/server/src/webhook_refusals.rs"]
 mod webhook_refusals;
@@ -19,13 +20,9 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;
 
 use askhava_adapters::api::{
-    AdapterMode, Delivery, StripePayments, WebhookVendor, refuse, verify_webhook,
+    AdapterMode, Delivery, WebhookVendor, check_webhook_source, refuse, verify_webhook,
 };
 use askhava_core::api::{ClientIpPolicy, ManualClock, Settings};
-use askhava_payments::api::{
-    Releasable, ReleaseError, ReleaseSink, STRIPE_WEBHOOK_PATH, StripeAccount, StripeWebhook,
-    stripe_webhook_routes,
-};
 use askhava_portals::api::{
     EVENTS_PER_HOUR_ALERT, SECURITY_EVENT_CAP_FLOOR, SecurityEventKind, WebSecurity,
     admit_security_event, configure_security_events, refuse_cross_site, security_event_cap,
@@ -50,6 +47,7 @@ const STRIPE_SECRET: &str = "whsec_fake_cap_0001";
 const TWILIO_TOKEN: &str = "fake_twilio_cap_token";
 const SIGNED_AT: i64 = 1_800_000_000;
 const FAKE_REQUEST_ID: &str = "6f9619ff-8b86-4011-b42d-00c04fc964ff";
+const STRIPE_PATH: &str = "/webhooks/stripe";
 const SMS_PATH: &str = "/webhooks/twilio/sms";
 const VOICE_PATH: &str = "/webhooks/twilio/voice";
 
@@ -181,45 +179,45 @@ fn td_sec_53_the_cap_never_falls_below_the_alert_threshold() {
     assert!(parse(Some("0")).is_err() && parse(Some("ten")).is_err());
 }
 
-/// A sink the refusal cases never reach.
-struct NoRelease;
-
-impl ReleaseSink for NoRelease {
-    fn release(&self, _: Releasable) -> impl Future<Output = Result<(), ReleaseError>> + Send {
-        std::future::ready(Ok(()))
+/// A Stripe route that refuses as `payments`' `receive` does: the SEC-040 source check in
+/// stand-in mode (127.0.0.1 only), then the signature, each refusal `refuse`'s 403.
+async fn stripe_route(
+    ConnectInfo(peer): ConnectInfo<SocketAddr>,
+    head: HeaderMap,
+    body: Bytes,
+) -> StatusCode {
+    let none: [(String, String); 0] = [];
+    let policy = ClientIpPolicy::from_pairs(none).expect("policy");
+    let client = policy.client_ip(&head, peer.ip());
+    let localhost = IpAddr::V4(Ipv4Addr::LOCALHOST);
+    let refused = |e| StatusCode::from_u16(refuse(WebhookVendor::Stripe, e));
+    if let Err(e) = check_webhook_source(AdapterMode::StandIn, client, localhost) {
+        return refused(e).unwrap_or(StatusCode::FORBIDDEN);
+    }
+    let pairs: Vec<(&str, &str)> = head
+        .iter()
+        .filter_map(|(n, v)| v.to_str().ok().map(|v| (n.as_str(), v)))
+        .collect();
+    let delivery = Delivery {
+        url: STRIPE_PATH,
+        body: &body,
+        headers: &pairs,
+    };
+    let secret = SecretString::from(STRIPE_SECRET);
+    match verify_webhook(WebhookVendor::Stripe, &secret, delivery, SIGNED_AT) {
+        Ok(_) => StatusCode::OK,
+        Err(e) => refused(e).unwrap_or(StatusCode::FORBIDDEN),
     }
 }
 
-/// `payments`' real Stripe route in stand-in mode (source 127.0.0.1) under the refusal layer,
-/// whose clock reads `at`.
+/// The Stripe route under the refusal layer, whose clock reads `at`.
 fn stripe(pool: PgPool, at: Timestamp) -> Router {
-    let none: [(String, String); 0] = [];
-    let lazy = sqlx::postgres::PgPoolOptions::new()
-        .connect_lazy("postgres://fake@127.0.0.1:1/none")
-        .expect("a lazy pool");
-    let hooks = Arc::new(StripeWebhook {
-        pool: lazy,
-        stripe: StripePayments::new("http://127.0.0.1:1", SecretString::from("sk_test_fake"))
-            .expect("client"),
-        secret: SecretString::from(STRIPE_SECRET),
-        account: StripeAccount {
-            live: false,
-            account: "acct_fakecap".to_owned(),
-        },
-        mode: AdapterMode::StandIn,
-        stand_in_host: IpAddr::V4(Ipv4Addr::LOCALHOST),
-        client_ip: ClientIpPolicy::from_pairs(none).expect("policy"),
-        clock: Arc::new(ManualClock::new(
-            Timestamp::from_second(SIGNED_AT).expect("time"),
-        )),
-        sink: NoRelease,
-    });
     let log = RefusalLog::new(pool, Arc::new(ManualClock::new(at)));
-    layer(stripe_webhook_routes(hooks), log)
+    layer(Router::new().route(STRIPE_PATH, post(stripe_route)), log)
 }
 
 fn stripe_request(body: &str, signature: &str, edge: Option<&str>) -> Request<Body> {
-    let mut builder = Request::post(STRIPE_WEBHOOK_PATH)
+    let mut builder = Request::post(STRIPE_PATH)
         .header("stripe-signature", signature)
         .header("x-request-id", FAKE_REQUEST_ID);
     if let Some(edge) = edge {
@@ -327,15 +325,10 @@ async fn td_sec_53_each_webhook_refusal_is_one_event(pool: PgPool) {
     let id = Uuid::parse_str(FAKE_REQUEST_ID).ok();
     let mut events = webhook_events(&pool).await;
     events.sort();
-    let mut expected: Vec<_> = [
-        STRIPE_WEBHOOK_PATH,
-        SMS_PATH,
-        VOICE_PATH,
-        STRIPE_WEBHOOK_PATH,
-    ]
-    .into_iter()
-    .map(|route| (route.to_owned(), id, None))
-    .collect();
+    let mut expected: Vec<_> = [STRIPE_PATH, SMS_PATH, VOICE_PATH, STRIPE_PATH]
+        .into_iter()
+        .map(|route| (route.to_owned(), id, None))
+        .collect();
     expected.sort();
     assert_eq!(events, expected);
 }
