@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T09:12:03Z by runner f11e5ea2d96c (actions).
+Updated 2026-11-13T09:16:49Z by runner f11e5ea2d96c (actions).
 
 **Building: T431 in progress since 09:02Z; 276 of 417 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T09:12:03Z by runner f11e5ea2d96c (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T431 claimed 09:02Z, lease until 12:02Z
 - **Week:** 14% used, 161.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:11Z, 0 min before this update
+- **Last run:** 09:16Z, 0 min before this update
 - **Keeper:** last ran 09:12Z, next wake 12:05Z
 
 ## Needs attention
@@ -80,7 +80,6 @@ Updated 2026-11-13T09:12:03Z by runner f11e5ea2d96c (actions).
 | T411 | quotes: the scrubbed job description and the shown and appro | resync | 1 | 30 min | 10:00Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 21 min | 09:38Z |  |
 | T358 | messaging: the Canadian area codes for the HELP roaming line | done | 1 | 40 min | 09:32Z |  |
-| T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z |  |
 
 ### Plan and harness merges on main
 - 09:02Z Plan: T255 plan gap 2, the address is written onto the homeowner's own contact (D-3431) (#660)
@@ -106,7 +105,6 @@ Updated 2026-11-13T09:12:03Z by runner f11e5ea2d96c (actions).
 - 14:48Z Plan: trim T251 to its context limit (D-3256) (#590)
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
 - 09:22Z Plan: T345 owns the runner tests that hard-code action tags (D-3200) (#572)
-- 09:13Z Plan: store the scrubbed job description and shown card so T251 can send approved cards (D-3189) (#568)
 
 ## Progress (requirements verified)
 
