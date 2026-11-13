@@ -9,6 +9,12 @@
 //! [`record_owner_submission`], so it is never sent again (D-229). A dispute row also blocks
 //! every refund of its charge (`refunds`, FEE-026). [`list_disputes`] feeds the weekly digest and
 //! the owner portal, with the countering fee at stake.
+//!
+//! T314 (D-2204): [`record_dispute`] queues two [`DISPUTE_OPENED_KIND`] runs in the dispute's
+//! transaction, at once and at the due date less [`SUBMIT_BEFORE`], so `picks` judges FEE-050 then
+//! and again before the submit task; [`mark_auto_submit`] and [`record_owner_submission`] each
+//! write their two rows in one transaction (a savepoint inside a caller's), so a mark never
+//! lands without its task, nor `submitted_at` without its countering fee.
 
 use std::future::Future;
 
@@ -20,7 +26,7 @@ use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
 use serde_json::{Value, json};
 use sqlx::types::Uuid;
-use sqlx::{PgConnection, PgPool};
+use sqlx::{Connection, PgConnection, PgPool};
 
 use crate::ledger::{EntryKind, LedgerEntry, NewEntry, ledger_append};
 use crate::models::{DisputeOpened, DisputeView, EvidencePack, MoneyEventError};
@@ -32,6 +38,9 @@ pub const DISPUTE_FEE_CENTS: i64 = 1500;
 pub const SUBMIT_BEFORE: SignedDuration = SignedDuration::from_hours(48);
 /// The `core.task` kind that submits a marked dispute's evidence (FEE-027).
 pub const SUBMIT_KIND: &str = "payments.dispute_submit";
+/// FEE-050, D-2204: the `core.task` kind of `picks`' handler that judges a dispute's auto-submit
+/// condition; payload `{"dispute": "dp_…", "pick": <uuid>}`.
+pub const DISPUTE_OPENED_KIND: &str = "picks.dispute_opened";
 /// The audit action and alert kind of a new dispute (FEE-027).
 pub const DISPUTE_ACTION: &str = "payments.dispute_opened";
 /// The idempotency action the evidence submission's Stripe key is derived under (SEC-018).
@@ -63,7 +72,8 @@ fn vendor_id(id: &str, prefixes: &[&str]) -> bool {
 
 /// FEE-027: records a `charge.dispute.created` once. A new dispute writes one ledger `dispute`
 /// entry of the amount plus [`DISPUTE_FEE_CENTS`], an audit row, a High alert to Casey and the
-/// [`SUBMIT_KIND`] task at the due date less [`SUBMIT_BEFORE`]; a repeated event returns `false`
+/// [`SUBMIT_KIND`] task at the due date less [`SUBMIT_BEFORE`], and two [`DISPUTE_OPENED_KIND`]
+/// runs, now and at that same time (FEE-050, D-2204); a repeated event returns `false`
 /// and writes nothing. From then on the charge's refunds are blocked (FEE-026): the insert holds
 /// the pick's `pick_intent` row lock, as a refund claim does, so the two never interleave.
 ///
@@ -115,6 +125,9 @@ pub async fn record_dispute(
     })?;
     ledger_append(&mut tx, &entry).await?;
     announce(&mut tx, id).await?;
+    let judge = (id, opened.dispute, charge.pick_id);
+    queue_opened(&mut tx, judge, now, "").await?;
+    queue_opened(&mut tx, judge, opened.due_at - SUBMIT_BEFORE, ".due").await?;
     queue_submit(&mut tx, id, opened.due_at - SUBMIT_BEFORE, "").await?;
     db(tx.commit().await)?;
     Ok(true)
@@ -129,6 +142,23 @@ async fn queue_submit(
 ) -> Result<(), MoneyEventError> {
     let mut task = NewTask::new(SUBMIT_KIND, json!({"dispute": id}), at);
     task.dedupe_key = Some(format!("{SUBMIT_KIND}.{id}{suffix}"));
+    enqueue(conn, &task)
+        .await
+        .map_err(|_| MoneyEventError::Database)?;
+    Ok(())
+}
+
+/// Queues one [`DISPUTE_OPENED_KIND`] run of dispute `id` (`dp_…` `stripe`, of `pick`) at `at`,
+/// once per `suffix` (FEE-050, D-2204).
+async fn queue_opened(
+    conn: &mut PgConnection,
+    (id, stripe, pick): (Uuid, &str, Uuid),
+    at: Timestamp,
+    suffix: &str,
+) -> Result<(), MoneyEventError> {
+    let payload = json!({"dispute": stripe, "pick": pick});
+    let mut task = NewTask::new(DISPUTE_OPENED_KIND, payload, at);
+    task.dedupe_key = Some(format!("{DISPUTE_OPENED_KIND}.{id}{suffix}"));
     enqueue(conn, &task)
         .await
         .map_err(|_| MoneyEventError::Database)?;
@@ -162,7 +192,8 @@ async fn announce(conn: &mut PgConnection, id: Uuid) -> Result<(), MoneyEventErr
 /// and a call attempt or a 3DS-authenticated payment. A new mark queues its own [`SUBMIT_KIND`]
 /// task at the later of `now` and the due date less [`SUBMIT_BEFORE`] (none once due), so a
 /// dispute marked after its first task ran, or opened under 2 days before its due date, is still
-/// sent (FEE-027, D-1545). `false` when it is unknown, already marked or already in.
+/// sent (FEE-027, D-1545). `false` when it is unknown, already marked or already in. The mark and
+/// its task commit together in one transaction on `conn` (a savepoint inside a caller's, D-2204).
 ///
 /// # Errors
 /// [`MoneyEventError::Database`].
@@ -171,26 +202,29 @@ pub async fn mark_auto_submit(
     dispute: &str,
     now: Timestamp,
 ) -> Result<bool, MoneyEventError> {
+    let mut tx = db(conn.begin().await)?;
     let marked = db(sqlx::query!(
         "UPDATE payments.dispute SET auto_submit = true
           WHERE stripe_dispute_id = $1 AND submitted_at IS NULL AND NOT auto_submit
          RETURNING id, due_at",
         dispute,
     )
-    .fetch_optional(&mut *conn)
+    .fetch_optional(&mut *tx)
     .await)?;
     let Some(row) = marked else {
         return Ok(false);
     };
     let due = row.due_at.to_jiff();
     if now < due {
-        queue_submit(conn, row.id, now.max(due - SUBMIT_BEFORE), ".marked").await?;
+        queue_submit(&mut tx, row.id, now.max(due - SUBMIT_BEFORE), ".marked").await?;
     }
+    db(tx.commit().await)?;
     Ok(true)
 }
 
 /// D-229, FEE-050: Casey submitted `dispute`'s evidence himself; it is never auto-submitted after,
-/// and the countering fee is recorded once. `false` when it was already in.
+/// and the countering fee is recorded once. `false` when it was already in. `submitted_at` and the
+/// fee commit together in one transaction on `conn` (a savepoint inside a caller's, D-2204).
 ///
 /// # Errors
 /// `Ledger` or `Database`.
@@ -199,7 +233,10 @@ pub async fn record_owner_submission(
     dispute: &str,
     at: Timestamp,
 ) -> Result<bool, MoneyEventError> {
-    submitted(conn, dispute, "owner", at).await
+    let mut tx = db(conn.begin().await)?;
+    let recorded = submitted(&mut tx, dispute, "owner", at).await?;
+    db(tx.commit().await)?;
+    Ok(recorded)
 }
 
 /// Marks the evidence in, `by` `auto` or `owner`, and appends the countering fee (FEE-050).
