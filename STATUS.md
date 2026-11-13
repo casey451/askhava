@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T14:30:51Z by runner ae799a921ac7 (actions).
+Updated 2026-11-13T14:30:59Z by runner 79a7b6c06892 (actions).
 
-**Building: T330 in progress since 13:50Z; 281 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T266 in progress since 13:35Z; 281 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 281 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T330 claimed 13:50Z, lease until 16:50Z; lane 4: T266 claimed 13:35Z, lease until 16:35Z
+- **Lane:** lane 4: T266 claimed 13:35Z, lease until 16:35Z
 - **Week:** 19% used, 151.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:30Z, 0 min before this update
 - **Keeper:** last ran 14:29Z, next wake 16:37Z
@@ -16,11 +16,12 @@ Updated 2026-11-13T14:30:51Z by runner ae799a921ac7 (actions).
 - PLAN GAP T319 (since 2026-11-13T13:50:53Z, no attempt used; a plan change fixes it): T319: tests/budget.rs is named by D-3445, but no task owns it and it does not exist
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T436 (since 2026-11-13T13:50:53Z, no attempt used; a plan change fixes it): T436: tests/budget.rs is named by D-3445, but no task owns it and it does not exist
-- Strict plan check red: 26 problem(s) on tasks still to run (+155 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+158 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T330 | picks, intake and server: a withdrawn pick tells its busines | MERGE_PENDING | 1 | 39 min | 14:30Z |  |
 | T367 | jobs, messaging, privacy, intake and payments: the daily swe | MERGE_PENDING | 1 | 60 min | 14:23Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z | PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
@@ -151,8 +152,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T330 (lease until 2026-11-13T16:50:53Z)
+- nothing
 - lane 4: T266 (lease until 2026-11-13T16:35:19Z)
 
 ## Last usage reading
-- {"task": "T367", "at": "2026-11-13T14:23:06Z", "cache_creation_input_tokens": 588442, "input_tokens": 387, "output_tokens": 124038, "cache_read_input_tokens": 17767545}
+- {"task": "T330", "at": "2026-11-13T14:30:29Z", "cache_creation_input_tokens": 821176, "cache_read_input_tokens": 43723133, "input_tokens": 522, "output_tokens": 171690}
