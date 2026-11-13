@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T11:15:49Z by runner 07cc7ea488ef (actions).
+Updated 2026-11-13T11:19:37Z by runner adb37e15746b (actions).
 
 **Idle since 11:14Z; 278 of 417 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T11:15:49Z by runner 07cc7ea488ef (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 11:14Z (no task in progress)
 - **Week:** 16% used, 164.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:15Z, 0 min before this update
+- **Last run:** 11:15Z, 3 min before this update
 - **Keeper:** last ran 11:15Z, next wake 11:35Z
 
 ## Needs attention
@@ -76,9 +76,9 @@ Updated 2026-11-13T11:15:49Z by runner 07cc7ea488ef (actions).
 | T378 | adapters, calls and stand-in (harness): every outbound call  | done | 1 | 45 min | 12:34Z |  |
 | T323 | ai: a new capitalized name at the start of a sentence counts | done | 1 | 24 min | 11:47Z |  |
 | T404 | harness: the door probe's fixtures hold a charged pick and t | done | 1 | 27 min | 11:46Z |  |
-| T345 | harness: every external GitHub Actions `uses:` in every work | done | 3 | 27 min | 11:16Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
 
 ### Plan and harness merges on main
+- 11:16Z Harness: an API error session death does not use an attempt (D-3443) (#664)
 - 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
 - 09:02Z Plan: T255 plan gap 2, the address is written onto the homeowner's own contact (D-3431) (#660)
 - 08:55Z Plan: T428 plan gap, new prep task owns the six pinned tests (D-3430) (#659)
