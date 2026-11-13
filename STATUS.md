@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T16:03:52Z by runner 9d7e3b884c94 (actions).
+Updated 2026-11-13T16:04:04Z by runner 579187c0c786 (actions).
 
-**Building: T386 in progress since 15:27Z; 283 of 421 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 16:03Z; 283 of 421 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 283 of 421 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T386 claimed 15:27Z, lease until 18:27Z
+- **Lane:** idle since 16:03Z (no task in progress)
 - **Week:** 21% used, 147.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:03Z, 0 min before this update
 - **Keeper:** last ran 15:58Z, next wake 18:30Z
@@ -18,13 +18,14 @@ Updated 2026-11-13T16:03:52Z by runner 9d7e3b884c94 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T386 | messaging (harness): the pick notice's "Can't take it" line  | MERGE_PENDING | 2 | 35 min | 16:03Z | PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a  |
 | T319 | portals and server: security-event rows are capped per addre | MERGE_PENDING | 1 | 54 min | 15:51Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | MERGE_PENDING | 2 | 66 min | 15:48Z | session ended without handing in |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | done | 1 | 24 min | 15:05Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z |  |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | resync | 1 | 39 min | 14:30Z |  |
 | T367 | jobs, messaging, privacy, intake and payments: the daily swe | done | 1 | 60 min | 14:23Z |  |
-| T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z | PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a  |
+| T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z |  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T312 | intake: a street address written in lower case never trips t | done | 2 | 51 min | 12:32Z | session ended without handing in |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | done | 3 | 46 min | 11:14Z | session ended without handing in |
@@ -149,7 +150,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T386 (lease until 2026-11-13T18:27:45Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T319", "at": "2026-11-13T15:51:25Z", "cache_creation_input_tokens": 662931, "input_tokens": 462, "output_tokens": 157089, "cache_read_input_tokens": 26721372}
+- {"task": "T386", "at": "2026-11-13T16:03:28Z", "input_tokens": 161, "cache_read_input_tokens": 5427369, "cache_creation_input_tokens": 310910, "output_tokens": 37851}
