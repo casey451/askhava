@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
-from runner import lanes, model_window, outbox, proof, state as st, verify
+from runner import api_death, lanes, model_window, outbox, proof, state as st, verify
 from runner.state import State
 
 MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queue (D-677); FIX-MAIN re-arms (D-1099)
@@ -95,7 +95,8 @@ PLAN_GAP_KEPT = 600  # characters of the worker's report kept in the BLOCKED rea
 @dataclass
 class WorkerResult:
     """What a worker session reports. 'outcome' is one of: submitted, tests_failed, plan_gap (only a
-    plan change can unblock the task, D-2859), usage_limit, permission_blocked, vendor_outage, or
+    plan change can unblock the task, D-2859), usage_limit, permission_blocked, vendor_outage, api_error
+    (the session died of an Anthropic API error before handing in, with nothing pushed, D-3443), or
     handed_off (the starting session does the work itself and calls `python3 -m runner --after`; the
     lease stays held). A crash is an exception, not a result. changed_paths, model_evidence,
     reviewer_evidence, usage and commits_ahead are read by the runner from git and the transcripts, never from what the worker
@@ -448,10 +449,30 @@ def _outage(state: State, tid: str, now: datetime) -> State:
     return st.with_task(state, tid, status=st.RETRY_LATER, outages=n + 1, retry_after=st.iso(after))
 
 
+def _api_death(state: State, tid: str, res: WorkerResult, cfg: Config, now: datetime) -> State:
+    """A session that died of an Anthropic API error before handing in, with nothing pushed (D-3443): the
+    death is noted in `api_deaths`, the outbox item `api-deaths` is written once ALARM_COUNT deaths fall within
+    the hour, and the task goes back to QUEUED with its attempts unchanged, at most FREE_REQUEUES times in a
+    row (`api_death.settle`); past that, or with no API-error label in the log, it is a failed attempt."""
+    found = api_death.label(res.log)
+    noted = api_death.note(state, tid, found or api_death.API_ERROR, now)
+    deaths = api_death.recent(noted, now)
+    if len(deaths) >= api_death.ALARM_COUNT:
+        title, body = api_death.alarm_note(deaths)
+        outbox.write_outbox(cfg.outbox_dir, api_death.OUTBOX_ID, title, "info", body)
+        print(f"runner: {title} (outbox {api_death.OUTBOX_ID}, D-3443)")
+    freed = api_death.settle(noted, tid, found, now) if found else None
+    why = api_death.LOG + found if found else res.log or api_death.API_ERROR  # only the safe label is kept
+    return freed if freed is not None else record_failure(noted, tid, why)
+
+
 def _after_worker(
     state: State, task: dict[str, Any], res: WorkerResult, cfg: Config, model: str, now: datetime
 ) -> State:
     tid = task["id"]
+    if res.outcome == api_death.API_ERROR:
+        return _api_death(state, tid, res, cfg, now)
+    state = api_death.end_run(state, tid)  # any other end breaks a run of free requeues (D-3443)
     if res.outcome == "usage_limit":
         when = st.iso(res.reset_at or now + HOURLY)
         usage = dict(state.get("usage") or {}, limit_hit={"task": tid, "at": st.iso(now), "reset_at": when})
@@ -2095,6 +2116,19 @@ def _history_entry(state: State, task: dict[str, Any], res: WorkerResult, model:
     return {**record, "resync": True} if entry.get("resync") else record  # the same attempt, resumed to merge main (D-891)
 
 
+def _free_marks(record: dict[str, Any], res: WorkerResult, before: dict[str, Any], after: dict[str, Any]) -> dict[str, Any]:
+    """The history row with `plan_gap` when this attempt was a first plan-gap failure (D-1058), and with
+    `api_error` (the death's safe label) for an API-error death, plus `api_error_free` when it was requeued
+    free (D-3443): an attempt that cost nothing, so the next one repeats its number."""
+    if len(after.get("plan_gap_strikes") or []) > len(before.get("plan_gap_strikes") or []):
+        record = {**record, "plan_gap": True}
+    if res.outcome == api_death.API_ERROR:
+        record = {**record, "api_error": api_death.label(res.log) or api_death.API_ERROR}
+        if int(after.get(api_death.RUN, 0)) > int(before.get(api_death.RUN, 0)):
+            record["api_error_free"] = True
+    return record
+
+
 def _record_usage(state: State, tid: str, model: str, res: WorkerResult, now: datetime, cfg: Config) -> State:
     """Add the attempt's transcript token totals to usage.by_task and the pacing windows (BUILD_BRIEF.md:510),
     and each role's tokens and model calls as `worker_tokens`, `worker_turns`, `reviewer_tokens` and
@@ -2127,8 +2161,7 @@ def finish(
     lane = st.lane_of(state, tid) or st.LANE_ONE
     record = _history_entry(state, task, res, model, cfg)
     final = _after_worker(state, task, res, cfg, model, now)
-    if len(st.entry(final, tid).get("plan_gap_strikes") or []) > len(st.entry(state, tid).get("plan_gap_strikes") or []):
-        record = {**record, "plan_gap": True}  # this attempt cost nothing, so the next one repeats its number (D-1058)
+    record = _free_marks(record, res, st.entry(state, tid), st.entry(final, tid))
     history = [*st.entry(state, tid).get("history", []), dict(record, result=st.status(final, tid))]
     final = _record_usage(st.with_task(final, tid, history=history), tid, model, res, now, cfg)
     if st.status(final, tid) == st.MERGE_PENDING and res.commits_ahead == 0:
@@ -2276,7 +2309,7 @@ def _ours_onto(base: State, ours: State, fresh: State) -> State:
     (`_usage_onto`) and `lane_strikes` only the lanes `ours` changed, so a concurrent write by the
     other lane's attempt is kept. The lease keys are never taken from `ours` (the caller sets the lane)."""
     out = copy.deepcopy(fresh)
-    merged = {"usage": _usage_onto, "lane_strikes": _per_key_onto}
+    merged = {"usage": _usage_onto, "lane_strikes": _per_key_onto, api_death.DEATHS: _per_key_onto}  # D-3443: deaths of both lanes kept
     for key in (set(base) | set(ours)) - {"tasks", "lease", "leases"}:
         if key in ours and ours[key] != base.get(key):
             join = merged.get(key)
