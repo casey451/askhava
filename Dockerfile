@@ -9,7 +9,7 @@
 # /srv/askhava/static/<crate>/, the `/static/<crate>/` paths the templates load (T173, D-1281).
 # Node, npm and node_modules never reach the runtime image.
 
-FROM node:22.23.4-trixie-slim@sha256:2117f713a417f3aff682ac8f5bc2ebbdf1beed51f36e67ab1e0fd3866b6d2d8f AS browser
+FROM node:26.13.0-trixie-slim@sha256:5adad64f9a1fca2d51972caa65983634c8a774eb300d72b20f7f2a0f60368072 AS browser
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
