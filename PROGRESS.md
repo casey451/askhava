@@ -3969,3 +3969,4 @@
 - 2026-11-13T20:14:16Z runner 3118516ea12c (actions): {}
 - 2026-11-13T20:14:35Z runner 6cc0b1c3ccc3 (actions): {}
 - 2026-11-13T20:16:12Z runner c309142e3550 (actions): {"T357": "MERGE_PENDING -> QUEUED"}
+- 2026-11-13T20:16:37Z runner c309142e3550 (actions): {"T357": "QUEUED -> IN_PROGRESS"}; T357 estimated 3.8M tokens (calibrated); week has 128.7M left (no five-hour budget, D-3056) after 11.3M still running in another lane (session_reading 2026-11-13T20:14:15Z (week)); claimed
