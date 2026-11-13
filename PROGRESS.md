@@ -3976,3 +3976,4 @@
 - 2026-11-13T20:20:00Z runner 6cc0b1c3ccc3 (actions): {}
 - 2026-11-13T20:20:51Z runner 900e97dabbc9 (actions): {"T335": "QUEUED -> IN_PROGRESS"}; T335 estimated 3.4M tokens (calibrated); week has 128.5M left (no five-hour budget, D-3056) after 11.5M still running in another lane (session_reading 2026-11-13T20:19:42Z (week)); claimed
 - 2026-11-13T20:22:01Z runner c0cfb40ee760 (actions): {}
+- 2026-11-13T20:22:21Z runner c0cfb40ee760 (actions): {"T271": "IN_PROGRESS -> MERGE_PENDING"}
