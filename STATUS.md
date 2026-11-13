@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T18:33:38Z by runner 53256149fffc (actions).
+Updated 2026-11-13T18:48:05Z by runner ac135e636d92 (actions).
 
 **Idle since 18:29Z; 289 of 423 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-13T18:33:38Z by runner 53256149fffc (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 18:29Z (no task in progress)
 - **Week:** 25% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:33Z, 0 min before this update
+- **Last run:** 18:47Z, 1 min before this update
 - **Keeper:** last ran 18:33Z, next wake 18:53Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+174 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -76,8 +76,6 @@ Updated 2026-11-13T18:33:38Z by runner 53256149fffc (actions).
 | T350 | privacy: an opt-out, HELP or START word is never taken or re | done | 1 | 103 min | 19:09Z |  |
 | T362 | server: the built static files are served at /static/<crate> | done | 3 | 26 min | 19:03Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T346 | portals: every homeowner Verify code is bound to its purpose | done | 1 | 40 min | 18:57Z |  |
-| T251 | intake and quotes: the ZIP question, the job location, and t | resync | 2 | 87 min | 18:46Z |  |
-| T376 | ai and stand-in (harness): the intake schema sent to Claude  | done | 1 | 35 min | 18:40Z |  |
 
 ### Plan and harness merges on main
 - 17:36Z Plan: count usage once per message, prove fix rounds were re-reviewed (D-3475) (#685)
@@ -102,7 +100,6 @@ Updated 2026-11-13T18:33:38Z by runner 53256149fffc (actions).
 - 22:01Z plan: T419 fixes the flaky TD-CALL-23 no-plaintext scan, claimed first (D-3324) (#622)
 - 20:49Z Harness: worker output discipline and per-role usage recording (D-3305) (#618)
 - 20:07Z Harness: up to 2 tasks per crate; one only where the crate's CLAUDE.md is full (D-3303) (#615)
-- 18:44Z Plan: performance track — measurement harness T416–T418, goals as non-blocking (D-3292) (#607)
 
 ## Progress (requirements verified)
 
