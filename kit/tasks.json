@@ -14219,7 +14219,7 @@
    "id": "T101",
    "slug": "site-base",
    "title": "site: base layout in the design spec's look, works without JavaScript, help in one place",
-   "goal": "The site's base layout (`app/site/templates/base.html`, the shared template T051 created, restyled here, plus the stylesheet and routes; this task extends the minimal `app/site/Cargo.toml` and `src/lib.rs` T051 created, D-492) renders every page server-side without JavaScript in the design spec's plaster-and-brass look, with one `h1`, landmarks, a skip link, `lang` on page and passages and help in the same place on every page (A11Y-003, A11Y-004, A11Y-017, WEB-001, A11Y-026, A11Y-029, A11Y-030). The WEB-007 status banner is hidden by default (TD-WEB-01's banner case) (D-493); its on or off state is read from T279's `ops::api` status banner (D-1843). Plan change D-3144: the banner is on the site's own pages (WEB-007: \"The site has a status banner\"), not on portal pages: `base.html` gains an empty `{% block banner %}{% endblock %}` above the header, which only the new site layout `app/site/templates/site_layout.html` (extending `base.html`) fills, with the WEB-007 sentence when its `banner_shown` field is true; the 23 portal templates that extend `base.html` through `app/portals/askama.toml` keep the empty block, so no portal struct gains a field; every site page (T102, T103, T115, T201, T202, T221) extends `site_layout.html` and fills `banner_shown` per request from `ops::api::banner_shown` (`app/ops/src/status_banner.rs:32`, an async read the handler makes before rendering) through one site helper this task adds. The stylesheet, and the fonts and textures T166 and T216 add, are compiled into the binary (`include_bytes!`, a fixed list of name, MIME type and bytes in the new `app/site/src/assets.rs`), because the runtime image keeps only the built `.js` files (`Dockerfile:17` to `:21`), and are served at `/static/site/<name>` by one `Router::nest_service(\"/static/site\", get(asset))` mount with no `.route(` line and no `/`-prefixed `*_PATH` or `*_ROUTE` constant (T362's rule, D-3106: `tests/security/tests/auth_matrix.rs:276` to `:300` reads those as routes, and its test router, `:400` to `:408`, merges no site route, so a `.route(` there would answer 404 in `td_sec_01`); an unknown name is a 404 and another method a 405 with `Allow`. No site script is written (`site.ts` is dropped; the pages work without JavaScript), so T362's `/static/<crate>/` folder has no `site` entry; this task runs after T362 and proves both mounts answer through `build_router`. The site's router is merged in `build_router` (the shared `app/server/src/lib.rs`), and each later site task merges its own page router there. The `nest_service` call gets a reasoned `NOT_PAGES` line in the shared `tests/a11y/fixtures.ts` (its A11Y-002 scan lists every such call, `:64`), and section 13 gets the row `GET /static/site/site.css` (module `site`) marked `yes`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (a public `GET` must answer 200, D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
+   "goal": "The site's base layout (`app/site/templates/base.html`, the shared template T051 created, restyled here, plus the stylesheet and routes; this task extends the minimal `app/site/Cargo.toml` and `src/lib.rs` T051 created, D-492) renders every page server-side without JavaScript in the design spec's daylight-and-evergreen look (V6, D-3331), with one `h1`, landmarks, a skip link, `lang` on page and passages and help in the same place on every page (A11Y-003, A11Y-004, A11Y-017, WEB-001, A11Y-026, A11Y-029, A11Y-030). The WEB-007 status banner is hidden by default (TD-WEB-01's banner case) (D-493); its on or off state is read from T279's `ops::api` status banner (D-1843). Plan change D-3144: the banner is on the site's own pages (WEB-007: \"The site has a status banner\"), not on portal pages: `base.html` gains an empty `{% block banner %}{% endblock %}` above the header, which only the new site layout `app/site/templates/site_layout.html` (extending `base.html`) fills, with the WEB-007 sentence when its `banner_shown` field is true; the 23 portal templates that extend `base.html` through `app/portals/askama.toml` keep the empty block, so no portal struct gains a field; every site page (T102, T103, T115, T201, T202, T221) extends `site_layout.html` and fills `banner_shown` per request from `ops::api::banner_shown` (`app/ops/src/status_banner.rs:32`, an async read the handler makes before rendering) through one site helper this task adds. The stylesheet, and the fonts and photos T166 and T216 add, are compiled into the binary (`include_bytes!`, a fixed list of name, MIME type and bytes in the new `app/site/src/assets.rs`), because the runtime image keeps only the built `.js` files (`Dockerfile:17` to `:21`), and are served at `/static/site/<name>` by one `Router::nest_service(\"/static/site\", get(asset))` mount with no `.route(` line and no `/`-prefixed `*_PATH` or `*_ROUTE` constant (T362's rule, D-3106: `tests/security/tests/auth_matrix.rs:276` to `:300` reads those as routes, and its test router, `:400` to `:408`, merges no site route, so a `.route(` there would answer 404 in `td_sec_01`); an unknown name is a 404 and another method a 405 with `Allow`. No site script is written (`site.ts` is dropped; the pages work without JavaScript), so T362's `/static/<crate>/` folder has no `site` entry; this task runs after T362 and proves both mounts answer through `build_router`. The site's router is merged in `build_router` (the shared `app/server/src/lib.rs`), and each later site task merges its own page router there. The `nest_service` call gets a reasoned `NOT_PAGES` line in the shared `tests/a11y/fixtures.ts` (its A11Y-002 scan lists every such call, `:64`), and section 13 gets the row `GET /static/site/site.css` (module `site`) marked `yes`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (a public `GET` must answer 200, D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14278,7 +14278,8 @@
     "D-1843",
     "D-1933",
     "D-3144",
-    "D-3106"
+    "D-3106",
+    "D-3331"
    ],
    "cites": [],
    "budget": {
@@ -26727,8 +26728,8 @@
   {
    "id": "T166",
    "slug": "site-design-assets",
-   "title": "site: self-hosted fonts and the design-token contrast test",
-   "goal": "The site serves its fonts from `app/site/static/fonts/` (no font host), and a Playwright test checks every color pair against the design spec's contrast values (WEB-027, A11Y-028); the home-page numbers are T102's (D-491). Plan change D-3144: the runtime image keeps only built `.js` files (`Dockerfile:17` to `:21`), so the fonts are served from bytes compiled into the binary: this task adds each font to T101's fixed list in `app/site/src/assets.rs` (owned here after T101), served at `/static/site/fonts/<name>` as `font/woff2`, with no `.route(` line.",
+   "title": "site: self-hosted Gelasio and DM Sans fonts and the design-token contrast test",
+   "goal": "The site serves its fonts, Gelasio 400 and 500 and DM Sans 400, 500 and 700 copied from `docs/design/fonts/` (SIL Open Font License), from `app/site/static/fonts/` (no font host), and a Playwright test checks every color pair against the design spec's contrast values (WEB-027, A11Y-028); the home-page numbers are T102's (D-491). Plan change D-3144: the runtime image keeps only built `.js` files (`Dockerfile:17` to `:21`), so the fonts are served from bytes compiled into the binary: this task adds each font to T101's fixed list in `app/site/src/assets.rs` (owned here after T101), served at `/static/site/fonts/<name>` as `font/woff2`, with no `.route(` line. Plan change D-3331: the look is V6 (daylight and evergreen), so the fonts are Gelasio and DM Sans (no Cormorant Garamond) and the test checks the flat section 2 tokens on `canvas`, `surface`, `band` and `night`, input borders and focus rings included, with no texture sample.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -26743,9 +26744,8 @@
     "accessibility"
    ],
    "owns": [
-    "app/site/static/fonts/cormorant-garamond-latin-400-italic.woff2",
-    "app/site/static/fonts/cormorant-garamond-latin-400-normal.woff2",
-    "app/site/static/fonts/cormorant-garamond-latin-500-normal.woff2",
+    "app/site/static/fonts/gelasio-latin-400-normal.woff2",
+    "app/site/static/fonts/gelasio-latin-500-normal.woff2",
     "app/site/static/fonts/dm-sans-latin-400-normal.woff2",
     "app/site/static/fonts/dm-sans-latin-500-normal.woff2",
     "app/site/static/fonts/dm-sans-latin-700-normal.woff2",
@@ -26776,11 +26776,12 @@
     "D-468",
     "D-490",
     "D-1143",
-    "D-3144"
+    "D-3144",
+    "D-3331"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
+    "files": 8,
     "lines": 200,
     "context_pct": 10
    },
@@ -26795,8 +26796,8 @@
   {
    "id": "T216",
    "slug": "site-textures",
-   "title": "site: the plaster, brass and paper textures",
-   "goal": "The plaster, brass bar, brass plate and paper textures from `docs/design/textures/` are served from `app/site/static/textures/` with no metadata, and the stylesheet (`site.css`, which this task edits after T166) references them (WEB-027). Plan change D-3144: the runtime image keeps only built `.js` files (`Dockerfile:17` to `:21`), so the textures are served from bytes compiled into the binary: this task adds each texture to T101's fixed list in `app/site/src/assets.rs` (owned here after T166), served at `/static/site/textures/<name>` as `image/jpeg`, with no `.route(` line.",
+   "title": "site: the hero photo and mark (photography assets)",
+   "goal": "Plan change D-3331 repurposes this task from the retired plaster, brass and paper textures to photography assets: the home hero photo `docs/design/photos/hero-kitchen.webp` and the mark `docs/design/brand/mark.svg` are served from `app/site/static/photos/hero-kitchen.webp` and `app/site/static/brand/mark.svg` with no metadata, and the stylesheet (`site.css`, which this task edits after T166) and the home template use them as DESIGN_SPEC section 5 says (the photo decorative with `alt=\"\"`, width and height set, never under text). The photo is a concept placeholder: licensed photos replace it at the same name and size before launch (a launch item for Casey, D-3331), so the file name is fixed and nothing else names the image. Plan change D-3144: the runtime image keeps only built `.js` files (`Dockerfile:17` to `:21`), so the assets are served from bytes compiled into the binary: this task adds each to T101's fixed list in `app/site/src/assets.rs` (owned here after T166), served at `/static/site/photos/<name>` as `image/webp` and `/static/site/brand/<name>` as `image/svg+xml`, with no `.route(` line.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -26812,10 +26813,8 @@
     "accessibility"
    ],
    "owns": [
-    "app/site/static/textures/plaster@2x.jpg",
-    "app/site/static/textures/brass-bar@2x.jpg",
-    "app/site/static/textures/brass-plate@2x.jpg",
-    "app/site/static/textures/paper@2x.jpg",
+    "app/site/static/photos/hero-kitchen.webp",
+    "app/site/static/brand/mark.svg",
     "app/site/static/site.css",
     "app/site/src/assets.rs"
    ],
@@ -26835,11 +26834,12 @@
    "decisions": [
     "D-451",
     "D-1143",
-    "D-3144"
+    "D-3144",
+    "D-3331"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 4,
     "lines": 100,
     "context_pct": 9
    },
@@ -26850,7 +26850,7 @@
    ],
    "branch": "claude/task/T216-site-textures",
    "prompt": "kit/prompts/T216.md",
-   "acceptance": "The four texture files are under 400 KB each, strip EXIF (the PII scanner passes), and `site.css` references them by the design spec's token names; a page rendered with them passes the TD-WEB-11 contrast cases T166 owns."
+   "acceptance": "The photo is a WebP under 250 KB and the mark an SVG with no script, both with no metadata (the PII scanner passes); the home page renders the photo and the button on the first screen at 390 by 844 and 320 by 740 (DESIGN_SPEC section 9), and nothing on the page sits on the photo."
   },
   {
    "id": "T167",
