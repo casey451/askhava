@@ -36,6 +36,7 @@ use sqlx::{Connection, PgConnection};
 use tokio::sync::Semaphore;
 
 use crate::models::PhotoError;
+use crate::vault::in_transaction;
 
 /// The largest upload accepted, in bytes; the photo route's body limit is this too (PRIV-013).
 pub const MAX_PHOTO_BYTES: usize = 15 * 1024 * 1024;
@@ -418,18 +419,24 @@ pub fn photo_path(token: &LinkToken) -> String {
 
 /// The photo a live link opens at `now`, read from storage and opened, with an audit row; an
 /// unknown or expired token is [`PhotoError::LinkDead`], which the route answers with 404
-/// (PRIV-014, PRIV-023, D-454).
+/// (PRIV-014, PRIV-023, D-454). A connection inside a transaction (sqlx's or a raw `BEGIN`) is
+/// refused first, and the `privacy.photo_opened` row is written in its own transaction that has
+/// committed before the bytes are returned, so no caller can hold the plaintext and roll the
+/// audit back; a failed audit returns no bytes (PRIV-003, PRIV-028, D-753, D-1838).
 ///
 /// # Errors
 ///
-/// [`PhotoError::LinkDead`], [`PhotoError::Storage`], [`PhotoError::Sealed`] or
-/// [`PhotoError::Database`].
+/// [`PhotoError::InTransaction`], [`PhotoError::LinkDead`], [`PhotoError::Storage`],
+/// [`PhotoError::Sealed`] or [`PhotoError::Database`].
 pub async fn open_link<S: StorageAdapter>(
     db: &mut PgConnection,
     (seal, storage): (&PhotoSeal, &S),
     token: &LinkToken,
     now: Timestamp,
 ) -> Result<CleanPhoto, PhotoError> {
+    if in_transaction(db).await.map_err(db_err)? {
+        return Err(PhotoError::InTransaction);
+    }
     let hash = token.hash();
     let row = sqlx::query!(
         "SELECT p.id, p.job_id, p.storage_key FROM privacy.photo_link l \
@@ -447,7 +454,9 @@ pub async fn open_link<S: StorageAdapter>(
         .await
         .map_err(|_| PhotoError::Storage)?;
     let plain = seal.open(row.job_id, row.id, &sealed)?;
-    record(db, row.id, "privacy.photo_opened").await?;
+    let mut tx = db.begin().await.map_err(db_err)?;
+    record(&mut tx, row.id, "privacy.photo_opened").await?;
+    tx.commit().await.map_err(db_err)?;
     Ok(CleanPhoto(plain))
 }
 
