@@ -26413,8 +26413,8 @@
     "T337",
     "T257"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "emergency-address-rerelease",
    "type": "build",
    "stage": "4",
@@ -26427,7 +26427,7 @@
     3351,
     3352
    ],
-   "reason": null,
+   "reason": "session ended without handing in",
    "last_failure": "PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address cannot reach the release with T255's files. picks::release reads the address only from the proof's contact (release.rs:347, privacy/src/api.rs:257); the sink mints the proof for the phone contact (release_sink.rs:101-133); take_name_address stores the address as a separate phone-less vault contact (conversation.rs:408-421); privacy has no public setter for a stored contact (vault.rs, only private reseal). Minting for the address-only contact would give the masked line a homeowner with no phone (release.rs:226-243). Fix needs either a privacy setter (T255 co-owns app/privacy/src/vault.rs and api.rs) or release.rs reading a second address contact named in the proof. Reviewer confirmed all five points.\nre-queued after plan fix D-3431: Plan gap 2 fixed by D-3431 (#660): address written onto the homeowner's own contact via privacy::api::set_name_address (Fable option A)",
    "history": [
     {
@@ -26473,6 +26473,29 @@
       "reviewer": {
        "tokens": 364842,
        "turns": 8
+      }
+     }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 0,
+     "head_sha": "2d9da67726b34a0aa4b6ec5127e64811cc05b6be",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-13T09:22:11Z",
+     "ended_at": "2026-11-13T09:48:17Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 0,
+       "turns": 0
+      },
+      "reviewer": {
+       "tokens": 0,
+       "turns": 0
       }
      }
     }
@@ -47508,7 +47531,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T09:48:11Z",
+ "updated_at": "2026-11-13T09:48:17Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

@@ -1,26 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-13T09:48:11Z by runner 2d9da67726b3 (actions).
+Updated 2026-11-13T09:48:17Z by runner 2d9da67726b3 (actions).
 
-**Building: T255 in progress since 09:22Z; 277 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 09:48Z; 277 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 277 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T255 claimed 09:22Z, lease until 12:22Z
+- **Lane:** idle since 09:48Z (no task in progress)
 - **Week:** 15% used, 165.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:48Z, 0 min before this update
 - **Keeper:** last ran 09:42Z, next wake 12:24Z
 
 ## Needs attention
+- BLOCKED T255: session ended without handing in
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 30 problem(s) on tasks still to run (+152 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 3 | 26 min | 09:48Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T431 | Brand rename prep: the legal-docs version case and five paym | MERGE_PENDING | 1 | 30 min | 09:32Z |  |
 | T249 | quotes and portals: radius matching by ZIP centroid, the cov | done | 1 | 71 min | 09:03Z |  |
-| T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 2 | 3 min | 07:47Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
+| T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 2 | 3 min | 07:47Z |  |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | BLOCKED | 1 | 40 min | 07:40Z | PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switc |
 | T420 | Brand rename prep: intake and ai unit tests take the brand f | done | 1 | 28 min | 06:38Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | done | 1 | 22 min | 05:08Z |  |
@@ -150,7 +152,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T255 (lease until 2026-11-13T12:22:11Z)
 
 ## Last usage reading
 - {"task": "T431", "at": "2026-11-13T09:32:54Z", "cache_read_input_tokens": 3434781, "input_tokens": 164, "output_tokens": 32044, "cache_creation_input_tokens": 131776}
