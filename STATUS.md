@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T21:39:19Z by runner f0c5d32f0bfc (actions).
+Updated 2026-11-13T21:39:39Z by runner f0c5d32f0bfc (actions).
 
-**Building: T354 in progress since 20:29Z; 294 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 21:39Z; 294 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 294 of 427 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T354 claimed 20:29Z, lease until 23:29Z
+- **Lane:** idle since 21:39Z (no task in progress)
 - **Week:** 28% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:35Z, 3 min before this update
+- **Last run:** 21:35Z, 4 min before this update
 - **Keeper:** last ran 21:21Z, next wake 23:31Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-13T21:39:19Z by runner f0c5d32f0bfc (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T354 | privacy: key rotation re-seals stored photos too, so droppin | MERGE_PENDING | 1 | 69 min | 21:39Z |  |
 | T335 | adapters, payments and stand-in (harness): the reconcile's p | MERGE_PENDING | 1 | 59 min | 21:20Z |  |
 | T412 | privacy: each business member's sign-in address and texting  | done | 1 | 111 min | 21:18Z |  |
 | T442 | mutation (harness): every named mutant is killed by a determ | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
@@ -155,7 +156,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T354 (lease until 2026-11-13T23:29:22Z)
 
 ## Last usage reading
-- {"task": "T335", "at": "2026-11-13T21:20:25Z", "cache_creation_input_tokens": 458660, "input_tokens": 399, "cache_read_input_tokens": 12185268, "output_tokens": 123976}
+- {"task": "T354", "at": "2026-11-13T21:39:18Z", "input_tokens": 373, "cache_creation_input_tokens": 348969, "cache_read_input_tokens": 10618249, "output_tokens": 104905}
