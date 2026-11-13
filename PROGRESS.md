@@ -3489,3 +3489,4 @@
 - 2026-11-13T07:43:49Z runner bee96646639a (actions): {"T255": "QUEUED -> IN_PROGRESS"}; T255 estimated 4.0M tokens (calibrated); week has 168.0M left (no five-hour budget, D-3056) (session_reading 2026-11-13T07:40:56Z (week)); claimed
 - 2026-11-13T07:46:38Z runner bee96646639a (actions): {}
 - 2026-11-13T07:46:58Z runner bee96646639a (actions): {}
+- 2026-11-13T07:47:39Z runner bee96646639a (actions): {"T255": "IN_PROGRESS -> BLOCKED"}
