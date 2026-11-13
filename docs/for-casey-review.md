@@ -2608,4 +2608,4 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 
 ## Re-sending an emergency job's details once the address arrives (T255 plan fix, D-3358)
 
-- The task that shares an emergency job's details after the homeowner sends her address late was stuck: the code that proves "this pick was paid" could not be reached from its file. It now gets one narrow, internal way to re-confirm a pick, which only reads that pick's own recorded, successful, not refunded and not disputed payment. Nothing outside the payments code can use it, and a first release still needs Stripe's signed confirmation.
+- The task that shares an emergency job's details after the homeowner sends her address late was stuck: the code that proves "this pick was paid" could not be reached from its file. It now gets one narrow, internal way to re-confirm a pick, which only reads that pick's own recorded, successful, not refunded and not disputed payment. It is used only after the system confirms the job was waiting for the address after an earlier, verified release. Nothing else can use it, and a first release still needs Stripe's signed confirmation.
