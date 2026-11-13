@@ -23,6 +23,8 @@ Each crate under `app/` keeps a short `CLAUDE.md` beside its `Cargo.toml` (Claud
 
 Any task that adds or changes behavior in a crate updates that crate's `CLAUDE.md` in the same pull request. Every crate's `CLAUDE.md` is a shared path, like its `Cargo.toml`.
 
+A task adds or edits only the lines its change needs. Condensing or restructuring a crate's `CLAUDE.md` (joining bullets, reordering, rewording lines it does not own, as D-3304 and D-3308 did) is a separate change, made only while no task that writes that crate is in flight (IN_PROGRESS or MERGE_PENDING in `kit/state.json` on `claude/kit-state`); its decision entry names the check. A rewrite under a running task's edits cannot be merged by insertion and forces a resync (D-3386, D-3444).
+
 ## 3. Every Rust file opens with a module comment
 
 The first lines of every `.rs` file under `app/` and `tests/` are `//!` comments. They say what the file does, why it exists, and the requirement IDs it implements or tests. Example:
