@@ -19064,7 +19064,7 @@
     "T316",
     "T317",
     "T318",
-    "T319",
+    "T436",
     "T322",
     "T323",
     "T325",
@@ -19122,7 +19122,7 @@
     "T393",
     "T400",
     "T396",
-    "T398",
+    "T435",
     "T416",
     "T417",
     "T418",
@@ -19555,7 +19555,7 @@
    "deps": [
     "T122",
     "T158",
-    "T210",
+    "T434",
     "T161",
     "T166",
     "T216",
@@ -19574,7 +19574,7 @@
     "T121",
     "T203",
     "T158",
-    "T210",
+    "T434",
     "T161",
     "T166",
     "T216",
@@ -19615,7 +19615,7 @@
     "T123",
     "T125",
     "T200",
-    "T210",
+    "T434",
     "T161",
     "T216",
     "T170",
@@ -19773,7 +19773,7 @@
    "deps": [
     "T134",
     "T303",
-    "T319"
+    "T436"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -31347,7 +31347,7 @@
     "T336",
     "T357",
     "T391",
-    "T398",
+    "T435",
     "T432"
    ],
    "status": "QUEUED",
@@ -31455,7 +31455,7 @@
    "deps": [
     "T303",
     "T158",
-    "T210",
+    "T434",
     "T200",
     "T348"
    ],
@@ -40942,10 +40942,8 @@
    "id": "T398",
    "deps": [
     "T396",
-    "T391",
     "T147",
-    "T293",
-    "T326"
+    "T293"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -41718,7 +41716,7 @@
     "T108",
     "T205",
     "T310",
-    "T398",
+    "T435",
     "T361",
     "T151",
     "T432"
@@ -45173,11 +45171,46 @@
     "T277",
     "T357",
     "T391",
-    "T398"
+    "T435"
    ],
    "status": "QUEUED",
    "attempts": 0,
    "slug": "name-address-answer-route",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T435",
+   "deps": [
+    "T398",
+    "T391",
+    "T326"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "phone-approval-gate-routes",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T434",
+   "deps": [
+    "T210"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-report-money-view-pages",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T436",
+   "deps": [
+    "T319"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "session-sweep-and-rate-limit-prune",
    "type": "build",
    "stage": "4"
   }
@@ -47882,7 +47915,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T12:34:39Z",
+ "updated_at": "2026-11-13T12:37:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -47980,7 +48013,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "48645fc04c5fb3a2a43bfb0d693fab50c1d1687d",
+ "runner_sha": "9889e5f5ff2d37ff9961d63502848cd11d70d13b",
  "starter": "actions",
  "smoke_runs": [
   {

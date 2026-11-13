@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-13T12:34:39Z by runner 48645fc04c5f (actions).
+Updated 2026-11-13T12:37:50Z by runner 9889e5f5ff2d (actions).
 
-**Building: T255 in progress since 11:40Z; 279 of 417 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T255 in progress since 11:40Z; 279 of 420 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 279 of 417 build tasks (owner gates not counted)
+- **Tasks done:** 279 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T255 claimed 11:40Z, lease until 14:40Z
 - **Week:** 17% used, 157.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:34Z, 0 min before this update
+- **Last run:** 12:34Z, 3 min before this update
 - **Keeper:** last ran 12:34Z, next wake 14:43Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+152 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+152 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -105,7 +105,7 @@ Updated 2026-11-13T12:34:39Z by runner 48645fc04c5f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 233 of 733 (31.8%) · partial 340 · unstarted 160
-**Tasks merged (throughput only):** 279 of 417
+**Tasks merged (throughput only):** 279 of 420
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -140,8 +140,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 159 of 199 done
-- stage 5: 0 of 64 done
+- stage 4: 159 of 201 done
+- stage 5: 0 of 65 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
