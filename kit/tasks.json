@@ -12066,8 +12066,8 @@
   {
    "id": "T341",
    "slug": "tier-and-visit-schedule-at-pick",
-   "title": "picks and portals (harness): the homeowner picks a tier of a tiers quote, and a per-visit price with its schedule gets its fee",
-   "goal": "Seventh audit N7-02 and N7-04's pick side (D-2332, D-2333; PICK-053, PICK-038, PICK-039, PICK-021, REC-010, REC-011; sets aside only D-2210's refusals of a tiered quote and a per-visit period). After T340 and T342: (1) Tiers: the quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`); `migrations/0179_picks_chosen_tier.sql` adds the chosen tier's index and name to `picks.pick`, written in the pick's transaction; `fee_inputs` uses that tier's price and no default tier exists; a missing or stale tier (the quote edited since) is a validation error that shows the choices again and stores nothing; the Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). The text pick (`<n> YES`, PICK-015) names no tier and the spec gives no text syntax for one, so a text pick of a tiers quote stores nothing and replies with the quote-page link to choose the package; the syntax is listed for Casey (D-2332). (2) Per-visit: `fee_period` (`service.rs:452`) maps a per-visit price with its stored visit schedule (T342, T164) to the matching fee period (weekly 52/12, every two weeks 26/12, and so on, as `app/payments/src/rules.rs:198` already converts); a per-visit quote without a schedule cannot exist after T342, and one from before is refused. (D-3118) Shapes that done code and tests build stay as they are: no new field on `quotes::api::PageQuote` (`app/quotes/src/api.rs:115`, which holds only the original text and is built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), on `PageView` or `Numbered` (`app/portals/src/quote_page.rs:117`, `:50`; `PageView` built by literal at `prop_arrival_order.rs:99`) or on `ConfirmFacts` (`app/portals/src/confirm_pay.rs:69`, built by literal in `tests/integration/tests/confirm_terms.rs:89` and `:120`). So: `quote_page.rs` (owned here) reads each tiers quote's tier names from `quotes::api::quoted_prices` and carries them beside the view the way `ShownPage` carries the accepted quote (D-3078: a field on `ShownPage`, a method on `PageView` answering none); the Confirm page takes the chosen tier through a new render entry point in `confirm_pay.rs` (owned here) beside `confirm_page_with_code`, whose existing callers pass no tier, and a field on the private `ConfirmView` (`:92`); and `page_pick` keeps its signature (its callers include done tests and `opted_out_yes` and `backup_choice`): the tier comes through a new entry point beside it that the code step calls, while `page_pick` with no tier refuses a tiers quote as today. T261 and T132 (the later owners of `confirm_pay.rs`) and T308 and T393 (of `quote_page.rs`) already depend on this task. (3) `tests/integration/tests/fee_fixed_at_pick.rs`'s tiered-pick case changes only as D-2332 records: the refusal is for a pick with no tier. Tests in `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
+   "title": "picks (harness): a pick of a tiers quote names its tier, and a per-visit price with its schedule gets its fee",
+   "goal": "Seventh audit N7-02 and N7-04's pick side (D-2332, D-2333; PICK-053, PICK-038, PICK-039, REC-010, REC-011; sets aside only D-2210's refusals of a tiered quote and a per-visit period). Plan change D-3497 split this task in two: this task stores and prices the chosen tier and the per-visit period in `picks`; T440 builds the quote page's tier choice and the Confirm page's tier (PICK-021). After T340 and T342: (1) Tiers: `migrations/0179_picks_chosen_tier.sql` adds the chosen tier's index and name to `picks.pick`, written in the pick's transaction; `fee_inputs` uses that tier's price and no default tier exists; a missing or stale tier (the quote edited since) is a validation error that names the choices and stores nothing. `page_pick` keeps its signature (its callers include done tests and `opted_out_yes` and `backup_choice`) and with no tier refuses a tiers quote as today; the tier comes through a new entry point beside it in `app/picks/src/service.rs`, reached through `picks::api`, which T440's code step calls. The text pick (`<n> YES`, PICK-015) names no tier and the spec gives no text syntax for one, so a text pick of a tiers quote stores nothing and replies with the quote-page link to choose the package; the syntax is listed for Casey (D-2332). (2) Per-visit: `fee_period` (`service.rs:452`) maps a per-visit price with its stored visit schedule (T342, T164) to the matching fee period (weekly 52/12, every two weeks 26/12, and so on, as `app/payments/src/rules.rs:198` already converts); a per-visit quote without a schedule cannot exist after T342, and one from before is refused. (3) `tests/integration/tests/fee_fixed_at_pick.rs`'s tiered-pick case changes only as D-2332 records: the refusal is for a pick with no tier. Tests in `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63) through `picks::api`. Money: the overseer runs an independent money review of the hand-in. Update the `picks` `CLAUDE.md` and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -12098,11 +12098,6 @@
    "owns": [
     "migrations/0179_picks_chosen_tier.sql",
     "app/picks/src/service.rs",
-    "app/portals/src/pick_flow.rs",
-    "app/portals/templates/quote_page.html",
-    "app/portals/src/confirm_pay.rs",
-    "app/portals/src/quote_page.rs",
-    "app/portals/templates/confirm_pay.html",
     "tests/integration/tests/fee_fixed_at_pick.rs",
     "tests/integration/tests/tier_and_visit_pick.rs"
    ],
@@ -12118,7 +12113,6 @@
    "requirements": [
     "PICK-053",
     "PICK-038",
-    "PICK-021",
     "REC-010",
     "REC-011"
    ],
@@ -12130,13 +12124,14 @@
     "D-2333",
     "D-2210",
     "D-3118",
-    "D-3134"
+    "D-3134",
+    "D-3497"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
-    "lines": 700,
-    "context_pct": 36
+    "files": 4,
+    "lines": 360,
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -12145,6 +12140,83 @@
    ],
    "branch": "claude/task/T341-tier-and-visit-schedule-at-pick",
    "prompt": "kit/prompts/T341.md"
+  },
+  {
+   "id": "T440",
+   "slug": "tier-choice-pages",
+   "title": "portals: the quote page's tier choice and the Confirm page's chosen tier",
+   "goal": "Plan change D-3497 split T341 in two: T341 stores and prices the chosen tier in `picks` and adds a tier-taking pick entry point beside `page_pick`, reached through `picks::api`; this task builds the pages (D-2332; PICK-021, PICK-053). (1) The quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`), and the code step calls T341's entry point with it; on T341's validation error for a missing or stale tier the page shows the choices again and nothing is stored. (2) The Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). (D-3118) Shapes that done code and tests build stay as they are: no new field on `quotes::api::PageQuote` (`app/quotes/src/api.rs:115`, which holds only the original text and is built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), on `PageView` or `Numbered` (`app/portals/src/quote_page.rs:117`, `:50`; `PageView` built by literal at `prop_arrival_order.rs:99`) or on `ConfirmFacts` (`app/portals/src/confirm_pay.rs:69`, built by literal in `tests/integration/tests/confirm_terms.rs:89` and `:120`). So `quote_page.rs` reads each tiers quote's tier names from `quotes::api::quoted_prices` and carries them beside the view the way `ShownPage` carries the accepted quote (D-3078: a field on `ShownPage`, a method on `PageView` answering none); the Confirm page takes the chosen tier through a new render entry point in `confirm_pay.rs` beside `confirm_page_with_code`, whose existing callers pass no tier, and a field on the private `ConfirmView` (`:92`). T261 and T132 (the later owners of `confirm_pay.rs`) and T308 and T393 (of `quote_page.rs`) run after this task. Tests in `tests/integration/tests/tier_pick_pages.rs` (TD-FEE-70) against real PostgreSQL, fake data only. Money: the overseer runs an independent money review of the hand-in. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` builds it with `serde_json::from_value`, never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge` (D-3134).",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "portals",
+   "deps": [
+    "T341",
+    "T340",
+    "T342",
+    "T157",
+    "T214",
+    "T266",
+    "T164",
+    "T232",
+    "T388",
+    "T294",
+    "T384",
+    "T421",
+    "T431"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/pick_flow.rs",
+    "app/portals/templates/quote_page.html",
+    "app/portals/src/quote_page.rs",
+    "app/portals/src/confirm_pay.rs",
+    "app/portals/templates/confirm_pay.html",
+    "tests/integration/tests/tier_pick_pages.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/recurring.md",
+    "docs/spec/fees.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-021"
+   ],
+   "tests": [
+    "TD-FEE-70"
+   ],
+   "decisions": [
+    "D-2332",
+    "D-2333",
+    "D-2210",
+    "D-3118",
+    "D-3134",
+    "D-3497"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 380,
+    "context_pct": 31
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T440-tier-choice-pages",
+   "prompt": "kit/prompts/T440.md"
   },
   {
    "id": "T344",
@@ -14336,7 +14408,7 @@
     "T338",
     "T339",
     "T340",
-    "T341",
+    "T440",
     "T342",
     "T343",
     "T344",
@@ -14421,7 +14493,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 54
+    "context_pct": 58
    },
    "checks": [
     "Ci",
@@ -17256,7 +17328,7 @@
     "T320",
     "T321",
     "T324",
-    "T361",
+    "T441",
     "T363",
     "T364",
     "T373",
@@ -19414,7 +19486,7 @@
     "T164",
     "T232",
     "T388",
-    "T341"
+    "T440"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -23378,7 +23450,7 @@
    "id": "T261",
    "slug": "served-confirm-route",
    "title": "portals and server (harness): the served Confirm page under the real middleware, the payment page's own Stripe CSP, and truthful bank-approval handling",
-   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `adapters::api::StripePayments` as the `IntentStripe` (`app/payments/src/intent_http.rs:15`; no `StripeHttp` exists, and the bank approval's client secret comes from `StripePayments`'s own intent answers, D-2076 (2); D-3100): only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` counts as a component test of the script only, never as journey evidence (D-1754), and changes in one case only (D-3100): its fake `handleNextAction` answers success at once, so after (3) its TD-FEE-25 3-D Secure case could never see the \"Your bank wants to check\" line it asserts (`:123`); that case holds the fake's answer until it has asserted that line and the `3ds` call, then releases it; the stand-in likewise holds its answer to the page's state ask until the case has asserted the checking line, then releases it; every other case, the stand-in page and the fake's other calls stay byte-identical; this one case is why the task is a harness task (only a harness task changes an earlier task's test). Update the `portals` and `server` `CLAUDE.md` files, add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3100) and `docs/decisions.md`. The Confirm route is served only after T433 (D-3468's half of T328) registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick, (business, job))` with the pick's own business and job (`app/payments/src/release_proof.rs:237`; since T337 it reads the pick's stored fee row and refuses any other pair; D-3100) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58). The Confirm route is served only after T340 and T341 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3055 (T232's pieces, which it builds but cannot serve): on `GET` the route calls T232's Confirm-page first-opening stamp; on each `POST` it applies T232's shared-inbox fresh-code check before `may_confirm` and stores T232's business-terms record (`businesses::api::record_confirm_terms`, channel `confirm_page`, the pick ID) in the press's transaction. `tests/e2e/confirm_served.spec.ts` also checks that the served page carries the \"Can't take it\" link to `/b/picks/{pick}/cant-take` (the page behind it is served by T306) and that reloading the page stores no terms row, and `confirm_route.rs` that with \"This inbox is shared\" on a Confirm inside a live session asks for a fresh code and charges nothing without it (the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32).",
+   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `adapters::api::StripePayments` as the `IntentStripe` (`app/payments/src/intent_http.rs:15`; no `StripeHttp` exists, and the bank approval's client secret comes from `StripePayments`'s own intent answers, D-2076 (2); D-3100): only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` counts as a component test of the script only, never as journey evidence (D-1754), and changes in one case only (D-3100): its fake `handleNextAction` answers success at once, so after (3) its TD-FEE-25 3-D Secure case could never see the \"Your bank wants to check\" line it asserts (`:123`); that case holds the fake's answer until it has asserted that line and the `3ds` call, then releases it; the stand-in likewise holds its answer to the page's state ask until the case has asserted the checking line, then releases it; every other case, the stand-in page and the fake's other calls stay byte-identical; this one case is why the task is a harness task (only a harness task changes an earlier task's test). Update the `portals` and `server` `CLAUDE.md` files, add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3100) and `docs/decisions.md`. The Confirm route is served only after T433 (D-3468's half of T328) registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick, (business, job))` with the pick's own business and job (`app/payments/src/release_proof.rs:237`; since T337 it reads the pick's stored fee row and refuses any other pair; D-3100) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58). The Confirm route is served only after T340, T341 and T440 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3055 (T232's pieces, which it builds but cannot serve): on `GET` the route calls T232's Confirm-page first-opening stamp; on each `POST` it applies T232's shared-inbox fresh-code check before `may_confirm` and stores T232's business-terms record (`businesses::api::record_confirm_terms`, channel `confirm_page`, the pick ID) in the press's transaction. `tests/e2e/confirm_served.spec.ts` also checks that the served page carries the \"Can't take it\" link to `/b/picks/{pick}/cant-take` (the page behind it is served by T306) and that reloading the page stores no terms row, and `confirm_route.rs` that with \"This inbox is shared\" on a Confirm inside a live session asks for a fresh code and charges nothing without it (the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -23393,7 +23465,7 @@
     "T433",
     "T337",
     "T340",
-    "T341",
+    "T440",
     "T348",
     "T359",
     "T362",
@@ -28452,8 +28524,8 @@
   {
    "id": "T361",
    "slug": "pick-bound-to-business",
-   "title": "quotes, picks and portals: a quote keeps its number once shown, and a pick names the business it was reviewed for",
-   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business. `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; the forms post only `quote=<n>` (`quote_page.html`, `pick_review.html`, `pick_code.html`); text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering. An AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`, so: A AI-read at 10:00 (hidden), B by form at 10:05 shows as #1; she reviews \"Pick #1\" and starts the code step; at 10:07 A is confirmed and becomes #1; her code then picks A, notifies A and fixes A's fee. An AI-read edit (the upsert sets `confirmed = false`) and a withdrawal (dropped from the list) shift later numbers the same way. Fix: (1) `migrations/0199_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; `page_quotes` and `list_rows` order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes only the order both share); a withdrawn quote keeps its place and number (shown as \"Withdrawn by the business\") (T384 already keeps it in place in `page_quotes` and the LIST reply, marked unavailable, D-2912) and an unconfirmed edit keeps its number while it waits; (2) the review, pick and code forms carry the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret), and `page_pick` and the text pick answer `Taken` when the number no longer maps to that business, so nothing is stored, notified or charged for another business. (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60), each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912): A AI-read at t0, B by form at t0+5m; review #1; confirm A; finish #1: the pick is B's (or refused), never A's; the same with an AI-read edit of an earlier quote, and with a withdrawal of #1 (B stays #2); a text \"2 YES\" after a reorder picks the business shown as #2. Every TD-PICK case passes unchanged. Update the `quotes`, `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3144: `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests): the business-bound pick is a new entry point beside it, which the page's forms use; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches the page through a new `quotes::api` read beside `page_quotes` and a new numbering function beside `portals`' `number_quotes`, which keeps its signature for that test.",
+   "title": "quotes and picks: a quote keeps its number once shown, and a pick resolves to the business it was shown for",
+   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business, so a quote confirmed or edited after a later one, or a withdrawal, shifts the numbers and a pick can land on, notify and charge another business (D-2632 gives the sequence). Plan change D-3497 split this task in two: this task stores the shown number and binds the pick in `quotes` and `picks`; T441 makes the quote page and the review, pick and code forms use them. Today `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering; an AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`. Fix: (1) `migrations/0199_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; `page_quotes` and `list_rows` order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes only the order both share); a withdrawn quote keeps its place and number (T384 already keeps it in place, D-2912) and an unconfirmed edit keeps its number while it waits; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches callers through a new `quotes::api` read beside `page_quotes` (D-3144). (2) `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests, D-3144), and a new business-bound entry point beside it, reached through `picks::api`, takes the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret) and answers `Taken` when the number no longer maps to that business; the text pick answers `Taken` the same way; so nothing is stored, notified or charged for another business. The new entry point and the text pick resolve a number by its shown number, never its list position; until T441 merges, the quote page still numbers by position through `number_quotes`, so `page_pick` keeps resolving a number by its position in the list the page shows (now in shown-number order), and the page and the pick it posts always agree; T441 moves the page to the shown number and the new entry point together (D-3497). (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60) through `quotes::api` and `picks::api`, each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912). Every TD-PICK case passes unchanged. Update the `quotes` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -28484,15 +28556,11 @@
     "security"
    ],
    "owns": [
+    "migrations/0199_quotes_shown_number.sql",
     "app/quotes/src/api.rs",
     "app/quotes/src/models.rs",
     "app/quotes/src/intake.rs",
-    "migrations/0199_quotes_shown_number.sql",
     "app/picks/src/service.rs",
-    "app/portals/src/pick_flow.rs",
-    "app/portals/templates/quote_page.html",
-    "app/portals/templates/pick_review.html",
-    "app/portals/templates/pick_code.html",
     "tests/integration/tests/pick_bound_business.rs"
    ],
    "reads": [
@@ -28520,13 +28588,14 @@
     "D-2912",
     "D-3144",
     "D-3262",
-    "D-3263"
+    "D-3263",
+    "D-3497"
    ],
    "cites": [],
    "budget": {
-    "files": 10,
-    "lines": 600,
-    "context_pct": 38
+    "files": 6,
+    "lines": 380,
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -28615,6 +28684,87 @@
    "branch": "claude/task/T407-safety-call-switch-stored",
    "prompt": "kit/prompts/T407.md",
    "acceptance": "TD-CALL-26 passes against PostgreSQL through the worker and the served routes; TD-CALL-19 and every existing safety-call, consent and owner-portal test passes unchanged; the switch stays off at launch."
+  },
+  {
+   "id": "T441",
+   "slug": "pick-forms-carry-business",
+   "title": "portals: the quote page shows the kept number, and the pick forms carry the business it was shown for",
+   "goal": "Plan change D-3497 split T361 in two (D-2632; PICK-008, PRIV-005): T361 stores each quote's shown number, orders `page_quotes` and the LIST by it, gives a `quotes::api` read of the shown numbers and a `picks::api` business-bound pick entry point that answers `Taken` when a number no longer maps to the business; this task makes the pages use them. The quote page numbers each quote by its shown number through T361's read and a new numbering function beside `portals`' `number_quotes` (`app/portals/src/quote_page.rs:61`, rendered at `:257`), which keeps its signature for `app/portals/src/tests/prop_arrival_order.rs` (D-3144); a withdrawn quote keeps its place and number, shown as \"Withdrawn by the business\". The review, pick and code forms (`app/portals/templates/quote_page.html`, `pick_review.html`, `pick_code.html`, posted to `app/portals/src/pick_flow.rs`) carry the business the number was shown for, in the form T361's entry point takes, and `pick_flow.rs` calls that entry point and treats `Taken` as it treats any quote that can no longer be picked, so nothing is stored, notified or charged for another business. Tests in `tests/integration/tests/pick_bound_forms.rs` (TD-PICK-64) against real PostgreSQL, fake data only. Every TD-PICK case passes unchanged. Update the `portals` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T361",
+    "T249",
+    "T342",
+    "T340",
+    "T341",
+    "T344",
+    "T295",
+    "T318",
+    "T266",
+    "T157",
+    "T214",
+    "T164",
+    "T232",
+    "T388",
+    "T308",
+    "T384",
+    "T440"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/pick_flow.rs",
+    "app/portals/src/quote_page.rs",
+    "app/portals/templates/quote_page.html",
+    "app/portals/templates/pick_review.html",
+    "app/portals/templates/pick_code.html",
+    "tests/integration/tests/pick_bound_forms.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/terms.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/privacy.md"
+   ],
+   "requirements": [],
+   "tests": [
+    "TD-PICK-64"
+   ],
+   "decisions": [
+    "D-2632",
+    "D-2631",
+    "D-084",
+    "D-2912",
+    "D-3144",
+    "D-3262",
+    "D-3263",
+    "D-3497"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 260,
+    "context_pct": 27
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T441-pick-forms-carry-business",
+   "prompt": "kit/prompts/T441.md"
   },
   {
    "id": "T382",
@@ -28759,13 +28909,13 @@
    "id": "T363",
    "slug": "pick-code-ip-limits",
    "title": "portals: the served pick and its code step apply the per-IP code send and try limits",
-   "goal": "Nov 10 code review batch 2, portals F3 (D-2634; SEC-014, D-1950, D-1951): the served pick's code step skips T089's per-IP code limits: `final_pick` and `code_step` (`app/portals/src/pick_flow.rs`) call neither of `portals`' own `crate::limits::admit_code_send` and `admit_code_try` (`app/portals/src/limits.rs:107`, `:84`), although `CODE_TRIES_PER_IP` (`:26`) is meant to cover pick codes, and D-1951's wiring list names only T280, T301, T302, T303 and T307. Fix: `final_pick` and \"Send a new code\" call `admit_code_send(pool, (ip, None), (now, threshold))` and \"Finish my pick\" calls `admit_code_try(pool, (ip, None), now)`, with the client IP from `ClientIpPolicy`, each before any Verify call; a refusal shows the existing daily-cap line and sends nothing. After T361 (the last earlier owner of `pick_flow.rs`). Tests in `tests/integration/tests/pick_code_limits.rs` (TD-SEC-63): 11 code sends from one IP across different jobs give exactly one refusal and no eleventh send; tries over the per-IP limit are refused before Verify; another IP is unaffected. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3144: the contact passed is `None`: `picks`' `send_code` already counts the per-number and global daily caps (`app/picks/src/service.rs:714`; the global threshold is `VERIFY_DAILY_THRESHOLD`, `app/portals/src/pick_flow.rs:274`), so `Some` would count them twice; `None` spends the per-IP count and two `CODE_SENDS_UNKNOWN` counters that never refuse. The client IP comes from a `ClientIpPolicy` that `PickCodeKeys` gains through a builder beside `with_threshold` (`:309`), so `pick_flow_routes` and `PickCodeKeys::new` keep their signatures (callers `tests/integration/tests/page_pick.rs:91`, `tests/integration/tests/share_and_cant_take.rs:197` to `:199`, `tests/security/tests/page_pick_privacy.rs:102`); `server`'s `pick_code_keys` (the shared `app/server/src/lib.rs:220`) sets it from the settings.",
+   "goal": "Nov 10 code review batch 2, portals F3 (D-2634; SEC-014, D-1950, D-1951): the served pick's code step skips T089's per-IP code limits: `final_pick` and `code_step` (`app/portals/src/pick_flow.rs`) call neither of `portals`' own `crate::limits::admit_code_send` and `admit_code_try` (`app/portals/src/limits.rs:107`, `:84`), although `CODE_TRIES_PER_IP` (`:26`) is meant to cover pick codes, and D-1951's wiring list names only T280, T301, T302, T303 and T307. Fix: `final_pick` and \"Send a new code\" call `admit_code_send(pool, (ip, None), (now, threshold))` and \"Finish my pick\" calls `admit_code_try(pool, (ip, None), now)`, with the client IP from `ClientIpPolicy`, each before any Verify call; a refusal shows the existing daily-cap line and sends nothing. After T441 (the last earlier owner of `pick_flow.rs`, D-3497). Tests in `tests/integration/tests/pick_code_limits.rs` (TD-SEC-63): 11 code sends from one IP across different jobs give exactly one refusal and no eleventh send; tries over the per-IP limit are refused before Verify; another IP is unaffected. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3144: the contact passed is `None`: `picks`' `send_code` already counts the per-number and global daily caps (`app/picks/src/service.rs:714`; the global threshold is `VERIFY_DAILY_THRESHOLD`, `app/portals/src/pick_flow.rs:274`), so `Some` would count them twice; `None` spends the per-IP count and two `CODE_SENDS_UNKNOWN` counters that never refuse. The client IP comes from a `ClientIpPolicy` that `PickCodeKeys` gains through a builder beside `with_threshold` (`:309`), so `pick_flow_routes` and `PickCodeKeys::new` keep their signatures (callers `tests/integration/tests/page_pick.rs:91`, `tests/integration/tests/share_and_cant_take.rs:197` to `:199`, `tests/security/tests/page_pick_privacy.rs:102`); `server`'s `pick_code_keys` (the shared `app/server/src/lib.rs:220`) sets it from the settings.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "portals",
    "deps": [
-    "T361",
+    "T441",
     "T089",
     "T317"
    ],
@@ -29885,7 +30035,7 @@
    "module": "portals",
    "deps": [
     "T316",
-    "T341",
+    "T440",
     "T374",
     "T406"
    ],
