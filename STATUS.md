@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T08:28:40Z by runner bee96646639a (actions).
+Updated 2026-11-13T08:33:46Z by runner bee96646639a (actions).
 
 **Building: T249 in progress since 07:51Z; 276 of 415 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T08:28:40Z by runner bee96646639a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T249 claimed 07:51Z, lease until 10:51Z
 - **Week:** 14% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:28Z, 0 min before this update
+- **Last run:** 08:33Z, 0 min before this update
 - **Keeper:** last ran 08:28Z, next wake 10:54Z
 
 ## Needs attention
@@ -110,7 +110,6 @@ Updated 2026-11-13T08:28:40Z by runner bee96646639a (actions).
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
 - 09:22Z Plan: T345 owns the runner tests that hard-code action tags (D-3200) (#572)
 - 09:13Z Plan: store the scrubbed job description and shown card so T251 can send approved cards (D-3189) (#568)
-- 08:32Z Harness: smoke ancestry reuse accepts squash commits whose identical tree passed Ci, Twin and Ally (D-3156) (#560)
 
 ## Progress (requirements verified)
 
