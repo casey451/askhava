@@ -37483,8 +37483,8 @@
     "T421",
     "T431"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "tier-and-visit-schedule-at-pick",
    "type": "harness",
    "stage": "4",
@@ -37496,6 +37496,33 @@
     3576,
     3577,
     3578
+   ],
+   "reason": "plan gap reported: PLAN GAP: test-design.md:203 (TD-FEE-63) and D-2332 require a text pick of a tiers quote to store nothing and reply with the quote-page link, but kit/prompts/T341.md:139 and :145 say T341 owns no customer copy. The reply needs a new en/es template with a link placeholder: existing text_pick_* templates have no {link}, and the first_quote, all_quotes_in and quote_update templates that do say something false here. Reviewer confirmed. Correction: no intake change is needed, because Out::say in app/picks/src/service.rs:183-205 renders the reply. TextPickIn carries no quote-page link, which is unse; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T341 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: test-design.md:203 (TD-FEE-63) and D-2332 require a text pick of a tiers quote to store nothing and reply with the quote-page link, but kit/prompts/T341.md:139 and :145 say T341 owns no customer copy. The reply needs a new en/es template with a link placeholder: existing text_pick_* templates have no {link}, and the first_quote, all_quotes_in and quote_update templates that do say something false here. Reviewer confirmed. Correction: no intake change is needed, because Out::say in app/picks/src/service.rs:183-205 renders the reply. TextPickIn carries no quote-page link, which is unsettled. Smallest fix: let T341 own the new template key (copy review WORD-028/029), or move this reply to T440 or a copy task and change TD-FEE-63 and D-2332 to match. Nothing was changed or committed.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 39,
+     "head_sha": "e2313f0f0711f3df02c4041c63cce73cded0b198",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-13T23:07:43Z",
+     "ended_at": "2026-11-13T23:11:06Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 2009085,
+       "turns": 21
+      },
+      "reviewer": {
+       "tokens": 480904,
+       "turns": 7
+      }
+     }
+    }
    ]
   },
   {
@@ -48902,12 +48929,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T328",
-   "at": "2026-11-13T23:00:58Z",
-   "cache_creation_input_tokens": 209848,
-   "output_tokens": 39613,
-   "cache_read_input_tokens": 4737864,
-   "input_tokens": 181
+   "task": "T341",
+   "at": "2026-11-13T23:11:06Z",
+   "output_tokens": 27302,
+   "cache_creation_input_tokens": 181639,
+   "cache_read_input_tokens": 2280944,
+   "input_tokens": 104
   },
   "source": "session_reading 2026-11-13T23:01:25Z (week)",
   "by_task": {
@@ -51837,17 +51864,26 @@
    },
    "T341": {
     "estimated_bytes": 694926,
-    "estimated_tokens": 3675017
+    "estimated_tokens": 3675017,
+    "output_tokens": 27302,
+    "cache_creation_input_tokens": 181639,
+    "cache_read_input_tokens": 2280944,
+    "input_tokens": 104,
+    "worker_tokens": 2009085,
+    "worker_turns": 21,
+    "reviewer_tokens": 480904,
+    "reviewer_turns": 7,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-13T20:09:01Z",
-    "tokens": 22126098
+    "tokens": 22563237
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 80343121,
+    "tokens": 80780260,
     "scaled_by": 0.6,
     "counting": "message_id"
    }
@@ -51860,7 +51896,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T23:08:11Z",
+ "updated_at": "2026-11-13T23:11:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -51958,7 +51994,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "31c17d5aa447f0a57b77cad6d11b3f01ddc7ac45",
+ "runner_sha": "e2313f0f0711f3df02c4041c63cce73cded0b198",
  "starter": "actions",
  "smoke_runs": [
   {
