@@ -2703,3 +2703,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## One shared email per homeowner, for now (D-3459, November 13)
 
 - When a homeowner picks on the quote page and chooses to be reached by email, the address is stored once on her record, not once per job. If she later shares a different address on a new job, the new one replaces the old one everywhere: a business she picked on the earlier job would then see the new address, and emails about the earlier job would go there too. Both addresses are hers and only businesses she picked see them, but the earlier business sees one she did not share with it. We accepted this for now; keeping a separate address per pick is a follow-up. Nothing needs you now unless you want that follow-up done before launch.
+
+## Token counts fixed; fix rounds must be re-reviewed (D-3475, November 13)
+
+Two runner fixes are queued first. The runner was counting tokens about 1.65 times over, because each reply appears on several lines of a session log; T438 counts each reply once and corrects the pacer's estimates for the older numbers. Your weekly usage reading comes from the plan itself, so it was never wrong. T439 makes the runner refuse a hand-in unless an Opus reviewer approved the exact final commit and every new commit was made by a worker, not the coordinating session; three of four fix rounds checked earlier this week had merged without that second look. Nothing needs you.
