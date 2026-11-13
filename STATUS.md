@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T11:42:30Z by runner 67d6f23a8fa8 (actions).
+Updated 2026-11-13T11:47:39Z by runner 67d6f23a8fa8 (actions).
 
 **Building: T255 in progress since 11:40Z; 278 of 417 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T11:42:30Z by runner 67d6f23a8fa8 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T255 claimed 11:40Z, lease until 14:40Z; lane 4: T312 claimed 11:41Z, lease until 14:41Z
 - **Week:** 16% used, 157.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:42Z, 0 min before this update
+- **Last run:** 11:47Z, 0 min before this update
 - **Keeper:** last ran 11:42Z, next wake 14:43Z
 
 ## Needs attention
@@ -75,7 +75,6 @@ Updated 2026-11-13T11:42:30Z by runner 67d6f23a8fa8 (actions).
 | T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
 | T378 | adapters, calls and stand-in (harness): every outbound call  | done | 1 | 45 min | 12:34Z |  |
 | T323 | ai: a new capitalized name at the start of a sentence counts | done | 1 | 24 min | 11:47Z |  |
-| T404 | harness: the door probe's fixtures hold a charged pick and t | done | 1 | 27 min | 11:46Z |  |
 
 ### Plan and harness merges on main
 - 11:32Z Harness: fix-round hand-off, tighter output caps, crate_cap 2 (D-3444) (#665)
