@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM privacy.staff_phone WHERE set_at < $2::timestamptz AND NOT (line_id = ANY($1))",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "544d7c5efe6166528fe9343f5c0e3bf31959e41ce84e821c6175d9817ff7b83b"
+}

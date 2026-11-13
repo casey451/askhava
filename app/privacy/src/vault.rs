@@ -45,7 +45,7 @@ pub const BASELINE_FLOOR: f64 = 1.0;
 const NONCE_LEN: usize = 12;
 const VERSION_LEN: usize = 2;
 /// The alert raised for a read whose reader, purpose or field is not a grant (SEC-047).
-const UNREGISTERED_ALERT: &str = "privacy.vault_read_unregistered";
+pub(crate) const UNREGISTERED_ALERT: &str = "privacy.vault_read_unregistered";
 /// The alert raised for an hour's reads above three times their baseline (SEC-047).
 const SPIKE_ALERT: &str = "privacy.vault_read_spike";
 /// The table a contact field is sealed for, named in its associated data (PRIV-002).
@@ -191,6 +191,28 @@ impl Vault {
             .map_err(|_| VaultError::Sealed)
     }
 
+    /// Seals `plain` for row `id` of the business-contact place `table` under the active key, its
+    /// associated data naming that table, column, row and version (PRIV-002, PRIV-024, D-3262).
+    /// The closed [`BusinessTable`] keeps it from sealing a homeowner contact or stated name.
+    pub(crate) fn seal_business(
+        &self,
+        table: BusinessTable,
+        id: Uuid,
+        plain: &str,
+    ) -> Result<Vec<u8>, VaultError> {
+        self.seal_at(table.place(), id, plain)
+    }
+
+    /// Opens a value [`Vault::seal_business`] sealed for row `id` of `table` (PRIV-002, D-3262).
+    pub(crate) fn open_business(
+        &self,
+        table: BusinessTable,
+        id: Uuid,
+        sealed: &[u8],
+    ) -> Result<SecretString, VaultError> {
+        self.open_at(table.place(), id, sealed)
+    }
+
     /// The blind-index digests of `value` for `purpose` under every index key version, the active
     /// first: HMAC-SHA256 under the key derived as HMAC(`VAULT_INDEX_KEY` vN, `<purpose>|vN`)
     /// (PRIV-024). Equality-only; it leaks which rows share a value (postgres brain P12).
@@ -239,6 +261,26 @@ impl Vault {
                 (*version, hmac(&derived, value.as_bytes()))
             })
             .collect()
+    }
+}
+
+/// The business-contact places the vault seals, apart from the homeowner contact (D-3262): the
+/// only tables [`Vault::seal_business`] and [`Vault::open_business`] reach (PRIV-002).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum BusinessTable {
+    /// `privacy.business_mailbox.address`, keyed by the mailbox ID.
+    MailboxAddress,
+    /// `privacy.staff_phone.number`, keyed by the line ID.
+    StaffPhoneNumber,
+}
+
+impl BusinessTable {
+    /// The table and column named in the associated data.
+    pub(crate) const fn place(self) -> (&'static str, &'static str) {
+        match self {
+            Self::MailboxAddress => ("privacy.business_mailbox", "address"),
+            Self::StaffPhoneNumber => ("privacy.staff_phone", "number"),
+        }
     }
 }
 
@@ -317,7 +359,8 @@ fn parse_keys(value: &str) -> Result<BTreeMap<u16, KeyBytes>, VaultError> {
     Ok(keys)
 }
 
-fn db_err(_: sqlx::Error) -> VaultError {
+/// Any database failure, its message dropped (PRIV-016).
+pub(crate) fn db_err(_: sqlx::Error) -> VaultError {
     VaultError::Database
 }
 
@@ -541,7 +584,7 @@ pub(crate) async fn in_transaction(db: &mut PgConnection) -> Result<bool, sqlx::
 /// Fails with [`VaultError::InTransaction`] when `db` is inside a transaction ([`in_transaction`]),
 /// so a caller's later rollback cannot undo a read's audit rows or a refusal's alert (PRIV-003,
 /// SEC-047, D-753).
-async fn ensure_bare(db: &mut PgConnection) -> Result<(), VaultError> {
+pub(crate) async fn ensure_bare(db: &mut PgConnection) -> Result<(), VaultError> {
     if in_transaction(db).await.map_err(db_err)? {
         return Err(VaultError::InTransaction);
     }
@@ -689,7 +732,7 @@ async fn audit_read(
 }
 
 /// Adds one read to `action`'s count for this UTC hour (SEC-047, D-750).
-async fn count_read(db: &mut PgConnection, action: &str) -> Result<(), VaultError> {
+pub(crate) async fn count_read(db: &mut PgConnection, action: &str) -> Result<(), VaultError> {
     sqlx::query!(
         "INSERT INTO privacy.read_count (hour, action, reads) VALUES (date_trunc('hour', now(), 'UTC'), $1, 1) \
          ON CONFLICT (action, hour) DO UPDATE SET reads = privacy.read_count.reads + 1",
@@ -702,7 +745,7 @@ async fn count_read(db: &mut PgConnection, action: &str) -> Result<(), VaultErro
 }
 
 /// The grant `privacy` reads under for `purpose`.
-fn own_grant(purpose: Purpose) -> &'static Grant {
+pub(crate) fn own_grant(purpose: Purpose) -> &'static Grant {
     GRANTS
         .iter()
         .find(|g| g.reader == Reader::Privacy && g.purpose == purpose)
