@@ -14,17 +14,21 @@
 //! (the pick notice, the withdrawal notice) are `core.task` rows with IDs only; their emails are
 //! other tasks' (D-491). T287 (D-1871): each new pick stores, in its own transaction, the
 //! introduction fee by job size fixed from its chosen quote (`payments::api::fix_fee_at_pick`).
+//! T340 (D-2331, D-3547): the fee's job facts come from the job's latest stored codes
+//! (`jobs::api::job_facts`) resolved by `payments::api::resolve_fee_facts`; unsettled facts refuse
+//! a non-emergency pick and price an emergency one on the default one-time facts with one High
+//! [`FEE_FACTS_ALERT`] naming the pick only.
 
 use std::sync::OnceLock;
 
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_core::api::{Guarded, NewTask, brand, enqueue as enqueue_task};
-use askhava_jobs::api::{current, job_number, move_to};
+use askhava_jobs::api::{current, job_facts, job_number, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
 use askhava_payments::api::{
-    BusinessId, FeeJob, FeeQuote, Period as FeePeriod, PeriodJob, PickedFee, RecurringCap, Service,
-    VisitTier, fee_at_pick, fee_terms_in_force, fix_fee_at_pick,
+    BusinessId, FeeQuote, JobCodes, JobFeeFacts, Period as FeePeriod, PeriodJob, PickedFee,
+    fee_at_pick, fee_terms_in_force, fix_fee_at_pick, resolve_fee_facts,
 };
 use askhava_privacy::api::{Vault, read_for_pick_code};
 use askhava_quotes::api::{Period, Price, page_quotes, quoted_prices};
@@ -58,6 +62,9 @@ pub const WAITING_TEMPLATE: &str = "text_pick_waiting";
 pub const NONE_TEMPLATE: &str = "text_pick_none";
 /// The pick-notice event: payload `pick`, `job`, `business`; it goes at once (PICK-031).
 pub const PICK_MADE_KIND: &str = "picks.pick_made";
+/// FEE-005, D-2331: the High alert of an emergency pick priced on default facts; its subject is
+/// the pick (`picks.pick`), from which the job and its number follow; no homeowner detail.
+pub const FEE_FACTS_ALERT: &str = "picks.fee_facts_unsettled";
 /// The withdrawal-notice event for the business: payload `pick`, `job`, `business`, `reason`
 /// (`replaced`, PICK-032; `paused`, CON-029).
 pub const PICK_WITHDRAWN_KIND: &str = "picks.pick_withdrawn";
@@ -358,8 +365,9 @@ async fn place(
 }
 
 /// Stores the pick with the fee fixed from its chosen quote (FEE-005, D-1871), its audit row and
-/// the pick-notice event. A quote whose fee can't be fixed is [`PicksError::Quotes`] and nothing
-/// is stored; the caller rolls its transaction back.
+/// the pick-notice event. A quote whose fee can't be fixed, or a non-emergency job whose facts are
+/// unsettled (D-2331), is [`PicksError::Quotes`] and nothing is stored; the caller rolls its
+/// transaction back. An emergency pick on default facts raises one [`FEE_FACTS_ALERT`].
 async fn new_pick(
     tx: &mut PgConnection,
     (job, quote, inbox): (Uuid, usize, Option<Uuid>),
@@ -368,26 +376,30 @@ async fn new_pick(
     let quotes = page_quotes(tx, job).await.map_err(|_| PicksError::Quotes)?;
     let business = quotes.get(quote - 1).ok_or(PicksError::Quotes)?.business;
     let number = i32::try_from(quote).map_err(|_| PicksError::Quotes)?;
-    let fee = picked_fee(tx, job, business).await?;
+    let (fee, unsettled) = picked_fee(tx, job, business).await?;
     let row = (job, business, number, inbox);
     let pick = models::insert_pick(tx, row, at).await?;
     fix_fee_at_pick(tx, pick, BusinessId(business), job, &fee, at)
         .await
         .map_err(|_| PicksError::Database)?;
+    if unsettled {
+        facts_alert(tx, pick).await?;
+    }
     pick_audit(tx, actor, "picks.picked", pick).await?;
     let payload = serde_json::json!({ "pick": pick, "job": job, "business": business });
     event(tx, PICK_MADE_KIND, pick, payload, at).await?;
     Ok(pick)
 }
 
-/// FEE-005, FEE-007, D-1415, D-1871, D-2210: the introduction fee by job size of `business`'s
-/// chosen quote on `job`, from its amounts and period alone under the fee terms in force, through
-/// `quotes::api` and `payments::api` only.
+/// FEE-005, FEE-007, FEE-045, D-1415, D-1871, D-2331: the introduction fee by job size of
+/// `business`'s chosen quote on `job`, from its amounts and period and the job's facts under the
+/// fee terms in force, through `quotes::api`, `jobs::api` and `payments::api` only; `true` with it
+/// when an emergency job's unsettled facts were replaced by the defaults.
 async fn picked_fee(
     tx: &mut PgConnection,
     job: Uuid,
     business: Uuid,
-) -> Result<PickedFee, PicksError> {
+) -> Result<(PickedFee, bool), PicksError> {
     let prices = quoted_prices(tx, job)
         .await
         .map_err(|_| PicksError::Quotes)?;
@@ -396,19 +408,69 @@ async fn picked_fee(
         .find(|q| q.business == business && !q.withdrawn)
         .and_then(|q| q.price)
         .ok_or(PicksError::Quotes)?;
-    let (chosen, period, facts) = fee_inputs(&price).ok_or(PicksError::Quotes)?;
+    let (facts, unsettled) = job_fee_facts(tx, job).await?;
+    let (chosen, period, facts) = fee_inputs(&price, facts).ok_or(PicksError::Quotes)?;
     let terms = fee_terms_in_force(tx)
         .await
         .map_err(|_| PicksError::Database)?;
-    fee_at_pick(chosen, period, facts, terms.mode(), None).map_err(|_| PicksError::Quotes)
+    fee_at_pick(chosen, period, facts, terms.mode(), None)
+        .map(|fee| (fee, unsettled))
+        .map_err(|_| PicksError::Quotes)
 }
 
-/// FEE-005, D-1415, D-2210: the fee inputs a stored price gives: the quote, its period and the
-/// job facts. No job stores its category or job type yet, so the facts are the defaults (the $25
-/// set tier, not fee-free, the $75 recurring cap, no flat-mode edit), a period quote is a recurring
-/// job type and any other one-time. A tiered quote (no one price was chosen) or a per-visit
-/// period has no fee: none.
-fn fee_inputs(price: &Price) -> Option<(FeeQuote, Option<FeePeriod>, PeriodJob)> {
+/// FEE-004, FEE-045, D-2331: `job`'s fee facts from its latest stored codes, resolved by
+/// `payments`; `true` with them when they were unsettled (no row, an unknown code, candidates
+/// outside the category) on an emergency job, which takes [`JobFeeFacts::EMERGENCY_DEFAULT`].
+/// Unsettled facts on any other job are [`PicksError::Quotes`] (fail closed).
+async fn job_fee_facts(
+    tx: &mut PgConnection,
+    job: Uuid,
+) -> Result<(JobFeeFacts, bool), PicksError> {
+    let row = job_facts(tx, job).await.map_err(|_| PicksError::Database)?;
+    let codes = row.as_ref().map(|r| JobCodes {
+        category: &r.category,
+        job_types: &r.job_types,
+    });
+    let resolved = resolve_fee_facts(tx, codes)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    if let Some(facts) = resolved {
+        return Ok((facts, false));
+    }
+    let emergency = current(tx, job)
+        .await
+        .map_err(|_| PicksError::Job)?
+        .emergency;
+    if emergency {
+        Ok((JobFeeFacts::EMERGENCY_DEFAULT, true))
+    } else {
+        Err(PicksError::Quotes)
+    }
+}
+
+/// FEE-005, D-2331: raises the High [`FEE_FACTS_ALERT`] about `pick`, by ID only, so the owner can
+/// check the fee stored on default facts before the business confirms.
+async fn facts_alert(tx: &mut PgConnection, pick: Uuid) -> Result<(), PicksError> {
+    let alert = NewAlert {
+        kind: FEE_FACTS_ALERT,
+        severity: Severity::High,
+        subject: Some(("picks.pick", pick)),
+    };
+    raise_alert(tx, &alert)
+        .await
+        .map(|_| ())
+        .map_err(|_| PicksError::Audit)
+}
+
+/// FEE-004, FEE-005, D-1415, D-2210, D-2331: the fee inputs a stored price and the job's `facts`
+/// give: the quote, its period and the job as the fee sees it (`JobFeeFacts::period_job`: one-time
+/// when every candidate is, else a period quote is a recurring job type and any other one-time;
+/// the $75 recurring cap, no flat-mode edit). A tiered quote (no one price was chosen) or a
+/// per-visit period has no fee: none.
+fn fee_inputs(
+    price: &Price,
+    facts: JobFeeFacts,
+) -> Option<(FeeQuote, Option<FeePeriod>, PeriodJob)> {
     let (chosen, period) = match price {
         Price::Firm(cents) => (FeeQuote::Fixed(*cents), None),
         Price::Range { low, high, .. } => (
@@ -435,20 +497,11 @@ fn fee_inputs(price: &Price) -> Option<(FeeQuote, Option<FeePeriod>, PeriodJob)>
         chosen,
         FeeQuote::DiagnosticVisit { .. } | FeeQuote::Hourly { hours: None, .. }
     );
-    let facts = PeriodJob {
-        job: FeeJob {
-            diagnostic_visit,
-            visit_tier: VisitTier::DEFAULT,
-            fee_free: false,
-        },
-        service: if period.is_some() {
-            Service::RecurringJobType
-        } else {
-            Service::NotRecurring
-        },
-        cap: RecurringCap::DEFAULT,
-    };
-    Some((chosen, period, facts))
+    Some((
+        chosen,
+        period,
+        facts.period_job(diagnostic_visit, period.is_some()),
+    ))
 }
 
 /// REC-002: the fee period of a stored quote period; a per-visit price has none.
