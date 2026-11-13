@@ -35,7 +35,7 @@ use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use serde_json::{Value, json};
 use sqlx::types::Uuid;
-use sqlx::{PgConnection, PgPool};
+use sqlx::{Connection, PgConnection, PgPool};
 
 use crate::contact_choice::contact_choice;
 use crate::money_notices::BUSINESS_NOTICE_KIND;
@@ -54,6 +54,9 @@ pub const EMAILED_QUESTION_TEMPLATE: &str = "emailed_question";
 pub const EMAILED_YES_ACTION: &str = "picks.emailed_yes";
 /// The audit mark of a NO to the emailed question (JOB-027, D-3488): stored only, never a no-show.
 pub const EMAILED_NO_ACTION: &str = "picks.emailed_no";
+/// The audit mark that the missed-call text or its email copy is queued for the pick (FEE-022,
+/// TXT-030, D-3490): once stored, the notice counts as attempted at every later run.
+pub const NOTICE_QUEUED_ACTION: &str = "picks.missed_call_notice_queued";
 /// A waiting refund's step, or a fraud warning's refund in flight, runs again this much later.
 pub const RERUN_AFTER: SignedDuration = SignedDuration::from_hours(1);
 
@@ -439,17 +442,26 @@ enum Missed {
     Held(Timestamp),
 }
 
-/// TXT-030, QH-001, QH-004, D-1819, D-3487: the missed-call notice when the first business
+/// TXT-030, QH-001, QH-004, D-1819, D-3487, D-3490: the missed-call notice when the first business
 /// attempt went unanswered: texted now inside her window or at any hour on an emergency job;
 /// outside it the caller queues its step again for the window's opening, so the text is never
 /// queued early; a number that can't be texted gets the same words by email when one is on file.
-/// Idempotent: the text and the email are each kept once by their keys.
+/// A notice queued once stays attempted (FEE-022): the pick's [`NOTICE_QUEUED_ACTION`] mark,
+/// stored in the queue's own transaction, is read before her window, so a later opt-out, an
+/// untextable number or the night changes nothing and sends no late copy. Idempotent: the text
+/// and the email are each kept once by their keys.
 async fn missed_call<P>(
     db: &mut PgConnection,
     parts: &StepParts<P>,
     facts: &Gathered,
     now: Timestamp,
 ) -> Result<Missed, HandlerError> {
+    if audited(db, NOTICE_QUEUED_ACTION, ("picks.pick", facts.pick))
+        .await
+        .map_err(|_| FAILED)?
+    {
+        return Ok(Missed::Done(true));
+    }
     let (Some(number), true) = (
         &facts.line,
         missed_call_at(facts.released_at, &facts.calls).is_some(),
@@ -465,36 +477,63 @@ async fn missed_call<P>(
         SendWindow::Hold { until } => return Ok(Missed::Held(until)),
         other => other,
     };
+    let emailable = match reach {
+        SendWindow::Now | SendWindow::Hold { .. } => false,
+        SendWindow::OptedOut | SendWindow::NotTextable => {
+            homeowner_has_email(db, vault, facts.homeowner)
+                .await
+                .map_err(|_| FAILED)?
+        }
+    };
+    let mut tx = db.begin().await.map_err(|_| FAILED)?;
+    let reach = (number.as_str(), reach, emailable);
+    let queued = queue_notice(&mut tx, parts, facts, reach, now).await?;
+    tx.commit().await.map_err(|_| FAILED)?;
+    Ok(Missed::Done(queued))
+}
+
+/// TXT-030, FEE-022, D-3490: queues the text, or else its email copy when `emailable` (an email
+/// on file, read before the transaction: the vault is not read inside it), in the caller's
+/// transaction and marks the pick with [`NOTICE_QUEUED_ACTION`] when either is queued.
+async fn queue_notice<P>(
+    tx: &mut PgConnection,
+    parts: &StepParts<P>,
+    facts: &Gathered,
+    (number, reach, emailable): (&str, SendWindow, bool),
+    now: Timestamp,
+) -> Result<bool, HandlerError> {
     let calls = (facts.released_at, &facts.calls[..]);
-    let what = (&facts.case(), number.as_str(), reach);
-    if missed_call_text(db, &parts.secret, what, calls)
+    let what = (&facts.case(), number, reach);
+    let texted = missed_call_text(tx, &parts.secret, what, calls)
         .await
-        .map_err(|_| FAILED)?
-    {
-        return Ok(Missed::Done(true));
+        .map_err(|_| FAILED)?;
+    if !texted && emailable {
+        email_copy(tx, parts, facts, number, now).await?;
     }
-    email_copy(db, parts, facts, number, now)
-        .await
-        .map(Missed::Done)
+    if !texted && !emailable {
+        return Ok(false);
+    }
+    let entry = AuditEntry {
+        actor: Actor::System,
+        action: NOTICE_QUEUED_ACTION,
+        subject_kind: "picks.pick",
+        subject_id: facts.pick,
+        change: Change::Action,
+    };
+    audit_once(tx, &entry).await.map_err(|_| FAILED)?;
+    Ok(true)
 }
 
 /// TXT-030, SEC-028: the missed-call words as an email to her (the outbox's `TextFailed` notice
-/// in the layout with the postal line and her manage link), once per job and pick; `false` when
-/// no email is on file.
+/// in the layout with the postal line and her manage link), once per job and pick; the caller
+/// has checked that an email is on file.
 async fn email_copy<P>(
     db: &mut PgConnection,
     parts: &StepParts<P>,
     facts: &Gathered,
     number: &str,
     now: Timestamp,
-) -> Result<bool, HandlerError> {
-    let vault = parts.vault.as_ref().ok_or(MISSING)?;
-    if !homeowner_has_email(db, vault, facts.homeowner)
-        .await
-        .map_err(|_| FAILED)?
-    {
-        return Ok(false);
-    }
+) -> Result<(), HandlerError> {
     let postal = parts.postal.as_ref().ok_or(MISSING)?;
     let manage_url = &MANAGE.to_string();
     let job = facts.job_number.to_string();
@@ -518,8 +557,8 @@ async fn email_copy<P>(
     };
     queue_email(db, (&parts.secret, postal), &to, &email, now)
         .await
-        .map_err(|_| FAILED)?;
-    Ok(true)
+        .map(drop)
+        .map_err(|_| FAILED)
 }
 
 /// Her answer to the emailed question, from the marks [`answered`] stores (JOB-027).
@@ -543,8 +582,9 @@ async fn email_check(db: &mut PgConnection, pick: Uuid) -> Result<EmailCheck, Ha
 
 /// FEE-022, JOB-027, D-1819, D-2204, D-3487: the 96-hour decision; a refund waiting or in flight
 /// queues this step again [`RERUN_AFTER`] later. The missed-call step runs first, so
-/// `notice_attempted` means the text or its email copy is in the outbox, never just owed; outside
-/// her window the decision waits for its opening. The steps run only on a Connected job, or a
+/// `notice_attempted` means the text or its email copy is in the outbox (this run or an earlier
+/// one, by the pick's mark), never just owed; only when none was queued yet does the decision
+/// wait for her window's opening. The steps run only on a Connected job, or a
 /// job the close moved to Closed, so no DONE or PROBLEM reply came (either moves it elsewhere);
 /// `refunded` is the pick's succeeded refund.
 async fn at_96<P: PaymentsAdapter>(

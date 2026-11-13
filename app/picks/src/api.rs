@@ -153,9 +153,9 @@ pub use crate::unreachable_refund::{
     no_call_at_72_hours, queue_reminders, reminder_template, reminder_times, send_at,
 };
 pub use crate::unreachable_steps::{
-    EMAILED_NO_ACTION, EMAILED_QUESTION_TEMPLATE, EMAILED_YES_ACTION, RELEASE_STEPS, RERUN_AFTER,
-    Step, StepParts, UNREACHABLE_STEP_KIND, run_fraud_warning, run_unreachable_step,
-    schedule_steps, step_task,
+    EMAILED_NO_ACTION, EMAILED_QUESTION_TEMPLATE, EMAILED_YES_ACTION, NOTICE_QUEUED_ACTION,
+    RELEASE_STEPS, RERUN_AFTER, Step, StepParts, UNREACHABLE_STEP_KIND, run_fraud_warning,
+    run_unreachable_step, schedule_steps, step_task,
 };
 
 /// The pure pick rules, for other crates and property tests.

@@ -9,6 +9,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_core::api::{Claimed, Guarded};
 use askhava_jobs::api::{JobStatus, current, move_to};
+use askhava_messaging::api::{RevokeChannel, suppress};
 use askhava_ops::api::Actor;
 use askhava_payments::api::FRAUD_WARNING_KIND;
 use askhava_picks::api::{
@@ -91,6 +92,7 @@ struct Case {
     job: Uuid,
     line: Uuid,
     contact: Uuid,
+    phone: String,
 }
 
 /// How to seed: the job's status, emergency, her email (and email contact choice), her phone and
@@ -117,7 +119,7 @@ fn released_at() -> Timestamp {
 }
 
 /// A fake business with a public name and her fake vault contact (a fresh 555 number).
-async fn people(db: &mut sqlx::PgConnection, seed: &Seed) -> (Uuid, Uuid) {
+async fn people(db: &mut sqlx::PgConnection, seed: &Seed) -> (Uuid, Uuid, String) {
     let at = az(1, 9, 0);
     let business = askhava_businesses::api::create(db, false, at)
         .await
@@ -126,15 +128,16 @@ async fn people(db: &mut sqlx::PgConnection, seed: &Seed) -> (Uuid, Uuid) {
         .await
         .expect("name");
     let n = NEXT.fetch_add(1, Ordering::Relaxed);
+    let phone = format!("{}{n:02}", seed.phone);
     let new = NewContact {
         name: Some(SecretString::from("Dana Testperson")),
-        phone: Some(SecretString::from(format!("{}{n:02}", seed.phone))),
+        phone: Some(SecretString::from(phone.clone())),
         email: seed.email.then(|| SecretString::from("dana@example.test")),
         address: None,
         onsite_contact: None,
     };
     let contact = store_contact(db, &vault(), &new).await.expect("contact");
-    (business, contact)
+    (business, contact, phone)
 }
 
 /// A job moved through its arrows to `seed.status`.
@@ -185,7 +188,7 @@ async fn paid_pick(db: &mut sqlx::PgConnection, (job, business): (Uuid, Uuid)) -
 async fn seeded(pool: &PgPool, seed: Seed) -> Case {
     let at = az(1, 9, 0);
     let mut db = pool.acquire().await.expect("conn");
-    let (business, contact) = people(&mut db, &seed).await;
+    let (business, contact, phone) = people(&mut db, &seed).await;
     let job = job_at(&mut db, &seed).await;
     let pick = paid_pick(&mut db, (job, business)).await;
     let line: Uuid = sqlx::query_scalar("INSERT INTO calls.number_pool (job_id, homeowner_id, business_id, pool_number, shared, assigned_at) VALUES ($1, $2, $3, '+19285550199', false, $4) RETURNING id")
@@ -208,6 +211,7 @@ async fn seeded(pool: &PgPool, seed: Seed) -> Case {
         job,
         line,
         contact,
+        phone,
     }
 }
 
@@ -569,6 +573,35 @@ async fn td_job_14_no_refund_without_a_queued_missed_call_notice(pool: PgPool) {
     assert_eq!(status(&pool, unreachable.job).await, "connected");
 }
 
+/// TD-JOB-14 (FEE-022, TXT-030, D-3490): a missed-call text queued at its step stays attempted:
+/// she opts out on day 3 and the 96-hour run at night still refunds at once, with no late email
+/// copy though an email is on file.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_14_a_queued_notice_counts_after_an_opt_out(pool: PgPool) {
+    let p = parts(true);
+    let case = seeded(
+        &pool,
+        Seed {
+            email: true,
+            ..REGULAR
+        },
+    )
+    .await;
+    two_calls(&pool, &case).await;
+    step(&pool, &p, &case, Step::BusinessCall, az(2, 15, 0)).await;
+    assert_eq!(count(&pool, MISSED_TEXT, case.contact).await, 1);
+    let mut db = pool.acquire().await.expect("conn");
+    let channel = (RevokeChannel::Portal, "portal");
+    let listed = suppress(&mut db, &vault(), &case.phone, channel, az(4, 9, 0)).await;
+    assert_eq!(listed, Ok(true));
+    step(&pool, &p, &case, Step::NinetySix, az(6, 21, 0)).await;
+    assert_eq!(count(&pool, REFUNDS, case.pick).await, 1);
+    assert_eq!(status(&pool, case.job).await, "closed");
+    assert_eq!(count(&pool, MISSED_TEXT, case.contact).await, 1);
+    assert_eq!(count(&pool, MISSED_EMAIL, case.contact).await, 0);
+    assert_eq!(count(&pool, DECISION_EMAIL, case.pick).await, 1);
+}
+
 /// TD-JOB-14 (FEE-022, JOB-027, D-3488): a NO to the 72-hour emailed question is only stored: the
 /// pick stays, and the 96-hour step still refunds.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -633,6 +666,7 @@ async fn next_pick(pool: &PgPool, first: &Case, email: bool) -> Case {
         job: first.job,
         line,
         contact: first.contact,
+        phone: first.phone.clone(),
     }
 }
 
