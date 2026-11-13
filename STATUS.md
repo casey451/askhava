@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T15:51:26Z by runner b35bc7039a5f (actions).
+Updated 2026-11-13T15:51:47Z by runner b35bc7039a5f (actions).
 
 **Building: T386 in progress since 15:27Z; 283 of 420 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 283 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T386 claimed 15:27Z, lease until 18:27Z; lane 3: T319 claimed 14:57Z, lease until 17:57Z
+- **Lane:** lane 1: T386 claimed 15:27Z, lease until 18:27Z
 - **Week:** 21% used, 147.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:50Z, 1 min before this update
 - **Keeper:** last ran 15:49Z, next wake 17:59Z
@@ -18,6 +18,7 @@ Updated 2026-11-13T15:51:26Z by runner b35bc7039a5f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T319 | portals and server: security-event rows are capped per addre | MERGE_PENDING | 1 | 54 min | 15:51Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | MERGE_PENDING | 2 | 66 min | 15:48Z | session ended without handing in |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | done | 1 | 24 min | 15:05Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z |  |
@@ -149,7 +150,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T386 (lease until 2026-11-13T18:27:45Z)
-- lane 3: T319 (lease until 2026-11-13T17:57:14Z)
 
 ## Last usage reading
-- {"task": "T266", "at": "2026-11-13T15:48:57Z", "output_tokens": 165786, "cache_read_input_tokens": 29971655, "input_tokens": 522, "cache_creation_input_tokens": 755776}
+- {"task": "T319", "at": "2026-11-13T15:51:25Z", "cache_creation_input_tokens": 662931, "input_tokens": 462, "output_tokens": 157089, "cache_read_input_tokens": 26721372}
