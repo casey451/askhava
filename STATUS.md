@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T20:18:56Z by runner 52ad5589ea2d (actions).
+Updated 2026-11-13T20:19:15Z by runner 52ad5589ea2d (actions).
 
 **Building: T357 in progress since 20:16Z; 290 of 425 done; week 27% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 290 of 425 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T357 claimed 20:16Z, lease until 23:16Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z; lane 7: T318 claimed 19:26Z, lease until 22:26Z
+- **Lane:** lane 1: T357 claimed 20:16Z, lease until 23:16Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z
 - **Week:** 27% used, 128.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:16Z, 2 min before this update
 - **Keeper:** last ran 20:14Z, next wake 22:28Z
@@ -20,6 +20,7 @@ Updated 2026-11-13T20:18:56Z by runner 52ad5589ea2d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T318 | calls, picks and quotes: the who's-calling text goes out at  | MERGE_PENDING | 1 | 52 min | 20:18Z |  |
 | T277 | intake and privacy: a check-in reply reaches its job, and a  | MERGE_PENDING | 1 | 45 min | 20:13Z |  |
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 48 min | 20:09Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T314 | payments and picks: a dispute's auto-submit mark and its tas | done | 1 | 29 min | 19:56Z |  |
@@ -155,7 +156,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T412 (lease until 2026-11-13T22:27:09Z)
 - lane 4: T442 (lease until 2026-11-13T22:41:31Z)
 - lane 6: T271 (lease until 2026-11-13T22:28:27Z)
-- lane 7: T318 (lease until 2026-11-13T22:26:14Z)
 
 ## Last usage reading
-- {"task": "T277", "at": "2026-11-13T20:13:33Z", "output_tokens": 143250, "cache_read_input_tokens": 29162120, "cache_creation_input_tokens": 468698, "input_tokens": 510}
+- {"task": "T318", "at": "2026-11-13T20:18:55Z", "output_tokens": 171110, "input_tokens": 604, "cache_read_input_tokens": 23616360, "cache_creation_input_tokens": 607469}
