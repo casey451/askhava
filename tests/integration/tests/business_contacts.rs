@@ -7,7 +7,7 @@
 //! is audited and counted under `vault_read.server.<purpose>`, refused inside a transaction, and a
 //! phone read under any purpose but `SignInCode` refused with one High alert; that `forget_unused`
 //! keeps what is in use or recent and is safe to repeat; and that a key rotation leaves every value
-//! readable and findable. The module logs nothing, so no log line can hold a value. All data and
+//! readable and findable, a duplicate address skipped and reported. The module logs nothing, so no log line can hold a value. All data and
 //! keys are fake.
 
 use askhava_integration::set_app_role;
@@ -202,27 +202,69 @@ async fn td_priv_28_a_mailbox_deleted_mid_lookup_is_never_returned(pool: PgPool)
     assert_eq!(mailboxes_of(&mut a, &vault, ADDRESS).await, Ok(vec![found]));
 }
 
-/// TD-PRIV-28: a rotation meeting a second mailbox with the same address fails with `Database`
-/// and leaves that mailbox findable, instead of silently dropping its index (D-3516).
+/// Indexes mailbox `id` under the v1 index key, as a server still on that key would.
+async fn index_under_v1(conn: &mut PgConnection, id: Uuid) {
+    let (version, digest) = *email_index(&v1(), ADDRESS, true).first().expect("digest");
+    sqlx::query(
+        "INSERT INTO privacy.business_mailbox_index (purpose, key_version, digest, mailbox_id) \
+         VALUES ('email', $1, $2, $3)",
+    )
+    .bind(i32::from(version))
+    .bind(&digest[..])
+    .bind(id)
+    .execute(&mut *conn)
+    .await
+    .expect("index");
+}
+
+/// TD-PRIV-28: when a mailbox indexed under the old key shares its address with one indexed under
+/// the active key (two servers mid-deploy), the rotation skips it, still findable, moves every
+/// other row, then reports `DuplicateAddress` until one of the pair is removed (D-3516, D-3517).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_priv_28_a_rotation_refuses_a_duplicate_address(pool: PgPool) {
     let mut conn = app_conn(&pool).await;
-    let orphan = mailbox_for(&mut conn, &v1(), ADDRESS).await.expect("mint");
+    let old = mailbox_for(&mut conn, &v1(), ADDRESS).await.expect("mint");
+    let other = mailbox_for(&mut conn, &v1(), "lee.marsh@example.com")
+        .await
+        .expect("mint");
+    store_staff_phone(&mut conn, &v1(), Uuid::new_v4(), PHONE)
+        .await
+        .expect("phone");
     sqlx::query("DELETE FROM privacy.business_mailbox_index WHERE mailbox_id = $1")
-        .bind(orphan)
+        .bind(old)
         .execute(&mut *conn)
         .await
         .expect("unindex");
-    let second = mailbox_for(&mut conn, &v1(), ADDRESS).await.expect("mint");
-    assert_ne!(orphan, second);
     let vault = v2();
+    let new = mailbox_for(&mut conn, &vault, ADDRESS).await.expect("mint");
+    index_under_v1(&mut conn, old).await;
+    let mut both = vec![old, new];
+    both.sort();
+    assert_eq!(
+        mailboxes_of(&mut conn, &vault, ADDRESS).await,
+        Ok(both.clone())
+    );
+    assert_eq!(rotate_business_batch(&mut conn, &vault, 10).await, Ok(2));
     assert_eq!(
         rotate_business_batch(&mut conn, &vault, 10).await,
-        Err(BusinessContactError::Database)
+        Err(BusinessContactError::DuplicateAddress)
     );
-    let mut both = vec![orphan, second];
-    both.sort();
     assert_eq!(mailboxes_of(&mut conn, &vault, ADDRESS).await, Ok(both));
+    let read = read_business_mailbox(&mut conn, &vault, BusinessPurpose::PhoneApproval, other);
+    assert_eq!(
+        read.await.expect("moved").expose_secret(),
+        "lee.marsh@example.com"
+    );
+    sqlx::query("DELETE FROM privacy.business_mailbox WHERE id = $1")
+        .bind(old)
+        .execute(&mut *conn)
+        .await
+        .expect("recover");
+    assert_eq!(rotate_business_batch(&mut conn, &vault, 10).await, Ok(0));
+    assert_eq!(
+        mailboxes_of(&mut conn, &vault, ADDRESS).await,
+        Ok(vec![new])
+    );
 }
 
 /// TD-PRIV-28: `store_staff_phone` runs in the caller's transaction and replaces the number.

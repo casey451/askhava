@@ -59,6 +59,10 @@ pub enum BusinessContactError {
     /// The database refused or dropped the statement.
     #[error("the business contact database statement failed")]
     Database,
+    /// A rotation moved nothing because each mailbox left holds an address another mailbox is
+    /// already found by under the active index key: merge or delete one of the pair (PRIV-024).
+    #[error("a mailbox shares its sign-in address with another")]
+    DuplicateAddress,
 }
 
 impl From<VaultError> for BusinessContactError {
@@ -434,34 +438,23 @@ pub async fn forget_unused(
     Ok(gone + phones)
 }
 
-/// Re-seals up to `limit` mailboxes under an older `VAULT_KEY` or index key version, re-indexing
-/// each address under the active one, then up to `limit` staff phones under an older `VAULT_KEY`;
-/// each move is its own transaction and audits its read as `privacy`'s rotation. Returns how many
-/// it moved: run it beside `rotate_batch` until it returns 0 (PRIV-003, PRIV-024).
+/// Re-seals up to `limit` staff phones under an older `VAULT_KEY`, then up to `limit` mailboxes
+/// under an older `VAULT_KEY` or index key version, re-indexing each address under the active
+/// one; each move is its own transaction and audits its read as `privacy`'s rotation. A mailbox
+/// whose address another mailbox already holds under the active index key is skipped, unmoved and
+/// still findable by its old digest, and the rest carry on. Returns how many it moved: run it
+/// beside `rotate_batch` until it returns 0 (PRIV-024, D-3517).
 ///
 /// # Errors
 ///
-/// [`BusinessContactError::Sealed`], [`BusinessContactError::Audit`] or
-/// [`BusinessContactError::Database`].
+/// [`BusinessContactError::DuplicateAddress`] when it moved nothing but skipped a duplicate (merge
+/// or delete one mailbox of the pair, then run again), [`BusinessContactError::Sealed`],
+/// [`BusinessContactError::Audit`] or [`BusinessContactError::Database`].
 pub async fn rotate_business_batch(
     db: &mut PgConnection,
     vault: &Vault,
     limit: i64,
 ) -> Result<u64, BusinessContactError> {
-    let mailboxes = sqlx::query_scalar!(
-        "SELECT id FROM privacy.business_mailbox WHERE key_version < $1 OR id IN \
-         (SELECT mailbox_id FROM privacy.business_mailbox_index WHERE key_version < $2) \
-         ORDER BY id LIMIT $3",
-        i32::from(vault.seal_version()),
-        i32::from(vault.index_version()),
-        limit,
-    )
-    .fetch_all(&mut *db)
-    .await
-    .map_err(db_fail)?;
-    for id in &mailboxes {
-        reseal(db, vault, BusinessTable::MailboxAddress, *id).await?;
-    }
     let lines = sqlx::query_scalar!(
         "SELECT line_id FROM privacy.staff_phone WHERE key_version < $1 ORDER BY line_id LIMIT $2",
         i32::from(vault.seal_version()),
@@ -473,7 +466,47 @@ pub async fn rotate_business_batch(
     for line in &lines {
         reseal(db, vault, BusinessTable::StaffPhoneNumber, *line).await?;
     }
-    Ok((mailboxes.len() + lines.len()) as u64)
+    let (moved, skipped) = rotate_mailboxes(db, vault, limit).await?;
+    let moved = moved + lines.len() as u64;
+    if moved == 0 && skipped > 0 {
+        return Err(BusinessContactError::DuplicateAddress);
+    }
+    Ok(moved)
+}
+
+/// Moves up to `limit` mailboxes left under an older key, skipping each one whose move finds its
+/// address held by another mailbox; returns how many it moved and how many it skipped (PRIV-024).
+async fn rotate_mailboxes(
+    db: &mut PgConnection,
+    vault: &Vault,
+    limit: i64,
+) -> Result<(u64, u64), BusinessContactError> {
+    let mut skipped: Vec<Uuid> = Vec::new();
+    let mut moved = 0_u64;
+    loop {
+        let ids = sqlx::query_scalar!(
+            "SELECT id FROM privacy.business_mailbox WHERE key_version < $1 OR id IN \
+             (SELECT mailbox_id FROM privacy.business_mailbox_index WHERE key_version < $2) \
+             ORDER BY id LIMIT $3",
+            i32::from(vault.seal_version()),
+            i32::from(vault.index_version()),
+            (limit - moved as i64).saturating_add(skipped.len() as i64),
+        )
+        .fetch_all(&mut *db)
+        .await
+        .map_err(db_fail)?;
+        let fresh: Vec<Uuid> = ids.into_iter().filter(|id| !skipped.contains(id)).collect();
+        if fresh.is_empty() || moved as i64 >= limit {
+            return Ok((moved, skipped.len() as u64));
+        }
+        for id in fresh {
+            match reseal(db, vault, BusinessTable::MailboxAddress, id).await {
+                Ok(()) => moved += 1,
+                Err(BusinessContactError::DuplicateAddress) => skipped.push(id),
+                Err(other) => return Err(other),
+            }
+        }
+    }
 }
 
 /// Opens, audits and re-seals row `id` of `table` under the active key in one transaction, a
@@ -505,8 +538,8 @@ async fn reseal(
 }
 
 /// Writes mailbox `id`'s re-sealed address and replaces its digests with the active one; fails
-/// with `Database` (rolling the move back) when another mailbox already holds that digest, so a
-/// duplicate address shows up instead of leaving this mailbox unfindable (PRIV-024).
+/// with `DuplicateAddress` (rolling the move back) when another mailbox already holds that
+/// digest, so a duplicate address shows up instead of leaving this mailbox unfindable (PRIV-024).
 async fn reindex(
     db: &mut PgConnection,
     vault: &Vault,
@@ -545,7 +578,7 @@ async fn reindex(
     .await
     .map_err(db_fail)?
     .map(|_| ())
-    .ok_or(BusinessContactError::Database)
+    .ok_or(BusinessContactError::DuplicateAddress)
 }
 
 /// The error mapping keeps no value and folds what cannot happen here into `Database`.
