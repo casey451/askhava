@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:10:22Z by runner e6625299c86f (actions).
+Updated 2026-11-13T22:10:42Z by runner e6625299c86f (actions).
 
-**Building: T438 in progress since 21:51Z; 295 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T415 in progress since 22:05Z; 295 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 295 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T438 claimed 21:51Z, lease until 00:51Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
+- **Lane:** lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
 - **Week:** 29% used, 126.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:06Z, 3 min before this update
+- **Last run:** 22:06Z, 4 min before this update
 - **Keeper:** last ran 22:01Z, next wake 00:53Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-13T22:10:22Z by runner e6625299c86f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T438 | Token usage counts each reply once: dedupe transcript usage  | MERGE_PENDING | 2 | 19 min | 22:10Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 2 | 7 min | 22:01Z | PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no p |
 | T354 | privacy: key rotation re-seals stored photos too, so droppin | done | 1 | 69 min | 21:39Z |  |
 | T335 | adapters, payments and stand-in (harness): the reconcile's p | MERGE_PENDING | 1 | 59 min | 21:20Z |  |
@@ -30,7 +31,7 @@ Updated 2026-11-13T22:10:22Z by runner e6625299c86f (actions).
 | T277 | intake and privacy: a check-in reply reaches its job, and a  | done | 1 | 45 min | 20:13Z |  |
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 48 min | 20:09Z |  |
 | T314 | payments and picks: a dispute's auto-submit mark and its tas | done | 1 | 29 min | 19:56Z |  |
-| T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
+| T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z |  |
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 2 h 1 min | 18:26Z |  |
 | T281 | picks: the unreachable-homeowner steps run at 24, 48, 72 and | done | 1 | 107 min | 18:15Z |  |
 | T436 | portals, core and server: expired sessions are swept and old | done | 1 | 34 min | 17:52Z |  |
@@ -155,10 +156,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T438 (lease until 2026-11-14T00:51:05Z)
 - lane 3: T415 (lease until 2026-11-14T01:05:51Z)
 - lane 6: T357 (lease until 2026-11-14T00:52:50Z)
 - lane 7: T340 (lease until 2026-11-14T00:52:00Z)
 
 ## Last usage reading
-- {"task": "T280", "at": "2026-11-13T22:01:09Z", "output_tokens": 62498, "input_tokens": 239, "cache_creation_input_tokens": 311428, "cache_read_input_tokens": 9678038}
+- {"task": "T438", "at": "2026-11-13T22:10:20Z", "cache_creation_input_tokens": 90283, "input_tokens": 75, "cache_read_input_tokens": 1659349, "output_tokens": 21015}
