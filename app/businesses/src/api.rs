@@ -189,6 +189,41 @@ pub async fn businesses_of_mailbox(
     .map_err(|_| BusinessesError::Database)
 }
 
+/// LIC-039, D-230, D-2704 (T371): up to `limit` active businesses with an ID after `after`, by
+/// ID, each with the ROC license number its latest daily check is under (one never checked is
+/// skipped); the `licensing.daily_lists` run's lookups while the ROC list fails.
+///
+/// # Errors
+///
+/// [`BusinessesError::Database`].
+pub async fn active_license_numbers(
+    conn: &mut PgConnection,
+    after: Option<Uuid>,
+    limit: u32,
+) -> Result<Vec<(Uuid, String)>, BusinessesError> {
+    let ids = sqlx::query_scalar!(
+        "SELECT id FROM businesses.business WHERE status = $1 AND ($2::uuid IS NULL OR id > $2) \
+         ORDER BY id",
+        AccountStatus::Active.code(),
+        after as Option<Uuid>,
+    )
+    .fetch_all(&mut *conn)
+    .await
+    .map_err(|_| BusinessesError::Database)?;
+    let limit = usize::try_from(limit).unwrap_or(usize::MAX);
+    let mut found = Vec::new();
+    for id in ids {
+        if found.len() >= limit {
+            break;
+        }
+        let number = askhava_licensing::api::bound_roc_number(conn, id).await;
+        if let Some(number) = number.map_err(|_| BusinessesError::Database)? {
+            found.push((id, number));
+        }
+    }
+    Ok(found)
+}
+
 /// The pure status and checklist rules, for the rules bridge and other crates' property tests.
 pub mod rules {
     pub use crate::rules::{
