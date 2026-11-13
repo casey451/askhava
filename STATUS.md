@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-13T03:24:23Z by runner 1351eeb1f8c2 (actions).
+Updated 2026-11-13T03:25:29Z by runner cfda2022c26f (actions).
 
-**Building: T371 in progress since 03:08Z; 268 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T371 in progress since 03:08Z; 269 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 268 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 269 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T371 claimed 03:08Z, lease until 06:08Z
 - **Week:** 11% used, 170.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -22,7 +22,7 @@ Updated 2026-11-13T03:24:23Z by runner 1351eeb1f8c2 (actions).
 | T429 | Copy, voice and AI-smell docs name Laftly | MERGE_PENDING | 1 | 22 min | 03:13Z |  |
 | T430 | payments: a Confirm needs the current card-authorization wor | MERGE_PENDING | 1 | 39 min | 03:13Z |  |
 | T426 | Brand rename prep: notice-address and sign-in security tests | done | 1 | 35 min | 02:49Z |  |
-| T425 | Brand rename prep: the last integration tests and four secur | MERGE_PENDING | 1 | 28 min | 02:39Z |  |
+| T425 | Brand rename prep: the last integration tests and four secur | done | 1 | 28 min | 02:39Z |  |
 | T423 | Brand rename prep: integration tests (first-quote move to si | done | 1 | 66 min | 01:47Z |  |
 | T422 | Brand rename prep: integration tests (accepted-quote email t | done | 1 | 44 min | 01:20Z |  |
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | MERGE_PENDING | 1 | 26 min | 01:18Z |  |
@@ -118,12 +118,11 @@ Updated 2026-11-13T03:24:23Z by runner 1351eeb1f8c2 (actions).
 - 05:16Z Harness: run lint and the slow compile-fail/prompt-injection tests in a parallel CI job (D-3142) (#550)
 - 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
 - 03:50Z Plan: pre-flight fixes round 6 — T355, T340, T341, T249, T273, T271, T277, T357, T314; new T405 (D-3118) (#542)
-- 03:24Z Harness: claim order prefers tasks in crates no other lane is writing (D-3082) (#523)
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 339 · unstarted 164
-**Tasks merged (throughput only):** 268 of 415
+**Tasks merged (throughput only):** 269 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -158,7 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 148 of 197 done
+- stage 4: 149 of 197 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
