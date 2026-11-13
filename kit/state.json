@@ -35144,7 +35144,14 @@
    "attempts": 0,
    "slug": "payment-jobs-registered",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-13T22:47:42Z",
+    "problems": [
+     "T328: dependency T340 is DONE but its owned file app/payments/src/fee_facts.rs is not on main",
+     "T328: dependency T340 is DONE but its owned file tests/integration/tests/fee_facts_at_pick.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T329",
@@ -37382,7 +37389,14 @@
    "attempts": 0,
    "slug": "tier-and-visit-schedule-at-pick",
    "type": "harness",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-13T22:47:42Z",
+    "problems": [
+     "T341: dependency T340 is DONE but its owned file app/payments/src/fee_facts.rs is not on main",
+     "T341: dependency T340 is DONE but its owned file tests/integration/tests/fee_facts_at_pick.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T344",
@@ -51716,7 +51730,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T22:47:51Z",
+ "updated_at": "2026-11-13T22:48:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
