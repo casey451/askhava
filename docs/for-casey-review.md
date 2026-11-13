@@ -2707,3 +2707,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Token counts fixed; fix rounds must be re-reviewed (D-3475, November 13)
 
 Two runner fixes are queued first. The runner was counting tokens about 1.65 times over, because each reply appears on several lines of a session log; T438 counts each reply once and corrects the pacer's estimates for the older numbers. Your weekly usage reading comes from the plan itself, so it was never wrong. T439 makes the runner refuse a hand-in unless an Opus reviewer approved the exact final commit and every new commit was made by a worker, not the coordinating session; three of four fix rounds checked earlier this week had merged without that second look. Nothing needs you.
+
+## Two more queued tasks split; splitting alone does not save tokens (D-3497, November 13)
+
+Two large queued tasks were each split in two: the homeowner choosing a package on a tiered quote (T341, now with T440 for the pages) and a quote keeping its number once shown (T361, now with T441 for the pages). Each half has its own tests and review, nothing in the product changes, and no requirement or test was dropped. Measuring last week's finished tasks showed that splitting does not by itself cut the total tokens, because every task carries the same start-up, rules and review cost; it makes each attempt shorter, a failed attempt cheaper, and lets the halves run beside other work. So two other candidates were left whole. Nothing needs you.
