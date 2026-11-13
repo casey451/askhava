@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T05:51:59Z by runner f7189ec863bb (actions).
+Updated 2026-11-13T06:10:09Z by runner f7189ec863bb (actions).
 
-**Idle since 05:50Z; 275 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T420 in progress since 06:10Z; 275 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 275 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 05:50Z (no task in progress)
-- **Week:** 13% used, 170.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:37Z, 14 min before this update
+- **Lane:** lane 1: T420 claimed 06:10Z, lease until 09:10Z
+- **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 06:04Z, 5 min before this update
 - **Keeper:** last ran 05:36Z, next wake 05:56Z
 
 ## Needs attention
@@ -87,8 +87,6 @@ Updated 2026-11-13T05:51:59Z by runner f7189ec863bb (actions).
 | T390 | calls and server: a blocked staff call that connects a line  | done | 1 | 29 min | 07:34Z |  |
 | T401 | server (harness): the door probe's fixture gains a released  | done | 2 | 37 min | 07:33Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
 | T339 | jobs: each job keeps its category code and remaining candida | done | 1 | 18 min | 07:13Z |  |
-| T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 71 min | 06:06Z |  |
-| T405 | payments and adapters (harness): each charged pick's 3-D Sec | done | 1 | 51 min | 06:05Z |  |
 
 ### Plan and harness merges on main
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
@@ -115,7 +113,6 @@ Updated 2026-11-13T05:51:59Z by runner f7189ec863bb (actions).
 - 09:13Z Plan: store the scrubbed job description and shown card so T251 can send approved cards (D-3189) (#568)
 - 08:32Z Harness: smoke ancestry reuse accepts squash commits whose identical tree passed Ci, Twin and Ally (D-3156) (#560)
 - 07:12Z Harness: close merged tasks before the smoke so their lanes free ~20 min sooner (D-3141) (#552)
-- 06:05Z Plan: pre-flight fixes round 8 — stage 5: T101, T102, T105, T202, T320, T106, T364; new T408 (D-3144) (#551)
 
 ## Progress (requirements verified)
 
@@ -148,7 +145,7 @@ Updated 2026-11-13T05:51:59Z by runner f7189ec863bb (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T04:40:31Z (week)): week: 24.0M used, 170.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T02:35:14Z.
+- Pacing (session_reading 2026-11-13T05:36:32Z (week)): week: 26.0M used, 168.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T05:45:37Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -163,7 +160,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T420 (lease until 2026-11-13T09:10:07Z)
 
 ## Last usage reading
 - {"task": "T215", "at": "2026-11-13T05:08:23Z", "input_tokens": 153, "output_tokens": 26850, "cache_creation_input_tokens": 148607, "cache_read_input_tokens": 3057803}
