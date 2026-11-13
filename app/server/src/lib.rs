@@ -10,8 +10,8 @@ use std::io;
 use std::sync::{Arc, OnceLock};
 
 use askhava_adapters::api::{
-    LocalStorage, StorageAdapter, TwilioConfig, TwilioMessageReader, TwilioSms, TwilioVerify,
-    twilio_clients,
+    LicenseLists, LocalStorage, StorageAdapter, TwilioConfig, TwilioMessageReader, TwilioSms,
+    TwilioVerify, twilio_clients,
 };
 use askhava_core::api::{
     Brand, Clock, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging,
@@ -492,6 +492,66 @@ fn register_license_reapply(registry: &mut Registry, clock: Arc<dyn Clock>) {
     });
 }
 
+/// `businesses`' active ROC businesses with their checked numbers, for the daily list run's
+/// lookups (LIC-039, D-2704; licensing may not call `businesses`).
+struct ActiveRoc;
+
+impl askhava_licensing::api::ActiveLicenses for ActiveRoc {
+    async fn active_after(
+        &self,
+        conn: &mut sqlx::PgConnection,
+        after: Option<Uuid>,
+        limit: u32,
+    ) -> Result<Vec<(Uuid, String)>, askhava_licensing::api::ImportError> {
+        askhava_businesses::api::active_license_numbers(conn, after, limit)
+            .await
+            .map_err(|_| askhava_licensing::api::ImportError::Database)
+    }
+}
+
+/// Registers `licensing`'s daily ROC and city list run (`licensing.daily_lists`, T371, D-2704,
+/// LIC-007, LIC-039) on the worker clock over `ASKHAVA_LICENSE_BASE_URL` with the
+/// `DailyListSettings` in `pairs`; `worker.rs`'s `schedule_start` seeds it. Without the base URL
+/// a run does nothing and queues no next run in dev and CI; in test and live it is a start error
+/// (D-2954).
+fn register_daily_lists(
+    registry: &mut Registry,
+    settings: &Settings,
+    clock: Arc<dyn Clock>,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let lists =
+        askhava_licensing::api::DailyListSettings::from_pairs(pairs).map_err(io::Error::other)?;
+    let source = match settings.license_base_url() {
+        Some(url) => Some(LicenseLists::new(url).map_err(io::Error::other)?),
+        None => match settings.environment() {
+            Environment::Dev | Environment::Ci => None,
+            Environment::Test | Environment::Live => {
+                return Err(io::Error::other(
+                    "the daily license lists need ASKHAVA_LICENSE_BASE_URL",
+                ));
+            }
+        },
+    };
+    let source = Arc::new(source);
+    registry.register(
+        askhava_licensing::api::DAILY_LISTS_KIND,
+        move |pool, task| {
+            let (source, now) = (Arc::clone(&source), clock.now());
+            async move {
+                let Some(source) = source.as_ref() else {
+                    return Ok(());
+                };
+                let parts = (source, &ActiveRoc);
+                askhava_licensing::api::run_daily_list(&pool, parts, &task, (now, lists))
+                    .await
+                    .map(|_| ())
+            }
+        },
+    );
+    Ok(())
+}
+
 /// The production worker's whole registry (T327, D-2285): [`register_handlers`], then what only
 /// the worker adds: `privacy`'s sealed photo delete over the stream's store (PRIV-009, T276),
 /// `messaging`'s paused-emergency follow-up on the call list (TXT-023, T279), with the footer
@@ -499,7 +559,8 @@ fn register_license_reapply(registry: &mut Registry, clock: Arc<dyn Clock>) {
 /// ([`register_notice_senders`], T313), the hourly
 /// dead-letter check ([`no_handler_alert`], OPS-004), `jobs`' daily timer backstop
 /// ([`register_timer_backstop`], T366), `businesses`' daily license-map re-apply
-/// ([`register_license_reapply`], T372) and, with the Twilio settings in `pairs`
+/// ([`register_license_reapply`], T372), `licensing`'s daily ROC and city list run
+/// ([`register_daily_lists`], T371) and, with the Twilio settings in `pairs`
 /// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027), `picks`'
 /// masked-line retry (CALL-001) and, with the vault keys too, `messaging`'s outbox sender
 /// (`messaging.send_due`, [`outbox_sender`], T356, D-2628); with both vault keys, `intake`'s card
@@ -547,6 +608,7 @@ where
     register_timer_backstop(&mut registry, Arc::clone(&clock));
     register_license_reapply(&mut registry, Arc::clone(&clock));
     let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {
         register_inbound_retry(
