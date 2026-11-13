@@ -2627,3 +2627,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Pictures to look at:** `docs/design/mockups/` (phone home page, phone full page, desktop home page, desktop full page, phone quote page).
 - **After an independent review.** The ZIP box on the home page was taken out: it asked for the ZIP before the texting consent and the 18+ line, so the chat asks for it instead, as before. The business fee card now also explains visit-fee quotes ($25) and repeating jobs like weekly pool cleaning (4 months of the price, never more than $75), and says "pay only when you confirm a pick". The "Who runs" block has places for the mailing address and help email.
 - **Build steps updated.** The three website build steps, the spec lines and the build notes that still described plaster and brass now describe this look; the old textures and fonts are deleted. The textures step now serves the photo and the mark. Nothing needs you now.
+
+## A check for leftover merge-conflict lines (D-3307)
+
+- On November 12 a commit that still had merge-conflict lines in this file passed every check and was found by hand; a new check now fails the build and the worker's local gate on any such line in any tracked file.
