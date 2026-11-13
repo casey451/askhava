@@ -12320,7 +12320,7 @@
    "id": "T255",
    "slug": "emergency-address-rerelease",
    "title": "intake, payments and server: ask again for an emergency address and release once it arrives",
-   "goal": "On an emergency job a release that comes before the address stores one `picks.address_wait` row and queues one `picks.address_needed` event (T069, TD-INT-34), but nothing handles the event, and nothing releases once the address arrives: the proof was consumed and `paid_release` needs a new Stripe event (D-1563). Build both (D-1739). (1) `app/intake/src/address_wait.rs`: the `picks.address_needed` handler, registered in `register_handlers` in the shared `app/server/src/lib.rs` (`:382`; not `bin/worker.rs`, D-3118), asks the homeowner the name-and-address question again at once through `intake::api::ask_name_address` (INT-027, INT-029), once per pick; and `address_arrived`, which `conversation.rs` (T040's, extended by T162) calls after `take_name_address` stores an address for a job with a waiting pick, queueing one `intake.address_in` event. (2) `app/payments/src/reclear.rs`: `payments::api::reclear_release(conn, pick)` returns a `Releasable` only from the pick's stored charge success (the succeeded PaymentIntent T189's `paid_release` checked) or its recorded $0 decision (`no_fee_release`'s rule), never from a redirect, the homeowner's message or a new event (SEC-030). (3) The `intake.address_in` handler in `app/server/src/release_sink.rs` (T254's) re-clears, settles and releases through the same sink, so the masked line opens then (TD-CALL-12's database path); a pick that left paid or free before the address arrived releases nothing, and a second address message releases nothing again. Tests in `app/server/tests/address_rerelease.rs` (TD-INT-39; only `server` may mint). Update the `intake`, `payments` and `server` `CLAUDE.md` files and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3286). The re-clear uses `no_fee_release`'s pick-bound rule from T337 (the pick's own `payments.pick_fee` business and job, D-2302), never a pair its caller passes. Once T340 is on `main`, a page pick of a non-emergency job with no `jobs.job_facts` row is refused, so any non-emergency job this task's own tests pick records its facts row first (`jobs::api::record_job_facts`, with the catalog stored once through `catalog::api::load_embedded`) (D-3118). Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
+   "goal": "On an emergency job a release that comes before the address stores one `picks.address_wait` row and queues one `picks.address_needed` event (T069, TD-INT-34), but nothing handles the event, and nothing releases once the address arrives: the proof was consumed and `paid_release` needs a new Stripe event (D-1563). Build both (D-1739). (1) `app/intake/src/address_wait.rs`: the `picks.address_needed` handler, registered in `register_handlers` in the shared `app/server/src/lib.rs` (`:382`; not `bin/worker.rs`, D-3118), asks the homeowner the name-and-address question again at once through `intake::api::ask_name_address` (INT-027, INT-029), once per pick; and `address_arrived`, which `conversation.rs` (T040's, extended by T162) calls after `take_name_address` stores an address for a job with a waiting pick, queueing one `intake.address_in` event. (2) `app/payments/src/reclear.rs`: `payments::api::reclear_release(conn, pick)` returns a `Releasable` only from the pick's stored charge success or its recorded $0 decision, never from a redirect, the homeowner's message, a new event or any value its caller passes but the pick ID (SEC-030). A pick with a `payments.pick_intent` row is re-cleared only through the one crate-private constructor this task adds in `app/payments/src/release_proof.rs` (now co-owned; `Releasable`'s fields stay private, so a sibling module cannot build one, D-3358): `pub(crate) async fn Releasable::from_stored_success(conn: &mut PgConnection, pick: Uuid) -> Result<Releasable, ReleaseError>`, in its own `impl Releasable` block placed after `no_fee_release` so the functions T359 and T408 cite keep their order. It takes nothing but the pick and reads, in one statement that takes `FOR SHARE OF` the pick's `payments.pick_intent` row (so `request_refund`'s `FOR UPDATE` on that row waits until the caller's transaction ends), that pick's own rows: its `payments.pick_intent` row (none: `WrongIntent`) with `ended_at` null; no `payments.refund` row of any status and no `payments.dispute` row for the pick (FEE-021, FEE-026, FEE-027); its latest `payments.charge_attempt` has status `succeeded`; and its append-only `payments.charge_evidence` row (FEE-042, written only in the transaction that stored a succeeded attempt) names the intent's own `pi_…` and amount. When several checks fail, the first in this order wins: no intent row `WrongIntent`; then ended, refunded or disputed `PickEnded`; then no `charge_attempt` row at all, a latest attempt not succeeded, or no evidence row naming the intent's `pi_…` and amount `NotPaid`; a failed statement is `Database`; only when every check holds is the answer `Releasable { pick, basis: PaidCharge }`, for that pick. A pick with no `pick_intent` row goes to `no_fee_release` with the pair of its own `payments.pick_fee` row (no row: `NoFeeDecision`), never a pair from the caller (D-2302). `reclear_release` is `pub` in `payments::api`, and `payments` cannot read `picks` tables, so the precondition is enforced in `server`: the `intake.address_in` handler (3) first confirms the pick's `picks.address_wait` row through a new `picks::api::awaiting_address(conn, pick) -> Result<bool, PicksError>` in the new `app/picks/src/address_wait_check.rs` (`SELECT … FOR SHARE` on the wait row; exported through the shared `picks` `api.rs`, one `mod` line in its `lib.rs`), and with no row calls nothing and releases nothing. That row exists only after `release` was given a minted proof for that pick (`app/picks/src/release.rs`, `insert_address_wait`), so the re-clear inherits a proof `paid_release` or `no_fee_release` already verified; a stored success alone (it may come from a press or the reconcile, D-3144) is never a first release: `paid_release` and T408's `held_release` keep their Stripe checks. The handler runs the wait check, `reclear_release` and `picks::api::settle` in one transaction and commits only after the settle, so no refund can start between the check and the settle; from that commit to `release`, the window `paid_release`'s path already has, the release's own paid-or-free status check (D-1564) is the backstop. A source-scan test in `app/payments/src/tests/reclear.rs`, in the style of `picks`' `prop_no_other_off_session_charge`, walks the workspace's `app/` and `tests/` sources and fails when any file other than `app/payments/src/reclear.rs`, `app/payments/src/api.rs`, `app/server/src/release_sink.rs` and the two test files named here names `reclear_release`, or any file outside `app/payments/src/` names `from_stored_success`. No other constructor, no `Default` and no `Clone` are added; nothing outside `payments` can make a `Releasable` (the SEC-030 compile-fail cases stay byte-identical). Branch tests in the new `app/payments/src/tests/reclear.rs` (`#[sqlx::test]`, fake IDs, rows inserted directly): a stored success clears exactly that pick with `PaidCharge`; another pick's success clears nothing; no intent row, an ended pick, a refund row (each status), a dispute row, no `charge_attempt` row at all, a latest attempt not succeeded (an earlier one succeeded), no evidence row and an evidence row for another intent or amount each give no `Releasable` with the error above, and a pick failing several checks gives the error that wins in the order above; the $0 path clears only with the pick's own `pick_fee` pair and a recorded $0 entry and gives `NoFeeDecision` without the row or the entry; and a broken connection gives `Database`; payments stays at or above its 95% branch floor. Update the `Releasable` doc comment and the `payments` `CLAUDE.md` release rule to say exactly: release only through `paid_release`, `no_fee_release` or `reclear_release` and then `Minter::mint`; `Releasable`'s one crate-private constructor is `from_stored_success`, which reads only the named pick's own stored, unended, unrefunded, undisputed success; `reclear_release` is called only by `server`'s `intake.address_in` handler after `picks::api::awaiting_address` found the wait row; never a public constructor, `Default` or `Clone`. End-to-end, TD-INT-39 also has a paid pick with a stored success and no `picks.address_wait` row: its `intake.address_in` event releases nothing and calls no re-clear. (3) The `intake.address_in` handler in `app/server/src/release_sink.rs` (T254's) re-clears, settles and releases through the same sink, so the masked line opens then (TD-CALL-12's database path); a pick that left paid or free before the address arrived releases nothing, and a second address message releases nothing again. End-to-end tests in `app/server/tests/address_rerelease.rs` (TD-INT-39; only `server` may mint). Update the `intake`, `payments` and `server` `CLAUDE.md` files and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3286). The re-clear uses `no_fee_release`'s pick-bound rule from T337 (the pick's own `payments.pick_fee` business and job, D-2302), never a pair its caller passes. Once T340 is on `main`, a page pick of a non-emergency job with no `jobs.job_facts` row is refused, so any non-emergency job this task's own tests pick records its facts row first (`jobs::api::record_job_facts`, with the catalog stored once through `catalog::api::load_embedded`) (D-3118). Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -12342,6 +12342,9 @@
     "app/intake/src/address_wait.rs",
     "app/intake/src/conversation.rs",
     "app/payments/src/reclear.rs",
+    "app/payments/src/release_proof.rs",
+    "app/payments/src/tests/reclear.rs",
+    "app/picks/src/address_wait_check.rs",
     "app/server/src/release_sink.rs",
     "app/server/tests/address_rerelease.rs"
    ],
@@ -12369,13 +12372,14 @@
     "D-2302",
     "D-3118",
     "D-3134",
-    "D-3286"
+    "D-3286",
+    "D-3358"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 500,
-    "context_pct": 19
+    "files": 8,
+    "lines": 600,
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -15095,7 +15099,7 @@
    "id": "T408",
    "slug": "safe-mode-release-hold",
    "title": "payments and server: a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends",
-   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:61`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T105) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (its payload the pick ID and its due time, since a claimed task carries no run time, `app/core/src/tasks.rs:100`; deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:456`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) while safe mode lasts enqueues the next run 15 minutes later and finishes: a handler cannot move its own `core.task` row (`core::api` exports no defer, and `server` may not write `core` tables), so the payload carries the pick ID and the run's due time, and the next run is `core::api::enqueue`d due 15 minutes after that time under the dedupe key `<kind>.<pick>.<run_at in microseconds>` (`core.task.dedupe_key` stays unique after a task is done, so the first held-release task's per-pick key is never reused, and a rerun of the same run enqueues the same key, which is refused, D-3263) and, once safe mode has ended, clears the pick again through a new `payments::api::held_release(pool, stripe, account, pick)` in `app/payments/src/release_proof.rs`. A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (`store_success`, `app/payments/src/charge.rs:232` and `app/payments/src/reconcile.rs:236`, `:612` all write through the same `handlers::record`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:212` to `:216`), and for a $0 pick keeps `no_fee_release`'s ledger check; nothing else makes a `Releasable` (SEC-030). Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Update the `server` and `payments` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:61`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T105) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (its payload the pick ID and its due time, since a claimed task carries no run time, `app/core/src/tasks.rs:100`; deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:456`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) while safe mode lasts enqueues the next run 15 minutes later and finishes: a handler cannot move its own `core.task` row (`core::api` exports no defer, and `server` may not write `core` tables), so the payload carries the pick ID and the run's due time, and the next run is `core::api::enqueue`d due 15 minutes after that time under the dedupe key `<kind>.<pick>.<run_at in microseconds>` (`core.task.dedupe_key` stays unique after a task is done, so the first held-release task's per-pick key is never reused, and a rerun of the same run enqueues the same key, which is refused, D-3263) and, once safe mode has ended, clears the pick again through a new `payments::api::held_release(pool, stripe, account, pick)` in `app/payments/src/release_proof.rs`. A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (`store_success`, `app/payments/src/charge.rs:232` and `app/payments/src/reconcile.rs:236`, `:612` all write through the same `handlers::record`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:212` to `:216`), and for a $0 pick keeps `no_fee_release`'s ledger check; nothing else makes a `Releasable` (SEC-030); `held_release` never uses T255's `Releasable::from_stored_success`, which re-clears only a pick whose proof was already spent (D-3358). Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Update the `server` and `payments` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15141,7 +15145,8 @@
     "D-1427",
     "D-1478",
     "D-2290",
-    "D-3263"
+    "D-3263",
+    "D-3358"
    ],
    "cites": [],
    "budget": {
@@ -25543,7 +25548,8 @@
    "deps": [
     "T295",
     "T327",
-    "T337"
+    "T337",
+    "T255"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -25586,7 +25592,8 @@
     "D-2286",
     "D-2970",
     "D-3007",
-    "D-3031"
+    "D-3031",
+    "D-3358"
    ],
    "cites": [],
    "budget": {
@@ -27900,7 +27907,8 @@
     "T334",
     "T340",
     "T332",
-    "T430"
+    "T430",
+    "T255"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -27943,7 +27951,8 @@
     "D-1414",
     "D-1419",
     "D-2302",
-    "D-3134"
+    "D-3134",
+    "D-3358"
    ],
    "cites": [],
    "budget": {
