@@ -120,26 +120,28 @@ def test_the_close_text_says_close_with_the_job_number() -> None:
 @pytest.mark.parametrize(
     ("planted", "expected"),
     [
-        ("Ask Hava: Sorry \U0001f600 hi", "emoji"),
-        ("Ask Hava: See bit.ly/abc", "shortener"),
-        ("Ask Hava: See https://example.com/x", "off askhava.com"),
-        ("Ask Hava: See askhava.com/roc", "ROC link must be"),
-        ("Ask Hava: File with the ROC at roc.az.gov", "off askhava.com"),
-        ("Ask Hava: Get a discount today", "promotion"),
-        ("Ask Hava: Save this number for later", "promotion"),
-        ("Ask Hava: Reply CANCEL to stop", "reply CANCEL"),
-        ("Ask Hava: Ask about our home warranty", "warranty"),
-        ("Ask Hava: Our guarantee covers it", "warranty"),
-        ("Ask Hava: Tenemos una garantía extendida", "warranty"),
-        ("Ask Hava: See http://192.168.1.5/x", "off askhava.com"),
+        ("{brand_short}: Sorry \U0001f600 hi", "emoji"),
+        ("{brand_short}: See bit.ly/abc", "shortener"),
+        ("{brand_short}: See https://example.com/x", "off {domain}"),
+        ("{brand_short}: See {domain}/roc", "ROC link must be"),
+        ("{brand_short}: File with the ROC at roc.az.gov", "off {domain}"),
+        ("{brand_short}: Get a discount today", "promotion"),
+        ("{brand_short}: Save this number for later", "promotion"),
+        ("{brand_short}: Reply CANCEL to stop", "reply CANCEL"),
+        ("{brand_short}: Ask about our home warranty", "warranty"),
+        ("{brand_short}: Our guarantee covers it", "warranty"),
+        ("{brand_short}: Tenemos una garantía extendida", "warranty"),
+        ("{brand_short}: See http://192.168.1.5/x", "off {domain}"),
         ("Hi there", "does not begin"),
     ],
 )
 def test_the_scan_catches_a_planted_violation(planted: str, expected: str) -> None:
-    """TD-TXT-02, TD-LIC-18: each planted violation is caught."""
+    """TD-TXT-02, TD-LIC-18: each planted violation is caught (brand tokens filled, D-1932, D-3347)."""
+    planted, expected = brand.fill(planted, data=BRAND), brand.fill(expected, data=BRAND)
     assert any(expected in p for p in problems(planted)), problems(planted)
 
 
 def test_the_scan_accepts_plain_links_and_times() -> None:
-    """The scan does not flag askhava.com links, an optional scheme, or "p.m." and "a.m."."""
-    assert problems("Ask Hava: Call 8 a.m. to 8 p.m. Arizona time. https://askhava.com/terms askhava.com/help/roc-complaint") == []
+    """The scan does not flag links on the brand's domain, an optional scheme, or "p.m." and "a.m."."""
+    text = "{brand_short}: Call 8 a.m. to 8 p.m. Arizona time. https://{domain}/terms {domain}/help/roc-complaint"
+    assert problems(brand.fill(text, data=BRAND)) == []

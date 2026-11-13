@@ -15,6 +15,7 @@ from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlencode, urlsplit
 
+import brand
 import pytest
 
 from stand_ins import ai, lob, resend, server, stripe, twilio
@@ -100,8 +101,8 @@ def test_provider_optout_file_is_con_030() -> None:
         *("parar", "alto", "cancelar", "baja"),
     ]
     assert settings["opt_in"]["keywords"] == ["start", "unstop"] and "YES" not in twilio.OPT_IN
-    assert settings["opt_out"]["reply"]["en"].startswith("Ask Hava: You're unsubscribed.")
-    assert settings["opt_out"]["reply"]["es"].startswith("Ask Hava: Se canceló su suscripción.")
+    assert settings["opt_out"]["reply"]["en"].startswith(brand.fill("{brand_short}: You're unsubscribed."))
+    assert settings["opt_out"]["reply"]["es"].startswith(brand.fill("{brand_short}: Se canceló su suscripción.", True))
 
 
 def test_spanish_opt_out_gets_the_spanish_reply_and_yes_resubscribes_nothing(base: str) -> None:

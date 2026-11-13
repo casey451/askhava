@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import brand
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -119,7 +120,7 @@ def test_every_draft_starts_with_the_note() -> None:
         ),
         (
             "accessibility-statement.md",
-            "The Ask Hava owner usually replies",
+            brand.fill("The {brand} owner usually replies"),
             "Casey usually replies",
             "personal name (WORD-021)",
         ),
@@ -131,8 +132,8 @@ def test_every_draft_starts_with_the_note() -> None:
         ),
         (
             "sms-terms.md",
-            "Ask Hava: Got it. Next, a few quick questions.",
-            "Ask Hava: Got your message.",
+            brand.fill("{brand_short}: Got it. Next, a few quick questions."),
+            brand.fill("{brand_short}: Got your message."),
             "missing CON-031 wording",
         ),
         (
