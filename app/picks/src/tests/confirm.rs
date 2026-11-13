@@ -11,7 +11,7 @@ use crate::confirm::{
     business_reply, confirm_by, fee_line, license_at_pick, read_business_word,
 };
 use crate::status::{confirm_backstop_minutes, pick_lost};
-use askhava_core::api::SettingsError;
+use askhava_core::api::{SettingsError, brand};
 use askhava_jobs::api::JobStatus;
 
 /// The English fee line, which every caller in these tests has.
@@ -204,6 +204,12 @@ fn td_pick_15_yes_and_confirm_by_text() {
     assert_eq!(business_reply(false, false), ConfirmReply::Nothing);
 }
 
+/// `text` with its English brand tokens filled from the brand file; `{job}` and the other
+/// placeholders stay (WORD-001, WORD-008, D-1932).
+fn fill(text: &str) -> String {
+    brand().fill(text, false).expect("the brand fills")
+}
+
 fn english(id: &str) -> String {
     let registry = Registry::embedded().expect("registry");
     let (text, _) = registry.template(id, Language::En).expect("English");
@@ -221,14 +227,19 @@ fn english(id: &str) -> String {
 fn td_pick_33_templates_equal_the_spec_text() {
     assert_eq!(
         english(PICK_NOTICE_TEMPLATE),
-        "Ask Hava: A homeowner picked your quote for job {job}. Accept by {time}."
+        fill("{brand_short}: A homeowner picked your quote for job {job}. Accept by {time}.")
     );
     assert_eq!(
         english(PICK_NOTICE_EMERGENCY_TEMPLATE),
-        "Ask Hava: EMERGENCY: a homeowner picked your quote for job {job}. Accept by {time}."
+        fill(
+            "{brand_short}: EMERGENCY: a homeowner picked your quote for job {job}. Accept by {time}."
+        )
     );
     let fee = english(FEE_REPLY_TEMPLATE).replace("{number}", &en(7_500, None));
-    assert_eq!(fee, "Ask Hava: Fee $75. Confirm and pay here: {link}.");
+    assert_eq!(
+        fee,
+        fill("{brand_short}: Fee $75. Confirm and pay here: {link}.")
+    );
     let expired = english(EXPIRED_TEMPLATE);
     assert!(expired.contains("expired") && expired.contains("can't be picked again"));
 }

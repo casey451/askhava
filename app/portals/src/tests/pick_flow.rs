@@ -4,6 +4,8 @@
 
 use askama::Template;
 
+use askhava_core::api::brand;
+
 use askhava_jobs::api::JobStatus;
 
 use askhava_picks::api::rules::{Stage, stage};
@@ -11,6 +13,11 @@ use askhava_picks::api::rules::{Stage, stage};
 use crate::pick_flow::{PageLanguage, ReviewView, result_page, takes_pick};
 
 const TOKEN: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
+/// `text` with its English brand tokens filled from the brand file (WORD-001, D-1932).
+fn fill(text: &str) -> String {
+    brand().fill(text, false).expect("the brand fills")
+}
 
 fn review(language: PageLanguage) -> String {
     ReviewView::review(1042, 2, TOKEN.to_owned(), "csrf-sample".to_owned())
@@ -32,11 +39,12 @@ fn td_pick_08_review_says_what_happens_next_with_go_back() {
     let html = review(PageLanguage::En);
     for line in [
         "You're picking one business for this request. If it falls through, you can pick another quote.",
-        "You hire the business directly. Ask Hava isn't part of your agreement with it.",
+        "You hire the business directly. {brand} isn't part of your agreement with it.",
         "or reply 2 YES",
         "After you press Pick, we text a 6-digit code to your phone.",
     ] {
-        assert!(html.contains(line), "missing: {line}");
+        let line = fill(line);
+        assert!(html.contains(&line), "missing: {line}");
     }
     let back = format!("<a href=\"/q/{TOKEN}?#quote-2\">Go back</a>");
     assert!(html.contains(&back), "Go back returns to the card");
@@ -142,11 +150,12 @@ fn a11y_014_result_heading_carries_autofocus_and_the_after_done_lines() {
     assert!(html.contains(heading), "focusable result heading");
     for line in [
         "We'll text you when they accept. You can still pick another quote on",
-        ">Add Ask Hava to your contacts</a>",
-        "URL%3Ahttps%3A%2F%2Faskhava.com",
-        "Know someone who needs quotes? Send them askhava.com.",
+        ">Add {brand} to your contacts</a>",
+        "URL%3Ahttps%3A%2F%2F{domain}",
+        "Know someone who needs quotes? Send them {domain}.",
     ] {
-        assert!(html.contains(line), "missing: {line}");
+        let line = fill(line);
+        assert!(html.contains(&line), "missing: {line}");
     }
     assert!(!html.contains("final-pick"), "no second Pick on the result");
     assert!(
