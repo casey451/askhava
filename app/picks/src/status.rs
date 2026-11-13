@@ -212,6 +212,27 @@ pub const fn steps_run(status: JobStatus) -> bool {
     }
 }
 
+/// Whether the 96-hour step of a pick whose refund succeeded still finishes its decision on a job
+/// in `status` (FEE-022, D-2204, D-3490): only Closed, where the refund's close moved it; a job
+/// that went elsewhere (Done on her DONE reply, back to Quotes ready) gets no decision email.
+#[must_use]
+pub const fn refund_finishes(status: JobStatus) -> bool {
+    match status {
+        JobStatus::Closed => true,
+        JobStatus::Intake
+        | JobStatus::Open
+        | JobStatus::NoQuotesYet
+        | JobStatus::QuotesReady
+        | JobStatus::AwaitingConfirm
+        | JobStatus::PaymentPending
+        | JobStatus::Connected
+        | JobStatus::Done
+        | JobStatus::ClosedEarly
+        | JobStatus::NotCovered
+        | JobStatus::Cancelled => false,
+    }
+}
+
 /// Whether a job in `status` still waits for the charge (FEE-041, FEE-018, FEE-020): an ended
 /// pick there moves to no backup until `payments`' caller returns the job to Quotes ready
 /// (PICK-047, D-2662).

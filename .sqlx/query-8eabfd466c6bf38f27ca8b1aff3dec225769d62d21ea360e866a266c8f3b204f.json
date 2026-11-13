@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, pool_number FROM calls.number_pool WHERE job_id = $1 ORDER BY seq DESC LIMIT 1",
+  "query": "SELECT id, pool_number FROM calls.number_pool WHERE job_id = $1 AND business_id = $2 AND homeowner_id = $3 ORDER BY seq DESC LIMIT 1",
   "describe": {
     "columns": [
       {
@@ -28,6 +28,8 @@
     ],
     "parameters": {
       "Left": [
+        "Uuid",
+        "Uuid",
         "Uuid"
       ]
     },
@@ -36,5 +38,5 @@
       false
     ]
   },
-  "hash": "26d201afe600557b8bfb882863308a62c37c44741a762cf8fab5ae738ec62ef9"
+  "hash": "8eabfd466c6bf38f27ca8b1aff3dec225769d62d21ea360e866a266c8f3b204f"
 }

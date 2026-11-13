@@ -318,6 +318,12 @@ async fn td_job_14_reminders_unless_a_business_call_came_first(pool: PgPool) {
     log_call(&pool, &called, "nobody", az(2, 10, 0)).await;
     step(&pool, &p, &called, Step::Reminders, az(3, 9, 0)).await;
     assert_eq!(count(&pool, REMINDERS, called.pick).await, 0);
+    let between = seeded(&pool, REGULAR).await;
+    step(&pool, &p, &between, Step::Reminders, az(3, 9, 0)).await;
+    assert_eq!(count(&pool, REMINDERS, between.pick).await, 1);
+    log_call(&pool, &between, "nobody", az(3, 15, 0)).await;
+    step(&pool, &p, &between, Step::Reminders, az(4, 9, 0)).await;
+    assert_eq!(count(&pool, REMINDERS, between.pick).await, 1);
 }
 
 /// TD-JOB-14 (TXT-030, QH-004): a first unanswered call at 9 p.m. queues the missed-call text
@@ -371,7 +377,7 @@ async fn td_job_14_the_missed_call_text_at_its_send_time(pool: PgPool) {
 
 /// TD-JOB-14 (FEE-035, JOB-013, JOB-027): at + 72 hours a call-contact job with no call returns
 /// to Quotes ready as a no-show; an email-contact job gets the emailed question once; its day-3
-/// NO from T277 records the no-show.
+/// NO from T277 records the no-show (`Step::DayThreeNo`, D-3488).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_job_14_the_72_hour_step_by_contact(pool: PgPool) {
     let p = parts(true);
@@ -392,14 +398,7 @@ async fn td_job_14_the_72_hour_step_by_contact(pool: PgPool) {
     }
     assert_eq!(status(&pool, by_email.job).await, "connected");
     assert_eq!(count(&pool, QUESTION, by_email.job).await, 1);
-    step(
-        &pool,
-        &p,
-        &by_email,
-        Step::EmailedAnswer(false),
-        az(5, 12, 0),
-    )
-    .await;
+    step(&pool, &p, &by_email, Step::DayThreeNo, az(5, 12, 0)).await;
     assert_eq!(status(&pool, by_email.job).await, "quotes_ready");
     assert_eq!(pick_status(&pool, by_email.pick).await, "no_show");
 }
@@ -427,6 +426,7 @@ async fn td_job_14_a_waiting_refund_runs_again_and_decides_once(pool: PgPool) {
     }
     assert_eq!(status(&pool, case.job).await, "closed");
     assert_eq!(count(&pool, DECISION_EMAIL, case.pick).await, 1);
+    assert_eq!(count(&pool, MISSED_TEXT, case.contact).await, 1);
     let agreed = seeded(
         &pool,
         Seed {
@@ -516,4 +516,175 @@ async fn td_job_14_the_fraud_warning_task(pool: PgPool) {
     assert_eq!(warn(released.pick, az(3, 9, 0)).await, Ok(()));
     assert_eq!(status(&pool, released.job).await, "connected");
     assert_eq!(pick_status(&pool, released.pick).await, "paid");
+}
+
+const REFUNDS: &str = "SELECT count(*) FROM payments.refund WHERE pick_id = $1";
+const NOTICES: &str = "SELECT count(*) FROM core.task WHERE kind = 'messaging.business_notice' AND payload->>'pick' = $1::text";
+
+/// Two unanswered business calls 4 hours apart on `case`'s line.
+async fn two_calls(pool: &PgPool, case: &Case) {
+    log_call(pool, case, "nobody", az(2, 10, 0)).await;
+    log_call(pool, case, "nobody", az(2, 14, 0)).await;
+}
+
+/// TD-JOB-14 (FEE-022, TXT-030, D-3487): the 96-hour step counts the missed-call notice only once
+/// it is queued: at night it waits for 8 a.m., then queues the text and refunds; a number that
+/// can't be texted, with no email on file, gets no refund.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_14_no_refund_without_a_queued_missed_call_notice(pool: PgPool) {
+    let night = seeded(&pool, REGULAR).await;
+    two_calls(&pool, &night).await;
+    step(&pool, &parts(true), &night, Step::NinetySix, az(6, 21, 0)).await;
+    assert_eq!(count(&pool, REFUNDS, night.pick).await, 0);
+    assert_eq!(count(&pool, MISSED_TEXT, night.contact).await, 0);
+    let again = "SELECT count(*) FROM core.task WHERE payload->>'step' = 'at_96' AND run_at = $2 AND payload->>'pick' = $1::text";
+    let at8: i64 = sqlx::query_scalar(again)
+        .bind(night.pick)
+        .bind(az(7, 8, 0).to_sqlx())
+        .fetch_one(&pool)
+        .await
+        .expect("at 8");
+    assert_eq!(at8, 1);
+    step(&pool, &parts(true), &night, Step::NinetySix, az(7, 8, 0)).await;
+    assert_eq!(count(&pool, MISSED_TEXT, night.contact).await, 1);
+    assert_eq!(status(&pool, night.job).await, "closed");
+    let unreachable = seeded(
+        &pool,
+        Seed {
+            phone: UNTEXTABLE,
+            ..REGULAR
+        },
+    )
+    .await;
+    two_calls(&pool, &unreachable).await;
+    step(
+        &pool,
+        &parts(true),
+        &unreachable,
+        Step::NinetySix,
+        az(6, 9, 0),
+    )
+    .await;
+    assert_eq!(count(&pool, REFUNDS, unreachable.pick).await, 0);
+    assert_eq!(status(&pool, unreachable.job).await, "connected");
+}
+
+/// TD-JOB-14 (FEE-022, JOB-027, D-3488): a NO to the 72-hour emailed question is only stored: the
+/// pick stays, and the 96-hour step still refunds.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_14_a_no_to_the_emailed_question_keeps_the_refund(pool: PgPool) {
+    let case = seeded(
+        &pool,
+        Seed {
+            email: true,
+            ..REGULAR
+        },
+    )
+    .await;
+    two_calls(&pool, &case).await;
+    let no = Step::EmailedAnswer(false);
+    step(&pool, &parts(true), &case, no, az(5, 12, 0)).await;
+    assert_eq!(status(&pool, case.job).await, "connected");
+    assert_eq!(pick_status(&pool, case.pick).await, "paid");
+    step(&pool, &parts(true), &case, Step::NinetySix, az(6, 9, 0)).await;
+    assert_eq!(count(&pool, REFUNDS, case.pick).await, 1);
+    assert_eq!(status(&pool, case.job).await, "closed");
+}
+
+/// Ends `first`'s pick as a no-show and its line, then seeds a second business's paid, released
+/// pick on the same job with her same contact and its own line (`email` sets its contact choice).
+async fn next_pick(pool: &PgPool, first: &Case, email: bool) -> Case {
+    let at = az(4, 9, 0);
+    let mut db = pool.acquire().await.expect("conn");
+    sqlx::query("UPDATE picks.pick SET status = 'no_show', ended_at = $2 WHERE id = $1")
+        .bind(first.pick)
+        .bind(at.to_sqlx())
+        .execute(&mut *db)
+        .await
+        .expect("end");
+    sqlx::query("UPDATE calls.number_pool SET closed_at = $2 WHERE id = $1")
+        .bind(first.line)
+        .bind(at.to_sqlx())
+        .execute(&mut *db)
+        .await
+        .expect("close");
+    let business = askhava_businesses::api::create(&mut db, false, at)
+        .await
+        .expect("business");
+    askhava_businesses::api::save_business_name(&mut db, business, ("Fake Roofing", None), None)
+        .await
+        .expect("name");
+    let pick = paid_pick(&mut db, (first.job, business)).await;
+    let line: Uuid = sqlx::query_scalar("INSERT INTO calls.number_pool (job_id, homeowner_id, business_id, pool_number, shared, assigned_at) VALUES ($1, $2, $3, '+19285550188', false, $4) RETURNING id")
+        .bind(first.job).bind(first.contact).bind(business).bind(at.to_sqlx()).fetch_one(&mut *db).await.expect("line");
+    sqlx::query("INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at, contact_id, mail_chosen) VALUES ($1, $2, $3, 'paid', $4, $5, $6)")
+        .bind(pick).bind(first.job).bind(business).bind(at.to_sqlx()).bind(first.contact).bind(email)
+        .execute(&mut *db).await.expect("release");
+    let choice = if email {
+        ContactChoice::Email
+    } else {
+        ContactChoice::Call
+    };
+    record_contact_choice(&mut db, pick, choice, at)
+        .await
+        .expect("choice");
+    Case {
+        pick,
+        job: first.job,
+        line,
+        contact: first.contact,
+    }
+}
+
+/// TD-JOB-14 (JOB-027, D-3488): each email-contact pick on one job gets its own 72-hour question.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_14_each_pick_on_a_job_gets_its_own_question(pool: PgPool) {
+    let email = Seed {
+        email: true,
+        ..REGULAR
+    };
+    let first = seeded(&pool, email).await;
+    step(&pool, &parts(true), &first, Step::SeventyTwo, az(5, 9, 0)).await;
+    let second = next_pick(&pool, &first, true).await;
+    step(&pool, &parts(true), &second, Step::SeventyTwo, az(7, 9, 0)).await;
+    assert_eq!(count(&pool, QUESTION, first.job).await, 2);
+}
+
+/// TD-JOB-14 (PRIV-005, TXT-030, D-3486, D-3490): an ended pick's steps do nothing on the job's
+/// next pick: no missed-call text from the next pick's calls, no question, no move; the next pick
+/// reads only its own line.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_14_an_ended_pick_never_acts_on_the_next_one(pool: PgPool) {
+    let p = parts(true);
+    let first = seeded(&pool, REGULAR).await;
+    let second = next_pick(&pool, &first, false).await;
+    log_call(&pool, &second, "nobody", az(4, 10, 0)).await;
+    for old in [Step::BusinessCall, Step::SeventyTwo, Step::Reminders] {
+        step(&pool, &p, &first, old, az(5, 10, 0)).await;
+    }
+    assert_eq!(count(&pool, MISSED_TEXT, first.contact).await, 0);
+    assert_eq!(count(&pool, REMINDERS, first.pick).await, 0);
+    assert_eq!(status(&pool, first.job).await, "connected");
+    assert_eq!(pick_status(&pool, second.pick).await, "paid");
+    step(&pool, &p, &second, Step::BusinessCall, az(5, 10, 0)).await;
+    assert_eq!(count(&pool, MISSED_TEXT, second.contact).await, 1);
+    let named = "SELECT count(*) FROM messaging.outbox WHERE template_id = 'caller_missed' AND recipient_id = $1 AND body LIKE '%Fake Roofing%'";
+    assert_eq!(count(&pool, named, second.contact).await, 1);
+}
+
+/// TD-JOB-14 (FEE-022, D-3490): a pick whose refund succeeded on a job that went to Done (her
+/// DONE reply) gets no decision email from a later 96-hour step.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_14_no_decision_email_on_a_job_done(pool: PgPool) {
+    let case = seeded(&pool, REGULAR).await;
+    two_calls(&pool, &case).await;
+    sqlx::query("INSERT INTO payments.refund (pick_id, trigger, status, tries, requested_at) VALUES ($1, 'fraud-warning', 'succeeded', 1, $2)")
+        .bind(case.pick).bind(az(5, 9, 0).to_sqlx()).execute(&pool).await.expect("refund");
+    let mut db = pool.acquire().await.expect("conn");
+    let arrow = (JobStatus::Connected, JobStatus::Done);
+    let moved = move_to(&mut db, case.job, arrow, az(5, 10, 0), Actor::System).await;
+    assert_eq!(moved, Ok(Guarded::Applied(())));
+    step(&pool, &parts(true), &case, Step::NinetySix, az(6, 9, 0)).await;
+    assert_eq!(count(&pool, NOTICES, case.pick).await, 0);
+    assert_eq!(status(&pool, case.job).await, "done");
 }

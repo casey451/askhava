@@ -5,16 +5,19 @@
 //! release queues four in its claim's transaction ([`schedule_steps`]: reminders 24 and 48
 //! hours after it, the 72-hour step, the 96-hour step); T271's route queues [`Step::BusinessCall`]
 //! after each logged business call and T277 queues [`Step::EmailedAnswer`] for the homeowner's
-//! YES or NO to the emailed question, each through [`step_task`]. Each run gathers the facts
-//! (the release row, the contact choice, the job, the masked line's call log through
-//! `calls::api::job_line` and `call_log`, the refund state) and calls the T191 functions that are
-//! due. A refund still waiting runs the 96-hour step again an hour later ([`RERUN_AFTER`]); the
-//! missed-call text is queued only at its send time; a number that can't be texted gets the
-//! TXT-030 copy by email. [`run_fraud_warning`] runs `payments`' `picks.fraud_warning` task.
+//! YES or NO to the 72-hour emailed question (a mark only) and [`Step::DayThreeNo`] for an
+//! email-contact day-3 NO (the no-show), each through [`step_task`]. Each run acts only while the
+//! pick is `paid` or `free`, and gathers the facts (the release row, the contact choice, the job,
+//! the call log of the line opened for this pick through `calls::api::job_line` and `call_log`,
+//! the refund state) and calls the T191 functions that are due. A reminder step queues only the
+//! reminders already due. The 96-hour step runs the missed-call step first and counts the notice
+//! only once it is queued. A refund still waiting runs the 96-hour step again an hour later
+//! ([`RERUN_AFTER`]); the missed-call text is queued only at its send time; a number that can't be
+//! texted gets the TXT-030 copy by email. [`run_fraud_warning`] runs `payments`' `picks.fraud_warning` task.
 //! Payloads and keys hold IDs only (PRIV-002).
 
 use askhava_adapters::api::PaymentsAdapter;
-use askhava_businesses::api::public_names;
+use askhava_businesses::api::{NoticePurpose, notice_addresses, public_names};
 use askhava_calls::api::{call_log, job_line};
 use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue};
 use askhava_jobs::api::{JobStatus, TEXT_KIND, current};
@@ -35,10 +38,12 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::contact_choice::contact_choice;
-use crate::status::steps_run;
+use crate::money_notices::BUSINESS_NOTICE_KIND;
+use crate::status::{refund_finishes, release_shown_codes, steps_run};
 use crate::unreachable_refund::{
     AtNinetySix, MISSED_CALL_TEMPLATE, ReleasedPick, call_record, decide_at_96_hours,
-    fraud_warning, missed_call_at, missed_call_text, no_call_at_72_hours, queue_reminders,
+    fraud_warning, missed_call_at, missed_call_text, no_call_at_72_hours, reminder_template,
+    reminder_times,
 };
 
 /// The unreachable-homeowner step task kind (D-1845).
@@ -47,7 +52,7 @@ pub const UNREACHABLE_STEP_KIND: &str = "picks.unreachable_step";
 pub const EMAILED_QUESTION_TEMPLATE: &str = "emailed_question";
 /// The audit mark of the homeowner's answer to the emailed question (JOB-027, D-3488).
 pub const EMAILED_YES_ACTION: &str = "picks.emailed_yes";
-/// The audit mark of a NO to the emailed question (FEE-035, D-3488).
+/// The audit mark of a NO to the emailed question (JOB-027, D-3488): stored only, never a no-show.
 pub const EMAILED_NO_ACTION: &str = "picks.emailed_no";
 /// A waiting refund's step, or a fraud warning's refund in flight, runs again this much later.
 pub const RERUN_AFTER: SignedDuration = SignedDuration::from_hours(1);
@@ -63,8 +68,10 @@ pub enum Step {
     NinetySix,
     /// TXT-030: after a logged business call: the missed-call text at its send time.
     BusinessCall,
-    /// JOB-027, FEE-035: her answer to the emailed question, `true` for YES.
+    /// JOB-027: her answer to the 72-hour emailed question, `true` for YES; only stored (D-3488).
     EmailedAnswer(bool),
+    /// FEE-035: an email-contact homeowner's day-3 check-in NO (T277): the no-show (D-3488).
+    DayThreeNo,
 }
 
 impl Step {
@@ -78,6 +85,7 @@ impl Step {
             Self::BusinessCall => "business_call",
             Self::EmailedAnswer(true) => "emailed_yes",
             Self::EmailedAnswer(false) => "emailed_no",
+            Self::DayThreeNo => "day3_no",
         }
     }
 
@@ -89,6 +97,7 @@ impl Step {
             Self::BusinessCall,
             Self::EmailedAnswer(true),
             Self::EmailedAnswer(false),
+            Self::DayThreeNo,
         ]
         .into_iter()
         .find(|s| s.code() == code)
@@ -169,6 +178,7 @@ struct Gathered {
     homeowner: Uuid,
     released_at: Timestamp,
     charged: bool,
+    live: bool,
     contact: Contact,
     status: JobStatus,
     emergency: bool,
@@ -219,6 +229,7 @@ async fn released(db: &mut PgConnection, pick: Uuid) -> Result<Option<Gathered>,
         homeowner: row.contact_id,
         released_at: row.released_at.to_jiff(),
         charged: row.status == "paid",
+        live: release_shown_codes().contains(&row.status),
         contact: if choice.email_chosen() {
             Contact::Email
         } else {
@@ -231,12 +242,14 @@ async fn released(db: &mut PgConnection, pick: Uuid) -> Result<Option<Gathered>,
     }))
 }
 
-/// [`released`] plus the job's masked line and its call log (CALL-007, D-1836).
+/// [`released`] plus the masked line opened for this pick (its job, business and her contact) and
+/// its call log (CALL-007, D-1836, D-3486), so a later pick's line is never read.
 async fn gather(db: &mut PgConnection, pick: Uuid) -> Result<Option<Gathered>, HandlerError> {
     let Some(mut facts) = released(db, pick).await? else {
         return Ok(None);
     };
-    if let Some((line, number)) = job_line(db, facts.job).await.map_err(|_| FAILED)? {
+    let whose = (facts.job, facts.business, facts.homeowner);
+    if let Some((line, number)) = job_line(db, whose).await.map_err(|_| FAILED)? {
         let log = call_log(db, line).await.map_err(|_| FAILED)?;
         facts.calls = log.iter().map(call_record).collect();
         facts.line = Some(number);
@@ -250,9 +263,10 @@ fn read_payload(payload: &Value) -> Option<(Uuid, Step)> {
 }
 
 /// The `picks.unreachable_step` handler (D-1845): reads the step, gathers the facts and runs it
-/// at `now`. A job no longer Connected gets no step, except the 96-hour step of a pick whose
-/// refund already succeeded, so a run that refunded and closed but failed before the decision
-/// email is finished by the queue's retry (the email's key keeps it once, D-2204).
+/// at `now`. A pick no longer `paid` or `free`, or a job no longer Connected, gets no step,
+/// except the 96-hour step of a pick whose refund already succeeded on a job the close moved to
+/// Closed, so a run that refunded and closed but failed before the decision email is finished by
+/// the queue's retry (the email's key keeps it once, D-2204, D-3490).
 ///
 /// # Errors
 /// A fixed sentence for a malformed payload, a missing setting or a failed step (retried).
@@ -269,24 +283,63 @@ pub async fn run_unreachable_step<P: PaymentsAdapter>(
     };
     let refunded =
         refund_state(&mut db, pick).await.map_err(|_| FAILED)? == PickRefundState::Succeeded;
-    let finishing = step == Step::NinetySix && refunded;
-    if !steps_run(facts.status) && !finishing {
+    let finishing = step == Step::NinetySix && refunded && refund_finishes(facts.status);
+    if !facts.live || !(steps_run(facts.status) || finishing) {
         return Ok(());
     }
     match step {
-        Step::Reminders => queue_reminders(&mut db, &facts.case(), facts_calls(&facts))
-            .await
-            .map(drop)
-            .map_err(|_| FAILED),
+        Step::Reminders => reminders(&mut db, &facts, now).await,
         Step::SeventyTwo => at_72(&mut db, &facts, now).await,
-        Step::BusinessCall => missed_call(&mut db, &parts, &facts, now).await,
-        Step::EmailedAnswer(yes) => answered(&mut db, &facts, yes, now).await,
+        Step::BusinessCall => match missed_call(&mut db, &parts, &facts, now).await? {
+            Missed::Held(until) => requeue(&mut db, facts.pick, Step::BusinessCall, until).await,
+            Missed::Done(_) => Ok(()),
+        },
+        Step::EmailedAnswer(yes) => answered(&mut db, facts.pick, yes).await,
+        Step::DayThreeNo => day_three_no(&mut db, &facts, now).await,
         Step::NinetySix => at_96(&pool, &mut db, (&parts, &facts), refunded, now).await,
     }
 }
 
-const fn facts_calls(facts: &Gathered) -> (Timestamp, Contact, &[CallRecord]) {
-    (facts.released_at, facts.contact, facts.calls.as_slice())
+/// Queues `step` of `pick` again at `at` (once per due second).
+async fn requeue(
+    db: &mut PgConnection,
+    pick: Uuid,
+    step: Step,
+    at: Timestamp,
+) -> Result<(), HandlerError> {
+    let again = step_task(pick, step, at);
+    enqueue(db, &again).await.map(drop).map_err(|_| FAILED)
+}
+
+/// TXT-026, BIZ-019, D-3490: the no-call reminders due by `now` and still owed (a business call
+/// before a reminder's time cancels it), each a business notice at its time, once per pick and
+/// time. A reminder not yet due is left to its own step, so a call before it still cancels it.
+async fn reminders(
+    db: &mut PgConnection,
+    facts: &Gathered,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    let due: Vec<Timestamp> = reminder_times(facts.released_at, &facts.calls)
+        .into_iter()
+        .filter(|at| *at <= now)
+        .collect();
+    if due.is_empty() {
+        return Ok(());
+    }
+    let to = notice_addresses(db, facts.business, NoticePurpose::Money)
+        .await
+        .map_err(|_| FAILED)?;
+    for at in due {
+        let payload = json!({
+            "template": reminder_template(facts.contact), "business": facts.business,
+            "pick": facts.pick, "job": facts.job, "to": to, "values": {"job": facts.job_number},
+        });
+        let mut task = NewTask::new(BUSINESS_NOTICE_KIND, payload, at);
+        let key = format!("no_call_reminder.{}.{}", facts.pick, at.as_second());
+        task.dedupe_key = Some(format!("{BUSINESS_NOTICE_KIND}.{key}"));
+        enqueue(db, &task).await.map_err(|_| FAILED)?;
+    }
+    Ok(())
 }
 
 /// FEE-035, JOB-013, JOB-027, D-1818: + 72 hours: a call-contact job with no business call
@@ -323,9 +376,9 @@ async fn no_call(
     }
 }
 
-/// JOB-027, D-1818: one `jobs.homeowner_text` event for [`EMAILED_QUESTION_TEMPLATE`] at the
-/// job's version with the business's public name, deduped per job; `intake`'s sender applies
-/// consent, opt-out and quiet hours.
+/// JOB-027, D-1818, D-3488: one `jobs.homeowner_text` event for [`EMAILED_QUESTION_TEMPLATE`] at
+/// the job's version with the business's public name, deduped per job and pick (a later pick on
+/// the same job gets its own question); `intake`'s sender applies consent, opt-out and quiet hours.
 async fn emailed_question(
     db: &mut PgConnection,
     facts: &Gathered,
@@ -337,20 +390,15 @@ async fn emailed_question(
         "values": {"job": facts.job_number, "business": facts.name}});
     let mut task = NewTask::new(TEXT_KIND, payload, now);
     task.dedupe_key = Some(format!(
-        "{TEXT_KIND}.{}.{EMAILED_QUESTION_TEMPLATE}",
-        facts.job
+        "{TEXT_KIND}.{}.{}.{EMAILED_QUESTION_TEMPLATE}",
+        facts.job, facts.pick
     ));
     enqueue(db, &task).await.map(drop).map_err(|_| FAILED)
 }
 
-/// JOB-027, FEE-035, D-3488: stores her answer once as an audit mark on the pick; a NO on an
-/// email-contact job records the no-show (`no_call_at_72_hours` with the day-3 NO).
-async fn answered(
-    db: &mut PgConnection,
-    facts: &Gathered,
-    yes: bool,
-    now: Timestamp,
-) -> Result<(), HandlerError> {
+/// JOB-027, FEE-022, D-3488: stores her answer to the 72-hour question once as an audit mark on
+/// the pick, which the 96-hour step reads; a NO changes nothing else (only a YES keeps the fee).
+async fn answered(db: &mut PgConnection, pick: Uuid, yes: bool) -> Result<(), HandlerError> {
     let entry = AuditEntry {
         actor: Actor::System,
         action: if yes {
@@ -359,11 +407,20 @@ async fn answered(
             EMAILED_NO_ACTION
         },
         subject_kind: "picks.pick",
-        subject_id: facts.pick,
+        subject_id: pick,
         change: Change::Action,
     };
-    audit_once(db, &entry).await.map_err(|_| FAILED)?;
-    if yes || facts.contact != Contact::Email {
+    audit_once(db, &entry).await.map(drop).map_err(|_| FAILED)
+}
+
+/// FEE-035, JOB-013, D-3488: an email-contact homeowner's day-3 check-in NO (T277's step) records
+/// the no-show (`no_call_at_72_hours` with the day-3 NO); a call-contact pick gets nothing.
+async fn day_three_no(
+    db: &mut PgConnection,
+    facts: &Gathered,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    if facts.contact != Contact::Email {
         return Ok(());
     }
     let what = (
@@ -375,21 +432,29 @@ async fn answered(
     no_call(db, facts, what, now).await
 }
 
+/// What the missed-call step did: `Done(true)` when the text or its email copy is queued (now or
+/// before), `Done(false)` when none is owed or she can't be reached, `Held` until her window opens.
+enum Missed {
+    Done(bool),
+    Held(Timestamp),
+}
+
 /// TXT-030, QH-001, QH-004, D-1819, D-3487: the missed-call notice when the first business
 /// attempt went unanswered: texted now inside her window or at any hour on an emergency job;
-/// outside it the step is queued again for the window's opening, so the text is never queued
-/// early; a number that can't be texted gets the same words by email when one is on file.
+/// outside it the caller queues its step again for the window's opening, so the text is never
+/// queued early; a number that can't be texted gets the same words by email when one is on file.
+/// Idempotent: the text and the email are each kept once by their keys.
 async fn missed_call<P>(
     db: &mut PgConnection,
     parts: &StepParts<P>,
     facts: &Gathered,
     now: Timestamp,
-) -> Result<(), HandlerError> {
+) -> Result<Missed, HandlerError> {
     let (Some(number), true) = (
         &facts.line,
         missed_call_at(facts.released_at, &facts.calls).is_some(),
     ) else {
-        return Ok(());
+        return Ok(Missed::Done(false));
     };
     let vault = parts.vault.as_ref().ok_or(MISSING)?;
     let reach = send_window(db, vault, facts.homeowner, now)
@@ -397,10 +462,7 @@ async fn missed_call<P>(
         .map_err(|_| FAILED)?;
     let reach = match reach {
         SendWindow::Hold { .. } if facts.emergency => SendWindow::Now,
-        SendWindow::Hold { until } => {
-            let again = step_task(facts.pick, Step::BusinessCall, until);
-            return enqueue(db, &again).await.map(drop).map_err(|_| FAILED);
-        }
+        SendWindow::Hold { until } => return Ok(Missed::Held(until)),
         other => other,
     };
     let calls = (facts.released_at, &facts.calls[..]);
@@ -409,9 +471,11 @@ async fn missed_call<P>(
         .await
         .map_err(|_| FAILED)?
     {
-        return Ok(());
+        return Ok(Missed::Done(true));
     }
-    email_copy(db, parts, facts, number, now).await.map(drop)
+    email_copy(db, parts, facts, number, now)
+        .await
+        .map(Missed::Done)
 }
 
 /// TXT-030, SEC-028: the missed-call words as an email to her (the outbox's `TextFailed` notice
@@ -458,29 +522,6 @@ async fn email_copy<P>(
     Ok(true)
 }
 
-/// Whether the missed-call notice was sent or attempted: owed, and a textable number or an email
-/// on file (FEE-022, D-1819); a delivery failure still counts.
-async fn notice_attempted<P>(
-    db: &mut PgConnection,
-    parts: &StepParts<P>,
-    facts: &Gathered,
-    now: Timestamp,
-) -> Result<bool, HandlerError> {
-    if missed_call_at(facts.released_at, &facts.calls).is_none() {
-        return Ok(false);
-    }
-    let vault = parts.vault.as_ref().ok_or(MISSING)?;
-    let reach = send_window(db, vault, facts.homeowner, now)
-        .await
-        .map_err(|_| FAILED)?;
-    if matches!(reach, SendWindow::Now | SendWindow::Hold { .. }) {
-        return Ok(true);
-    }
-    homeowner_has_email(db, vault, facts.homeowner)
-        .await
-        .map_err(|_| FAILED)
-}
-
 /// Her answer to the emailed question, from the marks [`answered`] stores (JOB-027).
 async fn email_check(db: &mut PgConnection, pick: Uuid) -> Result<EmailCheck, HandlerError> {
     let subject = ("picks.pick", pick);
@@ -500,9 +541,12 @@ async fn email_check(db: &mut PgConnection, pick: Uuid) -> Result<EmailCheck, Ha
     })
 }
 
-/// FEE-022, JOB-027, D-1819, D-2204: the 96-hour decision; a refund waiting or in flight queues
-/// this step again [`RERUN_AFTER`] later. A job still Connected has had no DONE or PROBLEM
-/// reply (either moves it on); `refunded` is the pick's succeeded refund.
+/// FEE-022, JOB-027, D-1819, D-2204, D-3487: the 96-hour decision; a refund waiting or in flight
+/// queues this step again [`RERUN_AFTER`] later. The missed-call step runs first, so
+/// `notice_attempted` means the text or its email copy is in the outbox, never just owed; outside
+/// her window the decision waits for its opening. The steps run only on a Connected job, or a
+/// job the close moved to Closed, so no DONE or PROBLEM reply came (either moves it elsewhere);
+/// `refunded` is the pick's succeeded refund.
 async fn at_96<P: PaymentsAdapter>(
     pool: &PgPool,
     db: &mut PgConnection,
@@ -511,11 +555,15 @@ async fn at_96<P: PaymentsAdapter>(
     now: Timestamp,
 ) -> Result<(), HandlerError> {
     let stripe = parts.stripe.as_ref().ok_or(MISSING)?;
+    let notice_attempted = match missed_call(db, parts, facts, now).await? {
+        Missed::Held(until) => return requeue(db, facts.pick, Step::NinetySix, until).await,
+        Missed::Done(queued) => queued,
+    };
     let rule = UnreachableFacts {
         released_at: facts.released_at,
         emergency: facts.emergency,
         calls: &facts.calls,
-        notice_attempted: notice_attempted(db, parts, facts, now).await?,
+        notice_attempted,
         done_or_problem: false,
         contact: facts.contact,
         email_check: email_check(db, facts.pick).await?,
@@ -530,8 +578,7 @@ async fn at_96<P: PaymentsAdapter>(
         return Ok(());
     }
     let at = now.saturating_add(RERUN_AFTER).map_err(|_| FAILED)?;
-    let again = step_task(facts.pick, Step::NinetySix, at);
-    enqueue(db, &again).await.map(drop).map_err(|_| FAILED)
+    requeue(db, facts.pick, Step::NinetySix, at).await
 }
 
 /// The `picks.fraud_warning` handler (FEE-052, JOB-014, D-1845, D-2071): runs
