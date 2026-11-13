@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T09:03:40Z by runner ae6e83ec9b4d (actions).
+Updated 2026-11-13T09:04:03Z by runner ae6e83ec9b4d (actions).
 
-**Building: T249 in progress since 07:51Z; 276 of 415 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T431 in progress since 09:02Z; 276 of 415 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 276 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T249 claimed 07:51Z, lease until 10:51Z; lane 2: T431 claimed 09:02Z, lease until 12:02Z
+- **Lane:** lane 2: T431 claimed 09:02Z, lease until 12:02Z
 - **Week:** 14% used, 161.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:03Z, 0 min before this update
+- **Last run:** 09:03Z, 1 min before this update
 - **Keeper:** last ran 08:57Z, next wake 10:54Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-13T09:03:40Z by runner ae6e83ec9b4d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T249 | quotes and portals: radius matching by ZIP centroid, the cov | MERGE_PENDING | 1 | 71 min | 09:03Z |  |
 | T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 2 | 3 min | 07:47Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | BLOCKED | 1 | 40 min | 07:40Z | PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switc |
 | T420 | Brand rename prep: intake and ai unit tests take the brand f | done | 1 | 28 min | 06:38Z |  |
@@ -154,8 +155,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T249 (lease until 2026-11-13T10:51:53Z)
+- nothing
 - lane 2: T431 (lease until 2026-11-13T12:02:06Z)
 
 ## Last usage reading
-- {"task": "T255", "at": "2026-11-13T07:47:38Z", "input_tokens": 128, "cache_creation_input_tokens": 387353, "cache_read_input_tokens": 5540011, "output_tokens": 33222}
+- {"task": "T249", "at": "2026-11-13T09:03:39Z", "output_tokens": 215790, "cache_read_input_tokens": 44095436, "cache_creation_input_tokens": 833016, "input_tokens": 675}
