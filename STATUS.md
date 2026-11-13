@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:27:56Z by runner 546c8d32a681 (actions).
+Updated 2026-11-13T22:29:16Z by runner 09bfaf2c02fd (actions).
 
-**Building: T355 in progress since 22:11Z; 296 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T355 in progress since 22:11Z; 297 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 296 of 428 build tasks (owner gates not counted)
+- **Tasks done:** 297 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
 - **Week:** 29% used, 124.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:27Z, 0 min before this update
+- **Last run:** 22:28Z, 1 min before this update
 - **Keeper:** last ran 22:27Z, next wake 00:54Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smalles; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+187 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 27 problem(s) on tasks still to run (+192 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 2 | 21 min | 22:14Z | Ci: failure; Lint and slow tests: failure / Lint and slow tests failed at step: Rust format and lint (clippy once, befor |
+| T357 | server, messaging and intake: START into an open request res | done | 2 | 21 min | 22:14Z | Ci: failure; Lint and slow tests: failure / Lint and slow tests failed at step: Rust format and lint (clippy once, befor |
 | T438 | Token usage counts each reply once: dedupe transcript usage  | MERGE_PENDING | 2 | 19 min | 22:10Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 2 | 7 min | 22:01Z | PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no p |
 | T354 | privacy: key rotation re-seals stored photos too, so droppin | done | 1 | 69 min | 21:39Z |  |
@@ -110,8 +110,8 @@ Updated 2026-11-13T22:27:56Z by runner 546c8d32a681 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 280 of 733 (38.2%) · partial 293 · unstarted 160
-**Tasks merged (throughput only):** 296 of 428
+**Requirements verified:** 281 of 733 (38.3%) · partial 292 · unstarted 160
+**Tasks merged (throughput only):** 297 of 428
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -119,7 +119,7 @@ Updated 2026-11-13T22:27:56Z by runner 546c8d32a681 (actions).
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 20 | 35 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
-| consent | 13 | 18 | 4 | 35 |
+| consent | 14 | 17 | 4 | 35 |
 | fees | 14 | 37 | 1 | 52 |
 | intake | 27 | 13 | 3 | 43 |
 | job-cards | 19 | 5 | 0 | 24 |
@@ -146,7 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 176 of 208 done
+- stage 4: 177 of 208 done
 - stage 5: 0 of 66 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
