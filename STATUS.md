@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-13T23:07:50Z by runner 31c17d5aa447 (actions).
+Updated 2026-11-13T23:08:11Z by runner 31c17d5aa447 (actions).
 
 **Building: T355 in progress since 22:11Z; 299 of 428 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 299 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 4: T391 claimed 22:36Z, lease until 01:36Z
-- **Week:** 30% used, 125.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 4: T391 claimed 22:36Z, lease until 01:36Z; lane 6: T341 claimed 23:07Z, lease until 02:07Z
+- **Week:** 30% used, 123.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:02Z, 5 min before this update
 - **Keeper:** last ran 23:01Z, next wake 01:08Z
 
@@ -138,7 +138,7 @@ Updated 2026-11-13T23:07:50Z by runner 31c17d5aa447 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T22:48:18Z (week)): week: 68.4M used, 125.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T19:21:51Z.
+- Pacing (session_reading 2026-11-13T23:01:25Z (week)): week: 70.4M used, 123.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T15:33:22Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -156,6 +156,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T355 (lease until 2026-11-14T01:11:47Z)
 - lane 3: T415 (lease until 2026-11-14T01:05:51Z)
 - lane 4: T391 (lease until 2026-11-14T01:36:08Z)
+- lane 6: T341 (lease until 2026-11-14T02:07:43Z)
 
 ## Last usage reading
 - {"task": "T328", "at": "2026-11-13T23:00:58Z", "cache_creation_input_tokens": 209848, "output_tokens": 39613, "cache_read_input_tokens": 4737864, "input_tokens": 181}
