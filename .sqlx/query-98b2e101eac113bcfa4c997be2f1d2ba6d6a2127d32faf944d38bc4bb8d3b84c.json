@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT version, text FROM payments.card_authorization WHERE business_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "payments.card_authorization",
+            "name": "version"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "text",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.card_authorization",
+            "name": "text"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "98b2e101eac113bcfa4c997be2f1d2ba6d6a2127d32faf944d38bc4bb8d3b84c"
+}
