@@ -4029,3 +4029,4 @@
 - 2026-11-13T21:44:50Z runner 58eef26515d0 (actions): {}
 - 2026-11-13T21:51:22Z runner 58eef26515d0 (actions): {"T438": "QUEUED -> IN_PROGRESS"}; T438 estimated 1.4M tokens (calibrated); week has 138.0M left (no five-hour budget, D-3056) (session_reading 2026-11-13T21:43:30Z (week)); claimed
 - 2026-11-13T21:52:02Z runner 4a8b6490731d (actions): {}
+- 2026-11-13T21:52:30Z runner 4a8b6490731d (actions): {"T340": "QUEUED -> IN_PROGRESS"}; T340 estimated 3.9M tokens (calibrated); week has 136.6M left (no five-hour budget, D-3056) after 1.4M still running in another lane (session_reading 2026-11-13T21:43:30Z (week)); claimed
