@@ -25,3 +25,4 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/businesses/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/businesses/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
+- [CALL-011 CALL-012 BIZ-033] (owns) T391, D-3564: `src/reply_link.rs` `is_main_phone`, `link_by_reply` (one non-main staff phone linked by the owner on the caller's transaction, one `businesses.phone_linked` audit row; no number stored). Test `tests/integration/tests/link_reply.rs`.
