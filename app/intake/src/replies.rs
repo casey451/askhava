@@ -6,12 +6,15 @@
 //! optionally with a request number, gets `answer_list`'s lines (TXT-031); any other reply first
 //! restarts each Intake job's 72-hour no-reply wait at the reply (`hear`, INT-019, D-807), then
 //! goes to `receive_text` as before, so consent, the 911 screen, CLOSE, cancel and `<n> YES` keep
-//! their own paths. The INT-032 "That's 2 jobs" wiring stays D-999's open gap.
+//! their own paths. The INT-032 "That's 2 jobs" wiring stays D-999's open gap. Before all of
+//! that, a check-in answer on one of her Connected jobs goes to `check_in_replies` in the same
+//! transaction (JOB-015, D-1840).
 
 use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
+use crate::check_in_replies::check_in_reply;
 use crate::conversation::hear;
 use crate::handlers::{answer_list, list_ask};
 use crate::models::{self, IntakeError};
@@ -25,10 +28,15 @@ pub enum Reply {
     Listed(Vec<Queued>),
     /// Any other text: `receive_text`'s result, after the wait restarted in an open request.
     Handled(Handled),
+    /// A check-in answer on this Connected job (JOB-015, JOB-016, D-1840).
+    CheckedIn(Uuid),
 }
 
 /// Handles one inbound homeowner text that `messaging` let through (TXT-031, INT-019, D-999,
-/// D-1197, D-1199 (4)), in one transaction. With an open request: LIST or LISTA (alone or with
+/// D-1197, D-1199 (4), JOB-015, D-1840), in one transaction. A check-in answer (DONE, NO,
+/// PROBLEM and the rest) on one of her Connected jobs with a check-in due, whether or not a
+/// request is open, gives [`Reply::CheckedIn`]: a PROBLEM's scrubbed words are stored before the
+/// answer is applied. Otherwise, with an open request: LIST or LISTA (alone or with
 /// one request number) answered from a job holding a shown quote gives [`Reply::Listed`], `names`
 /// being the businesses' public names; a LIST with no quoted job or whose list `quotes` cannot
 /// build (`IntakeError::Quotes`, e.g. a name missing from `names`, D-1310), or any other text
@@ -47,8 +55,12 @@ pub async fn receive_reply(
     (settings, names): (Settings, &[(Uuid, String)]),
 ) -> Result<Reply, IntakeError> {
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
-    let open = models::open_conversation(&mut tx, msg.contact).await?;
     let answered_elsewhere = msg.inbound.opt_out || msg.inbound.help;
+    if !answered_elsewhere && let Some(job) = check_in_reply(&mut tx, msg).await? {
+        tx.commit().await.map_err(|_| IntakeError::Database)?;
+        return Ok(Reply::CheckedIn(job));
+    }
+    let open = models::open_conversation(&mut tx, msg.contact).await?;
     if let Some(conversation) = open.filter(|_| !answered_elsewhere) {
         if list_ask(msg.inbound.words).is_some() {
             let spanish_on = settings.spanish_conversations_on;

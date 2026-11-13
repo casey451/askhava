@@ -21,6 +21,8 @@ The layer-2 crate that holds every homeowner contact detail (name, phone, email,
 - An inbound email failing SPF, DKIM or DMARC, or without an auth block, may only opt out (no HELP or START flag); a bad or stale signature is refused: `tests/integration/tests/read_inbound.rs`.
 - A purged photo's object goes after its rows, an orphan only over a day old, never an object a row names or one outside `photos/`: `tests/integration/tests/retention_deletes.rs` (TD-PRIV-20).
 - A hold placement or release always takes the shared retention key first, and nothing in `privacy` takes the exclusive key except `lock_retention_for_purge`; never take it after a homeowner or contact row lock: `tests/integration/tests/retention_purge_races.rs` (TD-PRIV-18).
+- `privacy.message_body` stores only a `ScrubbedText`, is read only by `problem_words` with an `OwnerSessionProof` (no business or homeowner read), and loses rows after 30 days and at the job's text stage: `tests/integration/tests/check_in_replies.rs` (TD-JOB-12).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/privacy/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/privacy/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
+- [JOB-016 TXT-020 PRIV-006 PRIV-008] (owns) `message_body.rs`: `keep_problem_words` (one row per inbox row), `problem_words` (owner proof), the daily `privacy.cut_problem_words` (30 days) and `run_words_purge` (text stage, in `server`'s purge step) (D-3521, D-3522).

@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO privacy.message_body (inbox_id, job_id, words, safety, created_at) VALUES ($1, $2, $3, $4, now()) ON CONFLICT (inbox_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "abba784861e6b3cbe6d36da3507db0eca18cdd16771585720e6bba4be344201a"
+}
