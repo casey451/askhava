@@ -3,8 +3,8 @@
 //! between no-license, handyman and licensed work (LIC-011 to LIC-016, LIC-028 to LIC-031, LIC-047).
 //!
 //! Pure functions, no database. Towns and ticked job types (CARD-001) are decided elsewhere. A
-//! `HandymanCard` carries the under-$1,000, no-permit condition that `handyman::check_quote` and
-//! `handyman::split_job` enforce when the quote comes in (LIC-019 to LIC-025);
+//! `HandymanCard` carries the under-$1,000, no-permit condition that `handyman::check_quote`
+//! enforces on each quote by its own price when it comes in (LIC-019 to LIC-025);
 //! [`eligibility_for_request`] withholds it from gas, smoke-alarm, sprinkler and permit-type
 //! requests whatever the AI says (AI-012, LIC-021, LIC-022).
 
