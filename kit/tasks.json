@@ -14385,7 +14385,8 @@
     "T427",
     "T428",
     "T430",
-    "T432"
+    "T432",
+    "T437"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -14419,7 +14420,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 54
+    "context_pct": 58
    },
    "checks": [
     "Ci",
@@ -30024,7 +30025,7 @@
    "id": "T395",
    "slug": "gate-c-preconditions",
    "title": "Gate C preconditions (harness): the runner opens Gate C and accepts 'go live' only when scripts/gate_c_ready.py passes",
-   "goal": "D-3080 (the external 80-point audit's items 11, 70, 71 and 80; owner actions P0; reconciliation N-02, A-01, A-02): Gate C (T145) had a one-line goal and nothing checked what must be true before real customer data, live texts and live charges. (1) `scripts/gate_c_ready.py` (standard library only, no network, reading only files on `main` and `kit/state.json`, never a secret, an account ID or a vendor API) checks T145's preconditions and prints one line per unmet one, exiting 1 when any is unmet: with `--ask`, (a) each owner action P0 item 1 to 14 in `docs/compliance/owner-actions.md` has an `operating` row in `docs/compliance/evidence-register.md` naming it `OA-<n>` with a date, who recorded it and a pointer; (b) `docs/integration-closure.md` has no row whose area is `money`, `privacy` or `security` with status `open` or `tracked`, and row IC-53 is closed or its Evidence cell names a `docs/decisions.md` entry recording Casey's dated written acceptance of going live without AI-written text; (c) `docs/phase2/sentinel-trace.md` (T392) ends \"Verdict: clean\"; (d) `docs/phase2/restore-drill.md` (T139) records the measured restore time and data-loss window, each met against Casey's targets or accepted by him in writing; (e) the newest record in `docs/releases/` follows `docs/release-record.md` (T141, A-02) with every field filled, a source SHA on `main` and Casey's dated sign-off (OPS-043); (f) `docs/build-readiness.md` records a verdict re-issued for Gate C, dated after the stage 6 exit proof in `kit/state.json` and not before that release record (`docs/governance.md` section 10). With `--go-live`, also (g) an `operating` row `GC-ALERT` records that in the real-phone rehearsal a real alert reached a real person: one High test alert raised on the live project pushed to Casey's alert address and was seen on his phone (OPS-029, OPS-035), by date and alert ID only. (2) In `runner/cycle.py` the runner opens the `gate-c` ask only when `--ask` passes on its `main` checkout; otherwise it opens nothing and writes one `blocked` outbox note listing the unmet lines, rewritten only when the list changes; and it applies a 'go live' answer only when `--go-live` passes, otherwise it keeps the reply in the gate's answers, leaves the gate waiting and writes one `info` note naming what is missing; a kept reply never clears the gate: Casey must say 'go live' again after `--go-live` passes. No task owns `docs/compliance/evidence-register.md` or `docs/releases/`, and Casey's answers come only through owner issues: Casey sends each `OA-<n>` fact, the `GC-ALERT` date and alert ID and his release sign-off in his owner-issue reply, and a plan-change session records the row or the release record from that answer (as T141's release records), never a task and never the runner; recording a row never says 'go live' for him. Casey's own stop is unchanged: he enters the keys, runs the rehearsal and says 'go live'; this adds preconditions and never clears the gate for him. No other gate changes. Tests in `tests/test_gate_c_ready.py` and `tests/test_runner_gate_c.py` (TD-OPS-39); every existing runner test passes unchanged. Update `docs/decisions.md`.",
+   "goal": "D-3080 (the external 80-point audit's items 11, 70, 71 and 80; owner actions P0; reconciliation N-02, A-01, A-02): Gate C (T145) had a one-line goal and nothing checked what must be true before real customer data, live texts and live charges. (1) `scripts/gate_c_ready.py` (standard library only, no network, reading only files on `main` and `kit/state.json`, never a secret, an account ID or a vendor API) checks T145's preconditions and prints one line per unmet one, exiting 1 when any is unmet: with `--ask`, (a) each owner action P0 item 1 to 14 in `docs/compliance/owner-actions.md` has an `operating` row in `docs/compliance/evidence-register.md` naming it `OA-<n>` with a date, who recorded it and a pointer; (b) `docs/integration-closure.md` has no row whose area is `money`, `privacy` or `security` with status `open` or `tracked`, and row IC-53 is closed or its Evidence cell names a `docs/decisions.md` entry recording Casey's dated written acceptance of going live without AI-written text; (c) `docs/phase2/sentinel-trace.md` (T392) ends \"Verdict: clean\"; (d) `docs/phase2/restore-drill.md` (T139) records the measured restore time and data-loss window, each met against Casey's targets or accepted by him in writing; (e) the newest record in `docs/releases/` follows `docs/release-record.md` (T141, A-02) with every field filled, a source SHA on `main` and Casey's dated sign-off (OPS-043); (f) `docs/build-readiness.md` records a verdict re-issued for Gate C, dated after the stage 6 exit proof in `kit/state.json` and not before that release record (`docs/governance.md` section 10). With `--go-live`, also (g) an `operating` row `GC-ALERT` records that in the real-phone rehearsal a real alert reached a real person: one High test alert raised on the live project pushed to Casey's alert address and was seen on his phone (OPS-029, OPS-035), by date and alert ID only. (2) In `runner/cycle.py` the runner opens the `gate-c` ask only when `--ask` passes on its `main` checkout; otherwise it opens nothing and writes one `blocked` outbox note listing the unmet lines, rewritten only when the list changes; and it applies a 'go live' answer only when `--go-live` passes, otherwise it keeps the reply in the gate's answers, leaves the gate waiting and writes one `info` note naming what is missing; a kept reply never clears the gate: Casey must say 'go live' again after `--go-live` passes. No task owns `docs/compliance/evidence-register.md` or `docs/releases/`, and Casey's answers come only through owner issues: Casey sends each `OA-<n>` fact, the `GC-ALERT` date and alert ID and his release sign-off in his owner-issue reply, and a plan-change session records the row or the release record from that answer (as T141's release records), never a task and never the runner; recording a row never says 'go live' for him. Casey's own stop is unchanged: he enters the keys, runs the rehearsal and says 'go live'; this adds preconditions and never clears the gate for him. No other gate changes. Tests in `tests/test_gate_c_ready.py` and `tests/test_runner_gate_c.py` (TD-OPS-39); every existing runner test passes unchanged. Since this task owns `runner/cycle.py`: reword the `_crate_limit` docstring, which still says \"line limit\", to name the crate `CLAUDE.md` size budget and old format that `crate_doc_full` reads since T437 (D-3474). Update `docs/decisions.md`.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -30065,7 +30066,8 @@
    "decisions": [
     "D-2740",
     "D-1760",
-    "D-3080"
+    "D-3080",
+    "D-3474"
    ],
    "cites": [],
    "budget": {
@@ -30475,6 +30477,60 @@
    "branch": "claude/task/T419-link-request-flaky-scan",
    "prompt": "kit/prompts/T419.md",
    "acceptance": "`cargo test -p askhava-integration --test link_request` passes; the plaintext-absence check scans only text-typed columns; the digest table is proven to hold no needle in a text column and no digest equal to a needle's bytes; the new regression case, a digest whose hex holds a 4-digit needle, fails under the old whole-row scan and passes under the new check; every other assertion in the file is unchanged; no file outside `tests/integration/tests/link_request.rs` changes except `docs/decisions.md`."
+  },
+  {
+   "id": "T437",
+   "slug": "crate-notes-one-entry-per-line",
+   "title": "harness: crate CLAUDE.md files hold one entry per line under a byte budget, api.rs only grows by re-exports, and the runner's crate-full signal follows the new budget",
+   "goal": "Merge hotspots (D-3474; D-3269, D-3303, D-3444, D-473): 22 of the last 25 resyncs involved a crate `CLAUDE.md` (23 file conflicts) where two tasks lengthened the same giant line (the 120-line limit pushed workers to pack entries into lines of up to 10,605 characters), and the rest were per-task paragraphs and definitions appended to `src/api.rs` files and registrations appended to the server `lib.rs`. `docs/code-docs.md` sections 2 and 9 now state the rules; this task makes a machine enforce them and points the runner's crate-full signal at the new budget. (1) `scripts/check_code_docs.py` `check_crate_doc` (keep every existing check: the six headings in order, the architecture name, module comments, requirement references, the trace, the root `CLAUDE.md` limit): drop `MAX_CRATE_DOC_LINES` and the 120-line limit; add `MAX_CRATE_DOC_LINE_CHARS = 400`, `MAX_CRATE_DOC_BYTES = 84_000` (UTF-8 bytes of the file) and `CRATE_DOC_TASK_BYTES = 2_000`, each with a comment naming D-3474. An old-format line is a non-blank line over 400 characters, or a non-blank line under one of the five list headings that does not start with `- `. A new constant `OLD_FORMAT_MARKER` is one exact line of plain words, built from the 400 constant, saying that the next task that starts in this crate (not a fix round and not a resync) splits every old-format line into one entry per line, keeping every fact, ID and path, and deletes this line, and that until then the runner lets one task at a time into this crate (D-3474). A file with no marker line fails on any old-format line (naming the line number and its length or the missing bullet). A file with the marker line passes its old-format lines, but fails when its crate is not in a new frozenset `OLD_FORMAT_CRATES` or when it has no old-format line left (\"delete the marker line\"). Every file fails over `MAX_CRATE_DOC_BYTES`. One helper (for example `old_format_lines(text)`) is the single definition both this check and the runner use. (2) The same script checks each `app/<crate>/src/api.rs` (D-3474, section 9): count its `//!` lines and its definitions (a top-level line, no indentation, that opens a `fn`, `struct`, `enum`, `union`, `trait`, `impl`, `type`, `const`, `static`, `macro_rules!` or a `mod` with a body, with or without `pub`, `pub(crate)`, `async`, `unsafe`); a new dict `API_ALLOWANCE` maps each crate to its two ceilings, the `//!` ceiling being the larger of the file's count and 12, and a crate missing from it gets 12 and 0. Over either ceiling fails, naming the count, the ceiling and the rule (\"put the note in the crate CLAUDE.md bullet or the owning module's //! comment\", \"define it in its own module and re-export it\"). (3) `runner/__main__.py` `crate_doc_full`: a crate is full when its `CLAUDE.md` on origin's `main` (`crate_doc_text`, unchanged) has any old-format line (the shared helper), or when its bytes plus `(held + 1) * CRATE_DOC_TASK_BYTES` exceed `MAX_CRATE_DOC_BYTES`; missing or unreadable is still full. Update its docstring and the docstrings in `runner/lanes.py` (module docstring and `crate_limit`) and `runner/update_merge.py` (module docstring point 5 and `_docs_broken`) that say \"line limit\" or \"120\"; no other change to `lanes.py` or `update_merge.py` (the merge resolver already runs `check_crate_doc`, so a resolved file is held to the new rules). The `crate_limit` docstring in `runner/cycle.py` is T395's (D-3474). (4) Freeze the allowances last, from `origin/main` fetched just before hand-in (read with `git show origin/main:<path>`; never merge, rebase or touch `claude/kit-state` for it): `OLD_FORMAT_CRATES` is every crate whose `CLAUDE.md` there has an old-format line, and `API_ALLOWANCE` each crate's `//!` count plus 8 (at least 12) and its definition count plus 2, a margin for tasks that merge while this one is reviewed, so the merged tree still passes. Then insert `OLD_FORMAT_MARKER` as a new line 2, directly under the title, of exactly those crate files (a shared path; a one-line insertion away from the lines other tasks edit, which git and the runner merge, so it is safe while tasks are in flight, D-3444). Do not rewrite, split, join or reword any other line of any crate `CLAUDE.md` or any `api.rs`: the split is the job of each marked crate's next task, which the runner then lets in alone, and the 18 files (about 584 KB, about 146,000 tokens) would not fit one session's window anyway. The plan-time sizes, for reference (`wc -c`): payments 71,987 bytes, portals 68,324, intake 54,089, businesses 50,907; 17 of 18 crates (all but `site`) had old-format lines; a mechanical split adds under 0.5%. If any crate file is over 84,000 bytes at hand-in, stop and report it rather than raise the budget. (5) Tests (decided-value updates logged in D-3474 under CLAUDE.md rule 6, never a weakening; every other assertion unchanged): `tests/test_check_code_docs.py` replaces `test_long_crate_doc_fails` (\"limit 120\") with cases for the byte budget at and over 84,000, a 400- and a 401-character line, a non-bullet line under a list heading, a 401-character `## Purpose` line, the marker accepted in an `OLD_FORMAT_CRATES` crate with old-format lines and refused outside it or with none left, and the `api.rs` ceilings (a 13th `//!` line in an unknown crate, a `pub struct`, a `pub(crate) fn`, an `impl` block, an indented `fn` inside an `impl` that is not counted, `pub use` and `pub mod x;` lines that are not counted); `test_real_repository_passes` still passes. `tests/test_runner_crate_cap.py`: the four tests built on `MAX_CRATE_DOC_LINES` keep their structure with bytes in place of lines (under, at and over the budget; held tasks counted at 2,000 bytes each; the text read from origin's `main`, not the checkout; the reservation case), and a new case shows a file with one old-format line, or the marker, is full at `held` 0. `tests/test_runner_crate_merge.py`: the two \"over its limit\" cases pad bytes instead of lines, and a new case shows a both-sides insertion whose inserted bullet is over 400 characters stays a conflict. Update `docs/architecture.md` (the runner and code-docs lines that name the 120-line limit or D-3303's line count) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T285"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "docs"
+   ],
+   "owns": [
+    "scripts/check_code_docs.py",
+    "runner/__main__.py",
+    "runner/lanes.py",
+    "runner/update_merge.py",
+    "tests/test_check_code_docs.py",
+    "tests/test_runner_crate_cap.py",
+    "tests/test_runner_crate_merge.py"
+   ],
+   "reads": [
+    "docs/code-docs.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-3474",
+    "D-3303",
+    "D-3444",
+    "D-473"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 500,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T437-crate-notes-one-entry-per-line",
+   "prompt": "kit/prompts/T437.md",
+   "acceptance": "`python3 -m pytest tests/test_check_code_docs.py tests/test_runner_crate_cap.py tests/test_runner_crate_merge.py` passes and the whole runner suite passes; `python3 scripts/check_code_docs.py` reports 0 problems on the merged tree; `MAX_CRATE_DOC_LINES` no longer exists; every crate `CLAUDE.md` with an old-format line carries `OLD_FORMAT_MARKER` as line 2 and no other line of any crate `CLAUDE.md` or `api.rs` changed; `crate_doc_full` reports a marked crate full and an unmarked one by the byte rule."
   }
  ]
 }

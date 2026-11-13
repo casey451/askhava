@@ -12,10 +12,10 @@ Ask Hava's code is written, changed and fixed by AI sessions, so it has to expla
 
 ## 2. Every crate has a `CLAUDE.md`
 
-Each crate under `app/` keeps a short `CLAUDE.md` beside its `Cargo.toml` (Claude Code loads it on its own when a session works in that folder). It is at most 120 lines and has these six headings, in this order:
+Each crate under `app/` keeps a short `CLAUDE.md` beside its `Cargo.toml` (Claude Code loads it on its own when a session works in that folder). It has these six headings, in this order:
 
 - `## Purpose`: two or three sentences on what the module is for, in plain words.
-- `## What it owns`: its tables, its files and its public functions, one line each.
+- `## What it owns`: its tables, its files and its public functions, one entry per line.
 - `## Rules it enforces`: each requirement ID it implements, with the function or file that does it (`FEE-039: payments::fees::recurring_basis`).
 - `## Never break`: the invariants a change must keep, each with the test that guards it (for example, "the homeowner's phone never leaves the vault: `tests/security/tests/vault_readers.rs`").
 - `## How to change`: recipes for the changes people will actually ask for (change a fee, add a job type, edit a text, add a setting), each naming the files to touch, the spec line to update and the tests to run.
@@ -23,7 +23,16 @@ Each crate under `app/` keeps a short `CLAUDE.md` beside its `Cargo.toml` (Claud
 
 Any task that adds or changes behavior in a crate updates that crate's `CLAUDE.md` in the same pull request. Every crate's `CLAUDE.md` is a shared path, like its `Cargo.toml`.
 
-A task adds or edits only the lines its change needs. Condensing or restructuring a crate's `CLAUDE.md` (joining bullets, reordering, rewording lines it does not own, as D-3304 and D-3308 did) is a separate change, made only while no task that writes that crate is in flight (IN_PROGRESS or MERGE_PENDING in `kit/state.json` on `claude/kit-state`); its decision entry names the check. A rewrite under a running task's edits cannot be merged by insertion and forces a resync (D-3386, D-3444).
+**One entry per line, under a size budget (D-3474).** Two tasks that each add a line insert at one place, which the runner merges by itself (D-3269); two tasks that both lengthen one long line change the same line, which nothing can merge and which costs a resync (22 of the 25 resyncs before D-3474 involved a crate `CLAUDE.md`, 23 file conflicts, every one a same-line rewrite). So:
+
+- Under the five list headings (every heading but `## Purpose`) each line is one bullet (`- `) holding one entry: one source file and what it owns, one rule and the function that applies it, one invariant and its test, one recipe, or one test file and its IDs. A task adds bullets of its own and never appends to another task's bullet; a change to an existing fact edits only that fact's bullet.
+- No line is longer than 400 characters, `## Purpose` included; an entry that needs more is two entries.
+- A note about which task did what ("T123 added ...") goes in the bullet for the file or rule it changed, never as a line or paragraph of its own.
+- The whole file is at most 84,000 bytes, about 21,000 tokens or a tenth of a worker's 200,000-token window, which every session in the crate loads. There is no line limit once T437 replaces the 120-line limit with this budget.
+- The runner holds a crate to one task at a time while its file, plus 2,000 bytes for each task in flight there and for the next one, would pass the budget, or while the file is still in the old format below (D-3303, D-3474). The task holding such a crate may condense its file, since no other task can be writing it.
+- Old format: T437 puts one marker line under the title of each crate file that still has a line over 400 characters or a line under a list heading that is not a bullet. The next task that starts in a marked crate (not a fix round and not a resync) splits those lines into one entry per line, keeping every fact, requirement ID, decision ID and path, and deletes the marker line in the same pull request. That rewrite is safe because the runner lets no other task into a marked crate meanwhile.
+
+A task adds or edits only the lines its change needs. Condensing or restructuring a crate's `CLAUDE.md` (joining bullets, reordering, rewording lines it does not own, as D-3304 and D-3308 did) is a separate change, made only while no task that writes that crate is in flight (IN_PROGRESS or MERGE_PENDING in `kit/state.json` on `claude/kit-state`); its decision entry names the check. A rewrite under a running task's edits cannot be merged by insertion and forces a resync (D-3386, D-3444). The two exceptions above, the task holding a crate at its budget and the next task in an old-format crate, meet that condition by construction (D-3474).
 
 ## 3. Every Rust file opens with a module comment
 
@@ -63,3 +72,11 @@ A change of behavior goes in `docs/decisions.md` (question, choice, reason, sour
 ## 8. Checked at the end by a session that knows nothing
 
 Before "Finished", T171 runs a cold-start drill: a fresh session given only the repository makes three typical changes on a throwaway branch and records every place it had to guess. Each gap is fixed in the docs before the build is called finished.
+
+## 9. Files every task adds to stay append-only
+
+The same reasoning as section 2 (D-3474): a shared file merges by itself only when each task adds whole lines of its own.
+
+- A crate's `src/api.rs` holds its `//!` module comment and one-line `pub use` and `pub mod` re-exports, nothing else. No per-task changelog paragraph ("T123: ...") in the module comment: the note goes in the crate `CLAUDE.md` bullet or in the `//!` comment of the module that does the work. No type, function, `impl`, constant or static is defined there (a page struct, a helper): it is defined in its own module and re-exported. A new re-export is a line of its own, not a name added to an existing `{...}` list.
+- Existing changelog paragraphs and definitions in `api.rs` files stay where they are: moving them would rewrite lines that tasks in flight edit, and some (the vault's release proof, for one) sit there on purpose. From T437, `scripts/check_code_docs.py` holds each crate's `api.rs` to the number of `//!` lines and definitions it had when T437 merged (at least 12 `//!` lines), so both counts can only fall.
+- In `app/server/src/lib.rs`, a new worker-task registration goes next to the registrations of its own crate (after the last of them), or, for a crate with none yet, among the other crates' registrations in alphabetical order of crate; never simply at the end of `register_handlers` or `worker_registry`, where every task's addition would meet. Anything longer than one `registry.register` statement (a closure, settings, several kinds) goes in a `register_<name>` function in the task's own module under `app/server/src/`, called from one line. A task goal that says "register it in `register_handlers`" is met this way. Existing registrations are not moved.
