@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:11:19Z by runner 58eef26515d0 (actions).
+Updated 2026-11-13T22:11:56Z by runner 343fd3e7c696 (actions).
 
-**Building: T415 in progress since 22:05Z; 295 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T355 in progress since 22:11Z; 295 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 295 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
-- **Week:** 29% used, 126.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
+- **Week:** 29% used, 124.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:11Z, 0 min before this update
 - **Keeper:** last ran 22:11Z, next wake 00:54Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smalles; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+183 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 26 problem(s) on tasks still to run (+187 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -140,7 +140,7 @@ Updated 2026-11-13T22:11:19Z by runner 58eef26515d0 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T22:01:30Z (week)): week: 67.2M used, 126.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T20:19:47Z.
+- Pacing (session_reading 2026-11-13T22:11:01Z (week)): week: 69.3M used, 124.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T21:35:48Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -155,7 +155,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T355 (lease until 2026-11-14T01:11:47Z)
 - lane 3: T415 (lease until 2026-11-14T01:05:51Z)
 - lane 6: T357 (lease until 2026-11-14T00:52:50Z)
 - lane 7: T340 (lease until 2026-11-14T00:52:00Z)
