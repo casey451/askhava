@@ -3,7 +3,7 @@
 //! Settings (SEC-001, SEC-002, SEC-003, SEC-036), the clock and business clock
 //! (JOB-007), the database pool, migrations and the guarded-update outcome
 //! (JOB-004, D-092), and logging with `Redacted` contact values and the Sentry
-//! scrubber (PRIV-016, PRIV-017, PRIV-028), the numbers-only database metrics (D-3292), the task queue and its `unfinished` read (JOB-006, PRIV-007), its dead-letter reads and one-row revive (OPS-004, JOB-006, T327, T366) and the rate-limit counters with
+//! scrubber (PRIV-016, PRIV-017, PRIV-028), the numbers-only database metrics (D-3292), the task queue and its `unfinished` and `due_or_running` reads (JOB-006, PRIV-007, LIC-039), its dead-letter reads and one-row revive (OPS-004, JOB-006, T327, T366) and the rate-limit counters with
 //! the client IP they are keyed on (SEC-014, SEC-040), and the test-control router and clock,
 //! whose routes exist only under the `test-control` feature (SEC-035), derived IDs and link tokens
 //! (CARD-017, PICK-028, SEC-037) and the webhook dedupe outcome and event key (SEC-017, SEC-039), and
@@ -42,6 +42,29 @@ pub use crate::tasks::{
 };
 pub use crate::test_control::{TEST_CONTROL_COMPILED, TestControl, TestControlError};
 pub use crate::webhooks::{Dedupe, EventKey, WebhookError};
+
+/// LIC-007, LIC-039, JOB-006, D-3416: true while any `core.task` of `kind` whose dedupe key
+/// starts with `key_prefix` is due or running: not done and not dead-lettered (unlike
+/// [`unfinished`], which counts a dead letter). The daily license lists' start-up seed reads it, so
+/// a live chain is never doubled and a dead one is seeded again (T371).
+///
+/// # Errors
+/// [`TaskError::Db`] when the read fails.
+pub async fn due_or_running(
+    db: &mut sqlx::PgConnection,
+    kind: &str,
+    key_prefix: &str,
+) -> Result<bool, TaskError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM core.task WHERE kind = $1 AND done_at IS NULL
+           AND dead_at IS NULL AND starts_with(dedupe_key, $2)) AS "live!""#,
+        kind,
+        key_prefix,
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| TaskError::Db)
+}
 
 /// OPS-004, JOB-006, D-2285: each task kind with a dead-lettered `core.task` whose last error is
 /// [`NO_HANDLER`], with how many, in kind order. Kinds and counts only, never a payload; the
