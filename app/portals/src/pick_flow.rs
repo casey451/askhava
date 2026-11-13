@@ -35,8 +35,10 @@
 //! (`picks::api::check_page_code`; a malformed code counts no try), and on a passed code runs one
 //! transaction: `picks::api::page_pick` and the terms acceptance with channel `quote_page`
 //! (PICK-016, TERMS-016), then the result page (PICK-045). From Payment pending on the page shows
-//! the confirmed line and stores nothing. The contact choice and email are checked and passed on
-//! unstored (PICK-018, D-1264).
+//! the confirmed line and stores nothing. T266 (D-1761): the same transaction stores her contact
+//! choice (`picks::api::record_contact_choice`) and, for email, seals the address into her vault
+//! contact only (`privacy::api::store_shared_email`); a failed code keeps both on the page and
+//! stores nothing (PICK-018, PICK-042, PRIV-001). A text pick stores no choice: a masked call.
 //!
 //! T157 (PICK-047, D-400): the review step lists the other available quotes in arrival order under
 //! "If the business for quote #<n> can't take it, move my pick to:", "No backup" selected and
@@ -68,11 +70,11 @@ use askhava_messaging::api::{Language, SendWindow, send_window};
 use askhava_ops::api::Actor;
 use askhava_picks::api::rules::{CodeVia, SendAsk, SendRefused, Stage, parse_code, stage};
 use askhava_picks::api::{
-    Browser, CodeCheck, CodeSent, PageCodeKeys, PagePick, backup_changed, bind_backup, bind_share,
-    check_page_code, choose_backup, page_pick, send_page_code, share_ticked, tick_share,
-    waiting_quote,
+    Browser, CodeCheck, CodeSent, ContactChoice, PageCodeKeys, PagePick, backup_changed,
+    bind_backup, bind_share, check_page_code, choose_backup, page_pick, record_contact_choice,
+    send_page_code, share_ticked, tick_share, waiting_quote,
 };
-use askhava_privacy::api::Vault;
+use askhava_privacy::api::{Vault, store_shared_email};
 use askhava_quotes::api::page_quotes;
 use axum::Router;
 use axum::extract::{FromRef, Path, State};
@@ -964,8 +966,8 @@ where
 }
 
 /// "Finish my pick" with every field shaped: checks the code against her vaulted phone, then
-/// stores the pick and the terms acceptance in one transaction (PICK-013, PICK-016, TERMS-016,
-/// D-1516). The contact choice and email are not stored (PICK-018, D-1264).
+/// stores the pick, her contact choice and the terms acceptance in one transaction (PICK-013,
+/// PICK-016, PICK-018, TERMS-016, D-1516, D-1761).
 async fn finish<V>(
     flow: &PickFlow<V>,
     keys: &PickCodeKeys<V>,
@@ -999,8 +1001,11 @@ where
         Err(_) => return failed("check").into_response(),
     }
     let (request, quote) = (view.request, view.quote);
-    let browser = browser(&view.csrf);
-    match store(flow, keys, (job, quote), (owner, &browser)).await {
+    let asked = Asked {
+        browser: browser(&view.csrf),
+        email: (view.reach == "email").then(|| SecretString::from(view.email.trim().to_owned())),
+    };
+    match store(flow, keys, (job, quote), (owner, &asked)).await {
         Ok(true) => done(request, quote, view.token),
         Ok(false) => render(CodeView::line_only(request, quote, view.token, TAKEN)),
         Err(status) => status.into_response(),
@@ -1012,17 +1017,18 @@ where
 /// channel `quote_page`, the line shown beside the final Pick and the published Terms (PICK-016,
 /// TERMS-016, D-1516). `false` when nothing could be picked (rolled back: the job moved, was
 /// paused or the quote went, or this browser never ticked the share box for the quote: PICK-049);
-/// a failed acceptance insert rolls the pick back too. The backup and the share tick `browser`
-/// sent are bound to the pick, new or kept, in the same transaction (D-2661, D-3032).
+/// a failed acceptance insert rolls the pick back too. The backup and the share tick the browser
+/// sent and her contact choice are bound to the pick, new or kept, in the same transaction
+/// (D-2661, D-3032, D-1761).
 async fn store<V>(
     flow: &PickFlow<V>,
     keys: &PickCodeKeys<V>,
     (job, quote): (Uuid, usize),
-    (owner, browser): (JobHomeowner, &Browser),
+    (owner, asked): (JobHomeowner, &Asked),
 ) -> Result<bool, StatusCode> {
     let now = flow.clock.now();
     let mut tx = flow.pool.begin().await.map_err(|_| failed("begin"))?;
-    if !share_ticked(&mut tx, (job, quote), browser)
+    if !share_ticked(&mut tx, (job, quote), &asked.browser)
         .await
         .map_err(|_| failed("share"))?
     {
@@ -1032,23 +1038,35 @@ async fn store<V>(
         .await
         .map_err(|_| failed("pause"))?;
     let actor = Actor::Homeowner(owner.contact);
-    let pick = match page_pick(&mut tx, (job, paused), quote, actor, now).await {
-        Ok(PagePick::Picked(pick)) => pick,
-        Ok(PagePick::Same(pick)) => {
-            bind(&mut tx, ((job, quote), pick), browser, now).await?;
-            tx.commit().await.map_err(|_| failed("commit"))?;
-            return Ok(true);
-        }
+    let (pick, new) = match page_pick(&mut tx, (job, paused), quote, actor, now).await {
+        Ok(PagePick::Picked(pick)) => (pick, true),
+        Ok(PagePick::Same(pick)) => (pick, false),
         Ok(PagePick::Taken) | Err(askhava_picks::api::PicksError::MovedOn) => return Ok(false),
         Err(_) => return Err(failed("pick")),
     };
-    bind(&mut tx, ((job, quote), pick), browser, now).await?;
+    let kept = (asked, owner.contact, &keys.vault);
+    bind(&mut tx, ((job, quote), pick), kept, now).await?;
+    if new {
+        accept_terms(&mut tx, keys, (owner.conversation, pick), now).await?;
+    }
+    tx.commit().await.map_err(|_| failed("commit"))?;
+    Ok(true)
+}
+
+/// The terms acceptance stored with a new page pick: channel `quote_page`, the line shown beside
+/// the final Pick and the published Terms (PICK-016, TERMS-016, D-1516).
+async fn accept_terms<V>(
+    tx: &mut sqlx::PgConnection,
+    keys: &PickCodeKeys<V>,
+    (conversation, pick): (Uuid, Uuid),
+    now: jiff::Timestamp,
+) -> Result<(), StatusCode> {
     // The review step is shown in English only until the page reads the request's language
     // (D-1249), so the acceptance stores the English line it showed, not `owner.language`.
     let (_, lead, link) = PageLanguage::En.terms();
     let assent = format!("{lead} {link}");
     let acceptance = TermsAcceptance {
-        conversation: owner.conversation,
+        conversation,
         pick,
         document: "homeowner_terms",
         version: &keys.terms.0,
@@ -1058,27 +1076,48 @@ async fn store<V>(
         assent_line: &assent,
         accepted_at: now,
     };
-    record_terms_acceptance(&mut tx, &acceptance)
+    record_terms_acceptance(tx, &acceptance)
         .await
         .map_err(|_| failed("terms"))?;
-    tx.commit().await.map_err(|_| failed("commit"))?;
-    Ok(true)
+    Ok(())
 }
 
-/// PICK-047, PICK-049, D-2661, D-3032: binds `browser`'s backup and its share tick to the pick,
-/// new or kept, in the transaction that stores it.
+/// What "Finish my pick" asked for besides the pick: the browser (its backup and share tick) and
+/// the email she shares, `None` for a masked call (PICK-018). No `Debug`: it carries her email.
+struct Asked {
+    browser: Browser,
+    email: Option<SecretString>,
+}
+
+/// PICK-047, PICK-049, PICK-018, PRIV-001, D-2661, D-3032, D-1761: binds the browser's backup and
+/// share tick and her contact choice to the pick, new or kept, in the transaction that stores it;
+/// a newly stored email choice seals the address into her vault contact `contact`, and nowhere
+/// else. A kept pick that already has a choice keeps it, and its vault email too.
 async fn bind(
     tx: &mut sqlx::PgConnection,
     (asked, pick): ((Uuid, usize), Uuid),
-    browser: &Browser,
+    (kept, contact, vault): (&Asked, Uuid, &Vault),
     now: jiff::Timestamp,
 ) -> Result<(), StatusCode> {
-    bind_backup(tx, pick, browser, now)
+    bind_backup(tx, pick, &kept.browser, now)
         .await
         .map_err(|_| failed("backup"))?;
-    bind_share(tx, (asked, pick), browser, now)
+    bind_share(tx, (asked, pick), &kept.browser, now)
         .await
-        .map_err(|_| failed("share"))
+        .map_err(|_| failed("share"))?;
+    let choice = match kept.email {
+        Some(_) => ContactChoice::Email,
+        None => ContactChoice::Call,
+    };
+    let stored = record_contact_choice(tx, pick, choice, now)
+        .await
+        .map_err(|_| failed("contact choice"))?;
+    if let (true, Some(email)) = (stored, &kept.email) {
+        store_shared_email(tx, vault, contact, email)
+            .await
+            .map_err(|_| failed("shared email"))?;
+    }
+    Ok(())
 }
 
 #[cfg(test)]

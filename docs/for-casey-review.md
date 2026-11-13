@@ -2686,3 +2686,19 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 
 - The task that adds the "Can't take it" line to the pick notice stopped because an older test keeps a fixed list of the blanks the text templates may have, and the new blank was not on it. That task may now add the one new blank to the list; the test still catches any other unexpected blank, so it is not loosened. The call-status task, which edits the same test file, now waits for it.
 - Eleven tasks were held because an earlier planning note wrote a file path in a shortened form the plan checker could not find. The note cannot be edited (the decision log is append-only), so those tasks now point at this fix instead; each task's own instructions already carry everything that note said for it. Nothing needs you now.
+
+## Two oversized tasks made smaller (D-3468, November 13)
+
+- Two queued tasks were too big for one working session, mostly because each one loaded a very long part of the architecture notes it only needed to add one line to. Both now add that line the way other tasks do (look it up, don't load the whole section), which brings them well under the limit.
+- The payments task was also split in two: one small task makes sure that when a pick ends, the homeowner is offered the next quote; the other makes sure the payment checks, refunds and the nightly reconcile actually run. Each half has its own tests and its own Opus review, and the money review still covers both.
+- The consent-records cleanup task was kept as one task, because its single test covers the whole cleanup and neither half could be tested on its own.
+
+## A withdrawn pick now tells its business; the opt-out "still open" email; the safety call's task (T330, D-3462 to D-3466, November 13)
+
+- When a homeowner picks a different quote, or texts CANCEL while a pick waits, the first business's owner and "Confirm and billing" people now get one notice: "Laftly: The homeowner withdrew their pick for job 1042, so there's nothing to accept. You weren't charged." (Spanish draft too.) These words are new and have not been through the copy panel yet; please read them.
+- A homeowner who opts out while a request is still open now gets, by email only and only if we have her email, "Your request 1042 is still open. Close it on your quote page." Nothing is texted.
+- The safety voice call's task now has a home in the worker. The switch is off, as it must be until you record the attorney's approval (T407 builds that), so no call is ever placed today. A new optional setting, `ASKHAVA_MAIN_NUMBER`, will hold the Laftly main number the call reads as its callback; none is set.
+
+## One shared email per homeowner, for now (D-3459, November 13)
+
+- When a homeowner picks on the quote page and chooses to be reached by email, the address is stored once on her record, not once per job. If she later shares a different address on a new job, the new one replaces the old one everywhere: a business she picked on the earlier job would then see the new address, and emails about the earlier job would go there too. Both addresses are hers and only businesses she picked see them, but the earlier business sees one she did not share with it. We accepted this for now; keeping a separate address per pick is a follow-up. Nothing needs you now unless you want that follow-up done before launch.

@@ -64,9 +64,14 @@
 //! or a portal session ([`PickProof`]) of a ticked quote, by the pure [`auto_confirm_plan`], or
 //! voids the tick with its [`AUTO_CONFIRM_VOID_KIND`] event (PICK-048, PICK-056).
 //!
+//! T266: [`record_contact_choice`] stores the PICK-018 choice with the page pick and
+//! [`contact_choice`] answers the release ([`ContactChoice`], D-1761).
 //! T214: [`tick_share`], [`share_ticked`] and [`bind_share`] log the PICK-049 share box;
 //! [`cant_take_job`] and [`cant_take`] end a pick at once with no fee, [`cant_take_link`] is its
 //! page (PICK-050).
+//!
+//! T330: [`run_pick_withdrawn`] tells the business its waiting pick was withdrawn, once per pick,
+//! with [`WITHDRAWN_TEMPLATE`] (PICK-032, CON-029).
 //!
 //! T228: [`waiting_picks_of`] and [`end_for_leaving`] end a leaving business's waiting picks with
 //! no fee and move each to the homeowner's backup (BIZ-051, PICK-047).
@@ -105,6 +110,7 @@ pub use crate::confirm_reminders::{
     lapse_plan, lapse_text, member_confirmed_line, owner_told, reminder_lines, reminders,
     window_open,
 };
+pub use crate::contact_choice::{ContactChoice, contact_choice, record_contact_choice};
 pub use crate::email_code::{
     CodeRoute, ConversationEmail, EmailFrom, OptedOutYes, Texting, check_email_code, code_route,
     opted_out_yes, send_email_code,
@@ -119,6 +125,7 @@ pub use crate::money_notices::{
 pub use crate::open_cards_email::{
     ComposedEmail, OpenCard, WaitingPick, chosen_minutes, missed_cards_line, open_cards_email,
 };
+pub use crate::pick_withdrawn::{WITHDRAWN_TEMPLATE, run_pick_withdrawn};
 pub use crate::release::{
     ADDRESS_NEEDED_KIND, EMAIL_CHOSEN_FIELDS, RELEASE_FIELDS, RELEASE_LINE_FAILED_ALERT,
     RELEASE_NO_RECIPIENT_ALERT, RELEASE_TEMPLATE, RELEASE_TEXT_TEMPLATE, ReleaseFacts, ReleaseStep,
