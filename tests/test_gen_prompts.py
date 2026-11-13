@@ -261,12 +261,29 @@ def test_prompt_pastes_requirements_tests_journeys_decisions_and_cites(tmp_path:
 
 def test_decision_excerpt_keeps_whole_sentences_of_the_choice() -> None:
     """D-3530: from "Choice:", whole sentences up to the limit; a "Choice," entry and one with no choice too."""
-    first = "Choice: do A. "
-    long_text = "Question: why? " + first + "Then B. " + "Y" * gp.DECISION_CHOICE_CHARS + "."
-    assert gp.decision_excerpt(long_text) == "Choice: do A. Then B. …"
+    opener = "Choice: " + "A" * 300 + ". "
+    long_text = "Question: why? " + opener + "Then B. " + "Y" * gp.DECISION_CHOICE_CHARS + "."
+    assert gp.decision_excerpt(long_text) == opener + "Then B. …"
     assert gp.decision_excerpt("Question: q. Choice, two parts. (1) A.") == "Choice, two parts. (1) A."
     assert gp.decision_excerpt("Question: short, no choice word.") == "Question: short, no choice word."
     assert gp.decision_excerpt("Choice: " + "z" * 900).endswith(" …")
+
+
+def test_a_short_opener_never_stands_alone() -> None:
+    """D-3530 review round 1: "Choice: no." before a long sentence is cut hard at the limit, not at "no."."""
+    text = "Choice: no. The rule stays " + "w" * gp.DECISION_CHOICE_CHARS + "."
+    excerpt = gp.decision_excerpt(text)
+    assert excerpt == text[: gp.DECISION_CHOICE_CHARS].rstrip() + " …"
+    assert len(excerpt) > gp.DECISION_CHOICE_CHARS // 2
+
+
+def test_the_part_naming_the_task_is_pasted() -> None:
+    """D-3530 review round 1: a multi-part choice also pastes the `**(n) T###.**` part naming the prompt's task."""
+    text = "Choice. **(1) T001.** " + "Do one. " * 80 + "**(2) T002.** Do two for T002. **(3) T003.** Do three."
+    excerpt = gp.decision_excerpt(text, "T002")
+    assert excerpt.endswith(" **(2) T002.** Do two for T002.")
+    assert "**(2) T002.**" not in gp.decision_excerpt(text, "T009")
+    assert gp.decision_excerpt("Choice. **(1) T001.** Short.", "T001") == "Choice. **(1) T001.** Short."
 
 
 def test_run_tests_block_maps_each_test_layer() -> None:

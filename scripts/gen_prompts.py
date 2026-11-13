@@ -74,6 +74,7 @@ BYTES_PER_TOKEN = 4
 CONTEXT_DRIFT_POINTS = 3  # how far a stored context_pct may sit from its measurement (D-1075)
 DECISION_CHOICE_CHARS = 450  # whole sentences of a decision's choice pasted into a prompt (D-3530)
 CHOICE_START = re.compile(r"\bChoice\b")
+PART_HEAD = re.compile(r"\*\*\(\d+\)[^*]*\*\*")  # a multi-part choice's "**(n) T###.**" heading (D-3530)
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z(`\"*])")
 SUPERSEDED_FILE = "kit/superseded_decisions.json"
 ARCHITECTURE = "docs/architecture.md"
@@ -267,8 +268,8 @@ def superseded_map(decisions: dict[str, str], extra: dict[str, str] | None = Non
     return found
 
 
-def paste_decisions(src: Sources, ids: list[str]) -> str:
-    """Each decision's excerpt; a superseded one is marked and its successor is pasted too (D-491)."""
+def paste_decisions(src: Sources, ids: list[str], task_id: str = "") -> str:
+    """Each decision's excerpt for `task_id`; a superseded one is marked and its successor is pasted too (D-491)."""
     if not ids:
         return NONE_NOTE
     out = []
@@ -281,7 +282,7 @@ def paste_decisions(src: Sources, ids: list[str]) -> str:
         text = src.decisions.get(did, "(not found in docs/decisions.md)")
         by = src.superseded.get(did)
         mark = f" **(superseded by {by}; history only, build {by})**" if by else ""
-        out.append(f"- **{did}**{mark} {decision_excerpt(text)}")
+        out.append(f"- **{did}**{mark} {decision_excerpt(text, task_id)}")
     return "\n".join(out)
 
 
@@ -289,23 +290,38 @@ def _cut(text: str, limit: int) -> str:
     return text if len(text) <= limit else text[:limit].rstrip() + " …"
 
 
-def decision_excerpt(text: str) -> str:
-    """The choice alone (D-3530): from "Choice:" (else the first word "Choice", else the entry's start), whole
-    sentences up to DECISION_CHOICE_CHARS, " …" marking a cut; the question and the rest stay in the log, where
-    the template tells the worker to grep for them."""
+def decision_excerpt(text: str, task_id: str = "") -> str:
+    """The choice alone (D-3530): from "Choice:" (else the first word "Choice", else the entry's start), up to
+    DECISION_CHOICE_CHARS (whole_sentences), " …" marking a cut, plus the `**(n) T###.**` part that names
+    `task_id` when the cut left it out; the question and the rest stay in the log, where the template tells the
+    worker to grep for them."""
     start = text.find("Choice:")
     if start < 0:
         found = CHOICE_START.search(text)
         start = found.start() if found else 0
-    return whole_sentences(text[start:].strip(), DECISION_CHOICE_CHARS)
+    excerpt = whole_sentences(text[start:].strip(), DECISION_CHOICE_CHARS)
+    head, part = task_part(text, task_id)
+    return f"{excerpt} {part}" if part and head not in excerpt else excerpt
+
+
+def task_part(text: str, task_id: str) -> tuple[str, str]:
+    """The first `**(n) ...**` heading of a multi-part choice that names `task_id`, and its part up to the next
+    heading, cut by whole_sentences; ("", "") when none names it (D-3530)."""
+    heads = list(PART_HEAD.finditer(text)) if task_id else []
+    for i, head in enumerate(heads):
+        if re.search(rf"\b{re.escape(task_id)}\b", head.group(0)):
+            end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
+            return head.group(0), whole_sentences(text[head.start() : end].strip(), DECISION_CHOICE_CHARS)
+    return "", ""
 
 
 def whole_sentences(text: str, limit: int) -> str:
-    """`text` when it fits `limit`; else its sentences up to the last end within `limit`, else a cut at `limit`."""
+    """`text` when it fits `limit`; else its sentences up to the last end within `limit` when that keeps at least
+    half of `limit`, else a hard cut at `limit`, so a short opener never stands alone (D-3530 review round 1)."""
     if len(text) <= limit:
         return text
     ends = [m.start() for m in SENTENCE_END.finditer(text) if m.start() <= limit]
-    return text[: ends[-1]] + " …" if ends else _cut(text, limit)
+    return text[: ends[-1]] + " …" if ends and ends[-1] >= limit // 2 else _cut(text, limit)
 
 
 def cited_line(src: Sources, cite: str) -> str:
@@ -436,7 +452,7 @@ def render(template: Template, task: dict[str, Any], src: Sources | None = None)
         "reads": bullets(task["reads"]),
         "requirements": paste_requirements(src, task["requirements"]),
         "tests": paste_tests(src, task["tests"]),
-        "decisions": paste_decisions(src, task["decisions"]),
+        "decisions": paste_decisions(src, task["decisions"], task["id"]),
         "cites": paste_cites(src, task["cites"]),
         "brains": paste_brains(src.root, task),
         "run_tests": run_tests_block(task),
