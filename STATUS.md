@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T02:27:33Z by runner 878f71e08df1 (actions).
+Updated 2026-11-13T02:29:11Z by runner fe45a7107588 (actions).
 
-**Building: T215 in progress since 23:45Z; 265 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T215 in progress since 23:45Z; 266 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 265 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 266 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T425 claimed 02:11Z, lease until 05:11Z; lane 4: T426 claimed 02:14Z, lease until 05:14Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
 - **Week:** 11% used, 164.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:27Z, 0 min before this update
+- **Last run:** 02:27Z, 1 min before this update
 - **Keeper:** last ran 02:27Z, next wake 02:47Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-13T02:27:33Z by runner 878f71e08df1 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T423 | Brand rename prep: integration tests (first-quote move to si | MERGE_PENDING | 1 | 66 min | 01:47Z |  |
+| T423 | Brand rename prep: integration tests (first-quote move to si | done | 1 | 66 min | 01:47Z |  |
 | T422 | Brand rename prep: integration tests (accepted-quote email t | done | 1 | 44 min | 01:20Z |  |
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | MERGE_PENDING | 1 | 26 min | 01:18Z |  |
 | T424 | Brand rename prep: integration tests (open-cards digest to s | MERGE_PENDING | 1 | 32 min | 01:15Z |  |
@@ -122,7 +122,7 @@ Updated 2026-11-13T02:27:33Z by runner 878f71e08df1 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 339 · unstarted 164
-**Tasks merged (throughput only):** 265 of 415
+**Tasks merged (throughput only):** 266 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -157,7 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 145 of 197 done
+- stage 4: 146 of 197 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
