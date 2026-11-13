@@ -37991,7 +37991,7 @@
      }
     }
    ],
-   "reviewed_sha": "912cee63a88512cc44833b90008e54d472932f64",
+   "reviewed_sha": "6446c63de6e07c0d66476642e46c3240db476eed",
    "review_lease": {
     "task": "T372",
     "session": "actions-43319891469",
@@ -38011,6 +38011,18 @@
      "main": "43a986763cadc416ed57b6129552227e4cc15252",
      "how": "hand-in",
      "at": "2026-11-13T01:07:21Z"
+    },
+    {
+     "from": "912cee63a88512cc44833b90008e54d472932f64",
+     "to": "6446c63de6e07c0d66476642e46c3240db476eed",
+     "main": "c9290eb86fd42d8c00152772fcf27e91b9af6ca6",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-13T01:22:21Z"
     }
    ],
    "update_waiting_since": null,
@@ -42403,7 +42415,7 @@
      }
     }
    ],
-   "reviewed_sha": "8132bdef1e3ffe2bded25d01272c88e3235a6345",
+   "reviewed_sha": "03f25a7abb21b8ba0d1eea7d994fb598139bd350",
    "review_lease": {
     "task": "T424",
     "session": "actions-43338492997",
@@ -42423,6 +42435,17 @@
      "main": "43a986763cadc416ed57b6129552227e4cc15252",
      "how": "hand-in",
      "at": "2026-11-13T01:15:15Z"
+    },
+    {
+     "from": "8132bdef1e3ffe2bded25d01272c88e3235a6345",
+     "to": "03f25a7abb21b8ba0d1eea7d994fb598139bd350",
+     "main": "c9290eb86fd42d8c00152772fcf27e91b9af6ca6",
+     "how": "runner",
+     "checks": {
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-13T01:22:21Z"
     }
    ],
    "update_waiting_since": null,
@@ -45113,7 +45136,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T01:21:49Z",
+ "updated_at": "2026-11-13T01:22:35Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -45211,7 +45234,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7ae5f9a704c4147d547436823e15818817c0ab1a",
+ "runner_sha": "43a986763cadc416ed57b6129552227e4cc15252",
  "starter": "actions",
  "smoke_runs": [
   {
