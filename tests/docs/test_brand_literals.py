@@ -187,28 +187,48 @@ def plant(root: Path, files: dict[str, str | bytes]) -> Path:
     return root
 
 
+def planted(text: str) -> str:
+    """A planted case with its brand words taken from the brand file, so each case holds under any
+    brand (D-1932, D-3347): the tokens of scripts/brand.py plus the spoken legal name, the statement
+    prefix (and its title case), the first word never used alone, and the display name in upper and
+    lower case. The internal identifiers (askhava-, askhava_, ASKHAVA_, X-Askhava-) stay literal."""
+    data = brand.load()
+    return brand.fill_tokens(
+        text,
+        brand.tokens(data, False)
+        | {
+            "brand_spoken": data["spoken_legal_name"],
+            "brand_prefix": data["statement_prefix"],
+            "brand_prefix_title": data["statement_prefix"].capitalize(),
+            "brand_alone": data["forbidden_alone"][0],
+            "brand_upper": data["display_name"].upper(),
+            "brand_lower": data["display_name"].lower(),
+        },
+    )
+
+
 @pytest.mark.parametrize(
     "line",
     [
-        'const NAME: &str = "Ask Hava";',
-        'let s = "ASK HAVA: hi";',
-        "<p>ask hava helps</p>",
-        '"text": "See askhava.com/help"',
-        "<p>Hava says hi</p>",
-        'let p = "ASKHAVA* JOB 1";',
-        'let l = "Ask Hava LLC";',
-        "say Ask Hava L L C",
-        'let d = "Ask Hava-branded";',
-        "<p>Hava-approved pros</p>",
-        "<p>pro-Hava</p>",
-        "<p>Askhava-branded and askhava.com</p>",
-        "<p>ASKHAVA-x</p>",
-        "<p>Hava.approved</p>",
-        'let h = "Y-Askhava-Key";',
+        'const NAME: &str = "{brand}";',
+        'let s = "{brand_upper}: hi";',
+        "<p>{brand_lower} helps</p>",
+        '"text": "See {domain}/help"',
+        "<p>{brand_alone} says hi</p>",
+        'let p = "{brand_prefix}* JOB 1";',
+        'let l = "{brand_legal}";',
+        "say {brand_spoken}",
+        'let d = "{brand}-branded";',
+        "<p>{brand_alone}-approved pros</p>",
+        "<p>pro-{brand_alone}</p>",
+        "<p>{brand_prefix_title}-branded and {domain}</p>",
+        "<p>{brand_prefix}-x</p>",
+        "<p>{brand_alone}.approved</p>",
+        'let h = "Y-{brand_prefix_title}-Key";',
     ],
 )
 def test_td_word_34_a_new_file_with_a_brand_word_fails(tmp_path: Path, line: str) -> None:
-    root = plant(tmp_path, {"app/fake/src/lib.rs": f"//! Fake.\n{line}\n"})
+    root = plant(tmp_path, {"app/fake/src/lib.rs": f"//! Fake.\n{planted(line)}\n"})
     problems = guard(root, brand.load())
     assert problems and problems[0].startswith("app/fake/src/lib.rs:2:"), problems
 
@@ -220,31 +240,31 @@ HTML = "app/fake/templates/page.html"
 @pytest.mark.parametrize(
     ("rel", "body"),
     [
-        (RS, "// Ask Hava in a comment\n/// Ask Hava doc\n//! Ask Hava module doc\n"),
-        (HTML, "{# Ask Hava #}\n{#\nAsk Hava\n#}\n<!-- Ask Hava -->\n<!--\nAsk Hava\n-->\n"),
-        (RS, '#[cfg(test)]\nmod tests {\n    fn f() {\n        let s = "Ask Hava";\n    }\n}\n'),
-        (RS, '#[cfg(test)]\nconst T: &str =\n    "Ask Hava";\n'),
+        (RS, "// {brand} in a comment\n/// {brand} doc\n//! {brand} module doc\n"),
+        (HTML, "{# {brand} #}\n{#\n{brand}\n#}\n<!-- {brand} -->\n<!--\n{brand}\n-->\n"),
+        (RS, '#[cfg(test)]\nmod tests {\n    fn f() {\n        let s = "{brand}";\n    }\n}\n'),
+        (RS, '#[cfg(test)]\nconst T: &str =\n    "{brand}";\n'),
         (RS, "use askhava_core::api::brand;\nlet k = \"ASKHAVA_ID_SECRET\";\nlet r = \"askhava_app\";\n"),
         (RS, 'let c = "askhava-core";\nlet p = "askhava.vault_probe";\nlet c = "askhava.csrf.session";\n'),
         (RS, '.header("X-Askhava-Message-Key", key);\n'),
-        (RS, '#[cfg(test)] fn f() {\n    let s = "Ask Hava";\n}\n'),
-        ("app/fake/x.schema.json", '{\n  "$id": "https://askhava.com/schemas/x.json",\n}\n'),
+        (RS, '#[cfg(test)] fn f() {\n    let s = "{brand}";\n}\n'),
+        ("app/fake/x.schema.json", '{\n  "$id": "https://{domain}/schemas/x.json",\n}\n'),
         (HTML, "Lake Havasu City and Havasupai\n"),
     ],
 )
 def test_td_word_34_comments_test_modules_and_identifiers_pass(tmp_path: Path, rel: str, body: str) -> None:
-    root = plant(tmp_path, {rel: body})
+    root = plant(tmp_path, {rel: planted(body)})
     assert guard(root, brand.load()) == []
 
 
 def test_td_word_34_a_one_line_cfg_test_item_does_not_hide_the_next_line(tmp_path: Path) -> None:
-    body = '#[cfg(test)] mod tests;\nlet s = "Ask Hava";\n#[cfg(test)]\nmod more;\nlet t = "Hava";\n'
+    body = planted('#[cfg(test)] mod tests;\nlet s = "{brand}";\n#[cfg(test)]\nmod more;\nlet t = "{brand_alone}";\n')
     problems = guard(plant(tmp_path, {RS: body}), brand.load())
     assert [p.split(" ", 1)[0] for p in problems] == [f"{RS}:2:", f"{RS}:5:"], problems
 
 
 def test_td_word_34_test_folders_skipped_files_and_exemptions_pass(tmp_path: Path) -> None:
-    hit = 'let s = "Ask Hava";\n'
+    hit = planted('let s = "{brand}";\n')
     root = plant(
         tmp_path,
         {
@@ -254,7 +274,7 @@ def test_td_word_34_test_folders_skipped_files_and_exemptions_pass(tmp_path: Pat
             "app/fake/Cargo.toml": hit,
             BRAND_FILE: hit,
             "app/ai/data/word_022_phrases.json": hit,
-            "app/payments/src/models.rs": 'pub const AUTHORIZATION_TEXT: &str = "I authorize Ask Hava \\\nLLC";\n',
+            "app/payments/src/models.rs": planted('pub const AUTHORIZATION_TEXT: &str = "I authorize {brand} \\\nLLC";\n'),
             "app/fake/static/logo.png": b"\x89PNG\r\n\x1a\n\xff\xfe",
         },
     )
@@ -268,8 +288,8 @@ def test_td_word_34_a_non_text_file_of_an_unlisted_type_fails(tmp_path: Path) ->
 
 def test_td_word_38_one_literal_fails_and_a_baseline_file_is_refused(tmp_path: Path) -> None:
     """TD-WORD-38: with no baseline any brand literal fails, and a baseline file is not read."""
-    root = plant(tmp_path, {"app/fake/src/lib.rs": 'let a = "Ask Hava";\n'})
-    assert guard(root, brand.load()) == ['app/fake/src/lib.rs:1: let a = "Ask Hava"; (brand literal)']
+    root = plant(tmp_path, {"app/fake/src/lib.rs": planted('let a = "{brand}";\n')})
+    assert guard(root, brand.load()) == [planted('app/fake/src/lib.rs:1: let a = "{brand}"; (brand literal)')]
     plant(root, {"app/fake/src/lib.rs": "//! Fake.\n", RETIRED_BASELINE.as_posix(): '{"app/fake/src/lib.rs": 1}'})
     assert guard(root, brand.load()) == [f"{RETIRED_BASELINE.as_posix()}: the baseline is retired (D-1933)"]
 
@@ -392,8 +412,8 @@ def test_td_word_34_the_legal_check_fails_on_the_drafts_under_a_fake_brand(tmp_p
 
 def test_td_word_34_the_legal_check_builds_word_021_from_the_brand() -> None:
     (pattern, label), = check_legal_docs.alone_patterns(brand.load())
-    assert label == "'Hava' alone (WORD-021)"
-    assert pattern.search("Hava said") and not pattern.search("Ask Hava said")
+    assert label == planted("'{brand_alone}' alone (WORD-021)")
+    assert pattern.search(planted("{brand_alone} said")) and not pattern.search(planted("{brand} said"))
     (other, _), = check_legal_docs.alone_patterns(fake_brand() | {"forbidden_alone": ["Zed"]})
     assert other.search("Zed") and not other.search("Zedd")
 

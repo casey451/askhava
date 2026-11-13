@@ -12,9 +12,16 @@
 // reads the request's language (D-1249). Fake data only.
 import { createHash, randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { Page } from "@playwright/test";
 import { axeScan, WIDTHS } from "../a11y/fixtures";
 import { test, expect } from "./fixtures";
+
+/** The brand file the app embeds (app/core/data/brand.json, D-1932): expected brand words come from it. */
+const BRAND = JSON.parse(readFileSync(join(import.meta.dirname, "..", "..", "app", "core", "data", "brand.json"), "utf8")) as {
+  display_name: string;
+};
 
 function seedQuotePage(): string {
   const token = randomBytes(32).toString("hex");
@@ -62,7 +69,7 @@ test("TD-PICK-08 TD-PICK-24 PICK-017: the review step holds the code step, both 
   const main = page.locator("main");
   await expect(main).toContainText("After you press Pick, we text a 6-digit code to your phone.");
   await expect(main).toContainText("You're picking one business for this request. If it falls through, you can pick another quote.");
-  await expect(main).toContainText("You hire the business directly. Ask Hava isn't part of your agreement with it.");
+  await expect(main).toContainText(`You hire the business directly. ${BRAND.display_name} isn't part of your agreement with it.`);
   await expect(main).toContainText("or reply 1 YES");
   await page.getByRole("link", { name: "Go back" }).click();
   await expect(page).toHaveURL(new RegExp(`${path}\\?#quote-1$`));
