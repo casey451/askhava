@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-13T03:41:16Z by runner cfda2022c26f (actions).
+Updated 2026-11-13T03:54:18Z by runner 394341cd00e8 (actions).
 
-**Building: T371 in progress since 03:08Z; 270 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T371 in progress since 03:08Z; 271 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 270 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 271 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T371 claimed 03:08Z, lease until 06:08Z
 - **Week:** 12% used, 170.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:41Z, 0 min before this update
+- **Last run:** 03:41Z, 12 min before this update
 - **Keeper:** last ran 03:41Z, next wake 06:10Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+140 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+141 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -25,7 +25,7 @@ Updated 2026-11-13T03:41:16Z by runner cfda2022c26f (actions).
 | T425 | Brand rename prep: the last integration tests and four secur | done | 1 | 28 min | 02:39Z |  |
 | T423 | Brand rename prep: integration tests (first-quote move to si | done | 1 | 66 min | 01:47Z |  |
 | T422 | Brand rename prep: integration tests (accepted-quote email t | done | 1 | 44 min | 01:20Z |  |
-| T421 | Brand rename prep: messaging, quotes, picks and portals unit | MERGE_PENDING | 1 | 26 min | 01:18Z |  |
+| T421 | Brand rename prep: messaging, quotes, picks and portals unit | done | 1 | 26 min | 01:18Z |  |
 | T424 | Brand rename prep: integration tests (open-cards digest to s | done | 1 | 32 min | 01:15Z |  |
 | T372 | businesses and licensing: each recorded ROC list re-applies  | done | 1 | 81 min | 01:07Z |  |
 | T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 1 | 2 min | 23:48Z | PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclea |
@@ -115,12 +115,11 @@ Updated 2026-11-13T03:41:16Z by runner cfda2022c26f (actions).
 - 05:28Z Harness: stop backup-runner caches evicting CI's Rust caches (D-3143) (#553)
 - 05:16Z Harness: run lint and the slow compile-fail/prompt-injection tests in a parallel CI job (D-3142) (#550)
 - 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
-- 03:50Z Plan: pre-flight fixes round 6 — T355, T340, T341, T249, T273, T271, T277, T357, T314; new T405 (D-3118) (#542)
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 339 · unstarted 164
-**Tasks merged (throughput only):** 270 of 415
+**Tasks merged (throughput only):** 271 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -155,7 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 150 of 197 done
+- stage 4: 151 of 197 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
