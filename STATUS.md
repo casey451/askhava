@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T16:40:32Z by runner 6c9f7507fc8a (actions).
+Updated 2026-11-13T16:40:50Z by runner 6c9f7507fc8a (actions).
 
 **Building: T357 in progress since 16:24Z; 284 of 421 done; week 23% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 284 of 421 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:24Z; lane 2: T436 claimed 16:25Z, lease until 19:25Z; lane 4: T319 claimed 16:23Z, lease until 19:23Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z; lane 6: T386 claimed 16:23Z, lease until 19:23Z; lane 7: T273 claimed 16:29Z, lease until 19:29Z
+- **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:24Z; lane 2: T436 claimed 16:25Z, lease until 19:25Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z; lane 6: T386 claimed 16:23Z, lease until 19:23Z; lane 7: T273 claimed 16:29Z, lease until 19:29Z
 - **Week:** 23% used, 134.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:36Z, 3 min before this update
 - **Keeper:** last ran 16:36Z, next wake 19:25Z
@@ -18,8 +18,9 @@ Updated 2026-11-13T16:40:32Z by runner 6c9f7507fc8a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T319 | portals and server: security-event rows are capped per addre | MERGE_PENDING | 1 | 17 min | 16:40Z | merging main into the reviewed head conflicts in app/core/CLAUDE.md, app/core/src/settings.rs; a resync merges it in on  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | resync | 2 | 35 min | 16:03Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
-| T319 | portals and server: security-event rows are capped per addre | resync | 1 | 54 min | 15:51Z | merging main into the reviewed head conflicts in app/core/CLAUDE.md, app/core/src/settings.rs; a resync merges it in on  |
+| T319 | portals and server: security-event rows are capped per addre | resync | 1 | 54 min | 15:51Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | done | 2 | 66 min | 15:48Z | session ended without handing in |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | done | 1 | 24 min | 15:05Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z |  |
@@ -150,10 +151,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T357 (lease until 2026-11-13T19:24:46Z)
 - lane 2: T436 (lease until 2026-11-13T19:25:24Z)
-- lane 4: T319 (lease until 2026-11-13T19:23:00Z)
 - lane 5: T281 (lease until 2026-11-13T19:27:55Z)
 - lane 6: T386 (lease until 2026-11-13T19:23:55Z)
 - lane 7: T273 (lease until 2026-11-13T19:29:07Z)
 
 ## Last usage reading
-- {"task": "T386", "at": "2026-11-13T16:03:28Z", "input_tokens": 161, "cache_read_input_tokens": 5427369, "cache_creation_input_tokens": 310910, "output_tokens": 37851}
+- {"task": "T319", "at": "2026-11-13T16:40:31Z", "input_tokens": 134, "cache_read_input_tokens": 2374197, "output_tokens": 24308, "cache_creation_input_tokens": 137979}
