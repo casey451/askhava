@@ -3681,3 +3681,4 @@
 - 2026-11-13T13:09:21Z runner 9889e5f5ff2d (actions): {"T255": "MERGE_PENDING -> DONE"}
 - 2026-11-13T13:16:45Z runner 9889e5f5ff2d (actions): {}
 - 2026-11-13T13:19:48Z runner 480741987da0 (manual): {}
+- 2026-11-13T13:22:11Z runner bf75098f9a71 (actions): {"T367": "QUEUED -> IN_PROGRESS"}; T367 estimated 3.3M tokens (calibrated); week has 160.0M left (no five-hour budget, D-3056) (session_reading 2026-11-13T12:53:02Z (week)); claimed
