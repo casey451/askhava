@@ -2,10 +2,12 @@
 
 Checks, for the code that exists so far (nothing fails before the workspace exists):
 - every crate under app/ (a folder with Cargo.toml) has a CLAUDE.md of at most
-  120 lines with the six headings, in order, and is named in docs/architecture.md;
+  120 lines and 8,192 bytes with the three headings, in order, and is named in
+  docs/architecture.md; its NOTES.md, where there is one, holds one entry per line
+  (`- [REQ-IDS] (section) text`, at most 600 characters), D-3474;
 - every .rs file under app/ and tests/ starts with a //! module comment;
 - every SQL file in migrations/ starts with a -- comment;
-- every requirement ID named in app/ code or a crate CLAUDE.md exists in docs/spec/;
+- every requirement ID named in app/ code or a crate CLAUDE.md or NOTES.md exists in docs/spec/;
 - once every file a build task owns exists, each of the task's requirements is
   named in one of those files.
 
@@ -21,15 +23,18 @@ import re
 import sys
 from pathlib import Path
 
-HEADINGS = (
-    "## Purpose",
-    "## What it owns",
-    "## Rules it enforces",
-    "## Never break",
-    "## How to change",
-    "## Tests that guard it",
-)
+HEADINGS = ("## Purpose", "## Never break", "## Detail")  # D-3474: the rest lives in the crate's NOTES.md
+# The six headings before D-3474, still accepted under the byte budget only because the protected fixture in
+# tests/test_runner_crate_merge.py uses them; T437 moves that fixture to HEADINGS and deletes this constant.
+LEGACY_HEADINGS = ("## Purpose", "## What it owns", "## Rules it enforces", "## Never break", "## How to change", "## Tests that guard it")
 MAX_CRATE_DOC_LINES = 120
+# D-3474: Claude Code loads a crate's CLAUDE.md into every session that reads a file in the crate, so it
+# stays small; the detail goes in NOTES.md, which a session greps by requirement ID.
+MAX_CRATE_DOC_BYTES = 8_192
+CRATE_DOC_TASK_BYTES = 400  # room one task in flight may take in a crate CLAUDE.md: one Never-break bullet (T437)
+NOTE_SAME_OPENING = 80  # characters of entry text that mark two entries as versions of one (note_duplicates)
+MAX_NOTE_LINE_CHARS = 600  # one NOTES.md entry: its ID prefix and section tag plus at most 400 characters of text
+NOTE_ENTRY = re.compile(r"^- \[(?:-|[A-Z][A-Z0-9]{1,5}-\d{3}(?: [A-Z][A-Z0-9]{1,5}-\d{3})*)\] \([a-z]+(?: \d+)?\) \S")
 REQ_DEF = re.compile(r"^- \*\*([A-Z0-9]+-\d{3})\*\*", re.MULTILINE)
 REQ_REF = re.compile(r"\b(?!TD-)(?!D-)([A-Z][A-Z0-9]{1,5}-\d{3})\b")
 SKIP_DIRS = {"target", "node_modules", ".git"}
@@ -64,12 +69,57 @@ def check_crate_doc(root: Path, crate: Path, architecture: str) -> list[str]:
     doc = crate / "CLAUDE.md"
     if not doc.is_file():
         return problems + [f"{rel}/CLAUDE.md: missing (docs/code-docs.md section 2)"]
-    lines = doc.read_text(encoding="utf-8").splitlines()
+    text = doc.read_text(encoding="utf-8")
+    lines = text.splitlines()
     if len(lines) > MAX_CRATE_DOC_LINES:
         problems.append(f"{rel}/CLAUDE.md: {len(lines)} lines, limit {MAX_CRATE_DOC_LINES}")
-    found = [h for h in (line.strip() for line in lines) if h in HEADINGS]
-    if found != list(HEADINGS):
+    if len(text.encode("utf-8")) > MAX_CRATE_DOC_BYTES:
+        problems.append(f"{rel}/CLAUDE.md: {len(text.encode('utf-8'))} bytes, limit {MAX_CRATE_DOC_BYTES}; move detail to NOTES.md")
+    found = [h for h in (line.strip() for line in lines) if h in HEADINGS or h in LEGACY_HEADINGS]
+    if found not in (list(HEADINGS), list(LEGACY_HEADINGS)):
         problems.append(f"{rel}/CLAUDE.md: headings must be, in order: {', '.join(HEADINGS)}")
+    return problems + check_crate_notes(root, crate)
+
+
+def check_crate_notes(root: Path, crate: Path) -> list[str]:
+    """A crate's NOTES.md (D-3474), where there is one: a `# ` title line, then one entry per line."""
+    path = crate / "NOTES.md"
+    if not path.is_file():
+        return []
+    rel = path.relative_to(root).as_posix()
+    lines = path.read_text(encoding="utf-8").splitlines()
+    problems = [] if lines and lines[0].startswith("# ") else [f"{rel}: line 1 must be a `# ` title"]
+    return problems + note_line_problems(rel, lines) + note_duplicates(rel, lines)
+
+
+def note_line_problems(rel: str, lines: list[str]) -> list[str]:
+    """Each NOTES.md line after the title: an entry, at most MAX_NOTE_LINE_CHARS long."""
+    problems: list[str] = []
+    for number, line in enumerate(lines[1:], 2):
+        if line.strip() and not NOTE_ENTRY.match(line):
+            problems.append(f"{rel}:{number}: not an entry `- [REQ-IDS or -] (section) text`")
+        elif len(line) > MAX_NOTE_LINE_CHARS:
+            problems.append(f"{rel}:{number}: {len(line)} characters, limit {MAX_NOTE_LINE_CHARS}; make it two entries")
+    return problems
+
+
+def note_duplicates(rel: str, lines: list[str]) -> list[str]:
+    """Errors for an entry repeated exactly, or two entries with the same IDs and section whose text opens
+    with the same NOTE_SAME_OPENING characters but differs: the shape git's union merge (.gitattributes) leaves
+    when two tasks edit one entry, keeping both versions (D-3474). The task that merged them keeps one."""
+    problems: list[str] = []
+    seen: dict[str, int] = {}
+    for number, line in enumerate(lines[1:], 2):
+        match = NOTE_ENTRY.match(line)
+        if not match:
+            continue
+        head, text = line[: match.end() - 1], line[match.end() - 1 :]
+        key = head + text[:NOTE_SAME_OPENING]
+        if key in seen:
+            kind = "repeats" if lines[seen[key] - 1] == line else "is another version of"
+            problems.append(f"{rel}:{number}: {kind} line {seen[key]}; keep one entry")
+        else:
+            seen[key] = number
     return problems
 
 
@@ -96,7 +146,7 @@ def check_headers(root: Path) -> list[str]:
 
 def check_references(root: Path, known: set[str]) -> list[str]:
     problems: list[str] = []
-    sources = files_under(root, "app", ".rs") + files_under(root, "app", "CLAUDE.md")
+    sources = files_under(root, "app", ".rs") + files_under(root, "app", "CLAUDE.md") + files_under(root, "app", "NOTES.md")
     for path in sources:
         for ref in sorted(set(REQ_REF.findall(path.read_text(encoding="utf-8")))):
             if ref not in known:

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM portals.session WHERE id IN (SELECT id FROM portals.session WHERE expires_at < $1 LIMIT $2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b2d885702691757c167486da66614b01460364f19d5603ea1aa981e911cc0e11"
+}
