@@ -11,11 +11,18 @@
 // app/portals/src/feedback.rs. Fake data only.
 import { createHash, randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { Page } from "@playwright/test";
 import { axeScan, WIDTHS } from "../a11y/fixtures";
 import { test, expect } from "./fixtures";
 
-const LABEL = "Ask Hava may show what I wrote on askhava.com with my first name and town";
+/** The brand file the app embeds (app/core/data/brand.json, D-1932): expected brand words come from it. */
+const BRAND = JSON.parse(readFileSync(join(import.meta.dirname, "..", "..", "app", "core", "data", "brand.json"), "utf8")) as {
+  display_name: string;
+  domain: string;
+};
+const LABEL = `${BRAND.display_name} may show what I wrote on ${BRAND.domain} with my first name and town`;
 
 function psql(sql: string): string {
   const done = spawnSync("psql", [process.env.DATABASE_URL ?? "", "-v", "ON_ERROR_STOP=1", "-q", "-t", "-A", "-c", sql], { encoding: "utf8" });

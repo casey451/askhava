@@ -126,6 +126,7 @@ def test_emails_only_at_reserved_or_own_domains() -> None:
     assert rules("to = 'pat@mail.example.org'") == []
     assert rules("to = 'a@b.test', 'c@d.example', 'e@f.invalid'") == []
     assert rules("help@askhava.com and jobs@notify.askhava.com") == []
+    assert rules("help@laftly.com and jobs@notify.laftly.com") == []  # RENAME_DOMAINS (D-3347)
     assert rules("delivered@resend.dev") == []
     assert rules("runner@users.noreply.github.com") == []
     assert rules("`you+poola@gmail.com`") == []
@@ -137,6 +138,9 @@ def test_real_looking_emails_fail() -> None:
     assert rules("reach me at pat" + "@havasu-mail.net") == ["email"]
     assert rules("x@example.com" + ".evil.io") == ["email"]
     assert rules("anyone" + "@resend.dev") == ["email"]
+    assert rules("help" + "@laftly.co") == ["email"]  # look-alikes of RENAME_DOMAINS (D-3347)
+    assert rules("help" + "@notlaftly.com") == ["email"]
+    assert rules("help" + "@laftly.com" + ".evil.net") == ["email"]
 
 
 def tiff(tags: list[int], sub_tags: list[int] | None = None) -> bytes:
