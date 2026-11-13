@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T14:39:18Z by runner 480741987da0 (actions).
+Updated 2026-11-13T14:40:36Z by runner ae799a921ac7 (actions).
 
-**Idle since 14:38Z; 281 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 14:40Z; 282 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 281 of 420 build tasks (owner gates not counted)
+- **Tasks done:** 282 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 14:38Z (no task in progress)
+- **Lane:** idle since 14:40Z (no task in progress)
 - **Week:** 19% used, 151.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:39Z, 0 min before this update
+- **Last run:** 14:39Z, 1 min before this update
 - **Keeper:** last ran 14:39Z, next wake 14:59Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Updated 2026-11-13T14:39:18Z by runner 480741987da0 (actions).
 |---|---|---|---|---|---|---|
 | T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z | session ended without handing in |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | MERGE_PENDING | 1 | 39 min | 14:30Z |  |
-| T367 | jobs, messaging, privacy, intake and payments: the daily swe | MERGE_PENDING | 1 | 60 min | 14:23Z |  |
+| T367 | jobs, messaging, privacy, intake and payments: the daily swe | done | 1 | 60 min | 14:23Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z | PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T312 | intake: a street address written in lower case never trips t | done | 2 | 51 min | 12:32Z | session ended without handing in |
@@ -110,7 +110,7 @@ Updated 2026-11-13T14:39:18Z by runner 480741987da0 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 233 of 733 (31.8%) · partial 340 · unstarted 160
-**Tasks merged (throughput only):** 281 of 420
+**Tasks merged (throughput only):** 282 of 420
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -145,7 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 161 of 201 done
+- stage 4: 162 of 201 done
 - stage 5: 0 of 65 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
