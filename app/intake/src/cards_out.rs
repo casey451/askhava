@@ -29,6 +29,10 @@
 //! `queue_emergency_card`. After the commit the homeowner's TXT-032 text goes through the steps
 //! T240's job texts use: `may_text`, `messaging::api::send_window` (opt-out, quiet hours: a held
 //! row waits in the outbox, whose sender holds it to the window) and one outbox row per job.
+//!
+//! T249 (CARD-024, D-1519, D-1521): the pool also gets the ZIP of the same `intake.property` row,
+//! so `card_pool` fills the job's location and each business's reach, and the cards go through
+//! `send_job_cards_in_reach`; a property with no stored ZIP matches by towns only.
 
 use std::sync::Arc;
 
@@ -40,7 +44,8 @@ use askhava_privacy::api::Vault;
 use askhava_quotes::api::{
     CardLines, CardNotice, CardPool, CardsOut, Pool, Reader, Recipient, SLOW_AT_MOST, StoredCard,
     band_floor_cents, card_holders, card_pool, cards_out_text, description, mark_card_sent,
-    queue_card_notice, queue_emergency_card, send_job_cards, sent_card, stored_card, unsent_cards,
+    queue_card_notice, queue_emergency_card, send_job_cards_in_reach, sent_card, stored_card,
+    unsent_cards,
 };
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
@@ -260,9 +265,7 @@ async fn send_stored(
     (conversation, stored): (Uuid, &StoredCard),
     now: Timestamp,
 ) -> Result<CardsSent, IntakeError> {
-    let town = models::property_town(db, conversation)
-        .await?
-        .ok_or(IntakeError::NoStoredCard)?;
+    let (town, zip) = property_place(db, conversation).await?;
     let band = models::latest_answer(db, conversation, &band_question(stored.job)).await?;
     let text = description(db, stored.job)
         .await
@@ -275,9 +278,14 @@ async fn send_stored(
     }
     let floor = band.as_deref().and_then(band_floor_cents);
     let quotes = |_| IntakeError::Quotes;
-    let pool = card_pool(&mut tx, (&town, &stored.facts), text, floor)
-        .await
-        .map_err(quotes)?;
+    let pool = card_pool(
+        &mut tx,
+        ((&town, zip.as_deref()), &stored.facts),
+        text,
+        floor,
+    )
+    .await
+    .map_err(quotes)?;
     mark_card_sent(&mut tx, stored.job, &stored.digest, now)
         .await
         .map_err(quotes)?;
@@ -285,7 +293,8 @@ async fn send_stored(
         businesses: &pool.businesses,
         pauses: &pool.pauses,
     };
-    let new = send_job_cards(&mut tx, pool.map, stored.job, &pool.job, &chosen, now)
+    let matched = (&pool.job, &chosen, &pool.reach);
+    let new = send_job_cards_in_reach(&mut tx, pool.map, stored.job, matched, now)
         .await
         .map_err(quotes)?;
     record_job_facts(
@@ -303,6 +312,44 @@ async fn send_stored(
         recipients: new,
         text,
     })
+}
+
+/// CARD-001, CARD-024, D-1521: the job's own town and its ZIP (none: towns only) from the
+/// newest property of request `conversation`'s homeowner.
+///
+/// # Errors
+/// [`IntakeError::NoStoredCard`] with no property town.
+async fn property_place(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<(String, Option<String>), IntakeError> {
+    let town = models::property_town(db, conversation)
+        .await?
+        .ok_or(IntakeError::NoStoredCard)?;
+    let zip = property_zip(db, conversation, &town).await?;
+    Ok((town, zip))
+}
+
+/// CARD-024, INT-049, D-1521: the ZIP of the newest property of request `conversation`'s
+/// homeowner in `town` (the town `models::property_town` read), in the same order; none for a row
+/// stored before the ZIP. Keyed by the town, the pair is always one row's: a property stored
+/// between the two reads in another town is skipped here, never paired with the older town.
+async fn property_zip(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    town: &str,
+) -> Result<Option<String>, IntakeError> {
+    sqlx::query_scalar!(
+        "SELECT p.zip FROM intake.property p JOIN intake.conversation c \
+         ON c.homeowner_id = p.homeowner_id WHERE c.id = $1 AND p.town = $2 \
+         ORDER BY p.created_at DESC, p.id DESC LIMIT 1",
+        conversation,
+        town
+    )
+    .fetch_optional(db)
+    .await
+    .map(Option::flatten)
+    .map_err(|_| IntakeError::Database)
 }
 
 /// JOB-008, D-3182: locks job `job`'s row in the caller's transaction, then the guarded move

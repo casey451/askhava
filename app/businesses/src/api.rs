@@ -189,6 +189,22 @@ pub async fn businesses_of_mailbox(
     .map_err(|_| BusinessesError::Database)
 }
 
+/// CARD-024, BIZ-058, D-1519 (T249): every business with a stored base ZIP and radius, sorted by
+/// ID, whatever its status or towns; `quotes`' card pool reads each one's reach and pools those
+/// whose radius reaches the job, so a business serving a town outside the markets is found too.
+///
+/// # Errors
+///
+/// [`BusinessesError::Database`].
+pub async fn businesses_with_service_area(
+    conn: &mut PgConnection,
+) -> Result<Vec<Uuid>, BusinessesError> {
+    sqlx::query_scalar!("SELECT business_id FROM businesses.service_area ORDER BY business_id")
+        .fetch_all(conn)
+        .await
+        .map_err(|_| BusinessesError::Database)
+}
+
 /// LIC-039, D-230, D-2704 (T371): up to `limit` active businesses with an ID after `after`, by
 /// ID, each with the ROC license number its latest daily check is under (one never checked is
 /// skipped); the `licensing.daily_lists` run's lookups while the ROC list fails.
