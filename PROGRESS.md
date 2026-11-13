@@ -3334,3 +3334,4 @@
 - 2026-11-13T03:04:42Z runner 1351eeb1f8c2 (actions): {"T426": "MERGE_PENDING -> DONE"}
 - 2026-11-13T03:08:03Z runner 1351eeb1f8c2 (actions): {"T249": "IN_PROGRESS -> QUEUED"}
 - 2026-11-13T03:08:24Z runner 1351eeb1f8c2 (actions): {}
+- 2026-11-13T03:08:39Z runner 1351eeb1f8c2 (actions): {"T371": "QUEUED -> IN_PROGRESS"}; T371 estimated 3.1M tokens (calibrated); week has 170.1M left (no five-hour budget, D-3056) after 1.9M still running in another lane (session_reading 2026-11-13T02:56:29Z (week)); claimed
