@@ -333,7 +333,10 @@ async fn td_fee_48_a_text_pick_and_a_page_pick_each_fix_one_fee(pool: PgPool) {
     );
     assert_eq!(
         (rows[0].5, rows[0].6),
-        (i64::try_from(tiers_fee).expect("cents"), 1)
+        (
+            i64::try_from(tiers_fee).expect("cents"),
+            AUTHORIZATION_VERSION
+        )
     );
     switch_fee_mode(&mut db, OWNER, FeeMode::Flat)
         .await
@@ -352,12 +355,15 @@ async fn td_fee_48_a_text_pick_and_a_page_pick_each_fix_one_fee(pool: PgPool) {
     );
     assert_eq!(
         (rows[1].5, rows[1].6),
-        (i64::try_from(flat_fee).expect("cents"), 2)
+        (
+            i64::try_from(flat_fee).expect("cents"),
+            AUTHORIZATION_VERSION + 1
+        )
     );
     let stored = pick_fee(&mut db, pick).await.expect("read").expect("fee");
     assert_eq!(
         (stored.mode, stored.cents, stored.terms_version),
-        (FeeMode::Flat, flat_fee, 2)
+        (FeeMode::Flat, flat_fee, AUTHORIZATION_VERSION + 1)
     );
 }
 
@@ -444,7 +450,7 @@ async fn td_fee_48_a_fee_is_fixed_once_and_never_changed(pool: PgPool) {
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_48_a_press_must_match_the_stored_fee(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
-    ready(&mut db, 1).await;
+    ready(&mut db, AUTHORIZATION_VERSION).await;
     let (pick, job) = (Uuid::from_u128(0x0287_0020), Uuid::from_u128(0x0287_0120));
     fix_fee_at_pick(
         &mut db,
@@ -542,7 +548,7 @@ async fn td_fee_48_a_press_must_match_the_stored_fee(pool: PgPool) {
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_48_a_switch_after_the_pick_is_refused_before_any_charge(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
-    ready(&mut db, 1).await;
+    ready(&mut db, AUTHORIZATION_VERSION).await;
     let (pick, job) = (Uuid::from_u128(0x0287_0030), Uuid::from_u128(0x0287_0130));
     fix_fee_at_pick(
         &mut db,
@@ -632,7 +638,7 @@ async fn td_fee_48_a_switch_after_the_pick_is_refused_before_any_charge(pool: Pg
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_48_a_switch_after_the_gate_changes_nothing_for_that_pick(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
-    ready(&mut db, 1).await;
+    ready(&mut db, AUTHORIZATION_VERSION).await;
     let (pick, job) = (Uuid::from_u128(0x0287_0040), Uuid::from_u128(0x0287_0140));
     fix_fee_at_pick(
         &mut db,

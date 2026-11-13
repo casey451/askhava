@@ -13,6 +13,7 @@
 use askhava_businesses::api::{
     Known, PestIdentity, create, holding, pest_identity, record_pest_match,
 };
+use askhava_core::api::brand;
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     JobStart, NOT_COVERED_KIND, Opened, Outcome, PEST_CONTROL, PEST_OFF_TEMPLATE, Request, Routing,
@@ -275,8 +276,10 @@ async fn td_lic_22_switched_off_pest_request_closes_early_with_the_pointer(
         .await
         .expect("queued body");
     assert_eq!(sent, pest_off_body(routing.language, false));
+    // The text opens with the brand file's short name (WORD-001, D-3430).
     assert!(
-        sent.starts_with("Ask Hava: ") && sent.contains("Department of Agriculture's license list")
+        sent.starts_with(&format!("{}: ", brand().short_name()))
+            && sent.contains("Department of Agriculture's license list")
     );
     assert!(
         !sent.contains("http") && !sent.contains('$'),

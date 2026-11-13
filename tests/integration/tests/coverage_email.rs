@@ -16,7 +16,7 @@ use askhava_adapters::api::{AdapterError, Email, EmailAdapter, IdempotencyKey};
 use askhava_businesses::api::{
     BAD_COVERAGE_PAYLOAD, CoverageMailer, NO_COVERAGE_SENDER, run_coverage_notice,
 };
-use askhava_core::api::{Claimed, HandlerError, SystemClock};
+use askhava_core::api::{Claimed, HandlerError, SystemClock, brand};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     JobStart, NOT_COVERED_KIND, NOT_COVERED_TEMPLATE, Opened, Outcome, Request, Routing, TextIn,
@@ -246,9 +246,13 @@ async fn td_ops_18_one_owner_inbox_email_with_no_homeowner_detail(pool: PgPool) 
     assert_eq!(sent.len(), 1, "one email however often the task runs");
     let (to, subject, body) = &sent[0];
     assert_eq!(to, OWNER_INBOX);
+    // The subject opens with the brand file's short name (WORD-001, D-3430).
     assert_eq!(
-        subject,
-        "Ask Hava: No business covers boat lift work in Lake Havasu City yet"
+        *subject,
+        format!(
+            "{}: No business covers boat lift work in Lake Havasu City yet",
+            brand().short_name()
+        )
     );
     for line in [
         "Trade: boat lift".to_owned(),
