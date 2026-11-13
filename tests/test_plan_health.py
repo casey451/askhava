@@ -321,3 +321,19 @@ def test_e_plan_health_prints_it_report_only_and_survives_a_fault(tmp_path: Path
     monkeypatch.setattr(plan_symbols, "warnings", lambda *a: 1 / 0)
     assert ph.main(["--root", str(root), "--state", str(state_file), "T001", "--symbols"]) == 0
     assert "check (e) unavailable: ZeroDivisionError" in capsys.readouterr().out
+
+
+def test_e_precision_spans_arguments_methods_and_new_variants(tmp_path: Path) -> None:
+    """D-3496 review: a verb inside a span, an argument name, `.name` on another receiver and a new variant
+    a wildcard arm absorbs are no warnings; a new variant matched exhaustively is, as a risk."""
+    import plan_symbols
+
+    owned = "pub enum Kind { A, B }\npub struct Seal;\nimpl Seal {\n    pub fn rotate_me(&self) {}\n}\npub fn seal_it() {}\n"
+    user = "use core::Kind;\nfn t(k: Kind) { match k { Kind::A => {}, Kind::B => {} } }\nfn u(x: X) { x.rotate_me(); }\n"
+    goal = ("It checks `X-Twilio-Signature` on `seal_it`. `run(db, seal_it)` moves rows. "
+            "It renames `rotate_me`. It adds a new variant, `Kind::C`.")
+    root = symbol_repo(tmp_path, goal, {"app/core/src/rename.rs": owned, "tests/integration/tests/theirs.rs": user})
+    found = [w for w in plan_symbols.warnings(root, None, ["T001"]) if "goal changes" in w]
+    assert len(found) == 1 and "enum `Kind`" in found[0] and "risk: exhaustive match" in found[0]
+    (root / "tests/integration/tests/theirs.rs").write_text(user.replace("Kind::B => {}", "_ => {}"), encoding="utf-8")
+    assert not any("goal changes" in w for w in plan_symbols.warnings(root, None, ["T001"]))

@@ -34,6 +34,7 @@ Usage: python3 scripts/plan_symbols.py [--root REPO] [--state PATH] [T### ...]
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import re
 import sys
@@ -56,6 +57,10 @@ DEFINE = re.compile(
 )
 ALIAS = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s+as\s+([A-Za-z_][A-Za-z0-9_]*)\b")
 PUB_USE = re.compile(r"pub\s+use\s+[^;]+;", re.DOTALL)
+IMPL = re.compile(r"^impl(?:<[^>\n]*>)?\s+(?:[\w:<>, ]+?\s+for\s+)?([A-Za-z_]\w*)", re.MULTILINE)
+CLAUSE = re.compile(r"[;:()]")
+ENUM_WORDS = re.compile(r"\b[A-Z][A-Za-z0-9_]*\b")
+WILDCARD = re.compile(r"\b_\s*=>")
 COMMENT = re.compile(r"//[^\n]*")
 QUOTED = re.compile(r'"([^"\n]{1,80})"')
 VALUE_MARK = re.compile(r"^[^\s]*(?:@|\{[a-z_]+\}|[a-z0-9]-[a-z0-9])[^\s]*$")
@@ -72,8 +77,12 @@ CHANGE = re.compile(
     re.IGNORECASE,
 )
 KEEP = re.compile(
-    r"\b(?:keeps?|kept|unchanged|untouched|stays?|as it is|byte-identical|does not change|neither|nor|never)\b", re.I
+    r"\b(?:keeps?|kept|unchanged|untouched|stays?|as it is|byte-identical|does not change|neither|nor|never"
+    r"|no(?! longer))\b",
+    re.I,
 )
+GAINS = re.compile(r"gains?", re.I)
+BREAKS = re.compile(r"\b(?:fields?|arguments?|parameters?|variants?)\b|::", re.I)
 UNCHANGED = re.compile(r"\b(?:unchanged|untouched|byte-identical|does not change|need(?:s)? none)\b", re.I)
 SENTENCE = re.compile(r"(?<=[.;:])\s+(?=[A-Z(`])")
 TEST_FILE = re.compile(r"(?:^|/)tests?/|(?:^|/)test_[^/]+\.py$|\.spec\.ts$|\.test\.ts$")
@@ -96,6 +105,8 @@ class Symbol:
     name: str
     kind: str
     file: str
+    owner: str = ""
+    additive: bool = False
 
     @property
     def crate(self) -> str:
@@ -145,14 +156,23 @@ def may_edit(plan: Plan, task: dict[str, Any], path: str) -> bool:
     return not verify.check_paths([path], {**task, "type": "harness"}, [], plan.doc.get("shared_paths", []))
 
 
+def impl_of(text: str, match: re.Match[str]) -> str:
+    """The type an indented `pub fn` is a method of (the last `impl` block opened above it), else ""."""
+    if match.group(1) != "fn" or not text[text.rfind("\n", 0, match.start()) + 1 : match.start() + 1].isspace():
+        return ""
+    blocks = list(IMPL.finditer(text, 0, match.start()))
+    return blocks[-1].group(1) if blocks else ""
+
+
 def owned_symbols(plan: Plan, task: dict[str, Any]) -> list[Symbol]:
     """Public items in the task's owned `.rs` files, plus their `as` names in the crate's `api.rs`."""
     owned = [p for p in plan.files if p.endswith(".rs") and under(p, task.get("owns", []))]
-    found = [Symbol(m.group(2), m.group(1), p) for p in owned for m in DEFINE.finditer(plan.files[p])]
+    found = [Symbol(m.group(2), m.group(1), p, impl_of(plan.files[p], m)) for p in owned
+             for m in DEFINE.finditer(plan.files[p])]
     for sym in list(found):
         api = plan.files.get(f"app/{sym.crate}/src/api.rs", "") if sym.crate else ""
         for stmt in PUB_USE.findall(api):
-            found += [Symbol(alias, sym.kind, sym.file) for orig, alias in ALIAS.findall(stmt) if orig == sym.name]
+            found += [Symbol(alias, sym.kind, sym.file, sym.owner) for orig, alias in ALIAS.findall(stmt) if orig == sym.name]
     return list({(s.name, s.file): s for s in found}.values())
 
 
@@ -162,32 +182,67 @@ def sentences(task: dict[str, Any]) -> list[str]:
     return [s for s in SENTENCE.split(text) if s.strip()]
 
 
-def changed(task: dict[str, Any], symbols: list[Symbol]) -> list[Symbol]:
-    """The owned symbols a change sentence (and no keep sentence) names in backticks; a span with a path
-    or a dot (`picks.release`, a table; `MoneyView.dispute_fees`, a field read) names none."""
+def clauses(sentence: str) -> list[tuple[str, list[str]]]:
+    """A sentence cut into clauses at `;`, `:` and parentheses outside backticks (not at commas, so "no
+    route, `TextIn` or `receive_reply` signature changes" keeps its "no"), each as its text with
+    the backticked spans blanked out (so `X-Twilio-Signature` is no verb) and the spans it holds."""
+    spans = TICKS.findall(sentence)
+    masked = TICKS.sub("\x00", sentence)
+    out: list[tuple[str, list[str]]] = []
+    for part in CLAUSE.split(masked):
+        held = [spans.pop(0) for _ in range(part.count("\x00"))]
+        out.append((part.replace("\x00", " "), held))
+    return out
+
+
+def lead_idents(span: str) -> list[str]:
+    """The identifiers of a span's leading path, before any `(` (`rotate_photos(db, seal)` gives only
+    `rotate_photos`); a span with a slash or a dot (a file, `picks.release`, a field read) gives none."""
+    head = span.split("(", 1)[0].strip()
+    return [] if "/" in head or "." in head else IDENT.findall(head)
+
+
+def changed(task: dict[str, Any], symbols: list[Symbol], files: dict[str, str]) -> list[Symbol]:
+    """The owned symbols named by a span in a clause whose own words (spans left out) change something and
+    keep nothing ("no ... changes" keeps). A clause that only gains something (a method, a wrapper) changes
+    nothing a user sees unless it gains a field, an argument or a variant (`BREAKS`). `Enum::NewVariant`, a
+    variant the enum's file does not hold yet, is an additive change."""
     by_name: dict[str, list[Symbol]] = {}
     for sym in symbols:
         by_name.setdefault(sym.name, []).append(sym)
     hit: dict[tuple[str, str], Symbol] = {}
     for sentence in sentences(task):
-        if not CHANGE.search(sentence) or KEEP.search(sentence):
-            continue
-        for span in TICKS.findall(sentence):
-            if "/" in span or "." in span:
+        for words, spans in clauses(sentence):
+            verbs = [m.group(0) for m in CHANGE.finditer(words)]
+            if not verbs or KEEP.search(words) or (all(GAINS.fullmatch(v) for v in verbs) and not BREAKS.search(words)):
                 continue
-            for ident in IDENT.findall(span):
-                hit.update({(s.name, s.file): s for s in by_name.get(ident, [])})
+            for span in spans:
+                idents = lead_idents(span)
+                for i, ident in enumerate(idents):
+                    for sym in by_name.get(ident, []):
+                        new = sym.kind == "enum" and i + 1 < len(idents) and idents[i + 1] not in ENUM_WORDS.findall(
+                            files.get(sym.file, ""))
+                        hit.setdefault((sym.name, sym.file), dataclasses.replace(sym, additive=new))
     return [s for s in hit.values() if len(s.name) >= MIN_NAME and s.name not in COMMON]
 
 
 def names_symbol(text: str, path: str, sym: Symbol) -> bool:
-    """The code of `text` (comments left out) uses the symbol: a type, trait or constant as a word, a
-    function as a call or a path (`name(`, `::name`, `.name`); in another crate the file names the
-    defining crate too."""
+    """The code of `text` (comments left out) uses the symbol: a method as `Type::name`, or `.name(` in a
+    file that names its type; a free function as a call or a path (`name(`, `::name`); a type, trait or
+    constant as a word; for an enum gaining a variant, only a file that matches it with no `_ =>` arm
+    (an exhaustive match the new variant breaks). In another crate the file names the defining crate too."""
     code = COMMENT.sub("", text)
     word = re.escape(sym.name)
-    form = rf"\b{word}\s*(?:\(|::<)|(?:::|\.){word}\b" if sym.kind == "fn" else rf"\b{word}\b"
-    if not re.search(form, code):
+    if sym.owner:
+        typed = re.search(rf"\b{re.escape(sym.owner)}\b", code) and re.search(rf"\.{word}\s*\(", code)
+        found = bool(re.search(rf"\b{re.escape(sym.owner)}::{word}\b", code) or typed)
+    elif sym.kind == "fn":
+        found = bool(re.search(rf"\b{word}\s*(?:\(|::<)|::{word}\b", code))
+    elif sym.additive:
+        found = bool(re.search(rf"\b{word}::\w+[^\n]*=>", code)) and not WILDCARD.search(code)
+    else:
+        found = bool(re.search(rf"\b{word}\b", code))
+    if not found:
         return False
     if not sym.crate or path.startswith(f"app/{sym.crate}/"):
         return True
@@ -222,7 +277,7 @@ def owners(plan: Plan, path: str) -> str:
 def symbol_warnings(plan: Plan, task: dict[str, Any]) -> list[str]:
     """Part one: unowned files that name a symbol the task's goal changes."""
     out: list[str] = []
-    for sym in sorted(changed(task, owned_symbols(plan, task)), key=lambda s: (s.name, s.file)):
+    for sym in sorted(changed(task, owned_symbols(plan, task), plan.files), key=lambda s: (s.name, s.file)):
         users = [
             p for p, text in plan.files.items()
             if p.endswith(".rs") and p != sym.file and names_symbol(text, p, sym)
@@ -231,8 +286,9 @@ def symbol_warnings(plan: Plan, task: dict[str, Any]) -> list[str]:
         if users:
             shown = ", ".join(f"{p} ({owners(plan, p)})" for p in users[:4])
             more = f" and {len(users) - 4} more" if len(users) > 4 else ""
+            risk = "; risk: exhaustive match on the new variant" if sym.additive else ""
             out.append(f"{task['id']}: its goal changes {sym.kind} `{sym.name}` ({sym.file}), which {shown}{more} "
-                       "name; it may not edit them (D-3496, report-only)")
+                       f"name{risk}; it may not edit them (D-3496, report-only)")
     return out
 
 
