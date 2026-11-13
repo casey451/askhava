@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T20:40:56Z by runner 67b31ac7893a (actions).
+Updated 2026-11-13T20:41:19Z by runner 67b31ac7893a (actions).
 
 **Building: T412 in progress since 19:27Z; 291 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 291 of 427 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T354 claimed 20:29Z, lease until 23:29Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
+- **Lane:** lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T354 claimed 20:29Z, lease until 23:29Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
 - **Week:** 28% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:40Z, 0 min before this update
 - **Keeper:** last ran 20:40Z, next wake 22:29Z
@@ -19,6 +19,7 @@ Updated 2026-11-13T20:40:56Z by runner 67b31ac7893a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T442 | mutation (harness): every named mutant is killed by a determ | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
 | T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 1 | 23 min | 20:39Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T271 | server and calls (harness): the dialed leg asks for status c | MERGE_PENDING | 1 | 53 min | 20:22Z |  |
 | T318 | calls, picks and quotes: the who's-calling text goes out at  | MERGE_PENDING | 1 | 52 min | 20:18Z |  |
@@ -155,8 +156,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T412 (lease until 2026-11-13T22:27:09Z)
 - lane 3: T354 (lease until 2026-11-13T23:29:22Z)
-- lane 4: T442 (lease until 2026-11-13T22:41:31Z)
 - lane 5: T335 (lease until 2026-11-13T23:20:34Z)
 
 ## Last usage reading
-- {"task": "T357", "at": "2026-11-13T20:39:32Z", "output_tokens": 8209, "cache_creation_input_tokens": 51399, "input_tokens": 53, "cache_read_input_tokens": 562753}
+- {"task": "T442", "at": "2026-11-13T20:40:54Z", "output_tokens": 30183, "input_tokens": 152, "cache_read_input_tokens": 3410331, "cache_creation_input_tokens": 141834}
