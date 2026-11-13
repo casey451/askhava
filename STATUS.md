@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T02:39:30Z by runner bc957f66520a (actions).
+Updated 2026-11-13T02:39:46Z by runner bc957f66520a (actions).
 
 **Building: T215 in progress since 23:45Z; 266 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 266 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T425 claimed 02:11Z, lease until 05:11Z; lane 4: T426 claimed 02:14Z, lease until 05:14Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T430 claimed 02:33Z, lease until 05:33Z
+- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 4: T426 claimed 02:14Z, lease until 05:14Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T430 claimed 02:33Z, lease until 05:33Z
 - **Week:** 11% used, 161.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:36Z, 3 min before this update
 - **Keeper:** last ran 02:36Z, next wake 02:48Z
@@ -18,6 +18,7 @@ Updated 2026-11-13T02:39:30Z by runner bc957f66520a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T425 | Brand rename prep: the last integration tests and four secur | MERGE_PENDING | 1 | 28 min | 02:39Z |  |
 | T423 | Brand rename prep: integration tests (first-quote move to si | done | 1 | 66 min | 01:47Z |  |
 | T422 | Brand rename prep: integration tests (accepted-quote email t | done | 1 | 44 min | 01:20Z |  |
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | MERGE_PENDING | 1 | 26 min | 01:18Z |  |
@@ -166,10 +167,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T215 (lease until 2026-11-13T02:45:19Z)
-- lane 3: T425 (lease until 2026-11-13T05:11:11Z)
 - lane 4: T426 (lease until 2026-11-13T05:14:10Z)
 - lane 6: T249 (lease until 2026-11-13T03:01:54Z)
 - lane 7: T430 (lease until 2026-11-13T05:33:35Z)
 
 ## Last usage reading
-- {"task": "T423", "at": "2026-11-13T01:47:29Z", "cache_creation_input_tokens": 380554, "cache_read_input_tokens": 10886153, "input_tokens": 266, "output_tokens": 50388}
+- {"task": "T425", "at": "2026-11-13T02:39:29Z", "output_tokens": 41850, "input_tokens": 218, "cache_creation_input_tokens": 215180, "cache_read_input_tokens": 5508462}
