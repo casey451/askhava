@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T12:39:34Z by runner 9889e5f5ff2d (actions).
+Updated 2026-11-13T12:44:46Z by runner 9889e5f5ff2d (actions).
 
 **Building: T255 in progress since 11:40Z; 279 of 420 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T12:39:34Z by runner 9889e5f5ff2d (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T255 claimed 11:40Z, lease until 14:40Z
 - **Week:** 17% used, 157.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:39Z, 0 min before this update
+- **Last run:** 12:44Z, 0 min before this update
 - **Keeper:** last ran 12:39Z, next wake 14:43Z
 
 ## Needs attention
@@ -73,7 +73,6 @@ Updated 2026-11-13T12:39:34Z by runner 9889e5f5ff2d (actions).
 | T370 | intake (harness): the night count the homeowner hears counts | check_failed | 1 | 22 min | 14:29Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z |  |
 | T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z |  |
-| T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
 
 ### Plan and harness merges on main
 - 12:32Z Plan: pre-flight 14, split three oversized build tasks; T111/T113 brand note (D-3445) (#668)
