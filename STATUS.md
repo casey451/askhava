@@ -1,20 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-13T13:31:43Z by runner bf75098f9a71 (actions).
+Updated 2026-11-13T13:35:24Z by runner 480741987da0 (actions).
 
 **Building: T386 in progress since 13:24Z; 281 of 420 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 281 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T386 claimed 13:24Z, lease until 16:24Z; lane 3: T367 claimed 13:22Z, lease until 16:22Z
-- **Week:** 18% used, 156.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:31Z, 0 min before this update
+- **Lane:** lane 2: T386 claimed 13:24Z, lease until 16:24Z; lane 3: T367 claimed 13:22Z, lease until 16:22Z; lane 4: T266 claimed 13:35Z, lease until 16:35Z
+- **Week:** 18% used, 150.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:31Z, 3 min before this update
 - **Keeper:** last ran 13:31Z, next wake 16:24Z
 
 ## Needs attention
-- PLAN GAP T266 (since 2026-11-13T13:09:16Z, no attempt used; a plan change fixes it): T266: dependency T255 is DONE but its owned file app/intake/src/address_wait.rs is not on main; T266: dependency T255 is DONE but its owned file app/payments/src/reclear.rs is not on main; T266: dependency T255 is DONE but its owned file app/picks/src/address_wait_check.rs is not on main; T266: dependency T255 is DONE but its owned file app/server/tests/address_rerelease.rs is not on main; T266: dependency T255 is DONE but its owned file app/privacy/src/contact_fields.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 23 problem(s) on tasks still to run (+154 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+155 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -134,7 +133,7 @@ Updated 2026-11-13T13:31:43Z by runner bf75098f9a71 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T12:53:02Z (week)): week: 37.3M used, 156.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T18:02:17Z.
+- Pacing (session_reading 2026-11-13T13:31:21Z (week)): week: 43.1M used, 150.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T21:53:51Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -152,6 +151,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T386 (lease until 2026-11-13T16:24:29Z)
 - lane 3: T367 (lease until 2026-11-13T16:22:08Z)
+- lane 4: T266 (lease until 2026-11-13T16:35:19Z)
 
 ## Last usage reading
 - {"task": "T255", "at": "2026-11-13T12:52:00Z", "cache_creation_input_tokens": 821539, "input_tokens": 662, "cache_read_input_tokens": 68470483, "output_tokens": 217225}
