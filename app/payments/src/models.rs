@@ -41,15 +41,18 @@ use crate::refund_rules::RefundReason;
 /// The FEE-015 card authorization, exactly as `docs/spec/fees.md` words it (D-195, D-196, D-365).
 /// A change of wording is a new [`AUTHORIZATION_VERSION`], accepted again before the next charge
 /// (FEE-007).
-pub const AUTHORIZATION_TEXT: &str = "I authorize Ask Hava LLC to save this card with Stripe for \
+pub const AUTHORIZATION_TEXT: &str = "I authorize Laftly LLC to save this card with Stripe for \
 introduction fees. I'm charged only when I press Confirm and pay for a homeowner's choice of my \
 quote, or when a homeowner picks a quote I set to auto-confirm, and the fee is shown before I \
 press it or set it: $25, $75 or $199 by job size, ongoing services counted at 4 months and capped \
 at $75. First win free if I join in the first 90 days or within 90 days after my trade opens. \
 Refunds per the Terms. I can remove this card at any time.";
 
-/// The version of [`AUTHORIZATION_TEXT`] stored with each acceptance (FEE-015, FEE-007).
-pub const AUTHORIZATION_VERSION: i32 = 1;
+/// The version of [`AUTHORIZATION_TEXT`] stored with each acceptance (FEE-015, FEE-007). Version 2
+/// names the renamed legal entity (D-3347, D-3425); through the `required_version` floor a Confirm
+/// needs an acceptance of version 2 or more, so every business accepts it again before its next
+/// charge.
+pub const AUTHORIZATION_VERSION: i32 = 2;
 
 /// Why a customer or card step was refused or could not finish. No variant carries a card
 /// detail, a vendor message or a database message (R5, D-698).
@@ -688,7 +691,7 @@ pub struct PickFacts {
 /// `payments.reconcile_charge.refund_reason`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RefundWhy {
-    /// The charge names no pick Ask Hava knows.
+    /// The charge names no pick the service knows.
     NoPick,
     /// The charge is on a pick whose job is closed (always refunded).
     ClosedJob,
@@ -843,7 +846,7 @@ impl MoneyView {
         }
     }
 
-    /// What Ask Hava kept: charges less refunds, credits, disputes and every Stripe fee.
+    /// What the service kept: charges less refunds, credits, disputes and every Stripe fee.
     #[must_use]
     pub const fn net(&self) -> i64 {
         self.charges

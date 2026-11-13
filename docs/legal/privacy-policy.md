@@ -1,22 +1,22 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.5 (draft, D-492 changes) · October 29, 2026 · Not yet in effect
+Version 0.6 (draft, D-492 changes) · November 13, 2026 · Not yet in effect
 
-# Ask Hava Privacy Policy
+# Laftly Privacy Policy
 
-Effective [date]. Ask Hava LLC, [mailing address: P.O. box or registered agent, never a home address], Lake Havasu City, Arizona. Contact: help@askhava.com.
+Effective [date]. Laftly LLC, [mailing address: P.O. box or registered agent, never a home address], Lake Havasu City, Arizona. Contact: help@laftly.com.
 
-This policy also serves as Ask Hava's privacy notice to the people who use it.
+This policy also serves as Laftly's privacy notice to the people who use it.
 
 ## 1. Who we are
 
-Ask Hava is a quote-request service; the business the homeowner chooses pays Ask Hava a set introduction fee.
+Laftly is a quote-request service; the business the homeowner chooses pays Laftly a set introduction fee.
 
-Ask Hava is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly.
+Laftly is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly.
 
 ## 2. What we collect
 
 - **From homeowners and tenants:** your phone number; what you tell us about the job; the town and ZIP; your first name and the job address; and, if you choose, your email, photos of the job and pictures of the look you want.
-- **From businesses:** business and license details from public records, team members' names, emails and phones, notice settings, and payment details (card details are held by our payment processor, Stripe, not by Ask Hava).
+- **From businesses:** business and license details from public records, team members' names, emails and phones, notice settings, and payment details (card details are held by our payment processor, Stripe, not by Laftly).
 - **Automatically:** message and call records (who, when, how long; we never record calls), the times a business's notice emails were sent, delivered and their own links first opened, and basic website logs. We don't use advertising cookies, tracking pixels or email open tracking.
 
 We never ask for Social Security numbers, driver's licenses, immigration status or ID images.
@@ -29,39 +29,39 @@ To run your request: send a description of the job to local businesses, show you
 
 ### When you pick a business
 
-When you send a request, Ask Hava sends a description of the job, with your name, phone number, email and street address removed, to local businesses that do that kind of work. If you send photos, those businesses also see them, with location data removed; we ask you to send only photos that show no person or house number, and once our AI photo screening is on, any faces, house numbers, license plates or readable text are blurred as well. Only after you pick a business, and it confirms (and pays its introduction fee, when one is due), does Ask Hava give that one business your first name and the job address, plus your email if you chose to share it and your photos at full size, with location data removed. Ask Hava never gives your phone number to any business, and never sells or shares phone numbers or texting permission for marketing.
+When you send a request, Laftly sends a description of the job, with your name, phone number, email and street address removed, to local businesses that do that kind of work. If you send photos, those businesses also see them, with location data removed; we ask you to send only photos that show no person or house number, and once our AI photo screening is on, any faces, house numbers, license plates or readable text are blurred as well. Only after you pick a business, and it confirms (and pays its introduction fee, when one is due), does Laftly give that one business your first name and the job address, plus your email if you chose to share it and your photos at full size, with location data removed. Laftly never gives your phone number to any business, and never sells or shares phone numbers or texting permission for marketing.
 
 ### Who sees what at each step
 
 | Who | What they see | When |
 |---|---|---|
 | Local businesses in that trade | The job description with your name, phone, email and street address removed; town; timing; your answers to fixed questions; any photos you sent, with location data removed (faces, house numbers, license plates and readable text blurred once AI photo screening is on) | When the request goes out |
-| Anyone on askhava.com | Your feedback, with your first name and town, only if you ticked the box allowing it | After your job is done |
+| Anyone on laftly.com | Your feedback, with your first name and town, only if you ticked the box allowing it | After your job is done |
 | The one business you pick | Your first name and the job address, plus your email if you chose to share it, and your photos at full size with location data removed | Only after you pick it, ask us to share them, and it confirms (and pays its introduction fee, when one is due) |
 | Businesses that get your job card | The job card you saw, your answers and the photos you kept, with no name, phone, email or street address | When the card goes out |
-| No business, ever | Your phone number | Never. Calls go through a masked Ask Hava number |
-| Vendors that run Ask Hava for us | Only what each needs to do its job | While providing the service, under their data-processing terms |
+| No business, ever | Your phone number | Never. Calls go through a masked Laftly number |
+| Vendors that run Laftly for us | Only what each needs to do its job | While providing the service, under their data-processing terms |
 | Police, courts or others | Only what a law requires, such as a subpoena or warrant | Only when the law requires it |
 
-Your number is never shared. Your first name and address go only to the business you pick. Ask Hava never gives your number to any business. If a business asks for it on the call, that's your choice.
+Your number is never shared. Your first name and address go only to the business you pick. Laftly never gives your number to any business. If a business asks for it on the call, that's your choice.
 
 The business you pick may use your details only for your job and follow-up about it. Our business terms forbid marketing lists and resale.
 
-**Vendors** (under contract, only to run Ask Hava): texting and calls (Twilio), email (Resend), payments (Stripe), hosting and its 30-day logs (Railway), encrypted backup storage (Backblaze B2), error monitoring (Sentry), letters for business identity checks (Lob), website delivery and security (Cloudflare), and, only once it is switched on, automated text reading (Anthropic; see section 6).
+**Vendors** (under contract, only to run Laftly): texting and calls (Twilio), email (Resend), payments (Stripe), hosting and its 30-day logs (Railway), encrypted backup storage (Backblaze B2), error monitoring (Sentry), letters for business identity checks (Lob), website delivery and security (Cloudflare), and, only once it is switched on, automated text reading (Anthropic; see section 6).
 
 **Legal demands.** We'll tell you about a legal demand for your data unless the law forbids it.
 
 ## 5. Text messages
 
-You choose to text us: your first text, or giving us your mobile number in the chat on askhava.com and typing the code we send to it, is your OK to get automated texts about your own request, and we text you only about that request. We keep the time of that first message and the version of our first reply as proof. Quote updates come by text unless you switch to email, or both, on your quote page; if you give an email for updates, we use it only for your request and never share it with businesses unless you choose email contact when you pick. Every update email has an unsubscribe link. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time.
+You choose to text us: your first text, or giving us your mobile number in the chat on laftly.com and typing the code we send to it, is your OK to get automated texts about your own request, and we text you only about that request. We keep the time of that first message and the version of our first reply as proof. Quote updates come by text unless you switch to email, or both, on your quote page; if you give an email for updates, we use it only for your request and never share it with businesses unless you choose email contact when you pick. Every update email has an unsubscribe link. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time.
 
-You can also opt out by emailing help@askhava.com, replying to any Ask Hava email, using the help form on askhava.com, or switching texts off on your quote page. Every opt-out goes on one list at once and stops all texts and automated calls from Ask Hava to that number. To use Ask Hava by text again, text START.
+You can also opt out by emailing help@laftly.com, replying to any Laftly email, using the help form on laftly.com, or switching texts off on your quote page. Every opt-out goes on one list at once and stops all texts and automated calls from Laftly to that number. To use Laftly by text again, text START.
 
 Your phone number and your texting permission are never shared with any business or third party, and your texts are never used for marketing.
 
 No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Text messaging originator opt-in data and consent will not be shared with any third parties.
 
-Ask Hava never sells or rents lists of people, phone numbers or texting consent.
+Laftly never sells or rents lists of people, phone numbers or texting consent.
 
 ## 6. Automated tools and AI
 
@@ -75,7 +75,7 @@ Ask Hava never sells or rents lists of people, phone numbers or texting consent.
 
 *(Add only while concept images are on:)* For some design jobs, an AI image service can make a concept picture from your written notes, never from your photos. It's labeled AI-generated.
 
-*(Add only if the Ask Hava owner switches on AI quote summaries; they are off at launch:)* AI may also shorten a business's quote into a summary shown next to the business's own words.
+*(Add only if the Laftly owner switches on AI quote summaries; they are off at launch:)* AI may also shorten a business's quote into a summary shown next to the business's own words.
 
 Our texts are automated. Ask "is this a person?" at any time and we'll tell you.
 
@@ -96,11 +96,11 @@ Photos are optional; a request goes out the same way without them. When you send
 
 ## 9. Your choices
 
-You can see and change your details (properties, language, texts on or off) on your homeowner page. You can also get a copy there: "Download my data" gives you a file of your requests, quotes, messages and the texting-permission records we still hold. You can ask us to delete your data there or by emailing help@askhava.com. Before we act on a delete or copy request sent by email or the help form, we text a code to the number on file and you type it back, so no one else can ask in your name. We answer each request within 30 days. When we delete, we keep only what the law or proof of your texting choices requires, without your other details. We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.
+You can see and change your details (properties, language, texts on or off) on your homeowner page. You can also get a copy there: "Download my data" gives you a file of your requests, quotes, messages and the texting-permission records we still hold. You can ask us to delete your data there or by emailing help@laftly.com. Before we act on a delete or copy request sent by email or the help form, we text a code to the number on file and you type it back, so no one else can ask in your name. We answer each request within 30 days. When we delete, we keep only what the law or proof of your texting choices requires, without your other details. We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.
 
 ## 10. How we protect it
 
-We encrypt contact details field by field and photos before they are stored, limit which parts of our software can read them, log every access, keep backups encrypted, and use multi-factor sign-in for our own accounts. The business you pick sees your first name and the job address only after it signs in to its Ask Hava account; we never put them in an email or a text. Our website uses an encrypted connection. Ordinary text messages and email are not end-to-end encrypted, and your mobile carrier, our texting provider or your email provider may keep copies, so please share sensitive details on askhava.com rather than by text. Card numbers are held by Stripe, not by Ask Hava. No system is perfect. We look into any suspected unauthorized access to personal information, and we tell affected people and government authorities when the law requires it. We may also tell you when we think it would help protect you.
+We encrypt contact details field by field and photos before they are stored, limit which parts of our software can read them, log every access, keep backups encrypted, and use multi-factor sign-in for our own accounts. The business you pick sees your first name and the job address only after it signs in to its Laftly account; we never put them in an email or a text. Our website uses an encrypted connection. Ordinary text messages and email are not end-to-end encrypted, and your mobile carrier, our texting provider or your email provider may keep copies, so please share sensitive details on laftly.com rather than by text. Card numbers are held by Stripe, not by Laftly. No system is perfect. We look into any suspected unauthorized access to personal information, and we tell affected people and government authorities when the law requires it. We may also tell you when we think it would help protect you.
 
 ## 11. Other people's details
 
@@ -108,7 +108,7 @@ If you give us someone else's contact details, make sure they're OK with it. We 
 
 ## 12. Children
 
-Ask Hava is only for people 18 or older. If we learn that someone under 18 has contacted us, we stop the request. If we learn we have information from a child under 13, we delete it, except the record of a texting opt-out.
+Laftly is only for people 18 or older. If we learn that someone under 18 has contacted us, we stop the request. If we learn we have information from a child under 13, we delete it, except the record of a texting opt-out.
 
 ## 13. Do Not Track
 
@@ -116,7 +116,7 @@ We don't track you across other websites, so we treat browsers' Do Not Track sig
 
 ## 14. Businesses
 
-The business data page explains what we keep about businesses and team members and for how long, who can see it, that call logs hold no recordings, that Ask Hava never asks about workers, and the notice-email and timing records we keep for each business. Business data goes to police or others only when a law requires it, and the business data page says: We'll tell you about any legal demand for your business's data unless the law forbids it.
+The business data page explains what we keep about businesses and team members and for how long, who can see it, that call logs hold no recordings, that Laftly never asks about workers, and the notice-email and timing records we keep for each business. Business data goes to police or others only when a law requires it, and the business data page says: We'll tell you about any legal demand for your business's data unless the law forbids it.
 
 ## 15. Changes
 

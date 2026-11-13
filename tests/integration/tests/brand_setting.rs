@@ -71,11 +71,18 @@ const HOMEOWNER_TERMS: &str = include_str!("../../../docs/legal/homeowner-terms.
 const WORD_022_LIST: &str = include_str!("../../../app/ai/data/word_022_phrases.json");
 
 /// The SHA-256 of `AUTHORIZATION_TEXT` for each `AUTHORIZATION_VERSION` (FEE-015, TERMS-016): a
-/// reworded authorization needs a new version and a new row here.
-const AUTHORIZATION_SHA256: [(i32, &str); 1] = [(
-    1,
-    "4cc85df1e5f51f40c7940427aa61904f35d94c423a886f19f76bc326d84274cd",
-)];
+/// reworded authorization needs a new version and a new row here. Version 1 named the former legal
+/// entity; version 2 names the brand file's `legal_name` (D-3347, D-3425).
+const AUTHORIZATION_SHA256: [(i32, &str); 2] = [
+    (
+        1,
+        "4cc85df1e5f51f40c7940427aa61904f35d94c423a886f19f76bc326d84274cd",
+    ),
+    (
+        2,
+        "eeddb192068fd55cb90f2503009615cf100a55c3c18596ca77d36de2b593d6f0",
+    ),
+];
 
 const POSTAL: &str = "PO Box 0000, Lake Havasu City, AZ 86403";
 
