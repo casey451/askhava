@@ -34,6 +34,11 @@ UPDATE_WAIT = timedelta(hours=2)  # how long an update merge git cannot make wai
 # A branch whose update merge has waited this long (`update_waiting_since`) no longer holds the merge line:
 # it still retries its own update until UPDATE_WAIT fails it, but the next branch gets the turn (D-3418).
 MERGE_LINE_STUCK = timedelta(minutes=30)
+# A turn holder that neither merged nor got a new head for this long gives up the turn (D-3418): Ci, Twin and
+# Ally take 12 to 17 minutes and auto-merge lands within minutes after, so 45 minutes is well over twice a
+# normal turn, while a check that never runs or a red ruleset check can no longer block the line for good.
+MERGE_LINE_TURN_LIMIT = timedelta(minutes=45)
+RULESET_ONLY_CHECKS = ("Governance",)  # required by the repository ruleset, not by verify.REQUIRED_CHECKS (D-483, D-494)
 UPDATE_STUCK = "the branch could not be brought up to date with main for {wait}: {why} (D-620)"
 UPDATE_CLOSE = ("Closed by the runner: this branch could not be brought up to date with main, and auto-merge was on "
                 "({why}). The next attempt continues this branch with main merged in, or starts fresh when that "
@@ -486,29 +491,84 @@ def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime) -> tuple
     The merge line (D-3418): only one branch at a time is brought up to date with `main`. Updating every
     behind branch at once restarted Ci, Twin and Ally on all of them each time `main` moved, and all but
     the next to merge were wasted (about 1.9 runs per merge). Tasks are taken in `_merge_line` order and
-    the turn goes to the first that `_holds_turn`; one that leaves the line in its step (a resync, a
-    failed attempt, DONE) passes it on in the same cycle. Every other task skips `_update_step` but still
-    gets auto-merge, so a branch already current with `main` merges without waiting for its turn."""
+    the turn goes to the first whose `_line_place` is "line" (`_mark_turn` records since when); one that
+    leaves the line in its step (a resync, a failed attempt, DONE) passes it on in the same cycle. A
+    "late" task (its turn ran out, or a ruleset-only check failed) is taken last and may update only if
+    the turn is still free, taking it when it pushes. Every other task skips `_update_step` but still gets auto-merge, so a branch already
+    current with `main` merges without waiting for its turn."""
     outcomes: dict[str, tuple[str, str, str]] = {}
-    turn_free = True
+    turn_free, late = True, []
     for tid in _merge_line(state):
         task = st.entry(state, tid)
-        pr, lane = _current_pr(env, task), st.task_lane(task)
-        holds = turn_free and _holds_turn(task, pr, now)
-        state, result = _resolve_one(state, env, cfg, now, task, pr, holds or _line_stuck(task, now))
+        pr = _current_pr(env, task)
+        place = _line_place(task, pr, now)
+        if place == "late":
+            late.append((tid, pr))
+            continue
+        holds = turn_free and place == "line" and not _main_red_for(state, tid)  # red main: only FIX-MAIN (D-620)
+        state = _mark_turn(state, tid, now if holds else None) if place == "line" else state
+        state, _ = _resolve_line_task(state, env, cfg, now, (tid, pr, holds or place == "stuck"), outcomes)
         turn_free = turn_free and not (holds and st.status(state, tid) == st.MERGE_PENDING)
-        outcomes[tid] = (tid, lane, result)
-        state = _lane_outcome(state, tid, lane, result, now, env.checks_on)
+    for tid, pr in late:
+        state, result = _resolve_line_task(state, env, cfg, now, (tid, pr, turn_free), outcomes)
+        turn_free = turn_free and result != "branch_updated"
     return state, [outcomes[t["id"]] for t in state["tasks"] if t["id"] in outcomes]
 
 
-def _holds_turn(task: dict[str, Any], pr: dict[str, Any] | None, now: datetime) -> bool:
-    """Whether a task may take the merge line's free turn (D-3418): an open pull request whose head
-    checks have not failed (a red head fails the attempt in its step), and an update merge not stuck
-    (`_line_stuck`). A task without a pull request yet, or a merged one, never holds the line."""
+def _resolve_line_task(state: State, env: Env, cfg: Config, now: datetime, item: tuple[str, dict[str, Any] | None, bool],
+                       outcomes: dict[str, tuple[str, str, str]]) -> tuple[State, str]:
+    """Resolve one task of the merge line, `item` = (task, its `_current_pr`, may_update), record its
+    outcome and the lane's (`_lane_outcome`)."""
+    tid, pr, may_update = item
+    lane = st.task_lane(st.entry(state, tid))
+    state, result = _resolve_one(state, env, cfg, now, st.entry(state, tid), pr, may_update)
+    outcomes[tid] = (tid, lane, result)
+    return _lane_outcome(state, tid, lane, result, now, env.checks_on), result
+
+
+def _line_place(task: dict[str, Any], pr: dict[str, Any] | None, now: datetime) -> str:
+    """The task's place in the merge line (D-3418). "line": it may hold the turn (an open pull request
+    whose required checks have not failed). "stuck": its update has waited MERGE_LINE_STUCK, so it keeps
+    retrying its own update until UPDATE_WAIT fails it (D-620) but never holds the turn. "late": its
+    turn ran out (`_turn_spent`) or a ruleset-only check failed on its head (`_ruleset_red`), so GitHub
+    may never merge it; it updates only when no one else holds the turn. "out": no pull request yet, a
+    merged one or red required checks; its step needs no update merge."""
     if pr is None or pr.get("merged") or verify.checks_state(pr) == "failed":
+        return "out"
+    if _line_stuck(task, now):
+        return "stuck"
+    return "late" if _turn_spent(task, now) or _ruleset_red(pr) else "line"
+
+
+def _ruleset_red(pr: dict[str, Any]) -> bool:
+    """Whether a check the repository ruleset requires but `verify.REQUIRED_CHECKS` does not (`Governance`,
+    D-483, D-494) failed on the PR head: auto-merge then never lands, so the task must not hold the merge
+    line (D-3418). Read from the check runs `pr_for` already fetched; the attempt itself is not failed."""
+    head = pr.get("head_sha")
+    return any(c.get("sha") == head and c.get("name") in RULESET_ONLY_CHECKS and c.get("conclusion") in ("failure", "cancelled", "timed_out")
+               for c in pr.get("checks", []))
+
+
+def _mark_turn(state: State, tid: str, now: datetime | None) -> State:
+    """Record when a "line" task took the merge line's turn (`merge_turn_since`, D-3418), kept while it
+    holds it; None clears it when an earlier task (FIX-MAIN, or a late branch that pushed) holds the
+    turn instead, so a task's turn time only counts while it is really its turn."""
+    since = st.entry(state, tid).get("merge_turn_since")
+    if now is None:
+        return st.with_task(state, tid, merge_turn_since=None) if since else state
+    return state if since else st.with_task(state, tid, merge_turn_since=st.iso(now))
+
+
+def _turn_spent(task: dict[str, Any], now: datetime) -> bool:
+    """Whether MERGE_LINE_TURN_LIMIT has passed since the task took the turn (`merge_turn_since`) or its
+    branch last got a new head (its hand-in or an update merge's `at`, D-620, D-2798), whichever is later
+    (D-3418): a turn holder that neither merged nor moved for that long (a check that never ran, a
+    ruleset check GitHub waits on) gives up the line. A task that never held the turn never runs out."""
+    since = task.get("merge_turn_since")
+    if not since:
         return False
-    return not _line_stuck(task, now)
+    stamps = [str(since), _handed_in_at(task)] + [str(u.get("at") or "") for u in task.get("update_merges") or []]
+    return now - max(st.parse(s) for s in stamps if s) >= MERGE_LINE_TURN_LIMIT
 
 
 def _merge_line(state: State) -> list[str]:
@@ -531,7 +591,9 @@ def _handed_in_at(task: dict[str, Any]) -> str:
 
 def _line_stuck(task: dict[str, Any], now: datetime) -> bool:
     """Whether the task's update merge has waited MERGE_LINE_STUCK or longer, so it no longer holds the
-    merge line (D-3418); its own UPDATE_WAIT still runs and fails the attempt in the end (D-620)."""
+    merge line (D-3418); its own UPDATE_WAIT still runs and fails the attempt in the end (D-620). The
+    wait keeps ageing while the task is off the turn, exactly as it always has while `main` is red
+    (the red-`main` guard skips the update first): FIX-MAIN is the only task that comes before it."""
     since = task.get("update_waiting_since")
     return bool(since) and now - st.parse(str(since)) >= MERGE_LINE_STUCK
 
@@ -2129,7 +2191,7 @@ def _hand_in_merge(env: Env, res: WorkerResult) -> dict[str, Any] | None:
     return {"from": res.head_sha, "to": str(done["sha"]), "main": str(done.get("main") or ""), "how": "hand-in"}
 
 
-UPDATE_KEYS = ("update_merges", "update_waiting_since", "update_push_failures")  # an attempt's update-merge record (D-620)
+UPDATE_KEYS = ("update_merges", "update_waiting_since", "update_push_failures", "merge_turn_since")  # an attempt's update-merge record (D-620, D-3418)
 
 
 def _without(state: State, tid: str, *keys: str) -> State:

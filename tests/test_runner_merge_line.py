@@ -164,3 +164,63 @@ def test_the_line_is_ordered_by_a_hand_in_update_merge_then_by_id(tmp_path: Path
     state = pending(state, "T005", 30, "5")
     state = st.with_task(state, "T005", update_merges=[early])
     assert cycle._merge_line(state) == ["T005", "T001", "T002", "T009"]
+
+
+def current_and_green(env: LineEnv, tid: str, sha: str, auto_merge: bool = True) -> None:
+    """The task's branch is current with main and its pull request shows `sha` with Ci, Twin and Ally green."""
+    env.prs[tid] = dict(green_pr(sha, merged=False), number=3, state="open", auto_merge=auto_merge)
+    env.by_branch[branch(tid)] = {"status": "current"}
+
+
+def test_a_green_current_turn_holder_that_never_merges_gives_up_the_line_at_the_limit(tmp_path: Path) -> None:
+    env, cfg, state = three_behind(tmp_path)
+    current_and_green(env, "T003", head("T003"))
+    state, _ = resolve(env, cfg, state)  # T003 takes the turn at minute 30: nothing to push
+    assert st.entry(state, "T003")["merge_turn_since"] == st.iso(NOW + timedelta(minutes=30))
+    assert env.updates == [(branch("T003"), head("T003"))]
+    limit = int(cycle.MERGE_LINE_TURN_LIMIT.total_seconds() // 60)
+    env.updates.clear()
+    state, _ = resolve(env, cfg, state, minutes=30 + limit - 1)  # just under the limit: it still holds the turn
+    assert env.updates == [(branch("T003"), head("T003"))]
+    env.updates.clear()
+    out, results = resolve(env, cfg, state, minutes=30 + limit)
+    assert env.updates == [(branch("T001"), head("T001"))] and results["T001"] == "branch_updated"
+    assert st.status(out, "T003") == st.MERGE_PENDING and results["T002"] == "merge_pending"
+
+
+def test_a_turn_holder_whose_checks_never_run_gives_up_the_line_after_its_update(tmp_path: Path) -> None:
+    env, cfg, state = three_behind(tmp_path)
+    state, _ = resolve(env, cfg, state)  # T003 updated to m-t003 at minute 30
+    env.prs["T003"] = dict(open_pr("T003", 3), head_sha="m-t003")  # its checks never start
+    env.by_branch[branch("T003")] = {"status": "current"}
+    limit = int(cycle.MERGE_LINE_TURN_LIMIT.total_seconds() // 60)
+    env.updates.clear()
+    state, _ = resolve(env, cfg, state, minutes=30 + limit - 1)
+    assert env.updates == [(branch("T003"), "m-t003")]
+    env.updates.clear()
+    _, results = resolve(env, cfg, state, minutes=30 + limit)
+    assert env.updates == [(branch("T001"), head("T001"))] and results["T001"] == "branch_updated"
+
+
+def test_a_red_governance_check_never_holds_the_line_but_updates_when_no_one_else_needs_the_turn(tmp_path: Path) -> None:
+    env, cfg, state = three_behind(tmp_path)
+    current_and_green(env, "T003", head("T003"))
+    env.prs["T003"]["checks"].append({"name": "Governance", "sha": head("T003"), "conclusion": "failure"})
+    out, results = resolve(env, cfg, state)
+    assert env.updates == [(branch("T001"), head("T001"))] and st.status(out, "T003") == st.MERGE_PENDING
+    alone = st.new_state()
+    alone["tasks"] = [st.entry(state, "T003")]
+    env.updates.clear()
+    env.by_branch[branch("T003")] = {"status": "pushed", "sha": "m-t003", "main": "main0002"}
+    _, results = resolve(env, cfg, alone)
+    assert env.updates == [(branch("T003"), head("T003"))] and results["T003"] == "branch_updated"
+
+
+def test_a_turn_holder_preempted_by_fix_main_loses_its_turn_time(tmp_path: Path) -> None:
+    env, cfg, state = three_behind(tmp_path)
+    state, _ = resolve(env, cfg, state)
+    assert st.entry(state, "T003")["merge_turn_since"]
+    state = pending(state, st.FIX_MAIN, 40, "fix")
+    env.prs[st.FIX_MAIN] = open_pr(st.FIX_MAIN, 9)
+    out, _ = resolve(env, cfg, state, minutes=41)
+    assert st.entry(out, st.FIX_MAIN)["merge_turn_since"] and not st.entry(out, "T003").get("merge_turn_since")
