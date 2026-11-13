@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T17:59:04Z by runner 5918a2604c7c (manual).
+Updated 2026-11-13T18:05:35Z by runner 5918a2604c7c (actions).
 
 **Building: T357 in progress since 16:24Z; 287 of 423 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T17:59:04Z by runner 5918a2604c7c (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:55Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z
 - **Week:** 25% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:57Z, 1 min before this update
+- **Last run:** 18:05Z, 0 min before this update
 - **Keeper:** last ran 17:57Z, next wake 19:30Z
 
 ## Needs attention
@@ -104,7 +104,6 @@ Updated 2026-11-13T17:59:04Z by runner 5918a2604c7c (manual).
 - 18:44Z Plan: performance track — measurement harness T416–T418, goals as non-blocking (D-3292) (#607)
 - 18:11Z Plan: pre-flight fixes round 11 — T346 context gap, T162 template key, T372 cite, T255/T347 budgets (D-3286) (#605)
 - 18:06Z Plan: T362 takes the keyboard test's load wait (D-3270) (#601)
-- 17:59Z Harness: seven lanes without merge collisions — crate exclusion, add-only conflict resolution, lanes 5→7 (D-3269) (#603)
 
 ## Progress (requirements verified)
 
