@@ -645,32 +645,46 @@ where
     register_optout_followup(&mut registry, settings, &id_secret, pairs.clone())?;
     register_unreachable(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
     register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
-    if let Some(twilio) = twilio_config(settings, pairs.clone())? {
-        register_inbound_retry(
-            &mut registry,
-            settings,
-            (&twilio, &id_secret, &clock),
-            pairs.clone(),
-        )?;
-        register_safety_call(
-            &mut registry,
-            settings,
-            (&twilio, &id_secret, &clock),
-            pairs.clone(),
-        )?;
-        let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
-        let sms = with_status_url(settings, sms);
-        if let Some(vault) = vault_from(settings, pairs.clone())? {
-            let keys = (id_secret.clone(), vault);
-            let sender = outbox_sender(settings, keys, sms.clone(), (&pairs, Arc::clone(&clock)))?;
-            askhava_messaging::api::register_send_due(&mut registry, Arc::new(sender));
-        }
-        let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
-        askhava_messaging::api::register_body_deletes(&mut registry, sms, id_secret, scan_clock);
-        let masked = (twilio.pool().clone(), clock);
-        register_masked(&mut registry, settings, masked, pairs)?;
-    }
+    register_twilio_handlers(&mut registry, settings, (id_secret, clock), pairs)?;
     Ok(registry)
+}
+
+/// The handlers that need the Twilio settings: the inbound retry, the safety call, the outbox
+/// sender (with both vault keys), the body deletes and the masked-line handlers. With no Twilio
+/// settings (dev and CI only) none is registered.
+fn register_twilio_handlers(
+    registry: &mut Registry,
+    settings: &Settings,
+    (id_secret, clock): (SecretString, Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let Some(twilio) = twilio_config(settings, pairs.clone())? else {
+        return Ok(());
+    };
+    register_inbound_retry(
+        registry,
+        settings,
+        (&twilio, &id_secret, &clock),
+        pairs.clone(),
+    )?;
+    register_safety_call(
+        registry,
+        settings,
+        (&twilio, &id_secret, &clock),
+        pairs.clone(),
+    )?;
+    let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
+    let sms = with_status_url(settings, sms);
+    if let Some(vault) = vault_from(settings, pairs.clone())? {
+        let keys = (id_secret.clone(), vault);
+        let sender = outbox_sender(settings, keys, sms.clone(), (&pairs, Arc::clone(&clock)))?;
+        askhava_messaging::api::register_send_due(registry, Arc::new(sender));
+    }
+    let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
+    askhava_messaging::api::register_body_deletes(registry, sms, id_secret, scan_clock);
+    let masked = (twilio.pool().clone(), clock);
+    register_masked(registry, settings, masked, pairs)?;
+    Ok(())
 }
 
 /// `messaging`'s paused-emergency follow-up on the call list only (TXT-023, T279, D-2186).
