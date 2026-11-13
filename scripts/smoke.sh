@@ -64,7 +64,7 @@ step "Secret scan (gitleaks)"
 secret_scan
 
 step "Plan and wording checks"
-for check in trace_spec validate_tasks check_catalog check_legal_docs check_ai_smell check_copy check_code_docs pii_scan check_plan_lock check_rust_rules check_crates; do
+for check in trace_spec validate_tasks check_catalog check_legal_docs check_ai_smell check_copy check_code_docs pii_scan check_plan_lock check_rust_rules check_crates check_conflict_markers; do
   python3 "scripts/${check}.py" >/dev/null || { echo "FAILED: scripts/${check}.py"; python3 "scripts/${check}.py" | tail -20; exit 1; }
   echo "ok  ${check}"
 done
