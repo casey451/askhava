@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T04:18:28Z by runner 394341cd00e8 (actions).
+Updated 2026-11-13T04:18:45Z by runner 9120e378d5c8 (actions).
 
 **Building: T371 in progress since 03:08Z; 272 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -13,7 +13,7 @@ Updated 2026-11-13T04:18:28Z by runner 394341cd00e8 (actions).
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+141 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+143 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
