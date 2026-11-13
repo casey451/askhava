@@ -18,6 +18,10 @@ line of JSON with what changed.
                                     plan change can unblock the task; the attempt counts, the task is
                                     BLOCKED (outbox item T###-plan-gap) until `--requeue --plan-fix`, or a
                                     plain `--requeue` for a mistaken report (D-2859)
+                                    `--outcome api_error --log "session died of an Anthropic API error: <label>"`
+                                    (the safety step, from `python3 -m runner.api_death`): with no hand-in
+                                    and the task branch unmoved, QUEUED with attempts unchanged, at most 2
+                                    in a row; 3 deaths within an hour write outbox item api-deaths (D-3443)
   python3 -m runner --renew         renew this session's lease (every 30 minutes while working)
   python3 -m runner --record-proof N --evidence TEXT
                                     record stage N's named proof for scripts/stage_exit.py
@@ -110,7 +114,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from runner import cycle, keeper as keeper_mod, lanes as lane_policy, model_window, outbox as outbox_mod, proof, state as st
+from runner import api_death, cycle, keeper as keeper_mod, lanes as lane_policy, model_window, outbox as outbox_mod, proof, state as st
 from runner.github_env import PREHANDIN_RED, SMOKE_PRE_LOG, GitHubEnv, alias_for, find_transcripts, smoke_target_dir, state_diff
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -413,8 +417,8 @@ PREHANDIN_HELD = "prehandin_red"  # --after's result when it held the hand-in fo
 def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
     transcripts = list(args.transcript) + find_transcripts(args.worker_agent)
     reviews = list(args.reviewer_transcript) + find_transcripts(args.reviewer_agent)
-    log = args.log
-    outcome = cycle.session_outcome(args.outcome, log)  # a worker's plan-gap report blocks the task for a plan fix (D-2859)
+    outcome, log = api_outcome(args.outcome, args.log, read_handoff(), env)  # free only with nothing handed in or pushed (D-3443)
+    outcome = cycle.session_outcome(outcome, log)  # a worker's plan-gap report blocks the task for a plan fix (D-2859)
     held = str(read_handoff().get("prehandin_log") or "")
     if held and outcome != "submitted":
         log = f"{log}; the last pre-hand-in gate before it: {held}"  # the retry still reads why the gate was red (D-1300)
@@ -426,6 +430,21 @@ def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
             env.log.append(line)
     return cycle.after_handoff(cfg, env, lambda task: env.collect_result(task, outcome, transcripts, reviews, log),
                                hold_red_gate, own_models=fallback)
+
+
+def api_outcome(outcome: str, log: str, handoff: dict[str, Any], env: Any) -> tuple[str, str]:
+    """The outcome and log `--after` hands on for `--outcome api_error` (backup-runner.yml's safety step, when
+    `python3 -m runner.api_death` found an API-error death in the execution file, D-3443): kept only when the
+    hand-off shows no hand-in and origin's task branch (the hand-off's `branch_prepared`) is where the claim
+    left it (`api_death.unpushed`); otherwise `tests_failed`, which counts as today. Other outcomes unchanged."""
+    if outcome != api_death.API_ERROR:
+        return outcome, log
+    branch = str(handoff.get("branch_prepared") or "")
+    tip = env.remote_tip_now(branch) if branch and hasattr(env, "remote_tip_now") else None
+    if api_death.unpushed(handoff, tip):
+        return outcome, log
+    print("runner: API-error death counts: a hand-in was tried or the task branch moved since the claim (D-3443)")
+    return "tests_failed", f"{log}; the attempt counts: a hand-in was tried or the task branch moved (D-3443)"
 
 
 def hold_red_gate(res: cycle.WorkerResult) -> str:
@@ -598,6 +617,10 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
         # The branch is already made, on top of an earlier pushed attempt when there is one: never recreate it (D-583).
         "branch_ready": bool(env.prepared.get("branch_ready")), "base": env.prepared.get("base"),
         "branch_note": branch_note(env.prepared),
+        # Origin's task branch at the claim ('' when absent; None when not prepared), so an API-error death
+        # with the branch unmoved costs no attempt (D-3443).
+        "branch_prepared": env.prepared.get("branch"),
+        "remote_at_start": (env.prepared.get("remote_sha") or "") if env.prepared.get("branch_ready") else None,
         # When the worker must have handed in: the lease's expiry less HAND_IN_MARGIN (D-1440, D-503). The lane
         # lease this session holds; lane "1"'s `lease` only when it holds none (the same fallback as `tid`).
         "hand_in_by": hand_in_by(mine or state.get("lease")),
