@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:56:42Z by runner 31c17d5aa447 (actions).
+Updated 2026-11-13T22:59:53Z by runner 31c17d5aa447 (actions).
 
-**Building: T355 in progress since 22:11Z; 298 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T355 in progress since 22:11Z; 298 of 428 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 298 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 4: T391 claimed 22:36Z, lease until 01:36Z; lane 7: T328 claimed 22:56Z, lease until 01:56Z
-- **Week:** 29% used, 125.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:48Z, 7 min before this update
+- **Week:** 30% used, 125.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:57Z, 2 min before this update
 - **Keeper:** last ran 22:48Z, next wake 01:08Z
 
 ## Needs attention
@@ -79,7 +79,6 @@ Updated 2026-11-13T22:56:42Z by runner 31c17d5aa447 (actions).
 | T418 | Performance: lab Core Web Vitals and Ci's warn-only performa | done | 1 | 50 min | 23:24Z |  |
 | T347 | licensing (harness): remove the handyman split-job check; ea | done | 1 | 52 min | 23:24Z |  |
 | T162 | intake: the one intake order for the five paths and the Span | done | 1 | 36 min | 23:01Z |  |
-| T385 | adapters, licensing and businesses (harness): the sign-up re | done | 3 | 30 min | 22:57Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - 21:01Z Plan: fewer smoke runs, scoped fix rounds, batched reads, decision excerpts (D-3530) (#698)
