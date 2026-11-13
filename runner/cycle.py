@@ -54,6 +54,10 @@ UNREVIEWED_CLOSE = ("Closed by the runner: head `{head}` is not the head its rev
 HEAD_UNPLACED = ("unchecked merge: merged head {head} (merge {merge}) could not be checked against the reviewed head "
                  "for {wait}; a person must look at that merge, then re-queue the task with --requeue (D-584)")
 HEAD_CHECK_WAIT = timedelta(hours=2)  # how long a merged head git cannot place waits before it is BLOCKED (D-584)
+# A lease whose session is a backup-runner run (`actions-<run id>`, backup-runner.yml) is freed early once that
+# run has been completed for DEAD_RUN_GRACE without handing in (dead_sessions, D-3417).
+ACTIONS_SESSION = re.compile(r"^actions-(\d+)$")
+DEAD_RUN_GRACE = timedelta(minutes=10)
 # The marker the runner's GitHubEnv puts in an auto-merge closing comment (runner/github_env.py DROP_MARKER).
 DROP_MARKER = "<!-- askhava-runner: closed to drop auto-merge (D-584) -->"
 # The BLOCKED reasons that are not the task's own fault, the only ones `--requeue` lifts (D-583).
@@ -220,6 +224,12 @@ class Env(Protocol):
     def files_at(self, sha: str, path: str) -> list[str]:
         """The files at or under `path` at that commit (`git ls-tree -r --name-only`), [] when none;
         raises when git cannot read the commit (D-1869). Optional, like text_at."""
+        ...
+
+    def run_status(self, run_id: int) -> tuple[str, str, str] | None:
+        """(status, conclusion, updated_at) of a GitHub Actions run, read from its latest attempt (a re-run
+        keeps the run id), or None when it cannot be read (D-3417). Optional: an Env without it frees a
+        lease only when it expires."""
         ...
 
 
@@ -1355,12 +1365,44 @@ def _finished_by(task: dict[str, Any], pr: dict[str, Any], lease: dict[str, Any]
     return bool(reviewed) and pr.get("head_sha") == reviewed and (task.get("review_lease") or {}).get("session") == lease.get("session")
 
 
+def dead_sessions(state: State, env: Env, own: str, now: datetime) -> set[str]:
+    """The sessions of live leases whose worker's backup-runner run is over without handing in (D-3417).
+
+    Only a session named `actions-<run id>` is looked at, never `own` (this cycle's session). Its run is
+    dead when its latest attempt is `completed` and was last updated at least DEAD_RUN_GRACE ago: a VM lost
+    mid-step ends the job before the always() safety hand-in (backup-runner.yml, D-503) can run, so the
+    lease would otherwise hold its lane for the rest of its 3 hours. Fail closed: a queued, in-progress,
+    waiting or requested run (a re-run reuses the id), an unreadable run, an Env without `run_status` or
+    an answer that does not parse keeps the lease. Nothing here cancels a run."""
+    ask = getattr(env, "run_status", None)
+    if ask is None:
+        return set()
+    dead: set[str] = set()
+    for lease in st.live_leases(state, now).values():
+        session = str(lease.get("session") or "")
+        found = ACTIONS_SESSION.match(session)
+        if found and session != own and _run_dead(ask, int(found.group(1)), now):
+            dead.add(session)
+    return dead
+
+
+def _run_dead(ask: Callable[[int], Any], run_id: int, now: datetime) -> bool:
+    """Whether `ask(run_id)` says the run is completed and was last updated DEAD_RUN_GRACE ago or more;
+    False on any error or unexpected answer (D-3417)."""
+    try:
+        status, _, updated = ask(run_id)
+        return bool(status == "completed" and st.parse(str(updated)) <= now - DEAD_RUN_GRACE)
+    except Exception:  # noqa: BLE001  # reason: any failure keeps the lease (fail closed, D-3417)
+        return False
+
+
 def run_cycle(cfg: Config, env: Env, now: datetime) -> str:
     """Run one cycle and return what it did (for logs and the drills)."""
     env.merge_main()
     base = env.read_state()
     items = env.read_inbox()
     state = st.release_expired(_record_inbox(st.sync_graph(base, cfg.graph), cfg, items, now), now)
+    state = st.release_dead(state, dead_sessions(state, env, cfg.session, now))  # pushed against `base` below (D-3417)
     state = release_proven(record_proofs(cfg, state, now))
     state = _adopt_orphan_pr(base, state, env)
     state = recheck_owned_gaps(state, env)
