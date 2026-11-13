@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T04:41:59Z by runner 67f315d17bab (actions).
+Updated 2026-11-13T04:45:50Z by runner 67f315d17bab (actions).
 
 **Idle since 04:41Z; 273 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T04:41:59Z by runner 67f315d17bab (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 04:41Z (no task in progress)
 - **Week:** 12% used, 166.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:40Z, 1 min before this update
+- **Last run:** 04:42Z, 3 min before this update
 - **Keeper:** last ran 04:40Z, next wake 10:20Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-13T04:41:59Z by runner 67f315d17bab (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T215 | businesses and ops: pest identity by the city list plus atte | MERGE_PENDING | 1 | 20 min | 04:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 20 min | 04:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T371 | licensing and server: the worker fetches and records the dai | done | 1 | 70 min | 04:18Z |  |
 | T427 | WORD-022 phrases catch both brand names in the spec trace, t | MERGE_PENDING | 1 | 29 min | 03:17Z |  |
 | T429 | Copy, voice and AI-smell docs name Laftly | done | 1 | 22 min | 03:13Z |  |
