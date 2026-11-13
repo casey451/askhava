@@ -13,12 +13,22 @@
 //! one High alert at [`EVENTS_PER_HOUR_ALERT`], at most one per kind per hour (SEC-048).
 //! Autoescaping is never turned off (SEC-011): the template scan in `scripts/check_rust_rules.py`
 //! and this file's test guard it.
+//!
+//! [`admit_security_event`] caps the rows before any pool connection is taken (SEC-048, D-2207,
+//! D-3445): at most N rows per minute per (kind, client address as SEC-040 reads it, route), and
+//! at most N per (kind, route) across all addresses, so a forged client-address header buys no
+//! fresh cap. The rest are only counted, one log line per minute with the count and no address.
+//! N is [`configure_security_events`]'s setting, never below [`EVENTS_PER_HOUR_ALERT`], so the
+//! hourly burst alert still fires from the stored rows.
 
-use std::sync::Arc;
+use std::collections::HashMap;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::{Arc, LazyLock, Mutex, PoisonError, RwLock};
 
-use askhava_core::api::Clock;
+use askhava_core::api::{ClientIpPolicy, Clock};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
-use axum::extract::{Form, FromRef, FromRequest, MatchedPath, Request, State};
+use axum::extract::{ConnectInfo, Form, FromRef, FromRequest, MatchedPath, Request, State};
 use axum::http::header::{self, HeaderName, HeaderValue};
 use axum::http::{HeaderMap, StatusCode};
 use axum::middleware::Next;
@@ -58,6 +68,125 @@ const SECURITY_HEADERS: [(HeaderName, &str); 5] = [
 /// TD-SEC-26, D-943).
 pub const EVENTS_PER_HOUR_ALERT: i64 = 50;
 
+/// The default and the floor of the security-event cap: [`EVENTS_PER_HOUR_ALERT`] as a row
+/// count (SEC-048, D-2207).
+pub const SECURITY_EVENT_CAP_FLOOR: u32 = 50;
+const _: () = assert!(SECURITY_EVENT_CAP_FLOOR as i64 == EVENTS_PER_HOUR_ALERT);
+
+/// The rows per minute each cap key may store; [`configure_security_events`] sets it.
+static EVENT_CAP: AtomicU32 = AtomicU32::new(SECURITY_EVENT_CAP_FLOOR);
+/// How the client address is read (SEC-040); unset, the default policy.
+static CLIENT_IP: RwLock<Option<ClientIpPolicy>> = RwLock::new(None);
+/// This process's per-minute counts.
+static WINDOW: LazyLock<Mutex<CapWindow>> = LazyLock::new(Mutex::default);
+
+/// The cap a setting gives: `None` is [`SECURITY_EVENT_CAP_FLOOR`], and a lower value is raised
+/// to it, since the burst alert counts stored rows (SEC-048, D-2207).
+#[must_use]
+pub fn security_event_cap(setting: Option<u32>) -> u32 {
+    setting.map_or(SECURITY_EVENT_CAP_FLOOR, |n| {
+        n.max(SECURITY_EVENT_CAP_FLOOR)
+    })
+}
+
+/// The process-wide setter `server`'s `main` calls once at start-up (D-3134): the cap from
+/// `ASKHAVA_SECURITY_EVENTS_PER_MINUTE` (a value below the floor is raised and logged) and the
+/// SEC-040 client-address policy. Never called (tests), the floor and the default policy hold.
+/// Returns the cap in force.
+pub fn configure_security_events(setting: Option<u32>, client_ip: ClientIpPolicy) -> u32 {
+    let cap = security_event_cap(setting);
+    if let Some(asked) = setting.filter(|&n| n < cap) {
+        tracing::warn!(
+            asked,
+            cap,
+            "security event cap raised to the alert threshold"
+        );
+    }
+    EVENT_CAP.store(cap, Ordering::Relaxed);
+    *CLIENT_IP.write().unwrap_or_else(PoisonError::into_inner) = Some(client_ip);
+    cap
+}
+
+/// The request's client address as SEC-040 takes it: the configured policy over the headers and
+/// the socket peer (`0.0.0.0` when the router was served without connect info).
+#[must_use]
+pub fn security_event_client(request: &Request) -> IpAddr {
+    let peer = request
+        .extensions()
+        .get::<ConnectInfo<SocketAddr>>()
+        .map_or(IpAddr::V4(Ipv4Addr::UNSPECIFIED), |info| info.0.ip());
+    let policy = CLIENT_IP.read().unwrap_or_else(PoisonError::into_inner);
+    match policy.as_ref() {
+        Some(policy) => policy.client_ip(request.headers(), peer),
+        None => ClientIpPolicy::from_pairs(std::iter::empty())
+            .map_or(peer, |policy| policy.client_ip(request.headers(), peer)),
+    }
+}
+
+/// Whether a security event of `kind` from `client` on `route` at `now` may store its row: true
+/// for the first N per (kind, client, route) and per (kind, route) in its minute; the rest are
+/// counted and logged once per minute, count only (SEC-048, SEC-016, D-2207). Checked before any
+/// pool connection is taken; the 403 is the caller's either way. The count of a minute is logged
+/// when the first event of a later minute arrives (no timer, D-3472): after a flood's last minute
+/// it waits for the next security event, and none is lost from the rows or the hourly alert.
+pub fn admit_security_event(
+    kind: SecurityEventKind,
+    client: IpAddr,
+    route: &str,
+    now: Timestamp,
+) -> bool {
+    let minute = now.as_second().div_euclid(60);
+    let cap = EVENT_CAP.load(Ordering::Relaxed);
+    let mut window = WINDOW.lock().unwrap_or_else(PoisonError::into_inner);
+    window.roll(minute);
+    window.admit(minute, (kind, client, route), cap)
+}
+
+/// The per-minute counts. Keys carry their minute, so a request timed by an earlier clock counts
+/// in its own minute; a new latest minute drops keys older than the minute before it and logs
+/// the held counts of earlier minutes (only then, D-3472). A key per address is made only while
+/// its route is under the ceiling, so a minute holds at most N address keys per kind and route.
+#[derive(Default)]
+struct CapWindow {
+    latest: i64,
+    rows: HashMap<(i64, SecurityEventKind, IpAddr, String), u32>,
+    routes: HashMap<(i64, SecurityEventKind, String), u32>,
+    held: HashMap<i64, u64>,
+}
+
+impl CapWindow {
+    fn roll(&mut self, minute: i64) {
+        if minute <= self.latest {
+            return;
+        }
+        self.latest = minute;
+        self.rows.retain(|key, _| key.0 >= minute - 1);
+        self.routes.retain(|key, _| key.0 >= minute - 1);
+        for (held_minute, held) in self.held.extract_if(|key, _| *key < minute) {
+            tracing::warn!(
+                minute = held_minute,
+                held,
+                "security events over the cap counted, not stored"
+            );
+        }
+    }
+
+    fn admit(&mut self, minute: i64, key: (SecurityEventKind, IpAddr, &str), cap: u32) -> bool {
+        let (kind, client, route) = key;
+        let route_key = (minute, kind, route.to_owned());
+        let route_rows = self.routes.get(&route_key).copied().unwrap_or(0);
+        let client_key = (minute, kind, client, route.to_owned());
+        let client_rows = self.rows.get(&client_key).copied().unwrap_or(0);
+        if route_rows >= cap || client_rows >= cap {
+            *self.held.entry(minute).or_default() += 1;
+            return false;
+        }
+        self.routes.insert(route_key, route_rows + 1);
+        self.rows.insert(client_key, client_rows + 1);
+        true
+    }
+}
+
 /// Middleware: the SEC-012 headers on every response, replacing any a handler set.
 pub async fn security_headers(request: Request, next: Next) -> Response {
     let mut response = next.run(request).await;
@@ -95,6 +224,9 @@ impl WebSecurity {
 
     async fn refuse(&self, kind: SecurityEventKind, site: EventSite) -> Response {
         let now = self.clock.now();
+        if !admit_security_event(kind, site.client, &site.route, now) {
+            return StatusCode::FORBIDDEN.into_response();
+        }
         let recorded = match self.pool.acquire().await {
             Ok(mut db) => {
                 // The session's row ID only, never the phone or name behind it (SEC-048).
@@ -127,11 +259,13 @@ impl WebSecurity {
 }
 
 /// The route template, request ID and cookies of a request, never its path (SEC-048, SEC-033).
-/// The cookies only find the session whose row ID is the event's actor reference.
+/// The cookies only find the session whose row ID is the event's actor reference; the client
+/// address only keys the cap and is never stored or logged.
 struct EventSite {
     route: String,
     request_id: Option<Uuid>,
     jar: CookieJar,
+    client: IpAddr,
 }
 
 impl EventSite {
@@ -148,6 +282,7 @@ impl EventSite {
             route: route.to_owned(),
             request_id,
             jar: CookieJar::from_headers(request.headers()),
+            client: security_event_client(request),
         }
     }
 }
@@ -241,7 +376,7 @@ where
 }
 
 /// The kinds of security event SEC-048 logs and counts.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SecurityEventKind {
     /// A failed sign-in step.
     AuthFailed,
