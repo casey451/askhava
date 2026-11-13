@@ -4,14 +4,16 @@
 //! T186 adds [`stored_card`], what a quote card reads of a shown quote (PICK-003, PICK-040);
 //! T047 adds [`list_rows`], the quotes the LIST text states (TXT-031, PICK-002; T384 keeps
 //! withdrawn and unavailable ones in place, PICK-051); T213 adds
-//! [`page_counts`], the business job page's counts and card check (CARD-019, CARD-023).
+//! [`page_counts`], the business job page's counts and card check (CARD-019, CARD-023); T249 adds
+//! [`Reach`], the job's ZIP centroid and each business's radius for CARD-024.
 //!
 //! Nothing here holds a homeowner's detail: a job is its offer towns, its candidate job types and
 //! its scrubbed text (PRIV-001); a business is IDs, codes and ticks.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use askhava_businesses::api::AccountStatus;
+use askhava_catalog::api::{Centroid, miles_between};
 use askhava_core::api::Guarded;
 use askhava_jobs::api::rules::Windows;
 use askhava_licensing::api::{Holder, Job, NoCardReason};
@@ -117,7 +119,8 @@ pub enum Skip {
     NotActive,
     /// It is not verified (CARD-001).
     NotVerified,
-    /// It serves none of the job's Arizona offer towns (CARD-001, CARD-002).
+    /// It serves none of the job's Arizona offer towns and its radius does not reach the job
+    /// (CARD-001, CARD-002, CARD-024).
     OutOfTown,
     /// The job has no candidate job type left.
     NoCandidates,
@@ -157,6 +160,44 @@ pub struct Pool<'a> {
     pub businesses: &'a [Pooled],
     /// The owner pause switches that are on.
     pub pauses: &'a OwnerPauses,
+}
+
+/// How far one business travels for a job: its base ZIP's centroid and its radius in whole miles
+/// (BIZ-058, INT-048). A business whose base ZIP has no centroid has no `BusinessReach`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct BusinessReach {
+    /// The base ZIP's centroid, from `catalog::api::zip_location`.
+    pub base: Centroid,
+    /// The service radius in miles, 1 to 100 (BIZ-058).
+    pub radius_miles: u8,
+}
+
+/// The radius side of matching (CARD-024, D-1519): the job's location and each business's reach,
+/// filled by the caller. The empty `Reach` (no job location, no business reach) is the towns rule
+/// alone, which is what every function without `_in_reach` uses.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct Reach {
+    /// The job's ZIP centroid, or none when the job has no known location.
+    pub job: Option<Centroid>,
+    /// Each business's reach by business ID; a business missing here matches by towns only.
+    pub businesses: BTreeMap<Uuid, BusinessReach>,
+}
+
+impl Reach {
+    /// CARD-024: the job's location is within `business`'s radius of its base (inclusive).
+    #[must_use]
+    pub fn reaches(&self, business: Uuid) -> bool {
+        match (self.job, self.businesses.get(&business)) {
+            (Some(job), Some(r)) => within_radius(miles_between(r.base, job), r.radius_miles),
+            _ => false,
+        }
+    }
+}
+
+/// CARD-024, BIZ-058: a distance in miles is at most the radius; the boundary is inclusive.
+#[must_use]
+pub fn within_radius(miles: f64, radius_miles: u8) -> bool {
+    miles <= f64::from(radius_miles)
 }
 
 /// What the homeowner is told once the trade is known (INT-017, INT-032), counted as CARD-001

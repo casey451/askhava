@@ -11,14 +11,20 @@
 //! never an owner name), filtered through [`capable_pool`] by the job's band floor and recurring
 //! flag; and the owner pauses (`ops::api::is_paused`: the "all" switch and the category's trade
 //! switch). It never names another module's table.
+//!
+//! T249 (CARD-024, D-1519, D-1521): with the job's ZIP, [`card_pool`] also fills the [`Reach`]:
+//! the job's centroid (`catalog::api::zip_location`) and, for every business serving some other
+//! service-area town, its base ZIP centroid and radius (`businesses::api::service_area`); a
+//! business whose radius reaches the job joins the pool by the same reads and skips. A job with no
+//! ZIP or no centroid, or a business with no service area or a base with no centroid, is towns only.
 
 use std::collections::BTreeSet;
 
 use askhava_businesses::api::{
     BusinessesError, Known, business, business_names, businesses_in_towns, capabilities, holding,
-    job_types, may_get_cards, towns,
+    job_types, may_get_cards, service_area, towns,
 };
-use askhava_catalog::api::{Category, category, service_area_towns};
+use askhava_catalog::api::{Category, Centroid, category, service_area_towns, zip_location};
 use askhava_licensing::api::{CityRecord, ClassMap, Job, LicenseKind};
 use askhava_ops::api::{Switch, is_paused};
 use sqlx::PgConnection;
@@ -26,7 +32,9 @@ use sqlx::types::Uuid;
 
 use crate::capability_match::{JobFit, capable_pool};
 use crate::job_text::CardFacts;
-use crate::models::{CardBusiness, CardJob, OfferTown, OwnerPauses, Pooled, QuotesError};
+use crate::models::{
+    BusinessReach, CardBusiness, CardJob, OfferTown, OwnerPauses, Pooled, QuotesError, Reach,
+};
 
 /// What one job's card send needs (CARD-001, CARD-016, CARD-020).
 #[derive(Debug, Clone)]
@@ -39,6 +47,8 @@ pub struct CardPool {
     pub businesses: Vec<Pooled>,
     /// The owner pauses in force.
     pub pauses: OwnerPauses,
+    /// The job's location and the reach of each business in another town (CARD-024).
+    pub reach: Reach,
     /// The category's display name, for the card notice's subject.
     pub category_name: String,
     /// The town's display name, for the card notice's subject.
@@ -51,8 +61,9 @@ fn biz<T>(result: Result<T, BusinessesError>) -> Result<T, QuotesError> {
     result.map_err(|_| QuotesError::Business)
 }
 
-/// CARD-001, CARD-002, CARD-016, BIZ-049, D-2708: the pool for a job in `town` with the stored
-/// card's `facts`, scrubbed `text` and the homeowner's band floor (`None` when unanswered).
+/// CARD-001, CARD-002, CARD-016, CARD-024, BIZ-049, D-2708: the pool for a job in `town` at `zip`
+/// (none: towns only) with the stored card's `facts`, scrubbed `text` and the homeowner's band
+/// floor (`None` when unanswered).
 ///
 /// # Errors
 /// [`QuotesError::Database`] when the catalog, the town or a pause cannot be read (an unknown
@@ -60,7 +71,7 @@ fn biz<T>(result: Result<T, BusinessesError>) -> Result<T, QuotesError> {
 /// [`QuotesError::Business`] when a business cannot be read.
 pub async fn card_pool(
     conn: &mut PgConnection,
-    (town, facts): (&str, &CardFacts),
+    ((town, zip), facts): ((&str, Option<&str>), &CardFacts),
     text: String,
     band_floor_cents: Option<u64>,
 ) -> Result<CardPool, QuotesError> {
@@ -82,7 +93,12 @@ pub async fn card_pool(
         code: place.code.clone(),
         state: place.state.clone(),
     }];
-    let businesses = pooled(conn, std::slice::from_ref(&place.code), fit).await?;
+    let job_at = match zip {
+        Some(z) => zip_location(z).map_err(|_| QuotesError::Database)?,
+        None => None,
+    };
+    let (ids, reach) = reached(conn, &place.code, job_at).await?;
+    let businesses = pooled(conn, &ids, fit).await?;
     let pauses = owner_pauses(conn, &stored).await?;
     let fee_free = facts.candidates.iter().all(|t| fee_free(&stored, t));
     Ok(CardPool {
@@ -94,6 +110,7 @@ pub async fn card_pool(
         },
         businesses,
         pauses,
+        reach,
         category_name: stored.name,
         town_name: place.name,
         fee_free,
@@ -149,15 +166,55 @@ async fn owner_pauses(
     })
 }
 
-/// CARD-001, CON-020, BIZ-049: the businesses serving `towns` that may get cards now, less the
-/// capability skips.
+/// CARD-001, CARD-024, D-1519: the businesses serving `town`, then, for a job at `job_at`, every
+/// business serving another service-area town whose radius reaches it, with its reach.
+async fn reached(
+    conn: &mut PgConnection,
+    town: &str,
+    job_at: Option<Centroid>,
+) -> Result<(Vec<Uuid>, Reach), QuotesError> {
+    let mut ids = biz(businesses_in_towns(conn, &[town.to_owned()]).await)?;
+    let in_town: BTreeSet<Uuid> = ids.iter().copied().collect();
+    let mut reach = Reach {
+        job: job_at,
+        ..Reach::default()
+    };
+    if job_at.is_none() {
+        return Ok((ids, reach));
+    }
+    let others: Vec<String> = service_area_towns()
+        .map_err(|_| QuotesError::Database)?
+        .into_iter()
+        .map(|t| t.code)
+        .filter(|c| c != town)
+        .collect();
+    for id in biz(businesses_in_towns(conn, &others).await)? {
+        if in_town.contains(&id) {
+            continue;
+        }
+        let Some(base) = biz(service_area(conn, id).await)?.and_then(|a| {
+            let radius_miles = a.area.radius_miles();
+            a.location.map(|base| BusinessReach { base, radius_miles })
+        }) else {
+            continue;
+        };
+        reach.businesses.insert(id, base);
+        if reach.reaches(id) {
+            ids.push(id);
+        }
+    }
+    Ok((ids, reach))
+}
+
+/// CARD-001, CON-020, BIZ-049: the businesses `ids` that may get cards now, less the capability
+/// skips.
 async fn pooled(
     conn: &mut PgConnection,
-    towns: &[String],
+    ids: &[Uuid],
     fit: JobFit,
 ) -> Result<Vec<Pooled>, QuotesError> {
     let mut pool = Vec::new();
-    for id in biz(businesses_in_towns(conn, towns).await)? {
+    for &id in ids {
         if let Some(one) = one_business(conn, id).await? {
             pool.push(one);
         }
