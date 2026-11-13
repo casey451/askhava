@@ -57,53 +57,61 @@ mod tests {
     const BUSINESS: Uuid = Uuid::from_u128(0xB0);
     const JOB: Uuid = Uuid::from_u128(0xC0);
 
-    async fn run(db: &mut PgConnection, sql: &'static str, pick: Uuid) {
-        sqlx::query(sql)
-            .bind(pick)
-            .bind(BUSINESS)
-            .bind(JOB)
-            .execute(&mut *db)
-            .await
-            .expect(sql);
-    }
-
     fn pi(pick: Uuid) -> String {
         format!("pi_{}", pick.simple())
     }
 
     async fn intent(db: &mut PgConnection, pick: Uuid) {
-        let sql = "INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents, \
-                   stripe_intent_id, emergency, created_at) VALUES ($1, $2, $3, 7500, \
-                   'pi_' || replace($1::text, '-', ''), true, now())";
-        run(db, sql, pick).await;
+        sqlx::query!(
+            "INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents, \
+             stripe_intent_id, emergency, created_at) VALUES ($1, $2, $3, 7500, $4, true, now())",
+            pick,
+            BUSINESS,
+            JOB,
+            pi(pick)
+        )
+        .execute(&mut *db)
+        .await
+        .expect("intent");
+    }
+
+    async fn end(db: &mut PgConnection, pick: Uuid) {
+        sqlx::query!(
+            "UPDATE payments.pick_intent SET ended_at = now() WHERE pick_id = $1",
+            pick
+        )
+        .execute(&mut *db)
+        .await
+        .expect("end");
     }
 
     async fn attempt(db: &mut PgConnection, pick: Uuid, try_no: i32, status: &str) {
-        sqlx::query(
+        sqlx::query!(
             "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at) \
              VALUES ($1, $2, gen_random_uuid(), $3, now())",
+            pick,
+            try_no,
+            status
         )
-        .bind(pick)
-        .bind(try_no)
-        .bind(status)
         .execute(&mut *db)
         .await
         .expect("attempt");
     }
 
     async fn evidence(db: &mut PgConnection, pick: Uuid, (stripe, cents): (&str, i64)) {
-        sqlx::query(
+        sqlx::query!(
             "INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, \
              try_no, idempotency_label, stripe_customer_id, stripe_intent_id, amount_cents, \
              pressed_at, charged_at) SELECT $1, $2, $3, press_id, try_no, \
-             'pick-' || $1::text || '-try' || try_no, 'cus_fake1', $4, $5, now(), now() \
-             FROM payments.charge_attempt WHERE pick_id = $1 ORDER BY try_no LIMIT 1",
+             $6, 'cus_fake1', $4, $5, now(), now() \
+             FROM payments.charge_attempt WHERE pick_id = $1 AND try_no = 1",
+            pick,
+            BUSINESS,
+            JOB,
+            stripe,
+            cents,
+            format!("pick-{pick}-try1")
         )
-        .bind(pick)
-        .bind(BUSINESS)
-        .bind(JOB)
-        .bind(stripe)
-        .bind(cents)
         .execute(&mut *db)
         .await
         .expect("evidence");
@@ -148,9 +156,7 @@ mod tests {
         let mut db = pool.acquire().await.expect("connection");
         let ended = Uuid::from_u128(10);
         paid(&mut db, ended).await;
-        let end = "UPDATE payments.pick_intent SET ended_at = now() WHERE pick_id = $1 \
-                   AND business_id = $2 AND job_id = $3";
-        run(&mut db, end, ended).await;
+        end(&mut db, ended).await;
         assert_eq!(cleared(&mut db, ended).await, Err(ReleaseError::PickEnded));
         let statuses = [
             "sending",
@@ -163,12 +169,12 @@ mod tests {
         for (n, status) in (11_u128..).zip(statuses) {
             let pick = Uuid::from_u128(n);
             paid(&mut db, pick).await;
-            sqlx::query(
+            sqlx::query!(
                 "INSERT INTO payments.refund (pick_id, trigger, status, tries, requested_at) \
                  VALUES ($1, 'unreachable', $2, 1, now())",
+                pick,
+                status
             )
-            .bind(pick)
-            .bind(status)
             .execute(&mut *db)
             .await
             .expect("refund");
@@ -180,10 +186,14 @@ mod tests {
         }
         let disputed = Uuid::from_u128(20);
         paid(&mut db, disputed).await;
-        let dispute = "INSERT INTO payments.dispute (stripe_dispute_id, pick_id, amount_cents, \
-                       due_at, opened_at) SELECT 'dp_fake20', $1, 7500, now(), now() \
-                       WHERE $2::uuid IS NOT NULL AND $3::uuid IS NOT NULL";
-        run(&mut db, dispute, disputed).await;
+        sqlx::query!(
+            "INSERT INTO payments.dispute (stripe_dispute_id, pick_id, amount_cents, due_at, \
+             opened_at) VALUES ('dp_fake20', $1, 7500, now(), now())",
+            disputed
+        )
+        .execute(&mut *db)
+        .await
+        .expect("dispute");
         assert_eq!(
             cleared(&mut db, disputed).await,
             Err(ReleaseError::PickEnded)
@@ -228,21 +238,19 @@ mod tests {
         let pick = Uuid::from_u128(40);
         intent(&mut db, pick).await;
         attempt(&mut db, pick, 1, "declined").await;
-        let end = "UPDATE payments.pick_intent SET ended_at = now() WHERE pick_id = $1 \
-                   AND business_id = $2 AND job_id = $3";
-        run(&mut db, end, pick).await;
+        end(&mut db, pick).await;
         assert_eq!(cleared(&mut db, pick).await, Err(ReleaseError::PickEnded));
     }
 
     async fn pick_fee(db: &mut PgConnection, pick: Uuid, job: Uuid) {
-        sqlx::query(
+        sqlx::query!(
             "INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, \
              amount_cents, terms_version, fixed_at) VALUES ($1, $2, $3, 'tiers', 'fee_free', 0, \
              1, now())",
+            pick,
+            BUSINESS,
+            job
         )
-        .bind(pick)
-        .bind(BUSINESS)
-        .bind(job)
         .execute(&mut *db)
         .await
         .expect("pick fee");
@@ -255,9 +263,15 @@ mod tests {
         let other_job = Uuid::from_u128(0xC1);
         pick_fee(&mut db, free, JOB).await;
         pick_fee(&mut db, unrecorded, other_job).await;
-        let entry = "INSERT INTO payments.ledger_entry (kind, business_id, job_id, amount_cents, \
-                     idempotency_key) SELECT 'free-first-win', $2, $3, 0, 'fake.' || $1::text";
-        run(&mut db, entry, free).await;
+        sqlx::query!(
+            "INSERT INTO payments.ledger_entry (kind, business_id, job_id, amount_cents, \
+             idempotency_key) VALUES ('free-first-win', $1, $2, 0, 'fake.t255')",
+            BUSINESS,
+            JOB
+        )
+        .execute(&mut *db)
+        .await
+        .expect("ledger");
         let done = cleared(&mut db, free).await.expect("free");
         assert_eq!((done.pick(), done.basis()), (free, ReleaseBasis::NoFeeDue));
         assert_eq!(
@@ -271,7 +285,7 @@ mod tests {
         let mut db = pool.acquire().await.expect("connection");
         let pick = Uuid::from_u128(60);
         paid(&mut db, pick).await;
-        sqlx::query("SET default_transaction_read_only = on")
+        sqlx::query!("SET default_transaction_read_only = on")
             .execute(&mut *db)
             .await
             .expect("read only");
@@ -281,11 +295,11 @@ mod tests {
     #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
     async fn td_int_39_a_failed_fee_read_is_a_database_error(pool: PgPool) {
         let mut db = pool.acquire().await.expect("connection");
-        sqlx::query("REVOKE SELECT ON payments.pick_fee FROM askhava_app")
+        sqlx::query!("REVOKE SELECT ON payments.pick_fee FROM askhava_app")
             .execute(&mut *db)
             .await
             .expect("revoke");
-        sqlx::query("SET ROLE askhava_app")
+        sqlx::query!("SET ROLE askhava_app")
             .execute(&mut *db)
             .await
             .expect("role");

@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "GRANT SELECT, UPDATE ON privacy.contact TO askhava_migrator",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "45fe91cd50d17fb312756a726e8a4b7b1b64dc30e53d25b4b7e3d841a027ce94"
+}

@@ -135,6 +135,18 @@ mod tests {
         ]
     }
 
+    async fn index(db: &mut sqlx::PgConnection, id: Uuid) -> Vec<(String, Vec<u8>)> {
+        let rows = sqlx::query!(
+            "SELECT purpose, digest FROM privacy.contact_index WHERE contact_id = $1 \
+             ORDER BY purpose",
+            id
+        )
+        .fetch_all(&mut *db)
+        .await
+        .expect("index");
+        rows.into_iter().map(|r| (r.purpose, r.digest)).collect()
+    }
+
     #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
     async fn td_priv_30_unknown_and_phone_less_contacts_are_refused(pool: PgPool) {
         let (vault, mut db) = (vault(), pool.acquire().await.expect("connection"));
@@ -152,13 +164,7 @@ mod tests {
     async fn td_priv_30_a_stored_contact_gets_both_fields_and_one_row_each(pool: PgPool) {
         let (vault, mut db) = (vault(), pool.acquire().await.expect("connection"));
         let id = stored(&mut db, &vault, Some("928-555-0181")).await;
-        let index = "SELECT purpose, digest FROM privacy.contact_index WHERE contact_id = $1 \
-                     ORDER BY purpose";
-        let before: Vec<(String, Vec<u8>)> = sqlx::query_as(index)
-            .bind(id)
-            .fetch_all(&mut *db)
-            .await
-            .expect("index");
+        let before = index(&mut db, id).await;
         set_name_address(&mut db, &vault, id, &s("Testa"), &s("1 Fake St"))
             .await
             .expect("set");
@@ -173,11 +179,7 @@ mod tests {
         let got = plain(&mut db, &vault, id).await;
         let want = ["Testo", "2 Fake Ave", "+19285550181", "testa@example.com"];
         assert_eq!(got, want.map(|v| Some(v.to_owned())));
-        let after: Vec<(String, Vec<u8>)> = sqlx::query_as(index)
-            .bind(id)
-            .fetch_all(&mut *db)
-            .await
-            .expect("index");
+        let after = index(&mut db, id).await;
         assert_eq!(before, after);
     }
 
@@ -189,12 +191,12 @@ mod tests {
         set_name_address(&mut db, &vault, id, &s("Testa"), &s("1 Fake St"))
             .await
             .expect("set");
-        sqlx::query(
+        sqlx::query!(
             "UPDATE privacy.contact SET address = (SELECT address FROM privacy.contact \
              WHERE id = $1) WHERE id = $2",
+            id,
+            other
         )
-        .bind(id)
-        .bind(other)
         .execute(&mut *db)
         .await
         .expect("copy");
@@ -226,21 +228,26 @@ mod tests {
     async fn td_priv_30_a_failed_audit_write_leaves_the_row(pool: PgPool) {
         let (vault, mut db) = (vault(), pool.acquire().await.expect("connection"));
         let id = stored(&mut db, &vault, Some("928-555-0185")).await;
-        for sql in [
-            "CREATE FUNCTION public.t255_refuse() RETURNS trigger LANGUAGE plpgsql AS \
-             $$ BEGIN IF NEW.field = 'address' THEN RAISE EXCEPTION 'fake audit failure'; \
-             END IF; RETURN NEW; END $$",
-            "CREATE TRIGGER t255_refuse BEFORE INSERT ON ops.audit_log FOR EACH ROW \
-             EXECUTE FUNCTION public.t255_refuse()",
-        ] {
-            sqlx::query(sql).execute(&mut *db).await.expect("trigger");
-        }
-        let set = set_name_address(&mut db, &vault, id, &s("Testa"), &s("1 Fake St")).await;
-        assert!(matches!(set, Err(VaultError::Audit)));
-        sqlx::query("DROP TRIGGER t255_refuse ON ops.audit_log")
+        // A role that may update the contact but write no audit row: the migrator role has no
+        // grant in the test database but these two (D-3352).
+        sqlx::query!("GRANT USAGE ON SCHEMA privacy TO askhava_migrator")
             .execute(&mut *db)
             .await
-            .expect("drop");
+            .expect("usage");
+        sqlx::query!("GRANT SELECT, UPDATE ON privacy.contact TO askhava_migrator")
+            .execute(&mut *db)
+            .await
+            .expect("grant");
+        sqlx::query!("SET ROLE askhava_migrator")
+            .execute(&mut *db)
+            .await
+            .expect("role");
+        let set = set_name_address(&mut db, &vault, id, &s("Testa"), &s("1 Fake St")).await;
+        assert!(matches!(set, Err(VaultError::Audit)));
+        sqlx::query!("RESET ROLE")
+            .execute(&mut *db)
+            .await
+            .expect("reset");
         assert!(sets(&mut db).await.is_empty());
         let [name, address, ..] = plain(&mut db, &vault, id).await;
         assert_eq!((name, address), (None, None));
@@ -249,7 +256,7 @@ mod tests {
     #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
     async fn td_priv_30_a_broken_connection_is_a_database_error(pool: PgPool) {
         let (vault, mut db) = (vault(), pool.acquire().await.expect("connection"));
-        sqlx::query("SET default_transaction_read_only = on")
+        sqlx::query!("SET default_transaction_read_only = on")
             .execute(&mut *db)
             .await
             .expect("read only");

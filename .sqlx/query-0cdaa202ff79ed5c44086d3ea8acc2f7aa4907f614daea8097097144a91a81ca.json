@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE privacy.contact SET address = (SELECT address FROM privacy.contact WHERE id = $1) WHERE id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0cdaa202ff79ed5c44086d3ea8acc2f7aa4907f614daea8097097144a91a81ca"
+}

@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, try_no, idempotency_label, stripe_customer_id, stripe_intent_id, amount_cents, pressed_at, charged_at) SELECT $1, $2, $3, press_id, try_no, $6, 'cus_fake1', $4, $5, now(), now() FROM payments.charge_attempt WHERE pick_id = $1 AND try_no = 1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "271a1abc74cdfc84eb0f8f071a6680e19e8d05c80648d9889252221a9e1da995"
+}

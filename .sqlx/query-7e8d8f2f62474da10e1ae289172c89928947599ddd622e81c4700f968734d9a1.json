@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "GRANT USAGE ON SCHEMA privacy TO askhava_migrator",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "7e8d8f2f62474da10e1ae289172c89928947599ddd622e81c4700f968734d9a1"
+}

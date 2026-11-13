@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.pick_intent SET ended_at = now() WHERE pick_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "09fb72e4cafe218dec9b1f0b2fca51416fc62a41fc6e744d45dc4754e401a45e"
+}
