@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T13:16:45Z by runner 9889e5f5ff2d (actions).
+Updated 2026-11-13T13:19:48Z by runner 480741987da0 (manual).
 
 **Idle since 13:08Z; 281 of 420 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-13T13:16:45Z by runner 9889e5f5ff2d (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 13:08Z (no task in progress)
 - **Week:** 17% used, 157.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:09Z, 7 min before this update
+- **Last run:** 13:18Z, 1 min before this update
 - **Keeper:** last ran 12:53Z, next wake 13:13Z
 
 ## Needs attention
 - PLAN GAP T266 (since 2026-11-13T13:09:16Z, no attempt used; a plan change fixes it): T266: dependency T255 is DONE but its owned file app/intake/src/address_wait.rs is not on main; T266: dependency T255 is DONE but its owned file app/payments/src/reclear.rs is not on main; T266: dependency T255 is DONE but its owned file app/picks/src/address_wait_check.rs is not on main; T266: dependency T255 is DONE but its owned file app/server/tests/address_rerelease.rs is not on main; T266: dependency T255 is DONE but its owned file app/privacy/src/contact_fields.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 23 problem(s) on tasks still to run (+152 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+155 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
