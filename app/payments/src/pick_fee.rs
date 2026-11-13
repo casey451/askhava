@@ -9,13 +9,17 @@
 //! reads it back: `open_intent` and `confirm_and_pay` charge only that amount, `may_confirm` holds
 //! its mode against the terms in force and `record_fee_at_confirm` writes it to the ledger. The
 //! table is insert-only for the app role, so nothing changes a fee after the pick.
+//!
+//! [`required_version`] lifts the stored version to at least [`AUTHORIZATION_VERSION`], so a
+//! fee-mode switch always lands above every version a card save stored; [`authorized`] is the pure
+//! Confirm gate: the version the terms need and the current wording, checked by its text (D-3397).
 
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
-use crate::models::BusinessId;
+use crate::models::{AUTHORIZATION_VERSION, BusinessId};
 use crate::rules::{Fee, FeeMode, FeeTerms, PickedFee};
 
 /// Why the fee terms or a pick's fee could not be read or fixed. No variant carries a value.
@@ -50,6 +54,29 @@ pub struct StoredPickFee {
     pub terms_version: i32,
 }
 
+/// FEE-007, FEE-015, D-072, D-3397: the authorization version the terms need, from the `stored`
+/// `payments.fee_terms` number: the larger of it and [`AUTHORIZATION_VERSION`] (the version a card
+/// save stores), so a fee-mode switch from it always rises above every version a business holds.
+#[must_use]
+pub const fn required_version(stored: i32) -> i32 {
+    if stored > AUTHORIZATION_VERSION {
+        stored
+    } else {
+        AUTHORIZATION_VERSION
+    }
+}
+
+/// FEE-007, FEE-015, D-072, D-3397: whether a business with the `accepted` (version, text) rows
+/// may be charged: its highest accepted version is at least `required` and at least one row's
+/// text equals `current_text` byte for byte. A version alone misses a wording change that reuses
+/// a number a mode switch already handed out, so the wording is checked by its text.
+#[must_use]
+pub fn authorized(accepted: &[(i32, &str)], required: i32, current_text: &str) -> bool {
+    let highest = accepted.iter().map(|&(version, _)| version).max();
+    highest.is_some_and(|version| version >= required)
+        && accepted.iter().any(|&(_, text)| text == current_text)
+}
+
 fn mode_of(code: &str) -> Result<FeeMode, PickFeeError> {
     [FeeMode::Tiers, FeeMode::Flat]
         .into_iter()
@@ -57,8 +84,9 @@ fn mode_of(code: &str) -> Result<FeeMode, PickFeeError> {
         .ok_or(PickFeeError::Database)
 }
 
-/// FEE-007, D-072, D-1871: the fee terms in force, from the one `payments.fee_terms` row; `picks`,
-/// the Confirm page and the owner switch read the terms only here.
+/// FEE-007, D-072, D-1871, D-3397: the fee terms in force, from the one `payments.fee_terms` row,
+/// its version lifted by [`required_version`]; `picks`, the Confirm page and the owner switch read
+/// the terms only here.
 ///
 /// # Errors
 ///
@@ -70,7 +98,7 @@ pub async fn fee_terms_in_force(conn: &mut PgConnection) -> Result<FeeTerms, Pic
         .map_err(|_| PickFeeError::Database)?;
     Ok(FeeTerms::new(
         mode_of(&row.mode)?,
-        row.authorization_version,
+        required_version(row.authorization_version),
     ))
 }
 
@@ -83,7 +111,7 @@ async fn terms_locked(conn: &mut PgConnection) -> Result<FeeTerms, PickFeeError>
         .map_err(|_| PickFeeError::Database)?;
     Ok(FeeTerms::new(
         mode_of(&row.mode)?,
-        row.authorization_version,
+        required_version(row.authorization_version),
     ))
 }
 

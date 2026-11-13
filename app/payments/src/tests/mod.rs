@@ -1,5 +1,6 @@
 //! In-crate tests for `askhava-payments`.
 
+mod authorization_floor;
 mod charge;
 mod coverage_margin;
 mod fee_at_pick;
