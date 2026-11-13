@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T14:48:53Z by runner 128fb2f384de (actions).
+Updated 2026-11-13T14:49:12Z by runner 128fb2f384de (actions).
 
 **Building: T330 in progress since 14:41Z; 282 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-13T14:48:53Z by runner 128fb2f384de (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T330 claimed 14:41Z, lease until 17:41Z; lane 5: T266 claimed 14:42Z, lease until 17:42Z
 - **Week:** 19% used, 152.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:47Z, 1 min before this update
-- **Keeper:** last ran 14:45Z, next wake 17:44Z
+- **Last run:** 14:49Z, 0 min before this update
+- **Keeper:** last ran 14:49Z, next wake 17:44Z
 
 ## Needs attention
 - PLAN GAP T319 (since 2026-11-13T13:50:53Z, no attempt used; a plan change fixes it): T319: tests/budget.rs is named by D-3445, but no task owns it and it does not exist
@@ -104,7 +104,6 @@ Updated 2026-11-13T14:48:53Z by runner 128fb2f384de (actions).
 - 17:59Z Harness: seven lanes without merge collisions — crate exclusion, add-only conflict resolution, lanes 5→7 (D-3269) (#603)
 - 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
 - 15:45Z Plan: new T412/T415 store business sign-in addresses and phones in the vault for T280, T397, T302 and T364 (D-3262) (#596)
-- 14:48Z Plan: trim T251 to its context limit (D-3256) (#590)
 
 ## Progress (requirements verified)
 
