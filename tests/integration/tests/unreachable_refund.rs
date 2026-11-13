@@ -7,7 +7,7 @@
 
 use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_calls::api::{AnsweredBy, Caller as CallCaller, LoggedCall};
-use askhava_core::api::Guarded;
+use askhava_core::api::{Guarded, brand};
 use askhava_jobs::api::{JobStatus, current, move_to};
 use askhava_messaging::api::{
     AreaCodes, IMPORTANT_TEMPLATES, Kind, Language, SendWindow, keyword, render,
@@ -210,7 +210,8 @@ fn td_txt_10_td_txt_13_the_no_call_reminders() {
     );
     let job = [("job", "41")];
     let es = render(REMINDER_TEMPLATE, Language::Es, true, &job).expect("es");
-    assert!(es.body.starts_with("Ask Hava: Trabajo 41"), "{}", es.body);
+    let opening = format!("{}: Trabajo 41", brand().es().short_name());
+    assert!(es.body.starts_with(&opening), "{}", es.body);
     assert_eq!(reminder_template(Contact::Email), REMINDER_EMAIL_TEMPLATE);
     for template in [
         reminder_template(Contact::Call),
