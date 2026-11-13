@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT business_id AS \"business!\", license_number AS \"number!\" FROM (\n             SELECT DISTINCT ON (business_id) business_id, license_number\n             FROM licensing.license_check ORDER BY business_id, checked_at DESC, id DESC) latest\n           WHERE license_number = ANY($1) ORDER BY business_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business!",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "licensing.license_check",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "number!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.license_check",
+            "name": "license_number"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "e34dde0a7262b00748337bc366d24de3915491caee4a0c2d147331843e16b1f4"
+}

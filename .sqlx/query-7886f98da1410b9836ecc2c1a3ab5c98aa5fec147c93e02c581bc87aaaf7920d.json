@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH n AS (\n             SELECT license_number, array_agg(DISTINCT class_code ORDER BY class_code) AS classes,\n                    min(list_date) AS list_date\n             FROM licensing.agency_record\n             WHERE import_id = $1 AND status = 'active' AND license_number > $2\n             GROUP BY license_number),\n           c AS (\n             SELECT n.license_number, n.classes AS new_classes,\n                    COALESCE((SELECT array_agg(DISTINCT r.class_code ORDER BY r.class_code)\n                              FROM licensing.agency_record r\n                              WHERE r.license_number = n.license_number AND r.status = 'active'\n                                AND r.list_date = (\n                                  SELECT max(e.list_date) FROM licensing.agency_record e\n                                  WHERE e.license_number = n.license_number\n                                    AND e.status = 'active' AND e.list_date < n.list_date)),\n                             '{}'::text[]) AS old_classes\n             FROM n)\n           SELECT license_number AS \"number!\", old_classes AS \"old!\", new_classes AS \"new!\"\n           FROM c WHERE new_classes IS DISTINCT FROM old_classes\n           ORDER BY license_number LIMIT $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "number!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.agency_record",
+            "name": "license_number"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "old!",
+        "type_info": "TextArray",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "new!",
+        "type_info": "TextArray",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "7886f98da1410b9836ecc2c1a3ab5c98aa5fec147c93e02c581bc87aaaf7920d"
+}

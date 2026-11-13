@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT field FROM ops.audit_log WHERE subject_kind = $1 AND subject_id = $2 AND (to_status IS NOT NULL OR field = $3) ORDER BY id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "field",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.audit_log",
+            "name": "field"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "fda5e56370ad2c9ee576687fe555959fa2e35e76923379549a9218988342288d"
+}
