@@ -1,23 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-13T21:18:37Z by runner 4a8b6490731d (actions).
+Updated 2026-11-13T21:18:43Z by runner 7bc9d7732971 (actions).
 
-**Building: T412 in progress since 19:27Z; 292 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T354 in progress since 20:29Z; 292 of 425 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 292 of 427 build tasks (owner gates not counted)
+- **Tasks done:** 292 of 425 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T354 claimed 20:29Z, lease until 23:29Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
+- **Lane:** lane 3: T354 claimed 20:29Z, lease until 23:29Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
 - **Week:** 28% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:18Z, 0 min before this update
 - **Keeper:** last ran 21:18Z, next wake 22:30Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+185 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 28 problem(s) on tasks still to run (+180 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T412 | privacy: each business member's sign-in address and texting  | MERGE_PENDING | 1 | 111 min | 21:18Z |  |
 | T442 | mutation (harness): every named mutant is killed by a determ | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
 | T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 1 | 23 min | 20:39Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T271 | server and calls (harness): the dialed leg asks for status c | MERGE_PENDING | 1 | 53 min | 20:22Z |  |
@@ -109,7 +110,7 @@ Updated 2026-11-13T21:18:37Z by runner 4a8b6490731d (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 280 of 733 (38.2%) · partial 293 · unstarted 160
-**Tasks merged (throughput only):** 292 of 427
+**Tasks merged (throughput only):** 292 of 425
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -153,9 +154,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T412 (lease until 2026-11-13T22:27:09Z)
 - lane 3: T354 (lease until 2026-11-13T23:29:22Z)
 - lane 5: T335 (lease until 2026-11-13T23:20:34Z)
 
 ## Last usage reading
-- {"task": "T442", "at": "2026-11-13T20:40:54Z", "output_tokens": 30183, "input_tokens": 152, "cache_read_input_tokens": 3410331, "cache_creation_input_tokens": 141834}
+- {"task": "T412", "at": "2026-11-13T21:18:20Z", "input_tokens": 668, "cache_read_input_tokens": 20436027, "cache_creation_input_tokens": 701929, "output_tokens": 215002}
