@@ -2663,3 +2663,8 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## T255 gets back an attempt lost to an outage (D-3442, November 13)
 
 - T255's last attempt ended after 26 minutes because the AI service refused the worker's login (a 403 error at its front door), not because of anything in the task. Fable, deciding for you overnight, gave the attempt back once. If the retry fails for any reason, T255 waits for you. A later change will make this kind of outage not use up an attempt automatically. Nothing needs you now.
+
+## An AI-service outage no longer uses up a task's attempts (D-3443, November 13)
+
+- This morning three tasks each lost an attempt because the AI service refused the worker's login, not because of anything in the work. Now, when a worker's session is cut off by an error from the AI service itself (a refused login, an overloaded or failing service) before it handed anything in or pushed anything, the task simply goes back in the queue with its attempts untouched. A task gets this at most twice in a row; a third such cut-off counts as usual, so nothing can loop forever.
+- If three sessions are cut off this way within an hour, you get an outbox note: that usually means the build's AI login needs a look or the service is down. Nothing needs you now.
