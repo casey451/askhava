@@ -7,23 +7,19 @@ Ask Hava's code is written, changed and fixed by AI sessions, so it has to expla
 1. `CLAUDE.md` at the root: the rules and the reading order.
 2. `docs/README.md` (written by T141): a map of the repository, one line per folder and per document, and the common changes with the files each one touches.
 3. `docs/architecture.md`: the modules, what each owns, and the dependency rules.
-4. The crate's own `CLAUDE.md` (section 2) for the module it is changing.
+4. The crate's own `CLAUDE.md` (section 2) for the module it is changing, and the lines of its `NOTES.md` that name the requirement IDs at hand.
 5. The spec file for the requirement (`docs/spec/*.md`), found by its ID.
 
-## 2. Every crate has a `CLAUDE.md`
+## 2. Every crate has a short `CLAUDE.md` and a greppable `NOTES.md`
 
-Each crate under `app/` keeps a short `CLAUDE.md` beside its `Cargo.toml` (Claude Code loads it on its own when a session works in that folder). It is at most 120 lines and has these six headings, in this order:
+Claude Code loads a crate's `CLAUDE.md` into every session that reads a file in the crate, so it stays small and the detail sits beside it, read by grep (D-3474). Both are shared paths.
 
-- `## Purpose`: two or three sentences on what the module is for, in plain words.
-- `## What it owns`: its tables, its files and its public functions, one line each.
-- `## Rules it enforces`: each requirement ID it implements, with the function or file that does it (`FEE-039: payments::fees::recurring_basis`).
-- `## Never break`: the invariants a change must keep, each with the test that guards it (for example, "the homeowner's phone never leaves the vault: `tests/security/tests/vault_readers.rs`").
-- `## How to change`: recipes for the changes people will actually ask for (change a fee, add a job type, edit a text, add a setting), each naming the files to touch, the spec line to update and the tests to run.
-- `## Tests that guard it`: the test files and test-design IDs for this module.
+- **`CLAUDE.md`**: at most 8,192 bytes and 120 lines, headings in this order: `## Purpose` (a sentence or two), `## Never break` (one bullet per invariant, each with its guarding test, for example "the homeowner's phone never leaves the vault: `tests/security/tests/vault_readers.rs`"; a long one may end "More: `(never N)` in NOTES.md.") and `## Detail` (the pointer to `NOTES.md`). The prompt pastes the module's `## Never break` list.
+- **`NOTES.md`**: everything else (owned tables, files and public functions; each requirement ID with the function that applies it; change recipes; tests and test-design IDs; decision IDs behind anything surprising). Line 1 is a `# ` title; every other line is one entry, `- [REQ-IDS or -] (section) text`, the section one of `purpose`, `owns`, `rules`, `never N`, `change`, `tests`, the text at most 400 characters, the line at most 600. Grep it (`grep -n 'FEE-039' app/payments/NOTES.md`); never read it whole.
 
-Any task that adds or changes behavior in a crate updates that crate's `CLAUDE.md` in the same pull request. Every crate's `CLAUDE.md` is a shared path, like its `Cargo.toml`.
+A task that adds or changes behavior adds one `NOTES.md` line per new fact at its end, and a `## Never break` bullet only for a new invariant. It never lengthens or joins another task's line, and edits a line only when its change makes that line false. `.gitattributes` union-merges `app/*/NOTES.md`, so two tasks that append both keep their lines. Until T437 makes `NOTES.md` a shared path (`grep -q NOTES.md runner/verify.py`), entry lines go at the end of the crate's `CLAUDE.md`, after the `## Detail` paragraph; entries naming the brand also wait there, since the brand-literal guard skips only `CLAUDE.md` until T437; `python3 scripts/split_crate_doc.py --sweep app/<crate>` moves them. That script made the split; `--verify <ref>` checks every word of the old file survived.
 
-A task adds or edits only the lines its change needs. Condensing or restructuring a crate's `CLAUDE.md` (joining bullets, reordering, rewording lines it does not own, as D-3304 and D-3308 did) is a separate change, made only while no task that writes that crate is in flight (IN_PROGRESS or MERGE_PENDING in `kit/state.json` on `claude/kit-state`); its decision entry names the check. A rewrite under a running task's edits cannot be merged by insertion and forces a resync (D-3386, D-3444).
+Condensing or restructuring either file (joining entries, reordering, rewording lines it does not own, as D-3304 and D-3308 did) is a separate change, made only while no task that writes that crate is in flight (IN_PROGRESS or MERGE_PENDING in `kit/state.json` on `claude/kit-state`); a rewrite under a running task's edits forces a resync (D-3386, D-3444).
 
 ## 3. Every Rust file opens with a module comment
 
@@ -47,7 +43,7 @@ The first lines of every `.rs` file under `app/` and `tests/` are `//!` comments
 
 ## 5. Every requirement can be traced
 
-- Every requirement ID mentioned in code or a crate `CLAUDE.md` must exist in `docs/spec/`.
+- Every requirement ID mentioned in code or a crate `CLAUDE.md` or `NOTES.md` must exist in `docs/spec/`.
 - Once every file a build task owns exists, each requirement listed for that task in `kit/tasks.json` must be named somewhere in those files. That keeps spec, code and tests joined up as the build goes.
 - Tests already carry their test-design IDs (`docs/test-design.md`, rule 2).
 
@@ -58,8 +54,15 @@ The first lines of every `.rs` file under `app/` and `tests/` are `//!` comments
 
 ## 7. Decisions stay findable
 
-A change of behavior goes in `docs/decisions.md` (question, choice, reason, source line) and `docs/architecture.md` in the same pull request. A crate's `CLAUDE.md` links to the decision IDs behind anything surprising, so a later session doesn't "fix" a deliberate choice.
+A change of behavior goes in `docs/decisions.md` (question, choice, reason, source line) and `docs/architecture.md` in the same pull request. A crate's `NOTES.md` links to the decision IDs behind anything surprising, so a later session doesn't "fix" a deliberate choice.
 
 ## 8. Checked at the end by a session that knows nothing
 
 Before "Finished", T171 runs a cold-start drill: a fresh session given only the repository makes three typical changes on a throwaway branch and records every place it had to guess. Each gap is fixed in the docs before the build is called finished.
+
+## 9. Code files every task adds to stay append-only
+
+As in section 2, a shared file merges by itself only when each task adds whole lines of its own (D-3474).
+
+- `src/api.rs` holds its `//!` comment and one-line `pub use` and `pub mod` re-exports. No per-task changelog paragraph there (put it in `NOTES.md` or the working module's `//!`), and no new definition: define it in its own module and re-export it, one line each, also when a goal says "add it to `api.rs`". Existing paragraphs and definitions stay.
+- In `app/server/src/lib.rs`, a new worker-task registration goes in its crate's block, in alphabetical order of its kind constant (a new crate's block among the others by crate name), never just at the end of `register_handlers` or `worker_registry`; more than one `registry.register` statement goes in a `register_<name>` function in the task's own module, called from one line. Existing registrations stay.

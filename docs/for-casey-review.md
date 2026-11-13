@@ -2702,3 +2702,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## One shared email per homeowner, for now (D-3459, November 13)
 
 - When a homeowner picks on the quote page and chooses to be reached by email, the address is stored once on her record, not once per job. If she later shares a different address on a new job, the new one replaces the old one everywhere: a business she picked on the earlier job would then see the new address, and emails about the earlier job would go there too. Both addresses are hers and only businesses she picked see them, but the earlier business sees one she did not share with it. We accepted this for now; keeping a separate address per pick is a follow-up. Nothing needs you now unless you want that follow-up done before launch.
+
+## Smaller crate guides: less to read for every AI session, fewer merge collisions (D-3474, November 13)
+
+- **Why.** Each part of the app (a crate) has a guide file that the AI tool loads by itself whenever a session opens a file in that part. Those guides had grown to as much as 72 KB, about a third of every working session's reading, and two tasks writing the same part often collided on the same long line.
+- **What changed.** Each guide now holds only what the part is for and the things a change must never break, each with its test, at most 8 KB. Everything else moved word for word, by a script that checked nothing was lost, into a notes file next to it with one short note per line, which sessions search by requirement number instead of reading whole. Two tasks that both add notes now merge without a collision. Total guide size went from about 581 KB to 86 KB.
+- **Still to come.** One small tooling task (T437, the next one the runner picks up) lets every task write the new notes files and makes the runner count the guide's size. Until it lands, tasks add their notes at the end of the guide. Nothing needs you now.
