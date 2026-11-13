@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T00:01:04Z by runner 85f85991bd6f (actions).
+Updated 2026-11-13T00:02:01Z by runner 85f85991bd6f (actions).
 
-**Building: T215 in progress since 23:45Z; 261 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T215 in progress since 23:45Z; 262 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 261 of 404 build tasks (owner gates not counted)
+- **Tasks done:** 262 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z
 - **Week:** 8% used, 167.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:00Z, 0 min before this update
+- **Last run:** 00:01Z, 0 min before this update
 - **Keeper:** last ran 00:01Z, next wake 02:48Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-13T00:01:04Z by runner 85f85991bd6f (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 1 | 2 min | 23:48Z | PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclea |
-| T351 | privacy and quotes: spaced gate codes, lower-case street add | MERGE_PENDING | 1 | 57 min | 23:46Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T351 | privacy and quotes: spaced gate codes, lower-case street add | done | 1 | 57 min | 23:46Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T418 | Performance: lab Core Web Vitals and Ci's warn-only performa | done | 1 | 50 min | 23:24Z |  |
 | T347 | licensing (harness): remove the handyman split-job check; ea | MERGE_PENDING | 1 | 52 min | 23:24Z |  |
@@ -125,7 +125,7 @@ Updated 2026-11-13T00:01:04Z by runner 85f85991bd6f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 232 of 733 (31.7%) · partial 337 · unstarted 164
-**Tasks merged (throughput only):** 261 of 404
+**Tasks merged (throughput only):** 262 of 404
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -160,7 +160,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 141 of 186 done
+- stage 4: 142 of 186 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
