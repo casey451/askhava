@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-13T18:25:35Z by runner 53256149fffc (actions).
+Updated 2026-11-13T18:25:42Z by runner f8a76096fe4a (actions).
 
-**Building: T357 in progress since 16:24Z; 288 of 423 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T357 in progress since 16:24Z; 288 of 421 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 288 of 423 build tasks (owner gates not counted)
+- **Tasks done:** 288 of 421 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:55Z
+- **Lane:** lane 1: T357 claimed 16:24Z, lease until 21:25Z
 - **Week:** 25% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:25Z, 0 min before this update
 - **Keeper:** last ran 18:25Z, next wake 19:58Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+174 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+166 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -107,7 +107,7 @@ Updated 2026-11-13T18:25:35Z by runner 53256149fffc (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 573 · unstarted 160
-**Tasks merged (throughput only):** 288 of 423
+**Tasks merged (throughput only):** 288 of 421
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -150,7 +150,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T357 (lease until 2026-11-13T19:55:42Z)
+- T357 (lease until 2026-11-13T21:25:42Z)
 
 ## Last usage reading
 - {"task": "T281", "at": "2026-11-13T18:15:40Z", "input_tokens": 1032, "output_tokens": 321589, "cache_creation_input_tokens": 1320276, "cache_read_input_tokens": 62499597}
