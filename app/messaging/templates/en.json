@@ -99,6 +99,16 @@
     "segments": 1,
     "text": "{brand_short}: {business} tried to call you about request {job}. Call them back on {number}."
   },
+  "whos_calling": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "{brand_short}: {business} will call you about request {job} from {number}. If you miss it, call them back on this number. It works for 30 days. Ask for the price and any changes in writing before work starts. Don't pay in full up front."
+  },
+  "whos_calling_email": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "{brand_short}: {business} accepted request {job}. They'll email you at the address you chose. Ask for the price and any changes in writing before work starts. Don't pay in full up front."
+  },
   "problem_reply": {
     "audience": "homeowner",
     "segments": 2,

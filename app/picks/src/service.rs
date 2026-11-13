@@ -143,18 +143,18 @@ pub async fn text_pick(
     let pick = match &plan {
         Plan::Which(numbers) => which(tx, &mut out, numbers, &views).await?,
         Plan::Paused(_) => None,
-        Plan::Terms(job) => terms_first(tx, &mut out, find(&views, *job), read.quote).await?,
+        Plan::Terms(job) => terms_first(tx, &mut out, view_of(&views, *job)?, read.quote).await?,
         Plan::NoQuote(job) => {
             let values = [
                 ("quoted", read.quote.to_string()),
-                ("job", number(&views, *job)),
+                ("job", view_of(&views, *job)?.number.to_string()),
             ];
             out.say(tx, NO_QUOTE_TEMPLATE, &[*job, input.inbox], &values)
                 .await?;
             None
         }
         Plan::Pick(job) | Plan::Replace(job) | Plan::Same(job) => {
-            Some(pick_quote(tx, &mut out, find(&views, *job), read.quote).await?)
+            Some(pick_quote(tx, &mut out, view_of(&views, *job)?, read.quote).await?)
         }
         Plan::Status => status_reply(tx, &mut out, &views).await?,
     };
@@ -237,12 +237,15 @@ async fn view(tx: &mut PgConnection, job: Uuid, paused: bool) -> Result<JobView,
     })
 }
 
-fn find(views: &[JobView], job: Uuid) -> &JobView {
-    views.iter().find(|v| v.job == job).unwrap_or(&views[0])
+/// PICK-015, D-2206 (fourth audit F23): the view of `job` among `views`; `None` when it is not
+/// there, never another job's view (and an empty list gives `None`, no panic). TD-PICK-53.
+pub(crate) fn find(views: &[JobView], job: Uuid) -> Option<&JobView> {
+    views.iter().find(|v| v.job == job)
 }
 
-fn number(views: &[JobView], job: Uuid) -> String {
-    find(views, job).number.to_string()
+/// [`find`] for a caller: a missing view is [`PicksError::Job`], never another job's (D-2206).
+fn view_of(views: &[JobView], job: Uuid) -> Result<&JobView, PicksError> {
+    find(views, job).ok_or(PicksError::Job)
 }
 
 /// The request numbers as words, "1042, 1043 and 1044" ("y" in Spanish), as "Close which?" lists

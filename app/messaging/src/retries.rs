@@ -31,9 +31,14 @@ pub const RETRY_AFTER: [SignedDuration; 3] = [
 ];
 
 /// The texts that go by email and show in the portal when their retries fail (TXT-014): the
-/// quote link and the missed-call text. The who's-calling text and a business's confirm request
-/// join this list in the tasks that add their templates.
-pub const IMPORTANT_TEMPLATES: [&str; 2] = ["first_quote", "caller_missed"];
+/// quote link, the missed-call text and both who's-calling texts (TXT-027, T318). A business's
+/// confirm request joins this list in the task that adds its template.
+pub const IMPORTANT_TEMPLATES: [&str; 4] = [
+    "first_quote",
+    "caller_missed",
+    "whos_calling",
+    "whos_calling_email",
+];
 
 /// The template ID of the email an important text becomes (TXT-014).
 pub const TEXT_FAILED_EMAIL: &str = "text_failed";

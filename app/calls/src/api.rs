@@ -56,6 +56,11 @@ pub use crate::voice::{
     safety_answer, safety_call_answered, safety_call_key, safety_call_status, safety_key_once,
     safety_script, safety_twiml,
 };
+pub use crate::whos_calling::{
+    LINE_WAIT_ATTEMPTS, WHOS_CALLING_EMAIL_TEMPLATE, WHOS_CALLING_KIND, WHOS_CALLING_TEMPLATE,
+    WhosCalling, WhosCallingSent, generic_name, queue_whos_calling, run_whos_calling,
+    send_whos_calling,
+};
 
 /// Whether job `job` ever had a masked line, open or closed (CALL-001, CALL-010, D-1688): the
 /// release's line retry (`picks.line_retry`) opens one only when this is false, so a line closed

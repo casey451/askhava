@@ -28,8 +28,12 @@
 //! released-before pick opens nothing again; a line that fails to open never hides the view and
 //! raises one High [`RELEASE_LINE_FAILED_ALERT`] instead, with one [`LINE_RETRY_KIND`] task that
 //! `settle::retry_line` runs (T254, D-1688); a failed release queues that task only once its
-//! claim stands (D-2017). The who's-calling text (TXT-027) is not sent here
-//! yet (D-1687).
+//! claim stands (D-2017).
+//!
+//! T318 (TXT-027, D-1687, D-3118): after the line is asked for, outside the claim's transaction,
+//! a shown release queues the pick's one who's-calling task (`calls::api::queue_whos_calling`,
+//! `whos_calling_later`); `calls` sends the text once the line is open, at once on an
+//! emergency job, else in her window (QH-004).
 //!
 //! T278 (JOB-015, D-1842): the claim's transaction also queues the day-3 and day-14 check-ins of
 //! a Connected job, from the release and the picked quote's earliest visit
@@ -40,7 +44,7 @@
 
 use askhava_adapters::api::MaskedPool;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
-use askhava_calls::api::{Connected, assign_number};
+use askhava_calls::api::{Connected, WhosCalling, assign_number, queue_whos_calling};
 use askhava_core::api::{NewTask, enqueue};
 use askhava_jobs::api::{current, job_number, schedule_check_ins};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
@@ -217,14 +221,51 @@ pub async fn release(
             return Err(error);
         }
     };
-    if let Released::Shown(_) = released
-        && open_line(pool, masked, (pick, contact, basis), at)
+    if let Released::Shown(_) = released {
+        if open_line(pool, masked, (pick, contact, basis), at)
             .await
             .is_err()
-    {
-        line_later(pool, pick, at, true).await;
+        {
+            line_later(pool, pick, at, true).await;
+        }
+        whos_calling_later(pool, (pick, contact, basis, email_chosen), at).await;
     }
     Ok(released)
+}
+
+/// TXT-027, D-1687, D-3118: queues the pick's one `calls.whos_calling` task through
+/// `calls::api::queue_whos_calling`, after the claim committed and the line was asked for, never
+/// in the claim's transaction; its handler sends once the line is open (now, or after a
+/// `picks.line_retry` opens it). One dedupe key per pick, so a repeated release queues none. The
+/// release stands regardless, so a failed write is dropped here, as in [`line_later`].
+async fn whos_calling_later(
+    pool: &PgPool,
+    (pick, contact, basis, email_chosen): (Uuid, Uuid, ReleaseBasis, bool),
+    at: Timestamp,
+) {
+    let Ok(mut conn) = pool.acquire().await else {
+        return;
+    };
+    let Ok(Some(target)) = models::release_target(&mut conn, pick, release_status(basis)).await
+    else {
+        return;
+    };
+    let (Ok(job), Ok(job_number)) = (
+        current(&mut conn, target.job).await,
+        job_number(&mut conn, target.job).await,
+    ) else {
+        return;
+    };
+    let call = WhosCalling {
+        pick,
+        job: target.job,
+        job_number,
+        business: target.business,
+        homeowner: contact,
+        email_contact: email_chosen,
+        emergency: job.emergency,
+    };
+    queue_whos_calling(&mut conn, &call, at).await.ok();
 }
 
 /// Opens the released job's masked line, the homeowner side being the proof's contact (CALL-001).
