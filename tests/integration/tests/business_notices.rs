@@ -8,7 +8,8 @@
 //! time (else by email), that a night notice is held whole to 8 a.m., that the release and
 //! card-fix emails carry a per-person signed sign-in link and no homeowner detail, that no
 //! business text template can carry one, that a card email holds no image and one job-page link,
-//! and that the sent count leaves out a business whose card notice hard-bounced. Fake data only.
+//! that the sent count leaves out a business whose card notice hard-bounced, and that both pick
+//! notices carry the "Can't take it" line (TD-PICK-43, PICK-050). Fake data only.
 
 use askhava_businesses::api::{
     Acting, ChannelError, Checks, ConsentChannel, Event, NoticeChannel, NoticePurpose, Roles,
@@ -535,14 +536,18 @@ async fn td_biz_14_times_are_set_at_send_and_a_link_is_never_unsigned(pool: PgPo
         json!({"template": template, "business": b, "pick": Uuid::from_u128(pick), "to": to,
                "values": values})
     };
-    let moved = notice("pick_notice", 0x502, json!({"job": 1042, "window": 240}));
+    let moved = notice(
+        "pick_notice",
+        0x502,
+        json!({"job": 1042, "window": 240, "cant_take": "example.com/b/picks/x/cant-take"}),
+    );
     let run = send(&mut db, (&moved, 12), false, at(NOON)).await;
     assert_eq!(run.expect("dropped"), NoticeOutcome::Dropped);
     assert!(emailed(&mut db, b).await.is_empty());
     let pick = notice(
         "pick_notice",
         WAITING_PICK,
-        json!({"job": 1042, "window": 240}),
+        json!({"job": 1042, "window": 240, "cant_take": "example.com/b/picks/x/cant-take"}),
     );
     send(&mut db, (&pick, 13), false, at(NOON))
         .await
@@ -571,4 +576,34 @@ async fn td_biz_14_times_are_set_at_send_and_a_link_is_never_unsigned(pool: PgPo
         run,
         Err(askhava_messaging::api::EmailError::Template)
     ));
+}
+
+/// TD-PICK-43 (PICK-050, PICK-037, TXT-001, D-3024): the pick notice and the emergency pick notice
+/// each carry the "Can't take it" line with the pick's own page address, in the stored plain body
+/// and inside the HTML body's line as text, never as a link (only `{link}` is made one).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_43_pick_notices_carry_the_cant_take_line(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let (b, _) = business(&mut db, 0x260).await;
+    let address = "example.com/b/picks/x/cant-take";
+    for (template, id) in [("pick_notice", 16_i64), ("pick_notice_emergency", 17)] {
+        let payload = json!({"template": template, "business": b,
+            "pick": Uuid::from_u128(WAITING_PICK), "to": [Uuid::from_u128(0x260)],
+            "values": {"job": 1042, "window": 240, "cant_take": address}});
+        send(&mut db, (&payload, id), false, at(NOON))
+            .await
+            .expect("sent");
+    }
+    let rows = emailed(&mut db, b).await;
+    assert_eq!(rows.len(), 2, "one email per notice");
+    let line = format!("Can't take it: {address}");
+    for (_, subject, html, plain) in rows {
+        assert!(!subject.contains(address), "{subject}");
+        assert!(plain.contains(&line), "{plain}");
+        let held = html
+            .split("<p")
+            .find(|p| p.contains("take it:"))
+            .expect("the line's paragraph");
+        assert!(held.contains(address) && !held.contains("<a"), "{held}");
+    }
 }
