@@ -367,6 +367,19 @@ def release_expired(state: State, now: datetime) -> State:
     return out
 
 
+def release_dead(state: State, dead: set[str]) -> State:
+    """Each lane whose lease is held by a session in `dead` (its worker's GitHub Actions run ended without
+    handing in, `runner.cycle.dead_sessions`, D-3417): freed before its 3 hours are up, through the same
+    `_release_lane` as an expired lease, so `attempts` stays as it is, the lease is kept in `stale_leases`
+    and a task that is no longer IN_PROGRESS (MERGE_PENDING) keeps its status."""
+    out = state
+    for lane in leases_of(state):
+        lease = lease_in(state, lane)
+        if lease and lease.get("session") in dead:
+            out = _release_lane(out, lane, lease)
+    return out
+
+
 def backoff_minutes(attempt: int) -> int:
     """RETRY_LATER backoff for vendor outages: 15 minutes doubling to a 6 hour cap."""
     return int(min(15 * 2 ** max(attempt, 0), 360))

@@ -149,6 +149,9 @@ JOB_TOKEN_READS = ("/check-runs", "/actions/jobs/")  # REST reads that need the 
 # The reads of `green_twin_tree` (D-3156): a commit's pulls and a git commit object, by full SHA. The job token reads
 # them so the pre-session step, which has no other token, can prove a merge too; the job has pull-requests and contents.
 TWIN_TREE_READS = re.compile(r"^repos/[^/]+/[^/]+/(?:commits/[0-9a-f]{40}/pulls|git/commits/[0-9a-f]{40})$")
+# The read of `run_status` (D-3417): one Actions run by id, in exactly the form `run_status` asks for it. The job token
+# reads it (`actions: write` includes the read); this exact match routes nothing else under `actions/runs/`.
+RUN_STATUS_READ = re.compile(r"^repos/[^/]+/[^/]+/actions/runs/\d+\?exclude_pull_requests=true$")
 PLAN_MERGE = re.compile(r"^\S+ (?:[Pp]lan|[Hh]arness):")  # plan and harness merge subjects (D-1462)
 RUNNER_WORKFLOW = "backup-runner.yml"  # the workflow a refill run is dispatched on, one run per lane (D-723)
 # The comments on a pull request the runner closes while preparing a retry's branch (D-583). They are
@@ -566,7 +569,7 @@ def _long_token_args(args: list[str]) -> list[str] | None:
     fetch, push or call the API at hand-in (T005, October 29, 2026). Remote git calls name the
     repository URL instead of `origin` so the credential helper, not the action's header, answers;
     gh calls other than the job-token calls (check runs and Actions jobs, RUNNER_CHECKS_TOKEN, D-502,
-    D-582, and the refill dispatch, D-723) use the token as GH_TOKEN."""
+    D-582, the run_status read, D-3417, and the refill dispatch, D-723) use the token as GH_TOKEN."""
     token, repo = os.environ.get("RUNNER_PUSH_TOKEN", ""), os.environ.get("GITHUB_REPOSITORY", "")
     if not token or not repo:
         return None
@@ -579,11 +582,12 @@ def _long_token_args(args: list[str]) -> list[str] | None:
 
 
 def _job_token_read(args: list[str]) -> bool:
-    """A `gh api` read of check runs (D-502), of an Actions job and its log (D-582), or one of `green_twin_tree`'s
-    reads of a commit's pulls and tree (D-3156)."""
+    """A `gh api` read of check runs (D-502), of an Actions job and its log (D-582), one of `green_twin_tree`'s
+    reads of a commit's pulls and tree (D-3156), or `run_status`'s read of one Actions run (D-3417)."""
     if args[:2] != ["gh", "api"]:
         return False
-    return any(part in args[-1] for part in JOB_TOKEN_READS) or bool(TWIN_TREE_READS.match(args[-1]))
+    path = args[-1]
+    return any(part in path for part in JOB_TOKEN_READS) or bool(TWIN_TREE_READS.match(path) or RUN_STATUS_READ.match(path))
 
 
 def _job_token_call(args: list[str]) -> bool:
@@ -1658,6 +1662,18 @@ class GitHubEnv:
     def _tree_sha(self, sha: str) -> str:
         """The tree SHA of a commit, read through REST so a PR head no longer on any branch is still found (D-3156)."""
         return str(self.gh_json(f"repos/{self.repo}/git/commits/{sha}")["tree"]["sha"] or "")
+
+    def run_status(self, run_id: int) -> tuple[str, str, str] | None:
+        """(status, conclusion, updated_at) of a GitHub Actions run (`actions/runs/<id>`, REST, read only, with the
+        job token: RUN_STATUS_READ),
+        which GitHub reports for the run's latest attempt, so a re-run shows as queued or in progress again;
+        None on any API error or a missing field, which keeps the lease (`cycle.dead_sessions`, D-3417)."""
+        try:
+            run = self.gh_json(f"repos/{self.repo}/actions/runs/{int(run_id)}?exclude_pull_requests=true")
+            return str(run["status"] or ""), str(run.get("conclusion") or ""), str(run["updated_at"] or "")
+        except (RuntimeError, ValueError, KeyError, TypeError, AttributeError) as exc:
+            self.log.append(f"run {run_id} unreadable: {str(exc)[:200]}")
+            return None
 
     def checks_on(self, sha: str) -> dict[str, str] | None:
         """{check name: conclusion, or "running"} for the required checks on a commit, each from its
