@@ -10520,7 +10520,8 @@
     "T325",
     "T336",
     "T357",
-    "T391"
+    "T391",
+    "T432"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -11041,7 +11042,8 @@
     "T208",
     "T024",
     "T167",
-    "T376"
+    "T376",
+    "T255"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -11774,6 +11776,79 @@
    "acceptance": "The six owned tests pass under the embedded brand and today's constants, and under the local switch (D-3347 brand file, `AUTHORIZATION_VERSION` 2, the SMS terms' next version line), both runs in the PR; each change replaces only a brand word, a version line or an authorization version with the value read from the brand file, the real draft or `AUTHORIZATION_VERSION`; no case, input, check or assertion is removed or loosened; no file outside the owned list changes except `docs/decisions.md`."
   },
   {
+   "id": "T432",
+   "slug": "name-address-answer-route",
+   "title": "intake and server: ask the name-and-address question in production and route her answer to her own contact",
+   "goal": "Plan gap 2 of T255 (D-3431): after T255, `intake::api::take_name_address` writes the homeowner's first name and address onto her own vault contact and `ask_name_address` is asked again by T255's `picks.address_needed` handler, but no production code routes a homeowner's answer to `take_name_address`, and the regular intake order never asks the INT-027 question (only tests call either; step 11 of the intake order, `docs/spec/intake.md:71`). Wire the live path. Production today calls neither `conversation::after_questions` (`app/intake/src/conversation.rs:80`) nor `zip_step::answer_zip` (`app/intake/src/zip_step.rs:149`), so the area check and steps 9 to 11 are not reached by a live text either; this task wires only step 11 and its answer, and says in its PR which earlier step it found unwired. (1) Ask: where the intake order reaches step 11 (for a regular or urgent job after the area check, as the last question; for a job chosen as an emergency right after the cards go out, INT-029), the ask goes in `app/intake/src/order.rs` (T162's, done) just before step 12, which starts at `show_built_card` (`app/intake/src/order.rs:268`): `ask_name_address` is called once per request, with the who-sees-it line (INT-027, D-238, D-437). (2) Route: `server`'s inbound-text route (`app/server/src/inbound_text.rs`) and `intake`'s dispatcher (`app/intake/src/replies.rs`, `receive_reply`) send a reply in a request whose open question is the name-and-address one to `take_name_address` with the raw text as a `SecretString` (never the scrubbed words, never the AI, never a log line or an error message, D-146) and screen it with `Asked::NameAndAddress`, so a street name never matches the 911 list (INT-002, D-165); `Taken::Again` asks again once; `Taken::Stored` goes on to the next step (`take_name_address` itself already queued T255's `address_arrived` event for a job with a waiting pick; this task never calls `address_arrived`, so the event is queued once); `Taken::Ended` sends nothing. How the open question is known: `ask_name_address` also stores one `intake.intake_answer` row with question `name_address_asked` (no words, the ask's time) in the transaction that queues the question; the open question is the name-and-address one when the request's latest `name_address_asked` row is newer than its latest `address_contact` answer; no new table, no read of `messaging` tables; named in the `intake` `CLAUDE.md`. An opt-out, HELP, CLOSE or LIST text keeps its own path first. Fake data only. End-to-end tests in `app/server/tests/name_address_answer.rs` (TD-INT-42): a regular job is asked the question once after the area check and its answer lands on the homeowner's own contact (the contact the release reads), no second contact row is made, the scrubbed words and every log line hold neither the name nor the address; an answer naming a street like a 911-list word opens no 911 text; an answer with no street number is asked again once; an emergency job whose release waited gets the address released once through T255's path. Update the `intake` and `server` `CLAUDE.md` files and `docs/architecture.md` section 8 (found by grep, never loaded whole). Uncertain at planning time (D-3431): whether `inbound_text.rs` already holds the raw body where `receive_reply` is called; if either needs a file this task does not own, report a plan gap rather than reach outside `owns`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "intake",
+   "deps": [
+    "T255",
+    "T256",
+    "T279",
+    "T317",
+    "T325",
+    "T336",
+    "T277",
+    "T357",
+    "T391",
+    "T398"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/conversation.rs",
+    "app/intake/src/order.rs",
+    "app/intake/src/replies.rs",
+    "app/server/src/inbound_text.rs",
+    "app/server/tests/name_address_answer.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/privacy.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-027",
+    "INT-029",
+    "INT-002",
+    "PRIV-001"
+   ],
+   "tests": [
+    "TD-INT-42"
+   ],
+   "decisions": [
+    "D-146",
+    "D-165",
+    "D-238",
+    "D-437",
+    "D-3431"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 500,
+    "context_pct": 26
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T432-name-address-answer-route",
+   "prompt": "kit/prompts/T432.md"
+  },
+  {
    "id": "T428",
    "slug": "brand-switch-laftly",
    "title": "Switch the brand file to Laftly and re-issue the legal records that name it",
@@ -12391,8 +12466,8 @@
   {
    "id": "T255",
    "slug": "emergency-address-rerelease",
-   "title": "intake, payments and server: ask again for an emergency address and release once it arrives",
-   "goal": "On an emergency job a release that comes before the address stores one `picks.address_wait` row and queues one `picks.address_needed` event (T069, TD-INT-34), but nothing handles the event, and nothing releases once the address arrives: the proof was consumed and `paid_release` needs a new Stripe event (D-1563). Build both (D-1739). (1) `app/intake/src/address_wait.rs`: the `picks.address_needed` handler, registered in `register_handlers` in the shared `app/server/src/lib.rs` (`:417`; not `bin/worker.rs`, D-3118), asks the homeowner the name-and-address question again at once through `intake::api::ask_name_address` (INT-027, INT-029), once per pick; and `address_arrived`, which `conversation.rs` (T040's, extended by T162) calls after `take_name_address` stores an address for a job with a waiting pick, queueing one `intake.address_in` event. (2) `app/payments/src/reclear.rs`: `payments::api::reclear_release(conn, pick)` returns a `Releasable` only from the pick's stored charge success or its recorded $0 decision, never from a redirect, the homeowner's message, a new event or any value its caller passes but the pick ID (SEC-030). A pick with a `payments.pick_intent` row is re-cleared only through the one crate-private constructor this task adds in `app/payments/src/release_proof.rs` (now co-owned; `Releasable`'s fields stay private, so a sibling module cannot build one, D-3358): `pub(crate) async fn Releasable::from_stored_success(conn: &mut PgConnection, pick: Uuid) -> Result<Releasable, ReleaseError>`, in its own `impl Releasable` block placed after `no_fee_release` so the functions T359 and T408 cite keep their order. It takes nothing but the pick and reads, in one statement that takes `FOR SHARE OF` the pick's `payments.pick_intent` row (so `request_refund`'s `FOR UPDATE` on that row waits until the caller's transaction ends), that pick's own rows: its `payments.pick_intent` row (none: `WrongIntent`) with `ended_at` null; no `payments.refund` row of any status and no `payments.dispute` row for the pick (FEE-021, FEE-026, FEE-027); its latest `payments.charge_attempt` has status `succeeded`; and its append-only `payments.charge_evidence` row (FEE-042, written only in the transaction that stored a succeeded attempt) names the intent's own `pi_…` and amount. When several checks fail, the first in this order wins: no intent row `WrongIntent`; then ended, refunded or disputed `PickEnded`; then no `charge_attempt` row at all, a latest attempt not succeeded, or no evidence row naming the intent's `pi_…` and amount `NotPaid`; a failed statement is `Database`; only when every check holds is the answer `Releasable { pick, basis: PaidCharge }`, for that pick. A pick with no `pick_intent` row goes to `no_fee_release` with the pair of its own `payments.pick_fee` row (no row: `NoFeeDecision`), never a pair from the caller (D-2302). `reclear_release` is `pub` in `payments::api`, and `payments` cannot read `picks` tables, so the precondition is enforced in `server`: the `intake.address_in` handler (3) first confirms the pick's `picks.address_wait` row through a new `picks::api::awaiting_address(conn, pick) -> Result<bool, PicksError>` in the new `app/picks/src/address_wait_check.rs` (`SELECT … FOR SHARE` on the wait row; exported through the shared `picks` `api.rs`, one `mod` line in its `lib.rs`), and with no row calls nothing and releases nothing. That row exists only after `release` was given a minted proof for that pick (`app/picks/src/release.rs` calls `insert_address_wait` in `app/picks/src/models.rs:412`), so the re-clear inherits a proof `paid_release` or `no_fee_release` already verified; a stored success alone (it may come from a press or the reconcile, D-3144) is never a first release: `paid_release` and T408's `held_release` keep their Stripe checks. The handler runs the wait check, `reclear_release` and `picks::api::settle` in one transaction and commits only after the settle, so no refund can start between the check and the settle; from that commit to `release`, the window `paid_release`'s path already has, the release's own paid-or-free status check (D-1564) stops the release only when `picks` has already moved the pick off paid or free (an end after a refund, a fraud-warning refund); it reads the status without a lock, and a refund or dispute begun in that window leaves the status `paid`, so it does not stop that release; this window is accepted as on `paid_release`'s path, not closed here (D-3384). A source-scan test in `app/payments/src/tests/reclear.rs`, in the style of `picks`' `prop_no_other_off_session_charge`, walks the workspace's `app/` and `tests/` sources and fails when any file other than `app/payments/src/reclear.rs`, `app/payments/src/api.rs`, `app/server/src/release_sink.rs` and the two test files named here names `reclear_release`, or any file outside `app/payments/src/` names `from_stored_success`. No other constructor, no `Default` and no `Clone` are added; nothing outside `payments` can make a `Releasable` (the SEC-030 compile-fail cases stay byte-identical). Branch tests in the new `app/payments/src/tests/reclear.rs` (`#[sqlx::test]`, fake IDs, rows inserted directly): a stored success clears exactly that pick with `PaidCharge`; another pick's success clears nothing; no intent row, an ended pick, a refund row (each status), a dispute row, no `charge_attempt` row at all, a latest attempt not succeeded (an earlier one succeeded), no evidence row and an evidence row for another intent or amount each give no `Releasable` with the error above, and a pick failing several checks gives the error that wins in the order above; the $0 path clears only with the pick's own `pick_fee` pair and a recorded $0 entry and gives `NoFeeDecision` without the row or the entry; and a broken connection gives `Database`; payments stays at or above its 95% branch floor. Update the `Releasable` doc comment and the `payments` `CLAUDE.md` release rule to say exactly: release only through `paid_release`, `no_fee_release` or `reclear_release` and then `Minter::mint`; `Releasable`'s one crate-private constructor is `from_stored_success`, which reads only the named pick's own stored, unended, unrefunded, undisputed success; `reclear_release` is called only by `server`'s `intake.address_in` handler after `picks::api::awaiting_address` found the wait row; never a public constructor, `Default` or `Clone`. End-to-end, TD-INT-39 also has a paid pick with a stored success and no `picks.address_wait` row: its `intake.address_in` event releases nothing and calls no re-clear. (3) The `intake.address_in` handler in `app/server/src/release_sink.rs` (T254's) re-clears, settles and releases through the same sink, so the masked line opens then (TD-CALL-12's database path); a pick that left paid or free before the address arrived releases nothing, and a second address message releases nothing again. End-to-end tests in `app/server/tests/address_rerelease.rs` (TD-INT-39; only `server` may mint). Update the `intake`, `payments`, `picks` (the new `awaiting_address` and its `FOR SHARE` read, D-3384) and `server` `CLAUDE.md` files and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3286). The re-clear uses `no_fee_release`'s pick-bound rule from T337 (the pick's own `payments.pick_fee` business and job, D-2302), never a pair its caller passes. Once T340 is on `main`, a page pick of a non-emergency job with no `jobs.job_facts` row is refused, so any non-emergency job this task's own tests pick records its facts row first (`jobs::api::record_job_facts`, with the catalog stored once through `catalog::api::load_embedded`) (D-3118). Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
+   "title": "intake, privacy, payments and server: ask again for an emergency address, store it on her own contact and release once it arrives",
+   "goal": "On an emergency job a release that comes before the address stores one `picks.address_wait` row and queues one `picks.address_needed` event (T069, TD-INT-34), but nothing handles the event, and nothing releases once the address arrives: the proof was consumed and `paid_release` needs a new Stripe event (D-1563). Build both (D-1739). (1) `app/intake/src/address_wait.rs`: the `picks.address_needed` handler, registered in `register_handlers` in the shared `app/server/src/lib.rs` (`:417`; not `bin/worker.rs`, D-3118), asks the homeowner the name-and-address question again at once through `intake::api::ask_name_address` (INT-027, INT-029), once per pick; and `address_arrived`, whose one caller is `take_name_address` in `conversation.rs` (T040's, extended by T162): after it stores an address for a job with a waiting pick it calls `address_arrived` once, in its own transaction, queueing one `intake.address_in` event; no other code calls `address_arrived` (T432's routing does not, D-3431). (2) `app/payments/src/reclear.rs`: `payments::api::reclear_release(conn, pick)` returns a `Releasable` only from the pick's stored charge success or its recorded $0 decision, never from a redirect, the homeowner's message, a new event or any value its caller passes but the pick ID (SEC-030). A pick with a `payments.pick_intent` row is re-cleared only through the one crate-private constructor this task adds in `app/payments/src/release_proof.rs` (now co-owned; `Releasable`'s fields stay private, so a sibling module cannot build one, D-3358): `pub(crate) async fn Releasable::from_stored_success(conn: &mut PgConnection, pick: Uuid) -> Result<Releasable, ReleaseError>`, in its own `impl Releasable` block placed after `no_fee_release` so the functions T359 and T408 cite keep their order. It takes nothing but the pick and reads, in one statement that takes `FOR SHARE OF` the pick's `payments.pick_intent` row (so `request_refund`'s `FOR UPDATE` on that row waits until the caller's transaction ends), that pick's own rows: its `payments.pick_intent` row (none: `WrongIntent`) with `ended_at` null; no `payments.refund` row of any status and no `payments.dispute` row for the pick (FEE-021, FEE-026, FEE-027); its latest `payments.charge_attempt` has status `succeeded`; and its append-only `payments.charge_evidence` row (FEE-042, written only in the transaction that stored a succeeded attempt) names the intent's own `pi_…` and amount. When several checks fail, the first in this order wins: no intent row `WrongIntent`; then ended, refunded or disputed `PickEnded`; then no `charge_attempt` row at all, a latest attempt not succeeded, or no evidence row naming the intent's `pi_…` and amount `NotPaid`; a failed statement is `Database`; only when every check holds is the answer `Releasable { pick, basis: PaidCharge }`, for that pick. A pick with no `pick_intent` row goes to `no_fee_release` with the pair of its own `payments.pick_fee` row (no row: `NoFeeDecision`), never a pair from the caller (D-2302). `reclear_release` is `pub` in `payments::api`, and `payments` cannot read `picks` tables, so the precondition is enforced in `server`: the `intake.address_in` handler (3) first confirms the pick's `picks.address_wait` row through a new `picks::api::awaiting_address(conn, pick) -> Result<bool, PicksError>` in the new `app/picks/src/address_wait_check.rs` (`SELECT … FOR SHARE` on the wait row; exported through the shared `picks` `api.rs`, one `mod` line in its `lib.rs`), and with no row calls nothing and releases nothing. That row exists only after `release` was given a minted proof for that pick (`app/picks/src/release.rs` calls `insert_address_wait` in `app/picks/src/models.rs:412`), so the re-clear inherits a proof `paid_release` or `no_fee_release` already verified; a stored success alone (it may come from a press or the reconcile, D-3144) is never a first release: `paid_release` and T408's `held_release` keep their Stripe checks. The handler runs the wait check, `reclear_release` and `picks::api::settle` in one transaction and commits only after the settle, so no refund can start between the check and the settle; from that commit to `release`, the window `paid_release`'s path already has, the release's own paid-or-free status check (D-1564) stops the release only when `picks` has already moved the pick off paid or free (an end after a refund, a fraud-warning refund); it reads the status without a lock, and a refund or dispute begun in that window leaves the status `paid`, so it does not stop that release; this window is accepted as on `paid_release`'s path, not closed here (D-3384). A source-scan test among `app/payments/src/reclear.rs`'s own inline tests (`#[cfg(test)] mod tests`; the separate test file was dropped to keep the task within the 10-file build cap, D-3431), in the style of `picks`' `prop_no_other_off_session_charge`, walks the workspace's `app/` and `tests/` sources and fails when any file other than `app/payments/src/reclear.rs`, `app/payments/src/api.rs`, `app/server/src/release_sink.rs` and `app/server/tests/address_rerelease.rs` names `reclear_release`, or any file outside `app/payments/src/` names `from_stored_success`. No other constructor, no `Default` and no `Clone` are added; nothing outside `payments` can make a `Releasable` (the SEC-030 compile-fail cases stay byte-identical). Branch tests in `app/payments/src/reclear.rs`'s inline `#[cfg(test)] mod tests` (D-3431; `#[sqlx::test]`, fake IDs, rows inserted directly): a stored success clears exactly that pick with `PaidCharge`; another pick's success clears nothing; no intent row, an ended pick, a refund row (each status), a dispute row, no `charge_attempt` row at all, a latest attempt not succeeded (an earlier one succeeded), no evidence row and an evidence row for another intent or amount each give no `Releasable` with the error above, and a pick failing several checks gives the error that wins in the order above; the $0 path clears only with the pick's own `pick_fee` pair and a recorded $0 entry and gives `NoFeeDecision` without the row or the entry; and a broken connection gives `Database`; payments stays at or above its 95% branch floor. Update the `Releasable` doc comment and the `payments` `CLAUDE.md` release rule to say exactly: release only through `paid_release`, `no_fee_release` or `reclear_release` and then `Minter::mint`; `Releasable`'s one crate-private constructor is `from_stored_success`, which reads only the named pick's own stored, unended, unrefunded, undisputed success; `reclear_release` is called only by `server`'s `intake.address_in` handler after `picks::api::awaiting_address` found the wait row; never a public constructor, `Default` or `Clone`. End-to-end, TD-INT-39 also has a paid pick with a stored success and no `picks.address_wait` row: its `intake.address_in` event releases nothing and calls no re-clear. (3) The `intake.address_in` handler in `app/server/src/release_sink.rs` (T254's) re-clears, settles and releases through the same sink, so the masked line opens then (TD-CALL-12's database path); a pick that left paid or free before the address arrived releases nothing, and a second address message releases nothing again. End-to-end tests in `app/server/tests/address_rerelease.rs` (TD-INT-39; only `server` may mint). Update the `intake`, `payments`, `picks` (the new `awaiting_address` and its `FOR SHARE` read, D-3384) and `server` `CLAUDE.md` files and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3286). The re-clear uses `no_fee_release`'s pick-bound rule from T337 (the pick's own `payments.pick_fee` business and job, D-2302), never a pair its caller passes. Once T340 is on `main`, a page pick of a non-emergency job with no `jobs.job_facts` row is refused, so any non-emergency job this task's own tests pick records its facts row first (`jobs::api::record_job_facts`, with the catalog stored once through `catalog::api::load_embedded`) (D-3118). Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134). (4) Where the name and address live (plan gap 2, D-3431). `picks::release` reads the name and address only from the contact its proof names (`app/picks/src/release.rs:348`, `privacy::api::read_for_release`, `app/privacy/src/api.rs:251`), and the sink mints for the job's homeowner contact (`app/server/src/release_sink.rs:101`), the one `read_for_readback` (`app/privacy/src/readback_reader.rs:67`), `read_released` (`app/privacy/src/released_reader.rs:34`) and the retention purge (`app/privacy/src/purge.rs:376`) read or clear; today `take_name_address` (`app/intake/src/conversation.rs:399`) stores the answer as a second, phone-less contact none of them reads. So `take_name_address` writes the name and address onto the homeowner's own contact, the one `models::recipient(conversation)` names (`intake.homeowner.contact_id`), never a second contact (it no longer calls `store_contact`), and records that same ID as the request's `address_contact` answer, as today. (a) New `privacy::api::set_name_address(db: &mut PgConnection, vault: &Vault, contact: Uuid, name: &SecretString, address: &SecretString) -> Result<(), VaultError>` in the new `app/privacy/src/contact_fields.rs` (one `mod` line in the shared `privacy` `lib.rs`, one re-export in the shared `api.rs`). It seals each value with `Vault::seal` for that contact's ID and its own column (`name`, `address`), so a value opens only on that contact's row and column (PRIV-002); the one edit to `app/privacy/src/vault.rs` is `fn seal` at `:134` becoming `pub(crate) fn seal` (one token, no line moved, nothing else in that file changes). In one transaction (a savepoint inside the caller's, `sqlx::Acquire::begin`, as `purge_contact` does) it runs `UPDATE privacy.contact SET name = $2, address = $3 WHERE id = $1 AND phone IS NOT NULL` and then writes one `ops.audit_log` row per field (`Actor::System`, action `contact_fields_set`, subject kind `privacy.contact` and the contact ID, `Change::Field(\"name\")` and `Change::Field(\"address\")`). Zero rows updated (no such contact, or one with no phone) is `VaultError::NotFound`, with no audit row and nothing changed; a failed audit write rolls the update back (`VaultError::Audit`). It adds no reader, purpose or grant, reads no field, counts no read, returns no plaintext, touches neither the phone, email, on-site contact nor any index, and logs nothing of either value. A second call overwrites both fields (the latest answer is kept) and audits again. Its update takes the contact row, lock (3) of the retention lock order (D-1839). (b) The setter cannot tell a purged contact from a live one, because `purge_contact` keeps the phone (D-079); so the rule that retention's clear is never undone is kept where retention decides: `take_name_address` runs in one transaction that first takes `models::lock_homeowner` (lock (2), which the contact purge holds while it decides, `app/intake/src/purge.rs:20`) and then writes only for a request the purge cannot yet have cleared: open (`closed_at` null), and either with a job whose status (`jobs::api::current`) is not final (`JobStatus::targets` empty, `app/jobs/src/status.rs:87`) or became final less than 180 days before the check instant by its `status_at`, or with no job and its latest answer (or, with none, its opening) less than 180 days before the check instant. The check instant is the later of `at` (the message's received time) and the processing time (the database's `now()` in the same transaction), because the purge runs on the wall clock: a message received before the window closed but processed after the purge ran must write nothing. The 180 days are a new constant in `conversation.rs` with a doc comment naming the purge's private `CONTACT_DAYS` (`app/intake/src/purge.rs:56`, not this task's file, so it is not changed or made public). Otherwise it returns a new `Taken::Ended` and writes nothing: no vault change, no audit row, no `address_contact` answer. A `set_name_address` error is `IntakeError::Vault`, nothing kept. (c) The re-release (3) sends the address at most once per pick, only through the existing confirmed, paid (or recorded $0) proof; `app/picks/src/release.rs` is not changed. (d) Tests: `set_name_address`'s branch cases are inline in `app/privacy/src/contact_fields.rs` (`#[cfg(test)] mod tests`, as `readback_reader.rs` does; TD-PRIV-30): an unknown contact and a phone-less contact each give `NotFound` with no audit row; a stored contact gets exactly one `contact_fields_set` row per field and its other fields and phone index unchanged; a second call keeps the latest values; a value written for one contact does not open when its bytes are copied to another contact's row (`VaultError::Sealed`); `purge_contact` then clears both fields; a failed audit write leaves the row as it was; `privacy` stays at or above its 95% branch floor. The TD-INT-11 test in `app/intake/src/tests/conversation.rs` (`:253` to `:308`) used the fake contact ID `0xA5`, which has no vault row; its fixture now stores a real vault contact with a fake phone through `privacy::api::store_contact` (the `Vault` built before the request opens) and uses that ID wherever it used `0xA5`; every assertion in the file stays byte-identical (BUILD_BRIEF.md:69, D-3431); no other line of that file changes. TD-INT-39 also covers, end to end in `app/server/tests/address_rerelease.rs`: an emergency pick released before the address, then given it, shows the business the first name and address through `picks::api::released_view` and never the phone; a second address message releases nothing and sends the address no second time; a late answer for a request the purge treats as ended (its job final 180 days or more, `purge_contact` run) gives `Taken::Ended`, leaves the contact's name and address cleared and writes no audit row; and an answer whose `at` is inside the window but which is processed after the window closed and the purge ran also gives `Taken::Ended` and writes nothing. Update the `privacy` `CLAUDE.md` (the setter, its refusals and its audit action) and `docs/architecture.md` section 8 (the homeowner's one contact holds her phone, name and address; no second contact is made), found by grep. The production caller that routes a homeowner's answer to `take_name_address` is T432's, not this task's.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -12400,7 +12475,8 @@
    "deps": [
     "T254",
     "T162",
-    "T337"
+    "T337",
+    "T257"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -12415,10 +12491,12 @@
     "app/intake/src/conversation.rs",
     "app/payments/src/reclear.rs",
     "app/payments/src/release_proof.rs",
-    "app/payments/src/tests/reclear.rs",
     "app/picks/src/address_wait_check.rs",
     "app/server/src/release_sink.rs",
-    "app/server/tests/address_rerelease.rs"
+    "app/server/tests/address_rerelease.rs",
+    "app/privacy/src/contact_fields.rs",
+    "app/privacy/src/vault.rs",
+    "app/intake/src/tests/conversation.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12426,16 +12504,21 @@
     "docs/spec/intake.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/fees.md",
+    "docs/spec/privacy.md",
     "docs/brains/payments-stripe.md",
     "docs/brains/sms-compliance.md",
     "docs/brains/rust-production.md"
    ],
    "requirements": [
     "INT-029",
-    "PICK-022"
+    "PICK-022",
+    "INT-027",
+    "PRIV-002",
+    "PRIV-007"
    ],
    "tests": [
-    "TD-INT-39"
+    "TD-INT-39",
+    "TD-PRIV-30"
    ],
    "decisions": [
     "D-1563",
@@ -12447,13 +12530,14 @@
     "D-3286",
     "D-3358",
     "D-3384",
-    "D-3385"
+    "D-3385",
+    "D-3431"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 10,
     "lines": 600,
-    "context_pct": 22
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -12461,7 +12545,8 @@
     "Ally"
    ],
    "branch": "claude/task/T255-emergency-address-rerelease",
-   "prompt": "kit/prompts/T255.md"
+   "prompt": "kit/prompts/T255.md",
+   "acceptance": "Two independent Opus reviews of the hand-in, each in a fresh session: one of the privacy rules (the address is written only onto the homeowner's own contact, never a second one; it leaves the vault only through the existing confirmed, paid or recorded $0 proof, at most once per pick; the phone is never shown; a request the purge treats as ended is never refilled) and one of the vault change (`Vault::seal` is the only `vault.rs` edit; the setter's sealing is bound to the contact's ID and column, it refuses an unknown or phone-less contact with no audit row, writes one audit row per field, returns no plaintext and adds no read purpose or grant). The runner has no two-review switch, so both are recorded in the pull request (D-3431). Every TD-INT-11 assertion byte-identical; `privacy` and `payments` at or above their 95% branch floor. The inline tests run with `cargo test -p askhava-privacy contact_fields::tests` and `cargo test -p askhava-payments reclear::tests`; both pass before hand-in, beside the commands under \"Run your tests\". Test lines (inline test modules and test files) are excluded from the 600-line budget count; the line budget is advisory, and going over it is not a plan gap (this is T255's last allowed plan-fix requeue, D-2859). The 10-file cap holds."
   },
   {
    "id": "T257",
@@ -13772,7 +13857,8 @@
     "T202",
     "T082",
     "T030",
-    "T241"
+    "T241",
+    "T432"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14241,7 +14327,8 @@
     "T421",
     "T427",
     "T428",
-    "T430"
+    "T430",
+    "T432"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -17123,7 +17210,8 @@
     "T425",
     "T426",
     "T429",
-    "T430"
+    "T430",
+    "T432"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -17186,7 +17274,8 @@
    "stage": "checkpoint",
    "module": null,
    "deps": [
-    "T126"
+    "T126",
+    "T432"
    ],
    "model": null,
    "effort": null,
@@ -18486,7 +18575,8 @@
     "T336",
     "T357",
     "T391",
-    "T398"
+    "T398",
+    "T432"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19471,7 +19561,8 @@
     "T426",
     "T427",
     "T428",
-    "T430"
+    "T430",
+    "T432"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19560,7 +19651,8 @@
     "T426",
     "T427",
     "T428",
-    "T430"
+    "T430",
+    "T432"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19648,7 +19740,8 @@
     "T426",
     "T427",
     "T428",
-    "T430"
+    "T430",
+    "T432"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19927,7 +20020,8 @@
     "T421",
     "T427",
     "T428",
-    "T430"
+    "T430",
+    "T432"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -28211,7 +28305,8 @@
     "T310",
     "T398",
     "T361",
-    "T151"
+    "T151",
+    "T432"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
