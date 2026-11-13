@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM picks.address_wait w WHERE w.pick_id = p.id) AS \"found!\"\n           FROM picks.pick p WHERE p.id = $1 FOR SHARE OF p",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "found!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "dc82ccf30c4a46851f176bd208823af83f6f2b3c3c18ff6abdf6ad307c17f3a1"
+}

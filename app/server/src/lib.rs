@@ -398,12 +398,27 @@ where
     (seal, index)
 }
 
+/// `intake`'s no-reply reminder and close (INT-019) and the emergency address asked again on
+/// `picks.address_needed` (INT-029, T255), both with the `ID_SECRET` as outbox key.
+fn register_intake_asks(registry: &mut Registry, id_secret: &SecretString) {
+    let secret = id_secret.clone();
+    registry.register(askhava_intake::api::NO_REPLY_KIND, move |pool, task| {
+        askhava_intake::api::run_no_reply(pool, secret.clone(), task)
+    });
+    let asked = id_secret.clone();
+    registry.register(
+        askhava_picks::api::ADDRESS_NEEDED_KIND,
+        move |pool, task| askhava_intake::api::run_address_needed(pool, asked.clone(), task),
+    );
+}
+
 /// Every module's `core.task` handlers, one `register` call per kind (D-481, D-491). The worker
 /// runs what it returns; tests hold it in a `OnceLock`. A kind with no handler is failed with
 /// `NO_HANDLER` and dead-lettered after its attempts (JOB-006). `stream` is the off-database
 /// stream writer and its nightly check (OPS-011, PRIV-029, D-734); `jobs` runs the job status
 /// timers (JOB-003, JOB-006); `quotes` the every-window-ended check (TXT-042, JOB-025); `intake` the
-/// no-reply reminder and close (INT-019), the card approval auto-send (INT-041); `picks` the FEE-020
+/// no-reply reminder and close (INT-019), the card approval auto-send (INT-041), the emergency
+/// address asked again on `picks.address_needed` (INT-029, T255); `picks` the FEE-020
 /// card-fix notice on `payments`' event (D-492), and with `confirm` (read once from
 /// `ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES`) the pick notice (PICK-037, D-1503) and the Confirm
 /// window's end (PICK-019); `intake` the accepted-quote email after a Confirm, still with no sender
@@ -424,10 +439,7 @@ where
 {
     release_minter();
     let mut registry = Registry::new();
-    let secret = stream.id_secret.clone();
-    registry.register(askhava_intake::api::NO_REPLY_KIND, move |pool, task| {
-        askhava_intake::api::run_no_reply(pool, secret.clone(), task)
-    });
+    register_intake_asks(&mut registry, &stream.id_secret);
     registry.register(
         askhava_intake::api::CARD_TIMER_KIND,
         askhava_intake::api::run_card_timer,
@@ -626,12 +638,26 @@ where
         }
         let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
         askhava_messaging::api::register_body_deletes(&mut registry, sms, id_secret, scan_clock);
-        let masked = twilio.pool().clone();
-        registry.register(askhava_picks::api::LINE_RETRY_KIND, move |pool, task| {
-            askhava_picks::api::retry_line(pool, masked.clone(), task, clock.now())
-        });
+        let masked = (twilio.pool().clone(), clock);
+        register_masked(&mut registry, settings, masked, pairs)?;
     }
     Ok(registry)
+}
+
+/// The handlers that open a masked line: `picks.line_retry` (`picks::api::retry_line`, D-1688,
+/// T254) and, with both vault keys, `intake.address_in`'s re-release (T255, D-1739).
+fn register_masked(
+    registry: &mut Registry,
+    settings: &Settings,
+    (masked, clock): (askhava_adapters::api::MaskedPool, Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let at = Arc::clone(&clock);
+    release_sink::register_address_in(registry, settings, (masked.clone(), at), pairs)?;
+    registry.register(askhava_picks::api::LINE_RETRY_KIND, move |pool, task| {
+        askhava_picks::api::retry_line(pool, masked.clone(), task, clock.now())
+    });
+    Ok(())
 }
 
 /// T251 (D-3180; CARD-025, INT-029, TXT-032): with both vault keys, `intake`'s card sender on

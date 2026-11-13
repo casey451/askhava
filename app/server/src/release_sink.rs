@@ -18,6 +18,12 @@
 //! [`stripe_webhook`] builds the route's `StripeWebhook` from the settings (SEC-036, SEC-039,
 //! SEC-049): the Stripe client, the `whsec_…` signing secret, the configured account and mode,
 //! the SEC-040 client-address policy, the vault and the masked pool.
+//!
+//! T255 (INT-029, D-1563, D-1739, D-3358, D-3431): [`address_in`], the `intake.address_in`
+//! handler ([`register_address_in`]), re-releases an emergency pick whose release waited for the
+//! address: `picks::api::awaiting_address`, `payments::api::reclear_release` (its only caller)
+//! and `picks::api::settle` in one transaction, then the same mint and release, so the masked
+//! line opens then.
 
 use std::io;
 use std::net::{IpAddr, Ipv4Addr};
@@ -25,13 +31,17 @@ use std::sync::Arc;
 
 use askhava_adapters::api::{AdapterMode, MaskedPool, StripePayments, TwilioConfig};
 use askhava_core::api::{
-    ClientIpPolicy, Clock, Environment, Settings, SystemClock, Vendor, check_base_url,
+    ClientIpPolicy, Clock, Environment, HandlerError, Registry, Settings, SystemClock, Vendor,
+    check_base_url,
 };
-use askhava_intake::api::job_homeowner;
+use askhava_intake::api::{ADDRESS_IN_KIND, job_homeowner};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
-use askhava_payments::api::{Releasable, ReleaseError, ReleaseSink, StripeAccount, StripeWebhook};
-use askhava_picks::api::{Released, Settled, release, settle};
+use askhava_payments::api::{
+    Releasable, ReleaseError, ReleaseSink, StripeAccount, StripeWebhook, reclear_release,
+};
+use askhava_picks::api::{Released, Settled, awaiting_address, release, settle};
 use askhava_privacy::api::Vault;
+use jiff::Timestamp;
 use secrecy::SecretString;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
@@ -47,6 +57,9 @@ pub const STRIPE_BASE_URL: &str = "ASKHAVA_STRIPE_BASE_URL";
 /// The High alert raised when a cleared pick's job has no open request naming its homeowner, so
 /// no proof can be minted (PICK-022, D-1739).
 pub const NO_CONTACT_ALERT: &str = "picks.release_no_contact";
+
+const BAD_ADDRESS_IN: &str = "bad intake.address_in payload";
+const ADDRESS_IN_FAILED: &str = "the re-release after the address failed";
 
 /// The stand-in's host, the only source a stand-in webhook may come from (SEC-049).
 const STAND_IN_HOST: IpAddr = IpAddr::V4(Ipv4Addr::LOCALHOST);
@@ -94,43 +107,125 @@ impl PickReleaser {
             .await
             .map_err(|_| ReleaseError::Database)?;
         tx.commit().await.map_err(|_| ReleaseError::Database)?;
-        let job = match settled {
-            Settled::Left => return Ok(Released::MovedOn),
-            Settled::Moved(job) | Settled::Was(job) => job,
-        };
-        let Some(contact) = self.contact_of(cleared.pick(), job).await? else {
-            return Ok(Released::MovedOn);
-        };
-        let proof = release_minter().mint(cleared, contact);
-        release(&self.pool, (&self.vault, &self.masked), (proof, false), at)
-            .await
-            .map_err(|_| ReleaseError::Database)
+        let keys = (&self.vault, &self.masked);
+        release_settled(&self.pool, keys, (cleared, settled), at).await
     }
+}
 
-    /// The job's homeowner contact through `intake` (D-1602); with none, one High
-    /// [`NO_CONTACT_ALERT`] about the pick and `None` (the release is `MovedOn` and nothing
-    /// retries it; a person acts on the alert, D-2017).
-    async fn contact_of(&self, pick: Uuid, job: Uuid) -> Result<Option<Uuid>, ReleaseError> {
-        let mut conn = self
-            .pool
-            .acquire()
+/// Mints and releases a settled clearing: `MovedOn` for a pick the settle left, else the
+/// release for the job's homeowner contact (PICK-022, PRIV-005, D-1739).
+async fn release_settled(
+    pool: &PgPool,
+    (vault, masked): (&Vault, &MaskedPool),
+    (cleared, settled): (Releasable, Settled),
+    at: Timestamp,
+) -> Result<Released, ReleaseError> {
+    let job = match settled {
+        Settled::Left => return Ok(Released::MovedOn),
+        Settled::Moved(job) | Settled::Was(job) => job,
+    };
+    let Some(contact) = contact_of(pool, cleared.pick(), job).await? else {
+        return Ok(Released::MovedOn);
+    };
+    let proof = release_minter().mint(cleared, contact);
+    release(pool, (vault, masked), (proof, false), at)
+        .await
+        .map_err(|_| ReleaseError::Database)
+}
+
+/// The job's homeowner contact through `intake` (D-1602); with none, one High
+/// [`NO_CONTACT_ALERT`] about the pick and `None` (the release is `MovedOn` and nothing
+/// retries it; a person acts on the alert, D-2017).
+async fn contact_of(pool: &PgPool, pick: Uuid, job: Uuid) -> Result<Option<Uuid>, ReleaseError> {
+    let mut conn = pool.acquire().await.map_err(|_| ReleaseError::Database)?;
+    let found = job_homeowner(&mut conn, job)
+        .await
+        .map_err(|_| ReleaseError::Database)?;
+    if found.is_none() {
+        let alert = NewAlert {
+            kind: NO_CONTACT_ALERT,
+            severity: Severity::High,
+            subject: Some(("pick", pick)),
+        };
+        raise_alert(&mut conn, &alert)
             .await
             .map_err(|_| ReleaseError::Database)?;
-        let found = job_homeowner(&mut conn, job)
-            .await
-            .map_err(|_| ReleaseError::Database)?;
-        if found.is_none() {
-            let alert = NewAlert {
-                kind: NO_CONTACT_ALERT,
-                severity: Severity::High,
-                subject: Some(("pick", pick)),
-            };
-            raise_alert(&mut conn, &alert)
-                .await
-                .map_err(|_| ReleaseError::Database)?;
-        }
-        Ok(found.map(|h| h.contact))
     }
+    Ok(found.map(|h| h.contact))
+}
+
+/// The re-release once an emergency address arrived (INT-029, PICK-022, SEC-030, D-1563,
+/// D-1739, D-3358, D-3384): in one transaction `picks::api::awaiting_address` must find the
+/// pick's `picks.address_wait` row (with none, nothing is re-cleared or released), then
+/// `payments::api::reclear_release` re-clears it from its own stored success or recorded $0
+/// decision and `picks::api::settle` checks it is still `paid` or `free`; the commit comes after
+/// the settle, so no refund starts between the check and the settle. Then the same mint and
+/// release as a first clearing: the address goes at most once (the release row), only through
+/// that proof, and the masked line opens. A pick that left paid or free, ended, was refunded or
+/// disputed is `MovedOn`; a second address finds the release row, `Already`.
+///
+/// # Errors
+/// [`ReleaseError::Database`] when a read, the settle, the vault read or the release's writes
+/// fail; the task is tried again.
+pub async fn address_in(
+    pool: &PgPool,
+    keys: (&Vault, &MaskedPool),
+    pick: Uuid,
+    at: Timestamp,
+) -> Result<Released, ReleaseError> {
+    let mut tx = pool.begin().await.map_err(|_| ReleaseError::Database)?;
+    let waiting = awaiting_address(&mut tx, pick)
+        .await
+        .map_err(|_| ReleaseError::Database)?;
+    if !waiting {
+        return Ok(Released::MovedOn);
+    }
+    let cleared = match reclear_release(&mut tx, pick).await {
+        Ok(cleared) => cleared,
+        Err(ReleaseError::Database) => return Err(ReleaseError::Database),
+        Err(_) => return Ok(Released::MovedOn),
+    };
+    let settled = settle(&mut tx, &cleared)
+        .await
+        .map_err(|_| ReleaseError::Database)?;
+    tx.commit().await.map_err(|_| ReleaseError::Database)?;
+    release_settled(pool, keys, (cleared, settled), at).await
+}
+
+/// Registers the [`ADDRESS_IN_KIND`] handler, [`address_in`] over the vault from `pairs` and
+/// `masked` on `clock` (INT-029, D-1739); payload `{"pick"}`. Called by `worker_registry` with the
+/// Twilio settings; without both vault keys nothing is registered (dev and CI), as `vault_from`
+/// allows.
+///
+/// # Errors
+/// A malformed vault key, named, never its value.
+pub fn register_address_in<I>(
+    registry: &mut Registry,
+    settings: &Settings,
+    (masked, clock): (MaskedPool, Arc<dyn Clock>),
+    pairs: I,
+) -> io::Result<()>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let Some(vault) = crate::vault_from(settings, pairs)? else {
+        return Ok(());
+    };
+    let vault = Arc::new(vault);
+    registry.register(ADDRESS_IN_KIND, move |pool, task| {
+        let (vault, masked, at) = (Arc::clone(&vault), masked.clone(), clock.now());
+        async move {
+            let pick = task.payload["pick"]
+                .as_str()
+                .and_then(|p| Uuid::parse_str(p).ok());
+            let pick = pick.ok_or(HandlerError(BAD_ADDRESS_IN))?;
+            address_in(&pool, (&vault, &masked), pick, at)
+                .await
+                .map(|_| ())
+                .map_err(|_| HandlerError(ADDRESS_IN_FAILED))
+        }
+    });
+    Ok(())
 }
 
 impl ReleaseSink for PickReleaser {

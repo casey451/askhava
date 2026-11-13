@@ -60,6 +60,7 @@ mod off_session;
 mod pick_fee;
 mod purge;
 mod receipts;
+mod reclear;
 mod reconcile;
 mod refund_rules;
 mod refund_state;

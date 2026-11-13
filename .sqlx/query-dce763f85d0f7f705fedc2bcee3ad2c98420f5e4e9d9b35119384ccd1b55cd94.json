@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT (i.ended_at IS NOT NULL\n                 OR EXISTS (SELECT 1 FROM payments.refund r WHERE r.pick_id = i.pick_id)\n                 OR EXISTS (SELECT 1 FROM payments.dispute d WHERE d.pick_id = i.pick_id))\n                 AS \"ended!\",\n               COALESCE((SELECT a.status = 'succeeded' FROM payments.charge_attempt a\n                 WHERE a.pick_id = i.pick_id ORDER BY a.try_no DESC LIMIT 1), false)\n               AND EXISTS (SELECT 1 FROM payments.charge_evidence e WHERE e.pick_id = i.pick_id\n                 AND e.stripe_intent_id = i.stripe_intent_id\n                 AND e.amount_cents = i.amount_cents) AS \"paid!\"\n               FROM payments.pick_intent i WHERE i.pick_id = $1 FOR SHARE OF i",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "ended!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "paid!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "dce763f85d0f7f705fedc2bcee3ad2c98420f5e4e9d9b35119384ccd1b55cd94"
+}

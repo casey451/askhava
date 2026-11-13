@@ -131,7 +131,7 @@ impl Vault {
     /// # Panics
     ///
     /// When the operating system's random source fails, as no value may be sealed without it.
-    fn seal(&self, column: &str, id: Uuid, plain: &str) -> Result<Vec<u8>, VaultError> {
+    pub(crate) fn seal(&self, column: &str, id: Uuid, plain: &str) -> Result<Vec<u8>, VaultError> {
         self.seal_at((CONTACT_TABLE, column), id, plain)
     }
 

@@ -20,12 +20,13 @@ use askhava_core::api::Guarded;
 use askhava_jobs::api::{JobStatus, create, current, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
-use askhava_privacy::api::{NewContact, Vault, store_contact};
+use askhava_privacy::api::{Vault, set_name_address};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
+use crate::address_wait::address_arrived;
 use crate::handlers::{restart_no_reply, schedule_no_reply};
 use crate::models::{self, IntakeError};
 use crate::order::{Path, Step, order};
@@ -383,19 +384,34 @@ pub async fn ask_name_address(
 /// What [`take_name_address`] did.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Taken {
-    /// Stored in the vault under this contact ID.
+    /// Written onto the homeowner's own vault contact, this ID.
     Stored(Uuid),
     /// No street number was given: ask again.
     Again,
+    /// The request is closed, or the retention purge treats it as ended (PRIV-007): nothing
+    /// written, so a purged contact is never refilled (D-3431).
+    Ended,
 }
 
-/// Stores the raw name-and-address answer in the vault only (INT-027, D-146): the first name and
-/// the street address as a vault contact, and in `intake` only that contact's ID. The words never
-/// reach the AI, the scrubber's output or a log. Pass the raw text, not the scrubbed words.
+/// How long after a request's job became final, or a jobless request's latest answer, the
+/// retention purge clears her contact: the purge's private `CONTACT_DAYS` in `purge.rs`
+/// (PRIV-007, D-3431). Keep the two equal.
+const PURGE_AFTER_DAYS: i64 = 180;
+
+/// Writes the raw name-and-address answer onto the homeowner's own vault contact, the one
+/// `models::recipient` names, never a second contact (INT-027, PRIV-001, PRIV-007, D-146,
+/// D-3431), and records that contact's ID as the `address_contact` answer. One transaction:
+/// the homeowner row first (lock (2) of the retention lock order, which the contact purge holds
+/// while it decides), then only for an open request the purge cannot yet have cleared (see
+/// [`within_retention`]), `privacy::api::set_name_address` (lock (3)). Once committed, any pick
+/// of the request whose release waited for the address gets its `intake.address_in` event
+/// ([`address_arrived`]). The words never reach the AI, the scrubber's output or a log. Pass the
+/// raw text, not the scrubbed words.
 ///
 /// # Errors
 ///
-/// [`IntakeError::Vault`] or [`IntakeError::Database`].
+/// [`IntakeError::Vault`], [`IntakeError::Job`], [`IntakeError::UnknownRequest`] or
+/// [`IntakeError::Database`]; nothing kept.
 pub async fn take_name_address(
     db: &mut PgConnection,
     vault: &Vault,
@@ -407,19 +423,65 @@ pub async fn take_name_address(
     let Some((name, address)) = split_name_address(raw.expose_secret()) else {
         return Ok(Taken::Again);
     };
-    let new = NewContact {
-        name: Some(SecretString::from(name)),
-        phone: None,
-        email: None,
-        address: Some(SecretString::from(address)),
-        onsite_contact: None,
+    let Some((homeowner, _)) = models::conversation_state(db, conversation).await? else {
+        return Err(IntakeError::UnknownRequest);
     };
-    let contact = store_contact(db, vault, &new)
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    models::lock_homeowner(&mut tx, homeowner).await?;
+    if !within_retention(&mut tx, conversation, at).await? {
+        return Ok(Taken::Ended);
+    }
+    let (contact, _) = models::recipient(&mut tx, conversation)
+        .await?
+        .ok_or(IntakeError::UnknownRequest)?;
+    let (name, address) = (SecretString::from(name), SecretString::from(address));
+    set_name_address(&mut tx, vault, contact, &name, &address)
         .await
         .map_err(|_| IntakeError::Vault)?;
     let hex = contact.simple().to_string();
-    models::insert_answer(db, (conversation, inbox), (ADDRESS_CONTACT, &hex), at).await?;
+    models::insert_answer(&mut tx, (conversation, inbox), (ADDRESS_CONTACT, &hex), at).await?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    address_arrived(db, conversation, at).await?;
     Ok(Taken::Stored(contact))
+}
+
+/// True while the retention purge cannot yet have cleared the request's contact (PRIV-007,
+/// D-3431): the request is open, and either one of its jobs is not final
+/// (`JobStatus::targets` not empty) or became final less than [`PURGE_AFTER_DAYS`] before the
+/// check instant, or it has no job and its latest answer (else its opening) is that recent. The
+/// check instant is the later of `at` and the database's `now()`, since the purge runs on the
+/// wall clock. Call it under the homeowner lock.
+async fn within_retention(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    at: Timestamp,
+) -> Result<bool, IntakeError> {
+    let row = sqlx::query!(
+        r#"SELECT c.closed_at IS NULL AS "open!", now() AS "now!",
+             GREATEST(c.opened_at, (SELECT max(a.answered_at) FROM intake.intake_answer a
+               WHERE a.conversation_id = c.id)) AS "last!"
+           FROM intake.conversation c WHERE c.id = $1"#,
+        conversation
+    )
+    .fetch_optional(&mut *db)
+    .await
+    .map_err(|_| IntakeError::Database)?
+    .ok_or(IntakeError::UnknownRequest)?;
+    if !row.open {
+        return Ok(false);
+    }
+    let since = at.max(row.now.to_jiff()) - SignedDuration::from_hours(PURGE_AFTER_DAYS * 24);
+    let jobs = models::request_jobs(db, conversation).await?;
+    if jobs.is_empty() {
+        return Ok(row.last.to_jiff() > since);
+    }
+    for job in jobs {
+        let found = current(db, job).await.map_err(|_| IntakeError::Job)?;
+        if !found.status.targets().is_empty() || found.status_at > since {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 /// Renders and queues one text to `recipient` under `subject` (TXT-011).

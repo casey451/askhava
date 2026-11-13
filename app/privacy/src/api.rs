@@ -20,6 +20,7 @@ use sqlx::types::Uuid;
 
 use crate::vault;
 
+pub use crate::contact_fields::{CONTACT_FIELDS_SET, set_name_address};
 pub use crate::handlers::{
     PURGE_KIND, RECHECK_KIND, purge_target, run_complaint_hold, run_purge_due, run_purge_due_after,
 };
