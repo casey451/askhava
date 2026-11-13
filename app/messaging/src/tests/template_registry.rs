@@ -17,6 +17,7 @@ const VALUES: &[(&str, &str)] = &[
     ("number", "the masked number"),
     ("time", "5 p.m."),
     ("reply_time", "2 days"),
+    ("cant_take", "example.com/b/picks/x/cant-take"),
 ];
 
 fn registry() -> &'static Registry {

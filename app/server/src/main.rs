@@ -31,6 +31,13 @@ async fn main() -> io::Result<()> {
     if std::env::args().nth(1).as_deref() == Some("bootstrap-owner") {
         return bootstrap_owner(&settings).await;
     }
+    // The security-event cap and the SEC-040 client address, once per process (T319, D-3134).
+    let client_ip = askhava_core::api::ClientIpPolicy::from_pairs(std::env::vars())
+        .map_err(io::Error::other)?;
+    askhava_portals::api::configure_security_events(
+        settings.security_events_per_minute(),
+        client_ip,
+    );
     let port = port_from_env()?;
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
     let pool = askhava_core::api::app_pool(&settings).map_err(io::Error::other)?;

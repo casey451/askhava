@@ -43,6 +43,7 @@ pub mod release_sink;
 pub mod request_timeout;
 pub mod static_files;
 pub mod voice_status;
+pub mod webhook_refusals;
 
 use request_timeout::RequestTimeout;
 use static_files::StaticRoot;
@@ -164,12 +165,16 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
     let checkin = checkin::routes(pool.clone());
+    // Each 403 of these four is a source or signature refusal, recorded as a capped
+    // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
+    let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));
+    let refused = |router| webhook_refusals::layer(router, refusals.clone());
     let calls = webhooks
         .clone()
-        .map_or_else(Router::new, voice_status::routes);
-    let twilio = webhooks.map_or_else(Router::new, inbound_text::routes);
-    let voice = voice.map_or_else(Router::new, inbound_voice::routes);
-    let stripe = stripe.map_or_else(Router::new, stripe_webhook_routes);
+        .map_or_else(Router::new, |h| refused(voice_status::routes(h)));
+    let twilio = webhooks.map_or_else(Router::new, |h| refused(inbound_text::routes(h)));
+    let voice = voice.map_or_else(Router::new, |v| refused(inbound_voice::routes(v)));
+    let stripe = stripe.map_or_else(Router::new, |s| refused(stripe_webhook_routes(s)));
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
         .merge(test_control)
@@ -1171,6 +1176,7 @@ fn register_accepted_quote(registry: &mut Registry) {
 fn register_purge_handlers(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     register_daily_purges(registry, clock);
     register_purge_stages(registry, clock);
+    register_daily_sweeps(registry, clock);
     let at = Arc::clone(clock);
     registry.register(
         askhava_businesses::api::COMPLAINT_HOLD_KIND,
@@ -1222,6 +1228,23 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
             alert_if_last(&pool, &task, outcome.await).await
         }
     });
+}
+
+/// SEC-004, SEC-014, SEC-040, D-2207, D-2306 (T436): `portals`' daily sweep of sessions expired
+/// more than a day earlier and `core`'s daily prune of rate-limit windows older than the longest
+/// window plus a day, both at `clock`'s now; each queues the next day's run first, and
+/// `schedule_start` in `worker.rs` seeds both.
+fn register_daily_sweeps(registry: &mut Registry, clock: &Arc<dyn Clock>) {
+    let at = Arc::clone(clock);
+    registry.register(
+        askhava_portals::api::SESSION_SWEEP_KIND,
+        move |pool, task| askhava_portals::api::run_session_sweep_at(pool, task, at.now()),
+    );
+    let at = Arc::clone(clock);
+    registry.register(
+        askhava_core::api::RATE_LIMIT_PRUNE_KIND,
+        move |pool, task| askhava_core::api::run_rate_limit_prune_at(pool, task, at.now()),
+    );
 }
 
 /// PRIV-007 to PRIV-009, D-1799, D-2641: `jobs`' stage tasks and `privacy`'s re-check at `clock`'s

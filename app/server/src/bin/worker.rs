@@ -69,7 +69,7 @@ async fn main() -> io::Result<()> {
 
 /// Queues the daily tasks at start (the chain check, the retention sweep, the body cut, the
 /// photo orphan sweep, the day-31 body scan, this hour's dead-letter check, the job timer
-/// backstop, the license-map re-apply, each daily license list (T371) and the outbox sender's
+/// backstop, the session sweep and rate-limit prune (T436), the license-map re-apply, each daily license list (T371) and the outbox sender's
 /// first run) and runs the intake golden set once.
 async fn schedule_start(
     pool: &sqlx::PgPool,
@@ -96,6 +96,12 @@ async fn schedule_start(
         .await
         .map_err(io::Error::other)?;
     askhava_jobs::api::schedule_backstop(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_portals::api::schedule_session_sweep(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_core::api::schedule_rate_limit_prune(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
     askhava_businesses::api::schedule_reapply(&mut conn, now)

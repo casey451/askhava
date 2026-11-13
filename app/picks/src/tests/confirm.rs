@@ -227,12 +227,14 @@ fn english(id: &str) -> String {
 fn td_pick_33_templates_equal_the_spec_text() {
     assert_eq!(
         english(PICK_NOTICE_TEMPLATE),
-        fill("{brand_short}: A homeowner picked your quote for job {job}. Accept by {time}.")
+        fill(
+            "{brand_short}: A homeowner picked your quote for job {job}. Accept by {time}. Can't take it: {cant_take}"
+        )
     );
     assert_eq!(
         english(PICK_NOTICE_EMERGENCY_TEMPLATE),
         fill(
-            "{brand_short}: EMERGENCY: a homeowner picked your quote for job {job}. Accept by {time}."
+            "{brand_short}: EMERGENCY: a homeowner picked your quote for job {job}. Accept by {time}. Can't take it: {cant_take}"
         )
     );
     let fee = english(FEE_REPLY_TEMPLATE).replace("{number}", &en(7_500, None));

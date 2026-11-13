@@ -514,27 +514,35 @@ fn read_name(reader: Reader, purpose: Purpose) -> &'static str {
         .map_or(UNREGISTERED_ALERT, |(.., name)| name.as_str())
 }
 
-/// Fails with [`VaultError::InTransaction`] when `db` is inside a transaction, whether sqlx opened
-/// it or a raw `BEGIN` did: sqlx's own depth counter is checked first, then the server's state. A
-/// transaction-local setting made by one statement outlives it only inside a transaction block;
-/// outside one, each statement is its own transaction and the setting is gone by the next. No
-/// error is raised, so the probe adds nothing to the server log (PRIV-003, SEC-047, D-753). A
-/// caller's later rollback could otherwise undo a read's audit rows or a refusal's alert.
-async fn ensure_bare(db: &mut PgConnection) -> Result<(), VaultError> {
+/// Whether `db` is inside a transaction, whether sqlx opened it or a raw `BEGIN` did: sqlx's own
+/// depth counter is checked first, then the server's state. A transaction-local setting made by
+/// one statement outlives it only inside a transaction block; outside one, each statement is its
+/// own transaction and the setting is gone by the next. No error is raised, so the probe adds
+/// nothing to the server log. The one probe for the vault reads and `photos::open_link`, whose
+/// audit a caller's later rollback could otherwise undo (PRIV-003, SEC-047, D-753, D-1838).
+///
+/// # Errors
+///
+/// The database error of either probe statement.
+pub(crate) async fn in_transaction(db: &mut PgConnection) -> Result<bool, sqlx::Error> {
     if db.is_in_transaction() {
-        return Err(VaultError::InTransaction);
+        return Ok(true);
     }
     sqlx::query_scalar!("SELECT set_config('askhava.vault_probe', 'open', true)")
         .fetch_one(&mut *db)
-        .await
-        .map_err(db_err)?;
-    let left = sqlx::query_scalar!(
+        .await?;
+    sqlx::query_scalar!(
         r#"SELECT coalesce(current_setting('askhava.vault_probe', true), '') = 'open' AS "open!""#
     )
     .fetch_one(&mut *db)
     .await
-    .map_err(db_err)?;
-    if left {
+}
+
+/// Fails with [`VaultError::InTransaction`] when `db` is inside a transaction ([`in_transaction`]),
+/// so a caller's later rollback cannot undo a read's audit rows or a refusal's alert (PRIV-003,
+/// SEC-047, D-753).
+async fn ensure_bare(db: &mut PgConnection) -> Result<(), VaultError> {
+    if in_transaction(db).await.map_err(db_err)? {
         return Err(VaultError::InTransaction);
     }
     Ok(())
