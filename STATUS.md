@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T10:36:21Z by runner 07cc7ea488ef (manual).
+Updated 2026-11-13T10:36:32Z by runner 07cc7ea488ef (actions).
 
 **Building: T428 in progress since 10:27Z; 278 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -79,7 +79,6 @@ Updated 2026-11-13T10:36:21Z by runner 07cc7ea488ef (manual).
 | T377 | adapters and stand-in (harness): every text asks Twilio for  | done | 1 | 28 min | 11:15Z |  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 1 | 8 min | 11:14Z | PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to l |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | done | 1 | 24 min | 11:05Z |  |
-| T411 | quotes: the scrubbed job description and the shown and appro | done | 1 | 28 min | 10:36Z |  |
 
 ### Plan and harness merges on main
 - 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
