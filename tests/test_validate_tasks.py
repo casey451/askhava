@@ -663,6 +663,26 @@ def test_deletes_lists_only_the_tasks_own_files(tmp_path: Path) -> None:
     assert_error(errors_for(tmp_path, tasks), "'deletes' must list strings")
 
 
+def test_crate_notes_names_other_app_crates_once(tmp_path: Path) -> None:
+    """D-3474: 'crate_notes' is optional, a list of strings, each an app crate, listed once, never the module."""
+    tasks = valid_tasks()
+    t1 = task(tasks, "T001")
+    other = "portals"
+    t1["crate_notes"] = [other]
+    assert errors_for(tmp_path, tasks) == []
+    t1["crate_notes"] = ["nowhere"]
+    assert_error(errors_for(tmp_path, tasks), "T001 (fake-rules): crate_notes names nowhere, which is not an app crate")
+    t1["crate_notes"] = [other, other]
+    assert_error(errors_for(tmp_path, tasks), f"T001 (fake-rules): crate_notes lists {other} twice")
+    t1["module"] = "payments"
+    t1["crate_notes"] = ["payments"]
+    assert_error(errors_for(tmp_path, tasks), "T001 (fake-rules): crate_notes repeats its module payments")
+    t1["crate_notes"] = "portals"
+    assert_error(errors_for(tmp_path, tasks), "'crate_notes' must be list")
+    t1["crate_notes"] = [7]
+    assert_error(errors_for(tmp_path, tasks), "'crate_notes' must list strings")
+
+
 def test_v5_goal_must_not_repeat_the_title(tmp_path: Path) -> None:
     tasks = valid_tasks()
     task(tasks, "T001")["goal"] = task(tasks, "T001")["title"]

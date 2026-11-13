@@ -14,7 +14,7 @@
   "docs/catalog/matching_examples.yaml": "1c51eeff33b92d693b9d3e9d4405ab83cbaff62a2e1a7d782b08e491c453eee8",
   "docs/catalog/question_bank.yaml": "b860a6a06fe98f281e698d3863a2d3ec453d99cdff88f93b584dd3860e340ccb",
   "docs/catalog/worked_examples.yaml": "e763c4aa2e06478bdf2c52bcdaba25672298626b7b578e5ca491f6fda15cc365",
-  "docs/code-docs.md": "7a4f8f8fdae199161511b81deb4067c9895c56390e86d74605a290133bb103f5",
+  "docs/code-docs.md": "9b40ff23978058d4ae5c78d77cdb95fadd07e0b152bac67eea762315af34f66d",
   "docs/constitution.md": "ff6cd3ae68c3e98f67b68533ff2516f63e99f0c4ea5a4a437886c2faf4749ace",
   "docs/governance.md": "606fce6406302e0adfdb606b47f16d8d8e9a63202bea5ae0ccc3a26fe66c9523",
   "docs/sources.md": "10300a94545ffcf45fea44dc240f07277642ac0f0cd27e9cad8507d19ba72080",
@@ -41,10 +41,10 @@
   "docs/spec/wording.md": "16b2d9cf21d3f51d5cba83adf512ad591255adafa83da6eefb1bd0276e786f85",
   "docs/test-design.md": "9ee57acdbf3cd76791205bd00410d817743293cc7ec382f1d7bb6026218ae1a1",
   "docs/threat-model.md": "f42b7fa58e2dccd9fda2e968823f75b3c6143b1ee8d5da126aa231d7b7ec9b16",
-  "kit/prompts/TEMPLATE.md": "0019103c2a4b5cae1e723b7ce06704b1929fcc69a93bcddcc248ef761b1a6a41",
-  "kit/runner.json": "dc35a0f0e205567ee78addfe575af4b7996c4dce85c91254805f4ed1902df71c",
+  "kit/prompts/TEMPLATE.md": "d1a6eaf0ec90e870e01112f410c3c36178c0c8262ab8b31815f31a313c3eacf0",
+  "kit/runner.json": "6bccd07eee8018aea35fa603c420f59d0247dfadb061714a28fe1b85e3224cfe",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
-  "kit/tasks.json": "895d75d0aaccd181c18788751726de378199cbd53d13951aaaa88cc20d433af8",
+  "kit/tasks.json": "5868ba0e71f391eaf6b6f2e79898062d095890b0a056c789669dc34b6cdd3358",
   "scripts/brand.py": "13d78b9984835e09b072aa5386a2429ba9f65395a6c2ca03677f7ac8c1173d8d",
   "scripts/check_ai_smell.py": "52c625e72630922705b642a20c8a33e2a9a6a8501e32d4687733ec5fe71b40cb",
   "scripts/check_catalog.py": "22059b11f6cd4d8241344302857716a969dfc6434c298106646b8bdd648e86dd",
@@ -71,7 +71,7 @@
   "scripts/smoke.sh": "d421a89871bf22b4cc39eb38fea4dd9446b4fd7ced65762bac80d6b897ee792d",
   "scripts/stage_exit.py": "a7e2c2760b1651658e9e71d6af07f5920b9c8ee75c02b979e64e756ca9c03274",
   "scripts/trace_spec.py": "b02fc82e47428091cf86b6413fe86d782c23a81f45923aec1dec67b93701aacd",
-  "scripts/validate_tasks.py": "26b78ed44724a58ec119822246e81ea2605a2367d163ed2096e437527b2e316f"
+  "scripts/validate_tasks.py": "6c6a44398b30355c7dda065f93c0fd7985acc6b9ca1ef94bc321ea3a5424ff51"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
  "schema": 1

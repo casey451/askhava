@@ -216,7 +216,7 @@ MAX_TESTS = 6
 # Harness, docs, audit and cleanup work keeps the D-119 limits; the P-1 limits above bind build tasks,
 # the ones a single worker session writes application code for (D-485).
 NON_BUILD_LIMITS = {"owns": 14, "files": 14, "lines": 800, "requirements": 25}
-OPTIONAL_KEYS: dict[str, type] = {"acceptance": str, "gate": dict, "deletes": list}
+OPTIONAL_KEYS: dict[str, type] = {"acceptance": str, "gate": dict, "deletes": list, "crate_notes": list}
 # cargo-mutants targets (docs/test-design.md section 4): their owners need an Opus reviewer (V6).
 MUTANT_RULE_MODULES = ("payments", "catalog", "licensing", "quotes", "messaging", "intake")
 MUTANTS_FILE = "tests/mutation/mutants.toml"
@@ -293,6 +293,7 @@ def check_shape(task: Task) -> list[str]:
         "cites",
         "checks",
         "deletes",
+        "crate_notes",
     ):
         if isinstance(task.get(key), list) and not all(isinstance(v, str) for v in task[key]):
             errors.append(f"{where(task)}: '{key}' must list strings")
@@ -492,6 +493,19 @@ def check_deletes(task: Task) -> list[str]:
     ]
 
 
+def check_crate_notes(task: Task) -> list[str]:
+    """D-3474: the optional 'crate_notes' names each other `app/` crate whose CLAUDE.md the task's goal
+    updates (beyond its module and the crates of its owned paths), so the runner counts the task as writing
+    that crate (runner/lanes.py task_crates) and no second task edits the file meanwhile. Each entry is a
+    crate module, listed once, and never the task's own module."""
+    notes = task.get("crate_notes", [])
+    errors = [f"{where(task)}: crate_notes names {c}, which is not an app crate" for c in notes if c not in CRATE_MODULES]
+    errors += [f"{where(task)}: crate_notes lists {c} twice" for c in sorted(set(notes)) if notes.count(c) > 1]
+    if task.get("module") in notes:
+        errors.append(f"{where(task)}: crate_notes repeats its module {task['module']}")
+    return errors
+
+
 def check_rules_reviewer(task: Task) -> list[str]:
     """V6: the owner of a cargo-mutants rules file has an Opus reviewer."""
     targets = [f"app/{m}/src/rules.rs" for m in MUTANT_RULE_MODULES]
@@ -516,6 +530,7 @@ def check_task(task: Task) -> list[str]:
         check_done_defined,
         check_goal,
         check_deletes,
+        check_crate_notes,
         check_rules_reviewer,
     ):
         errors += check(task)
