@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT p.id, p.job_id, p.storage_key FROM privacy.photo_link l JOIN privacy.photo p ON p.id = l.photo_id WHERE l.token_hash = $1 AND l.expires_at > $2",
+  "query": "SELECT id, job_id, key_version, storage_key FROM privacy.photo WHERE key_version < $1 ORDER BY id LIMIT $2",
   "describe": {
     "columns": [
       {
@@ -27,6 +27,17 @@
       },
       {
         "ordinal": 2,
+        "name": "key_version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "privacy.photo",
+            "name": "key_version"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
         "name": "storage_key",
         "type_info": "Text",
         "origin": {
@@ -39,15 +50,16 @@
     ],
     "parameters": {
       "Left": [
-        "Bytea",
-        "Timestamptz"
+        "Int4",
+        "Int8"
       ]
     },
     "nullable": [
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "defb696ab1d5db1ed9995f5695fcc201638a3157f7261d68d67fcc535e766e5f"
+  "hash": "375f70e064bb58f6c83b1522b8989b3ecb687db735faa87d42a2e83506c7d37c"
 }
