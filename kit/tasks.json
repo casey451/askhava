@@ -10362,7 +10362,8 @@
    "deps": [
     "T398",
     "T391",
-    "T326"
+    "T326",
+    "T449"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10578,7 +10579,8 @@
     "T391",
     "T432",
     "T328",
-    "T446"
+    "T446",
+    "T449"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -11851,7 +11853,8 @@
     "T277",
     "T357",
     "T391",
-    "T435"
+    "T435",
+    "T449"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -13990,7 +13993,8 @@
     "T082",
     "T030",
     "T241",
-    "T432"
+    "T432",
+    "T449"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14467,7 +14471,10 @@
     "T442",
     "T443",
     "T444",
-    "T445"
+    "T445",
+    "T447",
+    "T448",
+    "T449"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -18723,7 +18730,8 @@
     "T357",
     "T391",
     "T435",
-    "T432"
+    "T432",
+    "T449"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19061,7 +19069,8 @@
    "deps": [
     "T404",
     "T086",
-    "T100"
+    "T100",
+    "T449"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -28636,7 +28645,8 @@
     "T435",
     "T361",
     "T151",
-    "T432"
+    "T432",
+    "T449"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -31080,6 +31090,179 @@
    "branch": "claude/task/T446-pick-lapsed-email",
    "prompt": "kit/prompts/T446.md",
    "acceptance": "`tests/integration/tests/pick_lapsed_email.rs` passes against PostgreSQL with every listed case; every T328 `pick_ended.rs` case and every existing intake and messaging test passes unchanged; `scripts/check_copy.py` and `scripts/check_ai_smell.py` report 0 problems for the new email words."
+  },
+  {
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "cites": [],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "tests": [],
+   "id": "T447",
+   "slug": "outbox-vault-error-holds",
+   "title": "messaging: a passing vault error holds an outbox row instead of expiring it",
+   "goal": "Spot review of T356's fix rounds (D-3581 (1); CON-009, CON-013, TXT-021; D-3149, D-2188): `recipient_phone` (`app/messaging/src/service.rs:371`) maps every `privacy::api::read_contact` error to `OutboxError::Recipient`, and `after_error` (`app/messaging/src/outbox_sender.rs:290`) expires a row on `Recipient`, so a passing `VaultError::Database` or `VaultError::Audit` on the send's second read expires the row for good: a CON-009 opt-out confirmation can be lost. Fix: `recipient_phone` maps `VaultError::Database` and `VaultError::Audit` to `OutboxError::Database`, so the row is held for its retry by the batch loop (`outbox_sender.rs:164`), while `NotFound`, `Sealed`, a missing phone and every other error still expire it as D-3149 decided; no other behaviour changes. Tests, new `tests/integration/tests/outbox_vault_hold.rs`, against PostgreSQL with fake data only: a fake vault read that fails with a passing error on the second read (the one in `send_checked`) leaves the row queued and held, not expired, and the next run after the hold sends it; a row whose contact is gone still expires; and two fix-round behaviours no test covers yet: the next run is queued before the batch is worked, and a failed send is held while the rest of the batch still goes. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
+   "module": "messaging",
+   "deps": [
+    "T356"
+   ],
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/messaging/src/service.rs",
+    "app/messaging/src/outbox_sender.rs",
+    "tests/integration/tests/outbox_vault_hold.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "CON-009",
+    "CON-013"
+   ],
+   "decisions": [
+    "D-3149",
+    "D-2188",
+    "D-3581"
+   ],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 8
+   },
+   "branch": "claude/task/T447-outbox-vault-error-holds",
+   "prompt": "kit/prompts/T447.md",
+   "acceptance": "`tests/integration/tests/outbox_vault_hold.rs` passes with every listed case, the passing-vault-error case failing without the fix; every existing messaging and TD-CON test passes unchanged."
+  },
+  {
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "cites": [],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "tests": [],
+   "id": "T448",
+   "slug": "mask-all-separators",
+   "title": "portals: the data-download mask joins digit runs across any separator",
+   "goal": "Spot review of T315's fix rounds (D-3581 (2); PRIV-031; D-3265, D-3266): `mask_contact_details` (`app/portals/src/data_download.rs:458`) joins a run of digits only across `()+-. ` and line breaks, so a phone number written with slashes, underscores, tabs, a non-breaking space or an en or em dash (`928/555/0100`, `928_555_0100`, `928\\u{2013}555\\u{2013}0100`) is not masked in the homeowner's data download. Fix: every character that is neither a letter nor a digit (`char::is_alphanumeric` false) continues a run, so any separator joins digits; the 7-digit threshold, the email, web-address and bare-domain masking and every existing case stay as they are. Tests in `app/portals/src/tests/data_download_mask.rs`: one case each for a slash, an underscore, a tab, a non-breaking space, an en dash and an em dash between the digit groups of a fake 555 number, each masked; a 6-digit run with those separators is not; every existing case passes unchanged. Fake data only. Update the `portals` `CLAUDE.md` and `docs/decisions.md`.",
+   "module": "portals",
+   "deps": [
+    "T087",
+    "T346",
+    "T411",
+    "T315"
+   ],
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/data_download.rs",
+    "app/portals/src/tests/data_download_mask.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/privacy.md"
+   ],
+   "requirements": [
+    "PRIV-031"
+   ],
+   "decisions": [
+    "D-3265",
+    "D-3266",
+    "D-3581"
+   ],
+   "budget": {
+    "files": 2,
+    "lines": 120,
+    "context_pct": 8
+   },
+   "branch": "claude/task/T448-mask-all-separators",
+   "prompt": "kit/prompts/T448.md",
+   "acceptance": "`cargo test -p askhava-portals --lib tests::data_download_mask` passes with the new separator cases, each failing on the old separator list; every existing mask case passes unchanged."
+  },
+  {
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "cites": [],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "tests": [],
+   "id": "T449",
+   "slug": "emergency-texts-counted",
+   "title": "server and intake: emergency first texts count toward the request limits without being refused; a door-matrix link case binds the member",
+   "goal": "Spot review of T317's and T348's fix rounds (D-3581 (3) and (4); SEC-015, SEC-014, INT-002, SEC-025, SEC-026; D-1951, D-3083). (1) `intake_steps` (`app/server/src/inbound_text.rs:677`) opens an emergency first text's request without `admitted`, so emergency texts touch none of the per-phone, per-IP or all-numbers counters and 100 fake emergency requests in an hour never raise SEC-015's High alert. New `intake::api::count_emergency_request` in `app/intake/src/limits.rs` (shared `intake::api`, one `pub use`): it counts the request in the same windows `admit_new_request` uses and raises the same alert when a limit is passed, but always admits (INT-002: an emergency is never refused, its 911 text and handling unchanged); a counter or alert error is a database error as in `admitted`, so the delivery rolls back and Twilio resends it. `intake_steps` calls it for an emergency first text with no open request (a resubscribed START still counts nothing). Test in the new `tests/integration/tests/emergency_request_limits.rs` (set up as T317's `inbound_text_guards.rs`, which a build task may not edit): 101 emergency first texts from fake numbers in one hour raise the High alert once and every one of them still opens its request. (2) TD-SEC-61's \"token for another member\" case in `app/server/tests/door_matrix.rs` (`probe_link`, about line 1027) mints Y's token on another object, so it is refused by the object and member binding is untested: add a token minted for member Y on the same kind and object as X's, and assert that X's session with it acts as Y or is refused, never as X; no other probe, assertion or table rule changes. Fake data only. Update the `server` and `intake` `CLAUDE.md` files and `docs/decisions.md`.",
+   "module": "server",
+   "deps": [
+    "T241",
+    "T256",
+    "T257",
+    "T279",
+    "T317",
+    "T325",
+    "T336",
+    "T357",
+    "T391",
+    "T089",
+    "T401",
+    "T404",
+    "T348"
+   ],
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/server/src/inbound_text.rs",
+    "app/intake/src/limits.rs",
+    "tests/integration/tests/emergency_request_limits.rs",
+    "app/server/tests/door_matrix.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/intake.md"
+   ],
+   "requirements": [
+    "SEC-015",
+    "INT-002"
+   ],
+   "decisions": [
+    "D-1951",
+    "D-3083",
+    "D-3581"
+   ],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 17
+   },
+   "branch": "claude/task/T449-emergency-texts-counted",
+   "prompt": "kit/prompts/T449.md",
+   "acceptance": "In `emergency_request_limits.rs`, 101 emergency first texts in an hour raise the SEC-015 High alert and none is refused; in `door_matrix.rs`, a token minted for member Y on X's kind and object never acts as X; every existing TD-SEC, TD-INT and TD-SEC-61 case passes unchanged."
   }
  ]
 }
