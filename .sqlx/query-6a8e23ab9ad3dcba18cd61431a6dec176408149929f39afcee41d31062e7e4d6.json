@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO picks.contact_choice (pick_id, choice, decided_at) VALUES ($1, $2, $3) ON CONFLICT (pick_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6a8e23ab9ad3dcba18cd61431a6dec176408149929f39afcee41d31062e7e4d6"
+}
