@@ -160,7 +160,9 @@ async fn find(
 /// # Errors
 ///
 /// [`BusinessContactError::BadAddress`], [`BusinessContactError::Sealed`] or
-/// [`BusinessContactError::Database`].
+/// [`BusinessContactError::Database`]. Two transactions each minting two new addresses in
+/// opposite order can deadlock on the index's unique key; Postgres aborts one with `Database`,
+/// and a deadlock-aborted caller retries its transaction.
 pub async fn mailbox_for(
     db: &mut PgConnection,
     vault: &Vault,
@@ -170,19 +172,34 @@ pub async fn mailbox_for(
     let digests = email_index(vault, &bare, true);
     let active = *digests.first().ok_or(BusinessContactError::Sealed)?;
     let mut tx = db.begin().await.map_err(db_fail)?;
-    let id = match find(&mut tx, &digests).await?.first() {
-        Some(id) => *id,
+    let id = match touch(&mut tx, &digests).await? {
+        Some(id) => id,
         None => mint(&mut tx, vault, &bare, active, &digests).await?,
     };
-    sqlx::query!(
-        "UPDATE privacy.business_mailbox SET touched_at = clock_timestamp() WHERE id = $1",
-        id,
-    )
-    .execute(&mut *tx)
-    .await
-    .map_err(db_fail)?;
     tx.commit().await.map_err(db_fail)?;
     Ok(id)
+}
+
+/// Moves `touched_at` of the mailbox one of `digests` finds and returns its ID, in one statement:
+/// a mailbox `forget_unused` deleted meanwhile updates no row and finds none, so it is never
+/// returned (PRIV-026).
+async fn touch(
+    db: &mut PgConnection,
+    digests: &[(u16, [u8; 32])],
+) -> Result<Option<Uuid>, BusinessContactError> {
+    let versions: Vec<i32> = digests.iter().map(|(v, _)| i32::from(*v)).collect();
+    let hashes: Vec<Vec<u8>> = digests.iter().map(|(_, d)| d.to_vec()).collect();
+    sqlx::query_scalar!(
+        "UPDATE privacy.business_mailbox SET touched_at = clock_timestamp() WHERE id = \
+         (SELECT mailbox_id FROM privacy.business_mailbox_index WHERE purpose = 'email' AND \
+         (key_version, digest) IN (SELECT * FROM unnest($1::int4[], $2::bytea[])) \
+         ORDER BY mailbox_id LIMIT 1) RETURNING id",
+        &versions,
+        &hashes,
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(db_fail)
 }
 
 /// Seals and indexes `bare` as a new mailbox; when a simultaneous call indexed it first, deletes
@@ -224,8 +241,9 @@ async fn mint(
         .execute(&mut *db)
         .await
         .map_err(db_fail)?;
-    let found = find(db, digests).await?;
-    found.first().copied().ok_or(BusinessContactError::Database)
+    touch(db, digests)
+        .await?
+        .ok_or(BusinessContactError::Database)
 }
 
 /// The mailbox IDs whose digest of `address` matches under every readable index key version;
@@ -486,7 +504,9 @@ async fn reseal(
     tx.commit().await.map_err(db_fail)
 }
 
-/// Writes mailbox `id`'s re-sealed address and replaces its digests with the active one.
+/// Writes mailbox `id`'s re-sealed address and replaces its digests with the active one; fails
+/// with `Database` (rolling the move back) when another mailbox already holds that digest, so a
+/// duplicate address shows up instead of leaving this mailbox unfindable (PRIV-024).
 async fn reindex(
     db: &mut PgConnection,
     vault: &Vault,
@@ -514,15 +534,18 @@ async fn reindex(
     .map_err(db_fail)?;
     sqlx::query!(
         "INSERT INTO privacy.business_mailbox_index (purpose, key_version, digest, mailbox_id) \
-         VALUES ('email', $1, $2, $3) ON CONFLICT DO NOTHING",
+         VALUES ('email', $1, $2, $3) ON CONFLICT (purpose, key_version, digest) DO UPDATE \
+         SET mailbox_id = EXCLUDED.mailbox_id \
+         WHERE privacy.business_mailbox_index.mailbox_id = EXCLUDED.mailbox_id RETURNING mailbox_id",
         i32::from(version),
         &digest[..],
         id,
     )
-    .execute(&mut *db)
+    .fetch_optional(&mut *db)
     .await
-    .map_err(db_fail)?;
-    Ok(())
+    .map_err(db_fail)?
+    .map(|_| ())
+    .ok_or(BusinessContactError::Database)
 }
 
 /// The error mapping keeps no value and folds what cannot happen here into `Database`.

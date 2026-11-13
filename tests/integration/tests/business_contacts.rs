@@ -179,6 +179,52 @@ async fn td_priv_28_two_simultaneous_calls_make_one_mailbox(pool: PgPool) {
     assert_eq!(rows, 6);
 }
 
+/// TD-PRIV-28: a mailbox the sweep deletes while `mailbox_for` is finding it is never returned;
+/// the call mints a new one (D-3516).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_priv_28_a_mailbox_deleted_mid_lookup_is_never_returned(pool: PgPool) {
+    let vault = v1();
+    let (mut a, mut b) = (app_conn(&pool).await, app_conn(&pool).await);
+    let old = mailbox_for(&mut a, &vault, ADDRESS).await.expect("mint");
+    let mut sweep = b.begin().await.expect("begin");
+    sqlx::query("DELETE FROM privacy.business_mailbox WHERE id = $1")
+        .bind(old)
+        .execute(&mut *sweep)
+        .await
+        .expect("delete");
+    let commit_later = async {
+        tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+        sweep.commit().await.expect("commit")
+    };
+    let (_, found) = tokio::join!(commit_later, mailbox_for(&mut a, &vault, ADDRESS));
+    let found = found.expect("minted");
+    assert_ne!(found, old, "the deleted mailbox is not returned");
+    assert_eq!(mailboxes_of(&mut a, &vault, ADDRESS).await, Ok(vec![found]));
+}
+
+/// TD-PRIV-28: a rotation meeting a second mailbox with the same address fails with `Database`
+/// and leaves that mailbox findable, instead of silently dropping its index (D-3516).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_priv_28_a_rotation_refuses_a_duplicate_address(pool: PgPool) {
+    let mut conn = app_conn(&pool).await;
+    let orphan = mailbox_for(&mut conn, &v1(), ADDRESS).await.expect("mint");
+    sqlx::query("DELETE FROM privacy.business_mailbox_index WHERE mailbox_id = $1")
+        .bind(orphan)
+        .execute(&mut *conn)
+        .await
+        .expect("unindex");
+    let second = mailbox_for(&mut conn, &v1(), ADDRESS).await.expect("mint");
+    assert_ne!(orphan, second);
+    let vault = v2();
+    assert_eq!(
+        rotate_business_batch(&mut conn, &vault, 10).await,
+        Err(BusinessContactError::Database)
+    );
+    let mut both = vec![orphan, second];
+    both.sort();
+    assert_eq!(mailboxes_of(&mut conn, &vault, ADDRESS).await, Ok(both));
+}
+
 /// TD-PRIV-28: `store_staff_phone` runs in the caller's transaction and replaces the number.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_priv_28_a_staff_phone_is_replaced_inside_the_callers_transaction(pool: PgPool) {
