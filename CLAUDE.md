@@ -1,4 +1,4 @@
-# CLAUDE.md — Ask Hava session rules
+# CLAUDE.md — Laftly session rules
 
 Short rules loaded into every session. The full rules live elsewhere; read them, don't guess.
 
@@ -16,7 +16,7 @@ Short rules loaded into every session. The full rules live elsewhere; read them,
 - `BUILD_BRIEF.md` decides **how**; the changes file decides **what** (`BUILD_BRIEF.md:7`).
 - Then the v9.3 blueprint, then the twin, then everything else (`docs/sources.md:30`–`docs/sources.md:32`).
 - If the brief and the changes file conflict: changes file wins on what, brief wins on how; decide, log both lines and the choice in `docs/decisions.md`, don't stop (`BUILD_BRIEF.md:539`).
-- Never build a superseded value (`docs/sources.md:34`–`docs/sources.md:53`): no 2-month recurring rule (it's **4 months**), no $45/$59/$149 fees (it's **$25 / $75 / $199**), no "Havasu Home Quotes" brand (it's **Ask Hava**), no directory, no 4-per-trade cap.
+- Never build a superseded value (`docs/sources.md:34`–`docs/sources.md:53`): no 2-month recurring rule (it's **4 months**), no $45/$59/$149 fees (it's **$25 / $75 / $199**), no "Havasu Home Quotes" or "Ask Hava" brand (it's **Laftly**, Laftly LLC, laftly.com; D-3347), no directory, no 4-per-trade cap.
 
 ## Rules that can't bend (BUILD_BRIEF.md §2)
 
@@ -55,10 +55,10 @@ Short rules loaded into every session. The full rules live elsewhere; read them,
 - AI sees only scrubbed text through the Claude API (zero retention once signed; before that only under AI-008's switch, D-412), returns schema-validated fields, has no tools, adds no claims. Stand-in AI during the build (`BUILD_BRIEF.md:343`–`BUILD_BRIEF.md:344`; `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:262`).
 - No homeowner contact detail leaves the vault except on a confirmed, paid pick; the homeowner's phone is never shared (`BUILD_BRIEF.md:151`; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:225`).
 - Texting: full consent text first on every path; a text that is only an opt-out word (English or Spanish, incl. "cancel") opts out of all texts; "cancel" alone never closes a job; quiet hours 8 a.m.–8 p.m. in the stricter of Arizona and area-code time; every text kind has a Spanish template (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:113`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:158`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:159`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:184`; `BUILD_BRIEF.md:416`).
-- Wording: "introduction fee by job size," never "commission"; never "vetted," "best" or rankings; "Ask Hava is not a contractor and does not perform, bid on or supervise work" (`BUILD_BRIEF.md:453`–`BUILD_BRIEF.md:455`).
+- Wording: "introduction fee by job size," never "commission"; never "vetted," "best" or rankings; "Laftly is not a contractor and does not perform, bid on or supervise work" (`BUILD_BRIEF.md:453`–`BUILD_BRIEF.md:455`).
 - Accessibility: WCAG 2.2 AA; any axe-core violation fails `Ally` (`BUILD_BRIEF.md:424`).
 - Security: OWASP ASVS L2; gitleaks and the PII scanner fail the build on any hit (`BUILD_BRIEF.md:298`).
 
 ## When Claude stops and asks Casey (BUILD_BRIEF.md §16)
 
-Only at: a hands-on task only a human can do; the account checkpoint; real texts to Casey's own phone in Phase 2; the go for the askhava.com page (Stage 0.5); Gate C and the first live charge; the war-games go (T243, D-1473) (`BUILD_BRIEF.md:546`–`BUILD_BRIEF.md:552`). Gate B is Casey's own click-through after "Finished". Everything else Claude decides and logs in `docs/decisions.md` and `docs/for-casey-review.md` (`BUILD_BRIEF.md:542`).
+Only at: a hands-on task only a human can do; the account checkpoint; real texts to Casey's own phone in Phase 2; the go for the laftly.com page (Stage 0.5); Gate C and the first live charge; the war-games go (T243, D-1473) (`BUILD_BRIEF.md:546`–`BUILD_BRIEF.md:552`). Gate B is Casey's own click-through after "Finished". Everything else Claude decides and logs in `docs/decisions.md` and `docs/for-casey-review.md` (`BUILD_BRIEF.md:542`).
