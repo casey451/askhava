@@ -1,6 +1,6 @@
 # Brain: accessible forms, pages, emails and texts (WCAG 2.2 AA)
 
-- **Purpose:** how to build Ask Hava's pages, forms, emails and texts so disabled people can use them, with the exact rules behind A11Y-* and WEB-*, the pitfalls of the plaster-and-brass palette, and what the automated `Ally` check cannot see.
+- **Purpose:** how to build Ask Hava's pages, forms, emails and texts so disabled people can use them, with the exact rules behind A11Y-* and WEB-*, the pitfalls of the V6 palette (D-3331), and what the automated `Ally` check cannot see.
 - **Who reads it:** any session building or reviewing `site`, `portals` (homeowner quote page, business portal, owner portal), `messaging` (email and text templates) or `calls`; any task whose prompt names A11Y-*, WEB-*, BIZ-038, BIZ-042, PICK-040 or `docs/a11y.md`.
 - **How to use it:** read sections 1 to 3 before writing a form or page, section 4 before choosing a color, section 7 before claiming "accessible", and run the checklist in section 9 before the PR. Cite the tag (`[A1]`, list in section 10) when a design choice rests on it.
 - **Last verified:** 2026-10-29.
@@ -57,28 +57,28 @@ The GOV.UK Design System is built and user-researched by the UK Government Digit
 
 - Never remove the focus outline without replacing it (SC 2.4.7) [S2]. Use `outline` with `outline-offset`: it doesn't shift layout and survives forced-colors mode [S2]. Use `:focus-visible` so mouse users don't see the ring [S2].
 - The ring needs 3:1 against the colors next to it (SC 1.4.11) [S2][A8]. On mixed surfaces use a two-tone ring (a dark outline plus a light shadow, or the reverse) [S2].
-- **Ask Hava:** DESIGN_SPEC section 2 sets a 3 px ring with 3 px offset: `#E2C48F` on the wall (9.38:1 on `#232322`) and `#8A6A2E` on paper (4.28:1 on `#F3ECE0`, 3.84:1 on the darkest fibre `#E9E0D0`; computed for this file). Both pass 3:1. A brass button on paper sits next to paper, so the ring around it must use the paper color `#8A6A2E`, not the wall color, which is 1.43:1 on paper [computed].
+- **Ask Hava:** DESIGN_SPEC section 2 (V6, D-3331) sets a 3 px ring with 3 px offset: `focus` `#A8581E` on the light surfaces (4.72:1 on `canvas` `#F7F5F0`, 5.15:1 on `surface` `#FFFFFF`, 4.43:1 on `band` `#ECEFE8`) and `focus-on-night` `#F2B27A` on the `night` band (5.42:1 on `#1F4A3E`; computed for this file). All pass 3:1. The ring sits 3 px outside the evergreen button, on the page color, so it is measured against the page, not the button fill (1.59:1 against `evergreen`) [computed].
 
-## 4. Color contrast for the plaster-and-brass palette
+## 4. Color contrast for the V6 palette
 
-Rules: text 4.5:1, large text (24 px, or 18.67 px bold) 3:1, and UI component edges and focus rings 3:1 against adjacent colors [W1][A8]. Ratios can't be rounded up: 4.47:1 fails [W1]. Over images, textures or gradients, test the least-contrasting area [W1][A8]: that is why WEB-027 tests the lightest plaster patch (`#45433F`) and the darkest brass pixel.
-
+Rules: text 4.5:1, large text (24 px, or 18.67 px bold) 3:1, and UI component edges and focus rings 3:1 against adjacent colors [W1][A8]. Ratios can't be rounded up: 4.47:1 fails [W1]. Over images, textures or gradients, test the least-contrasting area [W1][A8]; V6 (D-3331) has flat colors only and never puts text on its photo, so WEB-027 tests the section 2 tokens directly.
 Ratios below were computed for this file with the WCAG relative-luminance formula [A1]:
 
 | Pair | Ratio | Verdict |
 |---|---|---|
-| `on-wall` `#F1EBE0` on lightest plaster `#45433F` | 8.32 | Pass |
-| `brass-text` `#E2C48F` on lightest plaster `#45433F` | 5.89 | Pass (the only brass allowed as text on the wall) |
-| `brass` fill `#B8935A` used as **text** on `#232322` / on `#45433F` | 5.51 / **3.46** | **Fails on the light patches.** Never use the fill color for text on the wall. |
-| `on-brass` `#1B1915` on `brass` `#B8935A` | 6.15 | Pass (WEB-027 also checks the darkest pixel of the texture) |
-| White or `on-wall` on `brass` | 2.85 / 2.41 | **Fail.** Never put light text on brass. |
-| `brass-text` `#E2C48F` or `brass` on paper `#F3ECE0` | 1.43 / 2.43 | **Fail.** Brass is never text on paper; links on paper are `paper-link` `#6B4A1E` (6.82), underlined. |
-| `paper-line` `#D9CCB6` on paper | 1.35 | Decorative only. **Never as an input border.** |
-| Error text `#8C291D` on paper | 7.30 | Pass |
-| `alert` border `#C9786A` on wall | 4.78 | Pass for a component edge |
+| `ink` `#1E2926` on `canvas` / `surface` / `band` | 13.76 / 15.00 / 12.91 | Pass |
+| `ink-soft` `#4A5952` on `canvas` / `surface` / `band` | 6.78 / 7.39 / 6.36 | Pass |
+| `evergreen` `#245849` links on `canvas` / `surface` / `band` | 7.51 / 8.18 / 7.04 | Pass (links in text are also underlined) |
+| White label on `evergreen` / on `evergreen-deep` `#183F35` | 8.18 / 11.66 | Pass |
+| White / `on-night-soft` `#DCE8E0` on `night` `#1F4A3E` | 9.97 / 7.91 | Pass |
+| `evergreen` text on `night` | 1.22 | **Fail.** Never green text on the night band; links there are white, underlined. |
+| `line` `#C8CEC5` on `canvas` / `surface` | 1.47 / 1.60 | Decorative only. **Never as an input border.** |
+| `field-edge` `#6E8077` on `canvas` / `surface` / `band` | 3.84 / 4.19 / 3.60 | Pass for an input border |
+| `alert` `#9B2C1F` text or border on `canvas` / `surface` / `band` | 6.95 / 7.57 / 6.52 | Pass |
+| V5's copper ring `#C57A3B` on `band` | 2.91 | **Fail.** Not used; `focus` `#A8581E` replaces it. |
 
-- **Input borders on paper:** a text box whose border is what shows it's a field needs 3:1 [A8] (W3C's Figure 45 fails a light-grey border). `paper-line` cannot be that border. Use `ink-soft` `#4F4A43` (7.5:1 per DESIGN_SPEC) or another pair checked first.
-- **Buttons:** a text button doesn't need a 3:1 boundary when its text identifies it [A8], so the brass button on paper passes 1.4.11 through its label. Make sure the label itself passes (it does, at 6.15).
+- **Input borders:** a text box whose border is what shows it's a field needs 3:1 [A8] (W3C's Figure 45 fails a light-grey border). `line` cannot be that border. Use `field-edge` `#6E8077`, or another pair checked first.
+- **Buttons:** a text button doesn't need a 3:1 boundary when its text identifies it [A8]; the evergreen fill also gives 7.04:1 or more against every light surface. Make sure the label itself passes (it does, at 8.18).
 - **Color alone never carries meaning** (SC 1.4.1) [A1]: errors also get the word "Error:" and the inline message; quote status ("Picked", "Can't take it") is written, not just tinted.
 - Disabled controls are exempt from contrast [W1]. That's one more reason not to disable form controls (3.3).
 
@@ -108,7 +108,7 @@ Ratios below were computed for this file with the WCAG relative-luminance formul
 ## 7. What axe can test, and what the VoiceOver script must cover
 
 - **Deque** makes axe-core, the open-source rules engine Ask Hava's `Ally` check runs (A11Y-002). Deque reports axe finds "on average 57% of WCAG issues automatically", from data on over 2,000 audits and 13,000 pages; that's a share of issue volume, not of success criteria, and it's a vendor's own figure [D1][D2]. axe aims for "zero false positives" and marks what it can't decide as "incomplete" (needs review) [D1].
-- **The gap this leaves:** A11Y-002 fails only on violations. "Incomplete" results don't fail the build. Text over the plaster texture is the likely case: axe usually can't compute contrast over a background image and reports it as needing review [inferred: documented axe behavior, not read for this file]. WEB-027's own pixel test closes that one gap; the others need a person.
+- **The gap this leaves:** A11Y-002 fails only on violations. "Incomplete" results don't fail the build. Text over an image is the usual case: axe usually can't compute contrast over a background image and reports it as needing review [inferred: documented axe behavior, not read for this file]. V6 never puts text on its photo (D-3331), so that case does not arise; the others need a person.
 - **Automated checks can't judge:** whether link text and error messages make sense; whether focus order is logical and focus moves to the right place after a submit or a pick; whether focus is hidden by the sticky header at each scroll position (2.4.11); whether a live region is actually spoken; whether a CAPTCHA-free, paste-friendly code field works with autofill (3.3.8); whether instructions come before the inputs; emails; texts; Stripe's iframe [inferred from D1, D2 and A3 to A6].
 - **Who uses what:** 91.3% of screen-reader users in WebAIM's 2023-24 survey use one on a phone, 70.6% of those VoiceOver; 71.6% explore a page by headings first [W2]. So the human script runs on an iPhone with VoiceOver and checks headings first. WebAIM (a non-profit at Utah State University) runs the longest-standing survey of screen-reader users [W2].
 - **The Gate B VoiceOver script (`docs/a11y.md`, A11Y-022) must cover, at minimum:**
@@ -164,7 +164,7 @@ Ratios below were computed for this file with the WCAG relative-luminance formul
 - [ ] Code fields accept paste and autofill; no CAPTCHA.
 - [ ] Nothing needs dragging; file input present; targets 24 px or spaced; email buttons tall.
 - [ ] Tab through the page with the sticky header present: no focused item fully hidden.
-- [ ] Every new color pair checked: no brass text on paper, no light text on brass, no `paper-line` input borders, focus ring 3:1 on every surface.
+- [ ] Every new color pair checked against DESIGN_SPEC section 2: no green text on the night band, no text on the photo, no `line` input borders, focus ring 3:1 on every surface.
 - [ ] Live region present at load; polite unless an error.
 - [ ] Copy passes `scripts/check_copy.py` (grade 8 homeowners, 9 businesses) and error messages say what to do.
 - [ ] Emails: plain-text part, `lang`, action-and-job link text, no images of text. Texts: no emoji, full links.

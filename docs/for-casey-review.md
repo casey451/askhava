@@ -2600,3 +2600,30 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Three held tasks under their size limits (D-3325)
 
 - T340, T271 and T126 now find their line in the big architecture notes by search instead of loading that whole section, so the build can run them; nothing they must do changed.
+
+## Phone-page speed test and the speed report in each check run (T418, D-3342, D-3343)
+
+- Each check run now times the quote page in a test phone browser (slowed like a mid-range phone on a weak mobile signal) and adds a speed table to the run's summary. It only warns, it never fails a run. The other pages it should time (home, ZIP result, the first request step, Confirm, the business home) are not served yet, so they show "not measured" until they are.
+- One follow-up for a later task: the rule that decides when the TypeScript checks run should also cover the new speed test folder, but that rule has a locked copy in the hand-in script, so a task that owns that script should change both together.
+
+## Re-sending an emergency job's details once the address arrives (T255 plan fix, D-3358)
+
+- The task that shares an emergency job's details after the homeowner sends her address late was stuck: the code that proves "this pick was paid" could not be reached from its file. It now gets one narrow, internal way to re-confirm a pick, which only reads that pick's own recorded, successful, not refunded and not disputed payment. It is used only after the system confirms the job was waiting for the address after an earlier, verified release. Nothing else can use it, and a first release still needs Stripe's signed confirmation.
+
+## The new name, Laftly (plan change, D-3347, November 12)
+
+- **What changed (your instruction).** The product is now **Laftly**, the company **Laftly LLC**, the website **laftly.com**, and emails come from **jobs@notify.laftly.com**; Spanish uses "Laftly" too. The rules, the spec and the build instructions now say Laftly. Internal names that no customer sees (code, database and server names, the repository) stay as they are, because renaming them only adds risk.
+- **How the switch happens.** Ten new steps go first in line. T420 to T427 make the tests read the name from the one brand file instead of spelling "Ask Hava"; T428 then switches that file to Laftly and re-issues the legal drafts and the card-authorization wording (a new version) under the new name; T429 renames the copy and voice guides. Until T428 merges, the app still says "Ask Hava".
+- **Your hands-on steps (Claude never does these).** (1) Point laftly.com's DNS where the build tells you (T116). (2) Add the sending domain notify.laftly.com in Resend. (3) Register the Twilio brand and texting campaign (10DLC) under Laftly LLC, set the Verify service's name to "Laftly", and set the opt-out replies to the Laftly wording. (4) Set the Stripe account's business name to Laftly and its statement descriptor prefix to LAFTLY. (5) Set up the Google Business profile as Laftly. (6) Run a USPTO trademark search for "Laftly" before spending on the brand. (7) The Stage 0.5 go is now for the laftly.com page.
+- **Worth a look.** The spec still answers "Is Laftly part of a local business with Hava in its name?", which was written for a local business named Hava. If that no longer matters, say so and it comes out.
+
+## The new look, built from your guide (D-3331, November 12)
+
+- **What changed.** Your light, photo-first homepage guide is now the design every page, portal screen and email follows ("V6", in `docs/design/DESIGN_SPEC.md`), replacing the dark plaster and brass look. Warm ivory, evergreen buttons, a real photo on the first phone screen and one box to describe the job, as in your guide.
+- **What we improved.** All text is at least 16 px (the guide went down to 10 to 13 px). The focus outline is darker so keyboard users can see it everywhere. "Near Havasu?" is gone: the site never guesses where someone is. The arrow on the button and the example buttons that needed scripts are gone. All words were rewritten in the Ask Hava voice, with the required lines (free for you, not a contractor, the 911 note) in place.
+- **Laftly.** The design, the sample pages and the pictures now say Laftly, with your connected-form mark redrawn so it stays sharp. The app's own name setting and the fixed legal lines still say Ask Hava until the rename step changes them in one go.
+- **Design pass.** The photo sits in an arch on desktop and fills more of the first phone screen. The steps, the quote cards, the fee table, the quote page and the footer were all redrawn.
+- **Before launch.** The kitchen photo is a concept image from your guide. It must be replaced with licensed photos before the site goes live.
+- **Pictures to look at:** `docs/design/mockups/` (phone home page, phone full page, desktop home page, desktop full page, phone quote page).
+- **After an independent review.** The ZIP box on the home page was taken out: it asked for the ZIP before the texting consent and the 18+ line, so the chat asks for it instead, as before. The business fee card now also explains visit-fee quotes ($25) and repeating jobs like weekly pool cleaning (4 months of the price, never more than $75), and says "pay only when you confirm a pick". The "Who runs" block has places for the mailing address and help email.
+- **Build steps updated.** The three website build steps, the spec lines and the build notes that still described plaster and brass now describe this look; the old textures and fonts are deleted. The textures step now serves the photo and the mark. Nothing needs you now.

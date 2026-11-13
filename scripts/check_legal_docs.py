@@ -54,13 +54,14 @@ DOCUMENTS = (
     "incident-response-plan.md",
 )
 BUSINESS_DOCUMENTS = frozenset({"business-terms.md", "business-email-notices.md"})
-# The names the spec's own wording uses; the spec keeps them whatever the brand file says (D-1940).
+# The names the spec's own wording uses; they change only with the spec, whatever the brand file says
+# (D-1940). The spec took the name Laftly on Nov 12, 2026 (D-3347).
 SPEC_TOKENS = {
-    "brand": "Ask Hava",
-    "brand_business": "Ask Hava for Business",
-    "brand_short": "Ask Hava",
-    "brand_legal": "Ask Hava LLC",
-    "domain": "askhava.com",
+    "brand": "Laftly",
+    "brand_business": "Laftly for Business",
+    "brand_short": "Laftly",
+    "brand_legal": "Laftly LLC",
+    "domain": "laftly.com",
 }
 
 HONEST = (

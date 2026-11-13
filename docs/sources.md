@@ -39,13 +39,13 @@ Each row is a conflict listed in the table in "How to read this file" of `Change
 |---|---|---|---|
 | 1 | Ongoing services count as **2 months** (`All_Services_Expansion_and_Role_Play_Changes.md`, Fees section) | Ongoing services count as **4 months** (a $150/month pool account counts as $600, so the fee is $75) | Row 1; section 3 |
 | 2 | Quote window and other items listed as open (same file's decision checklist) | All decisions are settled | Row 1; section 3 |
-| 3 | Ask Hava is a directory plus quotes; invite about 690 directory listings (`Ask_Hava_Quotes_Brand_and_Copy_Brief.md`) | The old directory is **deleted**; Ask Hava is the quote service only | Row 2; section 1 |
+| 3 | Ask Hava is a directory plus quotes; invite about 690 directory listings (`Ask_Hava_Quotes_Brand_and_Copy_Brief.md`) | The old directory is **deleted**; the brand (now Laftly, D-3347) is the quote service only | Row 2; section 1 |
 | 4 | "Your first win is free" for everyone (same file) | Free first win only for businesses joining in the **first 90 days** | Row 2; section 3 |
 | 5 | "Up to 4 contractors per trade" (`Havasu_Home_Quotes_Business_Plan_and_Blueprint_v9.md`) | **No cap**: every qualified, opted-in business gets every matching card | Row 3 |
 | 6 | Refund needs "2 attempts on 2 different days" (same file) | **2 attempts at least 3 hours apart within 72 hours** | Row 3 |
 | 7 | Homeowner picks by replying YES (same file) | Pick by a **code texted to the homeowner's phone** (`2 YES` by text still works) | Row 3 |
 | 8 | Fees $45 / $59 / $149 (same file) | **$25** if the chosen quote is under $500; **$75** for $500 to $1,500; **$199** over $1,500; no percentage cap | Row 3; section 3 |
-| 9 | Brand "Havasu Home Quotes" (same file, and the twin) | Brand **Ask Hava** (and Ask Hava for Business) | Rows 3 and 4; section 1 |
+| 9 | Brand "Havasu Home Quotes" (same file, and the twin); then brand "Ask Hava", "Ask Hava for Business", Ask Hava LLC and askhava.com (the changes file, section 1), superseded by Casey on Nov 12, 2026 (D-3347) | Brand **Laftly** (and Laftly for Business), in English and Spanish; legal entity **Laftly LLC**; domain **laftly.com**; email from `jobs@notify.laftly.com` | Rows 3 and 4; section 1; D-3347 |
 | 10 | Twin: 5 trades, old fees, old brand (`01_spec/hhq_twin/`) | Twin is updated in build Stage 1 to 25 categories, new fees and all changes in the changes file | Row 4 |
 | 11 | "Every quote shown, never ranked"; "Insurance on file: Yes/No"; "skip tenant requests"; texting "cancel" to close a job (website prototype, brand brief, revision notes) | The wording and rules in the changes file's section 7 win | Row 5 |
 | 12 | Any build-plan copy exported before the Oct 27 reviews: sessions flip "passes"; K9 runs real app tasks; build 1 to 2 weeks (the copies in `02_build_plan/` are already updated) | Runner-only completion, practice-task rehearsal, revised estimates (changes file section 8) | Row 6 |
