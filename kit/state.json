@@ -30233,8 +30233,8 @@
     "T284",
     "T412"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "BLOCKED",
+   "attempts": 2,
    "slug": "business-signin-served",
    "type": "build",
    "stage": "4",
@@ -30246,8 +30246,8 @@
     3219,
     3220
    ],
-   "reason": null,
-   "last_failure": "PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) has no business sign-in reader; D-1724 (docs/decisions.md:1243) names the prerequisite but assigns it to no task; T397 rests on the same missing lookup. Reviewer confirmed. Smallest fix: a task before T280 (privacy+businesses) storing each member's sign-in address and phone in the vault keyed by mailbox_id / staff phone line ID, with an address-to-mailboxes lookup and a read grant for business sign-in; T280 and T397 depend on it.\nre-queued after plan fix D-3262: Plan gap fixed by #596 (D-3262): new T412/T415 store business sign-in addresses and phones; T280 now depends on T412",
+   "reason": "plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smalles; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smallest fix: a businesses task before T280 adding businesses::api::member_contact(conn, member) -> Option<(business, mailbox, Vec<own staff_phone line IDs>)>, current members only. Other problems for the re-plan: (1) tests/e2e/webserver.ts:51-70 starts the app with no vault keys or Twilio/Verify settings, so refusing to start breaks Ally/e2e; (2) admit_code_try needs the link's business and models::open_link is pub(crate); (3) queue_account_email stores the rendered link body in the outbox in plain text against SEC-026; (4) goal asks for a business_signin_link template in en.json/es.json but the prompt says the task owns no customer copy.",
    "history": [
     {
      "attempt": 1,
@@ -30261,6 +30261,29 @@
      "started_at": "2026-11-12T11:06:16Z",
      "ended_at": "2026-11-12T11:14:18Z",
      "result": "BLOCKED"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 96,
+     "head_sha": "343fd3e7c6962037318b07625f19173dee929797",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-13T21:54:03Z",
+     "ended_at": "2026-11-13T22:01:09Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 9387873,
+       "turns": 54
+      },
+      "reviewer": {
+       "tokens": 664330,
+       "turns": 13
+      }
+     }
     }
    ],
    "requeues": [
@@ -48370,12 +48393,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T354",
-   "at": "2026-11-13T21:39:18Z",
-   "input_tokens": 373,
-   "cache_creation_input_tokens": 348969,
-   "cache_read_input_tokens": 10618249,
-   "output_tokens": 104905
+   "task": "T280",
+   "at": "2026-11-13T22:01:09Z",
+   "output_tokens": 62498,
+   "input_tokens": 239,
+   "cache_creation_input_tokens": 311428,
+   "cache_read_input_tokens": 9678038
   },
   "source": "session_reading 2026-11-13T21:43:30Z (week)",
   "by_task": {
@@ -50578,11 +50601,15 @@
    "T280": {
     "estimated_bytes": 598304,
     "estimated_tokens": 3164045,
-    "input_tokens": 221,
-    "cache_creation_input_tokens": 357451,
-    "cache_read_input_tokens": 8701450,
-    "output_tokens": 41493,
-    "last_model": "claude-opus-5-5"
+    "input_tokens": 460,
+    "cache_creation_input_tokens": 668879,
+    "cache_read_input_tokens": 18379488,
+    "output_tokens": 103991,
+    "last_model": "claude-opus-5-5",
+    "worker_tokens": 9387873,
+    "worker_turns": 54,
+    "reviewer_tokens": 664330,
+    "reviewer_turns": 13
    },
    "T323": {
     "estimated_bytes": 500135,
@@ -51269,11 +51296,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-13T20:09:01Z",
-    "tokens": 17743423
+    "tokens": 19085391
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 75960446,
+    "tokens": 77302414,
     "scaled_by": 0.6,
     "counting": "message_id"
    }
@@ -51286,7 +51313,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T21:54:25Z",
+ "updated_at": "2026-11-13T22:01:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -51384,7 +51411,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "4bc0aa878dc0c3a9408753088149406b63b51c17",
+ "runner_sha": "343fd3e7c6962037318b07625f19173dee929797",
  "starter": "actions",
  "smoke_runs": [
   {

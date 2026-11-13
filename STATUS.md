@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-13T21:54:25Z by runner 4bc0aa878dc0 (actions).
+Updated 2026-11-13T22:01:09Z by runner 343fd3e7c696 (actions).
 
-**Building: T280 in progress since 21:54Z; 295 of 428 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T438 in progress since 21:51Z; 295 of 428 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 295 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T280 claimed 21:54Z, lease until 00:54Z; lane 2: T438 claimed 21:51Z, lease until 00:51Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
+- **Lane:** lane 2: T438 claimed 21:51Z, lease until 00:51Z; lane 6: T357 claimed 21:52Z, lease until 00:52Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
 - **Week:** 28% used, 128.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:53Z, 1 min before this update
+- **Last run:** 21:54Z, 6 min before this update
 - **Keeper:** last ran 21:43Z, next wake 22:03Z
 
 ## Needs attention
+- BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smalles; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+186 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 26 problem(s) on tasks still to run (+187 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 2 | 7 min | 22:01Z | PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no p |
 | T354 | privacy: key rotation re-seals stored photos too, so droppin | done | 1 | 69 min | 21:39Z |  |
 | T335 | adapters, payments and stand-in (harness): the reconcile's p | MERGE_PENDING | 1 | 59 min | 21:20Z |  |
 | T412 | privacy: each business member's sign-in address and texting  | done | 1 | 111 min | 21:18Z |  |
@@ -79,7 +81,6 @@ Updated 2026-11-13T21:54:25Z by runner 4bc0aa878dc0 (actions).
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | resync | 1 | 58 min | 22:35Z |  |
 | T417 | Performance: seeded fake-data route benchmark and the first  | done | 1 | 36 min | 22:22Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 3 | 40 min | 22:16Z |  |
-| T162 | intake: the one intake order for the five paths and the Span | resync | 1 | 22 min | 21:57Z |  |
 
 ### Plan and harness merges on main
 - 21:01Z Plan: fewer smoke runs, scoped fix rounds, batched reads, decision excerpts (D-3530) (#698)
@@ -155,10 +156,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T280 (lease until 2026-11-14T00:54:03Z)
+- nothing
 - lane 2: T438 (lease until 2026-11-14T00:51:05Z)
 - lane 6: T357 (lease until 2026-11-14T00:52:50Z)
 - lane 7: T340 (lease until 2026-11-14T00:52:00Z)
 
 ## Last usage reading
-- {"task": "T354", "at": "2026-11-13T21:39:18Z", "input_tokens": 373, "cache_creation_input_tokens": 348969, "cache_read_input_tokens": 10618249, "output_tokens": 104905}
+- {"task": "T280", "at": "2026-11-13T22:01:09Z", "output_tokens": 62498, "input_tokens": 239, "cache_creation_input_tokens": 311428, "cache_read_input_tokens": 9678038}
