@@ -1,20 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-13T14:57:16Z by runner b0f6fb3a71c8 (actions).
+Updated 2026-11-13T14:57:40Z by runner b0f6fb3a71c8 (actions).
 
 **Building: T330 in progress since 14:41Z; 282 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 282 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T330 claimed 14:41Z, lease until 17:41Z; lane 5: T266 claimed 14:42Z, lease until 17:42Z
-- **Week:** 19% used, 152.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T330 claimed 14:41Z, lease until 17:41Z; lane 3: T319 claimed 14:57Z, lease until 17:57Z; lane 5: T266 claimed 14:42Z, lease until 17:42Z
+- **Week:** 19% used, 148.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:54Z, 3 min before this update
 - **Keeper:** last ran 14:53Z, next wake 17:43Z
 
 ## Needs attention
-- PLAN GAP T319 (since 2026-11-13T13:50:53Z, no attempt used; a plan change fixes it): T319: tests/budget.rs is named by D-3445, but no task owns it and it does not exist
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T436 (since 2026-11-13T13:50:53Z, no attempt used; a plan change fixes it): T436: tests/budget.rs is named by D-3445, but no task owns it and it does not exist
 - Strict plan check red: 26 problem(s) on tasks still to run (+155 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
@@ -136,7 +134,7 @@ Updated 2026-11-13T14:57:16Z by runner b0f6fb3a71c8 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T14:38:38Z (week)): week: 41.6M used, 152.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T19:07:19Z.
+- Pacing (session_reading 2026-11-13T14:53:23Z (week)): week: 45.3M used, 148.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T20:08:01Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -153,6 +151,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T330 (lease until 2026-11-13T17:41:21Z)
+- lane 3: T319 (lease until 2026-11-13T17:57:14Z)
 - lane 5: T266 (lease until 2026-11-13T17:42:55Z)
 
 ## Last usage reading
