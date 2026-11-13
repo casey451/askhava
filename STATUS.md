@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T17:30:01Z by runner fe3f0367425d (actions).
+Updated 2026-11-13T17:31:46Z by runner 63b732518726 (actions).
 
-**Building: T357 in progress since 16:24Z; 286 of 421 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T357 in progress since 16:24Z; 287 of 421 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 286 of 421 build tasks (owner gates not counted)
+- **Tasks done:** 287 of 421 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:55Z; lane 3: T436 claimed 17:18Z, lease until 20:18Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z
 - **Week:** 24% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:29Z, 0 min before this update
+- **Last run:** 17:30Z, 1 min before this update
 - **Keeper:** last ran 17:30Z, next wake 19:30Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-13T17:30:01Z by runner fe3f0367425d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T273 | privacy: a photo's plaintext is returned only after its open | MERGE_PENDING | 1 | 41 min | 17:10Z |  |
+| T273 | privacy: a photo's plaintext is returned only after its open | done | 1 | 41 min | 17:10Z |  |
 | T436 | portals, core and server: expired sessions are swept and old | resync | 1 | 28 min | 16:53Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | done | 2 | 22 min | 16:46Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T319 | portals and server: security-event rows are capped per addre | done | 1 | 17 min | 16:40Z |  |
@@ -109,7 +109,7 @@ Updated 2026-11-13T17:30:01Z by runner fe3f0367425d (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 573 · unstarted 160
-**Tasks merged (throughput only):** 286 of 421
+**Tasks merged (throughput only):** 287 of 421
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -144,7 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 166 of 202 done
+- stage 4: 167 of 202 done
 - stage 5: 0 of 65 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
