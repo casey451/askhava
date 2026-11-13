@@ -24,6 +24,7 @@
 //! Other crates reach it only through [`api`].
 
 mod accepted_quote;
+mod address_wait;
 pub mod api;
 mod cards_out;
 mod closing;

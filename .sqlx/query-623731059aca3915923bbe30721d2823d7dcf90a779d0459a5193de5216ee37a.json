@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT choice FROM intake.intake_answer WHERE conversation_id = $1 AND question_id = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "choice",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.intake_answer",
+            "name": "choice"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "623731059aca3915923bbe30721d2823d7dcf90a779d0459a5193de5216ee37a"
+}

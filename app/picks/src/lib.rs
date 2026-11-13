@@ -32,6 +32,7 @@
 //! T214 added the share box's log at the pick and "Can't take it" (PICK-049, PICK-050).
 //! Other crates reach it only through [`api`].
 
+mod address_wait_check;
 mod aftermath;
 pub mod api;
 mod auto_confirm;

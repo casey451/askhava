@@ -144,6 +144,7 @@ pub use crate::pick_fee::{
 };
 pub use crate::purge::{DISPUTE_OPEN_AFTER_DUE, place_dispute_holds, run_dispute_holds};
 pub use crate::receipts::{ChargeReceipt, RECEIPT_KIND, queue_receipt, receipt_for, tier_of_fee};
+pub use crate::reclear::reclear_release;
 pub use crate::reconcile::{
     CATCH_UP_MARGIN, CHARGE_FAILED_ALERT, ChargePage, GAP_ALERT_AFTER, LOOKBACK, MISMATCH_ALERT,
     OPEN_ALERT_AFTER, OPEN_CHARGE_ALERT, OpenWhy, PAGE_SIZE, RECONCILE_ACTION, RECONCILE_EVERY,

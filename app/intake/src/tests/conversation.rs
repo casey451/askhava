@@ -5,7 +5,7 @@
 //! a fresh database with fake IDs and fake text only. The two-trade cases are TD-INT-35's (T042).
 
 use askhava_messaging::api::{Language, render};
-use askhava_privacy::api::Vault;
+use askhava_privacy::api::{NewContact, Vault, store_contact};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use sqlx::types::Uuid;
@@ -251,15 +251,25 @@ async fn td_int_02_answers_count_only_for_an_open_request(mut db: Db) {
 /// answer is stored in the vault, nothing of it in `intake`.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_11_the_name_and_address_question_and_its_vault_answer(mut db: Db) {
-    let (id, homeowner) = open_request(&mut db, 0xA5, "my sink is leaking").await;
-    let msg = text_in(Uuid::from_u128(0xA5), 5, inbound("86403"));
+    let key = SecretString::from("1:MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTE=".to_owned());
+    let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
+    let index = SecretString::from("1:MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjI=".to_owned());
+    let vault = Vault::new(&key, &index, &url).expect("keys");
+    let phone = Some(SecretString::from("928-555-0165".to_owned()));
+    let new = NewContact {
+        phone,
+        ..NewContact::default()
+    };
+    let her = store_contact(&mut db, &vault, &new).await.expect("contact");
+    let (id, homeowner) = open_request(&mut db, her.as_u128(), "my sink is leaking").await;
+    let msg = text_in(her, 5, inbound("86403"));
     let early = ask_name_address(&mut db, &secret(), &msg, id, false).await;
     assert_eq!(early, Ok(None));
     sqlx::query!(
         "INSERT INTO intake.property (homeowner_id, contact_id, town, created_at) \
          VALUES ($1, $2, 'lake_havasu_city', now())",
         homeowner,
-        Uuid::from_u128(0xA5)
+        her
     )
     .execute(&mut *db)
     .await
@@ -283,10 +293,6 @@ async fn td_int_11_the_name_and_address_question_and_its_vault_answer(mut db: Db
             assert!(!text.to_lowercase().contains(word), "{text}");
         }
     }
-    let key = SecretString::from("1:MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTE=".to_owned());
-    let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
-    let index = SecretString::from("1:MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjI=".to_owned());
-    let vault = Vault::new(&key, &index, &url).expect("keys");
     let raw = SecretString::from("Zelda 12 Test Street".to_owned());
     let inbox = (id, Uuid::from_u128(0x901));
     let taken = take_name_address(&mut db, &vault, inbox, &raw, at(6)).await;

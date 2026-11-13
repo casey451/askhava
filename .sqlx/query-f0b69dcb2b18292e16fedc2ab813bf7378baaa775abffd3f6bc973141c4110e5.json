@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE privacy.contact SET name = $2, address = $3 WHERE id = $1 AND phone IS NOT NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bytea",
+        "Bytea"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f0b69dcb2b18292e16fedc2ab813bf7378baaa775abffd3f6bc973141c4110e5"
+}

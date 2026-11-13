@@ -71,6 +71,7 @@
 //! T228: [`waiting_picks_of`] and [`end_for_leaving`] end a leaving business's waiting picks with
 //! no fee and move each to the homeowner's backup (BIZ-051, PICK-047).
 
+pub use crate::address_wait_check::awaiting_address;
 pub use crate::aftermath::{
     Comparison, INACTIVE_TEMPLATE, LIVE_PICK_TEMPLATE, LOST_HIGHER_TEMPLATE, LOST_LOWER_TEMPLATE,
     LOST_OTHER_TYPE_TEMPLATE, LOST_SAME_TEMPLATE, LOST_SEVERAL_HIGHER_TEMPLATE,
