@@ -23270,12 +23270,11 @@
      "resync": true
     }
    ],
-   "reviewed_sha": "5b5d20fdda7218a4793087837d2f5bfde029d24f",
+   "reviewed_sha": "227ff13fafffb1977be527cb709d26a408a842c7",
    "review_lease": {
     "task": "T215",
-    "session": "actions-43360492123",
-    "expires": "2026-11-13T07:02:46Z",
-    "lane": "7"
+    "session": "actions-43366636759",
+    "expires": "2026-11-13T07:45:41Z"
    },
    "branch": "claude/task/T215-pest-identity-coverage-email",
    "auto_merge": {
@@ -23311,28 +23310,6 @@
      "expires": "2026-11-13T02:45:19Z"
     }
    ],
-   "update_merges": [
-    {
-     "from": "8d5543f1d410e4fc54165c7c65d14e9d0f7e5a0a",
-     "to": "d1efac020ec045c498fa8cf8e8a48956012ad374",
-     "main": "f5757405157ae2338742788b6870f37dff5a2a15",
-     "how": "hand-in",
-     "at": "2026-11-13T04:23:09Z"
-    },
-    {
-     "from": "d1efac020ec045c498fa8cf8e8a48956012ad374",
-     "to": "5b5d20fdda7218a4793087837d2f5bfde029d24f",
-     "main": "67f315d17babbb7c101e5ecbdfb528df2e384803",
-     "how": "runner",
-     "checks": {
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-13T04:27:59Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "runner_closed_prs": [
     655
    ],
@@ -23344,7 +23321,19 @@
      "app/businesses/CLAUDE.md"
     ],
     "at": "2026-11-13T04:45:41Z"
-   }
+   },
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "39a27be2887398e4cbdf1c050cbf06b1e9522ff0",
+     "to": "227ff13fafffb1977be527cb709d26a408a842c7",
+     "main": "28395994ffe1ee9b691514bf4ecb45f67365a973",
+     "how": "hand-in",
+     "at": "2026-11-13T05:08:24Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T166",
@@ -46829,7 +46818,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T05:06:29Z",
+ "updated_at": "2026-11-13T05:08:24Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -46927,7 +46916,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "28395994ffe1ee9b691514bf4ecb45f67365a973",
+ "runner_sha": "39a27be2887398e4cbdf1c050cbf06b1e9522ff0",
  "starter": "actions",
  "smoke_runs": [
   {
