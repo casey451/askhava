@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T03:13:25Z by runner f34f12aa4576 (actions).
+Updated 2026-11-13T03:13:41Z by runner 3870bfd497ae (actions).
 
 **Building: T429 in progress since 02:50Z; 268 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 268 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T429 claimed 02:50Z, lease until 05:50Z; lane 4: T371 claimed 03:08Z, lease until 06:08Z; lane 5: T427 claimed 02:48Z, lease until 05:48Z; lane 7: T430 claimed 02:33Z, lease until 05:33Z
+- **Lane:** lane 1: T429 claimed 02:50Z, lease until 05:50Z; lane 4: T371 claimed 03:08Z, lease until 06:08Z; lane 5: T427 claimed 02:48Z, lease until 05:48Z
 - **Week:** 11% used, 170.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:09Z, 3 min before this update
 - **Keeper:** last ran 03:09Z, next wake 05:35Z
@@ -18,6 +18,7 @@ Updated 2026-11-13T03:13:25Z by runner f34f12aa4576 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T430 | payments: a Confirm needs the current card-authorization wor | MERGE_PENDING | 1 | 39 min | 03:13Z |  |
 | T426 | Brand rename prep: notice-address and sign-in security tests | done | 1 | 35 min | 02:49Z |  |
 | T425 | Brand rename prep: the last integration tests and four secur | MERGE_PENDING | 1 | 28 min | 02:39Z |  |
 | T423 | Brand rename prep: integration tests (first-quote move to si | done | 1 | 66 min | 01:47Z |  |
@@ -168,7 +169,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T429 (lease until 2026-11-13T05:50:50Z)
 - lane 4: T371 (lease until 2026-11-13T06:08:00Z)
 - lane 5: T427 (lease until 2026-11-13T05:48:34Z)
-- lane 7: T430 (lease until 2026-11-13T05:33:35Z)
 
 ## Last usage reading
-- {"task": "T426", "at": "2026-11-13T02:49:26Z", "cache_read_input_tokens": 10163047, "cache_creation_input_tokens": 300596, "input_tokens": 287, "output_tokens": 79093}
+- {"task": "T430", "at": "2026-11-13T03:13:11Z", "output_tokens": 41663, "cache_creation_input_tokens": 270273, "input_tokens": 169, "cache_read_input_tokens": 4746512}
