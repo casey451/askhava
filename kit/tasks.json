@@ -13910,7 +13910,6 @@
    "module": "messaging",
    "deps": [
     "T204",
-    "T202",
     "T082",
     "T030",
     "T241",
@@ -14385,7 +14384,8 @@
     "T427",
     "T428",
     "T430",
-    "T432"
+    "T432",
+    "T319"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16819,8 +16819,8 @@
    "stage": "5",
    "module": null,
    "deps": [
-    "T118",
-    "T103"
+    "T103",
+    "T106"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16875,7 +16875,8 @@
    "module": null,
    "deps": [
     "T119",
-    "T217"
+    "T217",
+    "T118"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16939,8 +16940,8 @@
    "stage": "5",
    "module": null,
    "deps": [
-    "T120",
-    "T345"
+    "T345",
+    "T100"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -17091,13 +17092,14 @@
    "stage": "5",
    "module": null,
    "deps": [
-    "T122",
     "T158",
     "T434",
     "T161",
     "T166",
     "T216",
-    "T218"
+    "T218",
+    "T116",
+    "T117"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -17157,7 +17159,8 @@
     "T166",
     "T216",
     "T218",
-    "T229"
+    "T229",
+    "T120"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18550,8 +18553,7 @@
    "deps": [
     "T295",
     "T370",
-    "T296",
-    "T243"
+    "T296"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -23390,7 +23392,8 @@
     "T348",
     "T359",
     "T362",
-    "T421"
+    "T421",
+    "T319"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -26584,7 +26587,6 @@
    "deps": [
     "T313",
     "T295",
-    "T318",
     "T327"
    ],
    "model": "claude-opus-5-5",
@@ -26788,7 +26790,6 @@
    "stage": "4",
    "module": "portals",
    "deps": [
-    "T261",
     "T317"
    ],
    "model": "claude-opus-5-5",
@@ -26848,7 +26849,7 @@
    "stage": "4",
    "module": "portals",
    "deps": [
-    "T319"
+    "T317"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
