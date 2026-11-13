@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T08:52:55Z by runner bee96646639a (actions).
+Updated 2026-11-13T08:57:15Z by runner bee96646639a (actions).
 
 **Building: T249 in progress since 07:51Z; 276 of 415 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T08:52:55Z by runner bee96646639a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T249 claimed 07:51Z, lease until 10:51Z
 - **Week:** 14% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:52Z, 0 min before this update
+- **Last run:** 08:57Z, 0 min before this update
 - **Keeper:** last ran 08:52Z, next wake 10:54Z
 
 ## Needs attention
@@ -86,6 +86,7 @@ Updated 2026-11-13T08:52:55Z by runner bee96646639a (actions).
 | T336 | server, adapters and stand-in (harness): a text stopped by a | done | 2 | 56 min | 09:00Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
+- 08:55Z Plan: T428 plan gap, new prep task owns the six pinned tests (D-3430) (#659)
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
 - 04:59Z Harness: release a dead worker's lease early (D-3417) (#651)
 - 04:27Z Harness: safety hand-in reports unreleased leases (D-3419) (#654)
