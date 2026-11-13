@@ -25994,7 +25994,7 @@
     "T162",
     "T337"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "emergency-address-rerelease",
    "type": "build",
@@ -26008,8 +26008,8 @@
     3351,
     3352
    ],
-   "reason": "plan gap reported: PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclear.rs cannot build one (lib.rs declares mod release_proof as a sibling; CLAUDE.md of payments forbids a public constructor). release_proof.rs is owned by T189, T337, T408, T332, T359, not T255. paid_release needs a VerifiedStripeEvent and an adapter, so it cannot serve a (conn, pick) re-clear without a new event (SEC-030). Smallest fix: give T255 release_proof.rs to add a pub(crate) constructor from the stored success, or declare reclear as a child module inside release_proof.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T255 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclear.rs cannot build one (lib.rs declares mod release_proof as a sibling; CLAUDE.md of payments forbids a public constructor). release_proof.rs is owned by T189, T337, T408, T332, T359, not T255. paid_release needs a VerifiedStripeEvent and an adapter, so it cannot serve a (conn, pick) re-clear without a new event (SEC-030). Smallest fix: give T255 release_proof.rs to add a pub(crate) constructor from the stored success, or declare reclear as a child module inside release_proof.rs. Reviewer confirmed.",
+   "reason": null,
+   "last_failure": "PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclear.rs cannot build one (lib.rs declares mod release_proof as a sibling; CLAUDE.md of payments forbids a public constructor). release_proof.rs is owned by T189, T337, T408, T332, T359, not T255. paid_release needs a VerifiedStripeEvent and an adapter, so it cannot serve a (conn, pick) re-clear without a new event (SEC-030). Smallest fix: give T255 release_proof.rs to add a pub(crate) constructor from the stored success, or declare reclear as a child module inside release_proof.rs. Reviewer confirmed.\nre-queued after plan fix D-3358: Plan gap fixed by D-3358 (#638): T255 co-owns release_proof.rs for Releasable::from_stored_success",
    "history": [
     {
      "attempt": 1,
@@ -26033,6 +26033,21 @@
        "turns": 6
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-13T00:14:49Z",
+     "reason": "Plan gap fixed by D-3358 (#638): T255 co-owns release_proof.rs for Releasable::from_stored_success",
+     "by": "manual-7c3e0dcacdf3",
+     "was": "plan gap reported: PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclear.rs cannot build one (lib.rs declares mod release_proof as a sibling; CLAUDE.md of payments forbids a public constructor). release_proof.rs is owned by T189, T337, T408, T332, T359, not T255. paid_release needs a VerifiedStripeEvent and an adapter, so it cannot serve a (conn, pick) re-clear without a new event (SEC-030). Smallest fix: give T255 release_proof.rs to add a pub(crate) constructor from the stored success, or declare reclear as a child module inside release_proof.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T255 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3358",
+     "plan_since": "2026-11-12T23:45:41Z",
+     "plan_base": "dae8c6443b4f29a2b72d558ac349c5d778388eb3",
+     "plan_head": "90d5556300973896efdf6698352640a27bf8615f",
+     "plan_then": "d863d4466314721eb6ebe428ced50cbb5f951340ec3c06df415a12dcbd6e7a3b",
+     "plan_now": "596dbfb40e8e34935f4856e0c800689e0a221b1631394e262af819bd7dfd9d2f"
     }
    ]
   },
@@ -44402,7 +44417,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T00:14:23Z",
+ "updated_at": "2026-11-13T00:14:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -44500,8 +44515,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5d4b42856a08c82569a282c2f25ae30c6400bf69",
- "starter": "actions",
+ "runner_sha": "90d5556300973896efdf6698352640a27bf8615f",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "ef5a3860ab5e7ec8a777d83d5d0f0d7cc3fb8184",

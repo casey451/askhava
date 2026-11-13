@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T00:14:23Z by runner 5d4b42856a08 (actions).
+Updated 2026-11-13T00:14:49Z by runner 90d555630097 (manual).
 
 **Building: T215 in progress since 23:45Z; 262 of 404 done; week 9% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -12,7 +12,6 @@ Updated 2026-11-13T00:14:23Z by runner 5d4b42856a08 (actions).
 - **Keeper:** last ran 00:14Z, next wake 02:47Z
 
 ## Needs attention
-- BLOCKED T255: plan gap reported: PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclear.rs cannot build one (lib.rs declares mod release_proof as a sibling; CLAUDE.md of payments forbids a public constructor). release_proof.rs is owned by T189, T337, T408, T332, T359, not T255. paid_release needs a VerifiedStripeEvent and an adapter, so it cannot serve a (conn, pick) re-clear without a new event (SEC-030). Smallest fix: give T255 release_proof.rs to add a pub(crate) constructor from the stored success, or declare reclear as a child module inside release_proof.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T255 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T371 (since 2026-11-12T23:46:03Z, no attempt used; a plan change fixes it): T371: dependency T385 is DONE but its owned file app/licensing/src/own_record.rs is not on main; T371: dependency T385 is DONE but its owned file app/businesses/src/signup_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/integration/tests/signup_own_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/record/roc/ROC100001 is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/roc is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/city is not on main
 - Strict plan check red: 21 problem(s) on tasks still to run (+138 on DONE tasks); first: T320: measures 46% of the window, over its 45% limit; trim its reads or split it
@@ -94,6 +93,7 @@ Updated 2026-11-13T00:14:23Z by runner 5d4b42856a08 (actions).
 | T317 | server and intake: the inbound text route applies SEC-014's  | done | 2 | 53 min | 00:16Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
 
 ### Plan and harness merges on main
+- 00:14Z Plan: T255 plan gap: re-clear builds Releasable from the stored success (D-3358) (#638)
 - 22:08Z Plan: T340, T271, T126 under their context limits (D-3325) (#623)
 - 22:01Z plan: T419 fixes the flaky TD-CALL-23 no-plaintext scan, claimed first (D-3324) (#622)
 - 20:49Z Harness: worker output discipline and per-role usage recording (D-3305) (#618)
