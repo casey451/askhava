@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, status_at AS \"status_at: jiff_sqlx::Timestamp\" FROM jobs.job\n           WHERE status = ANY($1) AND status_at <= $2",
+  "query": "SELECT id, status_at AS \"status_at: jiff_sqlx::Timestamp\" FROM jobs.job\n           WHERE status = ANY($1) AND status_at <= $2 AND id > $3 ORDER BY id LIMIT $4",
   "describe": {
     "columns": [
       {
@@ -29,7 +29,9 @@
     "parameters": {
       "Left": [
         "TextArray",
-        "Timestamptz"
+        "Timestamptz",
+        "Uuid",
+        "Int8"
       ]
     },
     "nullable": [
@@ -37,5 +39,5 @@
       false
     ]
   },
-  "hash": "94ff193aa546149e7d2f77cefd17c49ad26decf4b8bd31591ef3cc57301ab4ba"
+  "hash": "28b8bfe30f88160181e7ebbe7cace008d8a1c6402e4504fdf63ddc8372d2f5d1"
 }
