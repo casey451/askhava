@@ -31,6 +31,9 @@ RESYNC_CLOSE = ("Closed by the runner: merging main into this branch conflicts i
                 "runner then opens a fresh pull request (D-891).")
 UPDATE_PUSH_LIMIT = 3  # rejected update-merge pushes (not races) before the attempt fails (D-620)
 UPDATE_WAIT = timedelta(hours=2)  # how long an update merge git cannot make waits before the attempt fails (D-620)
+# A branch whose update merge has waited this long (`update_waiting_since`) no longer holds the merge line:
+# it still retries its own update until UPDATE_WAIT fails it, but the next branch gets the turn (D-3418).
+MERGE_LINE_STUCK = timedelta(minutes=30)
 UPDATE_STUCK = "the branch could not be brought up to date with main for {wait}: {why} (D-620)"
 UPDATE_CLOSE = ("Closed by the runner: this branch could not be brought up to date with main, and auto-merge was on "
                 "({why}). The next attempt continues this branch with main merged in, or starts fresh when that "
@@ -478,35 +481,87 @@ def _close_history(state: State, tid: str, pr: dict[str, Any], result: str) -> S
 
 def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime) -> tuple[State, list[tuple[str, str, str]]]:
     """Resolve every MERGE_PENDING task, each on its own lane (D-620); [(task, lane, result)] in state
-    order. With one lane there is at most one, exactly as before."""
-    outcomes: list[tuple[str, str, str]] = []
-    for tid in [t["id"] for t in state["tasks"] if t.get("status") == st.MERGE_PENDING]:
-        lane = st.task_lane(st.entry(state, tid))
-        state, result = _resolve_one(state, env, cfg, now, st.entry(state, tid))
-        outcomes.append((tid, lane, result))
+    order. With one lane there is at most one, exactly as before.
+
+    The merge line (D-3418): only one branch at a time is brought up to date with `main`. Updating every
+    behind branch at once restarted Ci, Twin and Ally on all of them each time `main` moved, and all but
+    the next to merge were wasted (about 1.9 runs per merge). Tasks are taken in `_merge_line` order and
+    the turn goes to the first that `_holds_turn`; one that leaves the line in its step (a resync, a
+    failed attempt, DONE) passes it on in the same cycle. Every other task skips `_update_step` but still
+    gets auto-merge, so a branch already current with `main` merges without waiting for its turn."""
+    outcomes: dict[str, tuple[str, str, str]] = {}
+    turn_free = True
+    for tid in _merge_line(state):
+        task = st.entry(state, tid)
+        pr, lane = _current_pr(env, task), st.task_lane(task)
+        holds = turn_free and _holds_turn(task, pr, now)
+        state, result = _resolve_one(state, env, cfg, now, task, pr, holds or _line_stuck(task, now))
+        turn_free = turn_free and not (holds and st.status(state, tid) == st.MERGE_PENDING)
+        outcomes[tid] = (tid, lane, result)
         state = _lane_outcome(state, tid, lane, result, now, env.checks_on)
-    return state, outcomes
+    return state, [outcomes[t["id"]] for t in state["tasks"] if t["id"] in outcomes]
 
 
-def _resolve_one(state: State, env: Env, cfg: Config, now: datetime, task: dict[str, Any]) -> tuple[State, str]:
-    """One MERGE_PENDING task: its pull request merged (DONE or a red main), still open, or absent."""
-    tid = task["id"]
-    pr = env.pr_for(tid)
-    if pr is not None and _earlier_pr(task, pr, env):
-        pr = None  # an earlier attempt's PR beside an empty hand-in already on main (D-584)
+def _holds_turn(task: dict[str, Any], pr: dict[str, Any] | None, now: datetime) -> bool:
+    """Whether a task may take the merge line's free turn (D-3418): an open pull request whose head
+    checks have not failed (a red head fails the attempt in its step), and an update merge not stuck
+    (`_line_stuck`). A task without a pull request yet, or a merged one, never holds the line."""
+    if pr is None or pr.get("merged") or verify.checks_state(pr) == "failed":
+        return False
+    return not _line_stuck(task, now)
+
+
+def _merge_line(state: State) -> list[str]:
+    """MERGE_PENDING task ids in merge-line order (D-3418): FIX-MAIN first, then by hand-in time
+    (`_handed_in_at`; a task without one last), then by task id so every runner agrees."""
+    pending = [t for t in state["tasks"] if t.get("status") == st.MERGE_PENDING]
+    ordered = sorted(pending, key=lambda t: (t["id"] != st.FIX_MAIN, not _handed_in_at(t), _handed_in_at(t), t["id"]))
+    return [t["id"] for t in ordered]
+
+
+def _handed_in_at(task: dict[str, Any]) -> str:
+    """When the task's current attempt was handed in (D-3418): its last hand-in update merge's `at`
+    (D-2798), else its last attempt's `ended_at`; '' when neither is recorded."""
+    notes = [u for u in task.get("update_merges") or [] if u.get("how") == "hand-in"]
+    if notes and notes[-1].get("at"):
+        return str(notes[-1]["at"])
+    history = task.get("history") or []
+    return str(history[-1].get("ended_at") or "") if history else ""
+
+
+def _line_stuck(task: dict[str, Any], now: datetime) -> bool:
+    """Whether the task's update merge has waited MERGE_LINE_STUCK or longer, so it no longer holds the
+    merge line (D-3418); its own UPDATE_WAIT still runs and fails the attempt in the end (D-620)."""
+    since = task.get("update_waiting_since")
+    return bool(since) and now - st.parse(str(since)) >= MERGE_LINE_STUCK
+
+
+def _current_pr(env: Env, task: dict[str, Any]) -> dict[str, Any] | None:
+    """The task's pull request for this attempt, or None when it has none yet or the branch's latest
+    is an earlier attempt's beside an empty hand-in already on main (D-584)."""
+    pr = env.pr_for(task["id"])
+    return None if pr is not None and _earlier_pr(task, pr, env) else pr
+
+
+def _resolve_one(state: State, env: Env, cfg: Config, now: datetime, task: dict[str, Any],
+                 pr: dict[str, Any] | None, may_update: bool) -> tuple[State, str]:
+    """One MERGE_PENDING task with its `_current_pr`: merged (DONE or a red main), still open, or absent;
+    `may_update` is whether it may bring its branch up to date with main (the merge line, D-3418)."""
     if pr is None:
         return _without_pr(state, env, task, now)
-    return _resolve_pr(state, env, cfg, now, tid, pr)
+    return _resolve_pr(state, env, cfg, now, task["id"], pr, may_update)
 
 
-def _resolve_pr(state: State, env: Env, cfg: Config, now: datetime, tid: str, pr: dict[str, Any]) -> tuple[State, str]:
+def _resolve_pr(state: State, env: Env, cfg: Config, now: datetime, tid: str, pr: dict[str, Any],
+                may_update: bool = True) -> tuple[State, str]:
     """A MERGE_PENDING task whose pull request exists: merged (DONE or a red main) or still open. The one rule
-    by which both the cycle and `resolve_merged` (D-3141) close a merge."""
+    by which both the cycle and `resolve_merged` (D-3141) close a merge; `may_update` (the merge line's
+    turn, D-3418) only matters to an open pull request."""
     reviewed = _head_reviewed(state, env, tid, pr)
     if reviewed is not None and st.entry(state, tid).get("head_check_since"):
         state = st.with_task(state, tid, head_check_since=None)  # the head was placed: the wait is over (D-584)
     if not pr.get("merged"):
-        return _open_pr_step(state, env, tid, pr, reviewed, now)
+        return _open_pr_step(state, env, tid, pr, reviewed, now, may_update)
     if verify.checks_state(pr) == "pending":
         return state, "merge_pending"
     if reviewed is None:
@@ -622,13 +677,15 @@ def _earlier_reviewed(task: dict[str, Any]) -> set[str]:
     return {str(u.get("from")) for u in task.get("update_merges") or [] if u.get("from")}
 
 
-def _open_pr_step(state: State, env: Env, tid: str, pr: dict[str, Any], reviewed: bool | None, now: datetime) -> tuple[State, str]:
+def _open_pr_step(state: State, env: Env, tid: str, pr: dict[str, Any], reviewed: bool | None, now: datetime,
+                  may_update: bool = True) -> tuple[State, str]:
     """An unmerged PR (D-584). A head nobody reviewed (or one git cannot place) is a failed attempt,
     never a wait for an auto-merge the runner refuses; if auto-merge is on, the PR is closed first so
     GitHub cannot merge that head, and if the close fails the task stays MERGE_PENDING so `_merged`
     still judges whatever merges. Red checks fail the attempt. An update merge of the reviewed head
     (the runner's own whose record was lost, or GitHub's "Update branch" by merge) becomes the reviewed
-    head, and a reviewed head that fell behind main is brought up to date (`_update_step`, D-620).
+    head, and a reviewed head that fell behind main is brought up to date (`_update_step`, D-620), only
+    while `may_update` (the merge line's turn, D-3418).
     Another reviewed head updated from main merges only if auto-merge is already on; with it off the
     runner cannot turn it on for that head, so that too is a failed attempt. Otherwise auto-merge is
     turned on."""
@@ -645,7 +702,7 @@ def _open_pr_step(state: State, env: Env, tid: str, pr: dict[str, Any], reviewed
         return _update_wait(state, env, tid, pr, f"the pull request still shows {head[:12]}, the head before the update merge {sha[:12]}", now)
     if sha and head != sha and env.update_merge_of(sha, head, int(pr.get("number") or 0)) is True:
         state, sha = _adopt_update(state, tid, {"from": sha, "to": head, "how": "adopted"}, now), head
-    if sha and head == sha:
+    if sha and head == sha and may_update:
         state, stepped = _update_step(state, env, tid, pr, now)
         if stepped:
             return state, stepped

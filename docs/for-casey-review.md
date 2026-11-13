@@ -2635,3 +2635,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Back to one task per code area at a time (D-3386)
 
 - On November 12 we let two tasks work in the same code area at once to keep more lanes busy, with a rule to undo it if more than 1 merge in 5 needed redoing. 3 of the next 10 did, all over the same notes file, so it is back to one. Nothing needs you now.
+
+## Pull requests now wait their turn to catch up with main (D-3418)
+
+- When one task merged, the runner used to bring every other waiting task up to date at once, which restarted all their checks; only one could merge next, so about 2 check runs per merge were thrown away. Now only the oldest waiting task is brought up to date, and the next one gets its turn when it merges or drops out. Nothing needs you now.
