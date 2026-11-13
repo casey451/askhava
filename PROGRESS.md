@@ -3242,3 +3242,4 @@
 - 2026-11-13T00:32:02Z runner 90d555630097 (actions): {}
 - 2026-11-13T00:36:39Z runner 7ae5f9a704c4 (actions): {"T420": "None -> QUEUED", "T421": "None -> QUEUED", "T422": "None -> QUEUED", "T423": "None -> QUEUED", "T424": "None -> QUEUED", "T425": "None -> QUEUED", "T426": "None -> QUEUED", "T427": "None -> QUEUED", "T430": "None -> QUEUED", "T428": "None -> QUEUED", "T429": "None -> QUEUED"}
 - 2026-11-13T00:37:04Z runner 7ae5f9a704c4 (actions): {"T422": "QUEUED -> IN_PROGRESS"}; T422 estimated 1.7M tokens (calibrated); week has 164.7M left (no five-hour budget, D-3056) after 11.3M still running in another lane (session_reading 2026-11-13T00:31:43Z (week)); claimed
+- 2026-11-13T00:41:15Z runner 7ae5f9a704c4 (actions): {"T423": "QUEUED -> IN_PROGRESS"}; T423 estimated 1.4M tokens (calibrated); week has 163.0M left (no five-hour budget, D-3056) after 13.0M still running in another lane (session_reading 2026-11-13T00:31:43Z (week)); claimed

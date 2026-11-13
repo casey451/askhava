@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T00:37:04Z by runner 7ae5f9a704c4 (actions).
+Updated 2026-11-13T00:41:15Z by runner 7ae5f9a704c4 (actions).
 
 **Building: T215 in progress since 23:45Z; 262 of 415 done; week 9% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 262 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
-- **Week:** 9% used, 164.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:32Z, 4 min before this update
+- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
+- **Week:** 9% used, 163.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 00:37Z, 4 min before this update
 - **Keeper:** last ran 00:32Z, next wake 02:48Z
 
 ## Needs attention
@@ -119,7 +119,6 @@ Updated 2026-11-13T00:37:04Z by runner 7ae5f9a704c4 (actions).
 - 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
 - 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
 - 01:55Z Plan: owner approval before a team-linked phone works (BIZ-033, IC-95) — T396–T399 (D-3081) (#531)
-- 00:38Z Plan: T261 pre-flight fix and catalog loaded at start-up (T400, IC-96) (D-3100) (#534)
 
 ## Progress (requirements verified)
 
@@ -152,7 +151,7 @@ Updated 2026-11-13T00:37:04Z by runner 7ae5f9a704c4 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T00:31:43Z (week)): week: 29.3M used, 164.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T01:52:51Z.
+- Pacing (session_reading 2026-11-13T00:31:43Z (week)): week: 31.0M used, 163.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T01:57:07Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -171,6 +170,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T372 (lease until 2026-11-13T02:46:03Z)
 - lane 4: T422 (lease until 2026-11-13T03:36:38Z)
 - lane 6: T249 (lease until 2026-11-13T03:01:54Z)
+- lane 7: T423 (lease until 2026-11-13T03:40:54Z)
 
 ## Last usage reading
 - {"task": "T255", "at": "2026-11-12T23:48:10Z", "output_tokens": 18261, "cache_read_input_tokens": 2887666, "input_tokens": 101, "cache_creation_input_tokens": 272582}
