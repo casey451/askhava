@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T15:28:09Z by runner 9d7e3b884c94 (actions).
+Updated 2026-11-13T15:31:15Z by runner 9d7e3b884c94 (actions).
 
 **Building: T386 in progress since 15:27Z; 283 of 421 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T15:28:09Z by runner 9d7e3b884c94 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T386 claimed 15:27Z, lease until 18:27Z; lane 3: T319 claimed 14:57Z, lease until 17:57Z; lane 5: T266 claimed 14:42Z, lease until 17:42Z
 - **Week:** 20% used, 147.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:20Z, 7 min before this update
+- **Last run:** 15:29Z, 1 min before this update
 - **Keeper:** last ran 15:19Z, next wake 17:45Z
 
 ## Needs attention
@@ -72,7 +72,6 @@ Updated 2026-11-13T15:28:09Z by runner 9d7e3b884c94 (actions).
 | T366 | jobs and server: every dead-lettered task alerts, and a dail | done | 1 | 26 min | 17:53Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 1 | 32 min | 17:52Z |  |
 | T315 | jobs and portals: feedback words are blanked by the 3-year p | done | 1 | 66 min | 16:18Z |  |
-| T370 | intake (harness): the night count the homeowner hears counts | done | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 
 ### Plan and harness merges on main
 - 15:02Z Plan: split T328 and trim T321 to fit the context limit (D-3468) (#676)
