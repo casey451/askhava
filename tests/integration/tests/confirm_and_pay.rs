@@ -19,6 +19,7 @@ use askhava_adapters::api::{
     AdapterError, Charge, Delivery, IdempotencyKey, IntentMetadata, PaymentIntent, PaymentsAdapter,
     WebhookVendor, verify_webhook,
 };
+use askhava_core::api::brand;
 use askhava_payments::api::{
     BusinessId, ChargeError, ChargeOutcome, DESCRIPTOR_MAX, EntryKind, IntentStripe, IntentText,
     LATE_KIND, LATE_SUCCESS_ALERT, LedgerEntry, NewEntry, PickNow, Press, ReleaseError,
@@ -574,12 +575,14 @@ fn td_fee_38_td_fee_32_descriptors_fit() {
             "{descriptor}"
         );
         assert_eq!(text.statement_suffix(), format!("JOB {number}"));
-        let description = format!("Ask Hava introduction service, job {number}");
+        let description = format!(
+            "{} introduction service, job {number}",
+            brand().display_name()
+        );
         assert_eq!(text.description(), description);
     }
-    assert_eq!(
-        IntentText::for_job(1_000_000_000),
-        Err(ChargeError::BadField)
-    );
+    let digits = DESCRIPTOR_MAX - "* JOB ".len() - brand().statement_prefix().len();
+    let too_long = 10_i64.pow(u32::try_from(digits).expect("digits"));
+    assert_eq!(IntentText::for_job(too_long), Err(ChargeError::BadField));
     assert_eq!(IntentText::for_job(0), Err(ChargeError::BadField));
 }

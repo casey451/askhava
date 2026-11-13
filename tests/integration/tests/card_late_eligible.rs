@@ -11,7 +11,7 @@ use std::collections::BTreeSet;
 
 use askhava_businesses::api::AccountStatus;
 use askhava_catalog::api::{Catalog, parse};
-use askhava_core::api::Guarded;
+use askhava_core::api::{Guarded, brand};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     COUNT_MANY_TEMPLATE, COUNT_ONE_TEMPLATE, JobStart, NOT_COVERED_TEMPLATE, Opened, Request,
@@ -36,6 +36,12 @@ const TOWN: &str = "lake_havasu_city";
 const AC: (&str, &str) = ("hvac_repair", "AC not cooling");
 const PIPE: (&str, &str) = ("plumbing_repair", "faucet replacement");
 const WIRE: (&str, &str) = ("electrical", "outlet repair");
+
+/// `text` with the brand file's names in place of its `{brand...}` and `{domain}` tokens, so an
+/// expected line follows a brand switch (WORD-001, D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("known brand tokens")
+}
 
 fn at(hour: i8) -> Timestamp {
     format!("2026-11-02T{hour:02}:00:00-07:00")
@@ -334,7 +340,13 @@ async fn td_int_29_the_count_line_is_the_match(mut db: Db) {
     assert_eq!(template, Some(COUNT_MANY_TEMPLATE));
     assert_eq!(
         body.as_deref(),
-        Some("Ask Hava: Got it. We'll send this to the 5 AC businesses on Ask Hava.")
+        Some(
+            branded(
+                "{brand_short}: Got it. We'll send this to the 5 AC businesses on {brand}.",
+                false
+            )
+            .as_str()
+        )
     );
     let (_, _, template, body) = told(
         &mut db,
@@ -346,7 +358,13 @@ async fn td_int_29_the_count_line_is_the_match(mut db: Db) {
     assert_eq!(template, Some(COUNT_ONE_TEMPLATE));
     assert_eq!(
         body.as_deref(),
-        Some("Ask Hava: Got it. We'll send this to the 1 AC business on Ask Hava.")
+        Some(
+            branded(
+                "{brand_short}: Got it. We'll send this to the 1 AC business on {brand}.",
+                false
+            )
+            .as_str()
+        )
     );
     let (conversation, job_id, template, _) =
         told(&mut db, (&text(3, "my AC is not cooling"), AC.0), &ac, &[]).await;
@@ -398,7 +416,7 @@ async fn td_int_25_split_offer_and_split_makes_two_requests(mut db: Db) {
     assert_eq!(
         body.as_deref(),
         Some(
-            "Ask Hava: This needs 2 kinds of business. Reply SPLIT to send it as 2 requests, one per trade."
+            branded("{brand_short}: This needs 2 kinds of business. Reply SPLIT to send it as 2 requests, one per trade.", false).as_str()
         )
     );
     let second = JobStart {

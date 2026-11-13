@@ -16,7 +16,7 @@ use askhava_businesses::api::{
     add_member, add_owner, apply, business, complaints, create, for_casey, has_safety_word,
     link_phone, list_closed, phone_linked_line, record_complaint, reply, run_box_closed,
 };
-use askhava_core::api::Claimed;
+use askhava_core::api::{Claimed, brand};
 use askhava_messaging::api::count_segments;
 use askhava_ops::api::Actor;
 use jiff::{SignedDuration, Timestamp};
@@ -27,6 +27,12 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 const DAY: i64 = 24 * 60;
+
+/// `text` with the brand file's names in place of its `{brand...}` and `{domain}` tokens, so an
+/// expected line follows a brand switch (WORD-001, D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("known brand tokens")
+}
 
 fn at(minute: i64) -> Timestamp {
     Timestamp::from_second(1_790_000_000 + minute * 60).expect("time")
@@ -97,20 +103,25 @@ fn td_biz_03_complaint_reply_content() {
     };
     for spanish in [false, true] {
         let text = facts.text(spanish);
-        assert!(text.starts_with("Ask Hava: "));
+        assert!(text.starts_with(&branded("{brand_short}: ", spanish)));
         for part in ["Desert Pipe Co", "(928) 555-0142", "1042", "plumbing"] {
             assert!(text.contains(part), "{part}");
         }
-        assert!(text.ends_with("askhava.com/help/roc-complaint"));
+        assert!(text.ends_with(&branded("{domain}/help/roc-complaint", spanish)));
         assert!(count_segments(&text).segments <= 3);
     }
     let en = facts.text(false);
     assert!(en.contains("Sorry"));
-    assert!(
-        en.contains("Ask Hava is not a contractor and does not perform, bid on or supervise work")
-    );
+    assert!(en.contains(&branded(
+        "{brand} is not a contractor and does not perform, bid on or supervise work",
+        false
+    )));
     assert!(en.contains("is an independent business"));
-    assert!(facts.text(true).contains("Ask Hava no es contratista"));
+    assert!(
+        facts
+            .text(true)
+            .contains(&branded("{brand} no es contratista", true))
+    );
 }
 
 /// TD-BIZ-03, TD-BIZ-11 (BIZ-012, D-016): the third complaint within 90 days pauses the business;
@@ -335,8 +346,9 @@ async fn td_biz_11_member_phone_link_emails_the_owner(pool: PgPool) {
     assert!(refused.is_err());
     for spanish in [false, true] {
         let line = phone_linked_line("Test Member", "0170", spanish);
-        assert!(line.starts_with("Ask Hava: Test Member, ") && line.contains("0170"));
-        assert!(line.contains("askhava.com/b"));
+        let opening = branded("{brand_short}: Test Member, ", spanish);
+        assert!(line.starts_with(&opening) && line.contains("0170"));
+        assert!(line.contains(&branded("{domain}/b", spanish)));
     }
 }
 
