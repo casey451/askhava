@@ -438,6 +438,7 @@ where
     S: StorageAdapter + Send + Sync + 'static,
 {
     release_minter();
+    let clock = Arc::clone(&stream.clock);
     let mut registry = Registry::new();
     register_intake_asks(&mut registry, &stream.id_secret);
     registry.register(
@@ -463,15 +464,14 @@ where
         askhava_picks::api::run_receipt_notice,
     );
     register_pick_notices(&mut registry, confirm);
-    registry.register(
-        askhava_payments::api::PAUSE_KIND,
-        |pool, _task| async move {
-            askhava_payments::api::run_pause_watch(&pool, jiff::Timestamp::now()).await
-        },
-    );
+    let pause_clock = Arc::clone(&clock);
+    registry.register(askhava_payments::api::PAUSE_KIND, move |pool, _task| {
+        let now = pause_clock.now();
+        async move { askhava_payments::api::run_pause_watch(&pool, now).await }
+    });
     register_business_handlers(&mut registry);
     register_accepted_quote(&mut registry);
-    register_purge_handlers(&mut registry);
+    register_purge_handlers(&mut registry, &clock);
     if let Some(keys) = texts {
         registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
             askhava_intake::api::run_job_text(pool, Arc::clone(&keys), task)
@@ -1097,67 +1097,122 @@ fn register_accepted_quote(registry: &mut Registry) {
     });
 }
 
-/// The retention purge (PRIV-007 to PRIV-009, D-491): `messaging`'s daily body cut (TXT-020,
-/// D-1854); `jobs`' daily sweep and stage tasks, with `intake`'s sweep of requests that never got
-/// a job on the same daily task; on a stage task or
-/// `privacy`'s re-check, `businesses` queues its complaint hold events and `payments` places its
-/// dispute holds before `privacy` decides (a re-check that queued new events waits for them,
-/// D-1799); `privacy` applies the complaint events and hands the contact and text stages to
-/// `intake`, `quotes` and, on the text stage, the feedback words' step ([`feedback_step`], T315). Each purge task's last failed attempt raises an alert ([`alert_if_last`]).
-fn register_purge_handlers(registry: &mut Registry) {
-    registry.register(
-        askhava_messaging::api::CUT_KIND,
-        askhava_messaging::api::run_cut,
-    );
-    registry.register(askhava_jobs::api::SWEEP_KIND, |pool, task| async move {
-        askhava_jobs::api::run_sweep(pool.clone(), task.clone()).await?;
-        askhava_intake::api::run_request_sweep(pool, task).await
-    });
-    for kind in [
-        askhava_jobs::api::PURGE_DUE_KIND,
-        askhava_privacy::api::RECHECK_KIND,
-    ] {
-        registry.register(kind, |pool, task| async move {
-            let outcome = async {
-                let queued =
-                    askhava_businesses::api::run_complaint_holds(pool.clone(), task.clone())
-                        .await?;
-                askhava_payments::api::run_dispute_holds(pool.clone(), task.clone()).await?;
-                askhava_privacy::api::run_purge_due_after(pool.clone(), task.clone(), queued).await
-            };
-            alert_if_last(&pool, &task, outcome.await).await
-        });
-    }
+/// The retention purge (PRIV-007 to PRIV-009, D-491), every handler at `clock`'s now (the worker's
+/// clock, SEC-035, D-2641): `messaging`'s daily body cut (TXT-020, D-1854); `jobs`' daily sweep and
+/// stage tasks, with `intake`'s sweep of requests that never got a job on the same daily task (the
+/// sweep and the cut queue the next day's run first); on a stage task or `privacy`'s re-check,
+/// `businesses` queues its complaint hold events and `payments` places its dispute holds before
+/// `privacy` decides (a re-check that queued new events waits for them, D-1799); `privacy` applies
+/// the complaint events and hands the contact and text stages to `intake`, `quotes` and, on the
+/// text stage, the feedback words' step ([`feedback_step`], T315). Each purge task's last failed
+/// attempt, the daily sweep's and cut's too, raises an alert ([`alert_if_last`]).
+fn register_purge_handlers(registry: &mut Registry, clock: &Arc<dyn Clock>) {
+    register_daily_purges(registry, clock);
+    register_purge_stages(registry, clock);
+    let at = Arc::clone(clock);
     registry.register(
         askhava_businesses::api::COMPLAINT_HOLD_KIND,
-        askhava_privacy::api::run_complaint_hold,
+        move |pool, task| askhava_privacy::api::run_complaint_hold_at(pool, task, at.now()),
     );
-    registry.register(askhava_privacy::api::PURGE_KIND, |pool, task| async move {
-        let outcome = async {
-            askhava_intake::api::run_purge(pool.clone(), task.clone()).await?;
-            askhava_quotes::api::run_text_purge(pool.clone(), task.clone()).await?;
-            match askhava_privacy::api::purge_target(&task)? {
-                (job, askhava_privacy::api::PurgeStage::Text) => feedback_step(&pool, job).await,
-                _ => Ok(()),
-            }
-        };
-        alert_if_last(&pool, &task, outcome.await).await
+    let at = Arc::clone(clock);
+    registry.register(askhava_privacy::api::PURGE_KIND, move |pool, task| {
+        let now = at.now();
+        async move {
+            let outcome = purge_step(&pool, &task, now).await;
+            alert_if_last(&pool, &task, outcome).await
+        }
     });
-    register_feedback_purge(registry);
+    register_feedback_purge(registry, clock);
+    let at = Arc::clone(clock);
     registry.register(
         askhava_intake::api::REQUEST_PURGE_KIND,
-        |pool, task| async move {
-            let outcome = askhava_intake::api::run_request_purge(pool.clone(), task.clone()).await;
-            alert_if_last(&pool, &task, outcome).await
+        move |pool, task| {
+            let now = at.now();
+            async move {
+                let outcome =
+                    askhava_intake::api::run_request_purge_at(pool.clone(), task.clone(), now);
+                alert_if_last(&pool, &task, outcome.await).await
+            }
         },
     );
 }
 
+/// PRIV-007 to PRIV-009, TXT-020, D-2641: the daily body cut and the daily purge sweep (with
+/// `intake`'s request sweep) at `clock`'s now; a run's last failed attempt raises one
+/// `privacy.purge_failed` alert, and the next day's run is already queued.
+fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
+    let at = Arc::clone(clock);
+    registry.register(askhava_messaging::api::CUT_KIND, move |pool, task| {
+        let now = at.now();
+        async move {
+            let outcome = askhava_messaging::api::run_cut_at(pool.clone(), task.clone(), now);
+            alert_if_last(&pool, &task, outcome.await).await
+        }
+    });
+    let at = Arc::clone(clock);
+    registry.register(askhava_jobs::api::SWEEP_KIND, move |pool, task| {
+        let now = at.now();
+        async move {
+            let outcome = async {
+                askhava_jobs::api::run_sweep_at(pool.clone(), task.clone(), now).await?;
+                askhava_intake::api::run_request_sweep_at(pool.clone(), task.clone(), now).await
+            };
+            alert_if_last(&pool, &task, outcome.await).await
+        }
+    });
+}
+
+/// PRIV-007 to PRIV-009, D-1799, D-2641: `jobs`' stage tasks and `privacy`'s re-check at `clock`'s
+/// now: the complaint and dispute hold steps, then `privacy`'s decision.
+fn register_purge_stages(registry: &mut Registry, clock: &Arc<dyn Clock>) {
+    for kind in [
+        askhava_jobs::api::PURGE_DUE_KIND,
+        askhava_privacy::api::RECHECK_KIND,
+    ] {
+        let at = Arc::clone(clock);
+        registry.register(kind, move |pool, task| {
+            let now = at.now();
+            async move {
+                let outcome = stage_step(&pool, &task, now).await;
+                alert_if_last(&pool, &task, outcome).await
+            }
+        });
+    }
+}
+
+/// PRIV-007 to PRIV-009, D-1799: one stage task or re-check at `now`: `businesses`' complaint hold
+/// events, `payments`' dispute holds, then `privacy`'s decision.
+async fn stage_step(
+    pool: &PgPool,
+    task: &askhava_core::api::Claimed,
+    now: jiff::Timestamp,
+) -> Result<(), askhava_core::api::HandlerError> {
+    let queued = askhava_businesses::api::run_complaint_holds(pool.clone(), task.clone()).await?;
+    askhava_payments::api::run_dispute_holds_at(pool.clone(), task.clone(), now).await?;
+    askhava_privacy::api::run_purge_due_after_at(pool.clone(), task.clone(), (queued, now)).await
+}
+
+/// PRIV-007, PRIV-008, D-491: one `privacy.purge` task at `now`: `intake`'s rows, `quotes`' text
+/// and, on the text stage, the feedback words' step.
+async fn purge_step(
+    pool: &PgPool,
+    task: &askhava_core::api::Claimed,
+    now: jiff::Timestamp,
+) -> Result<(), askhava_core::api::HandlerError> {
+    askhava_intake::api::run_purge_at(pool.clone(), task.clone(), now).await?;
+    askhava_quotes::api::run_text_purge(pool.clone(), task.clone()).await?;
+    match askhava_privacy::api::purge_target(task)? {
+        (job, askhava_privacy::api::PurgeStage::Text) => feedback_step(pool, job, now).await,
+        _ => Ok(()),
+    }
+}
+
 /// PRIV-009, D-3264: the held feedback's daily ask-again task runs [`feedback_step`].
-fn register_feedback_purge(registry: &mut Registry) {
-    registry.register(
-        askhava_jobs::api::FEEDBACK_PURGE_KIND,
-        |pool, task| async move {
+fn register_feedback_purge(registry: &mut Registry, clock: &Arc<dyn Clock>) {
+    let at = Arc::clone(clock);
+    registry.register(askhava_jobs::api::FEEDBACK_PURGE_KIND, move |pool, task| {
+        let now = at.now();
+        async move {
             let job = task.payload["job"]
                 .as_str()
                 .and_then(|s| Uuid::parse_str(s).ok())
@@ -1165,24 +1220,27 @@ fn register_feedback_purge(registry: &mut Registry) {
                     "feedback purge payload is not a job",
                 ));
             let outcome = match job {
-                Ok(job) => feedback_step(&pool, job).await,
+                Ok(job) => feedback_step(&pool, job, now).await,
                 Err(e) => Err(e),
             };
             alert_if_last(&pool, &task, outcome).await
-        },
-    );
+        }
+    });
 }
 
 /// PRIV-009, PRIV-007, JOB-017 (T315, D-2205, D-3264): the text stage's feedback step: `privacy`
 /// says whether job `job` is held (an open dispute or complaint), and `jobs` blanks its feedback
-/// words when not, or keeps them and asks again in a day.
-async fn feedback_step(pool: &PgPool, job: Uuid) -> Result<(), askhava_core::api::HandlerError> {
+/// words when not, or keeps them and asks again in a day, at `now` (the worker's clock, D-2641).
+async fn feedback_step(
+    pool: &PgPool,
+    job: Uuid,
+    now: jiff::Timestamp,
+) -> Result<(), askhava_core::api::HandlerError> {
     let failed = askhava_core::api::HandlerError("feedback purge database call failed");
     let mut conn = pool.acquire().await.map_err(|_| failed)?;
     let held = askhava_privacy::api::is_held(&mut conn, job)
         .await
         .map_err(|_| failed)?;
-    let now = jiff::Timestamp::now();
     askhava_jobs::api::feedback_text_stage(&mut conn, (job, held), now)
         .await
         .map(|_| ())

@@ -49,12 +49,26 @@ pub async fn place_dispute_holds(
     Ok(open)
 }
 
-/// The composition's step on a contact-stage purge task, before `privacy` decides: runs
-/// [`place_dispute_holds`] at the wall clock; any other stage is left alone.
+/// The composition's step on a contact-stage purge task: [`run_dispute_holds_at`] at the wall
+/// clock.
+///
+/// # Errors
+/// As [`run_dispute_holds_at`].
+pub async fn run_dispute_holds(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    run_dispute_holds_at(pool, task, Timestamp::now()).await
+}
+
+/// PRIV-007, D-2641: the composition's step on a contact-stage purge task, before `privacy`
+/// decides: runs [`place_dispute_holds`] at `now` (the worker's clock); any other stage is left
+/// alone.
 ///
 /// # Errors
 /// A fixed [`HandlerError`] for a bad payload or a database failure.
-pub async fn run_dispute_holds(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+pub async fn run_dispute_holds_at(
+    pool: PgPool,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
     let (job, stage) = purge_target(&task)?;
     if stage != PurgeStage::Contact {
         return Ok(());
@@ -63,6 +77,6 @@ pub async fn run_dispute_holds(pool: PgPool, task: Claimed) -> Result<(), Handle
         .acquire()
         .await
         .map_err(|_| HandlerError("dispute hold database call failed"))?;
-    place_dispute_holds(&mut conn, job, Timestamp::now()).await?;
+    place_dispute_holds(&mut conn, job, now).await?;
     Ok(())
 }

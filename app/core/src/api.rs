@@ -66,6 +66,26 @@ pub async fn due_or_running(
     .map_err(|_| TaskError::Db)
 }
 
+/// PRIV-007 to PRIV-009, D-2641: of `keys`, the dedupe keys no `core.task` row holds yet, in
+/// `keys`' order; one statement over the unique dedupe index, so `jobs`' daily purge sweep skips a
+/// page of jobs whose stages are all queued without one insert each (T367).
+///
+/// # Errors
+/// [`TaskError::Db`] when the read fails.
+pub async fn keys_not_queued(
+    db: &mut sqlx::PgConnection,
+    keys: &[String],
+) -> Result<Vec<String>, TaskError> {
+    sqlx::query_scalar!(
+        r#"SELECT k.key AS "key!" FROM unnest($1::text[]) WITH ORDINALITY AS k(key, n)
+           WHERE NOT EXISTS (SELECT 1 FROM core.task t WHERE t.dedupe_key = k.key) ORDER BY k.n"#,
+        keys,
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| TaskError::Db)
+}
+
 /// OPS-004, JOB-006, D-2285: each task kind with a dead-lettered `core.task` whose last error is
 /// [`NO_HANDLER`], with how many, in kind order. Kinds and counts only, never a payload; the
 /// server's hourly no-handler check reads it (`app/server/src/no_handler_alert.rs`, T327).

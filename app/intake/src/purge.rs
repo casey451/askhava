@@ -270,18 +270,26 @@ pub async fn purge_answers(db: &mut PgConnection, job: Uuid) -> Result<u64, Hand
     Ok(gone.rows_affected())
 }
 
-/// The [`PURGE_KIND`](askhava_privacy::api::PURGE_KIND) handler; safe to run twice.
+/// The [`PURGE_KIND`](askhava_privacy::api::PURGE_KIND) handler at the wall clock: [`run_purge_at`].
+///
+/// # Errors
+/// As [`run_purge_at`].
+pub async fn run_purge(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    run_purge_at(pool, task, Timestamp::now()).await
+}
+
+/// PRIV-007, PRIV-008, D-2641: the [`PURGE_KIND`](askhava_privacy::api::PURGE_KIND) handler at
+/// `now` (the worker's clock); safe to run twice.
 ///
 /// # Errors
 /// A fixed [`HandlerError`] for a bad payload or a database or vault failure.
-pub async fn run_purge(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+pub async fn run_purge_at(pool: PgPool, task: Claimed, now: Timestamp) -> Result<(), HandlerError> {
     let (job, stage) = purge_target(&task)?;
     let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
     match stage {
         PurgeStage::Photos => Ok(()),
         PurgeStage::Text => purge_answers(&mut conn, job).await.map(|_| ()),
         PurgeStage::Contact => {
-            let now = Timestamp::now();
             purge_or_wait(&mut conn, (PURGE_KIND, &task), Target::Job(job), now).await
         }
     }
@@ -318,13 +326,25 @@ pub async fn sweep_requests(db: &mut PgConnection, now: Timestamp) -> Result<usi
     Ok(queued)
 }
 
-/// The composition's step on `jobs`' daily sweep: [`sweep_requests`] at the wall clock.
+/// The composition's step on `jobs`' daily sweep: [`run_request_sweep_at`] at the wall clock.
+///
+/// # Errors
+/// As [`run_request_sweep_at`].
+pub async fn run_request_sweep(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    run_request_sweep_at(pool, task, Timestamp::now()).await
+}
+
+/// PRIV-007, D-2641: [`sweep_requests`] at `now` (the worker's clock).
 ///
 /// # Errors
 /// A fixed [`HandlerError`] when the database call fails.
-pub async fn run_request_sweep(pool: PgPool, _task: Claimed) -> Result<(), HandlerError> {
+pub async fn run_request_sweep_at(
+    pool: PgPool,
+    _task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
     let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
-    sweep_requests(&mut conn, Timestamp::now())
+    sweep_requests(&mut conn, now)
         .await
         .map(|_| ())
         .map_err(|_| DB_FAILED)
@@ -335,8 +355,20 @@ pub async fn run_request_sweep(pool: PgPool, _task: Claimed) -> Result<(), Handl
 /// twice.
 ///
 /// # Errors
-/// A fixed [`HandlerError`] for a bad payload or a database or vault failure.
+/// As [`run_request_purge_at`].
 pub async fn run_request_purge(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    run_request_purge_at(pool, task, Timestamp::now()).await
+}
+
+/// PRIV-007, D-2641: [`run_request_purge`] at `now` (the worker's clock).
+///
+/// # Errors
+/// A fixed [`HandlerError`] for a bad payload or a database or vault failure.
+pub async fn run_request_purge_at(
+    pool: PgPool,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
     let conversation = task.payload["conversation"]
         .as_str()
         .and_then(|s| Uuid::parse_str(s).ok())
@@ -344,5 +376,5 @@ pub async fn run_request_purge(pool: PgPool, task: Claimed) -> Result<(), Handle
     let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
     let target = Target::Request(conversation);
     let kind = (REQUEST_PURGE_KIND, &task);
-    purge_or_wait(&mut conn, kind, target, Timestamp::now()).await
+    purge_or_wait(&mut conn, kind, target, now).await
 }

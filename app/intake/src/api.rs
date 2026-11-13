@@ -89,8 +89,8 @@ pub use crate::photos::{
     photo_answer, photo_body, photo_text,
 };
 pub use crate::purge::{
-    REQUEST_PURGE_KIND, purge_answers, run_purge, run_request_purge, run_request_sweep,
-    sweep_requests,
+    REQUEST_PURGE_KIND, purge_answers, run_purge, run_purge_at, run_request_purge,
+    run_request_purge_at, run_request_sweep, run_request_sweep_at, sweep_requests,
 };
 pub use crate::question_bank::{
     AiTurn, BankRun, BankSettings, Given, Heard, MAX_ASKED, NOT_SURE, Next, Prompt, SMELL_EN,
