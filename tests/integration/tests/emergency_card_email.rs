@@ -13,6 +13,7 @@ use askhava_businesses::api::{
     request_welcome, send_emergency_test, set_after_hours, set_emergency_emails, set_job_types,
     set_towns, suspend_after_hours, switch_off_warns, switch_state, welcome_sent,
 };
+use askhava_core::api::brand;
 use askhava_ops::api::Actor;
 use askhava_picks::api::{WindowRules, emergency_pick_plan, emergency_pick_subject};
 use askhava_portals::api::{
@@ -37,6 +38,12 @@ const NOTICE_WORDS: CardNotice<'static> = CardNotice {
     town: "Lake Havasu City",
     card: "AC not cooling. How soon: today.",
 };
+
+/// `text` with the brand file's names in place of its `{brand...}` and `{domain}` tokens, so an
+/// expected line follows a brand switch (WORD-001, D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("known brand tokens")
+}
 
 fn az(time: &str) -> Timestamp {
     format!("2026-11-02T{time}-07:00").parse().expect("time")
@@ -149,7 +156,10 @@ async fn td_card_09_emergency_card_at_14_00_goes_to_everyone_at_once(pool: PgPoo
     let (p, run_at) = &queued[0];
     assert_eq!(*run_at, az("14:00:00"));
     assert_eq!(to(p), [Uuid::from_u128(0xa0), Uuid::from_u128(0xa1)]);
-    let subject = "Ask Hava: EMERGENCY HVAC job in Lake Havasu City. Quote as soon as you can.";
+    let subject = branded(
+        "{brand_short}: EMERGENCY HVAC job in Lake Havasu City. Quote as soon as you can.",
+        false,
+    );
     assert_eq!(p["subject"], subject);
     assert_eq!(emergency_card_subject("HVAC", "Lake Havasu City"), subject);
     assert_eq!(
@@ -469,7 +479,10 @@ async fn td_biz_24_the_test_emergency_email_screen(pool: PgPool) {
     let [subject, _] = emergency_test_words(false);
     assert_eq!(
         subject,
-        "Ask Hava: EMERGENCY sample job card (not a real job)"
+        branded(
+            "{brand_short}: EMERGENCY sample job card (not a real job)",
+            false
+        )
     );
 }
 
@@ -495,7 +508,10 @@ async fn td_card_09_emergency_pick_at_23_00(pool: PgPool) {
     assert_eq!(pick.plan.reminder_at, Some(az("23:30:00")));
     assert_eq!(
         emergency_pick_subject(1042, "11 p.m. Arizona time"),
-        "Ask Hava: EMERGENCY: a homeowner picked your quote for job 1042. Accept by 11 p.m. Arizona time."
+        branded(
+            "{brand_short}: EMERGENCY: a homeowner picked your quote for job 1042. Accept by 11 p.m. Arizona time.",
+            false
+        )
     );
     let words = include_str!("../../../app/messaging/templates/en.json");
     assert!(words.contains("businesses get your request by email marked EMERGENCY"));

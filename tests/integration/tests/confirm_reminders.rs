@@ -7,7 +7,7 @@
 //! extension stored once. No function here can place a call (BIZ-039).
 
 use askhava_businesses::api::Roles;
-use askhava_core::api::Guarded;
+use askhava_core::api::{Guarded, brand};
 use askhava_jobs::api::{JobStatus, move_to};
 use askhava_messaging::api::Language;
 use askhava_ops::api::Actor;
@@ -21,6 +21,15 @@ use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
+
+/// PICK-031's last reminder for job 1042 due at 2 p.m., with the brand file's tokens (D-3347).
+const LAST_REMINDER: &str = "{brand_short}: Last reminder: job 1042 has 1 hour to accept. After 2 p.m. the homeowner can pick another quote.";
+
+/// `text` with the brand file's names in place of its `{brand...}` and `{domain}` tokens, so an
+/// expected line follows a brand switch (WORD-001, D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("known brand tokens")
+}
 
 /// Arizona wall-clock time on November `day`, 2026 (UTC-7 all year).
 fn az(day: i8, hour: i8, minute: i8) -> Timestamp {
@@ -175,8 +184,8 @@ fn td_pick_31_reminder_wording() {
     assert_eq!(
         reminder_lines(1042, due, first, Language::En),
         [
-            "Ask Hava: Reminder: accept job 1042 by 2 p.m.",
-            "Need more time? Hold for 2 more hours: confirm by 4 p.m."
+            branded("{brand_short}: Reminder: accept job 1042 by 2 p.m.", false),
+            "Need more time? Hold for 2 more hours: confirm by 4 p.m.".to_owned()
         ]
     );
     let last = Reminder {
@@ -186,9 +195,7 @@ fn td_pick_31_reminder_wording() {
     };
     assert_eq!(
         reminder_lines(1042, due, last, Language::En),
-        [
-            "Ask Hava: Last reminder: job 1042 has 1 hour to accept. After 2 p.m. the homeowner can pick another quote."
-        ]
+        [branded(LAST_REMINDER, false)]
     );
     let half = Reminder {
         at: az(9, 12, 30),
@@ -202,7 +209,8 @@ fn td_pick_31_reminder_wording() {
     };
     assert!(reminder_lines(1042, due, odd, Language::En)[0].contains("30 minutes"));
     let es = reminder_lines(1042, az(9, 16, 30), first, Language::Es);
-    assert!(es[0].starts_with("Ask Hava: Recordatorio") && es[0].contains("4:30 p.m."));
+    assert!(es[0].starts_with(&branded("{brand_short}: Recordatorio", true)));
+    assert!(es[0].contains("4:30 p.m."));
     assert!(es[1].contains("4 p.m.") && es.len() == 2);
     let morning = Reminder {
         at: az(9, 9, 0),
@@ -271,13 +279,19 @@ fn td_pick_27_the_lapse_text() {
         "https://askhava.com/q/x",
         Language::En,
     );
-    assert!(text.starts_with("Ask Hava: Sample Plumbing couldn't take it this time. You still have other quotes:\n2. Fake"));
+    assert!(text.starts_with(&branded("{brand_short}: Sample Plumbing couldn't take it this time. You still have other quotes:\n2. Fake", false)));
     assert!(text.contains("reply the number and YES, for example 2 YES. Picking shares your first name and job address"));
-    assert!(text.ends_with("By picking, you agree to the Terms: askhava.com/terms"));
+    assert!(text.ends_with(&branded(
+        "By picking, you agree to the Terms: {domain}/terms",
+        false
+    )));
     let none = lapse_text("Sample Plumbing", &[], "", Language::En);
     assert!(none.contains("We'll text you when another quote comes in.") && !none.contains("911"));
     let es = lapse_text("Sample Plumbing", &lines, "x", Language::Es);
-    assert!(es.ends_with("askhava.com/terms") && es.contains("compartimos su nombre de pila y"));
+    assert!(
+        es.ends_with(&branded("{domain}/terms", true))
+            && es.contains("compartimos su nombre de pila y")
+    );
     assert!(lapse_text("Sample Plumbing", &[], "", Language::Es).contains("otra cotización"));
 }
 
@@ -290,13 +304,19 @@ fn biz_033_the_owner_hears_of_a_members_confirm() {
     assert!(!owner_told(owner, owner));
     assert_eq!(
         member_confirmed_line(1042, 7_500, "Test Member", Language::En),
-        "Ask Hava: Test Member confirmed job 1042 and paid the introduction fee by job size, $75. You can see the job in your portal."
+        branded(
+            "{brand_short}: Test Member confirmed job 1042 and paid the introduction fee by job size, $75. You can see the job in your portal.",
+            false
+        )
     );
     assert!(member_confirmed_line(1042, 2_500, "Test Member", Language::Es).contains("$25"));
     let free = member_confirmed_line(1042, 0, "Test Member", Language::En);
     assert_eq!(
         free,
-        "Ask Hava: Test Member confirmed job 1042. No introduction fee was due for this job. You can see the job in your portal."
+        branded(
+            "{brand_short}: Test Member confirmed job 1042. No introduction fee was due for this job. You can see the job in your portal.",
+            false
+        )
     );
     let free_es = member_confirmed_line(1042, 0, "Test Member", Language::Es);
     assert!(!free_es.contains("$0") && free_es.contains("No se debía ninguna cuota"));

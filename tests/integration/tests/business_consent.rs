@@ -18,6 +18,7 @@ use askhava_businesses::api::{
     no_calls_line, phone_stopped, record_consent, recruiting_email, remove_member, request_welcome,
     stop_recruiting, stopped_email_line, welcome_lines, welcome_sent,
 };
+use askhava_core::api::brand;
 use askhava_messaging::api::{Language, MailboxKind, count_segments, render, template_ids};
 use askhava_ops::api::Actor;
 use askhava_portals::api::{DoneFacts, done_lines};
@@ -26,6 +27,12 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use ConsentChannel::{Email, Text};
+
+/// `text` with the brand file's names in place of its `{brand...}` and `{domain}` tokens, so an
+/// expected line follows a brand switch (WORD-001, D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("known brand tokens")
+}
 
 fn at(minute: i64) -> Timestamp {
     Timestamp::from_second(1_790_000_000 + minute * 60).expect("time")
@@ -220,19 +227,21 @@ async fn td_con_08_welcome_goes_once_before_the_first_card(pool: PgPool) {
 fn td_con_08_welcome_email_says_what_con_020_requires() {
     let all = welcome_lines().join("\n");
     for needed in [
-        "Ask Hava",
+        "{brand}",
         "To change how you get notices",
         "text STOP from a phone to stop texts to that phone",
-        "Ask Hava never calls you.",
-        "\"Ask Hava\" <jobs@notify.askhava.com>",
+        "{brand} never calls you.",
         "in Gmail, tap Not spam",
         "\"Never send it to Spam\"",
         "In any other email app, add us to your contacts.",
-        "\"Ask Hava homeowner calls\"",
-        "Ask Hava emails come only from addresses ending in askhava.com, never ask for your card or a code, and every button goes to askhava.com.",
+        "\"{brand} homeowner calls\"",
+        "{brand} emails come only from addresses ending in {domain}, never ask for your card or a code, and every button goes to {domain}.",
     ] {
-        assert!(all.contains(needed), "missing: {needed}");
+        assert!(all.contains(&branded(needed, false)), "missing: {needed}");
     }
+    let b = brand();
+    let from = format!("\"{}\" <{}>", b.email_from_name(), b.email_from_address());
+    assert!(all.contains(&from), "missing: {from}");
     assert!(
         !all.contains("come to this email"),
         "BIZ-036: cards may come by text"
@@ -266,7 +275,10 @@ async fn td_con_08_business_stop_stops_texts_only(pool: PgPool) {
     assert_eq!(n, 1);
     assert_eq!(
         stopped_email_line("0142"),
-        "Ask Hava: Texts to the phone ending 0142 are off because it texted STOP. Text START from it to turn them back on."
+        branded(
+            "{brand_short}: Texts to the phone ending 0142 are off because it texted STOP. Text START from it to turn them back on.",
+            false
+        )
     );
 }
 
@@ -312,7 +324,9 @@ fn td_txt_13_only_unexpected_business_texts_get_the_auto_reply() {
 fn td_txt_13_auto_reply_has_both_languages() {
     for (lang, help) in [(Language::En, "HELP"), (Language::Es, "AYUDA")] {
         let text = render(AUTO_REPLY_TEMPLATE, lang, true, &[]).expect("render");
-        assert!(text.body.contains("https://askhava.com/b") && text.body.contains(help));
+        assert!(
+            text.body.contains(&branded("https://{domain}/b", false)) && text.body.contains(help)
+        );
         assert_eq!(count_segments(&text.body).segments, 1);
     }
 }
@@ -327,7 +341,7 @@ async fn td_biz_35_recruiting_is_email_only_and_stops_at_once(pool: PgPool) {
         "PO Box 0000, Lake Havasu City, AZ 86403",
         MailboxKind::PoBox,
     );
-    let stop = "https://askhava.com/stop/fake-token";
+    let stop = &branded("https://{domain}/stop/fake-token", false);
     let mail = recruiting_email("Get job requests in Havasu", &["Hi."], postal, stop);
     let mail = mail.expect("email");
     assert_eq!(
@@ -372,41 +386,37 @@ fn td_biz_17_done_screen_says_email_once() {
     assert!(!line.to_lowercase().contains("text"));
 }
 
+/// TD-WORD-36: the consent, advertisement, welcome, waitlist and statement lines, with the brand
+/// file's tokens where the brand stands (WORD-001, D-1932, D-3347).
+const SIGN_UP_PINS: [&str; 7] = [
+    "I agree to get job and account notices from {brand} by email at the address above, not on paper. I agree to get job-card texts from {brand} at the phone number above. Message frequency varies. Message and data rates may apply. Text STOP to stop or HELP for help. {brand} never places recorded or automated calls to you. You can change this any time in your portal.",
+    "This email is an advertisement for {brand}.",
+    "Welcome to {brand}. Your business is active and can now get job cards.",
+    "Save the attached contact card, \"{brand} homeowner calls\". Calls from these numbers are homeowners who chose your quote, calling on an {brand} masked number. {brand} never calls you.",
+    "To change how you get notices, sign in at https://{domain}/b.",
+    "The trades you picked aren't open on {brand} yet, so you're on the waitlist. Your join date is kept. No priority; everyone waiting is told at once.",
+    "{brand} is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; {brand} doesn't direct, schedule, supervise or pay for the work.",
+];
+
 /// TD-WORD-36 (WORD-001, WORD-002, WORD-008, T293, D-1932): under the embedded brand the
 /// business and quote copy that now reads the brand file is byte-identical to the words it held
 /// as literals, in English and Spanish; WORD-002's business statement keeps its exact words.
 #[test]
 fn td_word_36_consent_welcome_and_sign_up_lines_are_unchanged_under_the_embedded_brand() {
     use askhava_businesses::api::{business_statement, waitlist_line};
-    assert_eq!(
-        consent_box(&[Email, Text]).wording,
-        "I agree to get job and account notices from Ask Hava by email at the address above, not on paper. I agree to get job-card texts from Ask Hava at the phone number above. Message frequency varies. Message and data rates may apply. Text STOP to stop or HELP for help. Ask Hava never places recorded or automated calls to you. You can change this any time in your portal."
-    );
-    assert_eq!(
-        advertisement_line(),
-        "This email is an advertisement for Ask Hava."
-    );
     let welcome = welcome_lines();
-    assert_eq!(
-        welcome[0],
-        "Welcome to Ask Hava. Your business is active and can now get job cards."
-    );
-    assert_eq!(
-        welcome[3],
-        "Save the attached contact card, \"Ask Hava homeowner calls\". Calls from these numbers are homeowners who chose your quote, calling on an Ask Hava masked number. Ask Hava never calls you."
-    );
-    assert_eq!(
-        welcome[4],
-        "To change how you get notices, sign in at https://askhava.com/b."
-    );
-    assert_eq!(
+    let got = [
+        consent_box(&[Email, Text]).wording,
+        advertisement_line(),
+        welcome[0].clone(),
+        welcome[3].clone(),
+        welcome[4].clone(),
         waitlist_line(),
-        "The trades you picked aren't open on Ask Hava yet, so you're on the waitlist. Your join date is kept. No priority; everyone waiting is told at once."
-    );
-    assert_eq!(
         business_statement(),
-        "Ask Hava is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; Ask Hava doesn't direct, schedule, supervise or pay for the work."
-    );
+    ];
+    for (got, want) in got.iter().zip(SIGN_UP_PINS) {
+        assert_eq!(*got, branded(want, false));
+    }
     let postal = (
         "PO Box 0000, Lake Havasu City, AZ 86403",
         MailboxKind::PoBox,
@@ -415,16 +425,51 @@ fn td_word_36_consent_welcome_and_sign_up_lines_are_unchanged_under_the_embedded
         "Get job requests",
         &[],
         postal,
-        "https://askhava.com/stop/fake-token",
+        &branded("https://{domain}/stop/fake-token", false),
     );
     let mail = mail.expect("email");
-    assert_eq!(
-        mail.lines.last().map(String::as_str),
-        Some("Ask Hava LLC, PO Box 0000, Lake Havasu City, AZ 86403")
+    let footer = branded(
+        "{brand_legal}, PO Box 0000, Lake Havasu City, AZ 86403",
+        false,
     );
-    let opening = recruiting_email("Ask Hava: hello", &[], postal, "https://askhava.com/stop/x");
+    assert_eq!(mail.lines.last().map(String::as_str), Some(footer.as_str()));
+    let opening = recruiting_email(
+        &branded("{brand_short}: hello", false),
+        &[],
+        postal,
+        &branded("https://{domain}/stop/x", false),
+    );
     assert_eq!(opening, Err(ConsentError::Subject));
 }
+
+/// TD-WORD-36: the complaint reply and phone-link lines (English, Spanish), the About us reasons and
+/// the returned-address banner, with the brand file's tokens and each line's language (D-3347).
+const COMPLAINT_PINS: [(&str, bool); 6] = [
+    (
+        "{brand_short}: Sorry about the trouble with Desert Pipe Co on request 1042 (plumbing). {brand} is not a contractor and does not perform, bid on or supervise work; Desert Pipe Co is an independent business. You can call them at (928) 555-0142. The owner of {brand} reads every complaint. If the job needed a state contractor license, you can also file with the state here: {domain}/help/roc-complaint",
+        false,
+    ),
+    (
+        "{brand_short}: Lamentamos el problema con Desert Pipe Co en la solicitud 1042 (plumbing). {brand} no es contratista y no realiza, cotiza ni supervisa trabajos; Desert Pipe Co es un negocio independiente. Puede llamarlos al (928) 555-0142. El dueño de {brand} lee cada queja. Si el trabajo necesitaba licencia de contratista, también puede quejarse ante el estado: {domain}/help/roc-complaint",
+        true,
+    ),
+    (
+        "{brand_short}: Sam, on your team, linked the phone number ending in 0142 to your account. If you don't recognize it, sign in at {domain}/b and remove it.",
+        false,
+    ),
+    (
+        "{brand_short}: Sam, de su equipo, vinculó el número que termina en 0142 a su cuenta. Si no lo reconoce, entre en {domain}/b y quítelo.",
+        true,
+    ),
+    (
+        "Leave out phone numbers, emails, links and \"call me\". Homeowners reach you through {brand}.",
+        false,
+    ),
+    (
+        "Leave out other ways to find you, like Google, Facebook, Yelp or \"search for us\". Homeowners reach you through {brand}.",
+        false,
+    ),
+];
 
 /// TD-WORD-36 (WORD-001, WORD-002, WORD-008, D-1932): the complaint reply and phone-link line in
 /// English and Spanish, the About us reasons and the returned-address banner, byte for byte.
@@ -437,37 +482,27 @@ fn td_word_36_complaint_about_us_and_banner_lines_are_unchanged_under_the_embedd
         job: "1042",
         trade: "plumbing",
     };
-    assert_eq!(
+    let got = [
         facts.text(false),
-        "Ask Hava: Sorry about the trouble with Desert Pipe Co on request 1042 (plumbing). Ask Hava is not a contractor and does not perform, bid on or supervise work; Desert Pipe Co is an independent business. You can call them at (928) 555-0142. The owner of Ask Hava reads every complaint. If the job needed a state contractor license, you can also file with the state here: askhava.com/help/roc-complaint"
-    );
-    assert_eq!(
         facts.text(true),
-        "Ask Hava: Lamentamos el problema con Desert Pipe Co en la solicitud 1042 (plumbing). Ask Hava no es contratista y no realiza, cotiza ni supervisa trabajos; Desert Pipe Co es un negocio independiente. Puede llamarlos al (928) 555-0142. El dueño de Ask Hava lee cada queja. Si el trabajo necesitaba licencia de contratista, también puede quejarse ante el estado: askhava.com/help/roc-complaint"
-    );
-    assert_eq!(
         phone_linked_line("Sam", "0142", false),
-        "Ask Hava: Sam, on your team, linked the phone number ending in 0142 to your account. If you don't recognize it, sign in at askhava.com/b and remove it."
-    );
-    assert_eq!(
         phone_linked_line("Sam", "0142", true),
-        "Ask Hava: Sam, de su equipo, vinculó el número que termina en 0142 a su cuenta. Si no lo reconoce, entre en askhava.com/b y quítelo."
-    );
-    assert_eq!(
         AboutUsRefusal::Contact.reason(),
-        "Leave out phone numbers, emails, links and \"call me\". Homeowners reach you through Ask Hava."
-    );
-    assert_eq!(
         AboutUsRefusal::Channel.reason(),
-        "Leave out other ways to find you, like Google, Facebook, Yelp or \"search for us\". Homeowners reach you through Ask Hava."
-    );
+    ];
+    for (got, (want, spanish)) in got.iter().zip(COMPLAINT_PINS) {
+        assert_eq!(*got, branded(want, spanish));
+    }
     assert_eq!(
         AboutUsRefusal::Length.reason(),
         "Write a short line about your business, up to 140 characters."
     );
     assert_eq!(
         returned_line("old@example.test"),
-        "Ask Hava emails to old@example.test are being returned or marked as spam, so you may miss job requests. Add or fix an email address."
+        branded(
+            "{brand} emails to old@example.test are being returned or marked as spam, so you may miss job requests. Add or fix an email address.",
+            false
+        )
     );
 }
 
@@ -478,11 +513,17 @@ fn td_word_36_quote_bounce_and_job_page_link_are_unchanged_under_the_embedded_br
     use askhava_quotes::api::{Bounce, job_page_prefix};
     assert_eq!(
         Bounce::Contact.message(),
-        "Please take out any phone number, email, link, or \"call me\" or \"text me\" line, including numbers written out as words. If the homeowner picks your quote, Ask Hava puts you in touch."
+        branded(
+            "Please take out any phone number, email, link, or \"call me\" or \"text me\" line, including numbers written out as words. If the homeowner picks your quote, {brand} puts you in touch.",
+            false
+        )
     );
     assert_eq!(
         Bounce::NeedsHours.message(),
         "Please add how many hours you think it will take, or a range like 2 to 3 hours."
     );
-    assert_eq!(job_page_prefix(), "https://askhava.com/b/jobs/");
+    assert_eq!(
+        job_page_prefix(),
+        branded("https://{domain}/b/jobs/", false)
+    );
 }
