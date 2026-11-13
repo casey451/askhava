@@ -1,8 +1,8 @@
-# BUILD_BRIEF.md — Ask Hava: instructions for Claude Code
+# BUILD_BRIEF.md — Laftly: instructions for Claude Code
 
 **Owner:** Casey Solomon · **Written:** October 27, 2026 · **Read this first, every session.**
 
-This file tells Claude Code how to build Ask Hava from start to finish. It sits at the repository root. Everything it refers to is in `sources/`, which is read-only.
+This file tells Claude Code how to build Laftly (formerly Ask Hava; renamed by Casey on Nov 12, 2026, D-3347) from start to finish. It sits at the repository root. Everything it refers to is in `sources/`, which is read-only.
 
 **Rule zero: this file decides *how* to build, and `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md` decides *what* to build.** If anything else in the repo contradicts them, they win. If they contradict each other, decide and log it by the §16 rule; don't stop.
 
@@ -39,7 +39,7 @@ That's all until the account checkpoint (§6).
 
 ## 1. Mission and definition of done
 
-Build the Ask Hava quote service exactly as specified:
+Build the Laftly quote service exactly as specified:
 - **People who need work done** text or web-chat a request.
 - **Every eligible opted-in local business** gets an anonymous job card.
 - **The homeowner** sees all eligible quotes on a private page and picks one with a texted code.
@@ -198,7 +198,7 @@ The runner resumes when Casey comments "accounts done" in the issue (§7, "Owner
 
 Then the runner sends the **"Finished: ready for your review"** message (§16). **Gate B** is Casey's guided click-through plus his screen-reader check (§9), done whenever he's ready; nothing waits on it except Gate C.
 
-**Stage 0.5** (the simple askhava.com page) comes after the checkpoint and only with Casey's separate go.
+**Stage 0.5** (the simple laftly.com page) comes after the checkpoint and only with Casey's separate go.
 
 **Gate C** comes after the business accounts. Casey enters live keys and says "go live." A real-phone rehearsal runs on his phone, and the first live charge needs his go.
 
@@ -446,11 +446,11 @@ The list below is the minimum, not the whole set:
 - Quiet hours: 8 a.m.–8 p.m. in the stricter of Arizona time and the recipient's area-code zone (urgent safety texts excepted).
 - Consent and opt-out logs kept for 5 years.
 - Business consent by sign-up checkbox (E-SIGN), with version and timestamp.
-- No voice call ever goes to a business (BIZ-046); the homeowner's code call, placed only on her tap, says "This is Ask Hava LLC" and gives a callback number.
+- No voice call ever goes to a business (BIZ-046); the homeowner's code call, placed only on her tap, says "This is Laftly LLC" and gives a callback number.
 
 **Wording**
 - "Every eligible quote shown, in the order received." "Insurance (business-reported)."
-- "Ask Hava is not a contractor and does not perform, bid on or supervise work."
+- "Laftly is not a contractor and does not perform, bid on or supervise work."
 - No "vetted," no "best," no rankings.
 - Fees are called an "introduction fee by job size," never a commission.
 
@@ -548,7 +548,7 @@ All configuration comes from environment variables validated at startup. The app
 1. **Hands-on tasks only a human can do:** a GitHub setting Claude can't change, for example. One issue, with exact taps, sent only after Claude has checked it can't do the task itself.
 2. **The account checkpoint** (§6): Casey creates the accounts and puts in the keys. Claude never creates accounts or accepts terms.
 3. **Real texts to Casey's own phone** in Phase 2, only if Twilio's test credentials can't be used (§6).
-4. **The go for the askhava.com page** (Stage 0.5), which publishes something.
+4. **The go for the laftly.com page** (Stage 0.5), which publishes something.
 5. **Gate C and the first live charge.** 6. **The war-games go (T243):** Casey's decision on the pre-war-games review's P0 items, before the war games (added on his instruction, D-1339, D-1473).
 
 **Finished:** when Phase 2 is done (everything in §1 except Gate B and Gate C), the runner sends one outbox message titled **"Finished: ready for your review"**, linking the handover pack, `docs/for-casey-review.md` and the Gate B click-through script. It also sends one short message when Phase 1 ends, which is the account checkpoint itself.

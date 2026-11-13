@@ -205,10 +205,16 @@ const TRIGGERS: &[&[&str]] = &[
     &["im"],
     &["i", "am"],
     &["it's"],
+    &["call", "me"],
     &["soy"],
     &["me", "llamo"],
     &["mi", "nombre", "es"],
 ];
+/// Name phrases that are also everyday job words ("its compressor died", "it is rusty"): a
+/// trigger only right after a greeting ("Hey its steve", "Hi, it is Steve", D-3317).
+const LOOSE_TRIGGERS: &[&[&str]] = &[&["it", "is"], &["its"]];
+/// Greetings that make a loose trigger or a one-word "<name> here" a name phrase (D-3317).
+const GREETINGS: &[&str] = &["hi", "hey", "hello", "hiya", "howdy", "hola", "buenas"];
 /// Words never cut as a stated or sign-off name, remembered as one or removed as one, a vault name
 /// word included (CON-010, CON-013, CON-035, AI-020, D-2621): every word of `messaging`'s opt-out
 /// phrases and of its sole opt-out, HELP and START words, English and Spanish, folded (lower case,
@@ -270,6 +276,8 @@ const SIGN_OFFS: &[&str] = &[
     "atentamente",
     "sincerely",
 ];
+/// Sign-offs that are also everyday words ("best price"): a cue only with a comma after them.
+const COMMA_SIGN_OFFS: &[&str] = &["best"];
 /// Number words and the digits each spells; a tens word ("twenty", "veinte") spells two digits,
 /// its zero taken by a unit word joined to it ("twenty-eight" is 28).
 const NUMBER_WORDS: &[(&str, &str)] = &[
@@ -366,6 +374,21 @@ const STREET_SUFFIXES: &[&str] = &[
 const STREET_PREFIXES: &[&str] = &["calle", "avenida", "camino"];
 const CODE_CUES: &[&str] = &["code", "codigo", "código", "gate", "pin", "clave", "portón"];
 const AT_WORDS: &[&str] = &["at", "arroba"];
+/// Words that join a spoken digit run ("928 dash 555 dash 0134", D-2622).
+const SPOKEN_SEPARATORS: &[&str] = &["dash", "guion", "guión", "space", "espacio"];
+/// Words before a bare house number that put an address next ("i live at 2150 mesquite").
+const HOUSE_CUES: &[&str] = &["at", "live", "address", "is"];
+/// Measures after a number that make it a size, not a house ("is 1500 square feet").
+const MEASURES: &[&str] = &[
+    "square", "sq", "sqft", "feet", "foot", "ft", "inch", "inches", "gallon", "gallons", "gal",
+    "dollars", "bucks", "watts", "volts", "amps", "btu", "pounds", "lbs", "miles", "years",
+    "degrees", "psi", "cfm", "tons", "yards", "meters", "metros", "pies", "pesos", "dolares",
+    "dollar", "usd", "watt", "volt", "amp", "kw", "kwh", "kva", "hp", "sf", "sqm", "gpm", "gph",
+    "mph", "pound", "lb", "mile", "year", "yrs", "degree", "ton", "yard", "meter", "metro", "pie",
+    "mm", "cm",
+];
+/// How many words after a code cue its digits may start, and how far a spaced run may reach.
+const CODE_REACH: usize = 3;
 const DOT_WORDS: &[&str] = &["dot", "punto"];
 
 /// Text that passed [`scrub`]; the only text type `ai` accepts (AI-004). Its field is private and
@@ -490,9 +513,13 @@ pub fn is_format(c: char) -> bool {
         | 0x1D173..=0x1D17A | 0xE0001 | 0xE0020..=0xE007F)
 }
 
-/// The lower-cased token without edge punctuation (a leading `@` kept).
+/// The lower-cased token without edge punctuation (a leading `@` kept), `(at)`, `[at]`, `(dot)`
+/// and `[dot]` read as `@` and `.` ("steve(at)gmail(dot)com", AI-020, D-2622).
 fn key_of(token: &str) -> String {
-    let lower = token.to_lowercase();
+    let mut lower = token.to_lowercase();
+    for (spelled, mark) in [("(at)", "@"), ("[at]", "@"), ("(dot)", "."), ("[dot]", ".")] {
+        lower = lower.replace(spelled, mark);
+    }
     lower
         .trim_matches(|c: char| !(c.is_alphanumeric() || c == '@'))
         .to_owned()
@@ -579,8 +606,9 @@ fn number_word(rest: &str) -> Option<(&'static str, &'static str)> {
         .copied()
 }
 
-/// Runs of number-spelling tokens (separator-only tokens and "double"/"triple" between them
-/// allowed) that together hold 7 or more digits: a phone number in any spelling (AI-002, AI-020).
+/// Runs of number-spelling tokens (separator-only tokens, a spoken "dash", "guion" or "space" and
+/// "double"/"triple" between them allowed) that together hold 7 or more digits: a phone number in
+/// any spelling (AI-002, AI-020, D-2622).
 fn mark_digit_runs(tokens: &[Token], cut: &mut [bool]) {
     let mut start = 0;
     while start < tokens.len() {
@@ -591,7 +619,7 @@ fn mark_digit_runs(tokens: &[Token], cut: &mut [bool]) {
             match (repeat, digit_form(key)) {
                 (Some(&(_, n)), _) => times = n,
                 (None, Some(d)) => (digits, last, times) = (digits + d.len() * times, Some(end), 1),
-                (None, None) if key.is_empty() && last.is_some() => {}
+                (None, None) if spoken_gap(key) && last.is_some() => {}
                 (None, None) => break,
             }
             end += 1;
@@ -603,7 +631,13 @@ fn mark_digit_runs(tokens: &[Token], cut: &mut [bool]) {
     }
 }
 
-/// "steve at gmail dot com", "steve at gmail.com", "gmail dot com" (AI-020).
+/// A token that may sit inside a digit run: separators only, or a spoken separator (D-2622).
+fn spoken_gap(key: &str) -> bool {
+    key.is_empty() || SPOKEN_SEPARATORS.contains(&key)
+}
+
+/// "steve at gmail dot com", "steve at gmail.com", "gmail dot com", and a spaced `@` with both
+/// its sides ("steve @ gmail.com", "steve @gmail.com") (AI-020, D-2622).
 fn mark_spelled_emails(tokens: &[Token], cut: &mut [bool]) {
     let key = |i: usize| tokens.get(i).map_or("", |t| t.key.as_str());
     for i in 0..tokens.len() {
@@ -618,6 +652,10 @@ fn mark_spelled_emails(tokens: &[Token], cut: &mut [bool]) {
         }
         if AT_WORDS.contains(&key(i)) && i > 0 && is_domain(key(i + 1)) {
             cut[i - 1..=i + 1].fill(true);
+        }
+        let spaced_at = key(i) == "@" || key(i).strip_prefix('@').is_some_and(is_domain);
+        if spaced_at && i > 0 {
+            cut[i - 1..=(i + 1).min(tokens.len() - 1)].fill(true);
         }
     }
 }
@@ -658,15 +696,22 @@ fn mark_streets(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) {
 }
 
 /// A house number of 3 to 6 digits followed by one or two capitalised names and no suffix
-/// ("I'm at 2150 Mesquite") (AI-002).
+/// ("I'm at 2150 Mesquite"), or, after "at", "live", "address" or "is", by one or two uncommon
+/// words in any case that are not measures ("i live at 2150 mesquite") (AI-002, D-2622).
 fn mark_bare_houses(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) {
     for (i, t) in tokens.iter().enumerate() {
         let digits = t.key.chars().take_while(char::is_ascii_digit).count();
         if digits < 3 || !is_house_number(&t.key) {
             continue;
         }
+        let cued = i > 0 && HOUSE_CUES.contains(&tokens[i - 1].key.as_str());
+        let street_word = |j: &usize| {
+            let token = &tokens[*j];
+            let plain = cued && is_wordish(&token.key, common);
+            titled(token, common) || (plain && !MEASURES.contains(&token.key.as_str()))
+        };
         let names = (i + 1..tokens.len().min(i + 3))
-            .take_while(|&j| titled(&tokens[j], common))
+            .take_while(street_word)
             .count();
         if names > 0 {
             cut[i..=i + names].fill(true);
@@ -690,39 +735,38 @@ fn ordinal(key: &str) -> bool {
     digits > 0 && ["st", "nd", "rd", "th"].contains(&&key[digits..])
 }
 
-/// The number after "gate code", "code", "pin", "código" or "clave", within three words.
+/// The number after "gate code", "code", "pin", "código" or "clave": the first digit-spelling
+/// token within three words and every one right after it, when the run holds 3 or more digits
+/// ("Gate code is 4 4 1 2", "gate code 44 12"; "error code 41" stays) (AI-002, D-2622).
 fn mark_codes(tokens: &[Token], cut: &mut [bool]) {
+    let digits_of = |j: usize| digit_form(&tokens[j].key).map_or(0, |d| d.len());
     for (c, t) in tokens.iter().enumerate() {
         if !CODE_CUES.contains(&t.key.as_str()) {
             continue;
         }
-        let near = c + 1..tokens.len().min(c + 4);
-        if let Some(j) = near
-            .into_iter()
-            .find(|&j| digit_form(&tokens[j].key).is_some_and(|d| d.len() >= 3))
-        {
-            cut[j] = true;
+        let near = c + 1..tokens.len().min(c + 1 + CODE_REACH);
+        let Some(first) = near.into_iter().find(|&j| digits_of(j) > 0) else {
+            continue;
+        };
+        let end = (first..tokens.len())
+            .find(|&j| digits_of(j) == 0)
+            .unwrap_or(tokens.len());
+        if (first..end).map(digits_of).sum::<usize>() >= 3 {
+            cut[first..end].fill(true);
         }
     }
 }
 
-/// Names after the AI-002 phrases (up to two words, the first not a common word, D-146) and after
-/// a sign-off at the message's end (AI-020); a [`NEVER_A_NAME`] word is never taken, but a first
-/// one does not stop the second ("This is Do Nguyen" still cuts "Nguyen", D-3277). Returns every
-/// word removed, lower-cased.
+/// Names after the AI-002 phrases (up to two words, the first not a common word, D-146), after
+/// a sign-off at the message's end and before "here" at a sentence's start (AI-020, D-2622); a
+/// [`NEVER_A_NAME`] word is never taken, but a first one does not stop the second ("This is Do
+/// Nguyen" still cuts "Nguyen", D-3277). Returns every word removed, lower-cased.
 fn mark_stated(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) -> Vec<String> {
     let mut names = Vec::new();
     for i in 0..tokens.len() {
-        let after = TRIGGERS.iter().find_map(|phrase| {
-            let end = i + phrase.len();
-            let hit = tokens
-                .get(i..end)?
-                .iter()
-                .zip(*phrase)
-                .all(|(t, w)| t.key == *w);
-            hit.then_some(end)
-        });
-        let after = after.or_else(|| sign_off(tokens, i));
+        let after = trigger_end(tokens, i)
+            .or_else(|| sign_off(tokens, i, cut))
+            .or_else(|| here_start(tokens, i, common));
         let Some(n) = after.filter(|&n| n < tokens.len()) else {
             continue;
         };
@@ -743,15 +787,60 @@ fn mark_stated(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) -> Vec<
     names
 }
 
-/// The index after a sign-off ("Thanks, Steve", "thank you - Ana Test", "— Steve") when one or two
-/// words end the message.
-fn sign_off(tokens: &[Token], i: usize) -> Option<usize> {
+/// The index after an AI-002 phrase starting at word `i` ("call me" too, D-2622); "it is" and
+/// "its" only right after a greeting (D-3317).
+fn trigger_end(tokens: &[Token], i: usize) -> Option<usize> {
+    let phrase_end = |phrase: &[&str]| {
+        let end = i + phrase.len();
+        let hit = tokens
+            .get(i..end)?
+            .iter()
+            .zip(phrase)
+            .all(|(t, w)| t.key == *w);
+        hit.then_some(end)
+    };
+    TRIGGERS.iter().find_map(|p| phrase_end(p)).or_else(|| {
+        greeted(tokens, i)
+            .then(|| LOOSE_TRIGGERS.iter().find_map(|p| phrase_end(p)))
+            .flatten()
+    })
+}
+
+/// Whether the word before word `i` is a greeting ("Hi," "hey") (D-3317).
+fn greeted(tokens: &[Token], i: usize) -> bool {
+    i > 0 && GREETINGS.contains(&tokens[i - 1].key.as_str())
+}
+
+/// The index after a sign-off ("Thanks, Steve", "thank you - Ana Test", "— Steve", "Best, Steve")
+/// when one or two words end the message, contact tokens already cut after them aside ("Thanks,
+/// Steve Smith 928-555-0134", D-2622). "best" is a sign-off only with a comma ("best price").
+fn sign_off(tokens: &[Token], i: usize, cut: &[bool]) -> Option<usize> {
     let key = tokens[i].key.as_str();
     let cue = SIGN_OFFS.contains(&key)
+        || (COMMA_SIGN_OFFS.contains(&key) && tokens[i].text.ends_with(','))
         || (key == "you" && i > 0 && tokens[i - 1].key == "thank")
         || tokens[i].text.chars().all(|c| "-—–~".contains(c));
-    let left = tokens.len() - i - 1;
+    let end = cut
+        .iter()
+        .rposition(|&gone| !gone)
+        .map_or(0, |last| last + 1);
+    let left = end.saturating_sub(i + 1);
     (cue && (1..=2).contains(&left)).then_some(i + 1)
+}
+
+/// Word `i` when one or two words starting there, at the message's or a sentence's start or
+/// after a greeting, come before "here" (AI-020, D-2622): one word only after a greeting ("Hi,
+/// Steve here"), two only after a greeting or when both are capitalised ("Steve Smith here"), so
+/// "Mold here too" and "Water here." keep their words (D-3317).
+fn here_start(tokens: &[Token], i: usize, common: &CommonWords) -> Option<usize> {
+    let greet = greeted(tokens, i);
+    let starts = greet || i == 0 || tokens[i - 1].text.ends_with(['.', '!', '?', ',']);
+    let here = |j: usize| tokens.get(j).is_some_and(|t| t.key == "here");
+    let joined = !tokens[i].text.ends_with(|c: char| !c.is_alphanumeric());
+    let named = |j: usize| tokens.get(j).is_some_and(|t| titled(t, common));
+    let one = greet && here(i + 1);
+    let two = joined && here(i + 2) && (greet || (named(i) && named(i + 1)));
+    (starts && (one || two)).then_some(i)
 }
 
 /// Whether `key` (a scrubber key or a remembered name), folded like `messaging`'s detector (lower
