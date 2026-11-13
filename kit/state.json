@@ -35187,7 +35187,8 @@
     "T388",
     "T294",
     "T384",
-    "T421"
+    "T421",
+    "T431"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -44330,6 +44331,7 @@
     "T426",
     "T427",
     "T430",
+    "T431",
     "T057",
     "T075",
     "T291",
@@ -44569,6 +44571,20 @@
     "docs/decisions.md",
     "docs/voice.md"
    ]
+  },
+  {
+   "id": "T431",
+   "deps": [
+    "T426",
+    "T430",
+    "T343",
+    "T215"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-switch-pinned-tests",
+   "type": "harness",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -47236,7 +47252,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T08:58:05Z",
+ "updated_at": "2026-11-13T09:02:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -47335,7 +47351,7 @@
   ]
  },
  "runner_sha": "ca8b6b621c5e1714c8116eaa639b1fa04845df35",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "dae8c6443b4f29a2b72d558ac349c5d778388eb3",

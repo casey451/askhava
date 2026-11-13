@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T08:58:05Z by runner ca8b6b621c5e (manual).
+Updated 2026-11-13T09:02:07Z by runner ca8b6b621c5e (actions).
 
 **Building: T249 in progress since 07:51Z; 276 of 416 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T08:58:05Z by runner ca8b6b621c5e (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T249 claimed 07:51Z, lease until 10:51Z
 - **Week:** 14% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:57Z, 0 min before this update
+- **Last run:** 08:58Z, 3 min before this update
 - **Keeper:** last ran 08:57Z, next wake 10:54Z
 
 ## Needs attention
@@ -82,7 +82,6 @@ Updated 2026-11-13T08:58:05Z by runner ca8b6b621c5e (manual).
 | T358 | messaging: the Canadian area codes for the HELP roaming line | done | 1 | 40 min | 09:32Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z |  |
 | T406 | quotes: a quote's PICK-040 facts are stored with it and read | done | 1 | 41 min | 09:05Z |  |
-| T336 | server, adapters and stand-in (harness): a text stopped by a | done | 2 | 56 min | 09:00Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - 08:55Z Plan: T428 plan gap, new prep task owns the six pinned tests (D-3430) (#659)
@@ -147,7 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 156 of 197 done
+- stage 4: 156 of 198 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
