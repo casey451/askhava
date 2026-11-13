@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T10:13:59Z by runner 07cc7ea488ef (manual).
+Updated 2026-11-13T10:15:17Z by runner fce428953ad0 (actions).
 
 **Building: T312 in progress since 09:53Z; 278 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T10:13:59Z by runner 07cc7ea488ef (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T312 claimed 09:53Z, lease until 12:53Z; lane 3: T428 claimed 09:52Z, lease until 12:52Z
 - **Week:** 15% used, 162.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:13Z, 0 min before this update
+- **Last run:** 10:14Z, 1 min before this update
 - **Keeper:** last ran 10:13Z, next wake 12:55Z
 
 ## Needs attention
@@ -81,7 +81,6 @@ Updated 2026-11-13T10:13:59Z by runner 07cc7ea488ef (manual).
 | T343 | harness: the DONE pick tests' fixtures record each job's fac | done | 1 | 24 min | 10:23Z |  |
 
 ### Plan and harness merges on main
-- 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
 - 09:02Z Plan: T255 plan gap 2, the address is written onto the homeowner's own contact (D-3431) (#660)
 - 08:55Z Plan: T428 plan gap, new prep task owns the six pinned tests (D-3430) (#659)
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
