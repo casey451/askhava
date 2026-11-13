@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T03:04:42Z by runner 1351eeb1f8c2 (actions).
+Updated 2026-11-13T03:08:03Z by runner 1351eeb1f8c2 (actions).
 
 **Building: T429 in progress since 02:50Z; 268 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 268 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T429 claimed 02:50Z, lease until 05:50Z; lane 5: T427 claimed 02:48Z, lease until 05:48Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T430 claimed 02:33Z, lease until 05:33Z
+- **Lane:** lane 1: T429 claimed 02:50Z, lease until 05:50Z; lane 5: T427 claimed 02:48Z, lease until 05:48Z; lane 7: T430 claimed 02:33Z, lease until 05:33Z
 - **Week:** 11% used, 166.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:57Z, 7 min before this update
+- **Last run:** 03:04Z, 3 min before this update
 - **Keeper:** last ran 02:56Z, next wake 03:06Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ Updated 2026-11-13T03:04:42Z by runner 1351eeb1f8c2 (actions).
 | T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z |  |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | done | 1 | 12 min | 03:22Z |  |
 | T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z |  |
-| T400 | server: the web process stores the catalog file at start-up, | done | 1 | 21 min | 03:07Z |  |
 
 ### Plan and harness merges on main
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
@@ -168,7 +167,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T429 (lease until 2026-11-13T05:50:50Z)
 - lane 5: T427 (lease until 2026-11-13T05:48:34Z)
-- lane 6: T249 (lease until 2026-11-13T03:01:54Z)
 - lane 7: T430 (lease until 2026-11-13T05:33:35Z)
 
 ## Last usage reading
