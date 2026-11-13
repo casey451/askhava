@@ -8,7 +8,7 @@
 //! `messaging`'s own rule. JOB-008's checks before Open are `intake`'s; here a job walks the
 //! arrows `intake` will drive. All data is fake (the phone is a 555 number).
 
-use askhava_core::api::{Claimed, Guarded, WorkerId, claim, finish};
+use askhava_core::api::{Claimed, Guarded, WorkerId, brand, claim, finish};
 use askhava_jobs::api::rules::{CheckIn, Contact, Reply, Windows, WindowsEnd};
 use askhava_jobs::api::{
     JobStatus, TEXT_KIND, TIMER_KIND, all_windows_ended, connected_reply, create, current, move_to,
@@ -386,6 +386,11 @@ fn rendered(language: Language) -> Vec<(String, String, bool)> {
         .collect()
 }
 
+/// `text` with the brand file's English names in place of its `{brand_short}` tokens (D-1932).
+fn filled(text: &str) -> String {
+    brand().fill(text, false).expect("brand tokens")
+}
+
 /// TD-PICK-33, TD-JOB-03: the JOB-010 and JOB-012 texts equal their spec text, JOB-010's replies
 /// are 1 add details, 2 keep waiting, 3 close, each has a Spanish draft, and no pressure word is
 /// in any of them (JOB-010, JOB-011, JOB-012, WORD-024, D-406, D-461).
@@ -394,8 +399,10 @@ fn td_pick_33_timeout_texts_equal_the_spec() {
     let en = rendered(Language::En);
     assert_eq!(
         en[0].1,
-        "Ask Hava: No quotes yet for request 1001. A few more details or a photo often help a \
+        filled(
+            "{brand_short}: No quotes yet for request 1001. A few more details or a photo often help a \
          business price it. Reply 1 to add details, 2 to keep waiting, or 3 to close."
+        )
     );
     assert!(
         en[1]
@@ -404,8 +411,10 @@ fn td_pick_33_timeout_texts_equal_the_spec() {
     );
     assert_eq!(
         en[2].1,
-        "Ask Hava: Request 1001 is closed because no quote was picked. Text us any time to start \
+        filled(
+            "{brand_short}: Request 1001 is closed because no quote was picked. Text us any time to start \
          a new one."
+        )
     );
     let es = rendered(Language::Es);
     assert!(es.iter().all(|(_, _, spanish_draft)| *spanish_draft));

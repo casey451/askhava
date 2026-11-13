@@ -6,7 +6,7 @@
 
 use std::sync::{Arc, Mutex};
 
-use askhava_core::api::MIGRATOR;
+use askhava_core::api::{MIGRATOR, brand};
 use askhava_messaging::api::{
     Language, MailboxKind, OPTOUT_CONFIRMATION_EMAIL, OPTOUT_WROTE_AGAIN_EMAIL, OptOutEmailSender,
     WROTE_AGAIN_ACTION, WroteAgain, queue_optout_confirmation_email, queue_optout_wrote_again,
@@ -21,6 +21,13 @@ use sqlx::types::Uuid;
 use tracing::field::{Field, Visit};
 use tracing::span::{Attributes, Id, Record};
 use tracing::{Event, Metadata, Subscriber};
+
+/// `text` with the brand file's names for its `{brand...}` and `{domain}` tokens, the Spanish
+/// names when `spanish`: expected brand words come from the brand file (WORD-001, WORD-008,
+/// D-1932, D-3347).
+fn branded(text: &str, spanish: bool) -> String {
+    brand().fill(text, spanish).expect("the brand fills")
+}
 
 /// 10:00 Arizona on a Tuesday.
 const NOW: i64 = 1_793_638_800;
@@ -155,7 +162,7 @@ async fn td_con_34_wrote_again_emails_at_most_once_a_day(pool: PgPool) {
     assert_eq!(wrote, want, "13:00 later is 23:00 the same Arizona day");
     let rows = emails(&pool, OPTOUT_WROTE_AGAIN_EMAIL, contact).await;
     assert_eq!(rows.len(), 2);
-    assert!(rows[0].contains("You opted out of texts from Ask Hava"));
+    assert!(rows[0].contains(&branded("You opted out of texts from {brand_short}", false)));
     assert!(rows[0].contains("send START") && rows[0].contains("quote page"));
     assert!(listed(&pool).await.is_empty());
 }
@@ -194,7 +201,10 @@ async fn td_con_34_wrote_again_in_spanish_with_an_email(pool: PgPool) {
     assert_eq!(done.expect("handled"), WroteAgain::Emailed(true));
     let rows = emails(&pool, OPTOUT_WROTE_AGAIN_EMAIL, contact).await;
     assert_eq!(rows.len(), 1);
-    assert!(rows[0].contains("Ask Hava: Usted canceló los mensajes de texto"));
+    assert!(rows[0].contains(&branded(
+        "{brand_short}: Usted canceló los mensajes de texto",
+        true
+    )));
     assert!(rows[0].contains("envíe START al número al que escribió"));
     assert!(!rows[0].contains("You opted out"));
     for secret in [PHONE, &PHONE[2..], EMAIL, "Dana"] {
