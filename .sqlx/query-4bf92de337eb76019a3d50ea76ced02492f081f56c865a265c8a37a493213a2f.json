@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM privacy.business_mailbox_index WHERE mailbox_id = $1 AND key_version <> $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4bf92de337eb76019a3d50ea76ced02492f081f56c865a265c8a37a493213a2f"
+}

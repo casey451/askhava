@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE privacy.staff_phone SET number = $2 WHERE line_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bytea"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2e58415fd7cc5efa7b00e98de1a4fa6b2c54630162a1e92dbec45958cd99b3f1"
+}
