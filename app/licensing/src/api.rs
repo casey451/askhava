@@ -46,9 +46,9 @@
 //! read under (LIC-011, LIC-048).
 //!
 //! The class changes (T372, D-2705): [`roc_lists`] and [`class_changes`] give each license
-//! number whose Active classes differ between a recorded ROC list and the one before it (a
-//! missing or lapsed number is no change); [`bound_businesses`] and [`latest_check_active`] read
-//! the daily checks (BIZ-050, LIC-043, CARD-015).
+//! number whose Active classes on a recorded ROC list differ from those on the last earlier list
+//! it had any on (D-3355; a missing or lapsed number is no change); [`bound_businesses`] and
+//! [`latest_check_active`] read the daily checks (BIZ-050, LIC-043, CARD-015).
 
 pub use crate::class_changes::{
     ClassChange, RocList, bound_businesses, class_changes, latest_check_active, roc_lists,

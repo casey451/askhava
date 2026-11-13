@@ -3,13 +3,15 @@
 //!
 //! [`REAPPLY_KIND`] runs once a day at [`RUN_HOUR`] Arizona time, after the daily lists are
 //! recorded; each run first queues the next day's run ([`schedule_reapply`]), then
-//! [`apply_lists`] applies every recorded ROC list it has not applied yet, oldest first, each
-//! against the list recorded before it, so a class removed on a day the task did not run is never
-//! lost. A list is marked applied by one [`LIST_APPLIED`] audit row on its `licensing.list_import`
-//! row (no new table); the first list ever recorded has nothing before it and is only marked. For
-//! each list, `licensing::api::class_changes` gives, [`BATCH`] license numbers at a time, each
-//! number whose Active classes changed (a number missing from the newer list or lapsed is no
-//! change); every business whose latest daily check is under a changed number gets
+//! [`apply_lists`] applies every recorded ROC list it has not applied yet, oldest first, so a class
+//! removed on a day the task did not run is never lost. A list is marked applied by one
+//! [`LIST_APPLIED`] audit row on its `licensing.list_import` row (no new table); the first list
+//! ever recorded has nothing before it and is only marked, and so is a list recorded late with a
+//! date older than one already applied (D-3356). For each list, `licensing::api::class_changes`
+//! gives, [`BATCH`] license numbers at a time, each number whose Active classes differ from the
+//! ones on the last earlier list it had any on (D-3355; a number missing from the newer list or
+//! lapsed is no change, and is compared with its last Active classes when it returns); every
+//! business whose latest daily check is under a changed number gets
 //! `capability::reapply_license` with the old and new classes and the list date, whose dedupe key
 //! (D-2596) makes a re-run for the same list queue nothing new. Who records the lists (T371) does
 //! not matter here.
@@ -110,8 +112,11 @@ pub async fn run_reapply(pool: &PgPool, now: Timestamp) -> Result<(), HandlerErr
     Ok(())
 }
 
-/// BIZ-050, LIC-043, D-2705: applies every recorded ROC list not yet marked [`LIST_APPLIED`],
-/// oldest first, each against the list before it; returns how many lists it marked.
+/// BIZ-050, LIC-043, D-2705, D-3356: applies every recorded ROC list not yet marked
+/// [`LIST_APPLIED`], oldest first; returns how many lists it marked. The first list ever recorded,
+/// and a list recorded late with a date older than one already applied, are only marked: the later
+/// list already compared each number with the classes it had then, so applying the older one now
+/// would re-apply stale classes.
 ///
 /// # Errors
 ///
@@ -124,33 +129,37 @@ pub async fn apply_lists(
     let lists = roc_lists(conn)
         .await
         .map_err(|_| BusinessesError::Database)?;
+    let mut done = Vec::with_capacity(lists.len());
+    for list in &lists {
+        let applied = audited(conn, LIST_APPLIED, (LIST_SUBJECT, list.id)).await;
+        done.push(applied.map_err(|_| BusinessesError::Database)?);
+    }
+    let newest_done = done.iter().rposition(|d| *d);
     let mut marked = 0;
-    let mut before: Option<RocList> = None;
-    for list in lists {
-        let done = audited(conn, LIST_APPLIED, (LIST_SUBJECT, list.id)).await;
-        if !done.map_err(|_| BusinessesError::Database)? {
-            if let Some(old) = before {
-                apply_list(conn, maps, (old, list), now).await?;
-            }
-            mark_applied(conn, list.id).await?;
-            marked += 1;
+    for (i, list) in lists.into_iter().enumerate() {
+        if done[i] {
+            continue;
         }
-        before = Some(list);
+        if i > 0 && newest_done.is_none_or(|n| n < i) {
+            apply_list(conn, maps, list, now).await?;
+        }
+        mark_applied(conn, list.id).await?;
+        marked += 1;
     }
     Ok(marked)
 }
 
-/// Re-applies the map to every business bound to a number whose classes changed from `old` to
-/// `new`, in batches of [`BATCH`] numbers (BIZ-050).
+/// Re-applies the map to every business bound to a number whose classes on `new` changed from
+/// the ones it last had (D-3355), in batches of [`BATCH`] numbers (BIZ-050).
 async fn apply_list(
     conn: &mut PgConnection,
     maps: (&ClassMap, &Catalog),
-    (old, new): (RocList, RocList),
+    new: RocList,
     now: Timestamp,
 ) -> Result<(), BusinessesError> {
     let mut after = String::new();
     loop {
-        let read = class_changes(conn, (old.id, new.id), (&after, BATCH)).await;
+        let read = class_changes(conn, new.id, (&after, BATCH)).await;
         let changes = read.map_err(|_| BusinessesError::Database)?;
         let Some(last) = changes.last() else {
             return Ok(());

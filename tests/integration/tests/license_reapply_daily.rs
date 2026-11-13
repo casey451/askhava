@@ -233,6 +233,44 @@ async fn td_biz_48_lists_missed_are_applied_in_order(pool: sqlx::PgPool) {
     assert_eq!(standing(&mut db, id).await, paused("no_covered_job_type"));
 }
 
+/// TD-BIZ-48 (BIZ-050, D-3355): a number missing from one list and back with fewer classes on a
+/// later one is compared with its last Active classes, so the lost R-37 unticks plumbing, pauses
+/// the business and queues one email.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_48_a_class_lost_while_missing_is_still_removed(pool: sqlx::PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    store_catalog(&mut db).await;
+    record(&mut db, 1, &[(NUMBER, "R-11"), (NUMBER, "R-37")]).await;
+    let id = bound(&mut db, NUMBER, covered(&["R-37"], "plumbing_repair")).await;
+    record(&mut db, 2, &[(STEADY, "R-11")]).await;
+    record(&mut db, 3, &[(NUMBER, "R-11")]).await;
+    assert_eq!(apply(&mut db).await, 3);
+    assert!(job_types(&mut db, id).await.expect("read").is_empty());
+    assert_eq!(standing(&mut db, id).await, paused("no_covered_job_type"));
+    let tasks = notices(&mut db).await;
+    assert_eq!(tasks.len(), 1);
+    assert_eq!(tasks[0]["dropped_classes"], serde_json::json!(["R-37"]));
+    assert_eq!(tasks[0]["paused"], serde_json::json!(true));
+}
+
+/// TD-BIZ-48 (BIZ-050, D-3356): a list recorded late with a date older than one already applied
+/// is only marked; it never re-applies its stale classes.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_48_a_late_older_list_is_only_marked(pool: sqlx::PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    store_catalog(&mut db).await;
+    record(&mut db, 1, &[(NUMBER, "R-11"), (NUMBER, "R-37")]).await;
+    let id = bound(&mut db, NUMBER, covered(&["R-37"], "plumbing_repair")).await;
+    record(&mut db, 3, &[(NUMBER, "R-11"), (NUMBER, "R-37")]).await;
+    assert_eq!(apply(&mut db).await, 2);
+    let before = job_types(&mut db, id).await.expect("read");
+    record(&mut db, 2, &[(NUMBER, "R-11")]).await;
+    assert_eq!(apply(&mut db).await, 1);
+    assert_eq!(job_types(&mut db, id).await.expect("read"), before);
+    assert_eq!(standing(&mut db, id).await.0, "active");
+    assert!(notices(&mut db).await.is_empty());
+}
+
 /// TD-BIZ-48 (D-2711, D-2730): through `save_job_types`, a covered tick lifts the pause (status
 /// audit row); a tick outside the rebuilt offer is refused and lifts nothing.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
