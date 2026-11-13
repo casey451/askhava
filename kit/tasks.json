@@ -14460,7 +14460,9 @@
     "T432",
     "T437",
     "T442",
-    "T443"
+    "T443",
+    "T444",
+    "T445"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -24627,7 +24629,7 @@
    "id": "T280",
    "slug": "business-signin-served",
    "title": "server and messaging (harness): the business sign-in pages are served, and the served route always asks for the new-device code",
-   "goal": "No task serves the business sign-in pages (D-1728 left the two `.route` lines and their page states to \"the task that serves the pages\", and none was named), and `SignIn::new` signs in on the link alone unless `with_device_codes` is called, kept on purpose for T084's component tests (D-1777 (2); second external audit known gaps, D-1844). (1) `app/server/src/business_signin.rs` builds the served sign-in state only through a constructor that requires `DeviceCodes` (the Verify adapter, the code-address lookup and the key); with no code configuration the server refuses to start rather than serve link-only sign-in, and it merges `SIGNIN_ROUTE` and `SIGNIN_LINK_ROUTE` in the shared `app/server/src/lib.rs`. `SignInMail` is composed there from T412's `privacy::api::mailboxes_of` and `businesses::api::businesses_of_mailbox` (`addresses`), the link's address read with `read_business_mailbox` under `BusinessPurpose::SignInLink`, and `CodeAddress` from the member's own linked phone that gets texts (`read_staff_phone` under `SignInCode`), else the member's own address (`read_business_mailbox` under `SignInCode`), each on a bare connection (D-3262), and `send_link` queues the link email through `app/messaging/src/signin_mail.rs` (a `business_signin_link` template in the shared templates, the link never logged). (2) The pages' `PAGE_STATES` entries go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788). Tests in `app/server/tests/business_signin_route.rs` against the assembled router: a missing code configuration refuses to start; a valid link without the code never signs in; a right code does; T272's caps hold through the served route. Update `docs/architecture.md` section 10, the `server`, `portals` and `messaging` `CLAUDE.md` files and `docs/decisions.md`. (3) Fourth external audit F12 (D-2206, D-1951): the link `POST` calls `portals::api::admit_sign_in_link` and the code `POST` `admit_code_try` first (T089's per-IP and per-business limits, in front of T272's per-member and per-link caps, which they never re-count); a refusal answers as any refusal, sends nothing and calls no Verify. (4) Plan change D-3055: `build_router` (`app/server/src/lib.rs:129`) has no settings, so it cannot build `DeviceCodes` (`app/portals/src/business_auth.rs:207`) itself; the served sign-in state is a new optional router part built from settings in `main.rs` (shared) and passed in. `Hooks` stays the four-part tuple (`lib.rs:76`) and both `RouterParts` conversions stay, because done tests build them (`app/server/tests/request_timeout.rs:51`, `server_hardening.rs:24`); the new part comes by a third conversion or a builder method on `RouterParts`. The four sign-in rows of `docs/architecture.md` section 13 flip from `T280` to `yes`. This is a harness task only because T284's done `app/server/tests/route_wiring.rs` builds the router from a fixed set of parts (`:238` to `:254`), so the flipped rows would fail there: its `router()` may change only to build the sign-in part from the same fake settings (adding to `pairs()`, `:202`, any fake setting the part needs) with `.expect`, and to pass it to `build_router`; no assertion, probe, table rule or other line changes.",
+   "goal": "No task serves the business sign-in pages (D-1728 left the two `.route` lines and their page states to \"the task that serves the pages\", and none was named), and `SignIn::new` signs in on the link alone unless `with_device_codes` is called, kept on purpose for T084's component tests (D-1777 (2); second external audit known gaps, D-1844). (1) `app/server/src/business_signin.rs` builds the served sign-in state only through a constructor that requires `DeviceCodes` (the Verify adapter, the code-address lookup and the key); with no code configuration the server refuses to start rather than serve link-only sign-in, and it merges `SIGNIN_ROUTE` and `SIGNIN_LINK_ROUTE` in the shared `app/server/src/lib.rs`. `SignInMail` is composed there from T412's `privacy::api::mailboxes_of` and `businesses::api::businesses_of_mailbox` (`addresses`), the link's address read with `read_business_mailbox` under `BusinessPurpose::SignInLink`, and `CodeAddress` from the member's own linked phone that gets texts (`read_staff_phone` under `SignInCode`), else the member's own address (`read_business_mailbox` under `SignInCode`), each on a bare connection (D-3262), and `send_link` queues the link email through `app/messaging/src/signin_mail.rs` (a `business_signin_link` template in the shared templates, the link never logged). (2) The pages' `PAGE_STATES` entries go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788). Tests in `app/server/tests/business_signin_route.rs` against the assembled router: a missing code configuration refuses to start; a valid link without the code never signs in; a right code does; T272's caps hold through the served route. Update `docs/architecture.md` section 10, the `server`, `portals` and `messaging` `CLAUDE.md` files and `docs/decisions.md`. (3) Fourth external audit F12 (D-2206, D-1951): the link `POST` calls `portals::api::admit_sign_in_link` and the code `POST` `admit_code_try` first (T089's per-IP and per-business limits, in front of T272's per-member and per-link caps, which they never re-count); a refusal answers as any refusal, sends nothing and calls no Verify. (4) Plan change D-3055: `build_router` (`app/server/src/lib.rs:129`) has no settings, so it cannot build `DeviceCodes` (`app/portals/src/business_auth.rs:207`) itself; the served sign-in state is a new optional router part built from settings in `main.rs` (shared) and passed in. `Hooks` stays the four-part tuple (`lib.rs:76`) and both `RouterParts` conversions stay, because done tests build them (`app/server/tests/request_timeout.rs:51`, `server_hardening.rs:24`); the new part comes by a third conversion or a builder method on `RouterParts`. The four sign-in rows of `docs/architecture.md` section 13 flip from `T280` to `yes`. This is a harness task only because T284's done `app/server/tests/route_wiring.rs` builds the router from a fixed set of parts (`:238` to `:254`), so the flipped rows would fail there: its `router()` may change only to build the sign-in part from the same fake settings (adding to `pairs()`, `:202`, any fake setting the part needs) with `.expect`, and to pass it to `build_router`; no assertion, probe, table rule or other line changes. (5) Plan change D-3562: `CodeAddress::code_to(db, member)` (`app/portals/src/business_auth.rs:176`) gets only the member row ID and no public function maps it to a business, mailbox or line, so this task also owns the new `app/businesses/src/sign_in_lines.rs`, exported through the shared `businesses::api` (one `mod` line, one `pub use` line): `sign_in_lines(conn, member) -> Result<Option<SignInLines>, BusinessesError>`, `None` unless `member` is a current member (`removed_at` null), else `SignInLines { business, mailbox, texting_lines }`: that row's business and mailbox IDs and the IDs of the `businesses.staff_phone` lines that member linked (`linked_by`, same business) with a text box ticked (as `may_text`, `app/businesses/src/consent.rs:243`, reads it), in `linked_at`, `id` order. Opaque IDs only; `CodeAddress` opens the first texting line with `read_staff_phone` under `SignInCode`, else the mailbox with `read_business_mailbox` under `SignInCode`, and on `None` sends no code (an error, as a failed send). No other `businesses` file changes. `business_signin_route.rs` adds: the code goes to the member's own texting line; with none (or only a line with no text box) to the member's own address; never to another member's line; no code for a removed member. Update the `businesses` `CLAUDE.md` too.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -24648,6 +24650,7 @@
    ],
    "owns": [
     "app/server/src/business_signin.rs",
+    "app/businesses/src/sign_in_lines.rs",
     "app/messaging/src/signin_mail.rs",
     "app/server/tests/business_signin_route.rs",
     "app/server/tests/route_wiring.rs"
@@ -24677,13 +24680,14 @@
     "D-2206",
     "D-1951",
     "D-3055",
-    "D-3262"
+    "D-3262",
+    "D-3562"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 450,
-    "context_pct": 45
+    "files": 5,
+    "lines": 530,
+    "context_pct": 50
    },
    "checks": [
     "Ci",
@@ -24692,7 +24696,7 @@
    ],
    "branch": "claude/task/T280-business-signin-served",
    "prompt": "kit/prompts/T280.md",
-   "acceptance": "TD-SEC-40 passes against PostgreSQL through the assembled router, and `Ally` passes with the new page states; every T084, T194, T269 and T272 case still passes. Every TD-SEC-41 case in `route_wiring.rs` passes with the sign-in rows `yes`."
+   "acceptance": "TD-SEC-40 passes against PostgreSQL through the assembled router, and `Ally` passes with the new page states; every T084, T194, T269 and T272 case still passes. Every TD-SEC-41 case in `route_wiring.rs` passes with the sign-in rows `yes`. The D-3562 `sign_in_lines` cases pass through the served route: own texting line, address fallback, never another member's line, no code for a removed member."
   },
   {
    "id": "T281",
@@ -30908,6 +30912,112 @@
    "branch": "claude/task/T443-after-smoke-fix-rounds",
    "prompt": "kit/prompts/T443.md",
    "acceptance": "`--after` on a fix-round hand-in (more than one `--worker-agent` or a prehand-in hold) runs main's `scripts/smoke.sh` on the head in the background outside the model (`runner: smoke_pending` until a verdict, nothing pushed meanwhile), holds a red once (`runner: smoke_red`) then fails `tests_failed`, lets a non-verdict through with a log line, and runs nothing for a first-round hand-in; the workflow's steps 4c and 5b carry D-3530's scoped fix-round checks and steps 5 and 5a handle both new results; the workflow holds the exact line `# T443: after-smoke live` (`grep -qxF` succeeds); `tests/test_runner_after_smoke.py` holds every listed case and every existing test passes unchanged."
+  },
+  {
+   "id": "T444",
+   "slug": "property-zip-town-test",
+   "title": "intake (test): the job's ZIP is read only from a property in the job's own town",
+   "goal": "Audit finding on T249 (D-3563 (b); CARD-024, INT-049, D-1521): `property_zip` (`app/intake/src/cards_out.rs:337`) reads the ZIP of the newest property of the request's homeowner `AND p.town = $2`, the town `models::property_town` read just before, so a property stored between the two reads in another town is never paired with the older town; no test fails if that condition is dropped. Both reads order the same way, so through the public API the condition matters only in that race, which no test can make happen on demand: the one change to `cards_out.rs` is `property_zip`'s visibility (`async fn` becomes `pub(crate) async fn`, its doc comment unchanged); nothing else in that file changes. New in-crate test `app/intake/src/tests/property_zip_town.rs` (one `mod` line in the shared `app/intake/src/tests/mod.rs`), `#[sqlx::test]` against PostgreSQL with fake data only (public market ZIPs, fake IDs, no names or phones), set up as `app/intake/src/tests/zip_step.rs` does: one homeowner request with an older property in one town with one ZIP and a newer property in another town with another ZIP; `crate::cards_out::property_zip(conn, conversation, <older town>)` returns the older property's ZIP, and with the newer town the newer one's; a town with no property gives `None`. Each case names TD-INT-38 and CARD-024 in its doc comment. Check by hand that deleting `AND p.town = $2` (and its bind) makes the first case fail, then restore it, and say so in the report. Update the `intake` `CLAUDE.md` tests note and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "intake",
+   "deps": [
+    "T249"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/cards_out.rs",
+    "app/intake/src/tests/property_zip_town.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/intake.md",
+    "app/intake/src/tests/zip_step.rs"
+   ],
+   "requirements": [
+    "CARD-024",
+    "INT-049"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1521",
+    "D-3563"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 120,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T444-property-zip-town-test",
+   "prompt": "kit/prompts/T444.md",
+   "acceptance": "`cargo test -p askhava-intake --lib tests::property_zip_town` passes against PostgreSQL; with `AND p.town = $2` removed from `property_zip` the older-town case fails (checked by hand, reported); the only change to `app/intake/src/cards_out.rs` is `property_zip`'s `pub(crate)`; every existing intake test passes unchanged."
+  },
+  {
+   "id": "T445",
+   "slug": "runner-stage-robustness",
+   "title": "runner (harness): a failed nightly on an older head keeps the stages the last green nightly proved, and a re-staged task's stage follows kit/tasks.json",
+   "goal": "Runner robustness (D-3563 (e); D-486, D-1126, D-3499, D-3531). (1) On November 13 a one-in-a-hundred property-test miss failed `named-mutants` on nightly-main; a failed `kit/nightly.json` makes `scripts/stage_exit.py` `_nightly_problems` fail every stage, so `passed_stages` (called by `runner/__main__.py` `build`'s `gate`) is empty and no task is claimed until a green nightly, about 2 hours, even after main had moved on and was green; `main_red` already ignores a failed nightly on an older head (`runner/cycle.py` `_nightly_red_on_head`, about line 1264). Make the gate do the same: `.github/workflows/nightly-main.yml`'s `record` step also writes `last_green` (`{\"sha\", \"ran_at\"}`): this run's when it is green, else the `last_green` of the `kit/nightly.json` it replaces (absent when there is none); every other key and the commit line stay as they are. A new pure `stage_exit.gate_nightly(nightly, main_head, is_ancestor)` returns the record unchanged unless its `conclusion` is `failure`, its `sha` is not `main_head` and is an ancestor of it (`is_ancestor` answers `True`), and it carries a `last_green` with a `sha`; then it returns `{\"conclusion\": \"success\", \"sha\": <last_green sha>}`, so a stage whose merges that green run contained stays passed and a stage that needs a newer merge waits for a newer green nightly. `gate` passes `gate_nightly(env.read_nightly(), env.main_head(), git_is_ancestor(ROOT))` to `passed_stages`; `evaluate`, `passed_stages`, the command line, `runner/proof.py`'s stage proofs and `main_red` read the raw record as today. A failed nightly on main's head still closes every stage and still sets `main_red`. (2) `runner/state.py` `sync_graph` (about line 99) copies a changed `stage` onto every entry not DONE or SKIPPED, as it does `deps` (D-1126), so a plan change that re-stages a queued task takes effect (the parked D-3498 re-stage of T111 and T121 needs it). (A worker stop opening `MAIN RED:` that the runner confirms is left out: it would add `runner/cycle.py`.) Tests first, in the new `tests/test_runner_stage_robustness.py`: `gate_nightly` returns the last green record for a failure on an older head, the raw failure on main's head, on a SHA that is not an ancestor or when `is_ancestor` answers `None`, and with no `last_green`; a success passes unchanged; `passed_stages` over the substituted record keeps a stage whose merges the last green SHA contains and closes one whose merge it does not; the `record` step's Python (read from the workflow file and run on fake records) keeps `last_green` across a failure and moves it on a success; `sync_graph` moves a QUEUED entry's stage and leaves a DONE entry's. Every existing test passes unchanged.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T443",
+    "T265"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "scripts/stage_exit.py",
+    "runner/__main__.py",
+    "runner/state.py",
+    ".github/workflows/nightly-main.yml",
+    "tests/test_runner_stage_robustness.py"
+   ],
+   "reads": [
+    "runner/cycle.py",
+    "runner/proof.py",
+    "tests/test_stage_exit.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-486",
+    "D-3499",
+    "D-3531",
+    "D-3563"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 300,
+    "context_pct": 40
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T445-runner-stage-robustness",
+   "prompt": "kit/prompts/T445.md",
+   "acceptance": "`tests/test_runner_stage_robustness.py` holds every listed case and passes; `python3 scripts/stage_exit.py --stage N` and every existing test (including `tests/test_stage_exit.py`, `tests/test_failure_drills.py`, `tests/test_runner_proof.py`) pass unchanged; the nightly `record` step writes `last_green` and nothing else new; a failed nightly on main's head still leaves `passed_stages` empty."
   }
  ]
 }
