@@ -11,9 +11,10 @@ use askhava_jobs::api::rules::{CheckIn, Contact, Reply};
 use askhava_jobs::api::{JobStatus, connected_reply, create, current, move_to};
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
-    AUTHORIZATION_TEXT, Appended, BusinessId, CardError, ConfirmError, Confirmed, FeeJob, FeeMode,
-    FeeQuote, FeeTerms, PeriodJob, PickedFee, RecurringCap, Service, VisitTier,
-    accept_authorization, fee_at_pick, fix_fee_at_pick, may_confirm, record_fee_at_confirm,
+    AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, Appended, BusinessId, CardError, ConfirmError,
+    Confirmed, FeeJob, FeeMode, FeeQuote, FeeTerms, PeriodJob, PickedFee, RecurringCap, Service,
+    VisitTier, accept_authorization, fee_at_pick, fix_fee_at_pick, may_confirm,
+    record_fee_at_confirm,
 };
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -22,7 +23,8 @@ use sqlx::{PgConnection, PgPool};
 
 const BUSINESS: BusinessId = BusinessId(Uuid::from_u128(0xb060_0001));
 const OTHER: Uuid = Uuid::from_u128(0xb060_0002);
-const TERMS: FeeTerms = FeeTerms::new(FeeMode::Tiers, 1);
+/// The terms a card save accepts: tiers at the current FEE-015 authorization version (D-3430).
+const TERMS: FeeTerms = FeeTerms::new(FeeMode::Tiers, AUTHORIZATION_VERSION);
 const JOB: PeriodJob = PeriodJob {
     job: FeeJob {
         diagnostic_visit: false,
