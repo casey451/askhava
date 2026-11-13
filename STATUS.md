@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T18:30:21Z by runner ac135e636d92 (actions).
+Updated 2026-11-13T18:33:09Z by runner 53256149fffc (actions).
 
 **Idle since 18:29Z; 289 of 423 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,17 +8,17 @@ Updated 2026-11-13T18:30:21Z by runner ac135e636d92 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 18:29Z (no task in progress)
 - **Week:** 25% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:27Z, 2 min before this update
+- **Last run:** 18:30Z, 2 min before this update
 - **Keeper:** last ran 18:27Z, next wake 18:47Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+174 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 1 | 2 h 1 min | 18:26Z |  |
+| T357 | server, messaging and intake: START into an open request res | resync | 1 | 2 h 1 min | 18:26Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T281 | picks: the unreachable-homeowner steps run at 24, 48, 72 and | done | 1 | 107 min | 18:15Z |  |
 | T436 | portals, core and server: expired sessions are swept and old | done | 1 | 34 min | 17:52Z |  |
 | T273 | privacy: a photo's plaintext is returned only after its open | done | 1 | 41 min | 17:10Z |  |
