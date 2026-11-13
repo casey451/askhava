@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-13T21:51:22Z by runner 58eef26515d0 (actions).
+Updated 2026-11-13T21:52:02Z by runner 4a8b6490731d (actions).
 
-**Building: T438 in progress since 21:51Z; 294 of 428 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T438 in progress since 21:51Z; 294 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 294 of 428 build tasks (owner gates not counted)
+- **Tasks done:** 294 of 427 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T438 claimed 21:51Z, lease until 00:51Z
 - **Week:** 28% used, 138.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:50Z, 0 min before this update
+- **Last run:** 21:51Z, 0 min before this update
 - **Keeper:** last ran 21:43Z, next wake 22:03Z
 
 ## Needs attention
 - PLAN GAP T280 (since 2026-11-13T21:43:04Z, no attempt used; a plan change fixes it): T280: dependency T412 is DONE but its owned file migrations/0188_privacy_business_contacts.sql is not on main; T280: dependency T412 is DONE but its owned file app/privacy/src/business_contacts.rs is not on main; T280: dependency T412 is DONE but its owned file tests/integration/tests/business_contacts.rs is not on main; T280: dependency T412 is DONE but its owned file tests/security/tests/business_contact_readers.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T415 (since 2026-11-13T21:43:04Z, no attempt used; a plan change fixes it): T415: dependency T412 is DONE but its owned file migrations/0188_privacy_business_contacts.sql is not on main; T415: dependency T412 is DONE but its owned file app/privacy/src/business_contacts.rs is not on main; T415: dependency T412 is DONE but its owned file tests/integration/tests/business_contacts.rs is not on main; T415: dependency T412 is DONE but its owned file tests/security/tests/business_contact_readers.rs is not on main
-- Strict plan check red: 26 problem(s) on tasks still to run (+183 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 26 problem(s) on tasks still to run (+185 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -114,7 +114,7 @@ Updated 2026-11-13T21:51:22Z by runner 58eef26515d0 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 280 of 733 (38.2%) · partial 293 · unstarted 160
-**Tasks merged (throughput only):** 294 of 428
+**Tasks merged (throughput only):** 294 of 427
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
