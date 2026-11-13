@@ -19,8 +19,9 @@ use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 /// The version of the PICK-048 authorization wording; a new wording takes a higher number, and a
-/// tick stored under another version never fires (PICK-056).
-pub const AUTO_CONFIRM_VERSION: i32 = 1;
+/// tick stored under another version never fires (PICK-056). Version 2 is the wording naming the
+/// renamed legal entity (D-3347, D-3426): a version-1 tick is void and the business ticks again.
+pub const AUTO_CONFIRM_VERSION: i32 = 2;
 
 /// PICK-048: the box's own authorization, with the fee shown in whole dollars (cents only when
 /// the fee has them) and the legal name from the brand file.
