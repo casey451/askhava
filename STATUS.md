@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T21:20:27Z by runner 474571b7a6b0 (actions).
+Updated 2026-11-13T21:20:46Z by runner 474571b7a6b0 (actions).
 
 **Building: T354 in progress since 20:29Z; 293 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 293 of 427 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T354 claimed 20:29Z, lease until 23:29Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
+- **Lane:** lane 3: T354 claimed 20:29Z, lease until 23:29Z
 - **Week:** 28% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:20Z, 0 min before this update
 - **Keeper:** last ran 21:19Z, next wake 23:23Z
@@ -18,6 +18,7 @@ Updated 2026-11-13T21:20:27Z by runner 474571b7a6b0 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T335 | adapters, payments and stand-in (harness): the reconcile's p | MERGE_PENDING | 1 | 59 min | 21:20Z |  |
 | T412 | privacy: each business member's sign-in address and texting  | MERGE_PENDING | 1 | 111 min | 21:18Z |  |
 | T442 | mutation (harness): every named mutant is killed by a determ | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
 | T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 1 | 23 min | 20:39Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
@@ -155,7 +156,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T354 (lease until 2026-11-13T23:29:22Z)
-- lane 5: T335 (lease until 2026-11-13T23:20:34Z)
 
 ## Last usage reading
-- {"task": "T412", "at": "2026-11-13T21:18:20Z", "input_tokens": 668, "cache_read_input_tokens": 20436027, "cache_creation_input_tokens": 701929, "output_tokens": 215002}
+- {"task": "T335", "at": "2026-11-13T21:20:25Z", "cache_creation_input_tokens": 458660, "input_tokens": 399, "cache_read_input_tokens": 12185268, "output_tokens": 123976}
