@@ -7,7 +7,7 @@
 //! The old wait then applies nothing, Quotes ready's 3-day close counts from the move, and
 //! `intake`'s sender drops a stale no-quotes-yet text and sends the first-quote text with her link.
 
-use askhava_core::api::{Claimed, Guarded, IdSecret, WorkerId, claim, finish};
+use askhava_core::api::{Claimed, Guarded, IdSecret, WorkerId, brand, claim, finish};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     JobStart, JobTextKeys, JobTextSkip, JobTextStep, Opened, PublishedTerms, TextIn,
@@ -37,7 +37,11 @@ use sqlx::{PgConnection, PgPool};
 /// 2026-11-02 10:00 Arizona time, when each job opens; [`hours`] counts from it (hour 32 is 6 p.m.
 /// the next day, hour 48 10 a.m. the day after).
 const DAY: &str = "2026-11-02T17:00:00Z";
-const PAGE: &str = "https://askhava.com/q/";
+
+/// Her quote page's link prefix on the brand file's domain (`https://<domain>/q/`, D-1932).
+fn page() -> String {
+    format!("https://{}/q/", brand().domain())
+}
 
 fn ts(s: &str) -> Timestamp {
     s.parse().expect("instant")
@@ -389,7 +393,10 @@ async fn td_job_11_a_no_quotes_yet_job_moves_and_its_stale_text_is_dropped(pool:
         JobTextStep::Skipped(JobTextSkip::MovedOn)
     );
     let first = events(&mut db, id, "first_quote").await;
-    assert!(!first[0].to_string().contains(PAGE), "no link in a payload");
+    assert!(
+        !first[0].to_string().contains(&page()),
+        "no link in a payload"
+    );
     let first = event(&first[0]);
     let step = job_text_step(&mut db, &keys(), &first, hours(48)).await;
     assert!(matches!(step.expect("step"), JobTextStep::Queued(_)));
@@ -407,7 +414,7 @@ async fn td_job_11_a_no_quotes_yet_job_moves_and_its_stale_text_is_dropped(pool:
     .expect("outbox");
     assert_eq!(bodies.len(), 1);
     assert!(bodies[0].contains("Your first quote for request"));
-    assert!(bodies[0].contains(PAGE));
+    assert!(bodies[0].contains(&page()));
 }
 
 /// TD-PICK-40's path (PICK-016, D-1517): after two quotes, with no manual move, "2 YES" gets the

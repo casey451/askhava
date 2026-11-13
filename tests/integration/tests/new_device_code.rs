@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_businesses::api::{Acting, Roles, add_member, add_owner, create, remove_member};
-use askhava_core::api::ManualClock;
+use askhava_core::api::{ManualClock, brand};
 use askhava_portals::api::{
     CODE_TRIES, CodeAddress, CodeFuture, CodeTo, CookieJar, DEVICE_COOKIE, DeviceCodes,
     PortalsError, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail,
@@ -92,7 +92,9 @@ impl SignInMail for FakeMail {
         _: SignInAddress,
         link: &SecretString,
     ) -> Result<(), PortalsError> {
-        let path = link.expose_secret().replace("https://askhava.com", "");
+        let path = link
+            .expose_secret()
+            .replace(&format!("https://{}", brand().domain()), "");
         self.sent
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
