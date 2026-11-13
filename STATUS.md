@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-13T07:40:01Z by runner bee96646639a (actions).
+Updated 2026-11-13T07:40:29Z by runner bee96646639a (actions).
 
-**Building: T428 in progress since 07:00Z; 276 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 07:40Z; 276 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 276 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T428 claimed 07:00Z, lease until 10:00Z
+- **Lane:** idle since 07:40Z (no task in progress)
 - **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:39Z, 0 min before this update
+- **Last run:** 07:40Z, 0 min before this update
 - **Keeper:** last ran 07:40Z, next wake 10:03Z
 
 ## Needs attention
+- BLOCKED T428: plan gap reported: PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switch.rs:67, fee_fixed_at_pick.rs:334, coverage_email.rs:249, pest_identity.rs:278. With the brand switched to Laftly and AUTHORIZATION_VERSION 2 they fail (old sms-terms version line; TERMS version 1; switch writes 3; terms_version 1 vs 2; hard-coded "Ask Hava: "). T428's line that fee_fixed_at_pick.rs passes unchanged contradicts the version-2 floor. Reviewer confirmed each by reading. Fix: give these files an owner or a harness task before T428.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T428 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 26 problem(s) on tasks still to run (+149 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T428 | Switch the brand file to Laftly and re-issue the legal recor | BLOCKED | 1 | 40 min | 07:40Z | PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switc |
 | T420 | Brand rename prep: intake and ai unit tests take the brand f | done | 1 | 28 min | 06:38Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | done | 1 | 22 min | 05:08Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 20 min | 04:22Z |  |
@@ -156,7 +158,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T428 (lease until 2026-11-13T10:00:00Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T420", "at": "2026-11-13T06:38:19Z", "cache_read_input_tokens": 7883492, "output_tokens": 61312, "cache_creation_input_tokens": 283387, "input_tokens": 219}
+- {"task": "T428", "at": "2026-11-13T07:40:28Z", "cache_creation_input_tokens": 266287, "input_tokens": 214, "cache_read_input_tokens": 9797509, "output_tokens": 39919}
