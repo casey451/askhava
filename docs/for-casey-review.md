@@ -2707,3 +2707,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Token counts fixed; fix rounds must be re-reviewed (D-3475, November 13)
 
 Two runner fixes are queued first. The runner was counting tokens about 1.65 times over, because each reply appears on several lines of a session log; T438 counts each reply once and corrects the pacer's estimates for the older numbers. Your weekly usage reading comes from the plan itself, so it was never wrong. T439 makes the runner refuse a hand-in unless an Opus reviewer approved the exact final commit and every new commit was made by a worker, not the coordinating session; three of four fix rounds checked earlier this week had merged without that second look. Nothing needs you.
+
+## Two tasks moved up a stage so more lanes can work (D-3498, November 13)
+
+The terms drafts (T111) and the startup and supply-chain security tests (T121) depended on nothing from the end of stage 4, so they now belong to stage 4 and can run beside it instead of waiting for it to finish. No gate, owner stop or account checkpoint moved, and no check got weaker. Four more (T101, T105, T307, T409) could follow once two open plan changes merge; one (T324) truly needs the stage-4 cleanup first. One catch: the runner does not yet copy a changed stage into its records, so a small runner fix has to land before this change, or the build would stall at the end of stage 4.

@@ -16120,10 +16120,9 @@
    "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030). The homeowner terms describe both ways of picking (the quote page and a \"<number> YES\" text pick, TERMS-001); both terms end with the TERMS-035 General section (severability, entire agreement, no waiver, transfer, notices, the 14-day business change notice and the homeowner rule that a change applies only to later requests), and the business terms add the 30-day write-first step and the TERMS-036 account-ending clause and no-promise sentence (D-492). The new summary file fails `scripts/check_legal_docs.py` until it is listed (`DOCUMENTS`, `:45`; any other `.md` under `docs/legal/` is an error, `:460`), so this task adds `business-terms-summary-es.md` to `DOCUMENTS` and to `BUSINESS_DOCUMENTS`, and moves `tests/test_check_legal_docs.py:53`'s count from 9 to 10; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) and DONE T291's, and the test belongs to no task (D-3263). The summary starts, as every draft does, with the English draft note line and a version line naming an English month (`check_header`, `scripts/check_legal_docs.py:360`), its body in Spanish. Brand: the brand is Laftly (Laftly LLC, laftly.com, D-3347, T428). Every 'Ask Hava', 'askhava.com' or 'Ask Hava:' text prefix in the decision quotes, research notes and examples of this prompt is historical and is written as 'Laftly', 'laftly.com' and 'Laftly:' (taken from core::api::brand() or app/core/data/brand.json) in every file this task owns; a test or checklist line that names the old brand is read as the Laftly one.",
    "type": "harness",
    "phase": 1,
-   "stage": "5",
+   "stage": "4",
    "module": null,
    "deps": [
-    "T100",
     "T428"
    ],
    "model": "claude-opus-5-5",
@@ -16938,7 +16937,7 @@
    "goal": "Security tests prove the app refuses to start on a live key in test, a test key in live or a vendor account off the environment's allow-list, the test-control router is absent from the release build, every route input rejects unknown fields, and the supply-chain steps (audits, pinned Actions and images, gitleaks over the commit range) fail on a planted hit (SEC-001 to SEC-003, SEC-010, SEC-021, SEC-035, SEC-036, SEC-045). Pentest PT-01 (D-2347): the supply-chain test reads every `.github/workflows/*.yml` and `*.yaml` file, not only `ci.yml`, and fails on any external `uses:` (anything but a `./` local action) without a 40-character commit SHA, with a planted-hit case (a workflow text using a tag) that must fail (TD-SEC-24). After T345 pinned every current one.",
    "type": "build",
    "phase": 1,
-   "stage": "5",
+   "stage": "4",
    "module": null,
    "deps": [
     "T345"
