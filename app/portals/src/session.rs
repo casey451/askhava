@@ -10,7 +10,12 @@
 //! token, so it needs no key, no table and no lookup, and only a page that could read the
 //! `HttpOnly` cookie could make one. A [`Session`] turns into a realm proof for vault reads only
 //! in its own realm (SEC-046).
+//!
+//! Expired rows are not kept: the daily [`SWEEP_KIND`] task ([`run_session_sweep_at`]) deletes
+//! sessions that expired more than a day earlier, [`SWEEP_BATCH`] rows per statement, and queues
+//! the next day's run first (SEC-004, D-2207).
 
+use askhava_core::api::{Claimed, HandlerError, NewTask, TaskError, enqueue};
 use askhava_privacy::api::{HomeownerSessionProof, OwnerSessionProof, SessionMint};
 use axum_extra::extract::cookie::{Cookie, CookieJar};
 use jiff::{SignedDuration, Timestamp};
@@ -18,8 +23,8 @@ use jiff_sqlx::ToSqlx;
 use rand::TryRng;
 use rand::rngs::SysRng;
 use sha2::{Digest, Sha256};
-use sqlx::PgConnection;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 use subtle::ConstantTimeEq;
 use thiserror::Error;
 
@@ -27,6 +32,11 @@ use thiserror::Error;
 pub const SESSION_COOKIE: &str = "__Host-askhava-session";
 /// The pre-session cookie a form without a session is bound to (SEC-042).
 pub const PRE_SESSION_COOKIE: &str = "__Host-askhava-pre";
+/// The daily task that deletes sessions expired more than a day earlier (SEC-004, D-2207).
+pub const SWEEP_KIND: &str = "portals.session_sweep";
+/// The most sessions one sweep statement deletes (D-2207).
+pub const SWEEP_BATCH: i64 = 5_000;
+const DAY: SignedDuration = SignedDuration::from_hours(24);
 
 /// Why a session step failed. No variant carries a token, an ID or a value (PRIV-016).
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -222,6 +232,75 @@ pub async fn current_session(
             actor_id: row.actor_id,
         })
     }))
+}
+
+/// Deletes at most `most` sessions that expired before `before`, in one short statement on its
+/// own, and returns how many (SEC-004, D-2207). The `expires_at` index serves it.
+///
+/// # Errors
+///
+/// [`PortalsError::Database`].
+pub async fn sweep_batch(pool: &PgPool, before: Timestamp, most: i64) -> Result<u64, PortalsError> {
+    let done = sqlx::query!(
+        "DELETE FROM portals.session WHERE id IN \
+         (SELECT id FROM portals.session WHERE expires_at < $1 LIMIT $2)",
+        before.to_sqlx(),
+        most,
+    )
+    .execute(pool)
+    .await
+    .map_err(|_| PortalsError::Database)?;
+    Ok(done.rows_affected())
+}
+
+/// Queues [`SWEEP_KIND`] for the day after `now`, once per day (dedupe key by day number,
+/// SEC-004, D-2207).
+///
+/// # Errors
+///
+/// [`TaskError::Db`].
+pub async fn schedule_session_sweep(
+    db: &mut PgConnection,
+    now: Timestamp,
+) -> Result<(), TaskError> {
+    let run_at = now + DAY;
+    let day = run_at.as_second() / 86_400;
+    let mut task = NewTask::new(SWEEP_KIND, serde_json::json!({}), run_at);
+    task.dedupe_key = Some(format!("{SWEEP_KIND}:{day}"));
+    enqueue(db, &task).await?;
+    Ok(())
+}
+
+/// SEC-004, D-2207: the [`SWEEP_KIND`] handler at `now` (the worker's clock): queues the next
+/// day's sweep first, so a run that fails for good still leaves it, then deletes every session
+/// that expired more than a day before `now`, [`SWEEP_BATCH`] rows per statement, until a batch
+/// comes back short. A live session and one expired less than a day ago stay. Safe to run twice.
+///
+/// # Errors
+///
+/// A fixed [`HandlerError`] when a database call fails.
+pub async fn run_session_sweep_at(
+    pool: PgPool,
+    _task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    let failed = HandlerError("session sweep database call failed");
+    {
+        let mut conn = pool.acquire().await.map_err(|_| failed)?;
+        schedule_session_sweep(&mut conn, now)
+            .await
+            .map_err(|_| failed)?;
+    }
+    let before = now - DAY;
+    let full = u64::try_from(SWEEP_BATCH).unwrap_or(u64::MAX);
+    loop {
+        let deleted = sweep_batch(&pool, before, SWEEP_BATCH)
+            .await
+            .map_err(|_| failed)?;
+        if deleted < full {
+            return Ok(());
+        }
+    }
 }
 
 /// Gives a page without a session its pre-session cookie, keeping one the browser already has,
