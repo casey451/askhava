@@ -4,7 +4,7 @@ Checks that requirement IDs are unique and use their file's prefix, that every
 requirement cites at least one `path:LINE` whose file exists in the repository
 with a non-blank line at that number, that every named decision (D-###) exists
 in docs/decisions.md, that no requirement contains a superseded value, and that
-no requirement's text implies Ask Hava is a contractor (WORD-022) or uses a
+no requirement's text implies the brand is a contractor (WORD-022) or uses a
 banned description such as "connect you with" (WORD-023).
 Prints counts; exits 1 on any error.
 
@@ -35,9 +35,9 @@ SUPERSEDED: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"\$(?:45|59|149)\b"), "old fee"),
     (re.compile(r"\b(?:2|two) months\b", re.IGNORECASE), "old recurring rule"),
 )
-# WORD-022 (D-360): wording that says or implies Ask Hava hires, dispatches, assigns, sends a
+# WORD-022 (D-360): wording that says or implies the brand hires, dispatches, assigns, sends a
 # worker, schedules, books, subcontracts, manages, warrants, guarantees, prices, bids on or
-# recommends work, or that a business works for or through Ask Hava. One list for the spec
+# recommends work, or that a business works for or through it. One list for the spec
 # check below, the catalog check (scripts/check_catalog.py) and the app's wording scan (T104).
 _NOT_A_CONTRACTOR_PATTERNS: tuple[str, ...] = (
     (
@@ -46,7 +46,7 @@ _NOT_A_CONTRACTOR_PATTERNS: tuple[str, ...] = (
     ),
     r"\byour (?:contractor|pro|plumber|electrician|technician|handyman)\b",
     (
-        r"\b(?:we|Ask Hava)(?:'ll| will)? (?:dispatch|assign|schedule|book)s? (?:you )?"
+        r"\b(?:we|Laftly|Ask Hava)(?:'ll| will)? (?:dispatch|assign|schedule|book)s? (?:you )?"
         r"(?:a|an|the|your|someone)\b"
     ),
     (
@@ -54,25 +54,25 @@ _NOT_A_CONTRACTOR_PATTERNS: tuple[str, ...] = (
         r"|contractor|crew|worker)\b"
     ),
     r"\bbook(?:s|ed|ing|ings)?\b",
-    r"\bhir(?:e|es|ed|ing) (?:through|via|with) (?:us|Ask Hava)\b",
-    r"\bthrough (?:Ask Hava|us)\b",
+    r"\bhir(?:e|es|ed|ing) (?:through|via|with) (?:us|Laftly|Ask Hava)\b",
+    r"\bthrough (?:Laftly|Ask Hava|us)\b",
     (
         r"\bdispatch(?:es|ed|ing)? (?:a|an|the|your) (?:plumber|pro|business|contractor|technician"
         r"|crew|worker)\b"
     ),
     r"\bassign(?:s|ed|ing|ment|ments)?\b",
-    r"\b(?:we|Ask Hava) (?:found|matched) you\b",
+    r"\b(?:we|Laftly|Ask Hava) (?:found|matched) you\b",
     r"\bmatch(?:es|ed)? you (?:with|to)\b",
     r"\bservice[- ]providers?\b",
     r"\bprovider partners?\b",
-    r"\b(?:our|Ask Hava's|Ask Hava|referral) network\b",
+    r"\b(?:our|Laftly's|Laftly|Ask Hava's|Ask Hava|referral) network\b",
     r"\bsubcontract\w*",
-    r"\b(?:we|Ask Hava) (?:guarantee|warrant|recommend|manage|negotiate|supervise|inspect)s?\b",
-    r"\bAsk Hava(?:'s)? (?:guarantee|warranty|pros?|plumbers?|contractors?|technicians?)\b",
+    r"\b(?:we|Laftly|Ask Hava) (?:guarantee|warrant|recommend|manage|negotiate|supervise|inspect)s?\b",
+    r"\b(?:Laftly|Ask Hava)(?:'s)? (?:guarantee|warranty|pros?|plumbers?|contractors?|technicians?)\b",
     r"\bguaranteed\b",
-    r"\b(?:work|works|working) for (?:us|Ask Hava)\b",
+    r"\b(?:work|works|working) for (?:us|Laftly|Ask Hava)\b",
     r"\bour (?:prices?|rates?|quotes?|estimates?)\b",
-    r"\bhire (?:us|Ask Hava)\b",
+    r"\bhire (?:us|Laftly|Ask Hava)\b",
     r"\bnuestr[oa]s? (?:profesionales|red|contratistas|técnicos|plomeros|electricistas)\b",
     r"\ble enviaremos (?:un|una) (?:plomero|técnico|profesional|contratista|electricista)\b",
     r"\bsubcontrat\w*",
@@ -81,9 +81,12 @@ _NOT_A_CONTRACTOR_PATTERNS: tuple[str, ...] = (
     r"\breferral (?:network|service)s?\b",
 )
 NOT_A_CONTRACTOR: tuple[tuple[re.Pattern[str], str], ...] = tuple(
-    (re.compile(p, re.IGNORECASE), "implies Ask Hava is a contractor (WORD-022)")
+    (re.compile(p, re.IGNORECASE), "implies the brand is a contractor (WORD-022)")
     for p in _NOT_A_CONTRACTOR_PATTERNS
 )
+# A web address in spec text ("laftly.com/help") is a page, not the brand (D-3402); only the
+# spec check blanks it, so the catalog check and the AI screen still refuse "through laftly.com".
+WEB_ADDRESS = re.compile(r"\b[\w-]+(?:\.[\w-]+)*\.(?:com|net|org)\b\S*", re.IGNORECASE)
 # Rules that quote the banned phrases in order to ban them (D-360).
 WORDING_RULE_IDS = frozenset(
     {"WORD-011", "WORD-020", "WORD-022", "WORD-023", "TERMS-012", "TERMS-026", "TERMS-027"}
@@ -255,14 +258,20 @@ def check_superseded(reqs: list[Requirement]) -> list[str]:
     ]
 
 
+def without_web_addresses(text: str) -> str:
+    """The text with each web address blanked, so "help through laftly.com/help" names a page,
+    not the brand (WORD-022, D-3402)."""
+    return WEB_ADDRESS.sub(" ", text)
+
+
 def check_not_a_contractor(reqs: list[Requirement]) -> list[str]:
-    """WORD-022: no requirement text (before "Source:") implies Ask Hava is a contractor."""
+    """WORD-022: no requirement text (before "Source:") implies the brand is a contractor."""
     return [
         f"{req.where}: {req.req_id} {label}: {match.group(0)!r}"
         for req in reqs
         if req.req_id not in WORDING_RULE_IDS
         for pat, label in NOT_A_CONTRACTOR
-        for match in [pat.search(req.text)]
+        for match in [pat.search(without_web_addresses(req.text))]
         if match
     ]
 
