@@ -1109,6 +1109,7 @@ fn register_accepted_quote(registry: &mut Registry) {
 fn register_purge_handlers(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     register_daily_purges(registry, clock);
     register_purge_stages(registry, clock);
+    register_daily_sweeps(registry, clock);
     let at = Arc::clone(clock);
     registry.register(
         askhava_businesses::api::COMPLAINT_HOLD_KIND,
@@ -1160,6 +1161,23 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
             alert_if_last(&pool, &task, outcome.await).await
         }
     });
+}
+
+/// SEC-004, SEC-014, SEC-040, D-2207, D-2306 (T436): `portals`' daily sweep of sessions expired
+/// more than a day earlier and `core`'s daily prune of rate-limit windows older than the longest
+/// window plus a day, both at `clock`'s now; each queues the next day's run first, and
+/// `schedule_start` in `worker.rs` seeds both.
+fn register_daily_sweeps(registry: &mut Registry, clock: &Arc<dyn Clock>) {
+    let at = Arc::clone(clock);
+    registry.register(
+        askhava_portals::api::SESSION_SWEEP_KIND,
+        move |pool, task| askhava_portals::api::run_session_sweep_at(pool, task, at.now()),
+    );
+    let at = Arc::clone(clock);
+    registry.register(
+        askhava_core::api::RATE_LIMIT_PRUNE_KIND,
+        move |pool, task| askhava_core::api::run_rate_limit_prune_at(pool, task, at.now()),
+    );
 }
 
 /// PRIV-007 to PRIV-009, D-1799, D-2641: `jobs`' stage tasks and `privacy`'s re-check at `clock`'s

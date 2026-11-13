@@ -29,9 +29,12 @@ pub use crate::logging::{
     subscriber as log_subscriber,
 };
 pub use crate::rate_limit::{
-    CF_CONNECTING_IP, CLOUDFLARE_RANGES, ClientIpPolicy, DEFAULT_CLIENT_IP_HEADER, RateDecision,
-    RateLimitError, hit as rate_limit_hit, hit_on as rate_limit_hit_on, ip_bucket,
-    prune as prune_rate_limits,
+    CF_CONNECTING_IP, CLOUDFLARE_RANGES, ClientIpPolicy, DEFAULT_CLIENT_IP_HEADER,
+    LONGEST_WINDOW as RATE_LIMIT_LONGEST_WINDOW, PRUNE_BATCH as RATE_LIMIT_PRUNE_BATCH,
+    PRUNE_KIND as RATE_LIMIT_PRUNE_KIND, RateDecision, RateLimitError, hit as rate_limit_hit,
+    hit_on as rate_limit_hit_on, ip_bucket, prune as prune_rate_limits,
+    prune_batch as prune_rate_limit_batch, prune_cutoff as rate_limit_prune_cutoff,
+    run_prune_at as run_rate_limit_prune_at, schedule_prune as schedule_rate_limit_prune,
 };
 pub use crate::settings::{Environment, Settings, SettingsError, Vendor, check_base_url};
 pub use crate::task_queries::unfinished;
