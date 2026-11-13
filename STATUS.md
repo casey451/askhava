@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T19:21:16Z by runner 6cc0b1c3ccc3 (actions).
+Updated 2026-11-13T19:25:26Z by runner 6cc0b1c3ccc3 (actions).
 
 **Building: T357 in progress since 19:21Z; 289 of 424 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 289 of 424 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T357 claimed 19:21Z, lease until 22:21Z
-- **Week:** 25% used, 144.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:05Z, 15 min before this update
+- **Lane:** lane 1: T357 claimed 19:21Z, lease until 22:21Z; lane 4: T438 claimed 19:25Z, lease until 22:25Z
+- **Week:** 25% used, 140.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:21Z, 3 min before this update
 - **Keeper:** last ran 19:05Z, next wake 00:45Z
 
 ## Needs attention
@@ -74,6 +74,7 @@ Updated 2026-11-13T19:21:16Z by runner 6cc0b1c3ccc3 (actions).
 | T416 | Performance: database pool and query measurements (PERF-004) | done | 1 | 54 min | 19:59Z |  |
 
 ### Plan and harness merges on main
+- 19:23Z Plan: deterministic kills for proptest-only named mutants (D-3499) (#694)
 - 19:02Z Plan: report-only symbol pre-flight in plan_health (D-3496) (#688)
 - 18:48Z Plan: crate guides to ≤8 KB, detail one entry per line in NOTES.md (D-3474) (#687)
 - 17:36Z Plan: count usage once per message, prove fix rounds were re-reviewed (D-3475) (#685)
@@ -130,7 +131,7 @@ Updated 2026-11-13T19:21:16Z by runner 6cc0b1c3ccc3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-13T19:05:04Z (week)): week: 50.0M used, 144.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T22:37:23Z.
+- Pacing (session_reading 2026-11-13T19:05:04Z (week)): week: 53.8M used, 140.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T22:41:39Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -146,6 +147,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T357 (lease until 2026-11-13T22:21:01Z)
+- lane 4: T438 (lease until 2026-11-13T22:25:17Z)
 
 ## Last usage reading
 - {"task": "T357", "at": "2026-11-13T18:26:34Z", "input_tokens": 732, "cache_read_input_tokens": 33678702, "output_tokens": 206682, "cache_creation_input_tokens": 1267043}
