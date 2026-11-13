@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T12:32:36Z by runner e5af370d0301 (actions).
+Updated 2026-11-13T12:32:54Z by runner e5af370d0301 (actions).
 
 **Building: T255 in progress since 11:40Z; 279 of 417 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 279 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T255 claimed 11:40Z, lease until 14:40Z; lane 4: T312 claimed 11:41Z, lease until 14:41Z
+- **Lane:** lane 1: T255 claimed 11:40Z, lease until 14:40Z
 - **Week:** 17% used, 157.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:29Z, 3 min before this update
 - **Keeper:** last ran 12:28Z, next wake 14:42Z
@@ -18,8 +18,9 @@ Updated 2026-11-13T12:32:36Z by runner e5af370d0301 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T312 | intake: a street address written in lower case never trips t | MERGE_PENDING | 2 | 51 min | 12:32Z | session ended without handing in |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | done | 3 | 46 min | 11:14Z | session ended without handing in |
-| T312 | intake: a street address written in lower case never trips t | QUEUED | 1 | 24 min | 10:17Z | session ended without handing in |
+| T312 | intake: a street address written in lower case never trips t | QUEUED | 1 | 24 min | 10:17Z |  |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | QUEUED | 2 | 22 min | 10:15Z |  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 3 | 26 min | 09:48Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T431 | Brand rename prep: the legal-docs version case and five paym | done | 1 | 30 min | 09:32Z |  |
@@ -148,7 +149,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T255 (lease until 2026-11-13T14:40:39Z)
-- lane 4: T312 (lease until 2026-11-13T14:41:09Z)
 
 ## Last usage reading
-- {"task": "T428", "at": "2026-11-13T11:14:44Z", "input_tokens": 234, "output_tokens": 44459, "cache_creation_input_tokens": 242847, "cache_read_input_tokens": 7673790}
+- {"task": "T312", "at": "2026-11-13T12:32:35Z", "input_tokens": 226, "cache_creation_input_tokens": 505723, "cache_read_input_tokens": 5955551, "output_tokens": 107091}
