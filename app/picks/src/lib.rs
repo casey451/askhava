@@ -30,6 +30,7 @@
 //! T209 added the PICK-048 auto-confirm: one off-session charge for a Verify-proven pick of a
 //! ticked quote, or the tick voided and the business told (PICK-048, PICK-056).
 //! T214 added the share box's log at the pick and "Can't take it" (PICK-049, PICK-050).
+//! T330 added the withdrawn-pick notice to the business (PICK-032, CON-029).
 //! Other crates reach it only through [`api`].
 
 mod address_wait_check;
@@ -47,6 +48,7 @@ mod handlers;
 mod models;
 mod money_notices;
 mod open_cards_email;
+mod pick_withdrawn;
 mod release;
 mod released_view;
 mod rules;
