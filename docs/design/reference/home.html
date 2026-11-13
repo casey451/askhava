@@ -2,104 +2,197 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Ask Hava home, dark plaster and brass</title>
-<style>
-@font-face{font-family:"Cormorant Garamond";font-weight:400;font-style:normal;src:url(../fonts/cormorant-garamond-latin-400-normal.woff2)}
-@font-face{font-family:"Cormorant Garamond";font-weight:500;font-style:normal;src:url(../fonts/cormorant-garamond-latin-500-normal.woff2)}
-@font-face{font-family:"Cormorant Garamond";font-weight:400;font-style:italic;src:url(../fonts/cormorant-garamond-latin-400-italic.woff2)}
-@font-face{font-family:"DM Sans";font-weight:400;src:url(../fonts/dm-sans-latin-400-normal.woff2)}
-@font-face{font-family:"DM Sans";font-weight:500;src:url(../fonts/dm-sans-latin-500-normal.woff2)}
-@font-face{font-family:"DM Sans";font-weight:700;src:url(../fonts/dm-sans-latin-700-normal.woff2)}
-*{box-sizing:border-box}
-body{margin:0;background:#1a1a19}
-.page{width:1440px;position:relative;color:#F1EBE0;font-family:"DM Sans",sans-serif;
-  background:url(../textures/plaster@2x.jpg) center top/1440px 2200px no-repeat #222221;overflow:hidden}
-.page::before{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(ellipse 900px 700px at 22% -6%,rgba(255,214,160,.13),transparent 70%),
-             radial-gradient(ellipse 700px 600px at 78% 8%,rgba(255,214,160,.09),transparent 70%),
-             linear-gradient(180deg,rgba(0,0,0,0) 60%,rgba(0,0,0,.25))}
-.serif{font-family:"Cormorant Garamond",Georgia,serif}
-.brass-bg{background:url(../textures/brass-bar@2x.jpg) center/cover}
-.brass-plate{background:url(../textures/brass-plate@2x.jpg) center/cover}
-a{color:#E2C48F;text-decoration:none}
-.rule{height:1px;background:linear-gradient(90deg,rgba(226,196,143,0),rgba(226,196,143,.55) 15%,rgba(226,196,143,.55) 85%,rgba(226,196,143,0))}
-.btn{white-space:nowrap;display:inline-flex;align-items:center;min-height:60px;padding:0 34px;border-radius:3px;font-size:18px;font-weight:700;letter-spacing:.2px}
-.btn-brass{color:#1B1915;box-shadow:inset 0 1px 0 rgba(255,245,215,.55),inset 0 -1px 0 rgba(70,50,20,.5),0 10px 24px rgba(0,0,0,.35)}
-.btn-ghost{border:1px solid rgba(226,196,143,.8);color:#F1EBE0;font-weight:500}
-header,section,footer{position:relative}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laftly home</title>
+<link rel="stylesheet" href="laftly-v6.css">
 </head>
 <body>
-<div class="page">
-<header style="display:flex;align-items:center;justify-content:space-between;padding:30px 96px 26px">
-  <span class="serif" style="font-weight:500;font-size:38px;letter-spacing:.6px">Ask Hava</span>
-  <nav style="display:flex;gap:38px;align-items:center;font-size:17px">
-    <a style="color:#F1EBE0">How it works</a><a style="color:#F1EBE0">What we cover</a><a style="color:#F1EBE0">For businesses</a><a style="color:#F1EBE0">Español</a>
-    <span class="btn brass-bg btn-brass" style="min-height:48px;padding:0 26px;font-size:17px">Text us your job</span>
-  </nav>
+<!-- V6 reference home page (D-3331). Static HTML and CSS, no JavaScript. Fake data only.
+     In the build the brand words come from app/core/data/brand.json. -->
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header">
+  <div class="shell header-row">
+    <a class="brand" href="home.html"><img src="../brand/mark.svg" width="30" height="27" alt="">Laftly</a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="header-link" href="#how">How it works</a>
+      <a class="header-link" href="#cover">What we cover</a>
+      <a class="header-link" href="#business">For businesses</a>
+      <a class="header-link" href="#help">Help</a>
+    </nav>
+    <a class="header-link" href="#es" lang="es" hreflang="es">Español</a>
+    <details class="menu">
+      <summary>Menu</summary>
+      <ul class="menu-list">
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#cover">What we cover</a></li>
+        <li><a href="#business">For businesses</a></li>
+        <li><a href="#help">Help</a></li>
+      </ul>
+    </details>
+  </div>
 </header>
-<div class="rule" style="margin:0 96px"></div>
 
-<section style="padding:100px 96px 120px;display:grid;grid-template-columns:1.25fr 0.95fr;gap:48px;align-items:center">
-  <div style="display:flex;flex-direction:column;gap:30px">
-    <p style="margin:0;font-size:16px;letter-spacing:3.2px;text-transform:uppercase;color:#E2C48F;font-weight:500">Lake Havasu City home services</p>
-    <h1 class="serif" style="margin:0;font-weight:400;font-size:92px;line-height:90px;letter-spacing:-1px">Get local quotes<br><i style="color:#E2C48F">by text.</i></h1>
-    <p style="margin:0;max-width:560px;font-size:21px;line-height:34px;color:#DCD4C7">Text us what needs fixing. We'll ask a few questions, send it to local businesses that do that kind of work, and text you when their quotes come in. Then you look them over and pick one.</p>
-    <div style="display:flex;gap:16px;align-items:center">
-      <span class="btn brass-bg btn-brass">Text us your job</span>
-      <span class="btn btn-ghost">Start a web chat</span>
+<main id="main">
+  <section class="hero shell" aria-labelledby="hero-title">
+    <div class="hero-text">
+      <p class="kicker">Lake Havasu City, Arizona</p>
+      <h1 class="display" id="hero-title">Get local quotes without giving out your number.</h1>
+      <p class="lede">Tell us what needs doing. We'll ask Havasu businesses that do that work and show you their quotes on one page.</p>
+      <form class="request" action="#chat" method="post" novalidate>
+        <div class="field">
+          <label for="job">What needs doing?</label>
+          <p class="hint" id="job-hint">For example: the AC runs but blows warm air.</p>
+          <textarea id="job" name="job" rows="3" aria-describedby="job-hint"></textarea>
+        </div>
+        <button class="button button-wide" type="submit">Get quotes</button>
+        <p class="cost small soft">Free for you. The business you pick pays <span class="nowrap">Laftly</span> a set introduction fee.</p>
+      </form>
+      <p class="hero-more"><a href="#how">See how it works</a></p>
     </div>
-    <p style="margin:-14px 0 0;font-size:16px;color:#DCD4C7">Or text [Ask Hava number] any time. This number is text-only.</p>
-    <p style="margin:0;font-size:17px;line-height:26px"><strong>Free for you.</strong> The business you pick pays Ask Hava a set introduction fee.</p>
-  </div>
+    <figure class="hero-photo">
+      <img src="../photos/hero-kitchen.webp" width="557" height="941" alt="" fetchpriority="high">
+    </figure>
+  </section>
 
-  <div style="position:relative;height:660px;display:flex;justify-content:center">
-    <!-- brass-framed arched niche -->
-    <div class="brass-plate" style="position:absolute;top:0;width:480px;height:650px;border-radius:240px 240px 4px 4px;box-shadow:0 30px 70px rgba(0,0,0,.55)"></div>
-    <div style="position:absolute;top:14px;width:452px;height:622px;border-radius:226px 226px 2px 2px;
-      background:url(../textures/plaster@2x.jpg) 30% 40%/900px auto #2a2928;
-      box-shadow:inset 0 30px 60px rgba(0,0,0,.65),inset 0 -10px 30px rgba(0,0,0,.4),inset 0 0 0 1px rgba(0,0,0,.4)"></div>
-    <!-- picture light -->
-    <div class="brass-bg" style="position:absolute;top:150px;width:200px;height:12px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.6)"></div>
-    <div style="position:absolute;top:160px;width:420px;height:420px;background:radial-gradient(ellipse 210px 230px at 50% 0%,rgba(255,224,170,.28),transparent 75%)"></div>
-    <!-- quote card on paper -->
-    <div style="position:absolute;top:214px;width:356px;padding:26px 26px 24px;border-radius:3px;color:#1F1D1B;
-      background:url(../textures/paper@2x.jpg) center/cover #F3ECE0;box-shadow:0 26px 50px rgba(0,0,0,.55),0 2px 0 rgba(255,255,255,.4) inset;display:flex;flex-direction:column;gap:12px">
-      <div style="display:flex;justify-content:space-between;font-size:14px;color:#5A544C"><span>No. 2 · Received 2:52 p.m.</span><span>Example</span></div>
-      <p class="serif" style="margin:0;font-weight:500;font-size:31px;line-height:32px">Desert Air HVAC</p>
-      <p style="margin:0;font-size:14px;color:#5A544C">Independent business, not affiliated with Ask Hava.</p>
-      <div style="height:1px;background:#D9CCB6"></div>
-      <div style="display:flex;align-items:baseline;gap:10px"><span class="serif" style="font-size:58px;line-height:54px">$89</span><span style="font-size:14px;color:#5A544C">visit fee, then an estimate on site</span></div>
-      <p class="serif" style="margin:0;font-style:italic;font-size:22px;line-height:27px">“Visit fee goes toward the repair. Can be there by 6.”</p>
-      <p style="margin:0;font-size:13px;line-height:19px;color:#5A544C">ROC #123456 showed Active on the ROC website when we checked. Check it yourself. · Google</p>
-      <span style="display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:3px;background:#1F1D1B;color:#F3ECE0;font-size:16px;font-weight:500">Pick Desert Air HVAC</span>
+  <section class="tint cover" id="cover" aria-labelledby="cover-title">
+    <div class="shell cover-grid">
+      <h2 class="section-title" id="cover-title">Pools, AC, boats, yards and more</h2>
+      <p>We're adding more. Send us any job and we'll tell you if we cover it. <a href="#cover">See the full list</a></p>
     </div>
+  </section>
+
+  <section class="section shell" id="how" aria-labelledby="how-title">
+    <div class="section-head">
+      <h2 class="section-title" id="how-title">How it works</h2>
+      <p class="soft">Start in the chat on this site. You don't need to know which trade to ask for.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="num" aria-hidden="true">1</span><div><h3>Tell us what you need.</h3><p>Answer a few short questions and add a photo if you have one. Unless it's an emergency, you see the request before it goes out. Your name and number are never on it.</p></div></li>
+      <li><span class="num" aria-hidden="true">2</span><div><h3>Havasu businesses quote.</h3><p>It goes to Havasu businesses that take this kind of job. Each one has 24 hours to quote. Every quote lists the same details: the price, what's included and when they can come. Not every business answers.</p></div></li>
+      <li><span class="num" aria-hidden="true">3</span><div><h3>You pick one, or none.</h3><p>Check their license and reviews, then choose. You hire the business directly.</p></div></li>
+    </ol>
+  </section>
+
+  <section class="section tint" aria-labelledby="example-title">
+    <div class="shell example">
+      <div class="section-head">
+        <p class="kicker">Example</p>
+        <h2 class="section-title" id="example-title">Each quote lists the same details, so they're easy to compare.</h2>
+        <p class="soft">These two are made up. Real quotes show in the order they came in, and no business can pay to be first.</p>
+      </div>
+      <div>
+        <p class="example-label"><span>Example: weekly pool cleaning</span><span>Not real quotes</span></p>
+        <div class="example-grid">
+          <article class="card quote" aria-label="Example quote 1">
+            <p class="quote-top"><span class="no">#1</span><span>Received 9:12 a.m.</span></p>
+            <h3 class="quote-name">Sample Pool Co.</h3>
+            <p class="quote-price"><span class="amount">$140</span><span class="format">a month, weekly visits</span></p>
+            <dl class="facts">
+              <div><dt>Chemicals</dt><dd>Included</dd></div>
+              <div><dt>Filter cleaning</dt><dd>Monthly</dd></div>
+              <div><dt>Earliest start</dt><dd>Next week</dd></div>
+            </dl>
+          </article>
+          <article class="card quote" aria-label="Example quote 2">
+            <p class="quote-top"><span class="no">#2</span><span>Received 10:40 a.m.</span></p>
+            <h3 class="quote-name">Sample Pool Service</h3>
+            <p class="quote-price"><span class="amount">$165</span><span class="format">a month, weekly visits</span></p>
+            <dl class="facts">
+              <div><dt>Chemicals</dt><dd>Included</dd></div>
+              <div><dt>Filter cleaning</dt><dd>Every visit</dd></div>
+              <div><dt>Earliest start</dt><dd>This week</dd></div>
+            </dl>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="night" aria-labelledby="fair-title">
+    <div class="shell fair">
+      <h2 class="section-title" id="fair-title">How we keep it fair</h2>
+      <ul class="fair-list">
+        <li><h3>Your number stays with us.</h3><p class="soft">Businesses see the job, not you. Your number is never shared. Your first name and address go only to the business you pick.</p></li>
+        <li><h3>Nobody pays to be first.</h3><p class="soft">Quotes show in the order they came in. Laftly doesn't rank or rate businesses, and no business can pay for a better spot.</p></li>
+        <li><h3>Asking costs you nothing.</h3><p class="soft">Laftly is a quote-request service; the business you choose pays Laftly a set introduction fee. That's $25, $75 or $199, by quote size. You pay Laftly nothing. If no quote fits, close the request.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section shell" id="business" aria-labelledby="biz-title">
+    <div class="biz-grid">
+      <div class="biz-text">
+        <p class="kicker">For businesses</p>
+        <h2 class="section-title mt-12" id="biz-title">Quote for free. Pay only when you confirm a pick.</h2>
+        <p class="soft mt-16">When a homeowner sends a job you do, we email you the details and you decide whether to quote. Every card says how many businesses got it. You quote once. No bidding rounds, no paid placement.</p>
+        <p class="soft">When you confirm a pick, you pay one fixed introduction fee by job size. It's not a share of the job.</p>
+        <p class="mt-16"><a href="#business">Read the business page</a></p>
+      </div>
+      <div class="card fee-card">
+        <h3>Introduction fee by job size</h3>
+        <dl>
+          <div><dt>A quote under $500</dt><dd>$25</dd></div>
+          <div><dt>$500 to $1,500</dt><dd>$75</dd></div>
+          <div><dt>Over $1,500</dt><dd>$199</dd></div>
+        </dl>
+        <p class="small soft">A visit-fee quote (a visit fee, then an estimate on site) is $25.</p>
+        <p class="small soft">A repeating service, such as weekly pool cleaning, is sized at 4 months of its price and is never more than $75. The $140 a month example above is $560 over 4 months, so its fee is $75.</p>
+        <p class="small soft">Job requests and picks come by email. We don't text or call businesses.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section shell who" id="help" aria-labelledby="who-title">
+    <div>
+      <h2 class="section-title" id="who-title">Who runs Laftly</h2>
+      <p class="soft mt-12">Laftly is run by Laftly LLC, a Lake Havasu City business. Its owner lives in Havasu. The owner has a full-time day job. Sign-up reviews are usually answered within 4 days, help and charge questions usually within 2 days, and this page shows when the owner is away.</p>
+      <dl class="who-facts mt-16">
+        <div><dt>Mailing address</dt><dd>[Laftly LLC mailing address: registered agent or PO box, from settings]</dd></div>
+        <div><dt>Help email</dt><dd>[help email, from settings]</dd></div>
+      </dl>
+    </div>
+    <aside class="note-911" aria-labelledby="note-911-title">
+      <h2 id="note-911-title">In an emergency, call 911</h2>
+      <p>Laftly isn't an emergency service and doesn't judge what needs an emergency response. If your message mentions gas, smoke, fire, a CO alarm going off or a downed power line, we send one automatic reminder to call 911. Don't rely on Laftly in an emergency: call 911.</p>
+    </aside>
+  </section>
+
+  <section class="shell end" aria-labelledby="end-title">
+    <h2 class="section-title" id="end-title">Tell us what needs doing.</h2>
+    <a class="button" href="#job">Get quotes</a>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="shell">
+    <div class="footer-grid">
+      <div>
+        <p class="footer-brand"><img src="../brand/mark.svg" width="30" height="27" alt="">Laftly</p>
+        <p class="footer-line">Local quotes. Your choice.</p>
+        <p class="small soft footer-statement">Laftly is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly.</p>
+      </div>
+      <nav aria-label="Homeowners">
+        <p class="footer-heading">Homeowners</p>
+        <ul class="footer-links">
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#cover">Services</a></li>
+          <li><a href="#job">Get quotes</a></li>
+          <li><a href="#help">Help</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Laftly">
+        <p class="footer-heading">Laftly</p>
+        <ul class="footer-links">
+          <li><a href="#business">For businesses</a></li>
+          <li><a href="#es" lang="es" hreflang="es">Español</a></li>
+          <li><a href="#terms">Terms</a></li>
+          <li><a href="#privacy">Privacy</a></li>
+          <li><a href="#accessibility">Accessibility</a></li>
+        </ul>
+      </nav>
+    </div>
+    <p class="footer-base">Lake Havasu City, Arizona</p>
   </div>
-</section>
-
-<div class="rule" style="margin:0 96px"></div>
-<section style="padding:76px 96px;display:grid;grid-template-columns:repeat(3,1fr);gap:64px">
-  <div><span class="serif" style="font-style:italic;font-size:44px;color:#E2C48F">1.</span><h2 class="serif" style="margin:10px 0 12px;font-weight:500;font-size:38px;line-height:42px">Tell us about the job</h2><p style="margin:0;font-size:19px;line-height:30px;color:#DCD4C7">We'll ask a few questions, and you can send a photo. You see exactly what we send before it goes out.</p></div>
-  <div><span class="serif" style="font-style:italic;font-size:44px;color:#E2C48F">2.</span><h2 class="serif" style="margin:10px 0 12px;font-weight:500;font-size:38px;line-height:42px">Businesses send quotes</h2><p style="margin:0;font-size:19px;line-height:30px;color:#DCD4C7">Local businesses that do that work get your request. Each quote lists the same details, so they're easy to compare.</p></div>
-  <div><span class="serif" style="font-style:italic;font-size:44px;color:#E2C48F">3.</span><h2 class="serif" style="margin:10px 0 12px;font-weight:500;font-size:38px;line-height:42px">You choose one</h2><p style="margin:0;font-size:19px;line-height:30px;color:#DCD4C7">Look up their license and reviews, pick one, and work with them directly.</p></div>
-</section>
-
-<div class="rule" style="margin:0 96px"></div>
-<section style="padding:60px 96px;display:flex;justify-content:space-between;align-items:center;gap:48px">
-  <h2 class="serif" style="margin:0;font-weight:500;font-size:42px;flex-shrink:0">What we cover now</h2>
-  <p class="serif" style="margin:0;font-size:29px;line-height:42px;text-align:right">Heating and cooling <span style="color:#E2C48F">·</span> Electrical <span style="color:#E2C48F">·</span> Handyman <span style="color:#E2C48F">·</span> Pool and spa repair <span style="color:#E2C48F">·</span> Weekly pool cleaning</p>
-</section>
-
-<section style="margin:8px 96px 80px;padding:24px 28px;background:rgba(16,15,14,.62);border:1px solid #C9786A;border-radius:4px;display:flex;gap:28px;align-items:baseline">
-  <h2 style="margin:0;font-size:18px;font-weight:700;color:#F2A898;flex-shrink:0">In an emergency, call 911</h2>
-  <p style="margin:0;font-size:17px;line-height:27px">Ask Hava isn't an emergency service and doesn't judge what needs an emergency response. If your message mentions gas, smoke, fire, a CO alarm going off or a downed power line, we send one automatic reminder to call 911. Don't rely on Ask Hava in an emergency: call 911.</p>
-</section>
-
-<footer style="background:rgba(14,13,12,.82);padding:56px 96px 64px;display:grid;grid-template-columns:1fr 1fr;gap:64px">
-  <div class="brass-bg" style="position:absolute;left:0;right:0;top:0;height:2px"></div>
-  <div><p class="serif" style="margin:0 0 14px;font-weight:500;font-size:40px">Ask Hava</p><p style="margin:0;font-size:17px;line-height:27px;color:#DCD4C7">Run by its local owner, who lives in Havasu. Questions? Text HELP, or email <a>help@askhava.com</a>.</p></div>
-  <div><p style="margin:0 0 18px;font-size:16px;line-height:26px;color:#DCD4C7">Ask Hava is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly.</p><p style="margin:0;display:flex;gap:28px;font-size:16px"><a>Terms</a><a>Privacy</a><a>Help</a><a>Accessibility</a></p></div>
 </footer>
-</div>
 </body>
 </html>

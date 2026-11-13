@@ -140,7 +140,7 @@ twin/                     the digital twin (updated in stage 1)
 | `messaging` | Outbox and inbox (never send twice); templates in English and Spanish; quiet hours; opt-out keywords; delivery tracking |
 | `calls` | Masked numbers from a pool, PIN routing, call logs (never recorded) |
 | `portals` | Homeowner page, business portal, owner portal |
-| `site` | Public website in the plaster-and-brass look of the design spec, `docs/design/DESIGN_SPEC.md` (WEB-001, D-451) |
+| `site` | Public website in the daylight-and-evergreen look of the design spec, `docs/design/DESIGN_SPEC.md` (WEB-001, D-3331) |
 | `ops` | Alerts, pause switches, safe mode, status banner, web-and-email mode, audit log viewer |
 | `recovery` | Backup checks, the restore drill, replay with derived IDs |
 | `adapters` | One interface per vendor; real and stand-in implementations chosen by configuration |
