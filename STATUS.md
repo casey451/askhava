@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:16:23Z by runner 546c8d32a681 (actions).
+Updated 2026-11-13T22:20:05Z by runner 343fd3e7c696 (actions).
 
 **Building: T355 in progress since 22:11Z; 296 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T22:16:23Z by runner 546c8d32a681 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
 - **Week:** 29% used, 124.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:15Z, 1 min before this update
+- **Last run:** 22:16Z, 3 min before this update
 - **Keeper:** last ran 22:15Z, next wake 00:55Z
 
 ## Needs attention
@@ -82,7 +82,6 @@ Updated 2026-11-13T22:16:23Z by runner 546c8d32a681 (actions).
 | T419 | calls (harness): TD-CALL-23's no-plaintext scan reads only t | done | 1 | 24 min | 22:37Z |  |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | resync | 1 | 58 min | 22:35Z |  |
 | T417 | Performance: seeded fake-data route benchmark and the first  | done | 1 | 36 min | 22:22Z |  |
-| T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 3 | 40 min | 22:16Z |  |
 
 ### Plan and harness merges on main
 - 21:01Z Plan: fewer smoke runs, scoped fix rounds, batched reads, decision excerpts (D-3530) (#698)
