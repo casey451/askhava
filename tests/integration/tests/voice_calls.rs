@@ -18,7 +18,7 @@ use askhava_calls::api::{
     owner_bridge_twiml, pin_heard, pin_prompt_twiml, place_safety_call, ring_owner,
     safety_call_answered, safety_call_key, safety_script, safety_twiml,
 };
-use askhava_core::api::Settings;
+use askhava_core::api::{Settings, brand};
 use askhava_intake::api::rules::safety_call_trigger;
 use askhava_intake::api::{SafetyCallAsk, enqueue_safety_call};
 use askhava_ops::api::{ALERT_ACKNOWLEDGED_ACTION, NewAlert, Severity, raise_alert};
@@ -192,7 +192,8 @@ fn td_call_06_the_code_call_opens_with_ask_hava_llc_and_says_the_code_twice() {
     let code = SecretString::from("123456".to_owned());
     let twiml = code_call_twiml(&from, MAIN, &code, "/again").expect("twiml");
     let twiml = twiml.expose_secret();
-    assert!(twiml.contains("<prosody rate=\"slow\">This is Ask Hava LLC."));
+    let opening = format!("<prosody rate=\"slow\">This is {}.", brand().legal_name());
+    assert!(twiml.contains(&opening));
     assert_eq!(twiml.matches("1, 2, 3, 4, 5, 6").count(), 2);
     assert!(twiml.contains("dial 9 2 8, 5 5 5, 0 1 0 0."));
     assert!(
@@ -340,9 +341,11 @@ fn td_call_09_only_danger_words_trigger_the_safety_call() {
 fn td_call_09_the_safety_script_is_short_and_generic() {
     let from = pool_number();
     let words = safety_script(MAIN, &from).expect("script");
-    assert!(words.starts_with("This is Ask Hava L L C."));
+    let opening = format!("This is {}.", brand().spoken_legal_name());
+    assert!(words.starts_with(&opening));
+    let not_emergency = format!("{} is not an emergency service.", brand().display_name());
     for part in [
-        "Ask Hava is not an emergency service.",
+        not_emergency.as_str(),
         "call 9 1 1",
         "dial 9 2 8, 5 5 5, 0 1 0 0",
         "Press 9 to stop all calls",

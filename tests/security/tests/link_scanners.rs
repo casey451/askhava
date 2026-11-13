@@ -10,7 +10,7 @@
 use std::sync::Arc;
 
 use askhava_businesses::api::{Acting, add_owner, create, record_step_up};
-use askhava_core::api::ManualClock;
+use askhava_core::api::{ManualClock, brand};
 use askhava_messaging::api::{NewNoticeLog, NoticeKind, Sending, record_notice};
 use askhava_picks::api::HoldAsk;
 use askhava_portals::api::CookieJar;
@@ -174,9 +174,10 @@ async fn mint(db: &mut PgConnection, o: &Owner, kind: ActionKind, object: Uuid) 
     let link = mint_action_link(db, target, hold(), (start(), later(120)))
         .await
         .expect("minted");
+    let ours = format!("https://{}", brand().domain());
     let path = link
         .expose_secret()
-        .strip_prefix("https://askhava.com")
+        .strip_prefix(ours.as_str())
         .expect("ours");
     path.to_owned()
 }
