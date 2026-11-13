@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T20:40:11Z by runner 975b720ac5e2 (actions).
+Updated 2026-11-13T20:40:29Z by runner c309142e3550 (actions).
 
 **Building: T412 in progress since 19:27Z; 291 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,12 +9,12 @@ Updated 2026-11-13T20:40:11Z by runner 975b720ac5e2 (actions).
 - **Lane:** lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T354 claimed 20:29Z, lease until 23:29Z; lane 4: T442 claimed 19:41Z, lease until 22:41Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
 - **Week:** 28% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:40Z, 0 min before this update
-- **Keeper:** last ran 20:29Z, next wake 22:30Z
+- **Keeper:** last ran 20:40Z, next wake 22:29Z
 
 ## Needs attention
 - BLOCKED T438: plan gap reported: PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {"start": ..., "tokens": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: "message_id"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {"start": ..., "tokens": 2000, "counting": "message_id"}, logged in docs/decisions.md under; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T438 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 28 problem(s) on tasks still to run (+183 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 26 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
