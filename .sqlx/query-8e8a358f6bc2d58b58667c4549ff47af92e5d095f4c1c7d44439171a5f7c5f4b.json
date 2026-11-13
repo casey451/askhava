@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT (p.status = $2 AND p.ended_at IS NULL\n             AND NOT EXISTS (SELECT 1 FROM picks.fraud_hold h WHERE h.pick_id = p.id)) AS \"open!\"\n           FROM picks.pick p WHERE p.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "open!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "8e8a358f6bc2d58b58667c4549ff47af92e5d095f4c1c7d44439171a5f7c5f4b"
+}
