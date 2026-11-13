@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T12:32:54Z by runner e5af370d0301 (actions).
+Updated 2026-11-13T12:33:17Z by runner e5af370d0301 (actions).
 
 **Building: T255 in progress since 11:40Z; 279 of 417 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T12:32:54Z by runner e5af370d0301 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T255 claimed 11:40Z, lease until 14:40Z
 - **Week:** 17% used, 157.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:29Z, 3 min before this update
+- **Last run:** 12:33Z, 0 min before this update
 - **Keeper:** last ran 12:28Z, next wake 14:42Z
 
 ## Needs attention
@@ -77,6 +77,7 @@ Updated 2026-11-13T12:32:54Z by runner e5af370d0301 (actions).
 | T378 | adapters, calls and stand-in (harness): every outbound call  | done | 1 | 45 min | 12:34Z |  |
 
 ### Plan and harness merges on main
+- 12:32Z Plan: pre-flight 14, split three oversized build tasks; T111/T113 brand note (D-3445) (#668)
 - 11:32Z Harness: fix-round hand-off, tighter output caps, crate_cap 2 (D-3444) (#665)
 - 11:16Z Harness: an API error session death does not use an attempt (D-3443) (#664)
 - 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
