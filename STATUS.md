@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T11:15:34Z by runner 07cc7ea488ef (actions).
+Updated 2026-11-13T11:15:49Z by runner 07cc7ea488ef (actions).
 
 **Idle since 11:14Z; 278 of 417 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-13T11:15:34Z by runner 07cc7ea488ef (actions).
 - **Lane:** idle since 11:14Z (no task in progress)
 - **Week:** 16% used, 164.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:15Z, 0 min before this update
-- **Keeper:** last ran 11:15Z, next wake 16:55Z
+- **Keeper:** last ran 11:15Z, next wake 11:35Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -77,7 +77,6 @@ Updated 2026-11-13T11:15:34Z by runner 07cc7ea488ef (actions).
 | T323 | ai: a new capitalized name at the start of a sentence counts | done | 1 | 24 min | 11:47Z |  |
 | T404 | harness: the door probe's fixtures hold a charged pick and t | done | 1 | 27 min | 11:46Z |  |
 | T345 | harness: every external GitHub Actions `uses:` in every work | done | 3 | 27 min | 11:16Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
-| T377 | adapters and stand-in (harness): every text asks Twilio for  | done | 1 | 28 min | 11:15Z |  |
 
 ### Plan and harness merges on main
 - 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
