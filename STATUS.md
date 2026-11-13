@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-13T21:19:03Z by runner 7bc9d7732971 (actions).
+Updated 2026-11-13T21:19:23Z by runner 6cc0b1c3ccc3 (actions).
 
-**Building: T354 in progress since 20:29Z; 292 of 425 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T354 in progress since 20:29Z; 292 of 424 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 292 of 425 build tasks (owner gates not counted)
+- **Tasks done:** 292 of 424 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T354 claimed 20:29Z, lease until 23:29Z; lane 5: T335 claimed 20:20Z, lease until 23:20Z
 - **Week:** 28% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:18Z, 0 min before this update
-- **Keeper:** last ran 21:18Z, next wake 22:30Z
+- **Last run:** 21:19Z, 0 min before this update
+- **Keeper:** last ran 21:19Z, next wake 23:23Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 28 problem(s) on tasks still to run (+180 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T412 | privacy: each business member's sign-in address and texting  | MERGE_PENDING | 1 | 111 min | 21:18Z |  |
-| T442 | mutation (harness): every named mutant is killed by a determ | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
+| T442 |  | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
 | T357 | server, messaging and intake: START into an open request res | MERGE_PENDING | 1 | 23 min | 20:39Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T271 | server and calls (harness): the dialed leg asks for status c | MERGE_PENDING | 1 | 53 min | 20:22Z |  |
 | T318 | calls, picks and quotes: the who's-calling text goes out at  | done | 1 | 52 min | 20:18Z |  |
@@ -110,7 +110,7 @@ Updated 2026-11-13T21:19:03Z by runner 7bc9d7732971 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 280 of 733 (38.2%) · partial 293 · unstarted 160
-**Tasks merged (throughput only):** 292 of 425
+**Tasks merged (throughput only):** 292 of 424
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
