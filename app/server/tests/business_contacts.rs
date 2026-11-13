@@ -3,15 +3,16 @@
 //! made through module APIs; mailboxes and numbers are touched at the database's clock, so each
 //! sweep runs at a `now` days ahead of it. Fake addresses (`example.com`) and 555-01xx numbers only.
 
+use askhava_adapters::api::{AdapterError, Email, EmailAdapter, IdempotencyKey};
 use askhava_businesses::api::{
-    Acting, ContactIds, Roles, add_member, add_owner, change_phone, contact_ids_in_use,
-    create as create_business, leave, link_phone, record_step_up, remove_member, request_backup,
-    request_notice_change, unlink_phone,
+    Acting, ContactIds, Roles, add_member, add_owner, change_phone, confirm_mailbox,
+    contact_ids_in_use, create as create_business, leave, link_phone, record_step_up,
+    remove_member, request_backup, request_notice_change, unlink_phone,
 };
 use askhava_core::api::MIGRATOR;
 use askhava_messaging::api::{
-    Audience, EmailClass, Language, MailboxKind, NewEmail, Notice, PostalAddress, Recipient,
-    queue_email, sender_business,
+    Audience, DailyLimit, EmailClass, EmailSent, EmailTo, Language, MailboxKind, NewEmail, Notice,
+    PostalAddress, Recipient, queue_email, send_email, sender_business,
 };
 use askhava_privacy::api::{
     BusinessContactError, BusinessPurpose, Vault, mailbox_for, read_business_mailbox,
@@ -51,9 +52,8 @@ async fn business(db: &mut PgConnection, owner: Uuid, now: Timestamp) -> Acting 
 }
 
 async fn member(db: &mut PgConnection, by: Acting, mailbox: Uuid, now: Timestamp) -> Uuid {
-    add_member(db, by, mailbox, Roles::BOTH, now)
-        .await
-        .expect("member")
+    let added = add_member(db, by, mailbox, Roles::BOTH, now).await;
+    added.expect("member")
 }
 
 async fn mailbox(db: &mut PgConnection, vault: &Vault, address: &str) -> Uuid {
@@ -76,19 +76,44 @@ async fn phone_of(db: &mut PgConnection, vault: &Vault, line: Uuid) -> Option<St
     }
 }
 
-async fn link(db: &mut PgConnection, dir: &ContactDirectory, by: Acting, n: &str) -> Uuid {
-    link_phone(db, dir, (by, false), &number(n), Timestamp::now())
-        .await
-        .expect("linked")
+/// Whether each of `ids` still has its mailbox.
+async fn kept(db: &mut PgConnection, vault: &Vault, ids: &[Uuid]) -> Vec<bool> {
+    let mut out = Vec::new();
+    for id in ids {
+        out.push(has_mailbox(db, vault, *id).await);
+    }
+    out
 }
 
-/// One unsent business email to `mailbox`, queued at `now`.
-async fn queue_to(db: &mut PgConnection, mailbox: Uuid, now: Timestamp) {
-    let postal = PostalAddress::new(
-        "PO Box 1234, Lake Havasu City, AZ 86405",
-        MailboxKind::PoBox,
-    )
-    .expect("box");
+async fn link(db: &mut PgConnection, dir: &ContactDirectory, by: Acting, n: &str) -> Uuid {
+    let linked = link_phone(db, dir, (by, false), &number(n), Timestamp::now()).await;
+    linked.expect("linked")
+}
+
+/// A provider that takes every email.
+struct TakesAll;
+
+impl EmailAdapter for TakesAll {
+    async fn send_email(&self, _: &IdempotencyKey, _: &Email<'_>) -> Result<String, AdapterError> {
+        Ok("re_fake_1".to_owned())
+    }
+    async fn remove_suppression(&self, _: &IdempotencyKey, _: &str) -> Result<(), AdapterError> {
+        Ok(())
+    }
+}
+
+/// Sends email row `id` at `now`, so it is `sent`.
+async fn send(db: &mut PgConnection, id: Uuid, now: Timestamp) {
+    let limit = DailyLimit::new(1000, 80).expect("limit");
+    let to = EmailTo::Business("sent.to@example.com");
+    let sent = send_email(db, (&secret(), &TakesAll, limit), id, to, now).await;
+    assert!(matches!(sent, Ok(EmailSent::Sent(_))), "{sent:?}");
+}
+
+/// One unsent business email to `mailbox`, queued at `now`; returns its row ID.
+async fn queue_to(db: &mut PgConnection, mailbox: Uuid, now: Timestamp) -> Uuid {
+    let kind = MailboxKind::PoBox;
+    let postal = PostalAddress::new("PO Box 1234, Faketown, AZ 00000", kind).expect("box");
     let to = Recipient {
         id: mailbox,
         audience: Audience::Business,
@@ -101,9 +126,10 @@ async fn queue_to(db: &mut PgConnection, mailbox: Uuid, now: Timestamp) {
         class: EmailClass::Notice,
         notice: Notice::StillOpen(1),
     };
-    queue_email(db, (&secret(), &postal), &to, &email, now)
+    let (id, _) = queue_email(db, (&secret(), &postal), &to, &email, now)
         .await
         .expect("queued");
+    id
 }
 
 #[sqlx::test(migrator = "MIGRATOR")]
@@ -115,21 +141,18 @@ async fn td_priv_29_link_writes_the_digest_and_the_sealed_number_together(pool: 
     let line = link(&mut db, &dir, by, "928-555-0142").await;
     let found = sender_business(&mut db, &vault, "+19285550142").await;
     assert_eq!(found.expect("lookup"), Some(by.business));
-    assert_eq!(
-        phone_of(&mut db, &vault, line).await.as_deref(),
-        Some("+19285550142")
-    );
-    change_phone(&mut db, &dir, (by, line), &number("928-555-0143"))
+    let phone = phone_of(&mut db, &vault, line).await;
+    assert_eq!(phone.as_deref(), Some("+19285550142"));
+    let n = number("928-555-0143");
+    change_phone(&mut db, &dir, (by, line), &n)
         .await
         .expect("changed");
     let old = sender_business(&mut db, &vault, "+19285550142").await;
     assert_eq!(old.expect("lookup"), None);
     let new = sender_business(&mut db, &vault, "+19285550143").await;
     assert_eq!(new.expect("lookup"), Some(by.business));
-    assert_eq!(
-        phone_of(&mut db, &vault, line).await.as_deref(),
-        Some("+19285550143")
-    );
+    let phone = phone_of(&mut db, &vault, line).await;
+    assert_eq!(phone.as_deref(), Some("+19285550143"));
 }
 
 /// A business whose owner, member `kept` (with a backup and an open address change) and removed
@@ -138,15 +161,14 @@ async fn team_with_leftovers(db: &mut PgConnection, now: Timestamp) -> ([Uuid; 4
     let ids: [Uuid; 7] = std::array::from_fn(|_| Uuid::new_v4());
     let by = business(db, ids[0], now).await;
     record_step_up(db, by, now).await.expect("step-up");
+    let s = secret();
     let kept = member(db, by, ids[1], now).await;
     let gone = member(db, by, ids[4], now).await;
     for (who, backup, new) in [(kept, ids[2], ids[3]), (gone, ids[5], ids[6])] {
-        request_backup(db, &secret(), by, (who, backup), now)
-            .await
-            .expect("backup");
-        request_notice_change(db, &secret(), by, (who, new), now)
-            .await
-            .expect("change");
+        let asked = request_backup(db, &s, by, (who, backup), now).await;
+        asked.expect("backup");
+        let code = request_notice_change(db, &s, by, (who, new), now).await;
+        code.expect("change");
     }
     remove_member(db, by, gone, now).await.expect("removed");
     ([ids[0], ids[1], ids[2], ids[3]], [ids[4], ids[5], ids[6]])
@@ -168,18 +190,13 @@ async fn td_priv_29_in_use_lists_current_contacts_not_a_removed_members_leftover
     for id in current {
         assert!(mailboxes.contains(&id), "a current contact is in use");
     }
+    let before = contact_ids_in_use(&mut db, then).await.expect("ids");
     for id in leftover {
-        assert!(
-            !mailboxes.contains(&id),
-            "a removed member's leftover is not"
-        );
+        assert!(!mailboxes.contains(&id), "a leftover is not in use");
+        assert!(before.mailboxes.contains(&id), "stopped at or after since");
     }
     assert_eq!(lines, vec![line]);
     assert!(!lines.contains(&left_line));
-    let before = contact_ids_in_use(&mut db, then).await.expect("ids");
-    for id in leftover {
-        assert!(before.mailboxes.contains(&id), "stopped at or after since");
-    }
 }
 
 #[sqlx::test(migrator = "MIGRATOR")]
@@ -195,6 +212,12 @@ async fn td_priv_29_the_sweep_keeps_fresh_and_used_contacts_then_forgets_the_res
     let mailed = mailbox(&mut db, &vault, "still.mailed@example.com").await;
     let leaver = mailbox(&mut db, &vault, "left.owner@example.com").await;
     let by = business(&mut db, owner, now).await;
+    let moved = mailbox(&mut db, &vault, "owner.new@example.com").await;
+    record_step_up(&mut db, by, now).await.expect("step-up");
+    let code = request_notice_change(&mut db, &secret(), by, (by.member, moved), now).await;
+    let code = code.expect("change").expect("code");
+    let changed = confirm_mailbox(&mut db, &secret(), (by.business, moved), &code, now).await;
+    assert!(changed.expect("confirmed"), "the owner's address moved");
     let line = link(&mut db, &dir, by, "928-555-0160").await;
     let unlinked = link(&mut db, &dir, by, "928-555-0161").await;
     unlink_phone(&mut db, by, unlinked).await.expect("unlinked");
@@ -207,40 +230,22 @@ async fn td_priv_29_the_sweep_keeps_fresh_and_used_contacts_then_forgets_the_res
     let left = business(&mut db, leaver, now).await;
     let left_line = link(&mut db, &dir, left, "928-555-0162").await;
     leave(&mut db, left.business, now).await.expect("left");
-
     assert_eq!(sweep_business_contacts(&pool, now).await, Ok(0));
-    sweep_business_contacts(&pool, days(3))
-        .await
-        .expect("swept");
-    assert!(
-        !has_mailbox(&mut db, &vault, fresh).await,
-        "minted, unused, older than 2 days"
-    );
-    for id in [owner, gone, shared, mailed, leaver] {
-        assert!(
-            has_mailbox(&mut db, &vault, id).await,
-            "in use or stopped under 30 days"
-        );
-    }
+    let all = [fresh, owner, moved, gone, shared, mailed, leaver];
+    assert!(sweep_business_contacts(&pool, days(3)).await.is_ok());
+    let want = [false, true, true, true, true, true, true];
+    let got = kept(&mut db, &vault, &all).await;
+    assert_eq!(got, want, "in use or out under 30 days");
     assert_eq!(phone_of(&mut db, &vault, unlinked).await, None);
     assert!(phone_of(&mut db, &vault, line).await.is_some());
-
     queue_to(&mut db, mailed, days(29)).await;
-    sweep_business_contacts(&pool, days(31))
-        .await
-        .expect("swept");
-    for id in [owner, shared, mailed] {
-        assert!(
-            has_mailbox(&mut db, &vault, id).await,
-            "in use or named by an unsent email"
-        );
-    }
-    for id in [gone, leaver] {
-        assert!(
-            !has_mailbox(&mut db, &vault, id).await,
-            "out of use for 30 days"
-        );
-    }
+    queue_to(&mut db, gone, days(23)).await;
+    let went = queue_to(&mut db, leaver, days(29)).await;
+    send(&mut db, went, days(30)).await;
+    assert!(sweep_business_contacts(&pool, days(31)).await.is_ok());
+    let want = [false, false, true, false, true, true, false];
+    let got = kept(&mut db, &vault, &all).await;
+    assert_eq!(got, want, "in use or unsent in 7 days");
     assert!(phone_of(&mut db, &vault, line).await.is_some());
     assert_eq!(phone_of(&mut db, &vault, left_line).await, None);
     assert_eq!(sweep_business_contacts(&pool, days(31)).await, Ok(0));
@@ -251,9 +256,7 @@ async fn td_priv_29_a_mailbox_touched_in_the_last_two_days_is_kept(pool: PgPool)
     let vault = vault();
     let mut db = pool.acquire().await.expect("conn");
     let fresh = mailbox(&mut db, &vault, "new.signup@example.com").await;
-    sweep_business_contacts(&pool, days(1))
-        .await
-        .expect("swept");
+    assert!(sweep_business_contacts(&pool, days(1)).await.is_ok());
     assert!(has_mailbox(&mut db, &vault, fresh).await);
     let again = mailbox(&mut db, &vault, "new.signup@example.com").await;
     assert_eq!(again, fresh);
