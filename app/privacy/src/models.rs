@@ -450,6 +450,10 @@ pub enum PhotoError {
     /// The link token is unknown or expired (PRIV-014).
     #[error("the photo link is not live")]
     LinkDead,
+    /// `open_link` was called on a connection inside a transaction, whose rollback could undo the
+    /// open's audit row after the bytes left; refused before anything is read (PRIV-003, D-1838).
+    #[error("a photo is never opened inside a transaction")]
+    InTransaction,
     /// The database refused the statement or the audit row.
     #[error("the photo database statement failed")]
     Database,

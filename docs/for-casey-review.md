@@ -2698,6 +2698,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - When a homeowner picks a different quote, or texts CANCEL while a pick waits, the first business's owner and "Confirm and billing" people now get one notice: "Laftly: The homeowner withdrew their pick for job 1042, so there's nothing to accept. You weren't charged." (Spanish draft too.) These words are new and have not been through the copy panel yet; please read them.
 - A homeowner who opts out while a request is still open now gets, by email only and only if we have her email, "Your request 1042 is still open. Close it on your quote page." Nothing is texted.
 - The safety voice call's task now has a home in the worker. The switch is off, as it must be until you record the attorney's approval (T407 builds that), so no call is ever placed today. A new optional setting, `ASKHAVA_MAIN_NUMBER`, will hold the Laftly main number the call reads as its callback; none is set.
+- The pick notice text now ends with a "Can't take it" link (Spanish draft: "¿No puede aceptarlo?"). Reviewers suggested "Can't take it? <link>" or "Can't take it (no fee): <link>" to answer the fee worry; the words were kept as planned (D-3453). Tell us if you want the change.
 
 ## One shared email per homeowner, for now (D-3459, November 13)
 
