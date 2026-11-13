@@ -1,11 +1,13 @@
 //! The scrubber's fixed cases and the adversarial corpus (TD-AI-01, TD-AI-05, TD-AI-09; AI-002, AI-003, AI-004, AI-009, AI-020).
 //!
-//! The corpus is 63 English and Spanish contact snippets (fullwidth and Arabic-Indic digits,
+//! The corpus is 74 English and Spanish contact snippets (fullwidth and Arabic-Indic digits,
 //! zero-width characters inside numbers, spelled-out, compound ("twenty-eight", "double five")
 //! and mixed numbers, "O"/"l" for 0/1, "at"/"dot" emails, @handles, bare domains, cross streets,
-//! house numbers without a suffix, gate codes, sign-offs, "mi nombre es"), each placed in four
-//! message frames: 252 cases. Recall on the listed contact tokens must be at least 99%, or
-//! this test, and so `Ci`, fails (AI-020). All names, numbers and addresses are fake.
+//! house numbers without a suffix, gate codes, sign-offs, "mi nombre es"; T351's spaced gate
+//! codes, lower-case streets, spoken dashes, "it is"/"its"/"<name> here" names, "Best," sign-offs
+//! and `(at)`/`(dot)` and spaced `@` emails, D-2622), each placed in four message frames: 296
+//! cases. Recall on the listed contact tokens must be at least 99%, or this test, and so `Ci`,
+//! fails (AI-020). All names, numbers and addresses are fake.
 
 use secrecy::SecretString;
 
@@ -101,6 +103,20 @@ const CONTACTS: &[(&str, &[&str])] = &[
         "This is Dave, call 928 555 0142 or dave@example.com, see example.com/x, 12 Test Way",
         &["dave", "555", "example.com", "12 test", "test way"],
     ),
+    ("Gate code is 4 4 1 2", &["4 4 1 2"]),
+    ("Gate code 44 12", &["44 12"]),
+    ("i live at 2150 mesquite in havasu", &["2150", "mesquite"]),
+    ("928 dash 555 dash 0134", &["555", "0134"]),
+    ("Steve Smith here", &["steve", "smith"]),
+    ("Hi, it is Steve", &["steve"]),
+    ("Hey its steve", &["steve"]),
+    ("Sink is leaking. Best, Steve", &["steve"]),
+    (
+        "Thanks, Steve Smith 928-555-0134",
+        &["steve", "smith", "0134"],
+    ),
+    ("steve(at)gmail(dot)com", &["steve", "gmail"]),
+    ("reach me at steve @ gmail.com", &["steve", "gmail"]),
 ];
 
 /// Message frames the snippets are placed in; each ends with the snippet, as sign-offs do.
