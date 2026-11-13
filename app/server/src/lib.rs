@@ -763,8 +763,8 @@ fn bad_postal() -> io::Error {
     io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value")
 }
 
-/// T281 (FEE-022, FEE-052, TXT-030, D-1845, D-3490): `picks.unreachable_step` and
-/// `picks.fraud_warning`, always registered, over `picks::api::StepParts`: the Stripe client of
+/// T281 (FEE-022, FEE-052, TXT-030, D-1845, D-3490): `picks.unreachable_step`,
+/// `picks.fraud_warning` and T314's `picks.dispute_opened` (FEE-050, D-2204), always registered, over `picks::api::StepParts`: the Stripe client of
 /// the Stripe webhook's settings (`release_sink::stripe_webhook`, read by [`stripe_wanted`]: unset
 /// in dev and CI, required in test and live), `ID_SECRET`, the vault and the footer postal line when set; a step
 /// that needs a missing part fails and is retried, then dead-lettered with its alert.
@@ -775,7 +775,9 @@ fn register_unreachable(
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     use askhava_messaging::api::{MailboxKind, PostalAddress};
-    use askhava_picks::api::{StepParts, UNREACHABLE_STEP_KIND, run_fraud_warning};
+    use askhava_picks::api::{
+        StepParts, UNREACHABLE_STEP_KIND, run_dispute_opened, run_fraud_warning,
+    };
     use secrecy::ExposeSecret;
     let hooks = if stripe_wanted(settings, &pairs) {
         let lazy = PgPool::connect_lazy(settings.database_url().expose_secret())
@@ -804,6 +806,13 @@ fn register_unreachable(
             step_clock.now(),
         )
     });
+    let (dispute_parts, dispute_clock) = (Arc::clone(&parts), Arc::clone(clock));
+    registry.register(
+        askhava_payments::api::DISPUTE_OPENED_KIND,
+        move |pool, task| {
+            run_dispute_opened(pool, Arc::clone(&dispute_parts), task, dispute_clock.now())
+        },
+    );
     let fraud_clock = Arc::clone(clock);
     registry.register(
         askhava_payments::api::FRAUD_WARNING_KIND,
