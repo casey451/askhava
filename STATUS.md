@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T13:41:30Z by runner 480741987da0 (actions).
+Updated 2026-11-13T13:41:39Z by runner 9889e5f5ff2d (actions).
 
 **Building: T367 in progress since 13:22Z; 281 of 420 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,12 +9,12 @@ Updated 2026-11-13T13:41:30Z by runner 480741987da0 (actions).
 - **Lane:** lane 3: T367 claimed 13:22Z, lease until 16:22Z; lane 4: T266 claimed 13:35Z, lease until 16:35Z
 - **Week:** 18% used, 150.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:41Z, 0 min before this update
-- **Keeper:** last ran 13:37Z, next wake 16:24Z
+- **Keeper:** last ran 13:41Z, next wake 16:24Z
 
 ## Needs attention
 - BLOCKED T386: plan gap reported: PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a fixed placeholder allowlist (slots, lines 231-241) for en.json/es.json that lacks {cant_take}, which T386 must add to pick_notice and pick_notice_emergency. The file is owned by T080/T271/T378/T383/T425, not T386. Evidence: cargo test -p askhava-integration --test voice_calls td_call_06 exit=101, panicked at voice_calls.rs:250:13: {cant_take} in en. Reviewer confirmed (kit/tasks.json ownership, prompt line 9 wording). Smallest plan change: let T386 own voice_calls.rs to add "; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T386 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+155 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+152 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
