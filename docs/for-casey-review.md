@@ -2635,3 +2635,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Back to one task per code area at a time (D-3386)
 
 - On November 12 we let two tasks work in the same code area at once to keep more lanes busy, with a rule to undo it if more than 1 merge in 5 needed redoing. 3 of the next 10 did, all over the same notes file, so it is back to one. Nothing needs you now.
+
+## A wrong "lease freed" report after a stopped session (D-3419)
+
+- On November 11 a stopped session's clean-up step said it had freed its task when it had not, so a follow-up run started for nothing. The step now reports those cases correctly. A second idea, stopping old check runs when a newer change arrives, is on hold because an existing test forbids it; nothing needs you now.
