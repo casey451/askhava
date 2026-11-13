@@ -2693,6 +2693,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - The payments task was also split in two: one small task makes sure that when a pick ends, the homeowner is offered the next quote; the other makes sure the payment checks, refunds and the nightly reconcile actually run. Each half has its own tests and its own Opus review, and the money review still covers both.
 - The consent-records cleanup task was kept as one task, because its single test covers the whole cleanup and neither half could be tested on its own.
 
+## A withdrawn pick now tells its business; the opt-out "still open" email; the safety call's task (T330, D-3462 to D-3466, November 13)
+
+- When a homeowner picks a different quote, or texts CANCEL while a pick waits, the first business's owner and "Confirm and billing" people now get one notice: "Laftly: The homeowner withdrew their pick for job 1042, so there's nothing to accept. You weren't charged." (Spanish draft too.) These words are new and have not been through the copy panel yet; please read them.
+- A homeowner who opts out while a request is still open now gets, by email only and only if we have her email, "Your request 1042 is still open. Close it on your quote page." Nothing is texted.
+- The safety voice call's task now has a home in the worker. The switch is off, as it must be until you record the attorney's approval (T407 builds that), so no call is ever placed today. A new optional setting, `ASKHAVA_MAIN_NUMBER`, will hold the Laftly main number the call reads as its callback; none is set.
+
 ## Crate notes files: one entry per line, so two tasks stop colliding (D-3474, November 13)
 
 - **Why.** You asked whether we can keep the crates from conflicting on merge. 22 of the last 25 merge collisions involved the short notes file each part of the app keeps for the next AI session. A 120-line limit pushed sessions to pack many notes into one very long line (one is over 10,000 characters), so two tasks in the same part both edited that line and a third session had to sort it out, about half an hour and 2.6 million tokens each time.
