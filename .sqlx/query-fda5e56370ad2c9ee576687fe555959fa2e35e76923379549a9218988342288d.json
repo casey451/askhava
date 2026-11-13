@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT field FROM ops.audit_log WHERE subject_kind = 'businesses.business' AND subject_id = $1 AND (to_status IS NOT NULL OR field = 'pause_reason') ORDER BY id DESC LIMIT 1",
+  "query": "SELECT field FROM ops.audit_log WHERE subject_kind = $1 AND subject_id = $2 AND (to_status IS NOT NULL OR field = $3) ORDER BY id DESC LIMIT 1",
   "describe": {
     "columns": [
       {
@@ -17,12 +17,14 @@
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Text",
+        "Uuid",
+        "Text"
       ]
     },
     "nullable": [
       true
     ]
   },
-  "hash": "b3ff5e51b8e46f2fff3afffa4032ec8a28a04e3b8134f792495cdee7da606a43"
+  "hash": "fda5e56370ad2c9ee576687fe555959fa2e35e76923379549a9218988342288d"
 }

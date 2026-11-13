@@ -29,7 +29,7 @@ use askhava_core::api::{HandlerError, NewTask, enqueue};
 use askhava_licensing::api::{
     ClassMap, HolderParts, RocList, bound_businesses, class_changes, latest_check_active, roc_lists,
 };
-use askhava_ops::api::{Actor, AuditEntry, Change, audit, audit_once, audited};
+use askhava_ops::api::{Actor, AuditEntry, Change, audit, audit_once, audited, field_changed_last};
 use jiff::Timestamp;
 use jiff::tz::{TimeZone, offset};
 use serde_json::json;
@@ -280,14 +280,9 @@ async fn check_active(tx: &mut PgConnection, id: Uuid) -> Result<bool, Businesse
 /// audit row is the `pause_reason` field change `pause_for_rule` writes when a rule's reason
 /// replaces `self` (a pause from active writes a status row instead).
 async fn replaced_self(tx: &mut PgConnection, id: Uuid) -> Result<bool, BusinessesError> {
-    let latest = sqlx::query_scalar!(
-        "SELECT field FROM ops.audit_log WHERE subject_kind = 'businesses.business' \
-         AND subject_id = $1 AND (to_status IS NOT NULL OR field = 'pause_reason') \
-         ORDER BY id DESC LIMIT 1",
-        id
-    );
-    let field = db(latest.fetch_optional(&mut *tx).await)?.flatten();
-    Ok(field.as_deref() == Some("pause_reason"))
+    let subject = ("businesses.business", id);
+    let last = field_changed_last(tx, subject, "pause_reason").await;
+    last.map_err(|_| BusinessesError::Database)
 }
 
 /// Replaces the `no_covered_job_type` reason with `reason`, the business staying paused, with one
