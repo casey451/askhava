@@ -1,28 +1,30 @@
 //! The daily ROC and city license lists, run by the worker (T371, D-2704; LIC-006, LIC-007,
 //! LIC-008, LIC-010, LIC-039, CARD-015, D-230, D-942).
 //!
-//! [`DAILY_LISTS_KIND`] is one task per list ([`DailyList`]), seeded by [`schedule_daily_lists`]
-//! at `run_hour` Arizona time (a setting). Each run fetches its list through `LicenseSource` and
-//! records it with `import_roc_list` or `import_city_list` dated the Arizona day, so a second run
-//! for the same list date records nothing new. A fetch or import failure is a failing list: its
-//! failure start is the run hour on the day after its latest recorded list (licensing's own import
-//! records; `licensing.list_import` keeps successful imports only), or, for a list never recorded,
-//! the start carried in the task's payload; `alert_list_failure` raises the alerts whose limits
-//! fell since the last run, also carried in the payload (no new table, D-3106). While the ROC list
-//! fails, `lookup_while_list_fails` runs for its active businesses at the throttle, at most `batch`
-//! a run, once per business per Arizona day, the cursor in the payload; the pairs come from the
-//! caller's [`ActiveLicenses`] (`businesses`, wired by `server`, since licensing may not call it).
-//! A failing list re-queues itself every `retry_every` (an hour) instead of daily, so the 12-hour
-//! alert fires within the hour it falls due; a good list ends the failure. Every run's slot lies on
-//! one grid anchored at the run hour, and each slot's dedupe key names the list and the instant, so
-//! two chains (a re-seed at start-up) merge into one; the alerts and the next run commit in one
-//! transaction, and a run whose next slot was already queued raises nothing (JOB-006, R11).
+//! [`DAILY_LISTS_KIND`] is one task chain per list ([`DailyList`]), seeded by
+//! [`schedule_daily_lists`] only when the list has no task due or running. Each run fetches its
+//! list through `LicenseSource` and records it with `import_roc_list` or `import_city_list` dated
+//! the list day (the Arizona day of the latest run hour at or before the run, so a list fetched
+//! between midnight and the run hour is the previous day's), so a second run for the same list day
+//! records nothing new. A fetch or import failure is a failing list: its failure start is the run
+//! hour on the day after its latest recorded list (`licensing.list_import` keeps successful
+//! imports only), or, for a list never recorded, the start carried in the task's payload. A
+//! failing run first commits, in one transaction, the next run (every `retry_every`, with the
+//! failure start, this run's time and the lookup cursor already moved past this run's batch) and,
+//! when that slot is new, `alert_list_failure`'s alerts due since the last run (no new table,
+//! D-3106); only then, and only when the slot was new, it runs `lookup_while_list_fails` (ROC only)
+//! for that batch within `sweep_budget`, so a slow agency site or a handler timeout can never lose
+//! the chain, an alert or the cursor, and a retried run repeats no lookups (D-3416). The pairs come
+//! from the caller's [`ActiveLicenses`] (`businesses`, wired by `server`). A good list ends the
+//! failure and queues the next run hour. Every slot lies on one grid anchored at the run hour and
+//! its dedupe key names the list and the instant, so a retried run lands on its own slot
+//! (JOB-006, R11, D-3412).
 
 use std::future::Future;
 use std::ops::RangeInclusive;
 
 use askhava_adapters::api::LicenseSource;
-use askhava_core::api::{Claimed, HandlerError, NewTask, SettingsError, enqueue};
+use askhava_core::api::{Claimed, HandlerError, NewTask, SettingsError, due_or_running, enqueue};
 use jiff::civil::Date;
 use jiff::tz::{TimeZone, offset};
 use jiff::{SignedDuration, Timestamp};
@@ -87,6 +89,9 @@ pub struct DailyListSettings {
     pub batch: u32,
     /// The alert clocks and the lookup throttle.
     pub limits: FailureLimits,
+    /// The longest one run's lookups may take, well under the worker's two-minute handler timeout
+    /// (`Lease::WORKER`); it also caps the batch at this over the throttle (D-3416). Not a key.
+    pub sweep_budget: SignedDuration,
 }
 
 impl Default for DailyListSettings {
@@ -96,6 +101,7 @@ impl Default for DailyListSettings {
             retry_every: SignedDuration::from_hours(1),
             batch: 50,
             limits: FailureLimits::default(),
+            sweep_budget: SignedDuration::from_secs(60),
         }
     }
 }
@@ -219,6 +225,13 @@ fn run_time(day: Date, run_hour: i8) -> Option<Timestamp> {
     at.ok().map(|at| at.timestamp())
 }
 
+/// The list day of a run at `now`: the Arizona day of the latest run hour at or before `now`, so a
+/// run between midnight and the run hour records the previous day's list (D-3416).
+fn list_day(now: Timestamp, run_hour: i8) -> Date {
+    let back = SignedDuration::from_hours(i64::from(run_hour));
+    arizona_day(now.saturating_sub(back).unwrap_or(now))
+}
+
 /// The first instant after `now` on the grid of `every` anchored at today's run hour (Arizona).
 fn next_slot(now: Timestamp, run_hour: i8, every: SignedDuration) -> Option<Timestamp> {
     let anchor = run_time(arizona_day(now), run_hour)?;
@@ -228,6 +241,11 @@ fn next_slot(now: Timestamp, run_hour: i8, every: SignedDuration) -> Option<Time
     anchor.checked_add(offset).ok()
 }
 
+/// The dedupe-key prefix of every slot of `list`.
+fn key_prefix(list: DailyList) -> String {
+    format!("{DAILY_LISTS_KIND}.{}.", list.name())
+}
+
 /// Queues `state`'s run at `run_at`; false when that slot of the list was already queued.
 async fn queue(
     conn: &mut PgConnection,
@@ -235,14 +253,14 @@ async fn queue(
     run_at: Timestamp,
 ) -> Result<bool, HandlerError> {
     let mut task = NewTask::new(DAILY_LISTS_KIND, state.payload(), run_at);
-    let slot = run_at.as_second();
-    task.dedupe_key = Some(format!("{DAILY_LISTS_KIND}.{}.{slot}", state.list.name()));
+    task.dedupe_key = Some(format!("{}{}", key_prefix(state.list), run_at.as_second()));
     let queued = enqueue(conn, &task).await.map_err(|_| FAILED)?;
     Ok(queued.is_some())
 }
 
-/// LIC-007, D-2704: queues each list's run at the first run hour after `now` (deduped by slot, so
-/// seeding at every start-up queues each once).
+/// LIC-007, LIC-039, D-2704, D-3416: queues a run, at the next `retry_every` slot, for each list
+/// with no run due or running, so a start-up never merges into or clobbers a live chain (a failing
+/// one keeps its state) and a chain lost to a dead letter starts again.
 ///
 /// # Errors
 ///
@@ -252,8 +270,13 @@ pub async fn schedule_daily_lists(
     now: Timestamp,
     settings: DailyListSettings,
 ) -> Result<(), ImportError> {
-    let run_at = next_slot(now, settings.run_hour, DAY).ok_or(ImportError::Database)?;
+    let run_at = next_slot(now, settings.run_hour, settings.retry_every);
+    let run_at = run_at.ok_or(ImportError::Database)?;
     for list in DailyList::ALL {
+        let live = due_or_running(conn, DAILY_LISTS_KIND, &key_prefix(list)).await;
+        if live.map_err(|_| ImportError::Database)? {
+            continue;
+        }
         let state = ListState::fresh(list, None);
         queue(conn, &state, run_at)
             .await
@@ -314,48 +337,71 @@ async fn recorded_failure_start(
     run_time(next, run_hour).map(Some).ok_or(FAILED)
 }
 
-/// LIC-039, D-230: one capped batch of throttled lookups for the ROC list's active businesses,
-/// once per business per Arizona day; returns the state after it and the lookups made.
-async fn sweep<S, A>(
+/// The most lookups one run makes: `batch`, and no more than fit in `sweep_budget` at the
+/// throttle (D-3416).
+fn batch_cap(settings: DailyListSettings) -> u32 {
+    let spacing = settings.limits.lookup_spacing.as_millis();
+    let fits = settings.sweep_budget.as_millis().checked_div(spacing);
+    let fits = u32::try_from(fits.unwrap_or(i128::MAX).max(1)).unwrap_or(u32::MAX);
+    fits.min(settings.batch)
+}
+
+/// LIC-039, D-230: picks this run's batch of the ROC list's active businesses (once per business
+/// per Arizona day) and returns the state with the cursor past it, before any lookup is made.
+async fn plan_sweep<A: ActiveLicenses + Sync>(
     conn: &mut PgConnection,
-    (source, active): (&S, &A),
+    active: &A,
     state: ListState,
     (now, settings): (Timestamp, DailyListSettings),
-) -> Result<(ListState, usize), HandlerError>
-where
-    S: LicenseSource + Sync,
-    A: ActiveLicenses + Sync,
-{
+) -> Result<(ListState, Vec<(Uuid, String)>), HandlerError> {
     let today = arizona_day(now);
     if state.list != DailyList::Roc || state.swept_on == Some(today) {
-        return Ok((state, 0));
+        return Ok((state, Vec::new()));
     }
-    let batch = active.active_after(conn, state.after, settings.batch).await;
+    let cap = batch_cap(settings);
+    let batch = active.active_after(conn, state.after, cap).await;
     let batch = batch.map_err(|_| FAILED)?;
-    let pairs: Vec<(Uuid, &str)> = batch.iter().map(|(id, n)| (*id, n.as_str())).collect();
-    let looked = lookup_while_list_fails(conn, source, &pairs, (now, settings.limits)).await;
-    looked.map_err(|_| FAILED)?;
-    let done = batch.len() < usize::try_from(settings.batch).unwrap_or(usize::MAX);
+    let done = batch.len() < usize::try_from(cap).unwrap_or(usize::MAX);
     let after = if done {
         None
     } else {
         batch.last().map(|(id, _)| *id)
     };
     let swept_on = if done { Some(today) } else { state.swept_on };
-    Ok((
-        ListState {
-            after,
-            swept_on,
-            ..state
-        },
-        batch.len(),
-    ))
+    let next = ListState {
+        after,
+        swept_on,
+        ..state
+    };
+    Ok((next, batch))
+}
+
+/// LIC-039, D-230, D-3416: the planned lookups at the throttle, stopped at `sweep_budget`; returns
+/// how many finished (none when stopped: the rest wait for tomorrow's sweep).
+async fn look_up<S: LicenseSource + Sync>(
+    conn: &mut PgConnection,
+    source: &S,
+    batch: &[(Uuid, String)],
+    (now, settings): (Timestamp, DailyListSettings),
+) -> Result<usize, HandlerError> {
+    let pairs: Vec<(Uuid, &str)> = batch.iter().map(|(id, n)| (*id, n.as_str())).collect();
+    let budget = std::time::Duration::try_from(settings.sweep_budget).unwrap_or_default();
+    let looked = lookup_while_list_fails(conn, source, &pairs, (now, settings.limits));
+    match tokio::time::timeout(budget, looked).await {
+        Ok(looked) => looked.map(|outcomes| outcomes.len()).map_err(|_| FAILED),
+        Err(_) => {
+            tracing::warn!(
+                planned = pairs.len(),
+                "daily license lookups stopped at the budget"
+            );
+            Ok(0)
+        }
+    }
 }
 
 /// The [`DAILY_LISTS_KIND`] handler (LIC-006, LIC-007, LIC-008, LIC-010, LIC-039, CARD-015,
-/// D-2704): fetches and records the task's list; on a failure runs a batch of lookups (ROC), then
-/// in one transaction queues the next run (daily after a good list, `retry_every` while failing)
-/// and, when that slot was not queued yet, raises the alerts due since the last run.
+/// D-2704, D-3416): fetches and records the task's list for its list day and queues the next run
+/// hour; on a failure, [`run_failing`].
 ///
 /// # Errors
 ///
@@ -373,27 +419,41 @@ where
 {
     let state = ListState::from_payload(&task.payload).ok_or(BAD_PAYLOAD)?;
     let mut conn = pool.acquire().await.map_err(|_| FAILED)?;
-    let day = arizona_day(now);
+    let day = list_day(now, settings.run_hour);
     let recorded = fetch_and_record(&mut conn, parts.0, state.list, day).await?;
-    if recorded.is_some() {
-        let next = ListState::fresh(state.list, Some(now));
-        let next_run = next_slot(now, settings.run_hour, DAY).ok_or(FAILED)?;
-        queue(&mut conn, &next, next_run).await?;
-        let (alerts, lookups) = (Vec::new(), 0);
-        return Ok(ListRun {
-            list: state.list,
-            recorded,
-            alerts,
-            lookups,
-            next_run,
-        });
+    if recorded.is_none() {
+        return run_failing(&mut conn, parts, state, (now, settings)).await;
     }
-    let since = recorded_failure_start(&mut conn, state.list, settings.run_hour).await?;
+    let next = ListState::fresh(state.list, Some(now));
+    let next_run = next_slot(now, settings.run_hour, DAY).ok_or(FAILED)?;
+    queue(&mut conn, &next, next_run).await?;
+    Ok(ListRun {
+        list: state.list,
+        recorded,
+        alerts: Vec::new(),
+        lookups: 0,
+        next_run,
+    })
+}
+
+/// LIC-039, D-942, D-3416: a failing list's run. One transaction queues the next slot (the failure
+/// start, this run and the cursor past this batch) and, when that slot is new, raises the alerts
+/// due since the last run (a seed's run, with no last run, counts from the failure start); then,
+/// only when the slot was new, the batch's lookups within the budget.
+async fn run_failing<S, A>(
+    conn: &mut PgConnection,
+    (source, active): (&S, &A),
+    state: ListState,
+    (now, settings): (Timestamp, DailyListSettings),
+) -> Result<ListRun, HandlerError>
+where
+    S: LicenseSource + Sync,
+    A: ActiveLicenses + Sync,
+{
+    let since = recorded_failure_start(conn, state.list, settings.run_hour).await?;
     let since = since.or(state.failing_since).unwrap_or(now);
-    let last_run = state
-        .last_run
-        .unwrap_or_else(|| now.saturating_sub(settings.retry_every).unwrap_or(now));
-    let (next, lookups) = sweep(&mut conn, parts, state, (now, settings)).await?;
+    let last_run = state.last_run.unwrap_or(since);
+    let (next, batch) = plan_sweep(conn, active, state, (now, settings)).await?;
     let next = ListState {
         failing_since: Some(since),
         last_run: Some(now),
@@ -401,15 +461,20 @@ where
     };
     let next_run = next_slot(now, settings.run_hour, settings.retry_every).ok_or(FAILED)?;
     let mut tx = conn.begin().await.map_err(|_| FAILED)?;
-    let alerts = match queue(&mut tx, &next, next_run).await? {
+    let fresh = queue(&mut tx, &next, next_run).await?;
+    let alerts = match fresh {
         true => alert_list_failure(&mut tx, (since, last_run, now), settings.limits).await,
         false => Ok(Vec::new()),
     };
     let alerts = alerts.map_err(|_| FAILED)?;
     tx.commit().await.map_err(|_| FAILED)?;
+    let lookups = match fresh {
+        true => look_up(conn, source, &batch, (now, settings)).await?,
+        false => 0,
+    };
     Ok(ListRun {
         list: state.list,
-        recorded,
+        recorded: None,
         alerts,
         lookups,
         next_run,

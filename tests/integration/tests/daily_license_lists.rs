@@ -9,13 +9,16 @@
 //! push alert once at 24 hours; while it fails each active business gets one lookup a day, at
 //! least the throttle apart, never more than the batch cap a run, the rest on the next runs; a
 //! list never recorded carries its failure start in the payload; the next good list ends the
-//! failure. Fake data only: invented license numbers, no names, phones or addresses.
+//! failure; a start-up seed never clobbers a failing chain and restarts a dead one; lookups that
+//! hang never lose the next run, the alerts or the cursor (D-3416); a list fetched before the run
+//! hour is the previous day's. Fake data only: invented license numbers, no names, phones or
+//! addresses.
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 
-use askhava_adapters::api::LicenseLists;
+use askhava_adapters::api::{AdapterError, LicenseLists, LicenseSource};
 use askhava_businesses::api::{active_license_numbers, create};
 use askhava_core::api::{Claimed, Lease, SettingsError, WorkerId, claim, finish};
 use askhava_licensing::api::{
@@ -275,7 +278,8 @@ async fn assert_good_list_ends_the_failure(
 }
 
 /// TD-LIC-28: a list never recorded carries its failure start in the payload: the listed alert
-/// once at 12 hours, the push alert once at 24, and the recorded ROC list runs daily meanwhile.
+/// once at 12 hours, the push alert once at 24, and the recorded ROC list runs daily meanwhile; a
+/// start-up seed every hour (a deploy) never lands on the chain's slots or drops its state (D-3416).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_lic_28_a_list_never_recorded_alerts_from_its_first_failure(pool: PgPool) {
     let dir = fixtures();
@@ -289,6 +293,8 @@ async fn td_lic_28_a_list_never_recorded_alerts_from_its_first_failure(pool: PgP
     let mut raised = Vec::new();
     let mut roc_runs = 0;
     for n in 0..=24 {
+        let deploy = schedule_daily_lists(&mut conn, hour(six, n), settings()).await;
+        deploy.expect("a start-up seed beside the live chains");
         let runs = run_due(&pool, &lists, hour(six, n)).await;
         let city = of(&runs, DailyList::City).expect("the failing list runs every hour");
         assert!(
@@ -373,4 +379,143 @@ async fn td_lic_28_a_refused_list_fails_and_a_retry_raises_nothing_twice(pool: P
         count(&pool, "SELECT count(*) FROM licensing.list_import").await,
         0
     );
+}
+
+/// A license source whose lists come from the fixtures but whose live lookups never answer.
+struct Hanging(LicenseLists);
+
+impl LicenseSource for Hanging {
+    async fn fetch_daily_list(&self, list: &str) -> Result<Vec<u8>, AdapterError> {
+        self.0.fetch_daily_list(list).await
+    }
+
+    async fn lookup_license(&self, _number: &str) -> Result<Vec<u8>, AdapterError> {
+        std::future::pending().await
+    }
+}
+
+/// The queued ROC run due at `run_at`, as the worker would claim it.
+async fn queued_roc(pool: &PgPool, run_at: Timestamp) -> Claimed {
+    let payload: serde_json::Value = sqlx::query_scalar(
+        "SELECT payload FROM core.task WHERE kind = 'licensing.daily_lists' AND done_at IS NULL \
+         AND payload->>'list' = 'roc' AND run_at = $1::text::timestamptz",
+    )
+    .bind(run_at.to_string())
+    .fetch_one(pool)
+    .await
+    .expect("the next ROC run is queued");
+    Claimed {
+        id: 0,
+        kind: DAILY_LISTS_KIND.to_owned(),
+        payload,
+        attempts: 1,
+    }
+}
+
+/// TD-LIC-28, D-3416: lookups that hang past the handler's timeout lose nothing: the next run (with
+/// the cursor past the batch) and the 12-hour alert are committed first; the retry raises nothing
+/// and repeats no lookup; a run's lookups stop at its time budget.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_lic_28_hanging_lookups_never_lose_the_next_run_or_the_alerts(pool: PgPool) {
+    let dir = fixtures();
+    let lists = Hanging(source(&dir));
+    let six = first_day(&pool, &lists.0).await;
+    for number in ACTIVE {
+        bound(&pool, number, false, six).await;
+    }
+    std::fs::remove_file(dir.join("roc")).expect("the list goes missing");
+    let now = hour(six, 36);
+    let task = Claimed {
+        id: 0,
+        kind: DAILY_LISTS_KIND.to_owned(),
+        payload: json!({"list": "roc", "last_run": hour(six, 35).to_string()}),
+        attempts: 1,
+    };
+    let run = run_daily_list(&pool, (&lists, &Active), &task, (now, settings()));
+    let cut = tokio::time::timeout(std::time::Duration::from_secs(1), run).await;
+    assert!(cut.is_err(), "the handler timed out in its lookups");
+    let alerts = "SELECT count(*) FROM ops.alert WHERE kind = 'licensing.list_failing'";
+    assert_eq!(
+        count(&pool, alerts).await,
+        1,
+        "the 12-hour alert committed first"
+    );
+    let next = queued_roc(&pool, hour(now, 1)).await;
+    assert!(
+        next.payload["after"].is_string(),
+        "the cursor is past the batch"
+    );
+    let budget = DailyListSettings {
+        sweep_budget: SignedDuration::from_millis(300),
+        ..settings()
+    };
+    let retry = run_daily_list(&pool, (&lists, &Active), &task, (now, budget)).await;
+    let retry = retry.expect("the retry");
+    assert!(
+        retry.alerts.is_empty() && retry.lookups == 0,
+        "nothing twice"
+    );
+    let later = (hour(now, 1), budget);
+    let run = run_daily_list(&pool, (&lists, &Active), &next, later).await;
+    let run = run.expect("lookups stop at the budget");
+    assert_eq!((run.lookups, run.next_run), (0, hour(now, 2)));
+    assert_eq!(count(&pool, alerts).await, 1);
+}
+
+/// TD-LIC-28, D-3416: a chain lost to a dead letter is seeded again at start-up (a live one is
+/// not), and the seed's run, with no last run, raises the alert that fell due while it was lost.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_lic_28_a_dead_chain_is_seeded_again_and_alerts(pool: PgPool) {
+    let dir = fixtures();
+    let lists = source(&dir);
+    let six = first_day(&pool, &lists).await;
+    std::fs::remove_file(dir.join("roc")).expect("the list goes missing");
+    let mut conn = pool.acquire().await.expect("connection");
+    let tasks = "SELECT count(*) FROM core.task WHERE done_at IS NULL AND dead_at IS NULL";
+    schedule_daily_lists(&mut conn, hour(six, 1), settings())
+        .await
+        .expect("seeded");
+    assert_eq!(
+        count(&pool, tasks).await,
+        2,
+        "the live chains are left alone"
+    );
+    sqlx::query("UPDATE core.task SET dead_at = now() WHERE done_at IS NULL")
+        .execute(&pool)
+        .await
+        .expect("dead letters");
+    schedule_daily_lists(&mut conn, hour(six, 40), settings())
+        .await
+        .expect("seeded again");
+    assert_eq!(count(&pool, tasks).await, 2, "one new run per list");
+    let runs = run_due(&pool, &lists, hour(six, 41)).await;
+    let roc = of(&runs, DailyList::Roc).expect("the seeded run");
+    assert_eq!(roc.alerts, [ListFailureAlert::Listed], "due at 36 hours");
+}
+
+/// TD-LIC-28, D-3416: a list that comes back between midnight and the run hour is recorded as the
+/// previous day's, and the run hour's list is still recorded as its own day's.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_lic_28_a_list_back_before_the_run_hour_is_the_previous_days(pool: PgPool) {
+    let dir = fixtures();
+    let lists = source(&dir);
+    let six = first_day(&pool, &lists).await;
+    std::fs::remove_file(dir.join("roc")).expect("the list goes missing");
+    hourly(&pool, &lists, hour(six, 24), 19).await;
+    std::fs::copy(dir.join("roc.keep"), dir.join("roc")).expect("back at 1 a.m.");
+    let one = run_due(&pool, &lists, hour(six, 43)).await;
+    let back = of(&one, DailyList::Roc).expect("the hourly re-run");
+    assert!(!back.recorded.as_ref().expect("recorded").already_imported);
+    assert_eq!(back.next_run, hour(six, 48), "the run hour");
+    let runs = run_due(&pool, &lists, hour(six, 48)).await;
+    let today = of(&runs, DailyList::Roc).expect("the daily run");
+    assert!(!today.recorded.as_ref().expect("recorded").already_imported);
+    let days: String = sqlx::query_scalar(
+        "SELECT string_agg(list_date::text, ',' ORDER BY list_date) FROM licensing.list_import \
+         WHERE source = 'roc'",
+    )
+    .fetch_one(&pool)
+    .await
+    .expect("days");
+    assert_eq!(days, "2026-11-02,2026-11-03,2026-11-04");
 }
