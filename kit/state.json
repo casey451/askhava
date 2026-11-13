@@ -47691,7 +47691,27 @@
     3533,
     3534,
     3535
-   ]
+   ],
+   "reviewed_sha": "a7eabb4771c5a5736f9cda51bf19fc4808be7871",
+   "review_lease": {
+    "task": "T442",
+    "session": "actions-43493737746",
+    "expires": "2026-11-13T22:41:31Z",
+    "lane": "4"
+   },
+   "branch": "claude/task/T442-mutant-deterministic-kills",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "67b31ac7893a51ec65a866f8600b5691d6b493c6",
+     "to": "a7eabb4771c5a5736f9cda51bf19fc4808be7871",
+     "main": "c992e962be91d8a5a8fd75a8226ceb2ad04d0c4c",
+     "how": "hand-in",
+     "at": "2026-11-13T20:40:56Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   }
  ],
  "owner_waits": [],
@@ -50595,7 +50615,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T20:40:29Z",
+ "updated_at": "2026-11-13T20:40:56Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -50693,7 +50713,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c309142e35506675f496348394489dcee073a78f",
+ "runner_sha": "67b31ac7893a51ec65a866f8600b5691d6b493c6",
  "starter": "actions",
  "smoke_runs": [
   {
