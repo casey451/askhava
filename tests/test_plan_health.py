@@ -247,3 +247,77 @@ def test_an_unbuildable_checker_leaves_the_runner_without_the_check(tmp_path: Pa
     monkeypatch.undo()
     assert "runner: plan health unavailable: test design unreadable" in capsys.readouterr().out
     assert callable(entry.plan_health_checker(make_repo(tmp_path / "ok", [plan_task("T001")]), {"tasks": [plan_task("T001")]}))
+
+
+# ---- check (e), unowned users, report-only (D-3496)
+
+
+def symbol_repo(tmp_path: Path, goal: str, files: dict[str, str], **over: Any) -> Path:
+    """T001 owns `app/core/src/rename.rs`; T002 owns the test the fixture names as its own."""
+    tasks = [plan_task("T001", owns=["app/core/src/rename.rs"], goal=goal, **over),
+             plan_task("T002", owns=["tests/integration/tests/theirs.rs"])]
+    root = make_repo(tmp_path, tasks)
+    for rel, text in {"app/core/src/rename.rs": "pub fn rename_me_now() {}\npub struct Widget;\n", **files}.items():
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text(text, encoding="utf-8")
+    return root
+
+
+def test_e_an_unowned_file_that_uses_a_symbol_the_goal_renames_is_warned(tmp_path: Path) -> None:
+    import plan_symbols
+
+    root = symbol_repo(tmp_path, "It renames `rename_me_now` to `renamed`.", {
+        "tests/integration/tests/theirs.rs": "use core::api;\nfn t() { core::api::rename_me_now(); }\n",
+        "tests/integration/tests/comment.rs": "use core::api;\n// rename_me_now is named in a comment only\n",
+        "tests/integration/tests/other_crate.rs": "fn t() { rename_me_now(); }\n",
+        "app/core/src/api.rs": "pub use crate::rename::rename_me_now;\nfn t() { rename_me_now(); }\n",
+    })
+    (root / "kit/tasks.json").write_text(json.dumps({**json.loads((root / "kit/tasks.json").read_text()),
+                                                     "shared_paths": ["app/core/src/api.rs"]}), encoding="utf-8")
+    found = plan_symbols.warnings(root, None, ["T001"])
+    assert len(found) == 1 and "fn `rename_me_now`" in found[0]
+    assert "tests/integration/tests/theirs.rs (T002)" in found[0]
+    assert "comment.rs" not in found[0] and "other_crate.rs" not in found[0] and "api.rs" not in found[0]
+
+
+def test_e_a_keep_sentence_a_common_name_or_an_unfinished_owner_is_no_warning(tmp_path: Path) -> None:
+    import plan_symbols
+
+    user = {"tests/integration/tests/theirs.rs": "fn t() { core::api::rename_me_now(); let _ = core::Widget; }\n"}
+    root = symbol_repo(tmp_path, "It changes nothing: `rename_me_now` keeps its signature.", user)
+    assert plan_symbols.warnings(root, None, ["T001"]) == []
+    root = symbol_repo(tmp_path / "b", "It renames `Widget`.", user, deps=["T002"])
+    assert len(plan_symbols.warnings(root, None, ["T001"])) == 1
+    assert plan_symbols.warnings(root, st.new_state(), ["T001"]) == []  # T002, a dependency, is not DONE yet
+    assert plan_symbols.warnings(root, done("T002"), ["T001"]) != []
+
+
+def test_e_a_pinned_value_the_goal_changes_and_a_named_test_are_warned(tmp_path: Path) -> None:
+    import plan_symbols
+
+    goal = ("It pins `actions/cache/restore@v4` and `Confirm and pay` to a SHA. "
+            "`tests/integration/tests/theirs.rs` passes unchanged.")
+    tag = 'uses = "actions/cache/restore@v4"\n'
+    root = symbol_repo(tmp_path, goal, {"tests/test_runner_x.py": tag, "tests/integration/tests/theirs.rs": "fn t() {}\n"})
+    found = plan_symbols.warnings(root, None, ["T001"])
+    assert any("'actions/cache/restore@v4'" in w and "tests/test_runner_x.py (no task by name)" in w for w in found)
+    assert not any("Confirm and pay" in w for w in found)  # words with spaces match prose, not pins
+    assert any("names 1 test(s)" in w and "theirs.rs pass unchanged" in w for w in found)
+    many = {f"tests/test_x{n}.py": tag for n in range(plan_symbols.MAX_LITERAL_FILES + 1)}
+    crowded = symbol_repo(tmp_path / "b", goal, many)
+    assert not any("restore@v4" in w for w in plan_symbols.warnings(crowded, None, ["T001"]))
+
+
+def test_e_plan_health_prints_it_report_only_and_survives_a_fault(tmp_path: Path, capsys: Any, monkeypatch: Any) -> None:
+    import plan_symbols
+
+    root = symbol_repo(tmp_path, "It removes `Widget`.", {"tests/integration/tests/theirs.rs": "use core::Widget;\n"})
+    state_file = write_state(root, st.new_state())
+    assert ph.main(["--root", str(root), "--state", str(state_file), "T001", "--symbols"]) == 0
+    out = capsys.readouterr().out
+    assert "WARN T001: its goal changes struct `Widget`" in out and "1 report-only unowned-user warning(s) (D-3496)" in out
+    assert ph.main(["--root", str(root), "--state", str(state_file), "T001", "--symbols", "--json"]) == 0
+    assert len(json.loads(capsys.readouterr().out)[ph.SYMBOLS_KEY]) == 1
+    monkeypatch.setattr(plan_symbols, "warnings", lambda *a: 1 / 0)
+    assert ph.main(["--root", str(root), "--state", str(state_file), "T001", "--symbols"]) == 0
+    assert "check (e) unavailable: ZeroDivisionError" in capsys.readouterr().out

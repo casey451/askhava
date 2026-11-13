@@ -2702,3 +2702,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## One shared email per homeowner, for now (D-3459, November 13)
 
 - When a homeowner picks on the quote page and chooses to be reached by email, the address is stored once on her record, not once per job. If she later shares a different address on a new job, the new one replaces the old one everywhere: a business she picked on the earlier job would then see the new address, and emails about the earlier job would go there too. Both addresses are hers and only businesses she picked see them, but the earlier business sees one she did not share with it. We accepted this for now; keeping a separate address per pick is a follow-up. Nothing needs you now unless you want that follow-up done before launch.
+
+## A cheap pre-check for plan gaps (D-3496, November 13)
+
+- Since November 10, nineteen build attempts stopped because a task's change broke a file another task owns. Each one wasted a whole session. The plan check now also warns, before a task starts, when its goal changes something a file it may not touch uses, quotes a value a test it may not edit pins, or claims such a test "passes unchanged". It only warns; it holds nothing. Tried on the past cases, it would have flagged 4 of 15. Most of the rest were hidden behavior no text check can see. Nothing needs you.
