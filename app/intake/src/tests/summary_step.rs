@@ -13,6 +13,14 @@ const SHORT: &str = "Kitchen sink drips under the cabinet.\nHow soon: No rush";
 const TAIL: &str = "It goes out in 30 minutes. Reply EDIT to change it, or SEND to send it now.";
 const LINK: &str = "askhava.com/r/fake-token";
 
+/// `text` with the brand file's names in place of its brand tokens, the Spanish names when
+/// `spanish` (WORD-001, WORD-008, D-1932).
+fn branded(text: &str, spanish: bool) -> String {
+    askhava_core::api::brand()
+        .fill(text, spanish)
+        .expect("the brand fills")
+}
+
 /// TD-INT-23 (INT-041): a card that fits 2 segments is texted in full in the spec's words, with
 /// the 30-minute default read into the text.
 #[test]
@@ -20,7 +28,10 @@ fn td_int_23_a_short_card_is_texted_in_full() {
     let (id, body) =
         preview_text(("1042", SHORT), LINK, AUTO_SEND_AFTER, Language::En).expect("text");
     assert_eq!(id, CARD_SHOWN_TEMPLATE);
-    let want = format!("Ask Hava: Here's request 1042 as businesses will see it: {SHORT} {TAIL}");
+    let want = branded(
+        &format!("{{brand_short}}: Here's request 1042 as businesses will see it: {SHORT} {TAIL}"),
+        false,
+    );
     assert_eq!(body, want);
     assert!(count_segments(&body).segments <= 2);
 }
@@ -32,8 +43,12 @@ fn td_int_23_a_long_card_sends_the_link_text() {
     let (id, body) =
         preview_text(("1042", &long), LINK, AUTO_SEND_AFTER, Language::En).expect("text");
     assert_eq!(id, CARD_LINK_TEMPLATE);
-    let want =
-        format!("Ask Hava: Request 1042 is ready. Take a look before it goes out: {LINK} {TAIL}");
+    let want = branded(
+        &format!(
+            "{{brand_short}}: Request 1042 is ready. Take a look before it goes out: {LINK} {TAIL}"
+        ),
+        false,
+    );
     assert_eq!(body, want);
     for text in [
         body,

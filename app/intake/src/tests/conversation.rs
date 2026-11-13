@@ -422,6 +422,14 @@ async fn td_int_20_an_under_18_sender_gets_one_reply_and_the_request_closes(mut 
     ));
 }
 
+/// `text` with the brand file's names in place of its brand tokens, the Spanish names when
+/// `spanish` (WORD-001, WORD-008, D-1932).
+fn branded(text: &str, spanish: bool) -> String {
+    askhava_core::api::brand()
+        .fill(text, spanish)
+        .expect("the brand fills")
+}
+
 /// TD-INT-20 (INT-038): the Spanish reply stays Spanish while Spanish conversations are off.
 #[test]
 fn td_int_20_the_spanish_reply_stays_on() {
@@ -430,14 +438,20 @@ fn td_int_20_the_spanish_reply_stays_on() {
         .body;
     assert_eq!(
         es,
-        "Ask Hava: Lo sentimos, debe tener 18 años o más para usar Ask Hava. Pídale a un padre o adulto que nos escriba."
+        branded(
+            "{brand_short}: Lo sentimos, debe tener 18 años o más para usar {brand}. Pídale a un padre o adulto que nos escriba.",
+            true
+        )
     );
     let en = render("under_18", Language::En, false, &[])
         .expect("render")
         .body;
     assert_eq!(
         en,
-        "Ask Hava: Sorry, you must be 18 or older to use Ask Hava. Please ask a parent or adult to text us."
+        branded(
+            "{brand_short}: Sorry, you must be 18 or older to use {brand}. Please ask a parent or adult to text us.",
+            false
+        )
     );
 }
 

@@ -17,10 +17,10 @@ use crate::rules::{
     CONSENT_TEMPLATE, Inbound, Send, Settings, Then, consent_template, plan, wanted_language,
 };
 
-const CON_031_EN: &str = "Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy";
-const CON_031_ES: &str = "Ask Hava: Recibido. Ahora, unas preguntas. Ask Hava no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. PARAR para salir, AYUDA para ayuda. Términos: askhava.com/terms Privacidad: askhava.com/privacy";
+const CON_031_EN: &str = "{brand_short}: Got it. Next, a few quick questions. {brand} is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: {domain}/terms Privacy: {domain}/privacy";
+const CON_031_ES: &str = "{brand_short}: Recibido. Ahora, unas preguntas. {brand} no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. PARAR para salir, AYUDA para ayuda. Términos: {domain}/terms Privacidad: {domain}/privacy";
 const CALL_022: &str = "If you report a danger like gas or smoke and we can't text, we may try one recorded call to this number. Don't wait for it: call 911.";
-const CON_027: &str = "Ask Hava is a local service. Our texts are automated. The Ask Hava owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent.";
+const CON_027: &str = "{brand} is a local service. Our texts are automated. The {brand} owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent.";
 const BANNED: &[&str] = &[
     "Reply OK",
     "Reply YES",
@@ -35,6 +35,26 @@ fn consent(safety_call_on: bool, language: Language, spanish_on: bool) -> String
     render(consent_template(safety_call_on), language, spanish_on, &[])
         .expect("consent")
         .body
+}
+
+/// `text` with the brand file's names in place of its brand tokens, the Spanish names when
+/// `spanish` (WORD-001, WORD-008, D-1932).
+fn branded(text: &str, spanish: bool) -> String {
+    askhava_core::api::brand()
+        .fill(text, spanish)
+        .expect("the brand fills")
+}
+
+/// The CON-031 text's length: `fixed` characters around its short name, its name and the domain
+/// twice, read from the brand file (295 English and 303 Spanish under the embedded brand).
+fn con_031_chars(fixed: usize, spanish: bool) -> usize {
+    let b = askhava_core::api::brand();
+    let (short, name) = if spanish {
+        (b.es().short_name(), b.es().display_name())
+    } else {
+        (b.short_name(), b.display_name())
+    };
+    fixed + short.chars().count() + name.chars().count() + 2 * b.domain().chars().count()
 }
 
 fn msg(words: &str) -> Inbound<'_> {
@@ -53,20 +73,21 @@ fn msg(words: &str) -> Inbound<'_> {
 #[test]
 fn td_con_18_english_consent_text_is_con_031_exactly() {
     let text = consent(false, Language::En, false);
-    assert_eq!(text, CON_031_EN);
-    assert_eq!(text.chars().count(), 295);
+    assert_eq!(text, branded(CON_031_EN, false));
+    assert_eq!(text.chars().count(), con_031_chars(257, false));
     let counted = count_segments(&text);
     assert_eq!((counted.encoding, counted.segments), (Encoding::Gsm7, 2));
     for line in [
-        "Ask Hava is not a contractor; you hire the business you pick directly.",
+        "{brand} is not a contractor; you hire the business you pick directly.",
         "Automated texts about your request",
         "Msg frequency varies",
         "Msg & data rates may apply",
         "Reply STOP to opt out, HELP for help",
-        "Terms: askhava.com/terms",
-        "Privacy: askhava.com/privacy",
+        "Terms: {domain}/terms",
+        "Privacy: {domain}/privacy",
     ] {
-        assert!(text.contains(line), "missing {line}");
+        let line = branded(line, false);
+        assert!(text.contains(&line), "missing {line}");
     }
     for banned in BANNED {
         assert!(!text.contains(banned), "holds {banned}");
@@ -79,11 +100,14 @@ fn td_con_18_english_consent_text_is_con_031_exactly() {
 #[test]
 fn td_con_18_spanish_consent_text_only_while_spanish_is_on() {
     let es = consent(false, Language::Es, true);
-    assert_eq!(es, CON_031_ES);
-    assert_eq!(es.chars().count(), 303);
+    assert_eq!(es, branded(CON_031_ES, true));
+    assert_eq!(es.chars().count(), con_031_chars(265, true));
     let counted = count_segments(&es);
     assert_eq!((counted.encoding, counted.segments), (Encoding::Gsm7, 2));
-    assert_eq!(consent(false, Language::Es, false), CON_031_EN);
+    assert_eq!(
+        consent(false, Language::Es, false),
+        branded(CON_031_EN, false)
+    );
 }
 
 /// TD-CON-18 (CALL-019, CALL-022, D-384): no safety-call sentence while the call is off; switched
@@ -94,8 +118,14 @@ fn td_con_18_safety_call_sentence_only_while_the_call_is_on() {
     assert_eq!(consent_template(false), CONSENT_TEMPLATE);
     let on = consent(true, Language::En, false);
     assert!(on.contains(CALL_022));
-    assert!(on.starts_with("Ask Hava: Got it. Next, a few quick questions."));
-    assert!(on.ends_with("Terms: askhava.com/terms Privacy: askhava.com/privacy"));
+    assert!(on.starts_with(&branded(
+        "{brand_short}: Got it. Next, a few quick questions.",
+        false
+    )));
+    assert!(on.ends_with(&branded(
+        "Terms: {domain}/terms Privacy: {domain}/privacy",
+        false
+    )));
     for banned in BANNED {
         assert!(!on.contains(banned), "holds {banned}");
     }
@@ -170,10 +200,13 @@ fn td_con_11_replies_after_the_consent_text_are_conversation_steps() {
 #[test]
 fn td_con_14_disclosure_line_is_con_027() {
     let line = disclosure(Language::En, false).expect("disclosure");
-    assert_eq!(line, format!("Ask Hava: {CON_027}"));
+    assert_eq!(line, branded(&format!("{{brand_short}}: {CON_027}"), false));
     assert!(!line.contains("Reply"));
     let es = disclosure(Language::Es, true).expect("disclosure es");
-    assert!(es.starts_with("Ask Hava: Ask Hava es un servicio local."));
+    assert!(es.starts_with(&branded(
+        "{brand_short}: {brand} es un servicio local.",
+        true
+    )));
 }
 
 fn secret() -> SecretString {

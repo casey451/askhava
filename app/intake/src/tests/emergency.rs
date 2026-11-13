@@ -268,6 +268,14 @@ fn en(id: &str, values: &[(&str, &str)]) -> String {
         .body
 }
 
+/// `text` with the brand file's names in place of its brand tokens, the Spanish names when
+/// `spanish` (WORD-001, WORD-008, D-1932).
+fn branded(text: &str, spanish: bool) -> String {
+    askhava_core::api::brand()
+        .fill(text, spanish)
+        .expect("the brand fills")
+}
+
 /// TD-INT-15 (INT-006, INT-033, D-324, D-346, D-436): the count texts are INT-033's words, "1 HVAC
 /// business ... gets" for one; the zero text is INT-033's exactly; the daytime choice names the
 /// email marked EMERGENCY and the 60 minutes, and never a phone call or "reach you tonight".
@@ -276,15 +284,24 @@ fn td_int_15_count_and_choice_wording() {
     let hvac = [("count", "3"), ("trade", "HVAC")];
     assert_eq!(
         en(NIGHT_MANY_TEMPLATE, &hvac),
-        "Ask Hava: 3 HVAC businesses on Ask Hava get emergency requests at night."
+        branded(
+            "{brand_short}: 3 HVAC businesses on {brand} get emergency requests at night.",
+            false
+        )
     );
     assert_eq!(
         en(NIGHT_ONE_TEMPLATE, &hvac),
-        "Ask Hava: 1 HVAC business on Ask Hava gets emergency requests at night."
+        branded(
+            "{brand_short}: 1 HVAC business on {brand} gets emergency requests at night.",
+            false
+        )
     );
     assert_eq!(
         en(NIGHT_NONE_TEMPLATE, &hvac),
-        "Ask Hava: No HVAC business on Ask Hava gets emergency requests at night yet. Your request goes out at 8 a.m."
+        branded(
+            "{brand_short}: No HVAC business on {brand} gets emergency requests at night yet. Your request goes out at 8 a.m.",
+            false
+        )
     );
     let day = en(CHOICE_TEMPLATE, &[]);
     assert!(day.contains(
