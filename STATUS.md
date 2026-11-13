@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T15:06:38Z by runner c220888afc80 (actions).
+Updated 2026-11-13T15:06:59Z by runner ae799a921ac7 (actions).
 
 **Building: T319 in progress since 14:57Z; 282 of 420 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,11 +9,11 @@ Updated 2026-11-13T15:06:38Z by runner c220888afc80 (actions).
 - **Lane:** lane 3: T319 claimed 14:57Z, lease until 17:57Z; lane 5: T266 claimed 14:42Z, lease until 17:42Z
 - **Week:** 20% used, 148.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:06Z, 0 min before this update
-- **Keeper:** last ran 15:04Z, next wake 17:44Z
+- **Keeper:** last ran 15:06Z, next wake 17:44Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+158 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+155 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -74,7 +74,6 @@ Updated 2026-11-13T15:06:38Z by runner c220888afc80 (actions).
 | T315 | jobs and portals: feedback words are blanked by the 3-year p | done | 1 | 66 min | 16:18Z |  |
 | T370 | intake (harness): the night count the homeowner hears counts | done | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T389 | licensing: a homeowner's wrong-license report pauses a pest  | done | 1 | 31 min | 15:11Z |  |
-| T362 | server: the built static files are served at /static/<crate> | BLOCKED | 2 | 21 min | 15:06Z |  |
 
 ### Plan and harness merges on main
 - 15:02Z Plan: split T328 and trim T321 to fit the context limit (D-3468) (#676)
