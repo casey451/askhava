@@ -4066,3 +4066,4 @@
 - 2026-11-13T22:34:15Z runner 4a8b6490731d (actions): {}
 - 2026-11-13T22:34:26Z runner 09bfaf2c02fd (manual): {}
 - 2026-11-13T22:36:17Z runner 09bfaf2c02fd (actions): {}
+- 2026-11-13T22:36:36Z runner 09bfaf2c02fd (actions): {"T391": "QUEUED -> IN_PROGRESS"}; T391 estimated 3.2M tokens (calibrated); week has 128.8M left (no five-hour budget, D-3056) after 7.2M still running in another lane (session_reading 2026-11-13T22:33:35Z (week)); claimed
