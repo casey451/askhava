@@ -452,15 +452,16 @@ def _outage(state: State, tid: str, now: datetime) -> State:
 def _api_death(state: State, tid: str, res: WorkerResult, cfg: Config, now: datetime) -> State:
     """A session that died of an Anthropic API error before handing in, with nothing pushed (D-3443): the
     death is noted in `api_deaths`, the outbox item `api-deaths` is written once ALARM_COUNT deaths fall within
-    the hour, and the task goes back to QUEUED with its attempts unchanged, at most FREE_REQUEUES times in a
+    the hour (at most once an hour), and the task goes back to QUEUED with its attempts unchanged, at most FREE_REQUEUES times in a
     row (`api_death.settle`); past that, or with no API-error label in the log, it is a failed attempt."""
     found = api_death.label(res.log)
     noted = api_death.note(state, tid, found or api_death.API_ERROR, now)
     deaths = api_death.recent(noted, now)
-    if len(deaths) >= api_death.ALARM_COUNT:
+    if api_death.alarm_due(noted, now):  # once per hour, so a dead token does not re-ping Casey on every death
         title, body = api_death.alarm_note(deaths)
         outbox.write_outbox(cfg.outbox_dir, api_death.OUTBOX_ID, title, "info", body)
         print(f"runner: {title} (outbox {api_death.OUTBOX_ID}, D-3443)")
+        noted = dict(noted, **{api_death.ALARMED: st.iso(now)})
     freed = api_death.settle(noted, tid, found, now) if found else None
     why = api_death.LOG + found if found else res.log or api_death.API_ERROR  # only the safe label is kept
     return freed if freed is not None else record_failure(noted, tid, why)

@@ -84,6 +84,18 @@ def test_signature_refuses_everything_else() -> None:
     assert ad.signature("") == "" and ad.signature("not json at all") == ""
 
 
+def test_signature_reads_only_the_result_string_never_tool_input_or_errors() -> None:
+    """D-3443 review: `permission_denials[].tool_input` and `errors[]` can carry text a tool or worker wrote."""
+    denied = {"type": "result", "subtype": "error_max_turns", "is_error": True,
+              "permission_denials": [{"tool_name": "Bash", "tool_input": {"command": "curl stub # expect API Error: 503"}}]}
+    assert ad.signature(json.dumps([denied])) == ""
+    errors = {"type": "result", "subtype": "error_during_execution", "is_error": True,
+              "errors": ["API Error: 403 authentication_failed", "overloaded_error"]}
+    assert ad.signature(json.dumps([errors])) == ""
+    assert ad.signature(json.dumps([{**errors, "result": None}])) == ""  # a result that is not a string
+    assert ad.signature(json.dumps([{**denied, "result": CF_403}])) == "API Error 403 authentication_failed"
+
+
 def test_the_command_prints_only_the_label_and_answers_by_exit_status(tmp_path: Path) -> None:
     f = tmp_path / "exec.json"
     f.write_text(_exec_file(CF_403))
@@ -165,8 +177,30 @@ def test_three_deaths_within_an_hour_write_the_outbox_item(tmp_path: Path) -> No
         _park_the_dead(env)
     note = (tmp_path / f"{ad.OUTBOX_ID}.md").read_text(encoding="utf-8")
     assert "kind: info" in note and "3 worker sessions died" in note
+    assert env.store[ad.ALARMED] == st.iso(NOW + timedelta(minutes=40))
     assert all(st.entry(env.store, t).get("attempts", 0) == 0 for t in ("T001", "T002", "T003"))
     assert not cs.check(env.store, lanes=1)
+
+
+def test_the_alarm_is_written_at_most_once_an_hour(tmp_path: Path) -> None:
+    """D-3443 review: with a dead token every later death would rewrite the item and notify.yml re-ping Casey."""
+    clock = [NOW]
+    tids = tuple(f"T00{n}" for n in range(1, 7))
+    env, cfg = _claimed(tmp_path, tids, clock)
+    written: list[int] = []
+    for minutes in (0, 10, 20, 30, 50, 85):
+        clock[0] = NOW + timedelta(minutes=minutes)
+        if minutes:
+            _reclaim(cfg, env, clock[0])
+        (tmp_path / f"{ad.OUTBOX_ID}.md").unlink(missing_ok=True)
+        with redirect_stdout(io.StringIO()):
+            _die(cfg, env)
+        if (tmp_path / f"{ad.OUTBOX_ID}.md").exists():
+            written.append(minutes)
+        _park_the_dead(env)
+    assert written == [20, 85]  # the third death, then none until an hour after that alarm
+    assert env.store[ad.ALARMED] == st.iso(NOW + timedelta(minutes=85)) and not cs.check(env.store, lanes=1)
+    assert ad.alarm_due(dict(env.store, **{ad.ALARMED: "garbled"}), NOW + timedelta(minutes=85))
 
 
 def test_deaths_older_than_the_hour_are_dropped_and_never_alarm(tmp_path: Path) -> None:

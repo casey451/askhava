@@ -5,9 +5,9 @@ authentication_failed", then the action's "result is_error:true") with no turn o
 safety hand-in recorded "session ended without handing in" and each lost an attempt for a fault outside
 the task (D-3442 gave T255's back by hand). This module makes that case cost nothing, narrowly:
 
-- `signature(text)`: the execution file's LAST `result` message must say `is_error: true` and its own text
-  (never a tool's output, which may quote these words) must name an API status 401, 403, 429 or 5xx, or
-  the error type `authentication_failed` or `overloaded_error`. The answer is a short label built only
+- `signature(text)`: the execution file's LAST `result` message must say `is_error: true` and its `result`
+  string (never `errors`, `permission_denials` or a tool's output, which may quote these words) must
+  name an API status 401, 403, 429 or 5xx, or the error type `authentication_failed` or `overloaded_error`. The answer is a short label built only
   from that status and error type ("API Error 403 authentication_failed"), never the raw text, so no
   header, token or request detail can reach the state, the log or an outbox item.
 - `python3 -m runner.api_death FILE` prints the label and exits 0 (backup-runner.yml's safety step then
@@ -20,7 +20,8 @@ the task (D-3442 gave T255's back by hand). This module makes that case cost not
   and `api_death_requeues` one higher, while it has had fewer than `FREE_REQUEUES` such requeues in a
   row; the next death counts as a failed attempt. Any other end of an attempt clears the run (`end_run`).
 - `ALARM_COUNT` deaths across lanes within `WINDOW` write the outbox item `api-deaths` (`alarm_note`),
-  so Casey hears of a credential or outage problem.
+  so Casey hears of a credential or outage problem, at most once per `WINDOW` (`alarm_due`, the state's
+  `api_deaths_alarm_at`), so a dead token does not re-ping him on every later death.
 """
 
 from __future__ import annotations
@@ -40,22 +41,13 @@ WINDOW = timedelta(minutes=60)  # the span the global guard counts deaths in, ac
 ALARM_COUNT = 3  # deaths within WINDOW that write the outbox item
 OUTBOX_ID = "api-deaths"
 DEATHS = "api_deaths"  # the state's top-level record of recent deaths
+ALARMED = "api_deaths_alarm_at"  # when the outbox item was last written
 RUN = "api_death_requeues"  # a task's consecutive free requeues
 LOG = "session died of an Anthropic API error: "  # the safety hand-in's `--log`, followed by the label
 STATUSES = ("401", "403", "429")  # and any 5xx
 STATUS = re.compile(r"API Error:? (\d{3})\b")  # the colon is absent in a label read again
 TYPES = ("authentication_failed", "overloaded_error")
 TYPE = re.compile(r"\b(authentication_failed|authentication_error|overloaded_error|rate_limit_error|api_error)\b")
-
-
-def _strings(value: Any) -> list[str]:
-    if isinstance(value, str):
-        return [value]
-    if isinstance(value, dict):
-        return [s for v in value.values() for s in _strings(v)]
-    if isinstance(value, list):
-        return [s for v in value for s in _strings(v)]
-    return []
 
 
 def label(text: str) -> str:
@@ -72,9 +64,11 @@ def signature(text: str) -> str:
     from runner import usage_reading
 
     results = [m for m in usage_reading.messages(text) if isinstance(m, dict) and m.get("type") == "result"]
-    if not results or results[-1].get("is_error") is not True:
+    last = results[-1] if results else {}
+    text = last.get("result")
+    if last.get("is_error") is not True or not isinstance(text, str):
         return ""
-    return next((found for found in map(label, _strings(results[-1])) if found), "")
+    return label(text)  # only the result's own text: `errors` and `permission_denials` carry tool input
 
 
 def unpushed(handoff: dict[str, Any], tip_now: str | None) -> bool:
@@ -114,6 +108,14 @@ def recent(state: st.State, now: datetime) -> list[dict[str, Any]]:
     """The deaths recorded within WINDOW before `now`, oldest first."""
     found = [d for d in (state.get(DEATHS) or {}).values() if isinstance(d, dict) and _recent(d, now)]
     return sorted(found, key=lambda d: str(d.get("at")))
+
+
+def alarm_due(state: st.State, now: datetime) -> bool:
+    """Whether ALARM_COUNT deaths fall within WINDOW and no alarm was written within WINDOW (an unreadable
+    marker counts as none)."""
+    if len(recent(state, now)) < ALARM_COUNT:
+        return False
+    return not _recent({"at": state.get(ALARMED)}, now)
 
 
 def settle(state: st.State, tid: str, label: str, now: datetime) -> st.State | None:
