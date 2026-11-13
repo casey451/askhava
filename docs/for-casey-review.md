@@ -2631,3 +2631,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## A check for leftover merge-conflict lines (D-3307)
 
 - On November 12 a commit that still had merge-conflict lines in this file passed every check and was found by hand; a new check now fails the build and the worker's local gate on any such line in any tracked file.
+
+## Back to one task per code area at a time (D-3386)
+
+- On November 12 we let two tasks work in the same code area at once to keep more lanes busy, with a rule to undo it if more than 1 merge in 5 needed redoing. 3 of the next 10 did, all over the same notes file, so it is back to one. Nothing needs you now.
