@@ -2707,6 +2707,17 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Token counts fixed; fix rounds must be re-reviewed (D-3475, November 13)
 
 Two runner fixes are queued first. The runner was counting tokens about 1.65 times over, because each reply appears on several lines of a session log; T438 counts each reply once and corrects the pacer's estimates for the older numbers. Your weekly usage reading comes from the plan itself, so it was never wrong. T439 makes the runner refuse a hand-in unless an Opus reviewer approved the exact final commit and every new commit was made by a worker, not the coordinating session; three of four fix rounds checked earlier this week had merged without that second look. Nothing needs you.
+
+## The unreachable-homeowner steps now run (D-3486 to D-3490, November 13)
+
+- After a business is given a homeowner's details, the worker now sends the "no call yet" reminders at 24 and 48 hours, returns a job whose business never called at 72 hours, asks an email-contact homeowner at 72 hours whether the business emailed her, and decides the automatic refund at 96 hours, retrying an hour later while the refund is still waiting on Stripe. The missed-call text waits for 8 a.m. unless the job is an emergency, and a number that can't be texted gets it by email.
+- For now these homeowner messages from the steps go in English: the step cannot read the language of her request yet (D-3489). Spanish conversations are off at launch, so nothing changes today; a follow-up should pass her language along before Spanish is switched on.
+
+## Smaller crate guides: less to read for every AI session, fewer merge collisions (D-3474, November 13)
+
+- **Why.** Each part of the app (a crate) has a guide file that the AI tool loads by itself whenever a session opens a file in that part. Those guides had grown to as much as 72 KB, about a third of every working session's reading, and two tasks writing the same part often collided on the same long line.
+- **What changed.** Each guide now holds only what the part is for and the things a change must never break, each with its test, at most 8 KB. Everything else moved word for word, by a script that checked nothing was lost, into a notes file next to it with one short note per line, which sessions search by requirement number instead of reading whole. Two tasks that both add notes now merge without a collision. Total guide size went from about 591 KB to 79 KB.
+- **Still to come.** One small tooling task (T437, the next one the runner picks up) lets every task write the new notes files and makes the runner count the guide's size. Until it lands, tasks add their notes at the end of the guide. Nothing needs you now.
 ## A cheap pre-check for plan gaps (D-3496, November 13)
 
 - Since November 10, nineteen build attempts stopped because a task's change broke a file another task owns. Each one wasted a whole session. The plan check now also warns, before a task starts, when its goal changes something a file it may not touch uses, quotes a value a test it may not edit pins, or claims such a test "passes unchanged". It only warns; it holds nothing. Tried on the past cases, it would have flagged 4 of 15. Most of the rest were hidden behavior no text check can see. Nothing needs you.

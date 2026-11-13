@@ -1,0 +1,11 @@
+# site notes (D-3474): one entry per line, `- [REQUIREMENT-IDS] (section) text`; grep by ID, never read whole; add yours at the end, one line each.
+- [WORD-001] (owns) `templates/base.html`: the plain shared layout: `lang`, the `title` and `main` blocks, a skip link to `#main`, a header with the wordmark link. The title suffix and the wordmark are `{{ askhava_core::api::brand().display_name() }}` (WORD-001, T294, D-1932, D-2486), so the layout compiles only in a crate that depends on `askhava-core` (today `portals`, through its `askama.toml`).
+- [-] (owns) `src/lib.rs`: the crate doc only; no code yet.
+- [WORD-001] (rules) WORD-001, D-1932: `base.html` names the brand only through `brand()`; `tests/docs/test_brand_literals.py` fails on a literal.
+- [SEC-011] (rules) SEC-011: `base.html` escapes every value (no `|safe`, checked by `scripts/check_rust_rules.py`).
+- [SEC-013] (rules) SEC-013: `base.html` loads no script, style or font from another host (`tests/security/tests/no_third_party.rs`).
+- [A11Y-030] (rules) A11Y-030: a page's `title` block begins "Error: " after a failed submit; the layout keeps `main` first for the error summary.
+- [-] (change) Restyle or add a layout block: edit `templates/base.html`, keep the `title`, `main` and `lang` blocks, run `cargo test -p askhava-portals` and `python3 scripts/check_copy.py`.
+- [-] (tests) `tests/security/tests/no_third_party.rs` (TD-SEC-04): `cargo test -p askhava-security --test no_third_party`.
+- [-] (tests) `app/portals/src/security.rs` `tests` (TD-SEC-04): `cargo test -p askhava-portals`.
+- [-] (tests) `app/portals/src/feedback.rs` `brand_tests` (TD-WORD-37: the title suffix and home link are today's bytes): `cargo test -p askhava-portals feedback::brand_tests`.

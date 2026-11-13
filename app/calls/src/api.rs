@@ -76,3 +76,28 @@ pub async fn job_had_line(
     .await
     .map_err(|_| CallsError::Database)
 }
+
+/// The newest masked line of job `job` between business `business` and homeowner contact
+/// `homeowner`, open or closed: its ID (for [`call_log`]) and its pool number (CALL-001, FEE-022,
+/// TXT-030, D-3486); `None` when they never had one. `picks`' unreachable steps read it for one
+/// pick's release (its job, business and bound contact), so a later pick's line on the same job is
+/// never read for an earlier pick.
+///
+/// # Errors
+///
+/// [`CallsError::Database`].
+pub async fn job_line(
+    db: &mut sqlx::PgConnection,
+    (job, business, homeowner): (sqlx::types::Uuid, sqlx::types::Uuid, sqlx::types::Uuid),
+) -> Result<Option<(sqlx::types::Uuid, String)>, CallsError> {
+    sqlx::query!(
+        "SELECT id, pool_number FROM calls.number_pool WHERE job_id = $1 AND business_id = $2 AND homeowner_id = $3 ORDER BY seq DESC LIMIT 1",
+        job,
+        business,
+        homeowner
+    )
+    .fetch_optional(db)
+    .await
+    .map(|row| row.map(|r| (r.id, r.pool_number)))
+    .map_err(|_| CallsError::Database)
+}
