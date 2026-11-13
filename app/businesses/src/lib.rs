@@ -28,6 +28,9 @@
 //!
 //! T316 added the public business name read in `public_name` (PICK-041, BIZ-022, D-2943).
 //!
+//! T372 added the daily license-map re-apply over the recorded ROC lists and the way back from
+//! a `no_covered_job_type` pause in `license_reapply` (BIZ-050, LIC-043, D-2705, D-2730).
+//!
 //! Other crates reach it only through [`api`].
 
 mod about_us;
@@ -46,6 +49,7 @@ mod emergency_switch;
 mod holding;
 mod identity;
 mod leaving;
+mod license_reapply;
 mod links;
 mod models;
 mod open_cards_times;
