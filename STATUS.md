@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T14:40:36Z by runner ae799a921ac7 (actions).
+Updated 2026-11-13T14:41:29Z by runner ae799a921ac7 (actions).
 
 **Idle since 14:40Z; 282 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T14:40:36Z by runner ae799a921ac7 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 14:40Z (no task in progress)
 - **Week:** 19% used, 151.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:39Z, 1 min before this update
+- **Last run:** 14:40Z, 0 min before this update
 - **Keeper:** last ran 14:39Z, next wake 14:59Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-13T14:40:36Z by runner ae799a921ac7 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z | session ended without handing in |
-| T330 | picks, intake and server: a withdrawn pick tells its busines | MERGE_PENDING | 1 | 39 min | 14:30Z |  |
+| T330 | picks, intake and server: a withdrawn pick tells its busines | resync | 1 | 39 min | 14:30Z | merging main into the reviewed head conflicts in app/messaging/CLAUDE.md, app/server/src/lib.rs; a resync merges it in o |
 | T367 | jobs, messaging, privacy, intake and payments: the daily swe | done | 1 | 60 min | 14:23Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z | PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
