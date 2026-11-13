@@ -7,7 +7,7 @@
 //! Every ID, address and time is fake.
 
 use askhava_businesses::api::{Acting, Roles, add_member, add_owner, create, remove_member};
-use askhava_core::api::Claimed;
+use askhava_core::api::{Claimed, brand};
 use askhava_picks::api::HoldAsk;
 use askhava_portals::api::{
     ActionKind, ActionLinkError, ActionTarget, OPEN_IN_BROWSER_LINE, UseBy, is_cross_site,
@@ -77,9 +77,8 @@ fn hold_ask(emergency: bool) -> HoldAsk {
 
 /// The `(kind, object, token)` of a minted link, read from its path.
 fn parts(link: &str) -> (ActionKind, Uuid, String) {
-    let rest = link
-        .strip_prefix("https://askhava.com/b/a/")
-        .expect("askhava.com link");
+    let ours = format!("https://{}/b/a/", brand().domain());
+    let rest = link.strip_prefix(ours.as_str()).expect("askhava.com link");
     let mut it = rest.split('/');
     let kind = ActionKind::from_slug(it.next().expect("kind")).expect("known kind");
     let object = it.next().expect("object").parse().expect("uuid");

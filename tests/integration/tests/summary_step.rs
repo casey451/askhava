@@ -7,6 +7,7 @@
 //! approved-card check the card sender runs. The wait starts once the text is seen sent; each
 //! show is its own text and timer; SEND is audited as the homeowner, the auto-send as the system.
 
+use askhava_core::api::brand;
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     APPROVED_ACTION, AUTO_SEND_AFTER, AUTO_SENT_ACTION, CARD_EDIT_TEMPLATE, CARD_LINK_TEMPLATE,
@@ -189,7 +190,8 @@ async fn td_int_23_send_ok_or_yes_sends_the_card_she_was_shown(mut db: Db) {
         };
         assert_eq!(sent.template, CARD_SHOWN_TEMPLATE);
         let got = body(&mut db, sent.outbox_id).await;
-        let head = format!("Ask Hava: Here's request {number} as businesses will see it: ");
+        let short = brand().short_name();
+        let head = format!("{short}: Here's request {number} as businesses will see it: ");
         assert_eq!(got, format!("{head}{} {TAIL}", shown.text()));
         assert!(!got.to_lowercase().contains("reply ok") && !got.contains('@'));
         assert!(!got.contains("555"), "no phone");
@@ -224,8 +226,9 @@ async fn td_int_23_a_long_card_links_and_goes_after_30_minutes(mut db: Db) {
         panic!("texted");
     };
     assert_eq!(sent.template, CARD_LINK_TEMPLATE);
+    let short = brand().short_name();
     let want = format!(
-        "Ask Hava: Request {number} is ready. Take a look before it goes out: {LINK} {TAIL}"
+        "{short}: Request {number} is ready. Take a look before it goes out: {LINK} {TAIL}"
     );
     assert_eq!(body(&mut db, sent.outbox_id).await, want);
     let first = latest_timer(&mut db, job).await;
