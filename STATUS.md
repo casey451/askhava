@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T14:37:38Z by runner ae799a921ac7 (actions).
+Updated 2026-11-13T14:38:39Z by runner 69b338517e8d (actions).
 
 **Building: T266 in progress since 13:35Z; 281 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -16,7 +16,7 @@ Updated 2026-11-13T14:37:38Z by runner ae799a921ac7 (actions).
 - PLAN GAP T319 (since 2026-11-13T13:50:53Z, no attempt used; a plan change fixes it): T319: tests/budget.rs is named by D-3445, but no task owns it and it does not exist
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T436 (since 2026-11-13T13:50:53Z, no attempt used; a plan change fixes it): T436: tests/budget.rs is named by D-3445, but no task owns it and it does not exist
-- Strict plan check red: 26 problem(s) on tasks still to run (+155 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+155 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -79,7 +79,6 @@ Updated 2026-11-13T14:37:38Z by runner ae799a921ac7 (actions).
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 1 | 38 min | 14:42Z |  |
 
 ### Plan and harness merges on main
-- 13:45Z Plan: shorten the critical path, drop legacy dependency edges (D-3446) (#671)
 - 12:32Z Plan: pre-flight 14, split three oversized build tasks; T111/T113 brand note (D-3445) (#668)
 - 11:32Z Harness: fix-round hand-off, tighter output caps, crate_cap 2 (D-3444) (#665)
 - 11:16Z Harness: an API error session death does not use an attempt (D-3443) (#664)
