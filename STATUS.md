@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-13T19:28:45Z by runner 6cc0b1c3ccc3 (actions).
+Updated 2026-11-13T19:35:39Z by runner c309142e3550 (manual).
 
-**Building: T357 in progress since 19:21Z; 289 of 424 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T357 in progress since 19:21Z; 289 of 427 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 289 of 424 build tasks (owner gates not counted)
+- **Tasks done:** 289 of 427 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T357 claimed 19:21Z, lease until 22:21Z; lane 2: T412 claimed 19:27Z, lease until 22:27Z; lane 3: T277 claimed 19:27Z, lease until 22:27Z; lane 4: T438 claimed 19:25Z, lease until 22:25Z; lane 5: T314 claimed 19:26Z, lease until 22:26Z; lane 6: T271 claimed 19:28Z, lease until 22:28Z; lane 7: T318 claimed 19:26Z, lease until 22:26Z
 - **Week:** 25% used, 124.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:28Z, 0 min before this update
+- **Last run:** 19:28Z, 6 min before this update
 - **Keeper:** last ran 19:05Z, next wake 00:45Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+178 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -104,7 +104,7 @@ Updated 2026-11-13T19:28:45Z by runner 6cc0b1c3ccc3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 279 of 733 (38.1%) · partial 294 · unstarted 160
-**Tasks merged (throughput only):** 289 of 424
+**Tasks merged (throughput only):** 289 of 427
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|

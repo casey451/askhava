@@ -49970,7 +49970,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T19:28:45Z",
+ "updated_at": "2026-11-13T19:35:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -50068,8 +50068,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6cc0b1c3ccc3c3fd9296b07e37ccf8fabab34216",
- "starter": "actions",
+ "runner_sha": "c309142e35506675f496348394489dcee073a78f",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "480741987da0eae3c6d01075667201910ec25160",
@@ -50336,7 +50336,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3530,
+ "next_decision": 3531,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -50785,6 +50785,12 @@
    "at": "2026-11-13T19:03:26Z",
    "reason": "Named-mutant 'ticked-job-type check dropped' survives ~1% of nightlies (property test only); add tests::radius_matching to its group via a test-only harness task first in claim_first (nightly failure stalls all claims)",
    "session": "manual-8fb12b1375b6"
+  },
+  {
+   "number": 3530,
+   "at": "2026-11-13T19:35:39Z",
+   "reason": "Token levers 3+4 and prompt trim: one smoke per session (runner --after runs end smoke), fix rounds scoped, 590s polls, batched reads, decision text pasted as Choice only",
+   "session": "manual-b13742562d75"
   }
  ],
  "lanes_fallback_history": [
