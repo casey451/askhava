@@ -21,3 +21,4 @@ The layer-1 crate that talks to outside vendors. Each vendor has one trait and o
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/adapters/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/adapters/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
+- [FEE-029 FEE-051 FEE-027] (owns) T335, D-3537: `StripePayments::list_charge_page` (`GET /v1/charges`, balance transaction expanded, succeeded only, cursor = last listed; disputes via `GET /v1/disputes?charge=`; cursor `ch_`/`py_`), `fetch_charge` (`GET /v1/charges/{id}`, D-3538) and `submit_dispute_evidence` (`POST /v1/disputes/{id}`, `evidence[…]` only plus `submit=true`, keyed).

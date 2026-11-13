@@ -137,6 +137,7 @@ pub use crate::release::{
     ReleaseView, Released, check_ins_at_release, plan_release, release, release_notice,
 };
 pub use crate::released_view::{Seat, ViewAnswer, ViewFacts, may_view, released_view};
+pub use crate::service::FEE_FACTS_ALERT;
 pub use crate::service::{
     CONFIRMED_TEMPLATE, CodeCheck, CodeSent, CodeTo, DONE_TEMPLATE, NO_QUOTE_TEMPLATE,
     NONE_TEMPLATE, PICK_MADE_KIND, PICK_WITHDRAWN_KIND, PageCodeKeys, PagePick, TERMS_TEMPLATE,

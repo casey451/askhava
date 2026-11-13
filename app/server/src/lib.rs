@@ -600,8 +600,9 @@ fn register_daily_lists(
 /// masked-line retry (CALL-001), the safety voice call ([`register_safety_call`], T330, D-3134)
 /// and, with the vault keys too, `messaging`'s outbox sender
 /// (`messaging.send_due`, [`outbox_sender`], T356, D-2628); with both vault keys, `intake`'s card
-/// sender ([`register_card_sender`], T251); and `intake`'s opt-out event
-/// ([`register_opted_out_live`], T330). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
+/// sender ([`register_card_sender`], T251); `intake`'s opt-out event
+/// ([`register_opted_out_live`], T330); and `messaging`'s opt-out follow-up emails
+/// ([`register_optout_followup`], T357). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
 /// checks every queued kind against it (TD-OPS-36).
 ///
 /// # Errors
@@ -642,34 +643,49 @@ where
     register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
+    register_optout_followup(&mut registry, settings, &id_secret, pairs.clone())?;
     register_unreachable(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
     register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
-    if let Some(twilio) = twilio_config(settings, pairs.clone())? {
-        register_inbound_retry(
-            &mut registry,
-            settings,
-            (&twilio, &id_secret, &clock),
-            pairs.clone(),
-        )?;
-        register_safety_call(
-            &mut registry,
-            settings,
-            (&twilio, &id_secret, &clock),
-            pairs.clone(),
-        )?;
-        let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
-        let sms = with_status_url(settings, sms);
-        if let Some(vault) = vault_from(settings, pairs.clone())? {
-            let keys = (id_secret.clone(), vault);
-            let sender = outbox_sender(settings, keys, sms.clone(), (&pairs, Arc::clone(&clock)))?;
-            askhava_messaging::api::register_send_due(&mut registry, Arc::new(sender));
-        }
-        let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
-        askhava_messaging::api::register_body_deletes(&mut registry, sms, id_secret, scan_clock);
-        let masked = (twilio.pool().clone(), clock);
-        register_masked(&mut registry, settings, masked, pairs)?;
-    }
+    register_twilio_handlers(&mut registry, settings, (id_secret, clock), pairs)?;
     Ok(registry)
+}
+
+/// The handlers that need the Twilio settings: the inbound retry, the safety call, the outbox
+/// sender (with both vault keys), the body deletes and the masked-line handlers. With no Twilio
+/// settings (dev and CI only) none is registered.
+fn register_twilio_handlers(
+    registry: &mut Registry,
+    settings: &Settings,
+    (id_secret, clock): (SecretString, Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let Some(twilio) = twilio_config(settings, pairs.clone())? else {
+        return Ok(());
+    };
+    register_inbound_retry(
+        registry,
+        settings,
+        (&twilio, &id_secret, &clock),
+        pairs.clone(),
+    )?;
+    register_safety_call(
+        registry,
+        settings,
+        (&twilio, &id_secret, &clock),
+        pairs.clone(),
+    )?;
+    let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
+    let sms = with_status_url(settings, sms);
+    if let Some(vault) = vault_from(settings, pairs.clone())? {
+        let keys = (id_secret.clone(), vault);
+        let sender = outbox_sender(settings, keys, sms.clone(), (&pairs, Arc::clone(&clock)))?;
+        askhava_messaging::api::register_send_due(registry, Arc::new(sender));
+    }
+    let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
+    askhava_messaging::api::register_body_deletes(registry, sms, id_secret, scan_clock);
+    let masked = (twilio.pool().clone(), clock);
+    register_masked(registry, settings, masked, pairs)?;
+    Ok(())
 }
 
 /// `messaging`'s paused-emergency follow-up on the call list only (TXT-023, T279, D-2186).
@@ -709,26 +725,65 @@ fn register_opted_out_live(
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     use askhava_intake::api::{OPTED_OUT_LIVE_KIND, StillOpenSender, run_opted_out_live};
-    use askhava_messaging::api::{MailboxKind, PostalAddress};
-    let vault = vault_from(settings, pairs)?;
-    let sender = match (settings.postal_address(), vault) {
-        (Ok(postal), Some(vault)) => {
-            let kind = match PostalAddress::new(postal, MailboxKind::PoBox) {
-                Ok(_) => MailboxKind::PoBox,
-                Err(_) => MailboxKind::PrivateMailbox,
-            };
-            let sender =
-                StillOpenSender::new(id_secret.clone(), (postal, kind), vault).map_err(|_| {
-                    io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value")
-                })?;
-            Some(Arc::new(sender))
-        }
-        _ => None,
+    let sender = match email_parts(settings, pairs)? {
+        Some((postal, vault)) => Some(Arc::new(
+            StillOpenSender::new(id_secret.clone(), postal, vault).map_err(|_| bad_postal())?,
+        )),
+        None => None,
     };
     registry.register(OPTED_OUT_LIVE_KIND, move |pool, task| {
         run_opted_out_live(pool, sender.clone(), task)
     });
     Ok(())
+}
+
+/// T357 (CON-016, CON-030, D-2629, D-3118): `messaging.optout_followup`
+/// ([`askhava_messaging::api::run_optout_followup`]), always registered (TD-OPS-36); its
+/// `OptOutEmailSender` is built from `ASKHAVA_ID_SECRET`, the footer postal line and both vault
+/// keys only when all are set, else none and each run sends nothing and is done (dev and CI).
+fn register_optout_followup(
+    registry: &mut Registry,
+    settings: &Settings,
+    id_secret: &SecretString,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    use askhava_messaging::api::{OPTOUT_FOLLOWUP_KIND, OptOutEmailSender, run_optout_followup};
+    let sender = match email_parts(settings, pairs)? {
+        Some((postal, vault)) => Some(Arc::new(
+            OptOutEmailSender::new(id_secret.clone(), postal, vault).map_err(|_| bad_postal())?,
+        )),
+        None => None,
+    };
+    registry.register(OPTOUT_FOLLOWUP_KIND, move |pool, task| {
+        run_optout_followup(pool, sender.clone(), task)
+    });
+    Ok(())
+}
+
+/// The footer postal line with its mailbox kind (a P.O. box when it reads as one, else a private
+/// mailbox) and the vault, for the opt-out emails' senders (CON-028, CON-030, D-3463); `None`
+/// unless `ASKHAVA_POSTAL_ADDRESS` and both vault keys are set.
+fn email_parts(
+    settings: &Settings,
+    pairs: Vec<(String, String)>,
+) -> io::Result<Option<((&str, askhava_messaging::api::MailboxKind), Vault)>> {
+    use askhava_messaging::api::{MailboxKind, PostalAddress};
+    let vault = vault_from(settings, pairs)?;
+    Ok(match (settings.postal_address(), vault) {
+        (Ok(postal), Some(vault)) => {
+            let kind = match PostalAddress::new(postal, MailboxKind::PoBox) {
+                Ok(_) => MailboxKind::PoBox,
+                Err(_) => MailboxKind::PrivateMailbox,
+            };
+            Some(((postal, kind), vault))
+        }
+        _ => None,
+    })
+}
+
+/// The start error for a postal line a sender refuses, naming the key, never its value.
+fn bad_postal() -> io::Error {
+    io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value")
 }
 
 /// T281 (FEE-022, FEE-052, TXT-030, D-1845, D-3490): `picks.unreachable_step`,
