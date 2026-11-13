@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T17:52:21Z by runner 62fcdb1690a3 (actions).
+Updated 2026-11-13T17:52:31Z by runner 62fcdb1690a3 (actions).
 
-**Building: T357 in progress since 16:24Z; 287 of 423 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T357 in progress since 16:24Z; 287 of 423 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 287 of 423 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T357 claimed 16:24Z, lease until 19:55Z; lane 5: T281 claimed 16:27Z, lease until 19:27Z
-- **Week:** 24% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:45Z, 6 min before this update
+- **Week:** 25% used, 138.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:52Z, 0 min before this update
 - **Keeper:** last ran 17:45Z, next wake 19:30Z
 
 ## Needs attention
@@ -78,7 +78,6 @@ Updated 2026-11-13T17:52:21Z by runner 62fcdb1690a3 (actions).
 | T376 | ai and stand-in (harness): the intake schema sent to Claude  | done | 1 | 35 min | 18:40Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 2 | 60 min | 18:26Z |  |
 | T366 | jobs and server: every dead-lettered task alerts, and a dail | done | 1 | 26 min | 17:53Z |  |
-| T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 1 | 32 min | 17:52Z |  |
 
 ### Plan and harness merges on main
 - 17:36Z Plan: count usage once per message, prove fix rounds were re-reviewed (D-3475) (#685)
