@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T12:54:09Z by runner 9889e5f5ff2d (actions).
+Updated 2026-11-13T13:09:21Z by runner 9889e5f5ff2d (actions).
 
-**Idle since 12:52Z; 280 of 420 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 13:08Z; 281 of 420 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 280 of 420 build tasks (owner gates not counted)
+- **Tasks done:** 281 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 12:52Z (no task in progress)
+- **Lane:** idle since 13:08Z (no task in progress)
 - **Week:** 17% used, 157.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:53Z, 0 min before this update
+- **Last run:** 13:09Z, 0 min before this update
 - **Keeper:** last ran 12:53Z, next wake 13:13Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-13T12:54:09Z by runner 9889e5f5ff2d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T255 | intake, privacy, payments and server: ask again for an emerg | MERGE_PENDING | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
+| T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T312 | intake: a street address written in lower case never trips t | done | 2 | 51 min | 12:32Z | session ended without handing in |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | done | 3 | 46 min | 11:14Z | session ended without handing in |
 | T312 | intake: a street address written in lower case never trips t | QUEUED | 1 | 24 min | 10:17Z |  |
@@ -105,7 +105,7 @@ Updated 2026-11-13T12:54:09Z by runner 9889e5f5ff2d (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 233 of 733 (31.8%) · partial 340 · unstarted 160
-**Tasks merged (throughput only):** 280 of 420
+**Tasks merged (throughput only):** 281 of 420
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -140,7 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 160 of 201 done
+- stage 4: 161 of 201 done
 - stage 5: 0 of 65 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
