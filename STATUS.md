@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T03:21:09Z by runner 1351eeb1f8c2 (actions).
+Updated 2026-11-13T03:24:03Z by runner 1351eeb1f8c2 (actions).
 
 **Building: T371 in progress since 03:08Z; 268 of 415 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-13T03:21:09Z by runner 1351eeb1f8c2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T371 claimed 03:08Z, lease until 06:08Z
 - **Week:** 11% used, 170.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:21Z, 0 min before this update
+- **Last run:** 03:23Z, 0 min before this update
 - **Keeper:** last ran 03:21Z, next wake 06:10Z
 
 ## Needs attention
@@ -90,7 +90,6 @@ Updated 2026-11-13T03:21:09Z by runner 1351eeb1f8c2 (actions).
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | resync | 1 | 33 min | 04:56Z |  |
 | T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z |  |
-| T248 | catalog and businesses: markets as reviewed data, Arizona ZI | done | 1 | 12 min | 03:22Z |  |
 
 ### Plan and harness merges on main
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
