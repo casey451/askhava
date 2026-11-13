@@ -19125,7 +19125,12 @@
     "T416",
     "T417",
     "T418",
-    "T419"
+    "T419",
+    "T420",
+    "T421",
+    "T427",
+    "T428",
+    "T430"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19384,7 +19389,8 @@
   {
    "id": "T111",
    "deps": [
-    "T100"
+    "T100",
+    "T428"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19396,7 +19402,8 @@
    "id": "T112",
    "deps": [
     "T111",
-    "T221"
+    "T221",
+    "T428"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19419,7 +19426,8 @@
    "id": "T229",
    "deps": [
     "T113",
-    "T115"
+    "T115",
+    "T428"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19632,7 +19640,18 @@
     "T375",
     "T397",
     "T399",
-    "T407"
+    "T407",
+    "T420",
+    "T421",
+    "T427",
+    "T428",
+    "T422",
+    "T423",
+    "T424",
+    "T425",
+    "T426",
+    "T429",
+    "T430"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19710,7 +19729,8 @@
     "T352",
     "T359",
     "T261",
-    "T129"
+    "T129",
+    "T421"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19866,7 +19886,12 @@
     "T394",
     "T395",
     "T402",
-    "T403"
+    "T403",
+    "T420",
+    "T421",
+    "T427",
+    "T428",
+    "T430"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21100,7 +21125,8 @@
    "id": "T161",
    "deps": [
     "T203",
-    "T202"
+    "T202",
+    "T429"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23571,7 +23597,8 @@
    "deps": [
     "T104",
     "T026",
-    "T161"
+    "T161",
+    "T429"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23872,7 +23899,17 @@
     "T235",
     "T394",
     "T402",
-    "T403"
+    "T403",
+    "T420",
+    "T421",
+    "T422",
+    "T423",
+    "T424",
+    "T425",
+    "T426",
+    "T427",
+    "T428",
+    "T430"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23883,7 +23920,17 @@
   {
    "id": "T238",
    "deps": [
-    "T237"
+    "T237",
+    "T420",
+    "T421",
+    "T422",
+    "T423",
+    "T424",
+    "T425",
+    "T426",
+    "T427",
+    "T428",
+    "T430"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23894,7 +23941,17 @@
   {
    "id": "T239",
    "deps": [
-    "T238"
+    "T238",
+    "T420",
+    "T421",
+    "T422",
+    "T423",
+    "T424",
+    "T425",
+    "T426",
+    "T427",
+    "T428",
+    "T430"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27469,7 +27526,8 @@
     "T341",
     "T348",
     "T359",
-    "T362"
+    "T362",
+    "T421"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -28100,7 +28158,8 @@
     "T378",
     "T390",
     "T311",
-    "T349"
+    "T349",
+    "T425"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -34881,7 +34940,8 @@
     "T232",
     "T388",
     "T294",
-    "T384"
+    "T384",
+    "T421"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -36002,7 +36062,8 @@
     "T343",
     "T286",
     "T328",
-    "T337"
+    "T337",
+    "T422"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -36017,7 +36078,8 @@
     "T332",
     "T335",
     "T359",
-    "T354"
+    "T354",
+    "T428"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -36386,6 +36448,7 @@
     "T334",
     "T340",
     "T332",
+    "T430",
     "T255"
    ],
    "status": "QUEUED",
@@ -37876,7 +37939,8 @@
    "id": "T379",
    "deps": [
     "T133",
-    "T313"
+    "T313",
+    "T425"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -39097,7 +39161,11 @@
    "id": "T386",
    "deps": [
     "T214",
-    "T295"
+    "T295",
+    "T420",
+    "T421",
+    "T422",
+    "T428"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -39714,7 +39782,8 @@
    "id": "T394",
    "deps": [
     "T299",
-    "T236"
+    "T236",
+    "T420"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -41939,6 +42008,266 @@
     "docs/decisions.md",
     "tests/integration/tests/link_request.rs"
    ]
+  },
+  {
+   "id": "T420",
+   "deps": [
+    "T049",
+    "T057",
+    "T075",
+    "T038",
+    "T040",
+    "T039",
+    "T048",
+    "T240",
+    "T156",
+    "T295",
+    "T152",
+    "T208",
+    "T024",
+    "T167",
+    "T376"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-tests-intake-ai",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T421",
+   "deps": [
+    "T029",
+    "T057",
+    "T075",
+    "T094",
+    "T026",
+    "T186",
+    "T213",
+    "T063",
+    "T055",
+    "T246",
+    "T230",
+    "T294",
+    "T224",
+    "T084",
+    "T232"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-tests-msg-quotes-portals",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T422",
+   "deps": [
+    "T343",
+    "T388",
+    "T148",
+    "T082",
+    "T293",
+    "T147",
+    "T184",
+    "T251",
+    "T278",
+    "T049",
+    "T083",
+    "T189",
+    "T337",
+    "T287",
+    "T332",
+    "T197",
+    "T150",
+    "T313"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-tests-integration-a",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T423",
+   "deps": [
+    "T247",
+    "T343",
+    "T030",
+    "T240",
+    "T081",
+    "T293",
+    "T178",
+    "T212",
+    "T032",
+    "T079",
+    "T292",
+    "T326",
+    "T093",
+    "T198",
+    "T194",
+    "T199",
+    "T269"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-tests-integration-b",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T424",
+   "deps": [
+    "T198",
+    "T360",
+    "T029",
+    "T028",
+    "T356",
+    "T070",
+    "T072",
+    "T052",
+    "T047",
+    "T023",
+    "T068",
+    "T276",
+    "T193"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-tests-integration-c",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T425",
+   "deps": [
+    "T377",
+    "T208",
+    "T279",
+    "T317",
+    "T013",
+    "T054",
+    "T343",
+    "T094",
+    "T191",
+    "T282",
+    "T378",
+    "T080",
+    "T383",
+    "T096",
+    "T148",
+    "T084",
+    "T199",
+    "T069"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-tests-integration-d",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T426",
+   "deps": [
+    "T196",
+    "T292",
+    "T272",
+    "T230",
+    "T343",
+    "T098",
+    "T214",
+    "T055",
+    "T026",
+    "T291",
+    "T295",
+    "T377",
+    "T378",
+    "T167",
+    "T172"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-tests-security-e2e-docs",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T427",
+   "deps": [
+    "T057",
+    "T075",
+    "T163"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "word-022-both-names",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T430",
+   "deps": [
+    "T057",
+    "T075",
+    "T287",
+    "T059",
+    "T060",
+    "T058",
+    "T225",
+    "T169",
+    "T056",
+    "T073",
+    "T264"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "authorization-version-floor",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T428",
+   "deps": [
+    "T420",
+    "T421",
+    "T422",
+    "T423",
+    "T424",
+    "T425",
+    "T426",
+    "T427",
+    "T430",
+    "T057",
+    "T075",
+    "T291",
+    "T059",
+    "T061",
+    "T062",
+    "T189",
+    "T066",
+    "T067",
+    "T258",
+    "T295",
+    "T287",
+    "T332",
+    "T167",
+    "T209"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-switch-laftly",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T429",
+   "deps": [
+    "T149"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "copy-docs-laftly",
+   "type": "docs",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -44441,7 +44770,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T00:32:02Z",
+ "updated_at": "2026-11-13T00:36:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -44539,7 +44868,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "90d5556300973896efdf6698352640a27bf8615f",
+ "runner_sha": "7ae5f9a704c4147d547436823e15818817c0ab1a",
  "starter": "actions",
  "smoke_runs": [
   {
