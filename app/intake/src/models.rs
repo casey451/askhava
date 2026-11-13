@@ -4,7 +4,7 @@
 //! T039, T040 and T043 add their queries here. T040 keeps a request's jobs as `intake_answer` rows
 //! (no new table, D-993); T050 adds the homeowner pause (`0076_intake_optout_jobs.sql`, CON-029);
 //! T251 adds the property's ZIP (`0165_intake_property_zip.sql`, INT-049) and the card sender's
-//! reads ([`insert_property`], [`property_town`]).
+//! reads ([`insert_property`], [`property_place`]).
 //! Every row holds IDs, codes
 //! and times only, never a contact value or homeowner text (PRIV-001, PRIV-028).
 
@@ -1008,19 +1008,21 @@ pub(crate) async fn insert_property(
     .map_err(|_| IntakeError::Database)
 }
 
-/// INT-049, CARD-001: the town of the newest property of request `conversation`'s homeowner,
-/// the job's own town for its cards; `None` before the ZIP and area check.
-pub(crate) async fn property_town(
+/// INT-049, CARD-001, CARD-024: the town and ZIP (none for a row stored before the ZIP) of the
+/// newest property of request `conversation`'s homeowner, both from that one row: the job's own
+/// town and location for its cards; `None` before the ZIP and area check.
+pub(crate) async fn property_place(
     db: &mut PgConnection,
     conversation: Uuid,
-) -> Result<Option<String>, IntakeError> {
-    sqlx::query_scalar!(
-        "SELECT p.town FROM intake.property p JOIN intake.conversation c \
+) -> Result<Option<(String, Option<String>)>, IntakeError> {
+    sqlx::query!(
+        "SELECT p.town, p.zip FROM intake.property p JOIN intake.conversation c \
          ON c.homeowner_id = p.homeowner_id WHERE c.id = $1 \
          ORDER BY p.created_at DESC, p.id DESC LIMIT 1",
         conversation
     )
     .fetch_optional(db)
     .await
+    .map(|row| row.map(|r| (r.town, r.zip)))
     .map_err(|_| IntakeError::Database)
 }

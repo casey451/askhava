@@ -314,8 +314,9 @@ async fn send_stored(
     })
 }
 
-/// CARD-001, CARD-024, D-1521: the job's own town and its ZIP (none: towns only) from the
-/// newest property of request `conversation`'s homeowner.
+/// CARD-001, CARD-024, D-1521: the job's own town and its ZIP (none: towns only), both from the
+/// one newest property row of request `conversation`'s homeowner (`models::property_place`), so
+/// they never come from two rows.
 ///
 /// # Errors
 /// [`IntakeError::NoStoredCard`] with no property town.
@@ -323,28 +324,9 @@ async fn property_place(
     db: &mut PgConnection,
     conversation: Uuid,
 ) -> Result<(String, Option<String>), IntakeError> {
-    let town = models::property_town(db, conversation)
+    models::property_place(db, conversation)
         .await?
-        .ok_or(IntakeError::NoStoredCard)?;
-    Ok((town, property_zip(db, conversation).await?))
-}
-
-/// CARD-024, INT-049, D-1521: the ZIP of the newest property of request `conversation`'s
-/// homeowner, the row `models::property_town` reads; none for a row stored before the ZIP.
-async fn property_zip(
-    db: &mut PgConnection,
-    conversation: Uuid,
-) -> Result<Option<String>, IntakeError> {
-    sqlx::query_scalar!(
-        "SELECT p.zip FROM intake.property p JOIN intake.conversation c \
-         ON c.homeowner_id = p.homeowner_id WHERE c.id = $1 \
-         ORDER BY p.created_at DESC, p.id DESC LIMIT 1",
-        conversation
-    )
-    .fetch_optional(db)
-    .await
-    .map(Option::flatten)
-    .map_err(|_| IntakeError::Database)
+        .ok_or(IntakeError::NoStoredCard)
 }
 
 /// JOB-008, D-3182: locks job `job`'s row in the caller's transaction, then the guarded move

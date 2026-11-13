@@ -13,16 +13,18 @@
 //! switch). It never names another module's table.
 //!
 //! T249 (CARD-024, D-1519, D-1521): with the job's ZIP, [`card_pool`] also fills the [`Reach`]:
-//! the job's centroid (`catalog::api::zip_location`) and, for every business serving some other
-//! service-area town, its base ZIP centroid and radius (`businesses::api::service_area`); a
+//! the job's centroid (`catalog::api::zip_location`) and, for every other business with a service
+//! area (`businesses::api::businesses_with_service_area`, whatever town it serves), its base ZIP
+//! centroid and radius (`businesses::api::service_area`); a
 //! business whose radius reaches the job joins the pool by the same reads and skips. A job with no
 //! ZIP or no centroid, or a business with no service area or a base with no centroid, is towns only.
 
 use std::collections::BTreeSet;
 
 use askhava_businesses::api::{
-    BusinessesError, Known, business, business_names, businesses_in_towns, capabilities, holding,
-    job_types, may_get_cards, service_area, towns,
+    BusinessesError, Known, business, business_names, businesses_in_towns,
+    businesses_with_service_area, capabilities, holding, job_types, may_get_cards, service_area,
+    towns,
 };
 use askhava_catalog::api::{Category, Centroid, category, service_area_towns, zip_location};
 use askhava_licensing::api::{CityRecord, ClassMap, Job, LicenseKind};
@@ -167,7 +169,8 @@ async fn owner_pauses(
 }
 
 /// CARD-001, CARD-024, D-1519: the businesses serving `town`, then, for a job at `job_at`, every
-/// business serving another service-area town whose radius reaches it, with its reach.
+/// other business with a service area whose radius reaches it, whatever town it serves, with its
+/// reach.
 async fn reached(
     conn: &mut PgConnection,
     town: &str,
@@ -182,13 +185,7 @@ async fn reached(
     if job_at.is_none() {
         return Ok((ids, reach));
     }
-    let others: Vec<String> = service_area_towns()
-        .map_err(|_| QuotesError::Database)?
-        .into_iter()
-        .map(|t| t.code)
-        .filter(|c| c != town)
-        .collect();
-    for id in biz(businesses_in_towns(conn, &others).await)? {
+    for id in biz(businesses_with_service_area(conn).await)? {
         if in_town.contains(&id) {
             continue;
         }

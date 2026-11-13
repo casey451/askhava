@@ -5,15 +5,18 @@
 //! Each business's reach is read back through `businesses::api::service_area` (its base ZIP's
 //! centroid from the reviewed table, or none) and the job's location through
 //! `catalog::api::zip_location`, as `quotes`' card pool fills them; `send_job_cards_in_reach`
-//! then records the cards.
+//! then records the cards. One case builds the pool through the real `quotes::api::card_pool`
+//! from stored businesses (base ZIP, radius, towns, ticks, welcome), as `intake`'s sender does.
 
 use std::collections::{BTreeMap, BTreeSet};
 
 use askhava_businesses::api::{
-    AccountStatus, Acting, Roles, ServiceArea, ServiceAreaProblem, add_member, add_owner, create,
-    save_service_area, service_area,
+    AccountStatus, Acting, Checks, Event, JobTypeChoice, Roles, ServiceArea, ServiceAreaProblem,
+    add_member, add_owner, apply, create, request_welcome, save_service_area, service_area,
+    set_job_types, set_towns, welcome_sent,
 };
-use askhava_catalog::api::{Catalog, parse, zip_location};
+use askhava_catalog::api::{Catalog, load_embedded, parse, zip_location};
+use askhava_integration::set_app_role;
 use askhava_jobs::api::create as create_job;
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::Actor;
@@ -22,10 +25,12 @@ use askhava_portals::api::{
     business_principal, change_service_area, service_area_settings_page, start_session,
 };
 use askhava_quotes::api::{
-    BusinessReach, CardBusiness, CardJob, Coverage, OfferTown, OwnerPauses, Pool, Pooled, Reach,
-    card_holders, coverage_in_reach, send_job_cards, send_job_cards_in_reach,
+    BusinessReach, CardBusiness, CardFacts, CardJob, Coverage, OfferTown, OwnerPauses, Pool,
+    Pooled, Reach, card_holders, card_pool, coverage_in_reach, send_job_cards,
+    send_job_cards_in_reach,
 };
 use jiff::Timestamp;
+use serde_json::Value;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
@@ -149,6 +154,66 @@ async fn td_card_13_send_job_cards_reaches_a_business_in_another_town(mut db: Db
     assert_eq!(count, Coverage::Send(sent.len()));
 }
 
+/// An active, welcomed business serving only `town`, ticking the AC job type, with base ZIP `zip`
+/// and `radius` miles, as the card pool reads it from the database.
+async fn stored_business(db: &mut PgConnection, town: &str, (zip, radius): (&str, &str)) -> Uuid {
+    let b = business_at(db, zip, radius).await;
+    add_owner(db, b, Uuid::new_v4(), at(0))
+        .await
+        .expect("owner");
+    let ok = Checks {
+        code_done: true,
+        match_passed: true,
+        flagged: false,
+    };
+    apply(db, b, Event::Checked(ok), Actor::System, at(0))
+        .await
+        .expect("active");
+    request_welcome(db, b, at(0)).await.expect("welcome");
+    welcome_sent(db, b, at(0)).await.expect("sent");
+    let actor = Actor::Business(b);
+    set_towns(db, b, &[town], actor).await.expect("towns");
+    let choice = JobTypeChoice::new(AC.0, AC.1);
+    let allowed: BTreeSet<_> = [choice.clone()].into();
+    set_job_types(db, b, &[choice], &allowed, actor)
+        .await
+        .expect("job types");
+    b
+}
+
+/// TD-CARD-13 through the real `quotes::api::card_pool` (CARD-024, D-1519): a business serving
+/// only Kingman (base 86401) with 100 miles is pooled, with its reach, for a Lake Havasu City job
+/// at 86403; one with 20 miles is not; with no ZIP the job is towns only and neither is pooled.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_card_13_card_pool_reaches_a_business_serving_another_town(mut db: Db) {
+    load_embedded(&mut db).await.expect("catalog");
+    let far = stored_business(&mut db, "kingman", ("86401", "100")).await;
+    let short = stored_business(&mut db, "kingman", ("86401", "20")).await;
+    set_app_role(&mut db).await.expect("SET ROLE askhava_app");
+    let facts = CardFacts {
+        category: AC.0.to_owned(),
+        candidates: vec![AC.1.to_owned()],
+        emergency: false,
+    };
+    let pool = card_pool(
+        &mut db,
+        ((TOWN, Some("86403")), &facts),
+        String::new(),
+        None,
+    )
+    .await
+    .expect("pool");
+    let pooled: Vec<Uuid> = pool.businesses.iter().map(|p| p.card.id).collect();
+    assert_eq!(pooled, vec![far]);
+    assert!(pool.reach.job.is_some());
+    assert!(pool.reach.reaches(far) && !pool.reach.reaches(short));
+    let pool = card_pool(&mut db, ((TOWN, None), &facts), String::new(), None)
+        .await
+        .expect("pool");
+    assert!(pool.businesses.is_empty());
+    assert!(pool.reach.job.is_none() && pool.reach.businesses.is_empty());
+}
+
 /// A business with its owner signed in, and a second member with `roles` signed in too.
 async fn signed_in(
     db: &mut PgConnection,
@@ -188,15 +253,34 @@ async fn principal(db: &mut PgConnection, business: Uuid, member: Uuid) -> Busin
     read.expect("signed in")
 }
 
-async fn audit_fields(db: &mut PgConnection, business: Uuid) -> Vec<(String, String)> {
-    sqlx::query_as(
-        "SELECT action, row_to_json(audit_log)::text FROM ops.audit_log \
+/// `business`'s audit rows in order: (action, `field` column, every column as JSON).
+async fn audit_fields(
+    db: &mut PgConnection,
+    business: Uuid,
+) -> Vec<(String, Option<String>, Value)> {
+    let rows: Vec<(String, Option<String>, String)> = sqlx::query_as(
+        "SELECT action, field, row_to_json(audit_log)::text FROM ops.audit_log \
          WHERE subject_id = $1 ORDER BY id",
     )
     .bind(business)
     .fetch_all(db)
     .await
-    .expect("audit")
+    .expect("audit");
+    rows.into_iter()
+        .map(|(a, f, row)| (a, f, serde_json::from_str(&row).expect("json")))
+        .collect()
+}
+
+/// PRIV-028: no column of an audit row holds the new radius or base ZIP.
+fn holds_no_value(row: &Value) {
+    let columns = row.as_object().expect("columns");
+    for (name, value) in columns {
+        let text = match value {
+            Value::String(s) => s.clone(),
+            other => other.to_string(),
+        };
+        assert!(text != "30" && !text.contains("86406"), "{name}: {text}");
+    }
 }
 
 /// TD-BIZ-38 (BIZ-010, BIZ-058, PRIV-028): the portal changes the base ZIP and radius with
@@ -235,11 +319,13 @@ async fn td_biz_38_portal_changes_base_zip_and_radius(mut db: Db) {
     assert_eq!(stored.area.radius_miles(), 30);
     assert!(stored.location.is_some());
     let rows = audit_fields(&mut db, business).await;
-    let new: Vec<&(String, String)> = rows[before..].iter().collect();
-    assert_eq!(new.len(), 2);
-    for (action, row) in new {
+    let new = &rows[before..];
+    let mut fields: Vec<&str> = new.iter().filter_map(|r| r.1.as_deref()).collect();
+    fields.sort_unstable();
+    assert_eq!(fields, vec!["base_zip", "service_radius"]);
+    for (action, _, row) in new {
         assert_eq!(action, "businesses.field_changed");
-        assert!(!row.contains("86406") && !row.contains("\"30\""), "{row}");
+        holds_no_value(row);
     }
     let theirs = service_area(&mut db, neighbour)
         .await
