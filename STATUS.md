@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T05:08:24Z by runner 39a27be28873 (actions).
+Updated 2026-11-13T05:08:40Z by runner 39a27be28873 (actions).
 
-**Building: T215 in progress since 04:45Z; 273 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 05:08Z; 273 of 415 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 273 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T215 claimed 04:45Z, lease until 07:45Z
+- **Lane:** idle since 05:08Z (no task in progress)
 - **Week:** 13% used, 170.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:06Z, 1 min before this update
+- **Last run:** 05:06Z, 2 min before this update
 - **Keeper:** last ran 05:06Z, next wake 07:48Z
 
 ## Needs attention
@@ -18,7 +18,8 @@ Updated 2026-11-13T05:08:24Z by runner 39a27be28873 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 20 min | 04:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T215 | businesses and ops: pest identity by the city list plus atte | MERGE_PENDING | 1 | 22 min | 05:08Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 20 min | 04:22Z |  |
 | T371 | licensing and server: the worker fetches and records the dai | done | 1 | 70 min | 04:18Z |  |
 | T427 | WORD-022 phrases catch both brand names in the spec trace, t | MERGE_PENDING | 1 | 29 min | 03:17Z |  |
 | T429 | Copy, voice and AI-smell docs name Laftly | done | 1 | 22 min | 03:13Z |  |
@@ -164,7 +165,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T215 (lease until 2026-11-13T07:45:41Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T215", "at": "2026-11-13T04:22:58Z", "input_tokens": 73, "output_tokens": 13034, "cache_creation_input_tokens": 61452, "cache_read_input_tokens": 824985}
+- {"task": "T215", "at": "2026-11-13T05:08:23Z", "input_tokens": 153, "output_tokens": 26850, "cache_creation_input_tokens": 148607, "cache_read_input_tokens": 3057803}
