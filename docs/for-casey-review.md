@@ -2682,6 +2682,17 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 
 - You asked whether we can work faster without problems. The build's speed is now set by the longest chain of tasks that must run one after another, not by how many helpers we have. We traced that chain and removed a handful of ordering links that were left over from an earlier plan or were simply wrong, keeping every link where one task truly needs another's code or data, and every point where the build waits for you, including the war-games go. The longest chain of tasks that must run one after another went from 51 to 49, which lets more work happen side by side. Every task keeps its tests and its Opus review, and the automatic checks confirm the plan is still correctly ordered. Nothing needs you now.
 
+## Two planning slips fixed (D-3467, November 13)
+
+- The task that adds the "Can't take it" line to the pick notice stopped because an older test keeps a fixed list of the blanks the text templates may have, and the new blank was not on it. That task may now add the one new blank to the list; the test still catches any other unexpected blank, so it is not loosened. The call-status task, which edits the same test file, now waits for it.
+- Eleven tasks were held because an earlier planning note wrote a file path in a shortened form the plan checker could not find. The note cannot be edited (the decision log is append-only), so those tasks now point at this fix instead; each task's own instructions already carry everything that note said for it. Nothing needs you now.
+
+## Two oversized tasks made smaller (D-3468, November 13)
+
+- Two queued tasks were too big for one working session, mostly because each one loaded a very long part of the architecture notes it only needed to add one line to. Both now add that line the way other tasks do (look it up, don't load the whole section), which brings them well under the limit.
+- The payments task was also split in two: one small task makes sure that when a pick ends, the homeowner is offered the next quote; the other makes sure the payment checks, refunds and the nightly reconcile actually run. Each half has its own tests and its own Opus review, and the money review still covers both.
+- The consent-records cleanup task was kept as one task, because its single test covers the whole cleanup and neither half could be tested on its own.
+
 ## A withdrawn pick now tells its business; the opt-out "still open" email; the safety call's task (T330, D-3462 to D-3466, November 13)
 
 - When a homeowner picks a different quote, or texts CANCEL while a pick waits, the first business's owner and "Confirm and billing" people now get one notice: "Laftly: The homeowner withdrew their pick for job 1042, so there's nothing to accept. You weren't charged." (Spanish draft too.) These words are new and have not been through the copy panel yet; please read them.
