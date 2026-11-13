@@ -171,7 +171,10 @@ async fn td_priv_25_a_sweep_over_5000_queued_jobs_reads_none_again(pool: PgPool)
     assert_eq!(sweep_closed(&mut conn, closed + DAY * 2).await, Ok(0));
     assert_eq!(scalar(&pool, tasks).await, before);
     let ids_after = scalar(&pool, TASK_IDS).await;
-    assert_eq!(ids_after, ids_before, "the sweep tried no insert, not even a deduped one");
+    assert_eq!(
+        ids_after, ids_before,
+        "the sweep tried no insert, not even a deduped one"
+    );
     closed_jobs(&pool, 1, closed + DAY).await;
     let found = unqueued_finals(&mut conn, closed + DAY * 2)
         .await
