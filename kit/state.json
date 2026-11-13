@@ -47644,7 +47644,7 @@
     "T170",
     "T285"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "usage-dedupe",
    "type": "harness",
@@ -47658,8 +47658,8 @@
     3503,
     3504
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {\"start\": ..., \"tokens\": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: \"message_id\"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {\"start\": ..., \"tokens\": 2000, \"counting\": \"message_id\"}, logged in docs/decisions.md under; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T438 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {\"start\": ..., \"tokens\": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: \"message_id\"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {\"start\": ..., \"tokens\": 2000, \"counting\": \"message_id\"}, logged in docs/decisions.md under BUILD_BRIEF.md:69. Confirmed by the reviewer subagent (ran the test; ownership in kit/tasks.json). Work is uncommitted in the worker tree; nothing was run green on smoke or prehandin.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {\"start\": ..., \"tokens\": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: \"message_id\"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {\"start\": ..., \"tokens\": 2000, \"counting\": \"message_id\"}, logged in docs/decisions.md under BUILD_BRIEF.md:69. Confirmed by the reviewer subagent (ran the test; ownership in kit/tasks.json). Work is uncommitted in the worker tree; nothing was run green on smoke or prehandin.\nre-queued after plan fix D-3536: D-3536 merged (#696): ledger windows left as today; test_failure_drills unchanged",
    "history": [
     {
      "attempt": 1,
@@ -47683,6 +47683,21 @@
        "turns": 6
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-13T20:54:10Z",
+     "reason": "D-3536 merged (#696): ledger windows left as today; test_failure_drills unchanged",
+     "by": "manual-e60d708a3a80",
+     "was": "plan gap reported: PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {\"start\": ..., \"tokens\": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: \"message_id\"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {\"start\": ..., \"tokens\": 2000, \"counting\": \"message_id\"}, logged in docs/decisions.md under; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T438 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3536",
+     "plan_since": "2026-11-13T19:25:17Z",
+     "plan_base": "7dd6ca1e8125ad2ed9b6610464e258fc1e202619",
+     "plan_head": "1a1400fd7ccfa7625664ac11302649f4e1bdd4e7",
+     "plan_then": "42017dfe576c01de4d6ffabdf3491c70eb45cb87bda4d1c66a0ad8cd48299516",
+     "plan_now": "12ba0b33dcfcaa92b0ac24cb88c1a91b54cb6301d0ac1fc6d77d28a47b953bae"
     }
    ]
   },
@@ -50746,7 +50761,7 @@
    }
   }
  },
- "updated_at": "2026-11-13T20:53:39Z",
+ "updated_at": "2026-11-13T20:54:10Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -50844,8 +50859,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c992e962be91d8a5a8fd75a8226ceb2ad04d0c4c",
- "starter": "actions",
+ "runner_sha": "1a1400fd7ccfa7625664ac11302649f4e1bdd4e7",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "b0f6fb3a71c8f2365acb7dce6da3e2a2e2bafd5f",

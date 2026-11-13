@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T20:53:39Z by runner c992e962be91 (actions).
+Updated 2026-11-13T20:54:10Z by runner 1a1400fd7ccf (manual).
 
 **Building: T412 in progress since 19:27Z; 292 of 427 done; week 28% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -12,9 +12,8 @@ Updated 2026-11-13T20:53:39Z by runner c992e962be91 (actions).
 - **Keeper:** last ran 20:53Z, next wake 22:29Z
 
 ## Needs attention
-- BLOCKED T438: plan gap reported: PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change it) compares a whole new ledger window to {"start": ..., "tokens": 2000}, but kit/prompts/T438.md requires a window that starts or rolls over to start marked (counting: "message_id"), with kit/pacing.json pre_dedupe_factor 0.6. The test fails only on the extra key {'counting': 'message_id'}. The prompt says stop and report. Fix: let T438 (or a harness task) change the expected value to {"start": ..., "tokens": 2000, "counting": "message_id"}, logged in docs/decisions.md under; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T438 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+183 on DONE tasks); first: T396: stored context_pct 46% but it measures 50%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+185 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -81,6 +80,7 @@ Updated 2026-11-13T20:53:39Z by runner c992e962be91 (actions).
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | done | 3 | 28 min | 20:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 
 ### Plan and harness merges on main
+- 20:53Z Plan: T438 plan gap, leave the ledger windows as today (D-3536) (#696)
 - 19:27Z Plan: pre-flight 15, split T341 and T361 (D-3497) (#691)
 - 19:23Z Plan: deterministic kills for proptest-only named mutants (D-3499) (#694)
 - 19:02Z Plan: report-only symbol pre-flight in plan_health (D-3496) (#688)
