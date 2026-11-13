@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-13T09:33:54Z by runner ca8b6b621c5e (actions).
+Updated 2026-11-13T09:36:32Z by runner 553bd9eb54c3 (actions).
 
-**Building: T255 in progress since 09:22Z; 277 of 416 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T255 in progress since 09:22Z; 277 of 417 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 277 of 416 build tasks (owner gates not counted)
+- **Tasks done:** 277 of 417 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T255 claimed 09:22Z, lease until 12:22Z
 - **Week:** 15% used, 165.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:33Z, 0 min before this update
+- **Last run:** 09:34Z, 2 min before this update
 - **Keeper:** last ran 09:33Z, next wake 12:24Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+150 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+150 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T431 | Brand rename prep: the legal-docs version case and five paym | MERGE_PENDING | 1 | 30 min | 09:32Z |  |
 | T249 | quotes and portals: radius matching by ZIP centroid, the cov | done | 1 | 71 min | 09:03Z |  |
-| T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 2 | 3 min | 07:47Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
+| T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 2 | 3 min | 07:47Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | BLOCKED | 1 | 40 min | 07:40Z | PLAN GAP: T428 does not own tests/test_check_legal_docs.py:75, tests/integration/tests/fee_at_pick.rs:25, fee_mode_switc |
 | T420 | Brand rename prep: intake and ai unit tests take the brand f | done | 1 | 28 min | 06:38Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | done | 1 | 22 min | 05:08Z |  |
@@ -36,7 +36,7 @@ Updated 2026-11-13T09:33:54Z by runner ca8b6b621c5e (actions).
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | done | 1 | 26 min | 01:18Z |  |
 | T424 | Brand rename prep: integration tests (open-cards digest to s | done | 1 | 32 min | 01:15Z |  |
 | T372 | businesses and licensing: each recorded ROC list re-applies  | done | 1 | 81 min | 01:07Z |  |
-| T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 1 | 2 min | 23:48Z |  |
+| T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 1 | 2 min | 23:48Z |  |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | done | 1 | 57 min | 23:46Z |  |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z |  |
 | T418 | Performance: lab Core Web Vitals and Ci's warn-only performa | done | 1 | 50 min | 23:24Z |  |
@@ -103,12 +103,11 @@ Updated 2026-11-13T09:33:54Z by runner ca8b6b621c5e (actions).
 - 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
 - 15:45Z Plan: new T412/T415 store business sign-in addresses and phones in the vault for T280, T397, T302 and T364 (D-3262) (#596)
 - 14:48Z Plan: trim T251 to its context limit (D-3256) (#590)
-- 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 234 of 733 (31.9%) · partial 339 · unstarted 160
-**Tasks merged (throughput only):** 277 of 416
+**Requirements verified:** 233 of 733 (31.8%) · partial 340 · unstarted 160
+**Tasks merged (throughput only):** 277 of 417
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -118,7 +117,7 @@ Updated 2026-11-13T09:33:54Z by runner ca8b6b621c5e (actions).
 | calls | 10 | 14 | 1 | 25 |
 | consent | 11 | 20 | 4 | 35 |
 | fees | 13 | 38 | 1 | 52 |
-| intake | 24 | 16 | 3 | 43 |
+| intake | 23 | 17 | 3 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
 | licensing | 26 | 22 | 0 | 48 |
 | lifecycle | 19 | 9 | 0 | 28 |
