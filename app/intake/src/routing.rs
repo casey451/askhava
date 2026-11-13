@@ -13,14 +13,24 @@
 //! covers it ([`Why::NobodyCovers`], logged as recruiting demand; only the told job when another
 //! job of the request is still live). [`split_request`] opens the second trade's job on a SPLIT or
 //! DIVIDIR reply, so each trade goes out as its own request.
+//!
+//! T215 (D-3332, D-3333): every recruiting-demand row also queues one [`NOT_COVERED_KIND`] task in
+//! the same transaction, holding the trade, the town, the request number and the count of
+//! requests not covered so far this Arizona month, never a homeowner detail; `businesses`'
+//! `coverage_notice` emails it to the owner inbox (OPS-041). With pest control switched off
+//! (LIC-012, D-402), a pest request closes early with the fee-free pointer to the Department's
+//! license search ([`Why::PestSwitchedOff`], [`PEST_OFF_TEMPLATE`]), logging no demand.
 
 use askhava_catalog::api::is_enabled;
-use askhava_jobs::api::{JobStatus, current, move_to};
+use askhava_core::api::{NewTask, arizona, brand, enqueue as enqueue_task};
+use askhava_jobs::api::{JobStatus, current, job_number, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use askhava_quotes::api::Coverage;
 use jiff::Timestamp;
+use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
+use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
@@ -39,6 +49,24 @@ pub const COUNT_ONE_TEMPLATE: &str = "coverage_count_one";
 pub const SPLIT_TEMPLATE: &str = "split_offer";
 /// The reply to a request from a town outside the towns list (INT-022).
 pub const OUT_OF_AREA_TEMPLATE: &str = "out_of_area";
+/// The `core.task` kind of one not-covered request's owner-inbox email (OPS-041, D-3332).
+pub const NOT_COVERED_KIND: &str = "intake.not_covered";
+/// The reply when pest control is switched off: the fee-free pointer to the Department of
+/// Agriculture's license search (LIC-012, D-402).
+pub const PEST_OFF_TEMPLATE: &str = "pest_switched_off";
+/// The catalog code of pest control (LIC-012).
+pub const PEST_CONTROL: &str = "pest_control";
+/// The [`PEST_OFF_TEMPLATE`] words after the brand's opening, English then draft Spanish. Fixed
+/// here, not in the template files, whose homeowner-text registry `quotes`' update-text scan
+/// lists in full (D-3333, as `zip_step`'s texts, D-3179); no link: texts carry none off-domain.
+const PEST_OFF_WORDS: (&str, &str) = (
+    "We aren't taking pest control jobs right now. To find a licensed pest control business, \
+     search online for the Arizona Department of Agriculture's license list. No charge from us. \
+     Text us for any other home job.",
+    "Por ahora no tomamos trabajos de control de plagas. Para encontrar un negocio de control de \
+     plagas con licencia, busque la lista de licencias del Departamento de Agricultura de \
+     Arizona. No le cobramos nada. Escríbanos para otros trabajos de su casa.",
+);
 /// The moving category a LIC-017 state check applies to.
 const MOVING: &str = "local_moving";
 /// The catalog's refused moving job type (`docs/catalog/categories.yaml`, LIC-017).
@@ -180,6 +208,9 @@ pub enum Why {
     PropertyManagement,
     /// No active business in the town covers the job (INT-017, from `quotes::api::coverage`).
     NobodyCovers,
+    /// Pest control is switched off (LIC-012, D-402): [`apply`] closes the request early with
+    /// the fee-free pointer to the Department's license search, not as Not covered (D-3333).
+    PestSwitchedOff,
 }
 
 /// The routing decision (INT-016).
@@ -194,7 +225,7 @@ pub enum Outcome {
 }
 
 /// Decides the first outcome that applies, area check first (INT-016, INT-022, LIC-017,
-/// LIC-018).
+/// LIC-018; LIC-012 for pest control switched off).
 #[must_use]
 pub fn route(req: &Request<'_>) -> Outcome {
     if !req.area.contains(&req.town) {
@@ -205,6 +236,9 @@ pub fn route(req: &Request<'_>) -> Outcome {
     }
     if HOME_WATCH.contains(&req.trade) && asks_property_management(req.words) {
         return Outcome::NotCovered(Why::PropertyManagement);
+    }
+    if !req.trade_open && req.trade == PEST_CONTROL {
+        return Outcome::NotCovered(Why::PestSwitchedOff);
     }
     if !req.trade_open {
         return Outcome::NotCovered(Why::TradeNotOpen);
@@ -271,18 +305,8 @@ pub async fn apply(
     (req, outcome): (&Request<'_>, Outcome),
     routing: &Routing<'_>,
 ) -> Result<Option<Queued>, IntakeError> {
-    let (status, template, action) = match outcome {
-        Outcome::Continue => return Ok(None),
-        Outcome::OutOfArea => (
-            JobStatus::ClosedEarly,
-            OUT_OF_AREA_TEMPLATE,
-            "intake.out_of_area",
-        ),
-        Outcome::NotCovered(_) => (
-            JobStatus::NotCovered,
-            NOT_COVERED_TEMPLATE,
-            "intake.not_covered",
-        ),
+    let Some((status, template, action)) = effect(outcome) else {
+        return Ok(None);
     };
     check_request(req, outcome)?;
     let at = routing.msg.received_at;
@@ -297,12 +321,11 @@ pub async fn apply(
     if !models::close_request(&mut tx, routing.conversation, at).await? {
         return Ok(None);
     }
-    for job in jobs {
-        leave_intake(&mut tx, job, status, at).await?;
+    for job in &jobs {
+        leave_intake(&mut tx, *job, status, at).await?;
     }
     if logs_demand(outcome) {
-        let found = (req.town, req.trade, routing.job_type);
-        models::insert_demand(&mut tx, routing.conversation, found, at).await?;
+        log_demand(&mut tx, req, routing, &jobs).await?;
     }
     let queued = queue(&mut tx, secret, template, routing, None).await?;
     let entry = AuditEntry {
@@ -317,6 +340,29 @@ pub async fn apply(
         .map_err(|_| IntakeError::Audit)?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Some(queued))
+}
+
+/// What [`apply`] does for `outcome`: the jobs' new status, the reply and the audit action;
+/// `None` for [`Outcome::Continue`]. Pest control switched off closes early (LIC-012, D-3333).
+fn effect(outcome: Outcome) -> Option<(JobStatus, &'static str, &'static str)> {
+    Some(match outcome {
+        Outcome::Continue => return None,
+        Outcome::OutOfArea => (
+            JobStatus::ClosedEarly,
+            OUT_OF_AREA_TEMPLATE,
+            "intake.out_of_area",
+        ),
+        Outcome::NotCovered(Why::PestSwitchedOff) => (
+            JobStatus::ClosedEarly,
+            PEST_OFF_TEMPLATE,
+            "intake.pest_switched_off",
+        ),
+        Outcome::NotCovered(_) => (
+            JobStatus::NotCovered,
+            NOT_COVERED_TEMPLATE,
+            "intake.not_covered",
+        ),
+    })
 }
 
 /// INT-017, INT-032, CARD-001: tells the homeowner the coverage `quotes::api::coverage` counted
@@ -379,14 +425,7 @@ async fn not_covered(
     }
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
     leave_intake(&mut tx, job, JobStatus::NotCovered, routing.msg.received_at).await?;
-    let found = (req.town, req.trade, routing.job_type);
-    models::insert_demand(
-        &mut tx,
-        routing.conversation,
-        found,
-        routing.msg.received_at,
-    )
-    .await?;
+    log_demand(&mut tx, req, routing, &[job]).await?;
     let queued = queue(&mut tx, secret, NOT_COVERED_TEMPLATE, routing, None).await?;
     let entry = AuditEntry {
         actor: Actor::System,
@@ -452,6 +491,60 @@ fn logs_demand(outcome: Outcome) -> bool {
     )
 }
 
+/// INT-017, OPS-041, D-3332: writes the request's recruiting-demand row and, in the same
+/// transaction, queues one [`NOT_COVERED_KIND`] task (one per request and trade) with the trade
+/// code and its label, the town code, the request number (the lowest job number of `jobs`, none
+/// when no job was opened) and how many requests were not covered this Arizona month, this one
+/// included. No contact, words or address go into the payload.
+async fn log_demand(
+    tx: &mut PgConnection,
+    req: &Request<'_>,
+    routing: &Routing<'_>,
+    jobs: &[Uuid],
+) -> Result<(), IntakeError> {
+    let at = routing.msg.received_at;
+    let found = (req.town, req.trade, routing.job_type);
+    models::insert_demand(tx, routing.conversation, found, at).await?;
+    let mut numbers = Vec::new();
+    for job in jobs {
+        numbers.push(job_number(tx, *job).await.map_err(|_| IntakeError::Job)?);
+    }
+    let payload = json!({
+        "conversation": routing.conversation,
+        "trade": req.trade,
+        "label": routing.label,
+        "town": req.town,
+        "number": numbers.into_iter().min(),
+        "month_count": month_count(tx, at).await?,
+    });
+    let mut task = NewTask::new(NOT_COVERED_KIND, payload, at);
+    let key = format!("{NOT_COVERED_KIND}.{}.{}", routing.conversation, req.trade);
+    task.dedupe_key = Some(key);
+    enqueue_task(tx, &task)
+        .await
+        .map(drop)
+        .map_err(|_| IntakeError::Database)
+}
+
+/// OPS-041: the requests with a recruiting-demand row from the start of `at`'s Arizona month up
+/// to `at`, each request once.
+async fn month_count(db: &mut PgConnection, at: Timestamp) -> Result<i64, IntakeError> {
+    let first = at.to_zoned(arizona()).date().first_of_month();
+    let start = first
+        .to_zoned(arizona())
+        .map_err(|_| IntakeError::Database)?
+        .timestamp();
+    sqlx::query_scalar!(
+        r#"SELECT count(DISTINCT conversation_id) AS "n!" FROM intake.recruiting_demand
+           WHERE created_at >= $1 AND created_at <= $2"#,
+        start.to_sqlx() as _,
+        at.to_sqlx() as _,
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| IntakeError::Database)
+}
+
 /// The recruiting-demand rows of request `conversation` (INT-017, OPS-041).
 ///
 /// # Errors
@@ -492,6 +585,35 @@ async fn leave_intake(
         .map_err(|_| IntakeError::Job)
 }
 
+/// LIC-012, D-402, D-3333: the pest-switched-off reply in `language` (Spanish only while Spanish
+/// conversations are on), opening with the brand's short name: the fee-free pointer to the
+/// Department of Agriculture's license list.
+#[must_use]
+pub fn pest_off_body(language: Language, spanish_on: bool) -> String {
+    if language == Language::Es && spanish_on {
+        format!("{}: {}", brand().es().short_name(), PEST_OFF_WORDS.1)
+    } else {
+        format!("{}: {}", brand().short_name(), PEST_OFF_WORDS.0)
+    }
+}
+
+/// The reply body of `template`: [`pest_off_body`] for [`PEST_OFF_TEMPLATE`], else the template
+/// rendered with `{trade}` and `{count}` when given (TXT-004).
+fn reply_body(
+    template: &str,
+    routing: &Routing<'_>,
+    count: Option<&str>,
+) -> Result<String, IntakeError> {
+    if template == PEST_OFF_TEMPLATE {
+        return Ok(pest_off_body(routing.language, routing.spanish_on));
+    }
+    let mut values = vec![("trade", routing.label)];
+    values.extend(count.map(|n| ("count", n)));
+    render(template, routing.language, routing.spanish_on, &values)
+        .map(|r| r.body)
+        .map_err(|_| IntakeError::Template)
+}
+
 /// Renders and queues the reply of `template`, with `{count}` when given (TXT-011).
 async fn queue(
     db: &mut PgConnection,
@@ -500,11 +622,7 @@ async fn queue(
     routing: &Routing<'_>,
     count: Option<&str>,
 ) -> Result<Queued, IntakeError> {
-    let mut values = vec![("trade", routing.label)];
-    values.extend(count.map(|n| ("count", n)));
-    let body = render(template, routing.language, routing.spanish_on, &values)
-        .map_err(|_| IntakeError::Template)?
-        .body;
+    let body = reply_body(template, routing, count)?;
     let subject = [routing.conversation, routing.msg.inbox_id];
     let text = NewText {
         template_id: template,

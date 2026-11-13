@@ -34,6 +34,10 @@ pub use crate::checkin_email::{
     CheckInSender, answer_label, check_in_code, parse_check_in_code, queue_check_in_email,
     render_check_in,
 };
+pub use crate::coverage_email::{
+    COVERAGE_EMAIL_TEMPLATE, CoverageFacts, OWNER_INBOX, coverage_lines, queue_coverage_email,
+    town_words, trade_subject,
+};
 pub use crate::email::{
     COMPLAINT_ALERT, DailyLimit, EMAIL_ACTION, EmailClass, EmailEvent, EmailSent, EmailTo, FROM,
     MailboxKind, NewEmail, Notice, OnDomain, PostalAddress, Recipient, Rendered, Sender,
