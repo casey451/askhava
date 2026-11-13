@@ -14,7 +14,9 @@
 //! day. Each try of a call is recorded by (CallSid, try number) with the count it was judged on,
 //! so a repeated Twilio callback answers the same step and counts nothing (SEC-017). On a connect
 //! the homeowner's phone is read for the bridge and the call's start is stored once per parent
-//! CallSid in `calls.call_start` (D-1836).
+//! CallSid in `calls.call_start` (D-1836). T271 (D-3118): [`voice_turn_reporting`] and
+//! [`voice_confirm_reporting`] name the dialed leg's status-callback URL in the dial;
+//! [`dialed_line`] finds the line of a dialed leg whose start was lost.
 //!
 //! The line a read-back names is bound to its try: `calls.pin_call.readback_line` is written by
 //! the insert that records the try, Twilio's resend of that turn reads the stored line back, never
@@ -36,7 +38,7 @@ use sha2::Sha256;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
-use crate::handlers::dial_twiml;
+use crate::handlers::{DIALED_STATUS_PATH, dial_twiml};
 use crate::models::{self, CallsError, TryKey};
 use crate::routing::{
     Answer, Attestation, CallTurn, IncomingCall, JobPin, Party, READBACK_AFTER, RoutedLine, Step,
@@ -171,6 +173,31 @@ pub async fn call_start(
     models::call_start(db, parent).await
 }
 
+/// FEE-022, D-1836, D-3118: the open line on pool number `pool_number` whose homeowner has the
+/// phone `dialed` (the dialed leg's `To`), when exactly one open line on that number is hers;
+/// `None` otherwise. The status route creates a start whose webhook write was lost on it. Call it
+/// outside a transaction (the vault refuses a read inside one).
+///
+/// # Errors
+///
+/// [`CallsError::Database`] or [`CallsError::Messaging`].
+pub async fn dialed_line(
+    db: &mut PgConnection,
+    vault: &Vault,
+    pool_number: &str,
+    dialed: &SecretString,
+) -> Result<Option<Uuid>, CallsError> {
+    let Party::Homeowner(her) = party_of(db, vault, dialed).await? else {
+        return Ok(None);
+    };
+    let lines = lines_on(db, pool_number).await?;
+    let mut hers = lines.iter().filter(|(l, _)| l.homeowner == her);
+    Ok(match (hers.next(), hers.next()) {
+        (Some((l, _)), None) => Some(l.line),
+        _ => None,
+    })
+}
+
 /// One webhook turn of an incoming call to a pool number (CALL-003, CALL-025, SEC-017).
 pub struct VoiceCall<'a> {
     /// The pool number called and the caller's number.
@@ -207,18 +234,36 @@ pub struct VoiceKeys<'a> {
     pub pool: &'a [PoolNumber],
 }
 
-/// Answers one turn of `v` at `now` (CALL-002 to CALL-005, CALL-025, SEC-017, D-1755): routes on
-/// the stored PINs with the stored counts, counts a wrong try once per (CallSid, try), and on a
-/// connect dials the homeowner from the pool number and stores the call's start (D-1836). Call it
-/// outside a transaction (the vault refuses a read inside one).
+/// [`voice_turn_reporting`] with the dial's status callback at the bare [`DIALED_STATUS_PATH`],
+/// resolved by Twilio against the voice URL; for callers with no public base URL (the done tests
+/// that build [`VoiceKeys`] by literal). The voice route calls [`voice_turn_reporting`] (D-3118).
 ///
 /// # Errors
 ///
-/// [`CallsError::Database`], [`CallsError::Messaging`] or [`CallsError::Ops`].
+/// As [`voice_turn_reporting`].
 pub async fn voice_turn(
     db: &mut PgConnection,
     vault: &Vault,
     keys: &VoiceKeys<'_>,
+    v: &VoiceCall<'_>,
+    now: Timestamp,
+) -> Result<VoiceReply, CallsError> {
+    voice_turn_reporting(db, vault, (keys, DIALED_STATUS_PATH), v, now).await
+}
+
+/// Answers one turn of `v` at `now` (CALL-002 to CALL-005, CALL-025, SEC-017, D-1755): routes on
+/// the stored PINs with the stored counts, counts a wrong try once per (CallSid, try), and on a
+/// connect dials the homeowner from the pool number, asking for the dialed leg's status callbacks
+/// at `status_url` (the public base plus [`DIALED_STATUS_PATH`], CALL-008, D-3118), and stores the
+/// call's start (D-1836). Call it outside a transaction (the vault refuses a read inside one).
+///
+/// # Errors
+///
+/// [`CallsError::Database`], [`CallsError::Messaging`] or [`CallsError::Ops`].
+pub async fn voice_turn_reporting(
+    db: &mut PgConnection,
+    vault: &Vault,
+    (keys, status_url): (&VoiceKeys<'_>, &str),
     v: &VoiceCall<'_>,
     now: Timestamp,
 ) -> Result<VoiceReply, CallsError> {
@@ -234,7 +279,7 @@ pub async fn voice_turn(
         entered: v.entered,
     };
     let answer = answer_for(db, vault, (party, v.call.pool_number), turn, judged.fresh).await?;
-    reply(db, vault, keys, (party, v), answer, now).await
+    reply(db, vault, (keys, status_url), (party, v), answer, now).await
 }
 
 /// How one turn was judged (SEC-017, CALL-025, CALL-005, D-2201).
@@ -431,7 +476,7 @@ async fn step_for(
 async fn reply(
     db: &mut PgConnection,
     vault: &Vault,
-    keys: &VoiceKeys<'_>,
+    keys: (&VoiceKeys<'_>, &str),
     (party, v): (Party, &VoiceCall<'_>),
     answer: Answer,
     now: Timestamp,
@@ -446,12 +491,8 @@ async fn reply(
     })
 }
 
-/// Confirms the read-back given at try `v.try_no`: the line stored with that try (the one read
-/// back) is connected when `pressed`, only when that try was recorded as the second of an
-/// A-attested call and the line is still open on the call's pool number and still the caller's
-/// business's (CALL-005, CALL-002, D-026, D-2201). A line closed or moved since, or a try that read
-/// nothing back, never connects another line: the caller is asked for the PIN again or the call
-/// ends. Nothing is counted.
+/// [`voice_confirm_reporting`] with the dial's status callback at the bare [`DIALED_STATUS_PATH`],
+/// as [`voice_turn`] (D-3118).
 ///
 /// # Errors
 ///
@@ -460,6 +501,27 @@ pub async fn voice_confirm(
     db: &mut PgConnection,
     vault: &Vault,
     keys: &VoiceKeys<'_>,
+    v: &VoiceCall<'_>,
+    pressed_at: (bool, Timestamp),
+) -> Result<VoiceReply, CallsError> {
+    voice_confirm_reporting(db, vault, (keys, DIALED_STATUS_PATH), v, pressed_at).await
+}
+
+/// Confirms the read-back given at try `v.try_no`: the line stored with that try (the one read
+/// back) is connected when `pressed`, only when that try was recorded as the second of an
+/// A-attested call and the line is still open on the call's pool number and still the caller's
+/// business's (CALL-005, CALL-002, D-026, D-2201). A line closed or moved since, or a try that read
+/// nothing back, never connects another line: the caller is asked for the PIN again or the call
+/// ends. Nothing is counted. A connect asks for the dialed leg's status callbacks at `status_url`
+/// (CALL-008, D-3118).
+///
+/// # Errors
+///
+/// As [`voice_turn`].
+pub async fn voice_confirm_reporting(
+    db: &mut PgConnection,
+    vault: &Vault,
+    keys: (&VoiceKeys<'_>, &str),
     v: &VoiceCall<'_>,
     (pressed, now): (bool, Timestamp),
 ) -> Result<VoiceReply, CallsError> {
@@ -489,7 +551,7 @@ pub async fn voice_confirm(
 async fn connect(
     db: &mut PgConnection,
     vault: &Vault,
-    keys: &VoiceKeys<'_>,
+    (keys, status_url): (&VoiceKeys<'_>, &str),
     (party, v): (Party, &VoiceCall<'_>),
     line: Uuid,
     now: Timestamp,
@@ -509,7 +571,11 @@ async fn connect(
     let her = read_contact(db, vault, access, routed.homeowner, &[Field::Phone])
         .await
         .map_err(|_| CallsError::Database)?;
-    let Some(twiml) = her.phone.as_ref().and_then(|p| dial_twiml(from, p)) else {
+    let Some(twiml) = her
+        .phone
+        .as_ref()
+        .and_then(|p| dial_twiml(from, p, status_url))
+    else {
         return Ok(VoiceReply::HangUp);
     };
     models::insert_call_start(db, v.call_sid, line, now).await?;

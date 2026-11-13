@@ -1514,7 +1514,7 @@
    "budget": {
     "files": 8,
     "lines": 350,
-    "context_pct": 30
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -1827,7 +1827,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 17
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -3376,7 +3376,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 11
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -10742,7 +10742,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 10
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -14459,7 +14459,8 @@
     "T430",
     "T432",
     "T437",
-    "T442"
+    "T442",
+    "T443"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -30226,7 +30227,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 30
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -30635,7 +30636,7 @@
    "id": "T438",
    "slug": "usage-dedupe",
    "title": "Token usage counts each reply once: dedupe transcript usage by message id and re-base pacing on deduped figures",
-   "goal": "Token double count (D-3475; D-3305, D-1110, D-3444; BUILD_BRIEF.md:510): `runner/verify.py` `usage_in_transcript` (lines 119-133) adds the `message.usage` of every transcript line, but Claude Code writes one line per content block of a reply, each repeating the reply's `message.id` and `usage` (the fact `turns_in_transcript`, line 136, already counts on), so every recorded token total reads about 1.65 times the real one (T319: 27.6M recorded against about 16.5M; T249: 45.2M against about 26.6M; a 36-line sample transcript holds 17 replies). (1) `usage_in_transcript` counts each reply once: among lines whose `message.usage` is a dict, the LAST line of each string `message.id` gives that reply's usage; a line without a string id counts once on its own; bad JSON, non-object and usage-less lines count nothing, as now. `read_transcripts` and `role_reading` (`runner/github_env.py`, not owned) then record deduped figures without change. (2) Marking, so old and new figures never mix unseen: `runner/cycle.py` `_record_usage` always writes `usage_counting: \"message_id\"` (also when `cfg.on_usage` is unset) on a `usage.by_task` entry holding no `USAGE_FIELDS` key yet; the claim pre-seeds the entry with `estimated_bytes` and `estimated_tokens` (`scripts/pacing.py:389`), so \"new\" means no token field, never \"task id absent from by_task\". An entry spanning the change (token fields recorded before it, more added after) stays unmarked and is corrected by the factor as a whole, a small under-estimate for the few tasks in flight at the change, accepted and logged in `docs/decisions.md` rather than stored separately. No one-time rewrite of `kit/state.json`: unmarked entries keep their raw numbers, and `history[n].usage` rows before this change stay as recorded (documented as per-line in `docs/architecture.md` section 12). (3) Pacing on deduped numbers: new `kit/pacing.json` key `pre_dedupe_factor` 0.6 (T319 16.5/27.6 = 0.60, T249 26.6/45.2 = 0.59), with its note; `scripts/pacing.py` `calibrated()` multiplies an unmarked DONE entry's weighted tokens by it before the median (a marked entry is used as recorded), so `estimate()`, the claim's `estimated_tokens`, `reserved()` and `projected_finish()` (line 375) run on deduped figures; a config without the key reads 1.0, so today's behaviour. The ledger windows (`usage.windows`, used only when no quota or session reading is under six hours old): `record_usage` scales an unmarked window's `tokens` once by the factor and marks the window (`counting: \"message_id\"`) before adding; a window that starts or rolls over starts marked; with no factor configured it behaves exactly as today. The weekly `standing.week.used` comes from a session reading or the quota command (the plan's own utilisation; `usage.source` was `session_reading` on November 13), which never sums transcripts, so it is not affected; only its ledger fallback was, and (3) fixes that. (4) `kit/state_schema.json` declares `usage_counting` (enum `message_id`) on `usage.by_task` entries and the window `counting`; `standing()` applies the factor when it reads an unmarked ledger window too, so a fallback standing before the next record is deduped; `python3 scripts/check_state.py` passes on a state with and without them. Tests (new `tests/test_runner_usage_dedupe.py`; no existing test changes, and every existing runner and pacing test passes unchanged; the marker is never made conditional: if a whole-entry comparison in an existing test breaks only because of it, stop and report it as a decided-value change for `docs/decisions.md` under `BUILD_BRIEF.md:69`, never weaken or skip the assertion): a fixture of repeated-id lines (three lines of one id with the same usage, two of another whose last line has a larger `output_tokens`, one id-less line, a usage-less line, bad JSON) gives the per-reply totals with the last line per id winning; `read_transcripts` and `role_reading` over two files of it; `_record_usage` marks an entry the claim pre-seeded with only `estimated_*` (and one with no entry), marks it with the pacer unset too, and leaves an entry with earlier tokens unmarked, never scaling turns; `calibrated()` over three unmarked DONE entries is 0.6 of the old median with the factor and the old median without it, and over marked entries the raw median; `projected_finish` falls by the factor for a calibrated model; `record_usage` scales an unmarked window once and never again; `standing()` on an unmarked ledger window reads the scaled figure; `check_state` validates both shapes. Update `docs/architecture.md` section 12 and `docs/decisions.md` (the measured before and after totals of the fixture).",
+   "goal": "Token double count (D-3475; D-3305, D-1110, D-3444; BUILD_BRIEF.md:510): `runner/verify.py` `usage_in_transcript` (lines 119-133) adds the `message.usage` of every transcript line, but Claude Code writes one line per content block of a reply, each repeating the reply's `message.id` and `usage` (the fact `turns_in_transcript`, line 136, already counts on), so every recorded token total reads about 1.65 times the real one (T319: 27.6M recorded against about 16.5M; T249: 45.2M against about 26.6M; a 36-line sample transcript holds 17 replies). (1) `usage_in_transcript` counts each reply once: among lines whose `message.usage` is a dict, the LAST line of each string `message.id` gives that reply's usage; a line without a string id counts once on its own; bad JSON, non-object and usage-less lines count nothing, as now. `read_transcripts` and `role_reading` (`runner/github_env.py`, not owned) then record deduped figures without change. (2) Marking, so old and new figures never mix unseen: `runner/cycle.py` `_record_usage` always writes `usage_counting: \"message_id\"` (also when `cfg.on_usage` is unset) on a `usage.by_task` entry holding no `USAGE_FIELDS` key yet; the claim pre-seeds the entry with `estimated_bytes` and `estimated_tokens` (`scripts/pacing.py:389`), so \"new\" means no token field, never \"task id absent from by_task\". An entry spanning the change (token fields recorded before it, more added after) stays unmarked and is corrected by the factor as a whole, a small under-estimate for the few tasks in flight at the change, accepted and logged in `docs/decisions.md` rather than stored separately. No one-time rewrite of `kit/state.json`: unmarked entries keep their raw numbers, and `history[n].usage` rows before this change stay as recorded (documented as per-line in `docs/architecture.md` section 12). (3) Pacing on deduped numbers: new `kit/pacing.json` key `pre_dedupe_factor` 0.6 (T319 16.5/27.6 = 0.60, T249 26.6/45.2 = 0.59), with its note; `scripts/pacing.py` `calibrated()` multiplies an unmarked DONE entry's weighted tokens by it before the median (a marked entry is used as recorded), so `estimate()`, the claim's `estimated_tokens`, `reserved()` and `projected_finish()` (line 375) run on deduped figures; a config without the key reads 1.0, so today's behaviour. The ledger windows (`usage.windows`, a fallback used only when no quota or session reading is under six hours old) are left exactly as today: never scaled, never marked, their shape `{start, tokens}` unchanged (D-3536: scaling them raced in `_windows_onto` across lanes, and an inflated fallback only errs toward waiting and rolls off within 7 days). The weekly `standing.week.used` comes from a session reading or the quota command (the plan's own utilisation; `usage.source` was `session_reading` on November 13), which never sums transcripts, so it is not affected; only its ledger fallback was, and that fallback stays as today (D-3536). (4) `kit/state_schema.json` declares `usage_counting` (enum `message_id`) on `usage.by_task` entries; `python3 scripts/check_state.py` passes on a state with and without them. Tests (new `tests/test_runner_usage_dedupe.py`; no existing test changes, and every existing runner and pacing test passes unchanged; the marker is never made conditional: if a whole-entry comparison in an existing test breaks only because of it, stop and report it as a decided-value change for `docs/decisions.md` under `BUILD_BRIEF.md:69`, never weaken or skip the assertion): a fixture of repeated-id lines (three lines of one id with the same usage, two of another whose last line has a larger `output_tokens`, one id-less line, a usage-less line, bad JSON) gives the per-reply totals with the last line per id winning; `read_transcripts` and `role_reading` over two files of it; `_record_usage` marks an entry the claim pre-seeded with only `estimated_*` (and one with no entry), marks it with the pacer unset too, and leaves an entry with earlier tokens unmarked, never scaling turns; `calibrated()` over three unmarked DONE entries is 0.6 of the old median with the factor and the old median without it, and over marked entries the raw median; `projected_finish` falls by the factor for a calibrated model; `record_usage` leaves the ledger windows exactly as today; `check_state` validates both shapes. Update `docs/architecture.md` section 12 and `docs/decisions.md` (the measured before and after totals of the fixture).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -30668,7 +30669,8 @@
     "D-3305",
     "D-1110",
     "D-3444",
-    "D-3475"
+    "D-3475",
+    "D-3536"
    ],
    "cites": [
     "BUILD_BRIEF.md:510"
@@ -30685,7 +30687,7 @@
    ],
    "branch": "claude/task/T438-usage-dedupe",
    "prompt": "kit/prompts/T438.md",
-   "acceptance": "Repeated `message.id` lines count once (last usage per id wins, id-less lines once each) in `usage_in_transcript`; every by_task entry with no token field yet (including one the claim pre-seeded) gets, pacer set or not, `usage_counting: \"message_id\"`; calibration, estimates, the projected finish and the ledger windows apply `pre_dedupe_factor` only to unmarked, pre-change figures and behave as today without the key; `kit/state_schema.json` declares the new keys and `check_state.py` passes; `tests/test_runner_usage_dedupe.py` covers each case and every existing test passes unchanged."
+   "acceptance": "Repeated `message.id` lines count once (last usage per id wins, id-less lines once each) in `usage_in_transcript`; every by_task entry with no token field yet (including one the claim pre-seeded) gets, pacer set or not, `usage_counting: \"message_id\"`; calibration, estimates and the projected finish apply `pre_dedupe_factor` only to unmarked, pre-change figures and behave as today without the key; `kit/state_schema.json` declares the new keys and `check_state.py` passes; `tests/test_runner_usage_dedupe.py` covers each case and every existing test passes unchanged. The ledger windows are unchanged (tests/test_failure_drills.py, tests/test_pacing.py and tests/test_runner_two_lanes.py pass unchanged)."
   },
   {
    "id": "T439",
@@ -30850,6 +30852,62 @@
    "branch": "claude/task/T442-mutant-deterministic-kills",
    "prompt": "kit/prompts/T442.md",
    "acceptance": "With a copy of the manifest from which only these property tests are stripped, by name: `tests::prop_matching_props`, `tests::prop_rules`, `tests::prop_handyman_never_gas`, and the proptest `td_con_06_an_opt_out_word_never_closes` (the intake `service.rs` group's entry narrowed to `tests::prop_optout_no_close::td_con_06_an_opt_out_changes_no_job_status`), `python3 scripts/run_named_mutants.py --manifest <that copy> --only 'ticked-job-type check dropped'` reports the mutant killed (by `tests::radius_matching`), and the same holds for each other mutant the goal names; `python3 scripts/run_named_mutants.py --all` kills every mutant; no mutant is removed and no `find`, `replace` or property test entry changes; no file other than `tests/mutation/mutants.toml` and `docs/decisions.md` changes."
+  },
+  {
+   "id": "T443",
+   "slug": "after-smoke-fix-rounds",
+   "title": "--after runs the full smoke itself on a fix-round hand-in; the session prompt's fix rounds run scoped checks",
+   "goal": "Give scoped fix rounds (D-3530) a full smoke test outside the model, and align the session prompt with D-3530's fix-round rule. D-3530 has a fix-round worker (D-3444's hand-off, and step 5b's held-gate round) run only `cargo fmt --check`, workspace clippy, `cargo test -p <crate>` for each crate it touched, the named failing tests and `scripts/prehandin.sh`, with the full `scripts/smoke.sh` only when its fixes touched more than one crate; `--after` runs only main's `prehandin.sh --quick` (D-1300), which runs no pytest, cargo or tsc, so a one-crate fix that breaks a dependent crate's or the integration crate's tests is caught only by `Ci` after the push, at the cost of the attempt. (1) `--after` (`runner/__main__.py` `after`, `runner/github_env.py` `collect_result`): when the hand-in followed a fix round (more than one `--worker-agent`, or a hand-off `prehandin_holds` above 0), after the pre-hand-in gate passes and before anything is pushed, the runner runs main's full `scripts/smoke.sh` on the handed-in head itself, outside the model: in a detached worktree of the head, with the smoke's own tree, seed, pinned mtimes and environment as the start routine's smoke (D-1890, D-2028), in the background as D-2560 does for the claim (the 600-second Bash call cannot hold it): `--after` prints `runner: smoke_pending` and exits 0 with nothing pushed and no state written while it runs, and the session runs step 5 again, the same way, until a verdict. The run is keyed to the head SHA and kept in the local hand-off file (no `kit/state.json` key, so `kit/state_schema.json` is untouched); a re-run of `--after` on the same head takes its result, a new head starts a new run. Green: the hand-in goes on as today. Red (smoke exit 1): held once like the pre-hand-in gate (`hold_red_gate`'s shape, its own hand-off counter `after_smoke_holds`, at most 1), printing `runner: smoke_red` with the failing lines (redacted as `_gate_verdict` does), so the session gives them to a new fix-round worker; red again after its hold fails the attempt as `tests_failed` with that output as `last_failure`. A timeout (the D-1178 budget), a worktree git cannot make, a dry run or any exit other than 0 or 1 is logged and lets the hand-in through (`Ci` still judges), as `prehandin` does. A first-round hand-in (one worker, no hold) runs no runner smoke: its worker ran the one full smoke D-3530 keeps. (2) `.github/workflows/backup-runner.yml` session prompt: step 4c's \"run `bash scripts/smoke.sh` and `bash scripts/prehandin.sh` once at the end\" becomes D-3530's scoped checks (the words of `kit/prompts/TEMPLATE.md` End step 1), and step 5b's \"run both scripts again\" likewise; steps 5 and 5a say what to do with `runner: smoke_pending` (run step 5 again the same way) and `runner: smoke_red` (a new foreground fix-round worker with step 4c's hand-off and that output in place of the findings, the reviewer reads the fix, then step 5 again); step 3c (resync) is unchanged. It also adds the exact line `# T443: after-smoke live` (a YAML comment, on a line of its own) to `.github/workflows/backup-runner.yml`: `kit/prompts/TEMPLATE.md` End step 1 greps for that line to know the runner now smokes fix-round heads (D-3530). Keep T439's verdict and commit-line rules and every other step word for word. Tests (new `tests/test_runner_after_smoke.py`; no existing test changes, every existing runner test passes): a first-round hand-in runs no smoke; a fix-round hand-in prints `smoke_pending` and pushes nothing, then takes a green verdict and hands in; a red verdict holds once, then fails `tests_failed` with the output as `last_failure`; a timeout, exit 3 or a missing worktree lets the hand-in through with a log line; a new head after a hold starts a new run; the workflow text of steps 4c and 5b names the scoped checks and no longer says \"once at the end\", and steps 5 and 5a name `smoke_pending` and `smoke_red`; the workflow holds the exact marker line.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T439"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "runner/__main__.py",
+    "runner/github_env.py",
+    ".github/workflows/backup-runner.yml",
+    "tests/test_runner_after_smoke.py"
+   ],
+   "reads": [
+    "scripts/smoke.sh",
+    "scripts/prehandin.sh",
+    "kit/prompts/TEMPLATE.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-1300",
+    "D-2028",
+    "D-2560",
+    "D-3444",
+    "D-3475",
+    "D-3530"
+   ],
+   "cites": [
+    "BUILD_BRIEF.md:250"
+   ],
+   "budget": {
+    "files": 4,
+    "lines": 450,
+    "context_pct": 42
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T443-after-smoke-fix-rounds",
+   "prompt": "kit/prompts/T443.md",
+   "acceptance": "`--after` on a fix-round hand-in (more than one `--worker-agent` or a prehand-in hold) runs main's `scripts/smoke.sh` on the head in the background outside the model (`runner: smoke_pending` until a verdict, nothing pushed meanwhile), holds a red once (`runner: smoke_red`) then fails `tests_failed`, lets a non-verdict through with a log line, and runs nothing for a first-round hand-in; the workflow's steps 4c and 5b carry D-3530's scoped fix-round checks and steps 5 and 5a handle both new results; the workflow holds the exact line `# T443: after-smoke live` (`grep -qxF` succeeds); `tests/test_runner_after_smoke.py` holds every listed case and every existing test passes unchanged."
   }
  ]
 }
