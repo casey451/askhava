@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T02:02:11Z by runner 9901076ee397 (actions).
+Updated 2026-11-13T02:09:27Z by runner 4ce270481192 (actions).
 
 **Building: T215 in progress since 23:45Z; 264 of 415 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-13T02:02:11Z by runner 9901076ee397 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z
 - **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:02Z, 0 min before this update
+- **Last run:** 02:08Z, 1 min before this update
 - **Keeper:** last ran 02:02Z, next wake 02:48Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 24 problem(s) on tasks still to run (+139 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+140 on DONE tasks); first: T151: stored context_pct 32% but it measures 36%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,8 +90,6 @@ Updated 2026-11-13T02:02:11Z by runner 9901076ee397 (actions).
 | T400 | server: the web process stores the catalog file at start-up, | done | 1 | 21 min | 03:07Z |  |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | resync | 1 | 67 min | 02:56Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | done | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T313 | messaging and server: an EMERGENCY card notice goes at night | done | 1 | 19 min | 02:07Z |  |
-| T368 | businesses (harness): the capability checklist offers every  | done | 1 | 17 min | 02:06Z |  |
 
 ### Plan and harness merges on main
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
@@ -122,7 +120,6 @@ Updated 2026-11-13T02:02:11Z by runner 9901076ee397 (actions).
 - 03:50Z Plan: pre-flight fixes round 6 — T355, T340, T341, T249, T273, T271, T277, T357, T314; new T405 (D-3118) (#542)
 - 03:24Z Harness: claim order prefers tasks in crates no other lane is writing (D-3082) (#523)
 - 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
-- 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
 
 ## Progress (requirements verified)
 
