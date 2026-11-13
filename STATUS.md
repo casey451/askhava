@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T01:08:03Z by runner e59912000c68 (actions).
+Updated 2026-11-13T01:08:22Z by runner 0b4b84f93392 (actions).
 
 **Building: T215 in progress since 23:45Z; 263 of 404 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-13T01:08:03Z by runner e59912000c68 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 2: T421 claimed 00:52Z, lease until 03:52Z; lane 4: T422 claimed 00:36Z, lease until 03:36Z; lane 5: T424 claimed 00:42Z, lease until 03:42Z; lane 6: T249 claimed 00:01Z, lease until 03:01Z; lane 7: T423 claimed 00:40Z, lease until 03:40Z
 - **Week:** 10% used, 158.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:07Z, 0 min before this update
-- **Keeper:** last ran 00:48Z, next wake 02:47Z
+- **Last run:** 01:08Z, 0 min before this update
+- **Keeper:** last ran 01:08Z, next wake 02:47Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 22 problem(s) on tasks still to run (+137 on DONE tasks); first: T320: measures 46% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 21 problem(s) on tasks still to run (+134 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
