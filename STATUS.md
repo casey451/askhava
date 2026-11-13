@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T03:35:26Z by runner cfda2022c26f (actions).
+Updated 2026-11-13T03:40:42Z by runner cfda2022c26f (actions).
 
-**Building: T371 in progress since 03:08Z; 269 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T371 in progress since 03:08Z; 270 of 415 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 269 of 415 build tasks (owner gates not counted)
+- **Tasks done:** 270 of 415 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T371 claimed 03:08Z, lease until 06:08Z
 - **Week:** 12% used, 170.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:35Z, 0 min before this update
+- **Last run:** 03:35Z, 5 min before this update
 - **Keeper:** last ran 03:35Z, next wake 06:10Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-13T03:35:26Z by runner cfda2022c26f (actions).
 |---|---|---|---|---|---|---|
 | T427 | WORD-022 phrases catch both brand names in the spec trace, t | MERGE_PENDING | 1 | 29 min | 03:17Z |  |
 | T429 | Copy, voice and AI-smell docs name Laftly | MERGE_PENDING | 1 | 22 min | 03:13Z |  |
-| T430 | payments: a Confirm needs the current card-authorization wor | MERGE_PENDING | 1 | 39 min | 03:13Z |  |
+| T430 | payments: a Confirm needs the current card-authorization wor | done | 1 | 39 min | 03:13Z |  |
 | T426 | Brand rename prep: notice-address and sign-in security tests | done | 1 | 35 min | 02:49Z |  |
 | T425 | Brand rename prep: the last integration tests and four secur | done | 1 | 28 min | 02:39Z |  |
 | T423 | Brand rename prep: integration tests (first-quote move to si | done | 1 | 66 min | 01:47Z |  |
@@ -88,7 +88,6 @@ Updated 2026-11-13T03:35:26Z by runner cfda2022c26f (actions).
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | done | 1 | 51 min | 06:05Z |  |
 | T356 | messaging and server (harness): the worker sends queued text | done | 1 | 86 min | 05:31Z |  |
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | resync | 1 | 33 min | 04:56Z |  |
-| T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
 
 ### Plan and harness merges on main
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
@@ -121,7 +120,7 @@ Updated 2026-11-13T03:35:26Z by runner cfda2022c26f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 339 · unstarted 164
-**Tasks merged (throughput only):** 269 of 415
+**Tasks merged (throughput only):** 270 of 415
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -156,7 +155,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 149 of 197 done
+- stage 4: 150 of 197 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
