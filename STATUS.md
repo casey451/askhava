@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-13T14:44:42Z by runner ae799a921ac7 (actions).
+Updated 2026-11-13T14:45:02Z by runner ae799a921ac7 (actions).
 
 **Building: T330 in progress since 14:41Z; 282 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-13T14:44:42Z by runner ae799a921ac7 (actions).
 - **Lane:** lane 2: T330 claimed 14:41Z, lease until 17:41Z; lane 5: T266 claimed 14:42Z, lease until 17:42Z
 - **Week:** 19% used, 152.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:44Z, 0 min before this update
-- **Keeper:** last ran 14:39Z, next wake 14:59Z
+- **Keeper:** last ran 14:45Z, next wake 17:44Z
 
 ## Needs attention
 - BLOCKED T386: plan gap reported: PLAN GAP: tests/integration/tests/voice_calls.rs:229-251 (td_call_06_no_route_lets_a_business_text_a_homeowner) keeps a fixed placeholder allowlist (slots, lines 231-241) for en.json/es.json that lacks {cant_take}, which T386 must add to pick_notice and pick_notice_emergency. The file is owned by T080/T271/T378/T383/T425, not T386. Evidence: cargo test -p askhava-integration --test voice_calls td_call_06 exit=101, panicked at voice_calls.rs:250:13: {cant_take} in en. Reviewer confirmed (kit/tasks.json ownership, prompt line 9 wording). Smallest plan change: let T386 own voice_calls.rs to add "; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T386 --plan-fix D-### --reason "..."` (D-2859)
