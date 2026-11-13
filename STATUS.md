@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-13T23:23:58Z by runner ca4b8a7556df (actions).
+Updated 2026-11-13T23:24:15Z by runner ca4b8a7556df (actions).
 
-**Building: T391 in progress since 22:36Z; 300 of 428 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 23:23Z; 300 of 428 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 300 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T391 claimed 22:36Z, lease until 01:36Z
+- **Lane:** idle since 23:23Z (no task in progress)
 - **Week:** 30% used, 123.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:23Z, 0 min before this update
 - **Keeper:** last ran 23:21Z, next wake 01:38Z
@@ -21,6 +21,7 @@ Updated 2026-11-13T23:23:58Z by runner ca4b8a7556df (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T391 | calls, businesses, messaging and server: the main phone's "L | MERGE_PENDING | 1 | 47 min | 23:23Z |  |
 | T415 | businesses, messaging and server: the production phone link  | MERGE_PENDING | 1 | 69 min | 23:15Z |  |
 | T355 | picks: the release claim re-checks the pick under its row lo | MERGE_PENDING | 1 | 59 min | 23:11Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | BLOCKED | 1 | 3 min | 23:11Z | PLAN GAP: test-design.md:203 (TD-FEE-63) and D-2332 require a text pick of a tiers quote to store nothing and reply with |
@@ -158,7 +159,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T391 (lease until 2026-11-14T01:36:08Z)
 
 ## Last usage reading
-- {"task": "T415", "at": "2026-11-13T23:15:34Z", "output_tokens": 154421, "cache_creation_input_tokens": 588864, "input_tokens": 536, "cache_read_input_tokens": 16676557}
+- {"task": "T391", "at": "2026-11-13T23:23:57Z", "input_tokens": 376, "output_tokens": 146899, "cache_read_input_tokens": 13160064, "cache_creation_input_tokens": 482702}
