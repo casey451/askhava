@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:44:36Z by runner 09bfaf2c02fd (actions).
+Updated 2026-11-13T22:47:51Z by runner 09bfaf2c02fd (actions).
 
-**Building: T355 in progress since 22:11Z; 297 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T355 in progress since 22:11Z; 298 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 297 of 428 build tasks (owner gates not counted)
+- **Tasks done:** 298 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 4: T391 claimed 22:36Z, lease until 01:36Z
 - **Week:** 29% used, 128.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:44Z, 0 min before this update
+- **Last run:** 22:44Z, 3 min before this update
 - **Keeper:** last ran 22:44Z, next wake 01:08Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-13T22:44:36Z by runner 09bfaf2c02fd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T340 | picks and payments: the fee at the pick uses the job's lates | MERGE_PENDING | 1 | 40 min | 22:32Z |  |
+| T340 | picks and payments: the fee at the pick uses the job's lates | done | 1 | 40 min | 22:32Z |  |
 | T357 | server, messaging and intake: START into an open request res | done | 2 | 21 min | 22:14Z | Ci: failure; Lint and slow tests: failure / Lint and slow tests failed at step: Rust format and lint (clippy once, befor |
 | T438 | Token usage counts each reply once: dedupe transcript usage  | MERGE_PENDING | 2 | 19 min | 22:10Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 2 | 7 min | 22:01Z | PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no p |
@@ -110,7 +110,7 @@ Updated 2026-11-13T22:44:36Z by runner 09bfaf2c02fd (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 281 of 733 (38.3%) · partial 292 · unstarted 160
-**Tasks merged (throughput only):** 297 of 428
+**Tasks merged (throughput only):** 298 of 428
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -145,7 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 177 of 208 done
+- stage 4: 178 of 208 done
 - stage 5: 0 of 66 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
