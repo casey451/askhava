@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-13T13:57:15Z by runner ae799a921ac7 (manual).
+Updated 2026-11-13T14:00:58Z by runner ae799a921ac7 (actions).
 
-**Building: T330 in progress since 13:50Z; 281 of 420 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T330 in progress since 13:50Z; 281 of 420 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 281 of 420 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T330 claimed 13:50Z, lease until 16:50Z; lane 3: T367 claimed 13:22Z, lease until 16:22Z; lane 4: T266 claimed 13:35Z, lease until 16:35Z
-- **Week:** 18% used, 151.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:57Z, 0 min before this update
+- **Week:** 19% used, 151.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 14:00Z, 0 min before this update
 - **Keeper:** last ran 13:56Z, next wake 16:24Z
 
 ## Needs attention
@@ -76,7 +76,6 @@ Updated 2026-11-13T13:57:15Z by runner ae799a921ac7 (manual).
 | T362 | server: the built static files are served at /static/<crate> | BLOCKED | 2 | 21 min | 15:06Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 1 | 38 min | 14:42Z |  |
 | T370 | intake (harness): the night count the homeowner hears counts | check_failed | 1 | 22 min | 14:29Z |  |
-| T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z |  |
 
 ### Plan and harness merges on main
 - 13:45Z Plan: shorten the critical path, drop legacy dependency edges (D-3446) (#671)
