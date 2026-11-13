@@ -13,6 +13,11 @@
 //! only on a hostname listed in `ASKHAVA_PROXIED_HOSTS` (empty at launch: every hostname is
 //! DNS-only, SEC-053) and only when the edge saw the request come from Cloudflare's published
 //! ranges ([`CLOUDFLARE_RANGES`]).
+//!
+//! A bucket name can hold a client address, so rows are not kept: the daily [`PRUNE_KIND`] task
+//! ([`run_prune_at`]) deletes windows that started more than [`LONGEST_WINDOW`] plus a day ago,
+//! [`PRUNE_BATCH`] rows per statement ([`prune_batch`]), and queues the next day's run first
+//! (SEC-014, SEC-040, D-2306). No index serves it: a table pruned daily holds a few days of rows.
 
 use std::net::IpAddr;
 
@@ -21,6 +26,17 @@ use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use sqlx::{PgConnection, PgPool};
 use thiserror::Error;
+
+use crate::tasks::{Claimed, HandlerError, NewTask, TaskError, enqueue};
+
+/// The daily task that deletes old rate-limit windows (SEC-014, SEC-040, D-2306).
+pub const PRUNE_KIND: &str = "core.rate_limit_prune";
+/// The most rows one prune statement deletes (D-2306).
+pub const PRUNE_BATCH: i64 = 5_000;
+/// The longest window any caller counts in today: `intake`'s Arizona day (`intake::limits`). A
+/// caller with a longer window raises this first, or the daily prune deletes live counts (D-2306).
+pub const LONGEST_WINDOW: SignedDuration = SignedDuration::from_hours(24);
+const DAY: SignedDuration = SignedDuration::from_hours(24);
 
 const CLIENT_IP_HEADER: &str = "ASKHAVA_CLIENT_IP_HEADER";
 const PROXIED_HOSTS: &str = "ASKHAVA_PROXIED_HOSTS";
@@ -256,6 +272,83 @@ pub async fn prune(pool: &PgPool, before: Timestamp) -> Result<u64, RateLimitErr
     .await
     .map_err(|_| RateLimitError::Db)?;
     Ok(done.rows_affected())
+}
+
+/// Deletes at most `most` counters whose window started before `before`, in one short statement
+/// on its own (no transaction held across batches), and returns how many (SEC-014, SEC-040,
+/// D-2306).
+///
+/// # Errors
+///
+/// [`RateLimitError::Db`] when the delete fails.
+pub async fn prune_batch(
+    pool: &PgPool,
+    before: Timestamp,
+    most: i64,
+) -> Result<u64, RateLimitError> {
+    let done = sqlx::query!(
+        "DELETE FROM core.rate_limit WHERE (bucket, window_start) IN \
+         (SELECT bucket, window_start FROM core.rate_limit WHERE window_start < $1 LIMIT $2)",
+        before.to_sqlx() as _,
+        most,
+    )
+    .execute(pool)
+    .await
+    .map_err(|_| RateLimitError::Db)?;
+    Ok(done.rows_affected())
+}
+
+/// The cut-off of the daily prune at `now`: windows that started before it are deleted. It is
+/// [`LONGEST_WINDOW`] plus one day back, so no window still counting is ever touched (an Arizona
+/// day's row starts at a UTC midnight and counts until 31 hours later; SEC-014, D-2306).
+#[must_use]
+pub fn prune_cutoff(now: Timestamp) -> Timestamp {
+    now - LONGEST_WINDOW - DAY
+}
+
+/// Queues [`PRUNE_KIND`] for the day after `now`, once per day (dedupe key by day number,
+/// SEC-014, SEC-040, D-2306).
+///
+/// # Errors
+///
+/// [`TaskError::Db`].
+pub async fn schedule_prune(db: &mut PgConnection, now: Timestamp) -> Result<(), TaskError> {
+    let run_at = now + DAY;
+    let day = run_at.as_second() / 86_400;
+    let mut task = NewTask::new(PRUNE_KIND, serde_json::json!({}), run_at);
+    task.dedupe_key = Some(format!("{PRUNE_KIND}:{day}"));
+    enqueue(db, &task).await?;
+    Ok(())
+}
+
+/// SEC-014, SEC-040, D-2306: the [`PRUNE_KIND`] handler at `now` (the worker's clock): queues the
+/// next day's run first, so a run that fails for good still leaves it, then deletes every window
+/// older than [`prune_cutoff`] in batches of [`PRUNE_BATCH`] until a batch comes back short. Safe
+/// to run twice: a repeat finds nothing left to delete.
+///
+/// # Errors
+///
+/// A fixed [`HandlerError`] when a database call fails.
+pub async fn run_prune_at(
+    pool: PgPool,
+    _task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    let failed = HandlerError("rate-limit prune database call failed");
+    {
+        let mut conn = pool.acquire().await.map_err(|_| failed)?;
+        schedule_prune(&mut conn, now).await.map_err(|_| failed)?;
+    }
+    let before = prune_cutoff(now);
+    let full = u64::try_from(PRUNE_BATCH).unwrap_or(u64::MAX);
+    loop {
+        let deleted = prune_batch(&pool, before, PRUNE_BATCH)
+            .await
+            .map_err(|_| failed)?;
+        if deleted < full {
+            return Ok(());
+        }
+    }
 }
 
 /// The start of the fixed window of `window` (at least one second) that holds `now`.
