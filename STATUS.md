@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-13T22:15:01Z by runner 58eef26515d0 (actions).
+Updated 2026-11-13T22:16:23Z by runner 546c8d32a681 (actions).
 
-**Building: T355 in progress since 22:11Z; 295 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T355 in progress since 22:11Z; 296 of 428 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 295 of 428 build tasks (owner gates not counted)
+- **Tasks done:** 296 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T355 claimed 22:11Z, lease until 01:11Z; lane 3: T415 claimed 22:05Z, lease until 01:05Z; lane 7: T340 claimed 21:52Z, lease until 00:52Z
 - **Week:** 29% used, 124.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:14Z, 0 min before this update
+- **Last run:** 22:15Z, 1 min before this update
 - **Keeper:** last ran 22:15Z, next wake 00:55Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smalles; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+183 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 26 problem(s) on tasks still to run (+187 on DONE tasks); first: T396: measures 51% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -25,7 +25,7 @@ Updated 2026-11-13T22:15:01Z by runner 58eef26515d0 (actions).
 | T354 | privacy: key rotation re-seals stored photos too, so droppin | done | 1 | 69 min | 21:39Z |  |
 | T335 | adapters, payments and stand-in (harness): the reconcile's p | MERGE_PENDING | 1 | 59 min | 21:20Z |  |
 | T412 | privacy: each business member's sign-in address and texting  | done | 1 | 111 min | 21:18Z |  |
-| T442 | mutation (harness): every named mutant is killed by a determ | MERGE_PENDING | 1 | 59 min | 20:40Z |  |
+| T442 | mutation (harness): every named mutant is killed by a determ | done | 1 | 59 min | 20:40Z |  |
 | T357 | server, messaging and intake: START into an open request res | check_failed | 1 | 23 min | 20:39Z |  |
 | T271 | server and calls (harness): the dialed leg asks for status c | done | 1 | 53 min | 20:22Z |  |
 | T318 | calls, picks and quotes: the who's-calling text goes out at  | done | 1 | 52 min | 20:18Z |  |
@@ -113,7 +113,7 @@ Updated 2026-11-13T22:15:01Z by runner 58eef26515d0 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 280 of 733 (38.2%) · partial 293 · unstarted 160
-**Tasks merged (throughput only):** 295 of 428
+**Tasks merged (throughput only):** 296 of 428
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -148,7 +148,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 175 of 208 done
+- stage 4: 176 of 208 done
 - stage 5: 0 of 66 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
