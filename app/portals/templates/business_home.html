@@ -6,6 +6,7 @@
     switch (SEC-027), which needs a fresh code and, to turn on, a phone that gets texts. -#}
 {% block title %}{% if too_many %}Error: {% endif %}Your business account{% endblock %}
 {% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
 <h1>Your business account</h1>
 {% if too_many %}<div role="alert" tabindex="-1" autofocus id="error-summary">
 <h2>There is a problem</h2>
