@@ -45164,12 +45164,12 @@
      }
     }
    ],
-   "reviewed_sha": "4ea07a42fd0e3e93c4823117be0409f982d2976a",
+   "reviewed_sha": "ea3a1daa4b9b030cf6b9c1dab85d28cd9386936d",
    "review_lease": {
     "task": "T396",
-    "session": "actions-43554549931",
-    "expires": "2026-11-14T07:09:13Z",
-    "lane": "6"
+    "session": "actions-43556118685",
+    "expires": "2026-11-14T08:11:35Z",
+    "lane": "3"
    },
    "branch": "claude/task/T396-phone-approval-hold",
    "auto_merge": {
@@ -45177,22 +45177,11 @@
     "why": "auto-merge on #747 (gh pr merge)",
     "head": "4ea07a42fd0e3e93c4823117be0409f982d2976a"
    },
-   "update_merges": [
-    {
-     "from": "cc677b54edd499531f6e12ca6aa1ffad660af7fd",
-     "to": "4ea07a42fd0e3e93c4823117be0409f982d2976a",
-     "main": "d53bdd2875b8da3ba2b10cbe47b4e9b66112f0a6",
-     "how": "hand-in",
-     "at": "2026-11-14T04:54:21Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-14T04:55:02Z",
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_lic_30_reads_write_nothing_and_log_no_value ... FAILED\ntest td_lic_30_setting_accepted_and_absent_reads_unreadable ... ok\ntest td_lic_30_signup_record_reads_the_bound_number ... ok\ntest td_lic_30_unreadable_alert_follows_the_arizona_day ... ok\ntest td_lic_30_unreadable_reads_raise_one_alert_a_day ... ok\nfailures:\n---- td_lic_30_reads_write_nothing_and_log_no_value stdout ----\nthread 'td_lic_30_reads_write_nothing_and_log_no_value' (29339) panicked at tests/integration/tests/signup_own_record.rs:634:9:\nthe unreadable read is logged\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_lic_30_reads_write_nothing_and_log_no_value\ntest result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.42s\nerror: test failed, to rerun pass `-p askhava-integration --test signup_own_record`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     747
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T398",
@@ -55110,7 +55099,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T06:03:23Z",
+ "updated_at": "2026-11-14T06:03:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -55208,7 +55197,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d53bdd2875b8da3ba2b10cbe47b4e9b66112f0a6",
+ "runner_sha": "ea3a1daa4b9b030cf6b9c1dab85d28cd9386936d",
  "starter": "actions",
  "smoke_runs": [
   {
