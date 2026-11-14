@@ -1,22 +1,23 @@
 //! The dispatcher of a homeowner's inbound text inside an open request (D-999, D-1199 (4), T241).
 //!
-//! `server`'s inbound-text route calls [`receive_raw_reply`] (as [`receive_reply`]) last, after `messaging` recorded the text
-//! once (TXT-012), the reader scrubbed it, the opt-out check let it through (CON-008) and the
-//! HELP reply was queued (CON-018). In an open request a text that is only LIST or LISTA,
-//! optionally with a request number, gets `answer_list`'s lines (TXT-031); any other reply first
-//! restarts each Intake job's 72-hour no-reply wait at the reply (`hear`, INT-019, D-807), then
-//! goes to `receive_text` as before, so consent, the 911 screen, CLOSE, cancel and `<n> YES` keep
-//! their own paths. The INT-032 "That's 2 jobs" wiring stays D-999's open gap. Before all of
-//! that, a check-in answer on one of her Connected jobs goes to `check_in_replies` in the same
-//! transaction (JOB-015, D-1840).
+//! `server`'s inbound-text route calls [`receive_raw_reply`] (as [`receive_reply`]) last, after
+//! `messaging` recorded the text once (TXT-012), the reader scrubbed it, the opt-out check let it
+//! through (CON-008) and the HELP reply was queued (CON-018). In an open request a text that is
+//! only LIST or LISTA, optionally with a request number, gets `answer_list`'s lines (TXT-031); any
+//! other reply first restarts each Intake job's 72-hour no-reply wait at the reply (`hear`,
+//! INT-019, D-807), then goes to `receive_text` as before, so consent, the 911 screen, CLOSE,
+//! cancel and `<n> YES` keep their own paths. The INT-032 "That's 2 jobs" wiring stays D-999's open
+//! gap. Before all of that, a check-in answer on one of her Connected jobs goes to
+//! `check_in_replies` in the same transaction (JOB-015, D-1840).
 //!
 //! The name and address (INT-027, INT-002, D-146, D-165, D-3703): [`receive_raw_reply`], the
 //! route's entry, also holds the raw text and the vault. While her request's name-and-address
 //! question is open (`conversation::name_address_open`), a reply that is not LIST or a CLOSE
 //! goes to `take_name_address` with the raw text, never the scrubbed words, the AI or a log; it
-//! is screened with `Asked::NameAndAddress` when it holds a street number (a 911-list hazard
-//! with no street number keeps the 911 path). Any other handled reply asks step 11 once the
-//! request reached it (`order::ask_last_question`).
+//! is screened with `Asked::NameAndAddress` only when [`reads_as_address`] holds (a name and a
+//! house number with no 911-list words around the street, D-3705), else as any reply, so a
+//! hazard keeps the 911 path; a SAFE is never her answer. Any other handled reply asks step 11
+//! once the request reached it (`order::ask_last_question`).
 
 use askhava_privacy::api::Vault;
 use secrecy::{ExposeSecret, SecretString};
@@ -25,6 +26,7 @@ use sqlx::{Connection, PgConnection};
 
 use crate::check_in_replies::check_in_reply;
 use crate::conversation::{Taken, ask_name_address, hear, name_address_open, take_name_address};
+use crate::emergency::{Check, check};
 use crate::handlers::{answer_list, list_ask};
 use crate::models::{self, IntakeError};
 use crate::order::ask_last_question;
@@ -157,31 +159,69 @@ fn moves_on(handled: &Handled) -> bool {
     matches!(handled.screened, Screened::Clear | Screened::Safe)
 }
 
-/// The reply to her open name-and-address question (INT-027, INT-002, D-146, D-165, D-3703):
-/// screened with `Asked::NameAndAddress` when the raw text holds a street number, else as any
-/// reply, so a hazard with no address keeps its 911 text and ends here; then the raw text goes
-/// to `take_name_address` (which queues T255's `address_arrived` itself). [`Taken::Again`] asks
-/// the question once more for this text; [`Taken::Stored`] and [`Taken::Ended`] send nothing.
+/// At most this many words after the house number are taken as the street whatever they say,
+/// as `emergency`'s address strip takes after a house number (D-165, D-982, D-3705).
+const STREET_WORDS: usize = 3;
+
+/// Whether raw text `raw` reads as her answer to the name-and-address question, so the 911-list
+/// screen skips it (INT-002, INT-027, D-165, D-3705): a name, then a house number of digits only,
+/// the name with no 911-list match, and the street (from the house number on) either with no match
+/// once its street address is removed or at most [`STREET_WORDS`] words after the number ("Testa 21
+/// smoke tree"). "Smoke in 2 rooms", "Fire at 12 Sample St" and "Testa 12 Sample St gas leak" are
+/// not her answer, so they are screened as any reply.
+#[must_use]
+pub fn reads_as_address(raw: &str) -> bool {
+    let Some((name, street)) = split_name_address(raw) else {
+        return false;
+    };
+    let mut words = street.split_whitespace();
+    let number = words
+        .next()
+        .map(|w| w.trim_matches(|c: char| !c.is_alphanumeric()))
+        .is_some_and(|w| !w.is_empty() && w.chars().all(|c| c.is_ascii_digit()));
+    let short = words.count() <= STREET_WORDS;
+    number && clear(&name) && (short || clear(&street))
+}
+
+/// No 911-list match and no alarm question in `words` (INT-002, INT-037).
+fn clear(words: &str) -> bool {
+    check(words, false) == Check::Clear
+}
+
+/// The reply to her open name-and-address question (INT-027, INT-002, INT-025, D-146, D-165,
+/// D-3703, D-3705): screened with `Asked::NameAndAddress` when [`reads_as_address`] holds, else
+/// as any reply, so a hazard keeps its 911 text and ends here. Only a clear reply is her answer:
+/// its raw text goes to `take_name_address` (which queues T255's `address_arrived` itself) and
+/// [`Taken::Again`] asks once more; [`Taken::Stored`] and [`Taken::Ended`] send nothing. A SAFE
+/// after a 911 text is never her answer: the question is asked once more.
 async fn answer_name_address(
     tx: &mut PgConnection,
     secret: &SecretString,
     (msg, raw): (&TextIn<'_>, RawReply<'_>),
     settings: Settings,
 ) -> Result<Reply, IntakeError> {
-    let addressed = split_name_address(raw.raw.expose_secret()).is_some();
-    let asked = if addressed {
+    let asked = if reads_as_address(raw.raw.expose_secret()) {
         Asked::NameAndAddress
     } else {
         Asked::Other
     };
     let mut handled = receive_answer(tx, secret, msg, settings, asked).await?;
-    let Some(conversation) = handled.conversation.filter(|_| moves_on(&handled)) else {
+    let Some(conversation) = handled.conversation else {
         return Ok(Reply::Handled(handled));
     };
+    let spanish_on = settings.spanish_conversations_on;
+    match handled.screened {
+        Screened::Clear => {}
+        Screened::Safe => {
+            let again = ask_name_address(tx, secret, msg, conversation, spanish_on).await?;
+            handled.texts.extend(again);
+            return Ok(Reply::Handled(handled));
+        }
+        Screened::Matched(_) | Screened::BeepAsked => return Ok(Reply::Handled(handled)),
+    }
     let ids = (conversation, msg.inbox_id);
     let taken = take_name_address(tx, raw.vault, ids, raw.raw, msg.received_at).await?;
     if taken == Taken::Again {
-        let spanish_on = settings.spanish_conversations_on;
         let again = ask_name_address(tx, secret, msg, conversation, spanish_on).await?;
         handled.texts.extend(again);
     }

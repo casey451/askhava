@@ -1,10 +1,11 @@
-//! TD-INT-42 (T432, D-3431, D-3701 to D-3704; INT-027, INT-029, INT-002, PRIV-001): the
-//! name-and-address question through Twilio's real inbound-text route on a real database. A
-//! regular job is asked it once, after the area check; her answer lands on her own vault contact
-//! (the one the release reads) and no second contact row is made; no audit row and no log line
-//! holds the name or the street; an answer naming a street like a 911-list word opens no
+//! TD-INT-42 (T432, D-3431, D-3701 to D-3705; INT-027, INT-029, INT-002, PRIV-001): the
+//! name-and-address question through Twilio's real inbound-text route on a real database. A regular
+//! job is asked it once, after the area check; her answer lands on her own vault contact (the one
+//! the release reads) and no second contact row is made; the scrubbed words, no audit row and no
+//! log line hold the name or the street; an answer naming a street like a 911-list word opens no
 //! 911 text; an answer with no street number is asked again once; an emergency job whose release
-//! waited for the address has it released once through T255's path.
+//! waited for the address has it released once through T255's path. A hazard sent while the
+//! question is open keeps its 911 text, and SAFE is not her answer (D-3705).
 //!
 //! The ZIP step is not wired to a live text yet (D-3702), so her first text and the area check
 //! run through `intake::api::receive_text` and `answer_zip`; this crate reads no module's table
@@ -25,20 +26,23 @@ use askhava_intake::api::rules::{
 };
 use askhava_intake::api::{
     ADDRESS_IN_KIND, Answer, RawReply, Reply, Taken, TextIn, ZipStep, answer_zip,
-    ask_last_question, emergency_events, name_address_open, receive_raw_reply, receive_text,
-    record_answer, run_address_needed, safe_hold,
+    ask_last_question, emergency_events, name_address_open, reads_as_address, receive_raw_reply,
+    receive_text, record_answer, run_address_needed, safe_hold,
 };
 use askhava_jobs::api::{JobStatus, create, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::{Actor, export_audit};
 use askhava_payments::api::{EntryKind, LedgerEntry, NewEntry, ledger_append, no_fee_release};
 use askhava_picks::api::{ADDRESS_NEEDED_KIND, PagePick, Released, page_pick};
-use askhava_privacy::api::{CONTACT_FIELDS_SET, NewContact, Vault, find_by_phone, store_contact};
+use askhava_privacy::api::{
+    CONTACT_FIELDS_SET, InboundWords, NewContact, Vault, find_by_phone, read_inbound_for,
+    store_contact,
+};
 use askhava_quotes::api::{
     CardBusiness, CardJob, Format, OfferTown, Price, QuoteForm, QuoteRules, Submitted, parse_quote,
     send_cards, submit_quote,
 };
-use askhava_server::inbound_text::{INBOUND_PATH, Webhooks, routes};
+use askhava_server::inbound_text::{INBOUND_PATH, Webhooks, answer_words, routes};
 use askhava_server::release_sink::{PickReleaser, address_in};
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
@@ -64,6 +68,8 @@ const ANSWER: &str = "Testa 12 Sample Ave";
 /// An answer whose street holds a 911-list word, in lower case with a short number and no
 /// suffix, so neither the scrubber nor the address strip removes it.
 const SMOKE_STREET: &str = "Testa 21 smoke tree";
+/// A hazard with a digit in it, sent while the question is open (D-3705).
+const OUTLET: &str = "smoke coming out of the outlet in 2 rooms";
 /// November 12, 2026, 11:00 Arizona time.
 const NOW: i64 = 1_794_506_400;
 
@@ -230,8 +236,24 @@ async fn audit(pool: &PgPool, action: &str) -> (String, Vec<Uuid>) {
     (format!("{rows:?}"), of.map(|r| r.subject_id).collect())
 }
 
+/// The scrubbed words the route reads from her `raw` text (PRIV-026, AI-003): the same reader,
+/// her vault name and stated names, no sole-word lists. It keeps a first name it has not seen,
+/// so the route hands on [`answer_words`] instead (D-3705).
+async fn scrubbed(pool: &PgPool, contact: Uuid, raw: &str) -> String {
+    let mut db = pool.acquire().await.expect("db");
+    let words = InboundWords {
+        emergency: &[],
+        opt_out: &[],
+        help: &[],
+        start: &[],
+    };
+    let read = read_inbound_for(&mut db, &vault(), contact, raw, &words).await;
+    read.expect("read").text.as_str().to_owned()
+}
+
 /// TD-INT-42: a regular job is asked once, after the area check; her answer goes onto her own
-/// contact (no second contact row), and no audit row or log line holds the name or street. The
+/// contact (no second contact row), and no scrubbed word, audit row or log line holds the name
+/// or street. The
 /// intake answers hold codes only (their `choice` column takes no capital letter or space).
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_int_42_a_regular_answer_lands_on_her_own_contact(pool: PgPool) {
@@ -245,6 +267,12 @@ async fn td_int_42_a_regular_answer_lands_on_her_own_contact(pool: PgPool) {
     let twice = ask_last_question(&mut db, &secret(), (&reply, request), false).await;
     assert_eq!(twice.expect("ask"), None, "asked once per request");
     drop(db);
+    let read = scrubbed(&pool, contact, ANSWER).await;
+    let words = answer_words(&read, reads_as_address(ANSWER));
+    assert!(
+        !read.contains("Sample Ave"),
+        "the scrubber removes the street"
+    );
     text(&pool, &logs, 3, ANSWER).await;
     assert!(!open(&pool, contact).await, "answered");
     let (_, set) = audit(&pool, CONTACT_FIELDS_SET).await;
@@ -265,6 +293,7 @@ async fn td_int_42_a_regular_answer_lands_on_her_own_contact(pool: PgPool) {
     assert_eq!(set.len(), 2, "a later text is no answer");
     let lines = logs.0.lock().expect("logs").clone();
     for needle in ["Testa", "Sample Ave"] {
+        assert!(!words.contains(needle), "the scrubbed words hold {needle}");
         assert!(!all.contains(needle), "an audit row holds {needle}");
         assert!(!lines.contains(needle), "a log line holds {needle}");
     }
@@ -489,4 +518,75 @@ async fn td_int_42_an_emergency_release_that_waited_gets_the_address_once(pool: 
     );
     let twice = address_in(&pool, (&vault(), &masked()), pick, now()).await;
     assert!(matches!(twice.expect("again"), Released::Already));
+}
+
+/// D-3705, INT-002: only a name, a house number and a short or hazard-free street is her answer;
+/// a hazard around it, or a street with no number, is screened as any reply.
+#[test]
+fn td_int_42_only_a_numbered_street_skips_the_screen() {
+    for answer in [ANSWER, SMOKE_STREET, "Testa 12 Smoke Sample Ln Apt 4"] {
+        assert!(reads_as_address(answer), "{answer} is her answer");
+    }
+    let hazards = [
+        OUTLET,
+        "Fire at 12 Sample St",
+        "Testa 12 Sample St gas leak in the kitchen",
+    ];
+    for text in hazards {
+        assert!(!reads_as_address(text), "{text} is screened");
+        assert!(
+            matches!(check(text, false), Check::Match(_)),
+            "{text} opens a 911 text"
+        );
+    }
+    for text in ["Testa, Smoke Tree Ave", "Testa on Fire Rd"] {
+        assert!(!reads_as_address(text), "{text} has no house number");
+    }
+}
+
+/// D-3705, INT-002, INT-025: a hazard with a digit sent while the question is open opens the 911
+/// text through the route and is not stored; SAFE is not her answer and asks the question once
+/// more; her answer after that lands on her contact.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_int_42_a_hazard_keeps_its_911_text_and_safe_asks_again(pool: PgPool) {
+    let logs = Logs::default();
+    let (contact, request) = her_request(&pool, &[]).await;
+    text(&pool, &logs, 2, "the unit upstairs").await;
+    text(&pool, &logs, 3, OUTLET).await;
+    let mut db = pool.acquire().await.expect("db");
+    let events = emergency_events(&mut db, request).await.expect("events");
+    assert_eq!(events.len(), 1, "the 911 text");
+    assert!(
+        audit(&pool, CONTACT_FIELDS_SET).await.1.is_empty(),
+        "nothing stored"
+    );
+    assert!(open(&pool, contact).await, "still waiting for the address");
+    let raw = SecretString::from("SAFE");
+    let keys = RawReply {
+        raw: &raw,
+        vault: &vault(),
+    };
+    let settings = (IntakeSettings::default(), &[][..]);
+    let safe = her_text(contact, "SAFE");
+    let reply = receive_raw_reply(&mut db, &secret(), (&safe, keys), settings).await;
+    let Reply::Handled(handled) = reply.expect("reply") else {
+        panic!("SAFE taken as her answer");
+    };
+    let asked = handled
+        .texts
+        .iter()
+        .filter(|q| q.template == NAME_ADDRESS_TEMPLATE);
+    assert_eq!(asked.count(), 1, "asked again once");
+    assert!(!safe_hold(&mut db, request).await.expect("hold"));
+    drop(db);
+    assert!(
+        audit(&pool, CONTACT_FIELDS_SET).await.1.is_empty(),
+        "SAFE is no answer"
+    );
+    text(&pool, &logs, 4, ANSWER).await;
+    assert_eq!(
+        audit(&pool, CONTACT_FIELDS_SET).await.1,
+        vec![contact, contact]
+    );
+    assert!(!open(&pool, contact).await, "answered");
 }

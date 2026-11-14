@@ -11,54 +11,56 @@
 //! only (D-1311), and raises one High [`FAILED_ALERT`] about its inbox row in the delivery's
 //! transaction, the step in the alert's audit row, never a body, phone or error text (D-2207).
 //!
-//! An inbound text runs, in order and once per MessageSid: `messaging::api::receive_inbound`
-//! (a repeat stops here), the sender's lookup (blind index only), `privacy::api::read_inbound_for`
-//! (a homeowner's text, scrubbed with her vault name and the names she stated before, AI-003,
-//! AI-020, D-1752) or `read_inbound` (a business phone's, empty context; the raw `Body` goes no
-//! further),
+//! An inbound text runs, in order and once per MessageSid: `messaging::api::receive_inbound` (a
+//! repeat stops here), the sender's lookup (blind index only), `privacy::api::read_inbound_for` (a
+//! homeowner's text, scrubbed with her vault name and the names she stated before, AI-003, AI-020,
+//! D-1752) or `read_inbound` (a business phone's, empty context; the raw `Body` goes no further),
 //! `messaging::api::on_inbound_text` (an opt-out stops here, CON-008; a homeowner's read that
 //! failed on a vault value other than a database or audit error falls back to the empty-context
 //! read for this and the HELP step and then stops before `intake`, D-2088),
 //! `messaging::api::reply_to_help` (HELP, INFO, AYUDA: the reply is queued, also to a listed
-//! number, and nothing else runs; any other text from a listed number stops here, CON-016),
-//! then, for a number that is not a linked business phone, `intake::api::receive_raw_reply`
-//! (TXT-031, INT-019, D-999) with the raw `Body` as a `SecretString` and the vault, so her answer
-//! to the open name-and-address question goes onto her own contact and is never 911-screened
-//! when it holds a street number (INT-027, INT-002, D-146, D-165, D-3704). A business phone's text goes to no homeowner path: its opt-out also
-//! calls `businesses::api::phone_stopped`, and any other text for which
-//! `businesses::api::auto_reply_due` holds queues `business_auto_reply` (BIZ-017, BIZ-032, D-1715),
-//! except a text that is exactly `LINK` and 4 digits (`calls::api::link_pin`), which goes only to
-//! `calls::api::link_reply` and gets no reply whether it linked or not (CALL-011, D-3079, T391).
-//! A directory hit counts as the business's only if `businesses::api::phone_standing` is not
-//! `Some(false)`: a staff phone waiting for the owner's approval takes an unknown number's path,
-//! so its STOP, LINK or other text never acts for the business; `None` (no staff phone row) keeps
-//! the business. Read in the delivery's transaction (CALL-012, BIZ-033, D-3081, D-3677, T435;
-//! test `tests/integration/tests/phone_approval_routes.rs`, TD-CALL-25).
-//! A first text whose new vault contact loses the unique phone index to a concurrent first text
-//! from the same phone continues with the winner's contact; if none is found the whole delivery
-//! rolls back, inbox row included, so Twilio sends it again (PRIV-001, TXT-012, D-1751). A status
-//! callback runs `messaging::api::receive_status`, once per (MessageSid, MessageStatus).
-//! While homeowner texting is switched off or her number suspended (`messaging::api::load_lines`),
-//! or Casey's `ops` `texting` or `all` pause is on, a homeowner's emergency text first runs
+//! number, and nothing else runs; any other text from a listed number stops here, CON-016), then,
+//! for a number that is not a linked business phone, `intake::api::receive_raw_reply` (TXT-031,
+//! INT-019, D-999) with the raw `Body` as a `SecretString` and the vault, so her answer to the open
+//! name-and-address question goes onto her own contact and is never 911-screened when
+//! `intake::api::reads_as_address` holds (INT-027, INT-002, D-146, D-165, D-3704, D-3705). A
+//! business phone's text goes to no homeowner path: its opt-out also calls
+//! `businesses::api::phone_stopped`, and any other text for which `businesses::api::auto_reply_due`
+//! holds queues `business_auto_reply` (BIZ-017, BIZ-032, D-1715), except a text that is exactly
+//! `LINK` and 4 digits (`calls::api::link_pin`), which goes only to `calls::api::link_reply` and
+//! gets no reply whether it linked or not (CALL-011, D-3079, T391). A directory hit counts as the
+//! business's only if `businesses::api::phone_standing` is not `Some(false)`: a staff phone waiting
+//! for the owner's approval takes an unknown number's path, so its STOP, LINK or other text never
+//! acts for the business; `None` (no staff phone row) keeps the business. Read in the delivery's
+//! transaction (CALL-012, BIZ-033, D-3081, D-3677, T435; test
+//! `tests/integration/tests/phone_approval_routes.rs`, TD-CALL-25). A first text whose new vault
+//! contact loses the unique phone index to a concurrent first text from the same phone continues
+//! with the winner's contact; if none is found the whole delivery rolls back, inbox row included,
+//! so Twilio sends it again (PRIV-001, TXT-012, D-1751). A status callback runs
+//! `messaging::api::receive_status`, once per (MessageSid, MessageStatus). While homeowner texting
+//! is switched off or her number suspended (`messaging::api::load_lines`), or Casey's `ops`
+//! `texting` or `all` pause is on, a homeowner's emergency text first runs
 //! `messaging::api::emergency_plan` (TXT-021 to TXT-024, T279, D-2187; an opted-out or listed
-//! homeowner's from the opt-out step, with no second critical alert and no call, D-2189): `raise_emergency` raises the critical alert once per message, `ops::api` turns the
-//! WEB-007 banner on, `queue_paused_safety` asks for the INT-004 email or Casey's call list, and
-//! intake's safety call is asked for only where the plan keeps it; intake's own step then runs as
-//! usual and nothing here texts. Nothing here logs a phone, a body or a URL (PRIV-016). This file is also compiled into
-//! `tests/integration/tests/inbound_text_route.rs` with `#[path]`, so it names no `crate::` item.
+//! homeowner's from the opt-out step, with no second critical alert and no call, D-2189):
+//! `raise_emergency` raises the critical alert once per message, `ops::api` turns the WEB-007
+//! banner on, `queue_paused_safety` asks for the INT-004 email or Casey's call list, and intake's
+//! safety call is asked for only where the plan keeps it; intake's own step then runs as usual and
+//! nothing here texts. Nothing here logs a phone, a body or a URL (PRIV-016). This file is also
+//! compiled into `tests/integration/tests/inbound_text_route.rs` with `#[path]`, so it names no
+//! `crate::` item.
 //!
-//! T336 (D-2307, D-3135 to D-3139): a text stopped by `Halt::Failed` also queues one
-//! [`RETRY_KIND`] task (payload its inbox row ID only, deduped per row) for `inbound_retry`, which
-//! reads the body back from Twilio and runs [`rerun`]: the same steps after the inbox insert. A
-//! listed sender's failure (`Halt::Settled`) and a `BadWebhook` delivery are not retried. Each
-//! step is safe to run again: the sender lookup and store are keyed by phone, the reads write
-//! audit rows only, `on_inbound_text` is retried only when it listed nothing (an `Open` or
-//! `Resubscribed` repeat writes nothing), the HELP reply, the business auto reply, the paused
-//! emergency claim and the safety call are keyed per inbox row, and SEC-014's count and
-//! `receive_raw_reply` share one savepoint, so a failed `receive_raw_reply` keeps no count. A 911-list
-//! first text that opened a new request is counted in SEC-015's all-numbers limit only after the
-//! delivery committed, best-effort and never refused ([`count_emergency`], D-3613); a retry's
-//! run ([`rerun`]) does not count it.
+//! T336 (D-2307, D-3135 to D-3139): a text stopped by `Halt::Failed` also queues one [`RETRY_KIND`]
+//! task (payload its inbox row ID only, deduped per row) for `inbound_retry`, which reads the body
+//! back from Twilio and runs [`rerun`]: the same steps after the inbox insert. A listed sender's
+//! failure (`Halt::Settled`) and a `BadWebhook` delivery are not retried. Each step is safe to run
+//! again: the sender lookup and store are keyed by phone, the reads write audit rows only,
+//! `on_inbound_text` is retried only when it listed nothing (an `Open` or `Resubscribed` repeat
+//! writes nothing), the HELP reply, the business auto reply, the paused emergency claim and the
+//! safety call are keyed per inbox row, and SEC-014's count and `receive_raw_reply` share one
+//! savepoint, so a failed `receive_raw_reply` keeps no count. A 911-list first text that opened a
+//! new request is counted in SEC-015's all-numbers limit only after the delivery committed,
+//! best-effort and never refused ([`count_emergency`], D-3613); a retry's run ([`rerun`]) does not
+//! count it.
 
 use std::sync::Arc;
 
@@ -70,13 +72,13 @@ use askhava_businesses::api::{
 use askhava_calls::api::{CallsError, link_pin, link_reply};
 use askhava_core::api::{Clock, Environment, NewTask, enqueue as enqueue_task};
 use askhava_intake::api::rules::{
-    Check, Inbound, Settings as IntakeSettings, check, safety_call_trigger, split_name_address,
-    wanted_language,
+    Check, Inbound, Settings as IntakeSettings, check, safety_call_trigger, wanted_language,
 };
 use askhava_intake::api::{
     Admission, Handled, IntakeError, LimitError, RawReply, Reply, SafetyCallAsk, TextIn,
     admit_new_request, count_emergency_request, enqueue_safety_call, list_ask, name_address_open,
-    on_opt_out, open_request_jobs, pause_on_repeat_cancel, receive_raw_reply, restart_after_start,
+    on_opt_out, open_request_jobs, pause_on_repeat_cancel, reads_as_address, receive_raw_reply,
+    restart_after_start,
 };
 use askhava_messaging::api::{
     APP_OPT_OUT_WORDS, Detected, EmergencyFacts, FollowUp, HelpSettings, InboundText, InboxError,
@@ -91,8 +93,8 @@ use askhava_ops::api::{
     raise_alert, show_banner,
 };
 use askhava_privacy::api::{
-    CommonWords, Inbound as Read, InboundWords, Known, NameMemory, NewContact, Vault, VaultError,
-    find_by_phone, read_inbound, read_inbound_for, store_contact,
+    CommonWords, Inbound as Read, InboundWords, Known, NameMemory, NewContact, REMOVED, Vault,
+    VaultError, find_by_phone, read_inbound, read_inbound_for, store_contact,
 };
 use askhava_quotes::api::{QuotesError, quoted_prices};
 use axum::Router;
@@ -507,8 +509,8 @@ pub async fn queue_held(
 
 /// TXT-012, CON-008, CON-018, D-801, D-2307: the steps after the inbox insert for inbox row
 /// `inbox_id`, run again by the retry from Twilio's copy of the body in the caller's transaction;
-/// `reach` other than [`Reach::All`] stops after the opt-out and HELP steps. Nothing here stores or logs
-/// the body; no alert is raised (T325's stays the record).
+/// `reach` other than [`Reach::All`] stops after the opt-out and HELP steps. Nothing here stores or
+/// logs the body; no alert is raised (T325's stays the record).
 #[allow(
     dead_code,
     reason = "only inbound_retry calls it; the test crates that compile this file by #[path] do not (D-3136)"
@@ -567,8 +569,8 @@ async fn handle(
     };
     let (contact, relation) = sender(db, h.vault, from).await?;
     let (read, unread) = read(h, db, fields.body, (contact, relation)).await?;
-    let words = read.text.as_str();
     let answer = address_answer(db, (contact, relation), fields.body).await?;
+    let words = answer_words(read.text.as_str(), answer);
     let emergency = matches!(check(words, answer), Check::Match(_));
     let msg = InboundText {
         inbox_id,
@@ -598,10 +600,18 @@ async fn handle(
     intake(h, db, (&msg, &read, fields.body), (resubscribed, now)).await
 }
 
-/// INT-002, INT-027, D-165, D-3704: whether a homeowner's `raw` text answers her open
-/// name-and-address question with a street number, so the 911-list screen never reads it.
+/// The scrubbed words every step after the read gets (INT-027, PRIV-001, D-3705): for her answer
+/// to the name-and-address question only [`REMOVED`], since the scrubber keeps a first name it
+/// has not seen yet; her raw text reaches `take_name_address` alone.
+#[must_use]
+pub fn answer_words(scrubbed: &str, address_answer: bool) -> &str {
+    if address_answer { REMOVED } else { scrubbed }
+}
+
+/// INT-002, INT-027, D-165, D-3704, D-3705: whether a homeowner's `raw` text answers her open
+/// name-and-address question (`reads_as_address`, D-3705), so the 911-list screen never reads it.
 async fn address_answer(db: &mut PgConnection, from: (Uuid, Relation), raw: &str) -> Step<bool> {
-    if from.1 != Relation::OpenRequest || split_name_address(raw).is_none() {
+    if from.1 != Relation::OpenRequest || !reads_as_address(raw) {
         return Ok(false);
     }
     name_address_open(db, from.0).await.map_err(intake_halt)
@@ -783,11 +793,11 @@ fn opened(replied: &Reply) -> bool {
 
 /// SEC-014, SEC-015, D-1951, D-2206, D-3083: the new-request limit for a homeowner with no open
 /// request, keyed by her vault contact (no IP: Twilio posts the text), counted on the delivery's
-/// transaction as its last step before `receive_raw_reply`, so a rolled-back delivery counts nothing
-/// and nothing waits on the network while the shared hourly row is held. A refused text ends here
-/// (200, its inbox row kept, so Twilio's resend is a repeat): it opens nothing and is answered by
-/// nothing; its alert (one per window, no body or phone) is `intake`'s. A counter or alert error
-/// is a database error, so the delivery rolls back and Twilio resends it.
+/// transaction as its last step before `receive_raw_reply`, so a rolled-back delivery counts
+/// nothing and nothing waits on the network while the shared hourly row is held. A refused text
+/// ends here (200, its inbox row kept, so Twilio's resend is a repeat): it opens nothing and is
+/// answered by nothing; its alert (one per window, no body or phone) is `intake`'s. A counter or
+/// alert error is a database error, so the delivery rolls back and Twilio resends it.
 async fn admitted(db: &mut PgConnection, contact: Uuid, now: Timestamp) -> Step<()> {
     match admit_new_request(&mut *db, (contact, None), now).await {
         Ok(Admission::Admitted) => Ok(()),
@@ -798,7 +808,8 @@ async fn admitted(db: &mut PgConnection, contact: Uuid, now: Timestamp) -> Step<
 
 /// TXT-031, PICK-041, D-1310, D-2206, D-3083: the public names, read now through
 /// `businesses::api::public_names`, of every business that quoted one of `jobs`, for the LIST
-/// reply; a business with no usable name is left out, so `receive_raw_reply` keeps D-1310's fallback.
+/// reply; a business with no usable name is left out, so `receive_raw_reply` keeps D-1310's
+/// fallback.
 async fn list_names(db: &mut PgConnection, jobs: &[Uuid]) -> Step<Vec<(Uuid, String)>> {
     let mut quoted: Vec<Uuid> = Vec::new();
     for &job in jobs {

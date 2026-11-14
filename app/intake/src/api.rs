@@ -99,7 +99,7 @@ pub use crate::question_bank::{
     AiTurn, BankRun, BankSettings, Given, Heard, MAX_ASKED, NOT_SURE, Next, Prompt, SMELL_EN,
     SMELL_ES, asks_smell_kind, keyword_answer, starts_now,
 };
-pub use crate::replies::{RawReply, receive_raw_reply};
+pub use crate::replies::{RawReply, reads_as_address, receive_raw_reply};
 pub use crate::replies::{Reply, receive_reply};
 pub use crate::resubscribe::{pause_on_repeat_cancel, restart_after_start};
 pub use crate::routing::{

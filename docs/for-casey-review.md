@@ -2797,3 +2797,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - When a team member's email bounces, only the owner is told (at the owner's own working addresses), since the email names the bouncing address.
 - The "Approve" link in the phone-linked email works for 7 days.
 - The catalog has no Spanish job-type names, so the Spanish license-change email names job types in English. Adding Spanish names to the catalog would fix it.
+
+## The name-and-address answer and the 911 check (D-3705, November 14)
+
+- The spec says the 911 word check never runs on a homeowner's answer to "What's your first name and street address?", so a street like "Smoke Tree" never sets it off. Taken literally, a text like "smoke coming out of the outlet in 2 rooms" sent while that question is open would be filed as her name and street and get no 911 text. The check is now skipped only when the text looks like an answer: a name, a house number and a street, with no 911 words around them. Anything else gets the normal check.
+- What this costs: an answer with a street name like "Smoke Tree Ave" and no house number gets the 911 text it did not need; when she replies SAFE she is asked for her name and address again. A very short text like "garage 2 fires" sent while the question is open would still skip the check. If you'd rather lean either way, say so.
