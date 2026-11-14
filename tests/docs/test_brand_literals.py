@@ -9,7 +9,7 @@ whole word.
 
 Scanned: every file under app/; a file that is not UTF-8 text fails unless its extension is in
 BINARY_EXTENSIONS. Skipped: Rust under src/tests/ or a tests/ folder and #[cfg(test)] items; comment
-lines (//, {# #}, <!-- -->); CLAUDE.md, Cargo.toml and the brand file itself; internal identifiers
+lines (//, {# #}, <!-- -->); CLAUDE.md, NOTES.md, Cargo.toml and the brand file itself; internal identifiers
 (the lower-case askhava_ and askhava- crate, role and schema names, ASKHAVA_* keys, an askhava.<x>
 setting or cookie name, a JSON schema's $id), never a brand word joined by a hyphen ("Hava-approved"). Exempt by name, each with its reason, in EXEMPT_FILES and EXEMPT_CONSTS.
 
@@ -40,7 +40,7 @@ RETIRED_BASELINE = Path("tests") / "brand_literal_baseline.json"
 BRAND_FILE = "app/core/data/brand.json"
 # Files that cannot hold customer text a literal check could read; anything else must be UTF-8.
 BINARY_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".woff", ".woff2"})
-SKIP_NAMES = frozenset({"CLAUDE.md", "Cargo.toml"})
+SKIP_NAMES = frozenset({"CLAUDE.md", "NOTES.md", "Cargo.toml"})  # a crate's notes are never shown to a customer (D-3474)
 EXEMPT_FILES = {
     "app/ai/data/word_022_phrases.json": "mirrors scripts/trace_spec.py's spec patterns (D-493)",
 }
@@ -280,6 +280,15 @@ def test_td_word_34_test_folders_skipped_files_and_exemptions_pass(tmp_path: Pat
     )
     assert guard(root, brand.load()) == []
 
+
+
+def test_td_word_34_a_crate_notes_file_is_skipped_but_a_source_file_is_not(tmp_path: Path) -> None:
+    """T437 (D-3474): a crate's NOTES.md, like its CLAUDE.md, is never shown to a customer; app/ source still fails."""
+    hit = planted('let s = "{brand}";\n')
+    root = plant(tmp_path, {"app/fake/NOTES.md": hit})
+    assert guard(root, brand.load()) == []
+    plant(root, {RS: hit})
+    assert [p.split(" ", 1)[0] for p in guard(root, brand.load())] == [f"{RS}:1:"]
 
 def test_td_word_34_a_non_text_file_of_an_unlisted_type_fails(tmp_path: Path) -> None:
     root = plant(tmp_path, {"app/fake/data/blob.dat": b"\xff\xfe\x00Ask"})

@@ -10,6 +10,9 @@ from typing import Any
 
 REQUIRED_CHECKS = ("Ci", "Twin", "Ally")
 NEVER_TOUCH = ("kit/state.json", "kit/nightly.json", "STATUS.md", "PROGRESS.md", "outbox/", "inbox/")
+# D-3474: a crate's NOTES.md, where every task adds its one-line entries (union-merged), is shared exactly
+# where that crate's CLAUDE.md is, so no task needs a new kit/tasks.json shared path for it.
+CRATE_NOTES = re.compile(r"app/[^/]+/NOTES\.md")
 
 
 def _matches(path: str, pattern: str) -> bool:
@@ -22,6 +25,13 @@ def _under(path: str, patterns: Iterable[str]) -> bool:
     return any(_matches(path, p) for p in patterns)
 
 
+def _shared(path: str, shared: tuple[str, ...]) -> bool:
+    """A shared path, or a crate NOTES.md whose crate CLAUDE.md is shared (D-3474)."""
+    if _under(path, shared):
+        return True
+    return CRATE_NOTES.fullmatch(path) is not None and _under(path[: -len("NOTES.md")] + "CLAUDE.md", shared)
+
+
 def check_paths(
     changed: Iterable[str],
     task: dict[str, Any],
@@ -31,6 +41,7 @@ def check_paths(
     """Violations in a diff: not owned, or protected without a harness task."""
     protected = tuple(protected)
     owns = tuple(task.get("owns", []))
+    shared = tuple(shared)
     problems: list[str] = []
     for path in sorted(set(changed)):
         if path.startswith("/") or ".." in path.split("/"):
@@ -39,7 +50,7 @@ def check_paths(
             problems.append(f"{path}: runner state is written only by the runner")
         elif _under(path, protected) and task.get("type") != "harness":
             problems.append(f"{path}: protected path, harness tasks only")
-        elif not _under(path, owns) and not _under(path, shared):
+        elif not _under(path, owns) and not _shared(path, shared):
             problems.append(f"{path}: not owned by {task.get('id')}")
     return problems
 

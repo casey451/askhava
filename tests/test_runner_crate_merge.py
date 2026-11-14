@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 
+import check_code_docs
 from runner import github_env as ge
 from runner.update_merge import UpdateMerge, exported, insert_only, reexports_only
 from test_runner_live import git, repo  # noqa: F401  # reason: `repo` is the shared fixture
@@ -19,8 +20,10 @@ from test_runner_update_merge import BRANCH, env_on, parents, push_branch, push_
 
 ROOT = Path(__file__).resolve().parent.parent
 DOC_PATH, API_PATH = "app/pay/CLAUDE.md", "app/pay/src/api.rs"
-HEADS = ("Purpose", "What it owns", "Rules it enforces", "Never break", "How to change", "Tests that guard it")
-DOC = "# app/pay\n\n" + "".join(f"## {h}\n\n- {h.lower()}\n\n" for h in HEADS)
+HEADS = tuple(h.removeprefix("## ") for h in check_code_docs.HEADINGS)  # D-3474: the guide's headings, never a copy
+# Each heading's own bullet, with "- what it owns" (the line the cases below add after) first under Detail.
+BULLETS = {h: f"- {h.lower()}\n" for h in HEADS} | {"Detail": "- what it owns\n- detail\n"}
+DOC = "# app/pay\n\n" + "".join(f"## {h}\n\n{BULLETS[h]}\n" for h in HEADS)
 API = "//! The public face of a fake crate.\n\npub use crate::a::A;\npub use crate::c::C;\n\n/// Does nothing.\npub fn f() {}\n"
 RUSTFMT = shutil.which("rustfmt") is not None
 
