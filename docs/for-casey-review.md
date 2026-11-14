@@ -2797,3 +2797,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - When a team member's email bounces, only the owner is told (at the owner's own working addresses), since the email names the bouncing address.
 - The "Approve" link in the phone-linked email works for 7 days.
 - The catalog has no Spanish job-type names, so the Spanish license-change email names job types in English. Adding Spanish names to the catalog would fix it.
+
+## The business sign-up form gets a small stylesheet (D-3699, November 14)
+
+- The sign-up task (T302) stopped again, this time on the accessibility checks for the sign-up form: the tick boxes had no visible edge strong enough to pass (the site has no styling yet), and the hint under "Business name" sat on the same line as its label, so it overlapped when text spacing is enlarged. These were planning gaps, not mistakes by the worker. T302 now also serves a tiny stylesheet for the sign-up screens, the same fix the feedback page got earlier: dark-edged tick boxes and each hint on its own line. No accessibility check was loosened. T302 gets another try; the site's full look later (T101) can absorb this stylesheet.
