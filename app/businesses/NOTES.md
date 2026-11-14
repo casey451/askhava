@@ -293,3 +293,4 @@
 - [LIC-006 LIC-007 LIC-008 LIC-010] (task 371) cross-reference (D-3620): the build note of T371 is in `app/licensing/NOTES.md`: `grep -n '(task 371)' app/licensing/NOTES.md`.
 - [CARD-024 CARD-001 CARD-002 BIZ-010] (task 249) cross-reference (D-3620): the build note of T249 is in `app/quotes/NOTES.md`: `grep -n '(task 249)' app/quotes/NOTES.md`.
 - [PICK-032 CON-028 CON-029 CALL-019] (task 330) cross-reference (D-3620): the build note of T330 is in `docs/build-notes.md`: `grep -n '(task 330)' docs/build-notes.md`.
+- [PICK-041 PICK-040 PICK-010 LIC-024] (task 393) cross-reference (D-3620): the build note of T393 is in `app/licensing/NOTES.md`: `grep -n '(task 393)' app/licensing/NOTES.md`.
