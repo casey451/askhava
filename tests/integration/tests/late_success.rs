@@ -58,6 +58,7 @@ impl PaymentsAdapter for FakeStripe {
                 pick_id: PICK.to_string(),
             },
             livemode: Some(false),
+            latest_charge: Some("ch_FakeT332".to_owned()),
         })
     }
 
