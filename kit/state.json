@@ -32639,7 +32639,7 @@
     "T406",
     "T411"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "action-links-served",
    "type": "build",
@@ -32653,8 +32653,8 @@
     3672,
     3673
    ],
-   "reason": "plan gap reported: PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it \"acts once\" needs code in crates T301 does not own (picks, businesses, quotes, T261's Confirm page) and cannot fit the 3-file, 600-line budget (prompt line 52). Reviewer confirmed: Away and Busy have no storage (picks::api::away_until/away_for only compute times, no migration column); Confirm needs a Verify code (UseBy::LinkAndCode, app/portals/src/action_links.rs:117) and its page is T261's (docs/architecture.md:539-540, not a T301 dependency); no non-test app code builds QuoteRules (app/quotes/src/intake.rs:245; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it \"acts once\" needs code in crates T301 does not own (picks, businesses, quotes, T261's Confirm page) and cannot fit the 3-file, 600-line budget (prompt line 52). Reviewer confirmed: Away and Busy have no storage (picks::api::away_until/away_for only compute times, no migration column); Confirm needs a Verify code (UseBy::LinkAndCode, app/portals/src/action_links.rs:117) and its page is T261's (docs/architecture.md:539-540, not a T301 dependency); no non-test app code builds QuoteRules (app/quotes/src/intake.rs:245); T399 (kit/tasks.json:10489) says T301's Approve POST only uses up the link, contradicting \"acts once\" for every kind. Hold (picks.window_extension via extend_once) and Pause/Resume (businesses::api::pause_self/resume_self) and PeriodJob (payments::api::resolve_fee_facts) do have production paths. Smaller issue: quote_form_page and quote_form_page_warned render no price fields; only quote_form_page_priced does (app/portals/templates/business_actions.html:83). Suggested fix: narrow T301's acts-once to Quote, Hold, Pause, Resume, Link this phone, Ask about a charge; Confirm to T261, Approve to T399, Away/Busy to a new task owning storage; add a task or dependency building QuoteRules from the stored job; log in docs/decisions.md. No code was changed.",
+   "reason": null,
+   "last_failure": "PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it \"acts once\" needs code in crates T301 does not own (picks, businesses, quotes, T261's Confirm page) and cannot fit the 3-file, 600-line budget (prompt line 52). Reviewer confirmed: Away and Busy have no storage (picks::api::away_until/away_for only compute times, no migration column); Confirm needs a Verify code (UseBy::LinkAndCode, app/portals/src/action_links.rs:117) and its page is T261's (docs/architecture.md:539-540, not a T301 dependency); no non-test app code builds QuoteRules (app/quotes/src/intake.rs:245); T399 (kit/tasks.json:10489) says T301's Approve POST only uses up the link, contradicting \"acts once\" for every kind. Hold (picks.window_extension via extend_once) and Pause/Resume (businesses::api::pause_self/resume_self) and PeriodJob (payments::api::resolve_fee_facts) do have production paths. Smaller issue: quote_form_page and quote_form_page_warned render no price fields; only quote_form_page_priced does (app/portals/templates/business_actions.html:83). Suggested fix: narrow T301's acts-once to Quote, Hold, Pause, Resume, Link this phone, Ask about a charge; Confirm to T261, Approve to T399, Away/Busy to a new task owning storage; add a task or dependency building QuoteRules from the stored job; log in docs/decisions.md. No code was changed.\nre-queued after plan fix D-3675: only Quote acts; other kinds split to T453-T458/T463",
    "history": [
     {
      "attempt": 1,
@@ -32678,6 +32678,21 @@
        "turns": 15
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-14T10:22:05Z",
+     "reason": "only Quote acts; other kinds split to T453-T458/T463",
+     "by": "manual-4e933dffa515",
+     "was": "plan gap reported: PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it \"acts once\" needs code in crates T301 does not own (picks, businesses, quotes, T261's Confirm page) and cannot fit the 3-file, 600-line budget (prompt line 52). Reviewer confirmed: Away and Busy have no storage (picks::api::away_until/away_for only compute times, no migration column); Confirm needs a Verify code (UseBy::LinkAndCode, app/portals/src/action_links.rs:117) and its page is T261's (docs/architecture.md:539-540, not a T301 dependency); no non-test app code builds QuoteRules (app/quotes/src/intake.rs:245; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3675",
+     "plan_since": "2026-11-14T09:09:23Z",
+     "plan_base": "d6d1d54ea21a18537cab068466554864dcda58a6",
+     "plan_head": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
+     "plan_then": "be3b4bbc9395853017c260bfb93f595b2d32a45c70634550435530c9393256db",
+     "plan_now": "81626a70f5de85aced167a969c342086669436ba83f924a6053408064122faa0"
     }
    ]
   },
@@ -56307,7 +56322,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T10:21:48Z",
+ "updated_at": "2026-11-14T10:22:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
