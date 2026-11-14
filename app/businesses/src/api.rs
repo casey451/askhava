@@ -81,7 +81,7 @@ pub use crate::email_verification::{
     ACTED_BY_ACTION, CHANGED_KIND, CHECK_TRIES, CODE_LIFE, EmailCheckError, RETURNED_KIND,
     Returned, SOFT_SPAN_DAYS, STEP_UP_LIFE, confirm as confirm_mailbox, log_notice_change,
     mark_returned, may_get_notices, record_step_up, request_change as request_notice_change,
-    returned_line, returned_mailboxes, start_signup_check, verified_by_link,
+    returned_line, returned_mailboxes, signup_mailbox, start_signup_check, verified_by_link,
 };
 pub use crate::emergency_switch::{
     AFTER_HOURS_OFF_KIND, AfterHoursTick, EMERGENCY_TEST_KIND, EMERGENCY_YES_LIFE, MISSED_IN_A_ROW,

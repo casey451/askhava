@@ -57,8 +57,8 @@ pub use crate::business_auth::{
     AddressForm, BUSINESS_SESSION_LIFE, BusinessPrincipal, CODE_TRIES, CodeAddress, CodeForm,
     CodeFuture, CodeTo, DEVICE_COOKIE, DEVICE_LIFE, DeviceCodes, JOB_PAGE_PREFIX, LINK_LIFE,
     LINKS_PER_LIFE, NOTICE_SEGMENT, Need, NoticeQuery, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn,
-    SignInAddress, SignInMail, business_principal, run_member_removed, signin_form, signin_open,
-    signin_page, signin_post, signin_request,
+    SignInAddress, SignInMail, business_principal, run_member_removed, send_sign_in_link,
+    signin_form, signin_open, signin_page, signin_post, signin_request,
 };
 pub use crate::business_left::{
     CardDetach, LEAVE_ROUTE, LeaveError, LeaveScreen, Left, PAUSE_REASON_ROUTE, leave, leave_page,
