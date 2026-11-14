@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T23:43:44Z by runner b3ae0baddcd3 (actions).
+Updated 2026-11-14T23:44:58Z by runner 85cb2030d1df (actions).
 
-**Idle since 23:37Z; 337 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 23:42Z; 338 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 337 of 471 build tasks (owner gates not counted)
+- **Tasks done:** 338 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 23:37Z (no task in progress)
+- **Lane:** idle since 23:42Z (no task in progress)
 - **Week:** 53% used, 84.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:43Z, 0 min before this update
+- **Last run:** 23:43Z, 1 min before this update
 - **Keeper:** last ran 23:43Z, next wake 05:23Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 20 problem(s) on tasks still to run (+110 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 29 problem(s) on tasks still to run (+110 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -21,7 +21,7 @@ Updated 2026-11-14T23:43:44Z by runner b3ae0baddcd3 (actions).
 | T486 | businesses and catalog: the free-first-win join dates: a pub | MERGE_PENDING | 1 | 65 min | 23:37Z |  |
 | T451 | quotes, picks, jobs, payments and server: the "Your numbers" | MERGE_PENDING | 1 | 41 min | 23:30Z |  |
 | T445 | runner (harness): a failed nightly on an older head keeps th | MERGE_PENDING | 1 | 24 min | 23:29Z |  |
-| T301 | server and portals: the email action links are served (every | MERGE_PENDING | 3 | 27 min | 23:24Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
+| T301 | server and portals: the email action links are served (every | done | 3 | 27 min | 23:24Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
 | T485 | businesses: a public read-only reader of a sign-up's identit | done | 1 | 28 min | 22:54Z |  |
 | T301 | server and portals: the email action links are served (every | resync | 3 | 58 min | 22:46Z |  |
 | T443 | --after runs the full smoke itself on a fix-round hand-in; t | done | 1 | 35 min | 22:19Z |  |
@@ -121,7 +121,7 @@ Updated 2026-11-14T23:43:44Z by runner b3ae0baddcd3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 337 of 471
+**Tasks merged (throughput only):** 338 of 471
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -156,7 +156,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 217 of 231 done
+- stage 4: 218 of 231 done
 - stage 5: 0 of 86 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
