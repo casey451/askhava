@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T21:34:11Z by runner 886756c58552 (actions).
+Updated 2026-11-14T21:34:23Z by runner 886756c58552 (actions).
 
 **Idle since 21:31Z; 332 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-14T21:34:11Z by runner 886756c58552 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 21:31Z (no task in progress)
 - **Week:** 51% used, 92.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:33Z, 0 min before this update
-- **Keeper:** last ran 21:33Z, next wake 21:53Z
+- **Last run:** 21:34Z, 0 min before this update
+- **Keeper:** last ran 21:34Z, next wake 21:54Z
 
 ## Needs attention
 - BLOCKED T460: plan gap reported: PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-3641 needs the server to read the sign-up's stored state (identity Step, code_done, email verified) before each identity step, but no public businesses::api reader gives it: signup_email_waits is not exported (lib.rs:49 private mod), RecordFound::masked() cannot tell "no step yet" from step 1, check_code (identity.rs:267-271) takes a try before it finds no step, and the server crate has no SQL (R8). T460 owns only app/server/src/business_signup.rs and app/server/tests/business_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T460 --plan-fix D-### --reason "..."` (D-2859)
