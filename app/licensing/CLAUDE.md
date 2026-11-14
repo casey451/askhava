@@ -29,3 +29,4 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/licensing/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/licensing/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
+- [PICK-041 LIC-026 LIC-034 LIC-038] (owns) T393, D-3642, D-3646: `card_facts` reads, read only, a card's license facts for a category (catalog kind): latest ROC check if Active, unpaused agency row (recorded day), else city-list match and year; handyman and insurance are the caller's. Tests `tests/integration/tests/quote_page_cards.rs`.
