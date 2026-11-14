@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:24:04Z by runner d17b9c63bff7 (actions).
+Updated 2026-11-14T10:25:17Z by runner d0b8abeaf423 (actions).
 
 **Building: T437 in progress since 09:33Z; 318 of 436 done; week 40% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 318 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T437 claimed 09:33Z, lease until 12:33Z; lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 4: T359 claimed 09:38Z, lease until 13:24Z
-- **Week:** 40% used, 111.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:22Z, 1 min before this update
+- **Lane:** lane 1: T437 claimed 09:33Z, lease until 12:33Z; lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 4: T359 claimed 09:38Z, lease until 13:24Z; lane 5: T329 claimed 10:25Z, lease until 13:25Z
+- **Week:** 40% used, 110.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 10:24Z, 1 min before this update
 - **Keeper:** last ran 10:02Z, next wake 12:36Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 39 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -95,6 +95,7 @@ Updated 2026-11-14T10:24:04Z by runner d17b9c63bff7 (actions).
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | done | 3 | 46 min | 11:14Z | session ended without handing in |
 
 ### Plan and harness merges on main
+- 10:21Z Plan: restructure the business sign-in chain — T300/T301/T302 gaps, 13 ordered follow-up tasks (D-3674, D-3675, D-3676) (#765)
 - 07:59Z Plan: T359 adopts two charge-ledger test expectations (TD-FEE-64), records the checked intent amount (D-3658) (#759)
 - 06:29Z Plan: T280 build note out of architecture.md after D-3620; sweep T393's late paragraph (D-3652) (#753)
 - 05:23Z Plan: T302 door-matrix gap — exact open sign-up step paths, browser-bound sign-up steps (D-3641) (#745)
@@ -148,7 +149,7 @@ Updated 2026-11-14T10:24:04Z by runner d17b9c63bff7 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T10:01:41Z (week)): week: 82.3M used, 111.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T09:04:16Z.
+- Pacing (session_reading 2026-11-14T10:01:41Z (week)): week: 83.6M used, 110.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T09:13:47Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -166,6 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T437 (lease until 2026-11-14T12:33:11Z)
 - lane 2: T435 (lease until 2026-11-14T13:15:37Z)
 - lane 4: T359 (lease until 2026-11-14T13:24:04Z)
+- lane 5: T329 (lease until 2026-11-14T13:25:08Z)
 
 ## Last usage reading
 - {"task": "T398", "at": "2026-11-14T09:41:02Z", "input_tokens": 65, "output_tokens": 10688, "cache_read_input_tokens": 734170, "cache_creation_input_tokens": 61607}
