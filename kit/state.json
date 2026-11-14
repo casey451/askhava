@@ -50778,7 +50778,7 @@
     "T326",
     "T449"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "phone-approval-gate-routes",
    "type": "build",
@@ -50792,6 +50792,31 @@
     3680,
     3681
    ],
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 84,
+     "head_sha": "f564e220b505f203b47bfa791d61553a7bacd48e",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-14T10:15:37Z",
+     "ended_at": "2026-11-14T10:46:23Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 3530223,
+       "turns": 47
+      },
+      "reviewer": {
+       "tokens": 719564,
+       "turns": 16
+      }
+     }
+    }
+   ],
    "reviewed_sha": "eae132ad3ad346b0bac475ad6d2846a9decf6918",
    "review_lease": {
     "task": "T435",
@@ -50800,7 +50825,11 @@
     "lane": "2"
    },
    "branch": "claude/task/T435-phone-approval-gate-routes",
-   "head_check_since": null,
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #769 (gh pr merge)",
+    "head": "eae132ad3ad346b0bac475ad6d2846a9decf6918"
+   },
    "update_merges": [
     {
      "from": "f564e220b505f203b47bfa791d61553a7bacd48e",
@@ -53445,12 +53474,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T329",
-   "at": "2026-11-14T10:28:01Z",
-   "input_tokens": 68,
-   "cache_creation_input_tokens": 97595,
-   "cache_read_input_tokens": 1335143,
-   "output_tokens": 12981
+   "task": "T435",
+   "at": "2026-11-14T10:46:23Z",
+   "input_tokens": 124,
+   "cache_read_input_tokens": 4052836,
+   "cache_creation_input_tokens": 157780,
+   "output_tokens": 39047
   },
   "source": "session_reading 2026-11-14T10:39:50Z (week)",
   "by_task": {
@@ -56658,7 +56687,17 @@
    },
    "T435": {
     "estimated_bytes": 400756,
-    "estimated_tokens": 1223490
+    "estimated_tokens": 1223490,
+    "usage_counting": "message_id",
+    "input_tokens": 124,
+    "cache_read_input_tokens": 4052836,
+    "cache_creation_input_tokens": 157780,
+    "output_tokens": 39047,
+    "worker_tokens": 3530223,
+    "worker_turns": 47,
+    "reviewer_tokens": 719564,
+    "reviewer_turns": 16,
+    "last_model": "claude-opus-5-5"
    },
    "T329": {
     "estimated_bytes": 385557,
@@ -56686,11 +56725,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-14T06:14:13Z",
-    "tokens": 5363495
+    "tokens": 5965729
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 110745239
+    "tokens": 111347473
    }
   },
   "session_reading": {
@@ -56701,7 +56740,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T10:46:24Z",
+ "updated_at": "2026-11-14T10:46:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
