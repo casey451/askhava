@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T16:28:49Z by runner 45c9090508ad (actions).
+Updated 2026-11-14T16:31:15Z by runner 858f0854e89f (actions).
 
 **Stopped: main is red, only FIX-MAIN runs; 329 of 452 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T16:28:49Z by runner 45c9090508ad (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane fix: FIX-MAIN claimed 16:24Z, lease until 19:24Z
 - **Week:** 48% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:28Z, 0 min before this update
+- **Last run:** 16:31Z, 0 min before this update
 - **Keeper:** last ran 16:28Z, next wake 18:05Z
 
 ## Needs attention
