@@ -4606,3 +4606,4 @@
 - 2026-11-14T10:01:24Z runner d6d1d54ea21a (actions): {}
 - 2026-11-14T10:01:42Z runner d6d1d54ea21a (actions): {}
 - 2026-11-14T10:02:02Z runner d6d1d54ea21a (actions): {}
+- 2026-11-14T10:15:41Z runner d0b8abeaf423 (actions): {"T435": "QUEUED -> IN_PROGRESS"}; T435 estimated 1.2M tokens (calibrated); week has 111.7M left (no five-hour budget, D-3056) after 2.3M still running in another lane (session_reading 2026-11-14T10:01:41Z (week)); claimed

@@ -1,23 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:02:02Z by runner d6d1d54ea21a (actions).
+Updated 2026-11-14T10:15:41Z by runner d0b8abeaf423 (actions).
 
 **Building: T437 in progress since 09:33Z; 318 of 436 done; week 40% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 318 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T437 claimed 09:33Z, lease until 12:33Z; lane 4: T359 claimed 09:38Z, lease until 12:38Z
-- **Week:** 40% used, 114.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:01Z, 0 min before this update
+- **Lane:** lane 1: T437 claimed 09:33Z, lease until 12:33Z; lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 4: T359 claimed 09:38Z, lease until 12:38Z
+- **Week:** 40% used, 111.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 10:02Z, 13 min before this update
 - **Keeper:** last ran 10:02Z, next wake 12:36Z
 
 ## Needs attention
 - BLOCKED T300: plan gap reported: PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID, ASKHAVA_TWILIO_AUTH_TOKEN, ASKHAVA_TWILIO_VERIFY_SERVICE_SID, VAULT_KEY or VAULT_INDEX_KEY, so business_signin.rs:129 uses NoVerify (every code send/check fails) and lib.rs:321 vault_from gives no vault; the browser half of TD-BIZ-42 cannot pass. Also tests/a11y/fixtures.ts:126-130 (owner-only since T267) opens page states with a bare page.goto and a seed returns only a path, so no signed-in /b page state can be axe-checked. Reviewer confirmed all three claims. Smallest fix; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T300 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T301: plan gap reported: PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301 does not own (picks, businesses, quotes, T261's Confirm page) and cannot fit the 3-file, 600-line budget (prompt line 52). Reviewer confirmed: Away and Busy have no storage (picks::api::away_until/away_for only compute times, no migration column); Confirm needs a Verify code (UseBy::LinkAndCode, app/portals/src/action_links.rs:117) and its page is T261's (docs/architecture.md:539-540, not a T301 dependency); no non-test app code builds QuoteRules (app/quotes/src/intake.rs:245; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T302: plan gap reported: PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 an; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T329 (since 2026-11-14T10:01:19Z, no attempt used; a plan change fixes it): T329: dependency T398 is DONE but its owned file tests/integration/tests/phone_approval_notices.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T435 (since 2026-11-14T10:01:19Z, no attempt used; a plan change fixes it): T435: dependency T398 is DONE but its owned file tests/integration/tests/phone_approval_notices.rs is not on main
 - Strict plan check red: 38 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
@@ -99,7 +97,6 @@ Updated 2026-11-14T10:02:02Z by runner d6d1d54ea21a (actions).
 | T312 | intake: a street address written in lower case never trips t | done | 2 | 51 min | 12:32Z | session ended without handing in |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | done | 3 | 46 min | 11:14Z | session ended without handing in |
 | T312 | intake: a street address written in lower case never trips t | QUEUED | 1 | 24 min | 10:17Z |  |
-| T428 | Switch the brand file to Laftly and re-issue the legal recor | QUEUED | 2 | 22 min | 10:15Z |  |
 
 ### Plan and harness merges on main
 - 07:59Z Plan: T359 adopts two charge-ledger test expectations (TD-FEE-64), records the checked intent amount (D-3658) (#759)
@@ -123,7 +120,6 @@ Updated 2026-11-14T10:02:02Z by runner d6d1d54ea21a (actions).
 - 12:32Z Plan: pre-flight 14, split three oversized build tasks; T111/T113 brand note (D-3445) (#668)
 - 11:32Z Harness: fix-round hand-off, tighter output caps, crate_cap 2 (D-3444) (#665)
 - 11:16Z Harness: an API error session death does not use an attempt (D-3443) (#664)
-- 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
 
 ## Progress (requirements verified)
 
@@ -156,7 +152,7 @@ Updated 2026-11-14T10:02:02Z by runner d6d1d54ea21a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T09:28:38Z (week)): week: 79.7M used, 114.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T09:34:17Z.
+- Pacing (session_reading 2026-11-14T10:01:41Z (week)): week: 82.3M used, 111.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T09:04:16Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -172,6 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T437 (lease until 2026-11-14T12:33:11Z)
+- lane 2: T435 (lease until 2026-11-14T13:15:37Z)
 - lane 4: T359 (lease until 2026-11-14T12:38:51Z)
 
 ## Last usage reading
