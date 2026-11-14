@@ -275,8 +275,8 @@ async fn expire(db: &mut PgConnection, id: Uuid) -> Result<(), OutboxError> {
 }
 
 /// What a failed send leaves: a listed number's row expires (CON-013), and so does a row whose
-/// recipient cannot be read or is of the wrong kind (D-3149), so no row stays at the head of the
-/// queue; a refusal waits for its TXT-014 retry or is given up; an unknown outcome is settled; a
+/// recipient can never be read or is of the wrong kind (D-3149), so no row stays at the head of the
+/// queue; a vault read that may pass is `Database`, so the batch loop holds it (D-3581); a refusal waits for its TXT-014 retry or is given up; an unknown outcome is settled; a
 /// row gone, blocked (21610) or already claimed needs nothing.
 async fn after_error<C>(
     db: &mut PgConnection,
