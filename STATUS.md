@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:36:01Z by runner 0d5dc61a17e7 (actions).
+Updated 2026-11-14T00:44:37Z by runner e40ebe112f64 (actions).
 
-**Building: T341 in progress since 00:03Z; 302 of 434 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T341 in progress since 00:03Z; 303 of 434 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 302 of 434 build tasks (owner gates not counted)
+- **Tasks done:** 303 of 434 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z; lane 7: T448 claimed 00:11Z, lease until 03:11Z
 - **Week:** 31% used, 127.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:32Z, 3 min before this update
+- **Last run:** 00:42Z, 1 min before this update
 - **Keeper:** last ran 00:32Z, next wake 03:05Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 30 problem(s) on tasks still to run (+198 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 31 problem(s) on tasks still to run (+200 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T444 | intake (test): the job's ZIP is read only from a property in | MERGE_PENDING | 1 | 24 min | 00:31Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 25 min | 00:23Z |  |
-| T391 | calls, businesses, messaging and server: the main phone's "L | MERGE_PENDING | 1 | 47 min | 23:23Z |  |
+| T391 | calls, businesses, messaging and server: the main phone's "L | done | 1 | 47 min | 23:23Z |  |
 | T415 | businesses, messaging and server: the production phone link  | done | 1 | 69 min | 23:15Z |  |
 | T355 | picks: the release claim re-checks the pick under its row lo | done | 1 | 59 min | 23:11Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | BLOCKED | 1 | 3 min | 23:11Z | PLAN GAP: test-design.md:203 (TD-FEE-63) and D-2332 require a text pick of a tiers quote to store nothing and reply with |
@@ -109,7 +109,7 @@ Updated 2026-11-14T00:36:01Z by runner 0d5dc61a17e7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 302 of 434
+**Tasks merged (throughput only):** 303 of 434
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -144,7 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 182 of 213 done
+- stage 4: 183 of 213 done
 - stage 5: 0 of 67 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
