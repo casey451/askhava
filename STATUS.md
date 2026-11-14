@@ -1,24 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-14T09:09:38Z by runner d6d1d54ea21a (actions).
+Updated 2026-11-14T09:13:53Z by runner d6d1d54ea21a (actions).
 
 **Building: T398 in progress since 09:02Z; 317 of 436 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 317 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T398 claimed 09:02Z, lease until 12:02Z; lane 3: T301 claimed 09:09Z, lease until 12:09Z; lane 4: T359 claimed 08:06Z, lease until 11:06Z; lane 5: T437 claimed 08:49Z, lease until 11:49Z
+- **Lane:** lane 2: T398 claimed 09:02Z, lease until 12:02Z; lane 4: T359 claimed 08:06Z, lease until 11:06Z; lane 5: T437 claimed 08:49Z, lease until 11:49Z
 - **Week:** 39% used, 112.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:06Z, 2 min before this update
+- **Last run:** 09:09Z, 4 min before this update
 - **Keeper:** last ran 09:06Z, next wake 11:08Z
 
 ## Needs attention
 - BLOCKED T300: plan gap reported: PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID, ASKHAVA_TWILIO_AUTH_TOKEN, ASKHAVA_TWILIO_VERIFY_SERVICE_SID, VAULT_KEY or VAULT_INDEX_KEY, so business_signin.rs:129 uses NoVerify (every code send/check fails) and lib.rs:321 vault_from gives no vault; the browser half of TD-BIZ-42 cannot pass. Also tests/a11y/fixtures.ts:126-130 (owner-only since T267) opens page states with a bare page.goto and a seed returns only a path, so no signed-in /b page state can be axe-checked. Reviewer confirmed all three claims. Smallest fix; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T300 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T301: plan gap reported: PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301 does not own (picks, businesses, quotes, T261's Confirm page) and cannot fit the 3-file, 600-line budget (prompt line 52). Reviewer confirmed: Away and Busy have no storage (picks::api::away_until/away_for only compute times, no migration column); Confirm needs a Verify code (UseBy::LinkAndCode, app/portals/src/action_links.rs:117) and its page is T261's (docs/architecture.md:539-540, not a T301 dependency); no non-test app code builds QuoteRules (app/quotes/src/intake.rs:245; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 39 problem(s) on tasks still to run (+100 on DONE tasks); first: T398: stored context_pct 19% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T301 | server and portals: the email action links are served (the q | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
 | T398 | businesses: notice texts go only to approved phones, and a m | resync | 1 | 32 min | 09:01Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 1 | 5 min | 08:59Z | PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID |
 | T280 | server and messaging (harness): the business sign-in pages a | done | 4 | 91 min | 08:04Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
@@ -168,9 +170,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T398 (lease until 2026-11-14T12:02:18Z)
-- lane 3: T301 (lease until 2026-11-14T12:09:23Z)
 - lane 4: T359 (lease until 2026-11-14T11:06:27Z)
 - lane 5: T437 (lease until 2026-11-14T11:49:58Z)
 
 ## Last usage reading
-- {"task": "T398", "at": "2026-11-14T09:01:42Z", "cache_read_input_tokens": 3169887, "cache_creation_input_tokens": 122182, "input_tokens": 115, "output_tokens": 30897}
+- {"task": "T301", "at": "2026-11-14T09:13:52Z", "cache_read_input_tokens": 3147699, "input_tokens": 100, "output_tokens": 21220, "cache_creation_input_tokens": 140263}

@@ -4562,3 +4562,4 @@
 - 2026-11-14T09:06:14Z runner d8b6eaa7352f (actions): {}
 - 2026-11-14T09:06:35Z runner 4c59dc96b173 (actions): {}
 - 2026-11-14T09:09:38Z runner d6d1d54ea21a (actions): {"T301": "QUEUED -> IN_PROGRESS"}; T301 estimated 1.3M tokens (calibrated); week has 112.6M left (no five-hour budget, D-3056) after 3.4M still running in another lane (session_reading 2026-11-14T09:06:13Z (week)); claimed
+- 2026-11-14T09:13:53Z runner d6d1d54ea21a (actions): {"T301": "IN_PROGRESS -> BLOCKED"}
