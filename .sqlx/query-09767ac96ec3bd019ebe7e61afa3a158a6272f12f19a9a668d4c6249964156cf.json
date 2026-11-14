@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO messaging.sender_held (line_id, index_version, digest, business_id) SELECT line_id, index_version, digest, business_id FROM messaging.sender_directory WHERE line_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "09767ac96ec3bd019ebe7e61afa3a158a6272f12f19a9a668d4c6249964156cf"
+}
