@@ -1,21 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:48:04Z by runner 2aad8a530a2f (actions).
+Updated 2026-11-14T22:48:39Z by runner 3b9687af32d2 (actions).
 
-**Building: T485 in progress since 22:26Z; 335 of 469 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T485 in progress since 22:26Z; 335 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 335 of 469 build tasks (owner gates not counted)
+- **Tasks done:** 335 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T485 claimed 22:26Z, lease until 01:26Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z
-- **Week:** 53% used, 87.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:47Z, 0 min before this update
+- **Lane:** lane 4: T485 claimed 22:26Z, lease until 01:26Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z; lane 6: T451 claimed 22:48Z, lease until 01:48Z
+- **Week:** 53% used, 85.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:48Z, 0 min before this update
 - **Keeper:** last ran 22:48Z, next wake 01:29Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T451 (since 2026-11-14T22:38:54Z, no attempt used; a plan change fixes it): T451: dependency T300 is DONE but its owned file app/server/src/business_portal.rs is not on main; T451: dependency T300 is DONE but its owned file app/server/tests/business_portal_route.rs is not on main
-- PLAN GAP T454 (since 2026-11-14T22:38:54Z, no attempt used; a plan change fixes it): T454: dependency T300 is DONE but its owned file app/server/src/business_portal.rs is not on main; T454: dependency T300 is DONE but its owned file app/server/tests/business_portal_route.rs is not on main
-- Strict plan check red: 21 problem(s) on tasks still to run (+109 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+110 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -122,8 +120,8 @@ Updated 2026-11-14T22:48:04Z by runner 2aad8a530a2f (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 304 of 733 (41.5%) · partial 272 · unstarted 157
-**Tasks merged (throughput only):** 335 of 469
+**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
+**Tasks merged (throughput only):** 335 of 471
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -132,7 +130,7 @@ Updated 2026-11-14T22:48:04Z by runner 2aad8a530a2f (actions).
 | businesses | 18 | 37 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 20 | 31 | 1 | 52 |
+| fees | 19 | 32 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
 | job-cards | 19 | 5 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
@@ -151,7 +149,7 @@ Updated 2026-11-14T22:48:04Z by runner 2aad8a530a2f (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T22:27:30Z (week)): week: 106.7M used, 87.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-25T19:38:21Z.
+- Pacing (session_reading 2026-11-14T22:47:45Z (week)): week: 108.1M used, 85.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-25T20:00:11Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -169,6 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 4: T485 (lease until 2026-11-15T01:26:33Z)
 - lane 5: T486 (lease until 2026-11-15T01:31:30Z)
+- lane 6: T451 (lease until 2026-11-15T01:48:26Z)
 
 ## Last usage reading
 - {"task": "T301", "at": "2026-11-14T22:46:56Z", "output_tokens": 101562, "cache_creation_input_tokens": 406076, "cache_read_input_tokens": 17422520, "input_tokens": 306}
