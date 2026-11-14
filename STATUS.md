@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T13:27:41Z by runner 88211c47dda5 (actions).
+Updated 2026-11-14T13:28:02Z by runner 88211c47dda5 (actions).
 
 **Building: T432 in progress since 12:42Z; 322 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 322 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z; lane 3: T437 claimed 12:53Z, lease until 15:53Z; lane 4: T466 claimed 12:59Z, lease until 15:59Z
+- **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z; lane 3: T437 claimed 12:53Z, lease until 15:53Z
 - **Week:** 44% used, 106.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:24Z, 3 min before this update
 - **Keeper:** last ran 13:24Z, next wake 15:45Z
@@ -18,6 +18,7 @@ Updated 2026-11-14T13:27:41Z by runner 88211c47dda5 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T466 | portals: one shared form stylesheet for native checkboxes an | MERGE_PENDING | 1 | 27 min | 13:27Z |  |
 | T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
 | T359 | payments: a successful charge writes its own charge ledger e | MERGE_PENDING | 3 | 72 min | 12:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 2 | 16 min | 12:20Z | PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T |
@@ -177,7 +178,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T432 (lease until 2026-11-14T15:42:31Z)
 - lane 3: T437 (lease until 2026-11-14T15:53:27Z)
-- lane 4: T466 (lease until 2026-11-14T15:59:47Z)
 
 ## Last usage reading
-- {"task": "T301", "at": "2026-11-14T12:40:36Z", "output_tokens": 38675, "cache_creation_input_tokens": 173366, "cache_read_input_tokens": 5336508, "input_tokens": 120}
+- {"task": "T466", "at": "2026-11-14T13:27:39Z", "output_tokens": 18376, "cache_creation_input_tokens": 84773, "input_tokens": 80, "cache_read_input_tokens": 1718057}
