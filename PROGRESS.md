@@ -4854,3 +4854,4 @@
 - 2026-11-14T15:39:46Z runner c97c4d0feb12 (actions): {}
 - 2026-11-14T15:40:05Z runner c97c4d0feb12 (actions): {}
 - 2026-11-14T15:44:40Z runner 45c9090508ad (actions): {"T467": "None -> QUEUED"}
+- 2026-11-14T15:45:04Z runner 45c9090508ad (actions): {"T467": "QUEUED -> IN_PROGRESS"}; T467 estimated 1.3M tokens (calibrated); week has 98.4M left (no five-hour budget, D-3056) after 3.6M still running in another lane (session_reading 2026-11-14T15:39:46Z (week)); claimed
