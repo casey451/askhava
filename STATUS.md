@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T03:44:11Z by runner f55f882ac049 (actions).
+Updated 2026-11-14T03:44:33Z by runner f5b7fd7dcd10 (actions).
 
 **Idle since 03:43Z; 310 of 435 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,15 +8,15 @@ Updated 2026-11-14T03:44:11Z by runner f55f882ac049 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:43Z (no task in progress)
 - **Week:** 35% used, 120.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:43Z, 0 min before this update
-- **Keeper:** last ran 03:35Z, next wake 05:55Z
+- **Last run:** 03:44Z, 0 min before this update
+- **Keeper:** last ran 03:44Z, next wake 04:04Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode|EmailCode in app/portals/src finds nothing, app/portals/src/tests/signup_code_screens.rs does not exist. T302 owns no portals file, so it cannot serve the email-code and identity-code steps (TD-SEC-45) without T450's Screen::IdentityCode, Screen::EmailCode, route constants and channel parser. kit/state.json on claude/kit-state has no T450 and T302's deps there stop at T415, so the runner started T302 before T450. Reviewer confirmed every claim.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 53% of the context window, over its 50% limit
-- Strict plan check red: 34 problem(s) on tasks still to run (+203 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 33 problem(s) on tasks still to run (+203 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
