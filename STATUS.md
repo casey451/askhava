@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T02:17:20Z by runner 918581713bc4 (actions).
+Updated 2026-11-14T02:18:33Z by runner a9be821a3861 (actions).
 
 **Building: T280 in progress since 00:35Z; 307 of 435 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T02:17:20Z by runner 918581713bc4 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 5: T341 claimed 02:03Z, lease until 05:03Z; lane 6: T449 claimed 01:42Z, lease until 04:42Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
 - **Week:** 33% used, 127.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:13Z, 3 min before this update
+- **Last run:** 02:17Z, 1 min before this update
 - **Keeper:** last ran 02:13Z, next wake 03:38Z
 
 ## Needs attention
@@ -27,7 +27,7 @@ Updated 2026-11-14T02:17:20Z by runner 918581713bc4 (actions).
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z |  |
 | T448 | portals: the data-download mask joins digit runs across any  | done | 1 | 38 min | 00:49Z |  |
 | T444 | intake (test): the job's ZIP is read only from a property in | done | 1 | 24 min | 00:31Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 25 min | 00:23Z |  |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 25 min | 00:23Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/intake/CLAUDE.md, app/messaging/CLAUDE.md, app |
 | T391 | calls, businesses, messaging and server: the main phone's "L | done | 1 | 47 min | 23:23Z |  |
 | T415 | businesses, messaging and server: the production phone link  | done | 1 | 69 min | 23:15Z |  |
 | T355 | picks: the release claim re-checks the pick under its row lo | done | 1 | 59 min | 23:11Z |  |
