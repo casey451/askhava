@@ -32,6 +32,7 @@ use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
 
+pub mod business_contacts;
 pub mod call_status;
 pub mod catalog_start;
 pub mod checkin;
@@ -431,14 +432,15 @@ fn register_intake_asks(registry: &mut Registry, id_secret: &SecretString) {
 /// timers (JOB-003, JOB-006); `quotes` the every-window-ended check (TXT-042, JOB-025); `intake` the
 /// no-reply reminder and close (INT-019), the card approval auto-send (INT-041), the emergency
 /// address asked again on `picks.address_needed` (INT-029, T255); `picks` the FEE-020
-/// card-fix notice on `payments`' event (D-492), and with `confirm` (read once from
+/// card-fix notice on `payments`' event (D-492) and the ended pick's next quote on
+/// `payments.pick_ended` (FEE-018, FEE-041, PICK-046, T328, on the stream's clock), and with `confirm` (read once from
 /// `ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES`) the pick notice (PICK-037, D-1503) and the Confirm
 /// window's end (PICK-019); `intake` the accepted-quote email after a Confirm, still with no sender
 /// although the footer postal setting now exists, so it sends nothing until a follow-up builds
 /// one (PICK-042, D-3077, D-3098 (2)); `payments` the pause watch that stops and resumes
 /// the payment timers with the charging pause (FEE-038, D-1427); and, with
-/// `texts` ([`job_text_keys`]), the homeowner job texts `jobs` queues (JOB-010 to JOB-012,
-/// TXT-042, D-1030 (A)). It takes the release mint first, through [`release_minter`], so a second
+/// `texts` ([`job_text_keys`]), the homeowner job texts `jobs` and `picks` queue (JOB-010 to
+/// JOB-012, TXT-042, PICK-046, D-1030 (A)) on the stream's clock. It takes the release mint first, through [`release_minter`], so a second
 /// minter stops the start rather than a payment (SEC-030, D-488).
 #[must_use]
 pub fn register_handlers<S>(
@@ -475,6 +477,11 @@ where
         askhava_payments::api::RECEIPT_KIND,
         askhava_picks::api::run_receipt_notice,
     );
+    let ended_clock = Arc::clone(&clock);
+    registry.register(askhava_payments::api::PICK_ENDED_KIND, move |pool, task| {
+        let now = ended_clock.now();
+        askhava_picks::api::run_pick_ended(pool, task, now)
+    });
     register_pick_notices(&mut registry, confirm);
     let pause_clock = Arc::clone(&clock);
     registry.register(askhava_payments::api::PAUSE_KIND, move |pool, _task| {
@@ -485,8 +492,10 @@ where
     register_accepted_quote(&mut registry);
     register_purge_handlers(&mut registry, &clock);
     if let Some(keys) = texts {
+        let text_clock = Arc::clone(&clock);
         registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
-            askhava_intake::api::run_job_text(pool, Arc::clone(&keys), task)
+            let now = text_clock.now();
+            askhava_intake::api::run_job_text_at(pool, Arc::clone(&keys), task, now)
         });
     }
     registry
@@ -1302,7 +1311,8 @@ fn register_purge_handlers(registry: &mut Registry, clock: &Arc<dyn Clock>) {
 }
 
 /// PRIV-007 to PRIV-009, TXT-020, D-2641, D-1840: the daily body cut, the daily cut of kept
-/// problem words and the daily purge sweep (with `intake`'s request sweep) at `clock`'s now; a run's last failed attempt raises one
+/// problem words and the daily purge sweep (with `intake`'s request sweep, then the business contact
+/// sweep, T415) at `clock`'s now; a run's last failed attempt raises one
 /// `privacy.purge_failed` alert, and the next day's run is already queued.
 fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     let at = Arc::clone(clock);
@@ -1327,7 +1337,10 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
         async move {
             let outcome = async {
                 askhava_jobs::api::run_sweep_at(pool.clone(), task.clone(), now).await?;
-                askhava_intake::api::run_request_sweep_at(pool.clone(), task.clone(), now).await
+                askhava_intake::api::run_request_sweep_at(pool.clone(), task.clone(), now).await?;
+                business_contacts::sweep_business_contacts(&pool, now)
+                    .await
+                    .map(|_| ())
             };
             alert_if_last(&pool, &task, outcome.await).await
         }

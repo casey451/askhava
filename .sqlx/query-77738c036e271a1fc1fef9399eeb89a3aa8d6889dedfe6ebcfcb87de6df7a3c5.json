@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT recipient_id FROM messaging.email_outbox WHERE recipient_kind = 'business' AND status <> 'sent' AND queued_at > $1::timestamptz",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "recipient_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "recipient_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "77738c036e271a1fc1fef9399eeb89a3aa8d6889dedfe6ebcfcb87de6df7a3c5"
+}

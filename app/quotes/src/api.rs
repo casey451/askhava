@@ -107,6 +107,7 @@ pub use crate::models::{
 pub use crate::notes::{
     NOTE_LIMIT, NoteFlag, NoteProblem, NoteScreener, OFF_PLATFORM, check_note, screen_note,
 };
+pub use crate::notify::list_lines;
 pub use crate::notify::{
     CardsOut, Counts, LIST_PAGE, Listed, Notice, Reader, SLOW_AT_MOST, Sent, UPDATE_GAP,
     arizona_time, cards_out_text, first_quote_text, list_texts, list_texts_from, notice,
