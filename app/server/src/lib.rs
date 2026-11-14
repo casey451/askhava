@@ -1258,7 +1258,8 @@ fn register_notice_senders(
 /// only), so each such task fails with `NO_ACCOUNT_SENDER` and is tried again, and a welcome is
 /// never marked sent without its email (D-3186). The OPS-041 owner-inbox email of a not-covered
 /// request (`intake.not_covered`, T215) has no sender either until a Resend client and the
-/// owner-inbox address exist, so it fails and is tried again the same way (D-3334).
+/// owner-inbox address exist, so it fails and is tried again the same way (D-3334). The business
+/// account event emails (`businesses::api::NOTICE_KINDS`, T329) wait the same way (D-3684).
 fn register_business_handlers(registry: &mut Registry) {
     use askhava_adapters::api::ResendEmail;
     use askhava_businesses::api::{run_coverage_notice, run_phone_stopped, run_welcome};
@@ -1279,6 +1280,74 @@ fn register_business_handlers(registry: &mut Registry) {
     registry.register(askhava_businesses::api::PHONE_STOPPED_KIND, |pool, task| {
         run_phone_stopped::<ResendEmail, NoAccountDirectory>(pool, None, task)
     });
+    for kind in askhava_businesses::api::NOTICE_KINDS {
+        registry.register(kind, |pool, task| {
+            askhava_businesses::api::run_notice_email::<ResendEmail, PortalNoticeParts>(
+                pool, None, task,
+            )
+        });
+    }
+}
+
+/// How long the BIZ-033 Approve link in the owner's phone-linked email works (D-3683).
+const APPROVE_LINK_LIFE: jiff::SignedDuration = jiff::SignedDuration::from_hours(7 * 24);
+
+/// The business event emails' parts (T329, D-3112, D-3684): no address, name, digits or language
+/// choice is readable yet (D-3186), so nothing is on file and English is used; the Approve link
+/// is `portals::api::mint_action_link`'s and the re-test link is the Emergency emails page.
+struct PortalNoticeParts;
+
+impl askhava_businesses::api::NoticeParts for PortalNoticeParts {
+    async fn address(
+        &self,
+        _: &mut sqlx::PgConnection,
+        _: Uuid,
+    ) -> Result<Option<SecretString>, askhava_core::api::HandlerError> {
+        Ok(None)
+    }
+    async fn spanish(
+        &self,
+        _: &mut sqlx::PgConnection,
+        _: Uuid,
+    ) -> Result<bool, askhava_core::api::HandlerError> {
+        Ok(false)
+    }
+    async fn member_name(
+        &self,
+        _: &mut sqlx::PgConnection,
+        _: Uuid,
+    ) -> Result<Option<String>, askhava_core::api::HandlerError> {
+        Ok(None)
+    }
+    async fn line_last4(
+        &self,
+        _: &mut sqlx::PgConnection,
+        _: (Uuid, Uuid),
+    ) -> Result<Option<String>, askhava_core::api::HandlerError> {
+        Ok(None)
+    }
+    async fn approve_link(
+        &self,
+        db: &mut sqlx::PgConnection,
+        (business, owner, line): (Uuid, Uuid, Uuid),
+        now: jiff::Timestamp,
+    ) -> Result<SecretString, askhava_core::api::HandlerError> {
+        use askhava_portals::api::{ActionKind, ActionTarget, mint_action_link};
+        let target = ActionTarget {
+            kind: ActionKind::Approve,
+            object: line,
+            member: owner,
+            business,
+        };
+        let ends = now.saturating_add(APPROVE_LINK_LIFE).unwrap_or(now);
+        mint_action_link(db, target, None, (now, ends))
+            .await
+            .map_err(|_| askhava_core::api::HandlerError("the Approve link could not be made"))
+    }
+    fn retest_link(&self) -> String {
+        let route = askhava_portals::api::EMERGENCY_SWITCH_ROUTE;
+        format!("https://{}{route}", askhava_core::api::brand().domain())
+    }
 }
 
 /// The account emails' directory until business addresses and phone numbers are readable

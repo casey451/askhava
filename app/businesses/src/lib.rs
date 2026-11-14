@@ -54,6 +54,7 @@ mod leaving;
 mod license_reapply;
 mod links;
 mod models;
+mod notice_emails;
 mod open_cards_times;
 mod pest_identity;
 mod phone_approval;
