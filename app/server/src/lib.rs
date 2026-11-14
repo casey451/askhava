@@ -32,6 +32,7 @@ use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
 
+pub mod action_links;
 pub mod business_contacts;
 pub mod business_portal;
 pub mod business_signin;
@@ -209,7 +210,8 @@ fn business_pages(
 /// ([`RouterParts::with_vault`]), else the webhooks'. The homeowner's quote page is `portals`'
 /// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055); the
 /// private feedback page after Done is `/f/{token}` (`feedback`, T230); the check-in answer page
-/// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231). The built
+/// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231); the email
+/// action links are `/b/a/{kind}/{object}/{token}` ([`action_links`], T301). The built
 /// browser files are served at `/static/<crate>/` from the parts' folder ([`static_files`], T362).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241) and the placed calls' status and safety-key routes
@@ -237,7 +239,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
-    let checkin = checkin::routes(pool.clone());
+    let link_pages = checkin::routes(pool.clone()).merge(action_links::routes(pool.clone()));
     // Each 403 of these four is a source or signature refusal, recorded as a capped
     // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
     let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));
@@ -257,7 +259,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(quote_page)
         .merge(pick_flow)
         .merge(feedback)
-        .merge(checkin)
+        .merge(link_pages)
         .merge(twilio)
         .merge(voice)
         .merge(dialed)
