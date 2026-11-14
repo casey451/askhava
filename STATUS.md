@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T03:19:53Z by runner f5b7fd7dcd10 (actions).
+Updated 2026-11-14T03:21:20Z by runner 224fe4c7f956 (actions).
 
-**Building: T433 in progress since 02:23Z; 308 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T433 in progress since 02:23Z; 309 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 308 of 435 build tasks (owner gates not counted)
+- **Tasks done:** 309 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 5: T440 claimed 02:53Z, lease until 05:53Z; lane 6: T344 claimed 02:54Z, lease until 05:54Z
 - **Week:** 34% used, 120.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:19Z, 0 min before this update
+- **Last run:** 03:20Z, 1 min before this update
 - **Keeper:** last ran 03:19Z, next wake 05:25Z
 
 ## Needs attention
@@ -16,13 +16,13 @@ Updated 2026-11-14T03:19:53Z by runner f5b7fd7dcd10 (actions).
 - PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 53% of the context window, over its 50% limit
-- Strict plan check red: 33 problem(s) on tasks still to run (+203 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 33 problem(s) on tasks still to run (+204 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T449 | server and intake: emergency first texts count toward the re | MERGE_PENDING | 1 | 31 min | 03:17Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T450 | portals: the sign-up code screens and the texts choice with  | MERGE_PENDING | 1 | 79 min | 03:00Z |  |
+| T450 | portals: the sign-up code screens and the texts choice with  | done | 1 | 79 min | 03:00Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 23 min | 02:41Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/intake/CLAUDE.md, app/messaging/CLAUDE.md, app |
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | done | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
@@ -111,16 +111,16 @@ Updated 2026-11-14T03:19:53Z by runner f5b7fd7dcd10 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 273 of 733 (37.2%) · partial 300 · unstarted 160
-**Tasks merged (throughput only):** 308 of 435
+**Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
+**Tasks merged (throughput only):** 309 of 435
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 14 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 17 | 38 | 3 | 58 |
+| businesses | 20 | 35 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
-| consent | 11 | 20 | 4 | 35 |
+| consent | 12 | 19 | 4 | 35 |
 | fees | 14 | 37 | 1 | 52 |
 | intake | 26 | 14 | 3 | 43 |
 | job-cards | 18 | 6 | 0 | 24 |
@@ -147,7 +147,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 188 of 214 done
+- stage 4: 189 of 214 done
 - stage 5: 0 of 67 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
