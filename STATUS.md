@@ -1,17 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-14T08:50:05Z by runner 4c59dc96b173 (actions).
+Updated 2026-11-14T08:50:32Z by runner 4c59dc96b173 (actions).
 
 **Building: T398 in progress since 08:29Z; 317 of 436 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 317 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T398 claimed 08:29Z, lease until 11:29Z; lane 4: T359 claimed 08:06Z, lease until 11:06Z
-- **Week:** 39% used, 116.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T398 claimed 08:29Z, lease until 11:29Z; lane 4: T359 claimed 08:06Z, lease until 11:06Z; lane 5: T437 claimed 08:49Z, lease until 11:49Z
+- **Week:** 39% used, 113.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:47Z, 2 min before this update
 - **Keeper:** last ran 08:41Z, next wake 11:09Z
 
 ## Needs attention
+- PLAN GAP T300 (since 2026-11-14T08:49:58Z, no attempt used; a plan change fixes it): T300: dependency T280 is DONE but its owned file app/server/src/business_signin.rs is not on main; T300: dependency T280 is DONE but its owned file app/businesses/src/sign_in_lines.rs is not on main; T300: dependency T280 is DONE but its owned file app/messaging/src/signin_mail.rs is not on main; T300: dependency T280 is DONE but its owned file app/server/tests/business_signin_route.rs is not on main
+- PLAN GAP T301 (since 2026-11-14T08:49:58Z, no attempt used; a plan change fixes it): T301: dependency T280 is DONE but its owned file app/server/src/business_signin.rs is not on main; T301: dependency T280 is DONE but its owned file app/businesses/src/sign_in_lines.rs is not on main; T301: dependency T280 is DONE but its owned file app/messaging/src/signin_mail.rs is not on main; T301: dependency T280 is DONE but its owned file app/server/tests/business_signin_route.rs is not on main
+- PLAN GAP T302 (since 2026-11-14T08:49:58Z, no attempt used; a plan change fixes it): T302: dependency T280 is DONE but its owned file app/server/src/business_signin.rs is not on main; T302: dependency T280 is DONE but its owned file app/businesses/src/sign_in_lines.rs is not on main; T302: dependency T280 is DONE but its owned file app/messaging/src/signin_mail.rs is not on main; T302: dependency T280 is DONE but its owned file app/server/tests/business_signin_route.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 39 problem(s) on tasks still to run (+99 on DONE tasks); first: T398: stored context_pct 19% but it measures 13%; regenerate
 
@@ -151,7 +154,7 @@ Updated 2026-11-14T08:50:05Z by runner 4c59dc96b173 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T08:20:50Z (week)): week: 77.8M used, 116.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T08:12:01Z.
+- Pacing (session_reading 2026-11-14T08:41:06Z (week)): week: 80.9M used, 113.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T08:01:48Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -168,6 +171,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T398 (lease until 2026-11-14T11:29:38Z)
 - lane 4: T359 (lease until 2026-11-14T11:06:27Z)
+- lane 5: T437 (lease until 2026-11-14T11:49:58Z)
 
 ## Last usage reading
 - {"task": "T280", "at": "2026-11-14T08:04:15Z", "cache_read_input_tokens": 4262742, "output_tokens": 34274, "cache_creation_input_tokens": 158940, "input_tokens": 161}
