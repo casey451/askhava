@@ -1,19 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:51:29Z by runner 917b57db8442 (actions).
+Updated 2026-11-14T00:52:03Z by runner e40ebe112f64 (actions).
 
 **Building: T341 in progress since 00:03Z; 303 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 303 of 434 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z
-- **Week:** 32% used, 127.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 4: T302 claimed 00:51Z, lease until 03:51Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z
+- **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:51Z, 0 min before this update
 - **Keeper:** last ran 00:51Z, next wake 03:05Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 30 problem(s) on tasks still to run (+197 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
+- PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 52% of the context window, over its 50% limit
+- Strict plan check red: 31 problem(s) on tasks still to run (+200 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -138,7 +139,7 @@ Updated 2026-11-14T00:51:29Z by runner 917b57db8442 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T00:32:02Z (week)): week: 66.5M used, 127.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T10:17:58Z.
+- Pacing (session_reading 2026-11-14T00:50:48Z (week)): week: 70.1M used, 123.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T06:18:09Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -156,6 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T341 (lease until 2026-11-14T03:03:00Z)
 - lane 3: T280 (lease until 2026-11-14T03:35:47Z)
+- lane 4: T302 (lease until 2026-11-14T03:51:46Z)
 - lane 5: T328 (lease until 2026-11-14T03:02:31Z)
 
 ## Last usage reading
