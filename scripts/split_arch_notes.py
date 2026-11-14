@@ -24,7 +24,11 @@ Usage:
   python3 scripts/split_arch_notes.py --verify REF  # prove the move from docs/architecture.md at REF: the
       file holds, in order, every line of REF's with each section's notes replaced by its stub (lines may be added), every crate NOTES.md starts with REF's,
       and every note's entries appear, whole and in order, exactly once across the destinations
-  python3 scripts/split_arch_notes.py --check       # fail if docs/architecture.md holds a build note (D-3620)
+  python3 scripts/split_arch_notes.py --check       # report each build note left in docs/architecture.md; exit 0
+      (the transition: tasks claimed before D-3620 may still bring one in on their update merge, and the
+      operator sweeps them with a plan pull request that runs this tool)
+  python3 scripts/split_arch_notes.py --check --strict   # the same, exit 1 on any (a later plan change turns
+      this on once every task whose attempt started before D-3620 merged is DONE or SKIPPED)
 Exit status 1 names each problem.
 """
 
@@ -266,7 +270,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=ROOT)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--verify", metavar="REF", help="prove the move from docs/architecture.md at REF; write nothing")
-    mode.add_argument("--check", action="store_true", help="fail if docs/architecture.md holds a build note")
+    mode.add_argument("--check", action="store_true", help="report each build note left in docs/architecture.md")
+    parser.add_argument("--strict", action="store_true", help="with --check: exit 1 on any build note")
     args = parser.parse_args(argv)
     if not (args.verify or args.check):
         return split(args.root)
@@ -274,7 +279,7 @@ def main(argv: list[str] | None = None) -> int:
     for problem in problems:
         print(problem)
     print(f"split_arch_notes: {len(problems)} problem(s)")
-    return 1 if problems else 0
+    return 1 if problems and (args.verify or args.strict) else 0
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
 """Tests for D-3620: the build notes live in the crates' NOTES.md, never in docs/architecture.md.
 
-Covers scripts/split_arch_notes.py: the check that keeps a "What T### built" paragraph out of
-docs/architecture.md (run here on the real file, so Ci and the smoke test fail on one), the routing of a
+Covers scripts/split_arch_notes.py: the check that reports a "What T### built" paragraph in
+docs/architecture.md (run here on the real file in its report-only mode, the D-3620 transition; `--strict`
+fails), the routing of a
 note to its crate with cross-references, the hold-back to docs/build-notes.md, and the mechanical move with
 its `--verify` proof. Fake data only.
 """
@@ -45,9 +46,12 @@ def fake_repo(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_real_architecture_holds_no_build_note() -> None:
-    """D-3620: a task's build note goes at the end of its crate's NOTES.md, never in docs/architecture.md."""
-    assert san.check(REPO_ROOT) == []
+def test_real_architecture_build_notes_are_reported_not_failed(capsys) -> None:  # type: ignore[no-untyped-def]
+    """D-3620's transition: a build note a task claimed before D-3620 brings into docs/architecture.md on its update
+    merge is reported (and swept by the operator's plan pull request), never a failure, until a later plan change
+    makes this test run `--check --strict` once every task whose attempt started before D-3620 merged is DONE or SKIPPED."""
+    assert san.main(["--root", str(REPO_ROOT), "--check"]) == 0
+    assert f"split_arch_notes: {len(san.check(REPO_ROOT))} problem(s)" in capsys.readouterr().out
 
 
 def test_check_names_a_build_note_line(tmp_path: Path) -> None:
@@ -125,10 +129,13 @@ def test_verify_finds_a_changed_architecture(tmp_path: Path) -> None:
 
 def test_main_check_exit_status(tmp_path: Path, capsys) -> None:  # type: ignore[no-untyped-def]
     root = fake_repo(tmp_path)
-    assert san.main(["--root", str(root), "--check"]) == 1
+    assert san.main(["--root", str(root), "--check"]) == 0  # report-only: the D-3620 transition
+    assert "4 problem(s)" in capsys.readouterr().out
+    assert san.main(["--root", str(root), "--check", "--strict"]) == 1
     assert "4 problem(s)" in capsys.readouterr().out
     san.main(["--root", str(root)])
     assert san.main(["--root", str(root), "--check"]) == 0
+    assert san.main(["--root", str(root), "--check", "--strict"]) == 0
     assert san.main(["--root", str(root), "--verify", "HEAD"]) == 0
 
 
