@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T05:05:23Z by runner 3a3945f3ac05 (actions).
+Updated 2026-11-14T05:05:38Z by runner d53bdd2875b8 (actions).
 
 **Building: T393 in progress since 04:25Z; 313 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -16,7 +16,7 @@ Updated 2026-11-14T05:05:23Z by runner 3a3945f3ac05 (actions).
 - PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
 - PLAN GAP T352 (since 2026-11-14T03:46:00Z, no attempt used; a plan change fixes it): T352: measures 53% of the context window, over its 50% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 32 problem(s) on tasks still to run (+207 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+207 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
