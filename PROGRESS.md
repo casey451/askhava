@@ -4480,3 +4480,4 @@
 - 2026-11-14T06:50:11Z runner f7cc24b1d073 (actions): {}
 - 2026-11-14T06:55:22Z runner 61c94cc79081 (actions): {"T352": "MERGE_PENDING -> DONE"}
 - 2026-11-14T06:55:53Z runner f7cc24b1d073 (actions): {"T396": "MERGE_PENDING -> QUEUED", "T437": "MERGE_PENDING -> QUEUED"}
+- 2026-11-14T06:56:12Z runner f7cc24b1d073 (actions): {"T437": "QUEUED -> IN_PROGRESS"}; T437 estimated 546k tokens (calibrated); week has 119.1M left (no five-hour budget, D-3056) after 901k still running in another lane (session_reading 2026-11-14T06:49:28Z (week)); claimed

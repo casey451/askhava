@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T280",
+ "current": "T437",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -40658,7 +40658,13 @@
    "attempts": 0,
    "slug": "charge-success-ledger-receipt",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-14T06:55:44Z",
+    "problems": [
+     "T359: dependency T352 is DONE but its owned file tests/contract/test_stripe_latest_charge.py is not on main"
+    ]
+   }
   },
   {
    "id": "T360",
@@ -50652,12 +50658,12 @@
     "T426",
     "T438"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 1,
    "slug": "crate-notes-shared-and-full-by-bytes",
    "type": "harness",
    "stage": "4",
-   "attempt_started_at": "2026-11-14T06:17:58Z",
+   "attempt_started_at": "2026-11-14T06:55:44Z",
    "decision_ids": [
     3582,
     3583,
@@ -51051,7 +51057,7 @@
     }
    ],
    "last_failure": "merging main into the reviewed head conflicts in app/adapters/CLAUDE.md; a resync merges it in on this attempt (D-891)",
-   "lane": "1",
+   "lane": "2",
    "update_merges": [
     {
      "from": "424ca0f62420d6b4bd1c4681c630660b23b5d6f9",
@@ -52391,7 +52397,7 @@
    "input_tokens": 69,
    "cache_read_input_tokens": 1004666
   },
-  "source": "session_reading 2026-11-14T06:27:42Z (week)",
+  "source": "session_reading 2026-11-14T06:49:28Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -55359,7 +55365,7 @@
    },
    "T437": {
     "estimated_bytes": 178999,
-    "estimated_tokens": 546476,
+    "estimated_tokens": 545831,
     "usage_counting": "message_id",
     "output_tokens": 64505,
     "input_tokens": 324,
@@ -55558,7 +55564,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T06:55:53Z",
+ "updated_at": "2026-11-14T06:56:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -55659,14 +55665,6 @@
  "runner_sha": "f7cc24b1d07352dc03f920313df5f1b74fdba1af",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "22e740b2d39cf324a3e4a7eb7883c40361a67ab2",
-   "ok": true,
-   "at": "2026-11-14T01:40:56Z",
-   "why": "start routine (ancestry reuse of d997705c35e7, 2026-11-14T01:32:25Z)",
-   "reused": "2026-11-14T01:32:25Z",
-   "base": "d997705c35e7d8be5f02fe0bca82b436e6e73085"
-  },
   {
    "sha": "22e740b2d39cf324a3e4a7eb7883c40361a67ab2",
    "ok": true,
@@ -55814,24 +55812,32 @@
    "why": "start routine (ancestry reuse of 6aa7f43d7bd8, 2026-11-14T06:17:58Z)",
    "reused": "2026-11-14T06:17:58Z",
    "base": "6aa7f43d7bd8c04503956e5e0efc899a614cb538"
+  },
+  {
+   "sha": "61c94cc79081c7f4291f0f0bcdb71be8610ff4de",
+   "ok": true,
+   "at": "2026-11-14T06:55:44Z",
+   "why": "start routine (ancestry reuse of 6aa7f43d7bd8, 2026-11-14T06:17:58Z)",
+   "reused": "2026-11-14T06:17:58Z",
+   "base": "6aa7f43d7bd8c04503956e5e0efc899a614cb538"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T280 estimated 901k tokens (calibrated); week has 118.3M left (no five-hour budget, D-3056) after 1.7M still running in another lane (session_reading 2026-11-14T06:27:42Z (week)); claimed",
-  "at": "2026-11-14T06:32:17Z",
+  "last": "T437 estimated 546k tokens (calibrated); week has 119.1M left (no five-hour budget, D-3056) after 901k still running in another lane (session_reading 2026-11-14T06:49:28Z (week)); claimed",
+  "at": "2026-11-14T06:55:44Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 75749112,
+    "used": 74900521,
     "budget": 194000000,
-    "left": 118250888,
+    "left": 119099479,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 279250684,
-  "projected_finish": "2026-11-24T08:21:48Z"
+  "remaining_estimate": 276577221,
+  "projected_finish": "2026-11-24T06:26:20Z"
  },
  "main_red_history": [
   {
