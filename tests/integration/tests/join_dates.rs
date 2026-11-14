@@ -6,8 +6,9 @@
 //! checklist, and `None` with no sign-up row; a new category the file has on reads a switch-on
 //! time and one it has off reads none; the owner's off-to-on switch records the time, a switch-off
 //! keeps it, a later switch-on records the later time, a reload or a repeated switch-on changes
-//! nothing; unknown and never-switched-on codes give nothing; the check refuses an enabled row with
-//! no time; the migration's backfill gives on categories 1970 and leaves off ones null; and
+//! nothing (a file-on category keeps its time across a reload); unknown and never-switched-on
+//! codes give nothing; the check refuses an enabled row with no time; the migration's backfill
+//! gives on categories 1970, leaves off ones null and ends with the check validated; and
 //! TD-FEE-08's switch-on cases hold on the read dates through `in_free_win_window`. Fake data only.
 
 use askhava_businesses::api::{create, join_facts};
@@ -48,9 +49,12 @@ async fn app(pool: &sqlx::PgPool) -> sqlx::pool::PoolConnection<sqlx::Postgres> 
     conn
 }
 
-/// A business whose sign-up form was submitted at `joined` with `trades` chosen.
+/// A business whose sign-up form was submitted at `joined` with `trades` chosen; the business row
+/// is created three days earlier, so a reader that answers the row's time instead fails.
 async fn signed_up(conn: &mut PgConnection, joined: Timestamp, trades: &[&str]) -> Uuid {
-    let id = create(conn, true, joined).await.expect("business");
+    let id = create(conn, true, joined - days(3))
+        .await
+        .expect("business");
     sqlx::query(
         "INSERT INTO businesses.signup (business_id, mailbox_id, submitted_at, trades) \
          VALUES ($1, gen_random_uuid(), $2, $3)",
@@ -112,16 +116,24 @@ async fn a_new_category_reads_a_switch_on_time_only_when_on(pool: sqlx::PgPool) 
 }
 
 /// FEE-010, D-195, D-3779: switching on records the time, off keeps it, on again records a later
-/// one; a reload and a repeated switch-on change nothing.
+/// one; a reload and a repeated switch-on change nothing, for a file-on category too.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn the_owner_switch_records_the_latest_switch_on(pool: sqlx::PgPool) {
     let mut conn = app(&pool).await;
+    let aged = at("2020-01-01T00:00:00Z");
+    sqlx::query("UPDATE catalog.category SET switched_on_at = $1 WHERE code = $2")
+        .bind(aged.to_sqlx())
+        .bind(ON_AT_LOAD)
+        .execute(&mut *conn)
+        .await
+        .expect("age the file-on time");
     assert!(switch(&mut conn, OFF_AT_LOAD, true).await);
     let first = opened(&mut conn, &[OFF_AT_LOAD]).await;
     assert_eq!(first.len(), 1);
     assert!(!switch(&mut conn, OFF_AT_LOAD, true).await);
     load(&mut conn, &catalog()).await.expect("reload");
     assert_eq!(opened(&mut conn, &[OFF_AT_LOAD]).await, first);
+    assert_eq!(opened(&mut conn, &[ON_AT_LOAD]).await, [aged]);
     assert!(switch(&mut conn, OFF_AT_LOAD, false).await);
     assert_eq!(opened(&mut conn, &[OFF_AT_LOAD]).await, first);
     sqlx::query("UPDATE catalog.category SET switched_on_at = $1 WHERE code = $2")
@@ -195,6 +207,13 @@ async fn the_backfill_marks_on_categories_on_before_launch(pool: sqlx::PgPool) {
     .await
     .expect("count");
     assert_eq!(on, 0);
+    let validated: bool = sqlx::query_scalar(
+        "SELECT convalidated FROM pg_constraint WHERE conname = 'category_switched_on_check'",
+    )
+    .fetch_one(&mut *admin)
+    .await
+    .expect("constraint");
+    assert!(validated);
 }
 
 /// TD-FEE-08 (FEE-010, D-195): on the read dates, a business that joined on day 200 for a trade
