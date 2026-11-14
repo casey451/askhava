@@ -8,6 +8,7 @@
     clippy::match_wildcard_for_single_variants
 )]
 
+use crate::business_numbers::Figure;
 use crate::rules::{self, Wait};
 
 /// A job's one status (JOB-001). Stored in `jobs.job.status` as [`JobStatus::code`].
@@ -223,5 +224,26 @@ impl JobStatus {
     #[must_use]
     pub const fn is_final(self) -> bool {
         self.targets().is_empty()
+    }
+
+    /// D-250, D-143: the "Your numbers" figure a move out of Connected into this status counts
+    /// in, as `rules::connected_move` maps the replies: Done is DONE, Quotes ready is NO, Closed
+    /// the third figure; any other status none (BIZ-025, T451).
+    #[must_use]
+    pub const fn finished_figure(self) -> Option<Figure> {
+        match self {
+            Self::Done => Some(Figure::Done),
+            Self::QuotesReady => Some(Figure::No),
+            Self::Closed => Some(Figure::Other),
+            Self::Intake
+            | Self::Open
+            | Self::NoQuotesYet
+            | Self::AwaitingConfirm
+            | Self::PaymentPending
+            | Self::Connected
+            | Self::ClosedEarly
+            | Self::NotCovered
+            | Self::Cancelled => None,
+        }
     }
 }

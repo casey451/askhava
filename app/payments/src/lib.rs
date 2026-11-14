@@ -47,6 +47,7 @@
 //! [`api::record_three_ds`] and [`api::three_ds_authenticated`] (FEE-050, FEE-027, D-3118).
 
 pub mod api;
+mod card_list;
 mod charge;
 mod dispute_http;
 mod disputes;

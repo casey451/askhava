@@ -129,3 +129,4 @@
 - [INT-043 TXT-041] (task 162) cross-reference (D-3620): the build note of T162 is in `app/quotes/NOTES.md`: `grep -n '(task 162)' app/quotes/NOTES.md`.
 - [FEE-045 FEE-005 FEE-004 FEE-007] (task 340) cross-reference (D-3620): the build note of T340 is in `app/picks/NOTES.md`: `grep -n '(task 340)' app/picks/NOTES.md`.
 - [PICK-053 PICK-038 REC-010 REC-011] (task 341) cross-reference (D-3620): the build note of T341 is in `app/picks/NOTES.md`: `grep -n '(task 341)' app/picks/NOTES.md`.
+- [BIZ-025] (task 451) `business_numbers.rs`: `finished_counts(db, pairs, (from, to))` reads the pairs' Connected moves from `jobs.status_history`; per pair the last move into Connected at or before `connected_at`, then the first move out after it (`move_out`), counted by `JobStatus::finished_figure` (Done DONE, Quotes ready NO, Closed third) when it falls in the window (D-3791).
