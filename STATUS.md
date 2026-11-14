@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:37:27Z by runner 4628302b543e (actions).
+Updated 2026-11-14T12:37:46Z by runner 4628302b543e (actions).
 
-**Building: T359 in progress since 11:24Z; 322 of 449 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T301 in progress since 12:32Z; 322 of 449 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 322 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 3: T301 claimed 12:32Z, lease until 15:32Z
+- **Lane:** lane 3: T301 claimed 12:32Z, lease until 15:32Z
 - **Week:** 43% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:36Z, 1 min before this update
+- **Last run:** 12:37Z, 0 min before this update
 - **Keeper:** last ran 12:36Z, next wake 14:27Z
 
 ## Needs attention
@@ -37,6 +37,7 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T359 | payments: a successful charge writes its own charge ledger e | MERGE_PENDING | 3 | 72 min | 12:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 2 | 16 min | 12:20Z | PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 3 | 23 min | 11:56Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T302 | server (harness): business sign-up's open doors and served p | check_failed | 5 | 45 min | 11:56Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
@@ -44,7 +45,7 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 | T453 | quotes: the job's quote rules are read from the stored job,  | done | 1 | 27 min | 11:02Z |  |
 | T452 | e2e and Ally (harness): a keyed web binary beside the suite' | done | 1 | 24 min | 10:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 31 min | 10:58Z |  |
-| T359 | payments: a successful charge writes its own charge ledger e | check_failed | 2 | 75 min | 10:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
+| T359 | payments: a successful charge writes its own charge ledger e | check_failed | 2 | 75 min | 10:54Z |  |
 | T435 | calls and server: calls and texts act for the business only  | done | 1 | 30 min | 10:46Z |  |
 | T329 | businesses: the eight business account events queued today ( | BLOCKED | 1 | 2 min | 10:28Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 52 min | 10:25Z |  |
@@ -191,8 +192,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T359 (lease until 2026-11-14T14:24:40Z)
 - lane 3: T301 (lease until 2026-11-14T15:32:04Z)
 
 ## Last usage reading
-- {"task": "T300", "at": "2026-11-14T12:20:06Z", "input_tokens": 233, "cache_creation_input_tokens": 240554, "cache_read_input_tokens": 15718482, "output_tokens": 82815}
+- {"task": "T359", "at": "2026-11-14T12:37:25Z", "cache_creation_input_tokens": 118533, "input_tokens": 96, "cache_read_input_tokens": 2441915, "output_tokens": 20251}
