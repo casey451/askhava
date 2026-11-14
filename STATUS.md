@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T23:29:40Z by runner 9a9821e1124d (actions).
+Updated 2026-11-14T23:29:56Z by runner 9a9821e1124d (actions).
 
-**Building: T445 in progress since 23:05Z; 337 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T486 in progress since 22:31Z; 337 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 337 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T445 claimed 23:05Z, lease until 02:05Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z; lane 6: T451 claimed 22:48Z, lease until 01:48Z
+- **Lane:** lane 5: T486 claimed 22:31Z, lease until 01:31Z; lane 6: T451 claimed 22:48Z, lease until 01:48Z
 - **Week:** 53% used, 84.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:26Z, 3 min before this update
 - **Keeper:** last ran 23:25Z, next wake 01:33Z
@@ -18,6 +18,7 @@ Updated 2026-11-14T23:29:40Z by runner 9a9821e1124d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T445 | runner (harness): a failed nightly on an older head keeps th | MERGE_PENDING | 1 | 24 min | 23:29Z |  |
 | T301 | server and portals: the email action links are served (every | MERGE_PENDING | 3 | 27 min | 23:24Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
 | T485 | businesses: a public read-only reader of a sign-up's identit | done | 1 | 28 min | 22:54Z |  |
 | T301 | server and portals: the email action links are served (every | resync | 3 | 58 min | 22:46Z |  |
@@ -161,9 +162,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T445 (lease until 2026-11-15T02:05:32Z)
+- nothing
 - lane 5: T486 (lease until 2026-11-15T01:31:30Z)
 - lane 6: T451 (lease until 2026-11-15T01:48:26Z)
 
 ## Last usage reading
-- {"task": "T301", "at": "2026-11-14T23:24:41Z", "cache_creation_input_tokens": 61603, "input_tokens": 69, "output_tokens": 11006, "cache_read_input_tokens": 1057921}
+- {"task": "T445", "at": "2026-11-14T23:29:39Z", "input_tokens": 116, "cache_read_input_tokens": 3296797, "output_tokens": 38740, "cache_creation_input_tokens": 127195}
