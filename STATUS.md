@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-14T17:43:21Z by runner 45c9090508ad (actions).
+Updated 2026-11-14T17:49:24Z by runner 14099277d223 (actions).
 
-**Stopped: main is red, only FIX-MAIN runs; 329 of 452 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Stopped: main is red, only FIX-MAIN runs; 329 of 453 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 329 of 452 build tasks (owner gates not counted)
+- **Tasks done:** 329 of 453 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 17:42Z (no task in progress)
+- **Lane:** idle since 17:47Z (no task in progress)
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:43Z, 0 min before this update
+- **Last run:** 17:43Z, 5 min before this update
 - **Keeper:** last ran 17:43Z, next wake 18:03Z
 
 ## Needs attention
 - MAIN IS RED: nightly; only FIX-MAIN runs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+106 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
+- Strict plan check red: 17 problem(s) on tasks still to run (+106 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| FIX-MAIN |  | MERGE_PENDING | 1 | 78 min | 17:42Z |  |
+| FIX-MAIN |  | done | 1 | 78 min | 17:42Z |  |
 | T467 | picks: a pick whose fee terms changed before its Confirm end | MERGE_PENDING | 1 | 43 min | 16:28Z |  |
 | T439 | --after refuses a hand-in whose head no Opus reviewer approv | MERGE_PENDING | 1 | 44 min | 16:06Z |  |
 | T465 | docs: move the entry lines left under each crate guide's `## | done | 1 | 31 min | 15:55Z |  |
@@ -130,7 +130,7 @@ Updated 2026-11-14T17:43:21Z by runner 45c9090508ad (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 575 · unstarted 158
-**Tasks merged (throughput only):** 329 of 452
+**Tasks merged (throughput only):** 329 of 453
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -170,7 +170,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
-- stage kit: 13 of 15 done
+- stage kit: 14 of 15 done
 
 ## Running
 - nothing
