@@ -115,6 +115,9 @@ pub use crate::open_cards_times::{
     OpenCardsTime, OpenCardsTimes, open_cards_times, set_open_cards_times,
 };
 pub use crate::pest_identity::{PestIdentity, pest_identity, record_pest_match};
+pub use crate::phone_approval::{
+    WaitingPhone, approve_phone, phone_standing, reject_phone, waiting_phones,
+};
 pub use crate::public_name::{PUBLIC_NAME_ALERT, public_names};
 pub use crate::reply_link::{is_main_phone, link_by_reply};
 pub use crate::rules::JobTypeChoice;
@@ -140,7 +143,8 @@ pub use crate::signup_record::{RecordFound, SignupRecord, signup_record};
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{
     Acting, MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember,
-    add_member, add_owner, change_phone, members, remove_member, set_roles, unlink_phone,
+    add_member, add_owner, change_phone, change_phone_at, members, remove_member, set_roles,
+    unlink_phone,
 };
 
 /// SEC-038, D-480: whether `by`, a current member of `by.business`, passed a Verify code (to their
@@ -282,7 +286,8 @@ pub async fn job_types(
 
 /// Links a phone as `team::link_phone` does (CALL-012) and, in the same transaction, queues the
 /// owner's [`PHONE_LINKED_KIND`] email when the linking member is not the owner (BIZ-033, D-258,
-/// D-311). The Approve gate and the owner text are T148's (D-493).
+/// D-311). A member's phone waits for the owner's `approve_phone` (T396, D-3081); the owner text
+/// is T148's (D-493).
 ///
 /// # Errors
 ///

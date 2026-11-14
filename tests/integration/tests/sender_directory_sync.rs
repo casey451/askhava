@@ -3,11 +3,12 @@
 //!
 //! The directory link here is the one the composition uses: `messaging::api::sender_add` with the
 //! vault. A refused number leaves no phone row behind, since the link runs in the same
-//! transaction. All numbers and IDs are fake.
+//! transaction. A phone a member other than the owner links or changes enters the directory only
+//! when the owner approves it (BIZ-033, D-3081). All numbers and IDs are fake.
 
 use askhava_businesses::api::{
-    Acting, Roles, SenderLink, TeamError, add_member, add_owner, change_phone, create, link_phone,
-    remove_member, unlink_phone,
+    Acting, Roles, SenderLink, TeamError, add_member, add_owner, approve_phone, change_phone,
+    create, link_phone, remove_member, unlink_phone, waiting_phones,
 };
 use askhava_messaging::api::{OutboxError, sender_add, sender_business};
 use askhava_privacy::api::Vault;
@@ -86,7 +87,8 @@ async fn td_biz_34_the_main_phone_follows_into_the_directory(pool: PgPool) {
     );
 }
 
-/// TD-BIZ-34 (CALL-012, D-491): a staff phone follows too, and leaves with the member who linked it.
+/// TD-BIZ-34 (CALL-012, D-491): a staff phone follows too, once the owner approves the member's
+/// link and number change (BIZ-033, D-3081), and leaves with the member who linked it.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_34_a_staff_phone_follows_into_the_directory(pool: PgPool) {
     let dir = directory();
@@ -100,10 +102,20 @@ async fn td_biz_34_a_staff_phone_follows_into_the_directory(pool: PgPool) {
     let line = link_phone(&mut db, &dir, (biller, false), &n("928-555-0182"), at(3))
         .await
         .expect("link");
+    assert_eq!(found(&mut db, &dir, "928-555-0182").await, None);
+    approve_phone(&mut db, owner, (line, at(3)), at(3))
+        .await
+        .expect("approve");
     assert_eq!(found(&mut db, &dir, "928-555-0182").await, Some(business));
     change_phone(&mut db, &dir, (biller, line), &n("928-555-0183"))
         .await
         .expect("change");
+    assert_eq!(found(&mut db, &dir, "928-555-0183").await, None);
+    assert_eq!(found(&mut db, &dir, "928-555-0182").await, None);
+    let waiting = waiting_phones(&mut db, business).await.expect("waiting");
+    approve_phone(&mut db, owner, (line, waiting[0].number_set_at), at(4))
+        .await
+        .expect("approve again");
     assert_eq!(found(&mut db, &dir, "928-555-0182").await, None);
     assert_eq!(found(&mut db, &dir, "928-555-0183").await, Some(business));
     remove_member(&mut db, owner, member, at(4))
