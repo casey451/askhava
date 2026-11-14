@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T02:38:04Z by runner 918581713bc4 (actions).
+Updated 2026-11-14T02:40:18Z by runner 918581713bc4 (actions).
 
 **Building: T437 in progress since 02:18Z; 307 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T02:38:04Z by runner 918581713bc4 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T437 claimed 02:18Z, lease until 05:18Z; lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
 - **Week:** 34% used, 124.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:37Z, 0 min before this update
+- **Last run:** 02:40Z, 0 min before this update
 - **Keeper:** last ran 02:38Z, next wake 04:43Z
 
 ## Needs attention
@@ -85,7 +85,6 @@ Updated 2026-11-14T02:38:04Z by runner 918581713bc4 (actions).
 | T429 | Copy, voice and AI-smell docs name Laftly | done | 1 | 22 min | 03:13Z |  |
 | T430 | payments: a Confirm needs the current card-authorization wor | done | 1 | 39 min | 03:13Z |  |
 | T426 | Brand rename prep: notice-address and sign-in security tests | done | 1 | 35 min | 02:49Z |  |
-| T425 | Brand rename prep: the last integration tests and four secur | done | 1 | 28 min | 02:39Z |  |
 
 ### Plan and harness merges on main
 - 01:13Z Plan: T302 plan gap — new T450 sign-up code screens and verified consent (D-3602) (#730)
