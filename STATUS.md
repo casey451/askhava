@@ -1,20 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T15:33:35Z by runner c97c4d0feb12 (actions).
+Updated 2026-11-14T15:37:22Z by runner 45c9090508ad (manual).
 
-**Building: T439 in progress since 15:21Z; 328 of 451 done; week 45% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T439 in progress since 15:21Z; 328 of 452 done; week 45% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 328 of 451 build tasks (owner gates not counted)
+- **Tasks done:** 328 of 452 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T439 claimed 15:21Z, lease until 18:21Z; lane 3: T465 claimed 15:24Z, lease until 18:24Z; lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane 7: T300 claimed 14:35Z, lease until 17:35Z
 - **Week:** 45% used, 100.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:33Z, 0 min before this update
+- **Last run:** 15:33Z, 3 min before this update
 - **Keeper:** last ran 15:33Z, next wake 17:38Z
 
 ## Needs attention
-- BLOCKED T261: plan gap reported: PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs:95); migrations/0158_picks_share_box.sql:28-29 CHECK allows only replaced/paused/ineligible/cant_take. T261 goal (1) and D-1871 (3) need the pick to end through the Can't take it path with its own reason, but T261 owns neither app/picks nor migrations, and no other task in kit/tasks.json builds a new reason (only T287 and T261 mention it). Reviewer confirmed with file:line evidence. Secondary: the task needs about 11 files and over 600 lines against a 7-file, 600-line budget.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 31 problem(s) on tasks still to run (+106 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+106 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -107,6 +106,7 @@ Updated 2026-11-14T15:33:35Z by runner c97c4d0feb12 (actions).
 | T266 | portals, picks and privacy: the homeowner's contact choice a | done | 2 | 66 min | 15:48Z | session ended without handing in |
 
 ### Plan and harness merges on main
+- 15:37Z Plan: fee_terms_changed pick end reason (new T467) so T261's Confirm page can end a pick safely (D-3722) (#788)
 - 13:12Z Plan: T301 door-matrix Quote-link cases follow BIZ-038/CARD-023; action pages link forms.css (D-3706) (#781)
 - 12:55Z Plan: shared portal forms stylesheet (T466) so business pages pass A11Y-007/009 (D-3699, D-3700) (#780)
 - 12:46Z Plan: split T437 so the NOTES.md rule lands before the crate-doc sweep (D-3698) (#777)
@@ -130,31 +130,31 @@ Updated 2026-11-14T15:33:35Z by runner c97c4d0feb12 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 272 of 733 (37.1%) · partial 303 · unstarted 158
-**Tasks merged (throughput only):** 328 of 451
+**Requirements verified:** 4 of 733 (0.5%) · partial 571 · unstarted 158
+**Tasks merged (throughput only):** 328 of 452
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 16 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 18 | 37 | 3 | 58 |
-| calls | 10 | 14 | 1 | 25 |
-| consent | 12 | 19 | 4 | 35 |
-| fees | 14 | 37 | 1 | 52 |
-| intake | 26 | 14 | 3 | 43 |
-| job-cards | 18 | 6 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 23 | 5 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
-| ops-recovery | 2 | 8 | 44 | 54 |
-| privacy | 9 | 20 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 9 | 41 | 5 | 55 |
+| accessibility | 0 | 29 | 6 | 35 |
+| ai | 0 | 24 | 5 | 29 |
+| businesses | 0 | 55 | 3 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 31 | 4 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 1 | 39 | 3 | 43 |
+| job-cards | 1 | 23 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 1 | 42 | 2 | 45 |
+| ops-recovery | 0 | 10 | 44 | 54 |
+| privacy | 0 | 29 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 55 | 1 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 1 | 49 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 0 | 11 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 

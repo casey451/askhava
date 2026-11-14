@@ -28316,7 +28316,7 @@
     "T319",
     "T466"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "served-confirm-route",
    "type": "build",
@@ -28330,8 +28330,8 @@
     3720,
     3721
    ],
-   "reason": "plan gap reported: PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason \"cant_take\" (models::end_pick is pub(crate), models.rs:95); migrations/0158_picks_share_box.sql:28-29 CHECK allows only replaced/paused/ineligible/cant_take. T261 goal (1) and D-1871 (3) need the pick to end through the Can't take it path with its own reason, but T261 owns neither app/picks nor migrations, and no other task in kit/tasks.json builds a new reason (only T287 and T261 mention it). Reviewer confirmed with file:line evidence. Secondary: the task needs about 11 files and over 600 lines against a 7-file, 600-line budget.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason \"cant_take\" (models::end_pick is pub(crate), models.rs:95); migrations/0158_picks_share_box.sql:28-29 CHECK allows only replaced/paused/ineligible/cant_take. T261 goal (1) and D-1871 (3) need the pick to end through the Can't take it path with its own reason, but T261 owns neither app/picks nor migrations, and no other task in kit/tasks.json builds a new reason (only T287 and T261 mention it). Reviewer confirmed with file:line evidence. Secondary: the task needs about 11 files and over 600 lines against a 7-file, 600-line budget. Nothing was committed.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason \"cant_take\" (models::end_pick is pub(crate), models.rs:95); migrations/0158_picks_share_box.sql:28-29 CHECK allows only replaced/paused/ineligible/cant_take. T261 goal (1) and D-1871 (3) need the pick to end through the Can't take it path with its own reason, but T261 owns neither app/picks nor migrations, and no other task in kit/tasks.json builds a new reason (only T287 and T261 mention it). Reviewer confirmed with file:line evidence. Secondary: the task needs about 11 files and over 600 lines against a 7-file, 600-line budget. Nothing was committed.\nre-queued after plan fix D-3722: D-3722 (#788): new T467 adds the fee_terms_changed end and a locked payments check; T261 calls end_for_fee_terms and waits on T467",
    "history": [
     {
      "attempt": 1,
@@ -28355,6 +28355,21 @@
        "turns": 10
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-14T15:37:22Z",
+     "reason": "D-3722 (#788): new T467 adds the fee_terms_changed end and a locked payments check; T261 calls end_for_fee_terms and waits on T467",
+     "by": "manual-51f28a9f9444",
+     "was": "plan gap reported: PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason \"cant_take\" (models::end_pick is pub(crate), models.rs:95); migrations/0158_picks_share_box.sql:28-29 CHECK allows only replaced/paused/ineligible/cant_take. T261 goal (1) and D-1871 (3) need the pick to end through the Can't take it path with its own reason, but T261 owns neither app/picks nor migrations, and no other task in kit/tasks.json builds a new reason (only T287 and T261 mention it). Reviewer confirmed with file:line evidence. Secondary: the task needs about 11 files and over 600 lines against a 7-file, 600-line budget.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3722",
+     "plan_since": "2026-11-14T14:27:19Z",
+     "plan_base": "49857763a082bd7cc92c26c79feef4ee8dc51282",
+     "plan_head": "45c9090508ad57c4bf49d0dbd85bc2f04129222f",
+     "plan_then": "7fd31dec5c95a2748475fa6c18a1506e84a7a4091b3eead22f8b3a6aa5b7af68",
+     "plan_now": "a6fe785c7e2abc7b44f860efeebedd4f0f502a1a99bb74bea66940bd3896653b"
     }
    ]
   },
@@ -58547,7 +58562,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T15:33:35Z",
+ "updated_at": "2026-11-14T15:37:22Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -58645,8 +58660,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c97c4d0feb12e99f49a885155edb1bdaeb71f188",
- "starter": "actions",
+ "runner_sha": "45c9090508ad57c4bf49d0dbd85bc2f04129222f",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
