@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T13:36:17Z by runner c37dc9c0f001 (actions).
+Updated 2026-11-14T13:36:32Z by runner c37dc9c0f001 (actions).
 
 **Building: T432 in progress since 12:42Z; 323 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-14T13:36:17Z by runner c37dc9c0f001 (actions).
 - **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z
 - **Week:** 44% used, 106.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:36Z, 0 min before this update
-- **Keeper:** last ran 13:34Z, next wake 15:45Z
+- **Keeper:** last ran 13:36Z, next wake 15:45Z
 
 ## Needs attention
 - PLAN GAP T353 (since 2026-11-14T13:35:50Z, no attempt used; a plan change fixes it): T353: dependency T359 is DONE but its owned file migrations/0183_payments_charge_id.sql is not on main; T353: dependency T359 is DONE but its owned file tests/integration/tests/charge_ledger_entry.rs is not on main
