@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T13:45:08Z by runner aa64d53b5f18 (actions).
+Updated 2026-11-14T13:47:22Z by runner aa64d53b5f18 (actions).
 
 **Building: T432 in progress since 12:42Z; 323 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T13:45:08Z by runner aa64d53b5f18 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z; lane 5: T353 claimed 13:44Z, lease until 16:44Z
 - **Week:** 44% used, 104.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:38Z, 6 min before this update
+- **Last run:** 13:45Z, 1 min before this update
 - **Keeper:** last ran 13:38Z, next wake 15:45Z
 
 ## Needs attention
@@ -128,7 +128,6 @@ Updated 2026-11-14T13:45:08Z by runner aa64d53b5f18 (actions).
 - 17:36Z Plan: count usage once per message, prove fix rounds were re-reviewed (D-3475) (#685)
 - 15:02Z Plan: split T328 and trim T321 to fit the context limit (D-3468) (#676)
 - 14:47Z Plan: fix T386 and D-3445 plan gaps (D-3467) (#673)
-- 13:45Z Plan: shorten the critical path, drop legacy dependency edges (D-3446) (#671)
 
 ## Progress (requirements verified)
 
