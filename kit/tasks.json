@@ -32073,13 +32073,14 @@
    "id": "T461",
    "slug": "signup-email-activation",
    "title": "server: business sign-up's service area, email code and activation are served",
-   "goal": "Plan change D-3676 (split from T302; BIZ-016, BIZ-019, BIZ-040, BIZ-049, BIZ-058, SEC-004; D-2128, D-3262, D-3602, D-3641): the rest of sign-up up to activation, in T302's `app/server/src/business_signup.rs`, on the existing route constants only (no new open path, so D-3641's list is unchanged). A correct email code activates an unflagged sign-up at once (`businesses::api::confirm`, `app/businesses/src/email_verification.rs:401`, calls `identity::settle`), and sign-up cannot finish without towns, a base ZIP and a radius (BIZ-058, `docs/spec/businesses.md:62`), so the order is: (1) `SERVICE_AREA_ROUTE` `POST` (the base ZIP and radius, `businesses::api::save_service_area`, BIZ-058, BIZ-049), allowed once the identity step is done; (2) `EMAIL_CHECK_ROUTE` `POST` (`/b/signup/email-code`), the emailed code step, refused until the service area is saved (`businesses::api::service_area` answers one) and before identity: `start_signup_check` sends it, `confirm_mailbox` (`email_verification.rs:363`'s `confirm`) checks it, both given the server's own `ASKHAVA_ID_SECRET` as their `secret` (the key `code_of`, `email_verification.rs:78`, derives the code from, so T464's TD-SEC-69 browser test can compute the code from T452's exported ID secret), a refused or expired code showing `Screen::EmailCode` with its problem; `EMAIL_RESEND_ROUTE` resends under the same rule. (3) Activation (BIZ-016): when the email step's `confirm` leaves the business `Active`, that response clears the `__Host-askhava-signup` cookie (`Max-Age=0`, same name and attributes), sends the owner the normal sign-in link to the verified sign-up email through the server's sign-in mailer (`business_signin::SignInMailer`; link plus code, SEC-004; no session is started without it) and shows the done screen (`Screen::Done` with `portals::api::done_facts`); when it leaves the business in `NeedsReview` (a flag), the done screen says so and the cookie stays, so nothing more is asked. Every later step reads the sign-up only from that verified cookie (T459's), never from a posted or path ID, and checks that the sign-up's stored state (its identity step, `businesses::api::Step`, code-sent and email-verified facts) allows that step now, and that the business's stored status (`businesses::api::AccountStatus`) is `Pending` or `NeedsReview`; a missing or bad binding (a wrong or altered MAC, ID or salt), a step out of order or a business in any other status is refused like any refusal (the screen again, no detail), changes nothing, sends nothing and calls no Verify (D-3641). The inbox check (BIZ-042) is not served here: it needs the owner's session and is T462's. Its rows in `docs/architecture.md` section 13 are marked `yes`. Tests: cases in `app/server/tests/business_signup_route.rs` (TD-SEC-45: the email code step is refused before the service area and before identity, accepts the right code and refuses a wrong one; the activating response clears the cookie and sends one sign-in email; a step taken after activation with a still-valid sign-up cookie is refused and changes nothing). Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3676 (split from T302; BIZ-016, BIZ-019, BIZ-040, BIZ-049, BIZ-058, SEC-004; D-2128, D-3262, D-3602, D-3641), revised by plan change D-3743 (the email paths come from T468; D-3186, D-752): the rest of sign-up up to activation, in T302's `app/server/src/business_signup.rs`, on the existing route constants only (no new open path, so D-3641's list is unchanged). A correct email code activates an unflagged sign-up at once (`businesses::api::confirm_mailbox`, `app/businesses/src/email_verification.rs:363`'s `confirm`, calls `identity::settle` at `:401`), and sign-up cannot finish without towns, a base ZIP and a radius (BIZ-058, `docs/spec/businesses.md:62`), so the order is: (1) `SERVICE_AREA_ROUTE` `POST` (the base ZIP and radius, `businesses::api::save_service_area`, BIZ-058, BIZ-049), allowed once the identity step is done; (2) `EMAIL_CHECK_ROUTE` `POST` (`/b/signup/email-code`), the emailed code step, refused until the service area is saved (`businesses::api::service_area` answers one) and before identity: `start_signup_check` opens the check and returns the code, emailing nothing itself (`email_verification.rs:134`); the server emails that code to the sign-up email through T468's `messaging::api::MailboxCodeSender` (BIZ-040: the code is sent to it), the mailbox from T468's `businesses::api::signup_mailbox` and the address opened with `privacy::api::read_business_mailbox` under `BusinessPurpose::AccountEmail` on a bare connection once the check is committed (D-752), never logged, stored or put in an error; `confirm_mailbox(conn, secret, (business, mailbox), code, now)` checks it; both are given the server's own `ASKHAVA_ID_SECRET` as their `secret` (the key `code_of`, `email_verification.rs:78`, derives the code from, so T464's TD-SEC-69 browser test can compute the code from T452's exported ID secret), a refused or expired code showing `Screen::EmailCode` with its problem; `EMAIL_RESEND_ROUTE` resends under the same rule. Every code send (the email step's first send and each resend) is counted first, in `app/server/src/business_signup.rs`, where the client IP is known (`portals::api::security_event_client`, as T459 reads it for `admit_sign_up`, SEC-040), through `intake::api::admit` as every portal limit is (`core::api::rate_limit_hit_on` underneath, one SEC-015 alert per scope and window): `portals::api::CODE_SENDS_PER_IP` (10 code sends per IP per hour, shared with the other portal code sends) and then a new `SIGNUP_EMAIL_CODES_PER_BUSINESS` limit in that file, `Limit::daily(\"signup.email_codes_per_business\", 5)` on `Key::Record(business)` (5 per Arizona day, the same per-destination cap PICK-055 gives portal code sends, `CODE_SENDS_PER_NUMBER`), so a holder of the sign-up cookie cannot flood the address or spend the email provider's daily quota (SEC-014, SEC-025). A refused or uncounted send (a counter error refuses too) calls neither `start_signup_check` nor the sender, so it opens no new check, queues and sends nothing and leaves the earlier code working, and shows the same `Screen::EmailCode` with no detail. (3) Activation (BIZ-016): when the email step's `confirm` leaves the business `Active`, that response clears the `__Host-askhava-signup` cookie (`Max-Age=0`, same name and attributes), sends the owner the normal sign-in link through T468's `portals::api::send_sign_in_link` with the server's sign-in mailer (`business_signin::SignInMailer`, which opens the address under `SignInLink`) to `SignInAddress { business, mailbox }`, the sign-up mailbox, which is the owner's (`submit_signup` adds the owner with it, `app/portals/src/business_signup.rs:674` to `:679`); the link then works as any sign-in link, with its new-device code (SEC-004; no session is started without it) and shows the done screen (`Screen::Done` with `portals::api::done_facts`); when it leaves the business in `NeedsReview` (a flag), the done screen says so and the cookie stays, so nothing more is asked. Every later step reads the sign-up only from that verified cookie (T459's), never from a posted or path ID, and checks that the sign-up's stored state (its identity step, `businesses::api::Step`, code-sent and email-verified facts) allows that step now, and that the business's stored status (`businesses::api::AccountStatus`) is `Pending` or `NeedsReview`; a missing or bad binding (a wrong or altered MAC, ID or salt), a step out of order or a business in any other status is refused like any refusal (the screen again, no detail), changes nothing, sends nothing and calls no Verify (D-3641). The served part takes the code sender and the sign-in mailer as it takes its other adapters; `from_settings` builds both with no sender while the app builds no Resend client (D-3186, as `ServedSignIn::from_settings` does, `app/server/src/business_signin.rs:133`), so in the served app the code and the link are not yet emailed (the screens are unchanged and T464's browser test computes the code, TD-SEC-69); the route tests build both over a recording fake provider. The inbox check (BIZ-042) is not served here: it needs the owner's session and is T462's. Its rows in `docs/architecture.md` section 13 are marked `yes`. Tests: cases in `app/server/tests/business_signup_route.rs` (TD-SEC-45: the email code step is refused before the service area and before identity, accepts the right code and refuses a wrong one; the code goes once to the sign-up address and only there (the fake provider records one email to it holding the code), a resend sends a new code and the earlier one stops working; a send past the per-business cap, and one past the per-IP cap, queues no `messaging.email_outbox` row, calls the provider no more, shows the same screen and leaves the earlier code working; the activating response clears the cookie and sends one sign-in email, to the owner's address, holding a `/b/sign-in/` link; a step taken after activation with a still-valid sign-up cookie is refused and changes nothing). Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "server",
    "deps": [
-    "T460"
+    "T460",
+    "T468"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -32104,7 +32105,8 @@
     "BIZ-016",
     "BIZ-019",
     "BIZ-040",
-    "BIZ-058"
+    "BIZ-058",
+    "SEC-014"
    ],
    "tests": [
     "TD-SEC-45"
@@ -32114,7 +32116,9 @@
     "D-3262",
     "D-3602",
     "D-3641",
-    "D-3676"
+    "D-3676",
+    "D-3186",
+    "D-3743"
    ],
    "cites": [],
    "budget": {
@@ -32128,7 +32132,8 @@
     "Ally"
    ],
    "branch": "claude/task/T461-signup-email-activation",
-   "prompt": "kit/prompts/T461.md"
+   "prompt": "kit/prompts/T461.md",
+   "acceptance": "`app/server/tests/business_signup_route.rs` passes against PostgreSQL with T459's and T460's cases unchanged: the service area and email code steps are refused out of order and after activation; the right email code, emailed once to the sign-up address through `MailboxCodeSender`, activates an unflagged sign-up, clears the `__Host-askhava-signup` cookie and sends exactly one sign-in link email to the owner's address through `send_sign_in_link`; a code send past `SIGNUP_EMAIL_CODES_PER_BUSINESS` (5 per Arizona day) or `CODE_SENDS_PER_IP` queues nothing, sends nothing and leaves the earlier code working; a wrong or expired code shows `Screen::EmailCode` with its problem and changes nothing; a flagged sign-up's done screen says it waits for review and keeps the cookie; `app/server/tests/business_signin_route.rs` and `tests/integration/tests/email_verification.rs` pass unchanged."
   },
   {
    "id": "T462",
@@ -32420,6 +32425,69 @@
    "branch": "claude/task/T467-fee-terms-changed-end",
    "prompt": "kit/prompts/T467.md",
    "acceptance": "`tests/integration/tests/fee_terms_changed_end.rs` passes against PostgreSQL: after a fee-mode switch the waiting pick ends `cancelled` with `end_reason` `fee_terms_changed` and its intent ended, no fee and no charge, and moves to her backup or returns the job to Quotes ready with exactly one current-version `pick_lapsed` event; with no switch, no stored fee, an attempt other than `declined`, a job in Payment pending or no waiting pick nothing changes and nothing is queued; a press racing the end either charges with the pick left waiting or is refused before any Stripe confirm with the pick ended, never both; \"Can't take it\" with no backup queues one `pick_lapsed` event; `share_and_cant_take.rs`, `backup_choice.rs`, `business_leaving.rs`, `pick_ended.rs`, `charge_attempts.rs` and `fee_fixed_at_pick.rs` pass unchanged."
+  },
+  {
+   "id": "T468",
+   "slug": "signup-mail-paths",
+   "title": "portals, businesses and messaging: public paths for sign-up's email code and its sign-in link at activation",
+   "goal": "Plan change D-3743 (the T461 plan gap a scout found; BIZ-040, SEC-004, SEC-018, SEC-025, SEC-026, PRIV-016; D-1725, D-1837, D-3186, D-3262, D-3676): T461 must email the sign-up's email code (BIZ-040: verified \"by a single-use link or 6-digit code sent to it\") and, on activation, the owner's normal sign-in link, but neither has a public path. A link is minted, stored and emailed only inside `portals` (`send_one` is private, `app/portals/src/business_auth.rs:694`; `models::new_link_token` and `admit_link` are `pub(crate)`, `app/portals/src/models.rs:28`, `:71`), and `SignInMail::send_link` (`business_auth.rs:138`) only emails a link it is handed. `start_signup_check` returns the code and emails nothing (`app/businesses/src/email_verification.rs:134`), `businesses::api` has no reader for the sign-up's mailbox ID, which `confirm_mailbox` (`:363`) needs, and nothing in the app emails a mailbox code. This task adds three thin public paths over code that exists; T461 composes them. (1) `app/portals/src/business_auth.rs`: `pub async fn send_sign_in_link<M: SignInMail>(db, mail: &M, to: SignInAddress, now) -> Result<(), PortalsError>` (one `pub use` line in the shared `app/portals/src/api.rs`). The body of `send_one` moves into a private function that takes the mailer instead of the `SignIn` state; `send_one` and the new function both call it, the new one with no next job: the same current-member check (nothing sent for a mailbox that is not a current member of `to.business`), the same `LINKS_PER_LIFE` cap under the member's lock (`admit_link`, D-1725, D-1837) and the same `{site()}/b/sign-in/<token>` link through `M::send_link`; its `///` comment says that `M` delivers the link only to `to.mailbox`'s own address, never to another (SEC-004). No other behaviour of `business_auth.rs` changes. (2) `app/businesses/src/email_verification.rs`: `pub async fn signup_mailbox(conn, business) -> Result<Uuid, EmailCheckError>` (one name in the shared `app/businesses/src/api.rs` export), the `businesses.signup` row's `mailbox_id` as `start_signup_check` reads it, `EmailCheckError::Database` for an unknown sign-up; `start_signup_check` and `confirm` keep their signatures. (3) `app/messaging/src/mailbox_code_mail.rs`: `MailboxCodeSender<E>`, built as T280's `SignInLinkSender` is (`app/messaging/src/signin_mail.rs`: the key secret, the provider, the checked postal line and the `DailyLimit`), whose `send(db, (mailbox, address), code, now)` queues one business email through `queue_account_email` from a new template `business_mailbox_code` (English, and Spanish marked draft, in the shared `app/messaging/templates/en.json` and `es.json`: the subject \"<brand short name>: Your email code\", the 6-digit code, that it works for the next 30 minutes (`CODE_LIFE`), and that a person who did not sign up can ignore it) and sends it at once with `send_email`. The code is a credential, so the stored row holds `CODE_MARK` (`[email code]`) in its place and the code goes in only on the way to the provider, through a wrapper like `signin_mail.rs`' `WithLink`; the row's key is the account-email key over the template, the mailbox and one ID keyed from the code and the send time (a repeat of one send is one email, SEC-018; a resend is a new one); the code is never logged. The sender counts nothing itself: its `///` comment says the caller admits every send first under SEC-014's per-IP and per-business limits (T461 does, where the client IP is known). `MailboxCodeSender`, `CODE_MARK` and the template ID are exported through the shared `app/messaging/src/api.rs` and `lib.rs`. The caller opens the address (`server`, under `privacy::api::BusinessPurpose::AccountEmail`, on a bare connection), as T280's sender is handed it; this task names no vault read. Tests, fake data only, in `tests/integration/tests/signup_mail_paths.rs` against PostgreSQL: `send_sign_in_link` stores one link for the owner and hands a recording `SignInMail` one `/b/sign-in/` link on the brand's site for that `SignInAddress`, sends nothing for a mailbox that is not a current member, and sends no more once `LINKS_PER_LIFE` links went in `LINK_LIFE`; `signup_mailbox` answers the mailbox `sign_up` stored and refuses an unknown business; `MailboxCodeSender::send` gives a recording `EmailAdapter` one email to the address whose text and HTML hold the code, a refusing provider leaves the stored row holding `CODE_MARK` and never the code, and a repeat of the same send queues and sends nothing more. Update the `portals`, `businesses` and `messaging` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "messaging",
+   "deps": [
+    "T302"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "copy": true,
+   "owns": [
+    "app/portals/src/business_auth.rs",
+    "app/businesses/src/email_verification.rs",
+    "app/messaging/src/mailbox_code_mail.rs",
+    "tests/integration/tests/signup_mail_paths.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/brains/rust-production.md",
+    "docs/brains/email-deliverability.md"
+   ],
+   "requirements": [
+    "BIZ-040",
+    "SEC-004",
+    "SEC-014"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1725",
+    "D-1837",
+    "D-3186",
+    "D-3262",
+    "D-3676",
+    "D-3743"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 400,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T468-signup-mail-paths",
+   "prompt": "kit/prompts/T468.md",
+   "acceptance": "`tests/integration/tests/signup_mail_paths.rs` passes against PostgreSQL: `send_sign_in_link` sends one stored link to the owner's `SignInAddress`, none to a mailbox that is not a current member and none past `LINKS_PER_LIFE`; `signup_mailbox` answers the sign-up's mailbox; `MailboxCodeSender` sends one email holding the code while the stored row holds only `CODE_MARK`, and a repeat sends nothing more; `app/server/tests/business_signin_route.rs`, `tests/security/tests/business_signin.rs`, `tests/integration/tests/notice_signin_link.rs` and `tests/integration/tests/email_verification.rs` pass unchanged; `check_copy.py` and `check_ai_smell.py` report 0 problems on the new template."
   }
  ]
 }
