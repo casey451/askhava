@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T23:14:09Z by runner 2fca8bb21789 (actions).
+Updated 2026-11-14T23:18:37Z by runner 2fca8bb21789 (actions).
 
 **Building: T445 in progress since 23:05Z; 337 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T23:14:09Z by runner 2fca8bb21789 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T445 claimed 23:05Z, lease until 02:05Z; lane 2: T301 claimed 22:57Z, lease until 01:57Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z; lane 6: T451 claimed 22:48Z, lease until 01:48Z
 - **Week:** 53% used, 84.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:12Z, 1 min before this update
+- **Last run:** 23:18Z, 0 min before this update
 - **Keeper:** last ran 23:12Z, next wake 01:33Z
 
 ## Needs attention
@@ -91,7 +91,6 @@ Updated 2026-11-14T23:14:09Z by runner 2fca8bb21789 (actions).
 | T444 | intake (test): the job's ZIP is read only from a property in | done | 1 | 24 min | 00:31Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 25 min | 00:23Z |  |
 | T391 | calls, businesses, messaging and server: the main phone's "L | done | 1 | 47 min | 23:23Z |  |
-| T415 | businesses, messaging and server: the production phone link  | done | 1 | 69 min | 23:15Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
