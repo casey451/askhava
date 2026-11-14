@@ -4803,3 +4803,4 @@
 - 2026-11-14T14:15:58Z runner f6b13e693c36 (actions): {}
 - 2026-11-14T14:16:15Z runner aa64d53b5f18 (actions): {}
 - 2026-11-14T14:27:25Z runner 49857763a082 (actions): {}
+- 2026-11-14T14:27:37Z runner 49857763a082 (actions): {"T261": "QUEUED -> IN_PROGRESS"}; T261 estimated 1.8M tokens (calibrated); week has 104.4M left (no five-hour budget, D-3056) after 1.6M still running in another lane (session_reading 2026-11-14T14:15:57Z (week)); claimed
