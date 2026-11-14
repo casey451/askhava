@@ -4205,3 +4205,4 @@
 - 2026-11-14T02:02:56Z runner a9be821a3861 (manual): {}
 - 2026-11-14T02:03:11Z runner a9be821a3861 (manual): {}
 - 2026-11-14T02:03:49Z runner a9be821a3861 (actions): {"T341": "MERGE_PENDING -> QUEUED"}
+- 2026-11-14T02:04:05Z runner a9be821a3861 (actions): {"T341": "QUEUED -> IN_PROGRESS"}; T341 estimated 2.2M tokens (calibrated); week has 127.0M left (no five-hour budget, D-3056) after 3.0M still running in another lane (session_reading 2026-11-14T01:36:24Z (week)); claimed
