@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T17:32:10Z by runner c98af220344c (actions).
+Updated 2026-11-14T17:42:43Z by runner bc11f33703b4 (actions).
 
 **Stopped: main is red, only FIX-MAIN runs; 329 of 453 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T17:32:10Z by runner c98af220344c (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane fix: FIX-MAIN claimed 16:24Z, lease until 19:24Z
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:32Z, 0 min before this update
+- **Last run:** 17:32Z, 10 min before this update
 - **Keeper:** last ran 17:32Z, next wake 19:27Z
 
 ## Needs attention
@@ -125,7 +125,6 @@ Updated 2026-11-14T17:32:10Z by runner c98af220344c (actions).
 - 19:23Z Plan: deterministic kills for proptest-only named mutants (D-3499) (#694)
 - 19:02Z Plan: report-only symbol pre-flight in plan_health (D-3496) (#688)
 - 18:48Z Plan: crate guides to ≤8 KB, detail one entry per line in NOTES.md (D-3474) (#687)
-- 17:36Z Plan: count usage once per message, prove fix rounds were re-reviewed (D-3475) (#685)
 
 ## Progress (requirements verified)
 
