@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:58:33Z by runner 11f2f6af5802 (actions).
+Updated 2026-11-14T10:58:53Z by runner 11f2f6af5802 (actions).
 
 **Building: T452 in progress since 10:34Z; 318 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 318 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T452 claimed 10:34Z, lease until 13:34Z; lane 3: T437 claimed 10:27Z, lease until 13:27Z; lane 5: T453 claimed 10:35Z, lease until 13:35Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z
+- **Lane:** lane 1: T452 claimed 10:34Z, lease until 13:34Z; lane 5: T453 claimed 10:35Z, lease until 13:35Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z
 - **Week:** 41% used, 106.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:56Z, 1 min before this update
+- **Last run:** 10:56Z, 2 min before this update
 - **Keeper:** last ran 10:56Z, next wake 13:29Z
 
 ## Needs attention
@@ -18,10 +18,11 @@ Updated 2026-11-14T10:58:33Z by runner 11f2f6af5802 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 3 | 31 min | 10:58Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T359 | payments: a successful charge writes its own charge ledger e | MERGE_PENDING | 2 | 75 min | 10:54Z | PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, an |
 | T435 | calls and server: calls and texts act for the business only  | MERGE_PENDING | 1 | 30 min | 10:46Z |  |
 | T329 | businesses: the eight business account events queued today ( | BLOCKED | 1 | 2 min | 10:28Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 52 min | 10:25Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 52 min | 10:25Z |  |
 | T398 | businesses: notice texts go only to approved phones, and a m | done | 1 | 38 min | 09:41Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 4 | 2 min | 09:18Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T301 | server and portals: the email action links are served (every | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
@@ -170,9 +171,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T452 (lease until 2026-11-14T13:34:24Z)
-- lane 3: T437 (lease until 2026-11-14T13:27:06Z)
 - lane 5: T453 (lease until 2026-11-14T13:35:08Z)
 - lane 6: T329 (lease until 2026-11-14T13:44:58Z)
 
 ## Last usage reading
-- {"task": "T359", "at": "2026-11-14T10:54:14Z", "output_tokens": 94841, "input_tokens": 321, "cache_read_input_tokens": 15945151, "cache_creation_input_tokens": 326456}
+- {"task": "T437", "at": "2026-11-14T10:58:30Z", "input_tokens": 52, "cache_creation_input_tokens": 42285, "cache_read_input_tokens": 653200, "output_tokens": 7765}
