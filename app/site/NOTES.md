@@ -9,3 +9,4 @@
 - [-] (tests) `tests/security/tests/no_third_party.rs` (TD-SEC-04): `cargo test -p askhava-security --test no_third_party`.
 - [-] (tests) `app/portals/src/security.rs` `tests` (TD-SEC-04): `cargo test -p askhava-portals`.
 - [-] (tests) `app/portals/src/feedback.rs` `brand_tests` (TD-WORD-37: the title suffix and home link are today's bytes): `cargo test -p askhava-portals feedback::brand_tests`.
+- [WORD-001 WEB-001 SEC-025] (task 294) cross-reference (D-3620): the build note of T294 is in `app/portals/NOTES.md`: `grep -n '(task 294)' app/portals/NOTES.md`.
