@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:00:23Z by runner dd258e06710f (actions).
+Updated 2026-11-14T00:00:48Z by runner dd258e06710f (actions).
 
 **Building: T437 in progress since 23:57Z; 301 of 428 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T00:00:23Z by runner dd258e06710f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T437 claimed 23:57Z, lease until 02:57Z
 - **Week:** 31% used, 134.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:59Z, 1 min before this update
+- **Last run:** 00:00Z, 0 min before this update
 - **Keeper:** last ran 23:45Z, next wake 00:05Z
 
 ## Needs attention
