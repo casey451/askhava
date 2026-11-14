@@ -32798,7 +32798,7 @@
     "T280",
     "T449"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 5,
    "slug": "business-signup-served",
    "type": "build",
@@ -32812,8 +32812,8 @@
     3600,
     3601
    ],
-   "reason": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    > 80 |       expect(await page.evaluate(edgeProblems)).toEqual([]);\n         |                                                 ^\n      81 |     });\n      82 |   }\n      83 | }\n        at /home/runner/work/askhava/askhava/tests/a11y/targets_contrast.spec.ts:80:49\n    Error Context: test-results/a11y/targets_contrast-A11Y-006--5f80a-ness-sign-up-form-at-1280px/error-context.md\n  5 failed\n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/signup (business sign-up form) takes the text-spacing override at 320px \n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/signup (business sign-up form) takes the text-spacing override at 768px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 320px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 768px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 1280px \n  233 passed (1.3m)\n##[error]Process completed with exit code 1.",
-   "last_failure": "PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 and 3; claim 1 is unrealistic but not enforced.\nre-queued after plan fix D-3676: split: T302 matrices+form page; T459-T462, T464",
+   "reason": null,
+   "last_failure": "PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 and 3; claim 1 is unrealistic but not enforced.\nre-queued after plan fix D-3676: split: T302 matrices+form page; T459-T462, T464\nre-queued after plan fix D-3699: D-3699 (#780): T302 owns business_signup.html and links T466's shared forms.css; depends on T466",
    "history": [
     {
      "attempt": 1,
@@ -33020,6 +33020,19 @@
      "plan_head": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
      "plan_then": "710bb23dcc7da95b7196e0269eed33f4a27094661bef6c820096bf265ea7148a",
      "plan_now": "10aa9553a90d400a4d074bf0130b28d5e76dfa85793bc466485c0bf314312d71"
+    },
+    {
+     "at": "2026-11-14T12:56:01Z",
+     "reason": "D-3699 (#780): T302 owns business_signup.html and links T466's shared forms.css; depends on T466",
+     "by": "manual-78e21f482ff3",
+     "was": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    > 80 |       expect(await page.evaluate(edgeProblems)).toEqual([]);\n         |                                                 ^\n      81 |     });\n      82 |   }\n      83 | }\n        at /home/runner/work/askhava/askhava/tests/a11y/targets_contrast.spec.ts:80:49\n    Error Context: test-results/a11y/targets_contrast-A11Y-006--5f80a-ness-sign-up-form-at-1280px/error-context.md\n  5 failed\n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/signup (business sign-up form) takes the text-spacing override at 320px \n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/signup (business sign-up form) takes the text-spacing override at 768px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 320px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 768px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 1280px \n  233 passed (1.3m)\n##[error]Process completed with exit code 1.",
+     "attempts": 5,
+     "plan_fix": "D-3699",
+     "plan_since": "2026-11-14T11:10:31Z",
+     "plan_base": "f7c093395ac79ff1fcdcaf13fad3d6d98c72ed66",
+     "plan_head": "091f183d8d0bf86ee4b3c1988b224bd212cf5acf",
+     "plan_then": "10aa9553a90d400a4d074bf0130b28d5e76dfa85793bc466485c0bf314312d71",
+     "plan_now": "72c1083faed5dd64e36b92545cfcf4c990c5eaa3bb60f8f69050a9ba03274a45"
     }
    ],
    "reviewed_sha": "bbbddfa348ef84392caa42f04fda82ebe820f3c5",
@@ -57633,7 +57646,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T12:55:45Z",
+ "updated_at": "2026-11-14T12:56:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

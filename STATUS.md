@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:55:45Z by runner 091f183d8d0b (manual).
+Updated 2026-11-14T12:56:01Z by runner 091f183d8d0b (manual).
 
 **Building: T432 in progress since 12:42Z; 322 of 451 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -13,23 +13,6 @@ Updated 2026-11-14T12:55:45Z by runner 091f183d8d0b (manual).
 
 ## Needs attention
 - BLOCKED T301: plan gap reported: PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires 200 for the fixture's own Quote link GET and for Y's Quote link on X's job. T301's goal (D-3189, CARD-023) requires the one not-found answer for a job with no sent card. Nothing in door_matrix.rs or door_matrix/released_pick.rs calls keep_card/mark_card_sent/sent_card (quoted_job only send_cards + submit_quote); job_page returns None without holds_card (app/quotes/src/job_page.rs:155). Y holds no card on X's job, so even a carded fixture does not fix case (b). Marking sectio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason "..."` (D-2859)
-- BLOCKED T302: Ally: failure
-Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
-    > 80 |       expect(await page.evaluate(edgeProblems)).toEqual([]);
-         |                                                 ^
-      81 |     });
-      82 |   }
-      83 | }
-        at /home/runner/work/askhava/askhava/tests/a11y/targets_contrast.spec.ts:80:49
-    Error Context: test-results/a11y/targets_contrast-A11Y-006--5f80a-ness-sign-up-form-at-1280px/error-context.md
-  5 failed
-    tests/a11y/reflow_spacing.spec.ts:101:7 › text spacing › A11Y-009: /b/signup (business sign-up form) takes the text-spacing override at 320px 
-    tests/a11y/reflow_spacing.spec.ts:101:7 › text spacing › A11Y-009: /b/signup (business sign-up form) takes the text-spacing override at 768px 
-    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 320px 
-    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 768px 
-    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 1280px 
-  233 passed (1.3m)
-##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 33 problem(s) on tasks still to run (+103 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
