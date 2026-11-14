@@ -9,7 +9,10 @@ line of JSON with what changed.
   python3 -m runner --after [--transcript P ... | --worker-agent ID ...] [--reviewer-transcript P ...
                     | --reviewer-agent ID ...] [--outcome submitted|tests_failed|plan_gap|usage_limit|...]
                                     finish the handed-off task: path check (git diff --no-renames),
-                                    model check from the transcripts, the pre-hand-in gate (main's
+                                    model check from the transcripts, the review proof (a reviewer
+                                    approved the exact head, a worker made each commit: runner/
+                                    review_proof.py; `review_missing` held once per rule, D-3728),
+                                    the pre-hand-in gate (main's
                                     scripts/prehandin.sh --quick on the head; red: `prehandin_red`,
                                     lease kept, up to 2 fix rounds, then a failed attempt, D-1300),
                                     review record (reviewed_sha and lease) pushed, branch pushed,
@@ -114,7 +117,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from runner import api_death, cycle, keeper as keeper_mod, lanes as lane_policy, model_window, outbox as outbox_mod, proof, state as st
+from runner import api_death, cycle, keeper as keeper_mod, lanes as lane_policy, model_window, outbox as outbox_mod, proof, review_proof, state as st
 from runner.github_env import PREHANDIN_RED, SMOKE_PRE_LOG, GitHubEnv, alias_for, find_transcripts, smoke_target_dir, state_diff
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -423,9 +426,13 @@ PREHANDIN_HOLDS = 2  # fix rounds a session gets for a red pre-hand-in gate befo
 PREHANDIN_HELD = "prehandin_red"  # --after's result when it held the hand-in for a fix round; the lease stays held
 
 
+REVIEW_HELD = review_proof.REVIEW_MISSING  # --after's result when it held the hand-in for a missing review proof (D-3728)
+
+
 def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
-    transcripts = list(args.transcript) + find_transcripts(args.worker_agent)
-    reviews = list(args.reviewer_transcript) + find_transcripts(args.reviewer_agent)
+    workers, reviewers = find_transcripts(args.worker_agent), find_transcripts(args.reviewer_agent)
+    transcripts = list(args.transcript) + workers
+    reviews = list(args.reviewer_transcript) + reviewers
     outcome, log = api_outcome(args.outcome, args.log, read_handoff(), env)  # free only with nothing handed in or pushed (D-3443)
     outcome = cycle.session_outcome(outcome, log)  # a worker's plan-gap report blocks the task for a plan fix (D-2859)
     held = str(read_handoff().get("prehandin_log") or "")
@@ -437,8 +444,11 @@ def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
         if line:
             print(f"runner: {line}")
             env.log.append(line)
-    return cycle.after_handoff(cfg, env, lambda task: env.collect_result(task, outcome, transcripts, reviews, log),
-                               hold_red_gate, own_models=fallback)
+    # The review proof (D-3728); only the real GitHubEnv takes it, the tests' stand-in envs keep their signature.
+    checked = {"proof": review_proof.Proof(workers, reviewers, read_handoff().get("branch_start"), dict(cfg.models))} \
+        if isinstance(env, GitHubEnv) else {}
+    return cycle.after_handoff(cfg, env, lambda task: env.collect_result(task, outcome, transcripts, reviews, log, **checked),
+                               hold_hand_in, own_models=fallback)
 
 
 def api_outcome(outcome: str, log: str, handoff: dict[str, Any], env: Any) -> tuple[str, str]:
@@ -454,6 +464,28 @@ def api_outcome(outcome: str, log: str, handoff: dict[str, Any], env: Any) -> tu
         return outcome, log
     print("runner: API-error death counts: a hand-in was tried or the task branch moved since the claim (D-3443)")
     return "tests_failed", f"{log}; the attempt counts: a hand-in was tried or the task branch moved (D-3443)"
+
+
+def hold_hand_in(res: cycle.WorkerResult) -> str:
+    """`after_handoff`'s hold: a missing review proof (hold_review), else a red pre-hand-in gate (hold_red_gate)."""
+    return hold_review(res) or hold_red_gate(res)
+
+
+def hold_review(res: cycle.WorkerResult) -> str:
+    """REVIEW_HELD when `review_proof.check` refused the hand-in and each rule it names still has its one
+    hold (hand-off counters `review_holds_a`, `review_holds_b`), else '' so `finish` fails the attempt as
+    `tests_failed` with the refusal log naming each commit and rule (D-3728). Without a hand-off file
+    nothing is held. A held run writes no kit/state.json, as for a red gate."""
+    found = read_handoff()
+    rules = review_proof.rules_in(res.log)
+    if not found or not rules or any(int(found.get(f"review_holds_{r}", 0)) >= 1 for r in rules):
+        return ""
+    found.update({f"review_holds_{r}": 1 for r in rules})
+    (ROOT / HANDOFF).write_text(json.dumps(found), encoding="utf-8")
+    print(f"runner: {REVIEW_HELD}: hand-in held once for rule(s) {', '.join(sorted(rules))}; run a NEW reviewer subagent on "
+          "the reviewer model over the head (or, for (b), have a NEW worker redo the commit, then a NEW reviewer approve "
+          "the new head), then run --after again naming every worker and reviewer agent id (D-3728):\n" + res.log)
+    return REVIEW_HELD
 
 
 def hold_red_gate(res: cycle.WorkerResult) -> str:
@@ -630,6 +662,9 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
         # with the branch unmoved costs no attempt (D-3443).
         "branch_prepared": env.prepared.get("branch"),
         "remote_at_start": (env.prepared.get("remote_sha") or "") if env.prepared.get("branch_ready") else None,
+        # The prepared branch's tip at the claim (`base_sha`; None when not prepared): review_proof's rule (b)
+        # judges only commits after it (D-3728).
+        "branch_start": env.prepared.get("base_sha"),
         # When the worker must have handed in: the lease's expiry less HAND_IN_MARGIN (D-1440, D-503). The lane
         # lease this session holds; lane "1"'s `lease` only when it holds none (the same fallback as `tid`).
         "hand_in_by": hand_in_by(mine or state.get("lease")),
@@ -995,7 +1030,7 @@ def main(argv: list[str] | None = None) -> int:
     return 2 if result == "state_invalid" else 0
 
 
-AFTER_KEEPS_HANDOFF = ("not_lease_holder", "lost_race", "state_invalid", PREHANDIN_HELD)
+AFTER_KEEPS_HANDOFF = ("not_lease_holder", "lost_race", "state_invalid", PREHANDIN_HELD, REVIEW_HELD)
 
 
 def close_handoff(result: str) -> None:
