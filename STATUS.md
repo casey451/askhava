@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T16:28:09Z by runner 87c063bb017b (actions).
+Updated 2026-11-14T16:28:21Z by runner 87c063bb017b (actions).
 
 **Stopped: main is red, only FIX-MAIN runs; 329 of 452 done; week 47% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 329 of 452 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T467 claimed 15:44Z, lease until 18:44Z; lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane fix: FIX-MAIN claimed 16:24Z, lease until 19:24Z
+- **Lane:** lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane fix: FIX-MAIN claimed 16:24Z, lease until 19:24Z
 - **Week:** 47% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:27Z, 1 min before this update
 - **Keeper:** last ran 16:27Z, next wake 18:05Z
@@ -19,6 +19,7 @@ Updated 2026-11-14T16:28:09Z by runner 87c063bb017b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T467 | picks: a pick whose fee terms changed before its Confirm end | MERGE_PENDING | 1 | 43 min | 16:28Z |  |
 | T439 | --after refuses a hand-in whose head no Opus reviewer approv | MERGE_PENDING | 1 | 44 min | 16:06Z |  |
 | T465 | docs: move the entry lines left under each crate guide's `## | done | 1 | 31 min | 15:55Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | done | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
@@ -175,9 +176,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T467 (lease until 2026-11-14T18:44:37Z)
 - lane 4: T459 (lease until 2026-11-14T18:02:50Z)
 - lane fix: FIX-MAIN (lease until 2026-11-14T19:24:32Z)
 
 ## Last usage reading
-- {"task": "T439", "at": "2026-11-14T16:06:03Z", "cache_creation_input_tokens": 160042, "cache_read_input_tokens": 4580093, "input_tokens": 128, "output_tokens": 59786}
+- {"task": "T467", "at": "2026-11-14T16:28:08Z", "input_tokens": 187, "output_tokens": 61250, "cache_read_input_tokens": 7760968, "cache_creation_input_tokens": 202749}
