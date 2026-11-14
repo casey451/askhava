@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T20:58:57Z by runner 331db6579840 (actions).
+Updated 2026-11-14T20:59:17Z by runner 331db6579840 (actions).
 
-**Building: T459 in progress since 19:49Z; 331 of 459 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T300 in progress since 19:50Z; 331 of 459 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 331 of 459 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T459 claimed 19:49Z, lease until 22:49Z; lane 6: T300 claimed 19:50Z, lease until 23:48Z
+- **Lane:** lane 6: T300 claimed 19:50Z, lease until 23:48Z
 - **Week:** 51% used, 88.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:52Z, 6 min before this update
 - **Keeper:** last ran 20:52Z, next wake 22:52Z
@@ -18,6 +18,7 @@ Updated 2026-11-14T20:58:57Z by runner 331db6579840 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T459 | server: business sign-up's form is served (the consent, the  | MERGE_PENDING | 1 | 69 min | 20:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T468 | portals, businesses and messaging: public paths for sign-up' | MERGE_PENDING | 1 | 29 min | 20:19Z |  |
 | T474 | harness: clearing a red main counts a failed attempt against | done | 1 | 26 min | 20:18Z |  |
@@ -165,8 +166,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T459 (lease until 2026-11-14T22:49:23Z)
 - lane 6: T300 (lease until 2026-11-14T23:48:55Z)
 
 ## Last usage reading
-- {"task": "T437", "at": "2026-11-14T20:28:42Z", "cache_creation_input_tokens": 43477, "input_tokens": 41, "output_tokens": 8141, "cache_read_input_tokens": 560198}
+- {"task": "T459", "at": "2026-11-14T20:58:56Z", "cache_creation_input_tokens": 393220, "output_tokens": 114965, "cache_read_input_tokens": 18053303, "input_tokens": 354}
