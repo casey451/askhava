@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T21:40:35Z by runner 2aad8a530a2f (actions).
+Updated 2026-11-14T21:42:00Z by runner 5c153897b3f5 (actions).
 
 **Idle since 21:39Z; 334 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T21:40:35Z by runner 2aad8a530a2f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 21:39Z (no task in progress)
 - **Week:** 51% used, 92.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:39Z, 0 min before this update
+- **Last run:** 21:40Z, 1 min before this update
 - **Keeper:** last ran 21:39Z, next wake 21:59Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-14T21:40:35Z by runner 2aad8a530a2f (actions).
 |---|---|---|---|---|---|---|
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z | PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No |
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
-| T300 | server and portals: the business portal is served behind the | MERGE_PENDING | 3 | 94 min | 21:25Z | PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T |
+| T300 | server and portals: the business portal is served behind the | resync | 3 | 94 min | 21:25Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T468 | portals, businesses and messaging: public paths for sign-up' | done | 1 | 29 min | 20:19Z |  |
