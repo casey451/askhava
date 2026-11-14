@@ -30823,7 +30823,7 @@
    "id": "T437",
    "slug": "crate-notes-shared-and-full-by-bytes",
    "title": "harness: a crate NOTES.md is a shared path wherever its CLAUDE.md is, the runner's crate-full signal also counts the D-3474 byte budget, and the legacy crate-doc headings go",
-   "goal": "Crate notes, runner side (D-3474; D-3303, D-3444, D-473): D-3474 split every crate `CLAUDE.md` into a short guide (`## Purpose`, `## Never break`, `## Detail`) of at most `scripts/check_code_docs.py` `MAX_CRATE_DOC_BYTES` (8,192) bytes and a greppable `app/<crate>/NOTES.md`, where every task now adds its entries, one line each (union-merged through `.gitattributes`). Four changes, nothing else. (1) `runner/verify.py` `check_paths`: a changed path `app/<crate>/NOTES.md` counts as shared exactly when `app/<crate>/CLAUDE.md` is in `shared`, so every task may add its lines there without a new `kit/tasks.json` shared path or a change to `scripts/validate_tasks.py`'s allowlist; name `NOTES.md` in a module-level constant or pattern with a comment citing D-3474 (the task template tells workers that NOTES.md is shared once `runner/verify.py` names it). Any other path keeps today's rules, and a NOTES.md under a protected path or `NEVER_TOUCH` is still refused. (2) `runner/__main__.py` `crate_doc_full`: a crate is also full when its `CLAUDE.md` on origin's `main` (`crate_doc_text`, unchanged), in UTF-8 bytes, plus `(held + 1) * check_code_docs.CRATE_DOC_TASK_BYTES` (400, one `## Never break` bullet for each task in flight and for the next one) is over `check_code_docs.MAX_CRATE_DOC_BYTES`. The guides are about 15 to 45 lines, so the 120-line count (D-3303) alone can no longer reach its limit, while two tasks that each add a bullet near the byte budget would merge into a file the check refuses, which costs a resync. Keep the line rule, keep a missing or unreadable file full, read both constants with `getattr` and fall back to the line rule alone when the runner's copy of the check lacks them; update the docstring. (3) `scripts/check_code_docs.py` still accepts the six pre-D-3474 headings (`LEGACY_HEADINGS`) only because the protected fixture `HEADS` in `tests/test_runner_crate_merge.py` uses them: change that fixture to the three headings `check_code_docs.HEADINGS` names (reading the constant, so it cannot drift again), then delete `LEGACY_HEADINGS` and its branch in `check_crate_doc`; every other assertion in that file stays. (4) `tests/docs/test_brand_literals.py` `SKIP_NAMES` also skips `NOTES.md` (a crate's notes, like its `CLAUDE.md`, are never shown to a customer; D-3474), with a planted case showing a brand word in `app/<crate>/NOTES.md` passes while the same word in an `app/` source file still fails; until then the split left the ten brand-naming entries after the `## Detail` paragraph of their crate's `CLAUDE.md`, which this task moves at its end (step 5). (5) Last, once (1) to (4) pass: run `python3 scripts/split_crate_doc.py --sweep`, which moves every entry line under a crate `CLAUDE.md`'s `## Detail` paragraph (the ten brand-naming entries and any interim lines tasks added before this task) to the end of that crate's `NOTES.md`, and commit the moved lines with no other change to those files; `python3 scripts/check_code_docs.py` and the brand guard must pass after it. The crate docs and NOTES files this touches are shared paths, as are `docs/architecture.md`, `docs/decisions.md` and `kit/plan.lock`, so they sit outside the owned-file budget (scripts/validate_tasks.py requires `files` to equal the owned count); the line budget covers them. Tests (keep every other existing test unchanged): in `tests/test_runner_logic.py`, a task touching `app/<crate>/NOTES.md` passes when that crate's `CLAUDE.md` is shared and fails as not owned when it is not, and a NOTES.md under a protected path is still refused for a build task; in `tests/test_runner_crate_cap.py`, a guide well under the byte budget is not full at held 0, one whose bytes plus one task's room pass the budget is full at held 0, held tasks count 400 bytes each, and a check module without the two constants falls back to the line rule. Update the `docs/architecture.md` lines that describe the path check and `crate_doc_full` (D-3303) and add your entry to `docs/decisions.md`.",
+   "goal": "Crate notes, runner side (D-3474; D-3303, D-3444, D-473): D-3474 split every crate `CLAUDE.md` into a short guide (`## Purpose`, `## Never break`, `## Detail`) of at most `scripts/check_code_docs.py` `MAX_CRATE_DOC_BYTES` (8,192) bytes and a greppable `app/<crate>/NOTES.md`, where every task now adds its entries, one line each (union-merged through `.gitattributes`). Four changes, nothing else. (1) `runner/verify.py` `check_paths`: a changed path `app/<crate>/NOTES.md` counts as shared exactly when `app/<crate>/CLAUDE.md` is in `shared`, so every task may add its lines there without a new `kit/tasks.json` shared path or a change to `scripts/validate_tasks.py`'s allowlist; name `NOTES.md` in a module-level constant or pattern with a comment citing D-3474 (the task template tells workers that NOTES.md is shared once `runner/verify.py` names it). Any other path keeps today's rules, and a NOTES.md under a protected path or `NEVER_TOUCH` is still refused. (2) `runner/__main__.py` `crate_doc_full`: a crate is also full when its `CLAUDE.md` on origin's `main` (`crate_doc_text`, unchanged), in UTF-8 bytes, plus `(held + 1) * check_code_docs.CRATE_DOC_TASK_BYTES` (400, one `## Never break` bullet for each task in flight and for the next one) is over `check_code_docs.MAX_CRATE_DOC_BYTES`. The guides are about 15 to 45 lines, so the 120-line count (D-3303) alone can no longer reach its limit, while two tasks that each add a bullet near the byte budget would merge into a file the check refuses, which costs a resync. Keep the line rule, keep a missing or unreadable file full, read both constants with `getattr` and fall back to the line rule alone when the runner's copy of the check lacks them; update the docstring. (3) `scripts/check_code_docs.py` still accepts the six pre-D-3474 headings (`LEGACY_HEADINGS`) only because the protected fixture `HEADS` in `tests/test_runner_crate_merge.py` uses them: change that fixture to the three headings `check_code_docs.HEADINGS` names (reading the constant, so it cannot drift again), then delete `LEGACY_HEADINGS` and its branch in `check_crate_doc`; every other assertion in that file stays. (4) `tests/docs/test_brand_literals.py` `SKIP_NAMES` also skips `NOTES.md` (a crate's notes, like its `CLAUDE.md`, are never shown to a customer; D-3474), with a planted case showing a brand word in `app/<crate>/NOTES.md` passes while the same word in an `app/` source file still fails; the ten brand-naming entries the split left after the `## Detail` paragraph of their crate's `CLAUDE.md` stay there for T465. This task changes no `app/<crate>/CLAUDE.md` and no `app/<crate>/NOTES.md` (D-3698): every other task appends its lines to those files until this task lands, so the sweep that moves the lines under each guide's `## Detail` paragraph is T465's, after this task is DONE; a retry branch that carries an earlier attempt's sweep first restores them to main's version (`git checkout origin/main -- 'app/*/CLAUDE.md' 'app/*/NOTES.md'`), and on merging main a conflict in one of them takes main's side. `docs/architecture.md`, `docs/decisions.md` and `kit/plan.lock` are shared paths, outside the owned-file budget (scripts/validate_tasks.py requires `files` to equal the owned count); the line budget covers them. Tests (keep every other existing test unchanged): in `tests/test_runner_logic.py`, a task touching `app/<crate>/NOTES.md` passes when that crate's `CLAUDE.md` is shared and fails as not owned when it is not, and a NOTES.md under a protected path is still refused for a build task; in `tests/test_runner_crate_cap.py`, a guide well under the byte budget is not full at held 0, one whose bytes plus one task's room pass the budget is full at held 0, held tasks count 400 bytes each, and a check module without the two constants falls back to the line rule. Update the `docs/architecture.md` lines that describe the path check and `crate_doc_full` (D-3303) and add your entry to `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -30857,7 +30857,8 @@
    "decisions": [
     "D-3474",
     "D-3303",
-    "D-3444"
+    "D-3444",
+    "D-3698"
    ],
    "cites": [],
    "budget": {
@@ -30872,7 +30873,7 @@
    ],
    "branch": "claude/task/T437-crate-notes-shared-and-full-by-bytes",
    "prompt": "kit/prompts/T437.md",
-   "acceptance": "`python3 -m pytest tests/test_runner_logic.py tests/test_runner_crate_cap.py tests/test_runner_crate_merge.py tests/test_crate_notes.py` passes and the whole runner suite passes; every existing test in the two owned test files is unchanged; `grep -q NOTES.md runner/verify.py` succeeds; `python3 scripts/check_pr_change.py` accepts a task branch that adds a line to its crate's NOTES.md; `crate_doc_full` reports a crate full by the byte rule or the line rule and falls back to the line rule when the constants are missing; `LEGACY_HEADINGS` no longer exists and `tests/test_runner_crate_merge.py` builds its crate doc from `check_code_docs.HEADINGS`; `tests/docs/test_brand_literals.py` passes with `NOTES.md` skipped; no other runner file changes; no crate `CLAUDE.md` has an entry line after its `## Detail` paragraph."
+   "acceptance": "`python3 -m pytest tests/test_runner_logic.py tests/test_runner_crate_cap.py tests/test_runner_crate_merge.py tests/test_crate_notes.py` passes and the whole runner suite passes; every existing test in the two owned test files is unchanged; `grep -q NOTES.md runner/verify.py` succeeds; `python3 scripts/check_pr_change.py` accepts a task branch that adds a line to its crate's NOTES.md; `crate_doc_full` reports a crate full by the byte rule or the line rule and falls back to the line rule when the constants are missing; `LEGACY_HEADINGS` no longer exists and `tests/test_runner_crate_merge.py` builds its crate doc from `check_code_docs.HEADINGS`; `tests/docs/test_brand_literals.py` passes with `NOTES.md` skipped; no other runner file changes; no `app/*/CLAUDE.md` or `app/*/NOTES.md` differs from main (D-3698)."
   },
   {
    "id": "T442",
@@ -32209,6 +32210,45 @@
    ],
    "branch": "claude/task/T464-signup-capability-journey",
    "prompt": "kit/prompts/T464.md"
+  },
+  {
+   "id": "T465",
+   "slug": "crate-doc-sweep",
+   "title": "docs: move the entry lines left under each crate guide's `## Detail` paragraph into that crate's NOTES.md",
+   "goal": "Crate-doc sweep, split out of T437 (D-3698; D-3474, D-891). Once T437 is DONE, `runner/verify.py` counts `app/<crate>/NOTES.md` as a shared path and the task template sends every task's entry lines there (union-merged through `.gitattributes`), so no task appends to a crate `CLAUDE.md` any more. Run `python3 scripts/split_crate_doc.py --sweep`, which moves every entry line under a crate `CLAUDE.md`'s `## Detail` paragraph (the ten brand-naming entries D-3474's split left there and the interim lines tasks added before T437) to the end of that crate's `NOTES.md`, and commit and hand in the result (Scope lists no owned file only because every path this changes is shared; this is not a report-only task). Nothing else: no line is reworded, dropped or added, no heading or `## Never break` bullet changes, and no other file changes. Every path this changes is a shared path (each crate's `CLAUDE.md`, and its `NOTES.md` once T437 is DONE), so the task owns no file; it adds no `docs/decisions.md` entry and no build note. On merging main, a conflict in a crate `CLAUDE.md` or `NOTES.md` takes main's side and the sweep runs again.",
+   "type": "docs",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T437"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-sonnet-5-5",
+   "review_areas": [],
+   "owns": [],
+   "reads": [],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-3698",
+    "D-3474"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 0,
+    "lines": 250,
+    "context_pct": 3
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T465-crate-doc-sweep",
+   "prompt": "kit/prompts/T465.md",
+   "acceptance": "`python3 scripts/check_code_docs.py` reports 0 problems; `python3 -m pytest tests/docs/test_brand_literals.py tests/test_crate_notes.py -q -p no:cacheprovider` passes; no `app/*/CLAUDE.md` has an entry line after its `## Detail` paragraph; each moved line stands unchanged at the end of its crate's `NOTES.md`; the diff changes only `app/*/CLAUDE.md` and `app/*/NOTES.md`."
   }
  ]
 }

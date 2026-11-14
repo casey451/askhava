@@ -2797,3 +2797,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - When a team member's email bounces, only the owner is told (at the owner's own working addresses), since the email names the bouncing address.
 - The "Approve" link in the phone-linked email works for 7 days.
 - The catalog has no Spanish job-type names, so the Spanish license-change email names job types in English. Adding Spanish names to the catalog would fix it.
+
+## The notes-file switch split in two so it can land (D-3698, November 14)
+
+- The small tooling task that lets every task write the new crate notes files (T437) ran out of tries. Its work was fine, but its last step tidied every crate guide while every other task was still adding lines to those same guides, so it collided with nearly every merge: 7 merge-ups and a failed merge. Those guide collisions were about a quarter of all the AI time spent in the last day.
+- T437 now does only the tooling part and touches no guide; once it lands, tasks write their notes into the notes files, which merge without collisions. A new tiny task (T465) does the tidy-up right after. Nothing needs you.
