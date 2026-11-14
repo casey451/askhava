@@ -234,3 +234,4 @@
 - [FEE-018 FEE-020 FEE-041 PICK-046] (task 328) cross-reference (D-3620): the build note of T328 is in `app/picks/NOTES.md`: `grep -n '(task 328)' app/picks/NOTES.md`.
 - [PICK-053 PICK-038 REC-010 REC-011] (task 341) cross-reference (D-3620): the build note of T341 is in `app/picks/NOTES.md`: `grep -n '(task 341)' app/picks/NOTES.md`.
 - [PICK-053 PICK-021 A11Y-030] (task 440) cross-reference (D-3620): the build note of T440 is in `app/portals/NOTES.md`: `grep -n '(task 440)' app/portals/NOTES.md`.
+- [PICK-041 PICK-040 PICK-010 LIC-024] (task 393) cross-reference (D-3620): the build note of T393 is in `app/licensing/NOTES.md`: `grep -n '(task 393)' app/licensing/NOTES.md`.
