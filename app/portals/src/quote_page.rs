@@ -16,6 +16,11 @@
 //! (`picks::api::accepted_pick`) and the token works, the page shows that quote above the list as
 //! the quote she accepted (number, type, amount, earliest visit, the business's own words) with
 //! the "Add Ask Hava to your contacts" card; no name, phone or address.
+//!
+//! T440 (PICK-053, D-2332, D-3626): a tiers quote's Pick form offers one radio per package, read
+//! from `quotes::api::quoted_prices` and carried on [`ShownPage`] (not on [`PageView`]), each
+//! posting its place, price and name for the pick flow to check; `?choose=<n>` (the pick flow's
+//! answer to no package or a stale one) adds the error to card `n`'s choices.
 
 use std::sync::Arc;
 
@@ -25,9 +30,11 @@ use askhava_intake::api::paused_by_homeowner;
 use askhava_jobs::api::quote_token::resolve;
 use askhava_jobs::api::{current, job_number};
 use askhava_picks::api::accepted_pick;
-use askhava_quotes::api::{AcceptedQuote, PageQuote, accepted_quote, page_quotes};
+use askhava_quotes::api::{
+    AcceptedQuote, PageQuote, Price, QuotesError, accepted_quote, page_quotes, quoted_prices,
+};
 use axum::Router;
-use axum::extract::{Path, Request, State};
+use axum::extract::{Path, RawQuery, Request, State};
 use axum::http::{HeaderName, HeaderValue, StatusCode};
 use axum::middleware::{Next, from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
@@ -36,6 +43,8 @@ use axum_extra::extract::cookie::CookieJar;
 use jiff::{SignedDuration, Timestamp};
 use sqlx::PgPool;
 
+use crate::confirm_pay::money;
+use crate::pick_flow::tier_value;
 use crate::security::{WebSecurity, no_store, refuse_cross_site};
 use crate::session::{csrf_token, ensure_pre_session};
 
@@ -134,6 +143,52 @@ impl PageView {
     pub(crate) const fn accepted(&self) -> Option<&Accepted> {
         None
     }
+
+    /// The page alone offers no package; [`ShownPage`] adds them (PICK-053, D-3626).
+    pub(crate) const fn packages(&self, _number: &usize) -> Vec<Package> {
+        Vec::new()
+    }
+
+    /// The page alone shows no package error; [`ShownPage`] adds it (PICK-053).
+    pub(crate) const fn choose_again(&self, _number: &usize) -> bool {
+        false
+    }
+}
+
+/// One package radio on a tiers quote's card (PICK-053, D-2332): the value the pick flow reads
+/// back and the label, "<name>, $<price>".
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Package {
+    /// The radio's value ([`tier_value`]).
+    pub(crate) value: String,
+    /// The radio's label.
+    pub(crate) label: String,
+}
+
+/// The packages, in order, of each tiers quote (by its number) not withdrawn among `quotes` of
+/// `job`, read from `quotes::api::quoted_prices` (PICK-053, D-2332).
+///
+/// # Errors
+///
+/// `quoted_prices`' [`QuotesError`].
+pub(crate) async fn quote_packages(
+    db: &mut sqlx::PgConnection,
+    job: sqlx::types::Uuid,
+    quotes: &[Numbered],
+) -> Result<Vec<(usize, Vec<(String, u64)>)>, QuotesError> {
+    let prices = quoted_prices(db, job).await?;
+    Ok(quotes
+        .iter()
+        .filter_map(|q| {
+            let price = prices
+                .iter()
+                .find(|p| p.business == q.quote.business && !p.withdrawn)?;
+            match &price.price {
+                Some(Price::Tiers(tiers)) => Some((q.number, tiers.clone())),
+                _ => None,
+            }
+        })
+        .collect())
 }
 
 /// The served page: [`PageView`] (its fields read through `Deref`) and the quote she accepted,
@@ -143,12 +198,33 @@ impl PageView {
 struct ShownPage {
     page: PageView,
     accepted_quote: Option<Accepted>,
+    /// Each tiers quote's packages by its number, read only while the job takes a pick.
+    tiers: Vec<(usize, Vec<(String, u64)>)>,
+    /// The quote whose card shows the "choose a package" error (`?choose=<n>`).
+    again: Option<usize>,
 }
 
 impl ShownPage {
     /// The accepted quote the template shows above the list, if any (PICK-042).
     const fn accepted(&self) -> Option<&Accepted> {
         self.accepted_quote.as_ref()
+    }
+
+    /// Quote `number`'s package radios, none for a quote without packages (PICK-053).
+    fn packages(&self, number: &usize) -> Vec<Package> {
+        let tiers = self.tiers.iter().find(|(n, _)| n == number);
+        tiers.map_or_else(Vec::new, |(_, tiers)| {
+            let radio = |(i, (name, cents)): (usize, &(String, u64))| Package {
+                value: tier_value(i, name, *cents),
+                label: format!("{name}, {}", money(*cents)),
+            };
+            tiers.iter().enumerate().map(radio).collect()
+        })
+    }
+
+    /// Whether quote `number`'s card shows the "choose a package" error (PICK-053).
+    fn choose_again(&self, number: &usize) -> bool {
+        self.again == Some(*number)
     }
 }
 
@@ -192,7 +268,12 @@ async fn noindex(request: Request, next: Next) -> Response {
 
 /// `GET /q/{token}`: the page, or a bare 404 for a malformed, unknown, revoked or expired token
 /// (SEC-037, PICK-011). Changes nothing but the pre-session cookie its Pick forms need (SEC-042).
-async fn show(State(page): State<QuotePage>, Path(raw): Path<String>, jar: CookieJar) -> Response {
+async fn show(
+    State(page): State<QuotePage>,
+    Path(raw): Path<String>,
+    RawQuery(query): RawQuery,
+    jar: CookieJar,
+) -> Response {
     let Ok(token) = LinkToken::parse(&raw) else {
         return StatusCode::NOT_FOUND.into_response();
     };
@@ -200,7 +281,9 @@ async fn show(State(page): State<QuotePage>, Path(raw): Path<String>, jar: Cooki
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
     let csrf = csrf_token(&jar).unwrap_or_default();
-    let view = match load(&page, &token, csrf).await {
+    let again = query.as_deref().and_then(|q| q.strip_prefix("choose="));
+    let again = again.and_then(|n| n.parse().ok());
+    let view = match load(&page, &token, (csrf, again)).await {
         Ok(Some(view)) => view,
         Ok(None) => return StatusCode::NOT_FOUND.into_response(),
         Err(err) => {
@@ -220,11 +303,12 @@ async fn show(State(page): State<QuotePage>, Path(raw): Path<String>, jar: Cooki
 /// Reads the page for `token`, or `None` when the token opens nothing now (SEC-037, PICK-011).
 /// Pick buttons show while the job takes a pick (`JobStatus::takes_pick`: Quotes ready and
 /// Awaiting confirm, where a new pick replaces the waiting one; PICK-012, PICK-032, D-1516); the
-/// CON-028 line while a live job is paused by the homeowner.
+/// CON-028 line while a live job is paused by the homeowner; a tiers quote's packages and, for
+/// quote `again`, the "choose a package" error with them (PICK-053).
 async fn load(
     page: &QuotePage,
     token: &LinkToken,
-    csrf: String,
+    (csrf, again): (String, Option<usize>),
 ) -> Result<Option<ShownPage>, PageError> {
     let mut db = page.pool.acquire().await.map_err(|_| PageError::Read)?;
     let Some(job) = resolve(&mut db, token).await.map_err(|_| PageError::Read)? else {
@@ -248,17 +332,29 @@ async fn load(
     let quotes = page_quotes(&mut db, job)
         .await
         .map_err(|_| PageError::Read)?;
+    let quotes = number_quotes(quotes);
+    let pick_open = row.status.takes_pick();
+    let tiers = if pick_open {
+        quote_packages(&mut db, job, &quotes)
+            .await
+            .map_err(|_| PageError::Read)?
+    } else {
+        Vec::new()
+    };
     let view = PageView {
         request,
         still_open,
         live: !is_final,
-        pick_open: row.status.takes_pick(),
+        pick_open,
         csrf,
-        quotes: number_quotes(quotes),
+        quotes,
     };
+    let accepted_quote = accepted(&mut db, job).await?;
     Ok(Some(ShownPage {
         page: view,
-        accepted_quote: accepted(&mut db, job).await?,
+        accepted_quote,
+        tiers,
+        again,
     }))
 }
 
