@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T02:41:41Z by runner 379412060e21 (actions).
+Updated 2026-11-14T02:41:59Z by runner 379412060e21 (actions).
 
-**Building: T437 in progress since 02:18Z; 307 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T433 in progress since 02:23Z; 307 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 307 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T437 claimed 02:18Z, lease until 05:18Z; lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
+- **Lane:** lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
 - **Week:** 34% used, 124.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:40Z, 0 min before this update
+- **Last run:** 02:40Z, 1 min before this update
 - **Keeper:** last ran 02:40Z, next wake 04:43Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-14T02:41:41Z by runner 379412060e21 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 23 min | 02:41Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/intake/CLAUDE.md, app/messaging/CLAUDE.md, app |
 | T449 | server and intake: emergency first texts count toward the re | MERGE_PENDING | 1 | 47 min | 02:29Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | MERGE_PENDING | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
@@ -31,7 +32,7 @@ Updated 2026-11-14T02:41:41Z by runner 379412060e21 (actions).
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z |  |
 | T448 | portals: the data-download mask joins digit runs across any  | done | 1 | 38 min | 00:49Z |  |
 | T444 | intake (test): the job's ZIP is read only from a property in | done | 1 | 24 min | 00:31Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 25 min | 00:23Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/intake/CLAUDE.md, app/messaging/CLAUDE.md, app |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 25 min | 00:23Z |  |
 | T391 | calls, businesses, messaging and server: the main phone's "L | done | 1 | 47 min | 23:23Z |  |
 | T415 | businesses, messaging and server: the production phone link  | done | 1 | 69 min | 23:15Z |  |
 | T355 | picks: the release claim re-checks the pick under its row lo | done | 1 | 59 min | 23:11Z |  |
@@ -157,9 +158,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T437 (lease until 2026-11-14T05:18:24Z)
 - lane 4: T433 (lease until 2026-11-14T05:23:41Z)
 - lane 7: T450 (lease until 2026-11-14T04:40:56Z)
 
 ## Last usage reading
-- {"task": "T449", "at": "2026-11-14T02:29:40Z", "cache_read_input_tokens": 5906615, "cache_creation_input_tokens": 237413, "input_tokens": 209, "output_tokens": 59671}
+- {"task": "T437", "at": "2026-11-14T02:41:40Z", "output_tokens": 11467, "cache_creation_input_tokens": 58903, "cache_read_input_tokens": 828089, "input_tokens": 54}
