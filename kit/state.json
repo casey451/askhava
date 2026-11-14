@@ -38109,7 +38109,7 @@
    "deps": [
     "T341"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "verify-day-cap-lock",
    "type": "build",
@@ -38123,6 +38123,31 @@
     3634,
     3635
    ],
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 67,
+     "head_sha": "91d1308e42ecb0e43823e369d97ccee0e5d73a5a",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-14T02:54:46Z",
+     "ended_at": "2026-11-14T03:23:17Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 1655764,
+       "turns": 41
+      },
+      "reviewer": {
+       "tokens": 427125,
+       "turns": 11
+      }
+     }
+    }
+   ],
    "reviewed_sha": "475e3c91621c9ac2d925a4018897aa87d2d4d96f",
    "review_lease": {
     "task": "T344",
@@ -38131,7 +38156,11 @@
     "lane": "6"
    },
    "branch": "claude/task/T344-verify-day-cap-lock",
-   "head_check_since": null,
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #742 (gh pr merge)",
+    "head": "475e3c91621c9ac2d925a4018897aa87d2d4d96f"
+   },
    "update_merges": [
     {
      "from": "91d1308e42ecb0e43823e369d97ccee0e5d73a5a",
@@ -51038,12 +51067,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T433",
-   "at": "2026-11-14T03:21:29Z",
-   "cache_creation_input_tokens": 330722,
-   "input_tokens": 286,
-   "output_tokens": 95527,
-   "cache_read_input_tokens": 12111910
+   "task": "T344",
+   "at": "2026-11-14T03:23:17Z",
+   "cache_read_input_tokens": 1954809,
+   "cache_creation_input_tokens": 102563,
+   "input_tokens": 102,
+   "output_tokens": 25415
   },
   "source": "session_reading 2026-11-14T02:47:16Z (week)",
   "by_task": {
@@ -54129,17 +54158,27 @@
    },
    "T344": {
     "estimated_bytes": 666551,
-    "estimated_tokens": 2044745
+    "estimated_tokens": 2044745,
+    "usage_counting": "message_id",
+    "cache_read_input_tokens": 1954809,
+    "cache_creation_input_tokens": 102563,
+    "input_tokens": 102,
+    "output_tokens": 25415,
+    "worker_tokens": 1655764,
+    "worker_turns": 41,
+    "reviewer_tokens": 427125,
+    "reviewer_turns": 11,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-14T01:10:02Z",
-    "tokens": 8716538
+    "tokens": 9040098
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 98418916
+    "tokens": 98742476
    }
   },
   "session_reading": {
@@ -54150,7 +54189,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T03:23:18Z",
+ "updated_at": "2026-11-14T03:23:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

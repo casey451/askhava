@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T03:23:18Z by runner 91d1308e42ec (actions).
+Updated 2026-11-14T03:23:42Z by runner 91d1308e42ec (actions).
 
 **Building: T440 in progress since 02:53Z; 309 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 309 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 5: T440 claimed 02:53Z, lease until 05:53Z; lane 6: T344 claimed 02:54Z, lease until 05:54Z
+- **Lane:** lane 5: T440 claimed 02:53Z, lease until 05:53Z
 - **Week:** 34% used, 120.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:22Z, 0 min before this update
 - **Keeper:** last ran 03:22Z, next wake 05:55Z
@@ -21,6 +21,7 @@ Updated 2026-11-14T03:23:18Z by runner 91d1308e42ec (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T344 | picks: the global daily Verify cap holds under concurrent co | MERGE_PENDING | 1 | 28 min | 03:23Z |  |
 | T433 | server and payments: every payments task runs in the product | MERGE_PENDING | 1 | 57 min | 03:21Z |  |
 | T449 | server and intake: emergency first texts count toward the re | MERGE_PENDING | 1 | 31 min | 03:17Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T450 | portals: the sign-up code screens and the texts choice with  | done | 1 | 79 min | 03:00Z |  |
@@ -158,7 +159,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 5: T440 (lease until 2026-11-14T05:53:03Z)
-- lane 6: T344 (lease until 2026-11-14T05:54:46Z)
 
 ## Last usage reading
-- {"task": "T433", "at": "2026-11-14T03:21:29Z", "cache_creation_input_tokens": 330722, "input_tokens": 286, "output_tokens": 95527, "cache_read_input_tokens": 12111910}
+- {"task": "T344", "at": "2026-11-14T03:23:17Z", "cache_read_input_tokens": 1954809, "cache_creation_input_tokens": 102563, "input_tokens": 102, "output_tokens": 25415}
