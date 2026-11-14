@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:15:01Z by runner f7c093395ac7 (actions).
+Updated 2026-11-14T11:18:26Z by runner f7c093395ac7 (actions).
 
 **Building: T329 in progress since 10:44Z; 319 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T11:15:01Z by runner f7c093395ac7 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 6: T329 claimed 10:44Z, lease until 13:44Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
 - **Week:** 41% used, 110.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:14Z, 0 min before this update
+- **Last run:** 11:18Z, 0 min before this update
 - **Keeper:** last ran 11:15Z, next wake 13:48Z
 
 ## Needs attention
@@ -123,7 +123,6 @@ Updated 2026-11-14T11:15:01Z by runner f7c093395ac7 (actions).
 - 13:45Z Plan: shorten the critical path, drop legacy dependency edges (D-3446) (#671)
 - 12:32Z Plan: pre-flight 14, split three oversized build tasks; T111/T113 brand note (D-3445) (#668)
 - 11:32Z Harness: fix-round hand-off, tighter output caps, crate_cap 2 (D-3444) (#665)
-- 11:16Z Harness: an API error session death does not use an attempt (D-3443) (#664)
 
 ## Progress (requirements verified)
 
