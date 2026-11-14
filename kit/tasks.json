@@ -14500,7 +14500,8 @@
     "T464",
     "T465",
     "T466",
-    "T467"
+    "T467",
+    "T474"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -30928,7 +30929,7 @@
    "id": "T437",
    "slug": "crate-notes-shared-and-full-by-bytes",
    "title": "harness: a crate NOTES.md is a shared path wherever its CLAUDE.md is, the runner's crate-full signal also counts the D-3474 byte budget, and the legacy crate-doc headings go",
-   "goal": "Crate notes, runner side (D-3474; D-3303, D-3444, D-473): D-3474 split every crate `CLAUDE.md` into a short guide (`## Purpose`, `## Never break`, `## Detail`) of at most `scripts/check_code_docs.py` `MAX_CRATE_DOC_BYTES` (8,192) bytes and a greppable `app/<crate>/NOTES.md`, where every task now adds its entries, one line each (union-merged through `.gitattributes`). Four changes, nothing else. (1) `runner/verify.py` `check_paths`: a changed path `app/<crate>/NOTES.md` counts as shared exactly when `app/<crate>/CLAUDE.md` is in `shared`, so every task may add its lines there without a new `kit/tasks.json` shared path or a change to `scripts/validate_tasks.py`'s allowlist; name `NOTES.md` in a module-level constant or pattern with a comment citing D-3474 (the task template tells workers that NOTES.md is shared once `runner/verify.py` names it). Any other path keeps today's rules, and a NOTES.md under a protected path or `NEVER_TOUCH` is still refused. (2) `runner/__main__.py` `crate_doc_full`: a crate is also full when its `CLAUDE.md` on origin's `main` (`crate_doc_text`, unchanged), in UTF-8 bytes, plus `(held + 1) * check_code_docs.CRATE_DOC_TASK_BYTES` (400, one `## Never break` bullet for each task in flight and for the next one) is over `check_code_docs.MAX_CRATE_DOC_BYTES`. The guides are about 15 to 45 lines, so the 120-line count (D-3303) alone can no longer reach its limit, while two tasks that each add a bullet near the byte budget would merge into a file the check refuses, which costs a resync. Keep the line rule, keep a missing or unreadable file full, read both constants with `getattr` and fall back to the line rule alone when the runner's copy of the check lacks them; update the docstring. (3) `scripts/check_code_docs.py` still accepts the six pre-D-3474 headings (`LEGACY_HEADINGS`) only because the protected fixture `HEADS` in `tests/test_runner_crate_merge.py` uses them: change that fixture to the three headings `check_code_docs.HEADINGS` names (reading the constant, so it cannot drift again), then delete `LEGACY_HEADINGS` and its branch in `check_crate_doc`; every other assertion in that file stays. (4) `tests/docs/test_brand_literals.py` `SKIP_NAMES` also skips `NOTES.md` (a crate's notes, like its `CLAUDE.md`, are never shown to a customer; D-3474), with a planted case showing a brand word in `app/<crate>/NOTES.md` passes while the same word in an `app/` source file still fails; the ten brand-naming entries the split left after the `## Detail` paragraph of their crate's `CLAUDE.md` stay there for T465. This task changes no `app/<crate>/CLAUDE.md` and no `app/<crate>/NOTES.md` (D-3698): every other task appends its lines to those files until this task lands, so the sweep that moves the lines under each guide's `## Detail` paragraph is T465's, after this task is DONE; a retry branch that carries an earlier attempt's sweep first restores them to main's version (`git checkout origin/main -- 'app/*/CLAUDE.md' 'app/*/NOTES.md'`), and on merging main a conflict in one of them takes main's side. `docs/architecture.md`, `docs/decisions.md` and `kit/plan.lock` are shared paths, outside the owned-file budget (scripts/validate_tasks.py requires `files` to equal the owned count); the line budget covers them. Tests (keep every other existing test unchanged): in `tests/test_runner_logic.py`, a task touching `app/<crate>/NOTES.md` passes when that crate's `CLAUDE.md` is shared and fails as not owned when it is not, and a NOTES.md under a protected path is still refused for a build task; in `tests/test_runner_crate_cap.py`, a guide well under the byte budget is not full at held 0, one whose bytes plus one task's room pass the budget is full at held 0, held tasks count 400 bytes each, and a check module without the two constants falls back to the line rule. Update the `docs/architecture.md` lines that describe the path check and `crate_doc_full` (D-3303) and add your entry to `docs/decisions.md`.",
+   "goal": "Re-verification attempt (plan change D-3752; D-3698, D-3582, D-3747, D-551). This task's four changes are already on `main`: they merged in c97c4d0fe (#783) and were never reverted. FIX-MAIN #795 found that the nightly named-mutants red on 45c909050 came from T357's rewrite of an `app/messaging/src/optout.rs` line (D-3747), reverted nothing and merged only its `docs/decisions.md` entry; the runner then counted a failed attempt against this task only because it was the last merge (`runner/cycle.py` `clear_main_red`, which T474 fixes). Do not rebuild, reword or improve any of the four. Verify that each still stands on `main` and works: (1) `runner/verify.py` `CRATE_NOTES` and `_shared_notes`: `check_paths` counts `app/<crate>/NOTES.md` as shared exactly when that crate's `CLAUDE.md` is in `shared`, and a NOTES.md under a protected path or `NEVER_TOUCH` is still refused; (2) `runner/__main__.py` `crate_doc_full`: the byte rule (UTF-8 bytes on origin's `main` plus `(held + 1) * check_code_docs.CRATE_DOC_TASK_BYTES` over `check_code_docs.MAX_CRATE_DOC_BYTES`) beside the line rule, both constants read with `getattr` and the line rule alone when they are missing; (3) `LEGACY_HEADINGS` is gone from `scripts/check_code_docs.py` and `tests/test_runner_crate_merge.py` builds its crate doc from `check_code_docs.HEADINGS`; (4) `tests/docs/test_brand_literals.py` `SKIP_NAMES` holds `NOTES.md` and its planted NOTES case passes. Run the tests the acceptance names. If any of the four is missing or a test fails on `main`, change nothing and stop with a report that opens `PLAN_GAP:` naming what is missing (repairing it here would be new, unreviewed work). Hand-in (the runner refuses an empty hand-in from any task but a cleanup one, D-551): exactly one commit that appends this attempt's entry, under its reserved decision number, at the end of `docs/decisions.md`: for each of the four changes, the file and line where it stands on `main` and the test that covers it, the commands run with their pass counts, and that no code changed (D-3752). Nothing else changes: no owned file, no `docs/architecture.md` (no behaviour changed), no `kit/plan.lock`, no `app/*/CLAUDE.md` or `app/*/NOTES.md`. If the branch the runner prepared differs from `origin/main` in any other file, first restore that file to main's version (`git checkout origin/main -- <path>`).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -30963,13 +30964,14 @@
     "D-3474",
     "D-3303",
     "D-3444",
-    "D-3698"
+    "D-3698",
+    "D-3752"
    ],
    "cites": [],
    "budget": {
     "files": 7,
     "lines": 320,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -30978,7 +30980,7 @@
    ],
    "branch": "claude/task/T437-crate-notes-shared-and-full-by-bytes",
    "prompt": "kit/prompts/T437.md",
-   "acceptance": "`python3 -m pytest tests/test_runner_logic.py tests/test_runner_crate_cap.py tests/test_runner_crate_merge.py tests/test_crate_notes.py` passes and the whole runner suite passes; every existing test in the two owned test files is unchanged; `grep -q NOTES.md runner/verify.py` succeeds; `python3 scripts/check_pr_change.py` accepts a task branch that adds a line to its crate's NOTES.md; `crate_doc_full` reports a crate full by the byte rule or the line rule and falls back to the line rule when the constants are missing; `LEGACY_HEADINGS` no longer exists and `tests/test_runner_crate_merge.py` builds its crate doc from `check_code_docs.HEADINGS`; `tests/docs/test_brand_literals.py` passes with `NOTES.md` skipped; no other runner file changes; no `app/*/CLAUDE.md` or `app/*/NOTES.md` differs from main (D-3698)."
+   "acceptance": "`python3 -m pytest tests/test_runner_logic.py tests/test_runner_crate_cap.py tests/test_runner_crate_merge.py tests/test_crate_notes.py tests/docs/test_brand_literals.py` passes and the whole runner suite passes; `grep -q CRATE_NOTES runner/verify.py` and `grep -q CRATE_DOC_TASK_BYTES runner/__main__.py` succeed; `grep -l LEGACY_HEADINGS scripts/check_code_docs.py tests/test_runner_crate_merge.py` finds nothing; `grep -q NOTES.md tests/docs/test_brand_literals.py` succeeds; `git diff --name-only origin/main...HEAD` lists only `docs/decisions.md`, and that diff only appends one entry that cites D-3752 (D-3752)."
   },
   {
    "id": "T442",
@@ -32885,6 +32887,57 @@
    "branch": "claude/task/T473-backup-runner-postgres-digest",
    "prompt": "kit/prompts/T473.md",
    "acceptance": "Every `image:` line in `.github/workflows/*.yml` carries `@sha256:`; backup-runner's Postgres digest equals `ci.yml`'s; each workflow still parses as YAML and `actionlint` reports nothing new."
+  },
+  {
+   "id": "T474",
+   "slug": "fix-main-blames-only-a-revert",
+   "title": "harness: clearing a red main counts a failed attempt against the blamed task only when FIX-MAIN actually reverted its files",
+   "goal": "Red `main` clearing blames only a real revert (plan change D-3752; docs/governance.md section 5.3 and 5.4; D-1099, D-551, D-584, D-3747). Today `runner/cycle.py` `clear_main_red`, once a green smoke on main's head (and a successful nightly for that head when kit/nightly.json is for it) clears `main_red`, always calls `record_failure` on `main_red.task`, the task `offending_merge` blamed only because it was the latest DONE merge, with the reason \"reverted by FIX-MAIN (...)\". On November 14 that moved T437 from DONE to BLOCKED (attempts 4), although FIX-MAIN #795 merged only its D-3747 entry (FIX-MAIN's `files` in kit/state.json: `docs/decisions.md` alone) and T437's merge c97c4d0fe stayed on `main`; the red came from T357 (D-3747), and the BLOCKED T437 held its dependents. Change, in `runner/cycle.py` only: (1) A pure helper `fix_main_reverted(red, fix, shared)` (under 50 lines, a docstring citing D-3752) says whether the merged FIX-MAIN changed the offending task's work back. `red` is `main_red`, whose `files` are the offending merge's files (`set_main_red`); `fix` is the FIX-MAIN entry, whose `files` are the merged FIX-MAIN pull request's changed files, recorded when it went DONE. FIX-MAIN merges are squashed, so its revert commit is never in `main`'s history and the squash message proves nothing (#795's message says \"Revert T437 merge\" though its tree reverted nothing): the merged files are the signal. The offending task's own paths are its `files` not under a shared path (`Config.shared`, a prefix entry such as `.sqlx/` covering what it contains, matched as `runner/verify.py` matches shared paths). Reverted: FIX-MAIN's `files` include one of those own paths, or the offending merge had no own path and FIX-MAIN's `files` include one of its files other than `docs/decisions.md` (append-only; every FIX-MAIN adds an entry). Not reverted: FIX-MAIN went DONE as an empty hand-in (`empty_handin`), or its `files` are known and none of them is such a path. Unknown, kept as today (reverted, the safe side): FIX-MAIN's `files` missing or empty without `empty_handin`. (2) `clear_main_red` stores `outcome` (`reverted` or `fixed_otherwise`) and `fix_files` (FIX-MAIN's merged files) on the record it appends to `main_red_history`, and calls `record_failure` with today's reason text only when the outcome is `reverted`; on `fixed_otherwise` the offending task keeps its status, attempts, `merged_sha` and `files`. Nothing else about a red `main` changes: the smoke and nightly checks, `revert_landed_red`, `blocked_fix_main`, `clear_false_red` and `offending_merge` stay as they are, and the state schema needs no change (`main_red_history` records are not constrained). Tests in the new `tests/test_runner_fix_main_clear.py`, driving `cycle.run_cycle` with a fake env as `tests/test_failure_drills.py` does: a FIX-MAIN that merged only `docs/decisions.md` clears `main` and leaves the DONE offending task DONE with its attempts and `merged_sha`, history outcome `fixed_otherwise` with `fix_files`; one whose files include an own path of the offending task re-queues it with attempts + 1 and the \"reverted by FIX-MAIN\" reason, outcome `reverted`; one at `MAX_ATTEMPTS` - 1 is BLOCKED only on a real revert; an overlap only in shared paths (`docs/architecture.md`, `docs/decisions.md`, a file under `.sqlx/`) is `fixed_otherwise`; an empty-hand-in FIX-MAIN is `fixed_otherwise`; a FIX-MAIN with no recorded files keeps today's outcome; and unit cases for `fix_main_reverted` itself, including an offending merge with shared paths only. Every existing test stays unchanged and passing, `tests/test_failure_drills.py`'s review-red drill among them (its FIX-MAIN pull request records no files, so it keeps today's outcome). Update the `docs/architecture.md` line on clearing a red `main` (found by grep, never loaded whole) and add your entry to `docs/decisions.md`. Runner logic: an Opus worker, an Opus review, and two review rounds (the second on the head the first round's fixes produce).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T438",
+    "T439"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "runner/cycle.py",
+    "tests/test_runner_fix_main_clear.py"
+   ],
+   "reads": [
+    "docs/governance.md",
+    "tests/test_failure_drills.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-1099",
+    "D-551",
+    "D-584",
+    "D-3747",
+    "D-3752"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 43
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T474-fix-main-blames-only-a-revert",
+   "prompt": "kit/prompts/T474.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_fix_main_clear.py` passes and the whole runner suite passes, every existing test unchanged; `fix_main_reverted` exists in `runner/cycle.py` under 50 lines; a cleared `main_red_history` record carries `outcome` and `fix_files`; `record_failure` runs on the offending task only for `reverted`; a FIX-MAIN that merged only `docs/decisions.md` leaves a DONE offending task DONE with unchanged attempts; no other runner file changes (D-3752)."
   }
  ]
 }
