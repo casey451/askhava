@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T467",
+ "current": "FIX-MAIN",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -23865,7 +23865,7 @@
   {
    "id": "FIX-MAIN",
    "deps": [],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "type": "harness",
    "model": "claude-sonnet-5-5",
@@ -23890,7 +23890,7 @@
    "retry_after": null,
    "last_failure": null,
    "reason": null,
-   "attempt_started_at": "2026-10-31T20:06:00Z",
+   "attempt_started_at": "2026-11-14T16:24:32Z",
    "stale_leases": [
     {
      "task": "FIX-MAIN",
@@ -23908,13 +23908,13 @@
      "expires": "2026-10-29T17:00:00Z"
     }
    ],
-   "lane": "2",
+   "lane": "fix",
    "decision_ids": [
-    1053,
-    1054,
-    1055,
-    1056,
-    1057
+    3745,
+    3746,
+    3747,
+    3748,
+    3749
    ],
    "history": [
     {
@@ -55428,11 +55428,11 @@
    "input_tokens": 128,
    "output_tokens": 59786
   },
-  "source": "session_reading 2026-11-14T15:39:46Z (week)",
+  "source": "session_reading 2026-11-14T16:07:56Z (week)",
   "by_task": {
    "FIX-MAIN": {
-    "estimated_bytes": 1552047,
-    "estimated_tokens": 2819416,
+    "estimated_bytes": 3756447,
+    "estimated_tokens": 4368674,
     "input_tokens": 164,
     "output_tokens": 35548,
     "cache_creation_input_tokens": 243830,
@@ -58799,7 +58799,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T16:24:36Z",
+ "updated_at": "2026-11-14T16:24:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -59078,20 +59078,20 @@
   "set_at": "2026-11-14T16:07:33Z"
  },
  "pacing": {
-  "last": "T467 estimated 1.3M tokens (calibrated); week has 98.4M left (no five-hour budget, D-3056) after 3.6M still running in another lane (session_reading 2026-11-14T15:39:46Z (week)); claimed",
-  "at": "2026-11-14T15:44:37Z",
+  "last": "FIX-MAIN estimated 4.4M tokens (calibrated); week has 97.4M left (no five-hour budget, D-3056) after 2.6M still running in another lane (session_reading 2026-11-14T16:07:56Z (week)); claimed",
+  "at": "2026-11-14T16:24:32Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 95627782,
+    "used": 96611511,
     "budget": 194000000,
-    "left": 98372218,
+    "left": 97388489,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 280578295,
-  "projected_finish": "2026-11-24T18:43:08Z"
+  "remaining_estimate": 281921645,
+  "projected_finish": "2026-11-24T20:32:50Z"
  },
  "main_red_history": [
   {
@@ -59188,7 +59188,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3745,
+ "next_decision": 3750,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
