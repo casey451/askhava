@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:07:06Z by runner bc74ea9d3841 (actions).
+Updated 2026-11-14T00:07:32Z by runner bc74ea9d3841 (actions).
 
 **Building: T437 in progress since 23:57Z; 301 of 431 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 301 of 431 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T437 claimed 23:57Z, lease until 02:57Z; lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z
-- **Week:** 31% used, 129.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:03Z, 3 min before this update
+- **Lane:** lane 1: T437 claimed 23:57Z, lease until 02:57Z; lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z; lane 6: T444 claimed 00:07Z, lease until 03:07Z
+- **Week:** 31% used, 127.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 00:03Z, 4 min before this update
 - **Keeper:** last ran 00:01Z, next wake 03:00Z
 
 ## Needs attention
@@ -136,7 +136,7 @@ Updated 2026-11-14T00:07:06Z by runner bc74ea9d3841 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T00:00:43Z (week)): week: 64.6M used, 129.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T11:23:11Z.
+- Pacing (session_reading 2026-11-14T00:00:43Z (week)): week: 66.8M used, 127.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T13:45:19Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -154,6 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T437 (lease until 2026-11-14T02:57:41Z)
 - lane 2: T341 (lease until 2026-11-14T03:03:00Z)
 - lane 5: T328 (lease until 2026-11-14T03:02:31Z)
+- lane 6: T444 (lease until 2026-11-14T03:07:03Z)
 
 ## Last usage reading
 - {"task": "T391", "at": "2026-11-13T23:23:57Z", "input_tokens": 376, "output_tokens": 146899, "cache_read_input_tokens": 13160064, "cache_creation_input_tokens": 482702}
