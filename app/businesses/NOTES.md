@@ -299,3 +299,4 @@
 - [SEC-004] (owns) T280, D-3562, D-3219: `src/sign_in_lines.rs` `sign_in_lines(conn, member)`: `None` for a removed or unknown member, else `SignInLines { business, mailbox, texting_lines }`: lines that member linked, not the main phone, with a text box by a current member, `linked_at`, `id` order. IDs only. Test: `app/server/tests/business_signin_route.rs`.
 - [BIZ-033] (rules) T398, D-3659: `notice_recipients` lists only phones with `approved_at`; `phone_link_notice` keyed by `number_set_at`; `api::change_phone` emails the owner.
 - [SEC-024 BIZ-033 BIZ-040] (task 329) `src/notice_emails.rs` sends `NOTICE_KINDS`.
+- [BIZ-040] (task 468) D-3759: `email_verification::signup_mailbox(conn, business)` reads `businesses.signup.mailbox_id` (the mailbox `start_signup_check` checks and `confirm` takes); `EmailCheckError::Database` for an unknown sign-up. Test `tests/integration/tests/signup_mail_paths.rs`.
