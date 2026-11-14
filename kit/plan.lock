@@ -71,7 +71,7 @@
   "scripts/quota_probe.py": "63f21117d06c02632e2e79698ef828a33668cefc1403cfc261cc2d813d3cf951",
   "scripts/run_named_mutants.py": "325ff572d79be0e8e1a23026cbfd81cd50b7671f743f1f550390bd4569ac4f59",
   "scripts/smoke.sh": "d421a89871bf22b4cc39eb38fea4dd9446b4fd7ced65762bac80d6b897ee792d",
-  "scripts/split_arch_notes.py": "7440ec9d4ca9976a1585705d8ba2ad8370546f9bd6715a3567af4cf52815650c",
+  "scripts/split_arch_notes.py": "d56b30ceaad3ee05712466e5246834dc8ccf639b6cb19e609f6a7452a9157ec1",
   "scripts/split_crate_doc.py": "9a01aead037ba1c4249fc076dce86987b731defd23e5a68ee8f72e7ba8595a17",
   "scripts/stage_exit.py": "a7e2c2760b1651658e9e71d6af07f5920b9c8ee75c02b979e64e756ca9c03274",
   "scripts/trace_spec.py": "b02fc82e47428091cf86b6413fe86d782c23a81f45923aec1dec67b93701aacd",

@@ -130,3 +130,16 @@ def test_main_check_exit_status(tmp_path: Path, capsys) -> None:  # type: ignore
     san.main(["--root", str(root)])
     assert san.main(["--root", str(root), "--check"]) == 0
     assert san.main(["--root", str(root), "--verify", "HEAD"]) == 0
+
+
+def test_a_note_merged_in_after_the_move_moves_too(tmp_path: Path) -> None:
+    root = fake_repo(tmp_path)
+    san.split(root)
+    arch = root / "docs/architecture.md"
+    late = "**What T449 built (D-6).** `app/payments/src/late.rs` counts (FEE-001).\n\n"
+    arch.write_text(arch.read_text(encoding="utf-8").replace("## 11.", late + "## 11."), encoding="utf-8")
+    assert len(san.check(root)) == 1
+    assert san.split(root) == 0
+    text = arch.read_text(encoding="utf-8")
+    assert san.check(root) == [] and text.count(san.STUB) == 2 and "T449" not in text
+    assert "[FEE-001] (task 449) **What T449 built (D-6).**" in (root / "app/payments/NOTES.md").read_text(encoding="utf-8")

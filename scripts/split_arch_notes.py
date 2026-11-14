@@ -19,7 +19,8 @@ them, mechanically (no rewording), the way scripts/split_crate_doc.py moved crat
 - each section keeps a short stub (STUB) in place of its notes, saying where they are and how to grep them.
 
 Usage:
-  python3 scripts/split_arch_notes.py               # move the notes (refuses when none are left)
+  python3 scripts/split_arch_notes.py               # move the notes (refuses when none are left); run it
+      again after a merge brings a task's late "What T### built" paragraph back, and it moves that one too
   python3 scripts/split_arch_notes.py --verify REF  # prove the move from docs/architecture.md at REF: the
       file holds, in order, every line of REF's with each section's notes replaced by its stub (lines may be added), every crate NOTES.md starts with REF's,
       and every note's entries appear, whole and in order, exactly once across the destinations
@@ -122,24 +123,30 @@ def xref_entry(tag: str, text: str, dest: str, known: set[str]) -> str:
     return f"- [{ids}] ({tag}){XREF}{task_name(tag)} is in `{dest}`: `grep -n '({tag})' {dest}`."
 
 
+def section_numbers(lines: list[str]) -> list[int]:
+    """The `## N.` section each line is in (0 before the first)."""
+    out, section = [], 0
+    for line in lines:
+        heading = re.match(r"^## (\d+)\. ", line)
+        section = int(heading.group(1)) if heading else section
+        out.append(section)
+    return out
+
+
 def notes_of(text: str) -> list[tuple[int, int, str, str]]:
     """Each build note in SECTIONS: (section, line index, tag, paragraph), in file order."""
-    found, section = [], 0
-    for index, line in enumerate(text.split("\n")):
-        heading = re.match(r"^## (\d+)\. ", line)
-        if heading:
-            section = int(heading.group(1))
-        head = NOTE.match(line)
-        if head and section in SECTIONS:
-            found.append((section, index, tag_of(head), line))
-    return found
+    lines = text.split("\n")
+    return [(sec, i, tag_of(head), line) for i, (sec, line) in enumerate(zip(section_numbers(lines), lines))
+            if sec in SECTIONS and (head := NOTE.match(line))]
 
 
 def strip_notes(text: str) -> str:
-    """`text` with each section's notes (and the blank line after each) replaced by one STUB where the first was."""
+    """`text` with each section's notes (and the blank line after each) replaced by one STUB where the first was;
+    a section that already has the STUB (a note merged in after the move) only loses its notes."""
     lines, notes = text.split("\n"), notes_of(text)
     drop = {i for _, i, _, _ in notes} | {i + 1 for _, i, _, _ in notes if i + 1 < len(lines) and not lines[i + 1]}
-    first = {min(i for s, i, _, _ in notes if s == sec) for sec in {s for s, _, _, _ in notes}}
+    stubbed = {sec for sec, line in zip(section_numbers(lines), lines) if line == STUB}
+    first = {min(i for s, i, _, _ in notes if s == sec) for sec in {s for s, _, _, _ in notes} - stubbed}
     out: list[str] = []
     for index, line in enumerate(lines):
         if index in first:
