@@ -142,6 +142,8 @@ pub use crate::release::{
 };
 pub use crate::released_view::{Seat, ViewAnswer, ViewFacts, may_view, released_view};
 pub use crate::service::FEE_FACTS_ALERT;
+pub use crate::service::PACKAGE_TEMPLATE;
+pub use crate::service::page_pick_tier;
 pub use crate::service::{
     CONFIRMED_TEMPLATE, CodeCheck, CodeSent, CodeTo, DONE_TEMPLATE, NO_QUOTE_TEMPLATE,
     NONE_TEMPLATE, PICK_MADE_KIND, PICK_WITHDRAWN_KIND, PageCodeKeys, PagePick, TERMS_TEMPLATE,
@@ -149,6 +151,7 @@ pub use crate::service::{
     check_page_code, page_pick, record_terms_line, send_code, send_page_code, terms_line,
     terms_line_sent, text_pick, waiting_quote, withdraw_paused,
 };
+pub use crate::service::{ChosenTier, TierPick};
 pub use crate::settle::{
     ACCEPTED_QUOTE_KIND, AcceptedPick, LINE_RETRY_KIND, Settled, accepted_pick, retry_line, settle,
 };
