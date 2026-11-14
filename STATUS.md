@@ -1,18 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:38:44Z by runner f7c093395ac7 (actions).
+Updated 2026-11-14T12:40:37Z by runner 24008eb1e197 (actions).
 
-**Building: T301 in progress since 12:32Z; 322 of 449 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 12:40Z; 322 of 449 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 322 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T301 claimed 12:32Z, lease until 15:32Z
+- **Lane:** idle since 12:40Z (no task in progress)
 - **Week:** 43% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:38Z, 0 min before this update
+- **Last run:** 12:38Z, 1 min before this update
 - **Keeper:** last ran 12:38Z, next wake 15:34Z
 
 ## Needs attention
 - BLOCKED T300: plan gap reported: PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T196 own them; T300 owns no templates or static files, kit/prompts/T300.md:160) draw native checkboxes and a radio with no styling; Chromium reports a 0px border and transparent fill, so tests/a11y/targets_contrast.spec.ts:80 (A11Y-007) fails on the new /b and /b/notices page states (same cause as D-1820 for the feedback page). Reviewer confirmed by reading. Smallest fix: a portals task before T300 giving those inputs a visible edge (like feedback.css) or one shared rule in ap; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T300 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T301: plan gap reported: PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires 200 for the fixture's own Quote link GET and for Y's Quote link on X's job. T301's goal (D-3189, CARD-023) requires the one not-found answer for a job with no sent card. Nothing in door_matrix.rs or door_matrix/released_pick.rs calls keep_card/mark_card_sent/sent_card (quoted_job only send_cards + submit_quote); job_page returns None without holds_card (app/quotes/src/job_page.rs:155). Y holds no card on X's job, so even a carded fixture does not fix case (b). Marking sectio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T302: Ally: failure
 Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
     > 80 |       expect(await page.evaluate(edgeProblems)).toEqual([]);
@@ -32,11 +33,12 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 ##[error]Process completed with exit code 1.
 - BLOCKED T437: merging main into the task branch conflicts in app/businesses/CLAUDE.md again after 2 resyncs in this attempt, so this attempt fails and the next one starts from the branch with main merged in, or fresh from main when that still conflicts (D-583, D-620, D-891)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 33 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+103 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
 | T359 | payments: a successful charge writes its own charge ledger e | MERGE_PENDING | 3 | 72 min | 12:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 2 | 16 min | 12:20Z | PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 3 | 23 min | 11:56Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
@@ -51,7 +53,7 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 52 min | 10:25Z |  |
 | T398 | businesses: notice texts go only to approved phones, and a m | done | 1 | 38 min | 09:41Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 4 | 2 min | 09:18Z |  |
-| T301 | server and portals: the email action links are served (every | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
+| T301 | server and portals: the email action links are served (every | BLOCKED | 1 | 4 min | 09:13Z |  |
 | T398 | businesses: notice texts go only to approved phones, and a m | resync | 1 | 32 min | 09:01Z |  |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 1 | 5 min | 08:59Z |  |
 | T280 | server and messaging (harness): the business sign-in pages a | done | 4 | 91 min | 08:04Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
@@ -192,7 +194,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T301 (lease until 2026-11-14T15:32:04Z)
 
 ## Last usage reading
-- {"task": "T359", "at": "2026-11-14T12:37:25Z", "cache_creation_input_tokens": 118533, "input_tokens": 96, "cache_read_input_tokens": 2441915, "output_tokens": 20251}
+- {"task": "T301", "at": "2026-11-14T12:40:36Z", "output_tokens": 38675, "cache_creation_input_tokens": 173366, "cache_read_input_tokens": 5336508, "input_tokens": 120}
