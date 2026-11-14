@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:50:00Z by runner e3143b26af96 (actions).
+Updated 2026-11-14T00:50:22Z by runner e3143b26af96 (actions).
 
 **Building: T341 in progress since 00:03Z; 303 of 434 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 303 of 434 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z; lane 7: T448 claimed 00:11Z, lease until 03:11Z
+- **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z
 - **Week:** 31% used, 127.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:45Z, 4 min before this update
 - **Keeper:** last ran 00:45Z, next wake 03:05Z
@@ -18,6 +18,7 @@ Updated 2026-11-14T00:50:00Z by runner e3143b26af96 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T448 | portals: the data-download mask joins digit runs across any  | MERGE_PENDING | 1 | 38 min | 00:49Z |  |
 | T444 | intake (test): the job's ZIP is read only from a property in | MERGE_PENDING | 1 | 24 min | 00:31Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 25 min | 00:23Z |  |
 | T391 | calls, businesses, messaging and server: the main phone's "L | done | 1 | 47 min | 23:23Z |  |
@@ -156,7 +157,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T341 (lease until 2026-11-14T03:03:00Z)
 - lane 3: T280 (lease until 2026-11-14T03:35:47Z)
 - lane 5: T328 (lease until 2026-11-14T03:02:31Z)
-- lane 7: T448 (lease until 2026-11-14T03:11:43Z)
 
 ## Last usage reading
-- {"task": "T444", "at": "2026-11-14T00:31:14Z", "cache_read_input_tokens": 1542395, "input_tokens": 81, "output_tokens": 16176, "cache_creation_input_tokens": 68396}
+- {"task": "T448", "at": "2026-11-14T00:49:59Z", "cache_read_input_tokens": 636029, "cache_creation_input_tokens": 57067, "output_tokens": 13527, "input_tokens": 41}
