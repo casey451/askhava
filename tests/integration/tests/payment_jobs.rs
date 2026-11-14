@@ -2,18 +2,20 @@
 //! `payments` jobs run in the production worker registry against PostgreSQL and the stand-in
 //! Stripe (`python3 -m stand_ins.server`, started per test on a free port).
 //!
-//! The registry is `askhava_server::worker_registry` from dev settings (no Stripe key: every
-//! payments kind is registered and a run ends done), and for the money cases the same registry
-//! with `payment_jobs::register` over the Stripe client `release_sink::stripe_webhook` builds
-//! from dev settings naming the stand-in, as `worker_registry` does with the Stripe settings. The
-//! composition root is compiled in place as `pick_ended.rs` does (D-2853's exception, logged for this file in D-3621). Each due task runs
+//! The registry is `askhava_server::worker_registry` itself: from dev settings without a Stripe
+//! key (every payments kind is registered and a run ends done), and for the money cases from dev
+//! settings holding the Stripe settings that name the stand-in, so its own `stripe_client` hands
+//! `payment_jobs::register` the client (D-3624). The composition root is compiled in place as
+//! `pick_ended.rs` does (D-2853's exception, logged for this file in D-3621). Each due task runs
 //! through `Registry::run` on a manual clock. A pick ended by `payments` (the four-hour end,
 //! FEE-018, through `payments.pay_timer` over an unreachable Stripe) that then succeeds by the
 //! check round (`payments.charge_check`) or by the webhook gives one `late-success` refund and one
 //! alert; the refund's ledger write failing once (the worker stopped after Stripe answered) is
-//! finished by the retry with one refund and one ledger row. A success for a pick `picks` moved
-//! on is refunded and releases nothing; two starts seed one reconcile. The stand-in sends no
-//! `livemode`, so the webhook's re-fetch reads it as test mode (`TestMode`). All IDs are fake.
+//! finished by the retry with one refund and one ledger row; a stop after the check round read
+//! the charge and before its evidence write ends in one attempt and no refund. A success for a
+//! pick `picks` moved on (unknown, cancelled, expired, payment_failed) is refunded and releases
+//! nothing; two starts seed one reconcile. The stand-in sends no `livemode`, so the webhook's
+//! re-fetch reads it as test mode (`TestMode`). All IDs are fake.
 
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -93,6 +95,16 @@ fn stand_in() -> StandIn {
 /// (`release_sink::stripe_webhook`, as `worker_registry`'s `stripe_client` reads it); its
 /// `stripe` is the one client the worker shares.
 fn client(base: &str) -> release_sink::StripeHooks {
+    let pairs = stripe_pairs(base);
+    let settings = Settings::from_pairs(pairs.clone()).expect("settings");
+    let lazy = PgPool::connect_lazy("postgres://fake@127.0.0.1:1/none").expect("lazy pool");
+    let hooks = release_sink::stripe_webhook(&settings, lazy, pairs).expect("stripe settings");
+    hooks.expect("the Stripe client")
+}
+
+/// The dev Twilio pairs plus the Stripe webhook's settings naming the stand-in at `base` and the
+/// vault keys: what `stripe_client` needs to build the one Stripe client.
+fn stripe_pairs(base: &str) -> Vec<(String, String)> {
     let key = |b: u8| format!("1:{}", STANDARD.encode([b; 32]));
     let stripe = [
         ("ASKHAVA_STRIPE_WEBHOOK_SECRET", HOOK_SECRET.to_owned()),
@@ -102,14 +114,10 @@ fn client(base: &str) -> release_sink::StripeHooks {
         ("VAULT_KEY", key(0x59)),
         ("VAULT_INDEX_KEY", key(0x69)),
     ];
-    let pairs: Vec<(String, String)> = twilio_pairs()
+    twilio_pairs()
         .into_iter()
         .chain(stripe.map(|(k, v)| (k.to_owned(), v)))
-        .collect();
-    let settings = Settings::from_pairs(pairs.clone()).expect("settings");
-    let lazy = PgPool::connect_lazy("postgres://fake@127.0.0.1:1/none").expect("lazy pool");
-    let hooks = release_sink::stripe_webhook(&settings, lazy, pairs).expect("stripe settings");
-    hooks.expect("the Stripe client")
+        .collect()
 }
 
 /// The stand-in's answers with `livemode: false`, which it leaves out (the webhook's re-fetch).
@@ -136,12 +144,13 @@ impl<S: PaymentsAdapter + Sync> PaymentsAdapter for TestMode<'_, S> {
     }
 }
 
-/// The production registry from dev settings, with `stripe` registered as `worker_registry` does
-/// when the Stripe settings are set (`None`: the dev registry as it is).
-fn registry(clock: Arc<dyn Clock>, stripe: Option<release_sink::StripeHooks>) -> Registry {
+/// The production registry, `worker_registry`, from dev settings; with `stripe` (the stand-in's
+/// base URL) the Stripe settings are among them, so `worker_registry`'s own `stripe_client`
+/// hands the payments jobs their client (`None`: no Stripe key, as in dev and CI).
+fn registry(clock: Arc<dyn Clock>, stripe: Option<&str>) -> Registry {
     let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join(format!("t433-{}", Uuid::new_v4()));
     std::fs::create_dir_all(&dir).expect("storage dir");
-    let pairs: Vec<(String, String)> = [
+    let base = [
         ("ASKHAVA_APP_ENV", "dev".to_owned()),
         (
             "ASKHAVA_DATABASE_URL",
@@ -152,20 +161,15 @@ fn registry(clock: Arc<dyn Clock>, stripe: Option<release_sink::StripeHooks>) ->
             format!("file://{}", dir.display()),
         ),
         ("ASKHAVA_ID_SECRET", ID_SECRET.into()),
-    ]
-    .into_iter()
-    .map(|(k, v)| (k.to_owned(), v))
-    .collect();
+    ];
+    let mut pairs: Vec<(String, String)> = stripe.map(stripe_pairs).unwrap_or_default();
+    pairs.retain(|(k, _)| !base.iter().any(|(b, _)| b == k));
+    pairs.extend(base.map(|(k, v)| (k.to_owned(), v)));
     let settings = Settings::from_pairs(pairs.clone()).expect("settings");
-    let stream = offdb_stream::OffDbStream::from_settings(&settings, pairs.clone(), clock.clone())
-        .expect("stream");
+    let stream =
+        offdb_stream::OffDbStream::from_settings(&settings, pairs.clone(), clock).expect("stream");
     let parts = (None, ConfirmSettings::default());
-    let mut registry = worker_registry(&settings, stream, parts, pairs).expect("registry");
-    if stripe.is_some() {
-        let stripe = stripe.map(|h| h.stripe.clone());
-        payment_jobs::register(&mut registry, stripe, secret(), clock);
-    }
-    registry
+    worker_registry(&settings, stream, parts, pairs).expect("registry")
 }
 
 /// Runs every task due at the clock's now through `registry`, as the worker would, until none is.
@@ -243,7 +247,7 @@ async fn charged(pool: &PgPool, hooks: &release_sink::StripeHooks) -> String {
 
 /// FEE-018 through the worker: the four-hour timer over an unreachable Stripe ends the pick.
 async fn four_hour_end(pool: &PgPool, clock: &Arc<ManualClock>) {
-    let down = registry(clock.clone(), Some(client("http://127.0.0.1:1/stripe")));
+    let down = registry(clock.clone(), Some("http://127.0.0.1:1/stripe"));
     let timer = json!({"pick": PICK, "kind": "stripe-down", "due": NOW - 60});
     queue(pool, TIMER_KIND, timer, at(0)).await;
     run_due(pool, &down, clock).await;
@@ -315,7 +319,7 @@ async fn td_fee_52_check_round_late_success_survives_a_stop(pool: PgPool) {
         CREATE TRIGGER t433_stop BEFORE INSERT ON payments.ledger_entry FOR EACH ROW
         WHEN (NEW.kind = 'refund') EXECUTE FUNCTION payments.t433_stop();";
     sqlx::raw_sql(stop).execute(&pool).await.expect("stop");
-    let worker = registry(clock.clone(), Some(client(&server.1)));
+    let worker = registry(clock.clone(), Some(&server.1));
     queue(
         &pool,
         CHECK_KIND,
@@ -332,12 +336,7 @@ async fn td_fee_52_check_round_late_success_survives_a_stop(pool: PgPool) {
         .await
         .expect("restart");
     clock.set(at(3 * 3_600));
-    run_due(
-        &pool,
-        &registry(clock.clone(), Some(client(&server.1))),
-        &clock,
-    )
-    .await;
+    run_due(&pool, &registry(clock.clone(), Some(&server.1)), &clock).await;
     assert_refunded_once(&pool).await;
 }
 
@@ -350,7 +349,7 @@ async fn td_fee_52_webhook_late_success_refunds_once(pool: PgPool) {
     let intent = charged(&pool, &stripe).await;
     let (mode, acct) = (TestMode(&stripe.stripe), account());
     four_hour_end(&pool, &clock).await;
-    let worker = registry(clock.clone(), Some(client(&server.1)));
+    let worker = registry(clock.clone(), Some(&server.1));
     for n in 1..=2 {
         clock.set(at(60 * n));
         let event = succeeded(&intent);
@@ -361,27 +360,66 @@ async fn td_fee_52_webhook_late_success_refunds_once(pool: PgPool) {
     assert_refunded_once(&pool).await;
 }
 
-/// TD-FEE-52 (FEE-021, D-1547): a verified success for a pick `picks` moved on (no awaiting
-/// confirm pick) settles `Left` in the release sink, which queues the late refund and alert; the
-/// worker refunds once and nothing is released, also when the success arrives again.
-#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_fee_52_picks_moved_on_success_is_refunded_unreleased(pool: PgPool) {
+/// TD-FEE-52 (FEE-021, D-1547): a verified success for a pick `picks` moved on settles `Left` in
+/// the release sink, which queues the late refund and alert; the worker refunds once and nothing
+/// is released, also when the success arrives again. `ended`: the pick's `picks.pick` status,
+/// ended before it was settled (`None`: no pick row, an unknown pick).
+async fn moved_on_success_is_refunded_unreleased(pool: PgPool, ended: Option<&str>) {
     let server = stand_in();
     let (clock, stripe) = (Arc::new(ManualClock::new(at(0))), client(&server.1));
     let intent = charged(&pool, &stripe).await;
+    if let Some(status) = ended {
+        sqlx::query(
+            "INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status,
+               picked_at, ended_at) VALUES ($1, $2, $3, 1, 'page', $4, to_timestamp($5 - 600),
+               to_timestamp($5 - 60))",
+        )
+        .bind(PICK)
+        .bind(JOB)
+        .bind(BUSINESS)
+        .bind(status)
+        .bind(NOW)
+        .execute(&pool)
+        .await
+        .expect("ended pick");
+    }
     let (mode, acct) = (TestMode(&stripe.stripe), account());
     let sink = release_sink::PickReleaser::new(pool.clone(), vault(), masked(), clock.clone());
-    let worker = registry(clock.clone(), Some(client(&server.1)));
+    let worker = registry(clock.clone(), Some(&server.1));
     for n in 0..2 {
         let event = succeeded(&intent);
         let cleared = paid_release(&pool, &mode, &acct, &event, PICK, at(n));
         if let Ok(cleared) = cleared.await {
             let released = sink.settle_and_release(cleared).await;
-            assert!(matches!(released, Ok(Released::MovedOn)));
+            assert!(matches!(released, Ok(Released::MovedOn)), "{ended:?}");
         }
         run_due(&pool, &worker, &clock).await;
     }
     assert_refunded_once(&pool).await;
+}
+
+/// TD-FEE-52: the success for an unknown pick (no `picks.pick` row).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_52_picks_moved_on_success_is_refunded_unreleased(pool: PgPool) {
+    moved_on_success_is_refunded_unreleased(pool, None).await;
+}
+
+/// TD-FEE-52 (PICK-032): the success for a pick replaced before its Confirm (`cancelled`).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_52_cancelled_pick_success_is_refunded_unreleased(pool: PgPool) {
+    moved_on_success_is_refunded_unreleased(pool, Some("cancelled")).await;
+}
+
+/// TD-FEE-52 (PICK-019): the success for a pick whose Confirm window ran out (`expired`).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_52_expired_pick_success_is_refunded_unreleased(pool: PgPool) {
+    moved_on_success_is_refunded_unreleased(pool, Some("expired")).await;
+}
+
+/// TD-FEE-52 (FEE-018, FEE-020): the success for a pick `payments` ended (`payment_failed`).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_52_payment_failed_pick_success_is_refunded_unreleased(pool: PgPool) {
+    moved_on_success_is_refunded_unreleased(pool, Some("payment_failed")).await;
 }
 
 fn vault() -> Vault {
@@ -439,12 +477,7 @@ async fn td_fee_52_two_starts_seed_one_reconcile(pool: PgPool) {
                  WHERE kind = 'payments.reconcile'";
     let due = Timestamp::from_second(count(&pool, epoch).await).expect("run_at");
     let clock = Arc::new(ManualClock::new(due));
-    run_due(
-        &pool,
-        &registry(clock.clone(), Some(client(&server.1))),
-        &clock,
-    )
-    .await;
+    run_due(&pool, &registry(clock.clone(), Some(&server.1)), &clock).await;
     let done =
         "SELECT count(*) FROM core.task WHERE kind = 'payments.reconcile' AND done_at IS NOT NULL";
     assert_eq!(count(&pool, done).await, 1, "the reconcile ran");
@@ -478,7 +511,7 @@ async fn td_fee_52_check_round_and_refund_check(pool: PgPool) {
     let server = stand_in();
     let (clock, stripe) = (Arc::new(ManualClock::new(at(0))), client(&server.1));
     let intent = charged(&pool, &stripe).await;
-    let worker = registry(clock.clone(), Some(client(&server.1)));
+    let worker = registry(clock.clone(), Some(&server.1));
     queue(
         &pool,
         CHECK_KIND,
@@ -511,4 +544,47 @@ async fn td_fee_52_check_round_and_refund_check(pool: PgPool) {
     assert_eq!(count(&pool, done).await, 1, "the check moved it on");
     let ledger = "SELECT count(*) FROM payments.ledger_entry WHERE kind = 'refund'";
     assert_eq!(count(&pool, ledger).await, 1, "one refund ledger row");
+}
+
+/// TD-FEE-52 (FEE-019, FEE-042, FEE-047): the check round reads the stand-in's succeeded charge,
+/// then the worker stops before its evidence write; after the restart the retry stores the one
+/// success: one intent, one attempt, one evidence row, no refund and no second ledger row.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_52_check_round_stop_after_stripe_charges_once(pool: PgPool) {
+    let server = stand_in();
+    let clock = Arc::new(ManualClock::new(at(0)));
+    charged(&pool, &client(&server.1)).await;
+    let stop = "CREATE FUNCTION payments.t433_stop() RETURNS trigger LANGUAGE plpgsql AS
+        $$ BEGIN RAISE EXCEPTION 'worker stopped'; END $$;
+        CREATE TRIGGER t433_stop BEFORE INSERT ON payments.charge_evidence
+        FOR EACH ROW EXECUTE FUNCTION payments.t433_stop();";
+    sqlx::raw_sql(stop).execute(&pool).await.expect("stop");
+    let check = json!({"pick": PICK, "try": 1, "round": 0});
+    queue(&pool, CHECK_KIND, check, at(0)).await;
+    run_due(&pool, &registry(clock.clone(), Some(&server.1)), &clock).await;
+    let evidence = "SELECT count(*) FROM payments.charge_evidence";
+    assert_eq!(count(&pool, evidence).await, 0, "stopped before the write");
+    sqlx::raw_sql("DROP TRIGGER t433_stop ON payments.charge_evidence")
+        .execute(&pool)
+        .await
+        .expect("restart");
+    clock.set(at(3 * 3_600));
+    run_due(&pool, &registry(clock.clone(), Some(&server.1)), &clock).await;
+    assert_eq!(count(&pool, evidence).await, 1, "the success stored once");
+    let attempts = "SELECT count(*) FROM payments.charge_attempt";
+    assert_eq!(count(&pool, attempts).await, 1, "no second charge attempt");
+    let won = "SELECT count(*) FROM payments.charge_attempt WHERE status = 'succeeded'";
+    assert_eq!(count(&pool, won).await, 1, "the one attempt succeeded");
+    let intents = "SELECT count(*) FROM payments.pick_intent";
+    assert_eq!(count(&pool, intents).await, 1, "no second intent");
+    assert_eq!(
+        count(&pool, "SELECT count(*) FROM payments.refund").await,
+        0
+    );
+    let ledger = "SELECT count(*) FROM payments.ledger_entry";
+    assert_eq!(
+        count(&pool, ledger).await,
+        0,
+        "the check writes no ledger row"
+    );
 }
