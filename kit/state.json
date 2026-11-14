@@ -32618,7 +32618,7 @@
     "T280",
     "T449"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "business-signup-served",
    "type": "build",
@@ -32632,8 +32632,8 @@
     3600,
     3601
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:10, nor tests/a11y/page_states.ts (PAGE_STATES entry required by TD-SEC-45). route_wiring.rs:253 and door_matrix.rs:647 build the router via build_router without sign-up. Smallest fix: a harness task opens every /b/signup... path except /b/signup/capability like a sign-in page in auth_matrix.rs, door_matrix.rs and door_cases.txt, has route_wiring.rs and door_matrix.rs build the router with sign-up merged in, and adds the PAGE_STATES entry. Reviewer confirmed each point. Work is uncommitted in the T302 tree.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:10, nor tests/a11y/page_states.ts (PAGE_STATES entry required by TD-SEC-45). route_wiring.rs:253 and door_matrix.rs:647 build the router via build_router without sign-up. Smallest fix: a harness task opens every /b/signup... path except /b/signup/capability like a sign-in page in auth_matrix.rs, door_matrix.rs and door_cases.txt, has route_wiring.rs and door_matrix.rs build the router with sign-up merged in, and adds the PAGE_STATES entry. Reviewer confirmed each point. Work is uncommitted in the T302 tree.\nre-queued after plan fix D-3641: door-matrix gap fixed (#745): exact open sign-up step paths, browser-bound steps; T280 and T449 are DONE",
    "history": [
     {
      "attempt": 1,
@@ -32731,6 +32731,19 @@
      "plan_head": "c4076414e148a666aed851c924aa8e6079f21781",
      "plan_then": "5b9b828e389f5f6f4ee17561fc61f6968b8a4a112843e65d5275921fd9565cbe",
      "plan_now": "2dc3be4922334778cbd49b661b0e56a63bcaf70102573ae51ad49fc7d55c83fd"
+    },
+    {
+     "at": "2026-11-14T08:47:42Z",
+     "reason": "door-matrix gap fixed (#745): exact open sign-up step paths, browser-bound steps; T280 and T449 are DONE",
+     "by": "manual-f239a4684ea5",
+     "was": "plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 3,
+     "plan_fix": "D-3641",
+     "plan_since": "2026-11-14T03:56:22Z",
+     "plan_base": "c4076414e148a666aed851c924aa8e6079f21781",
+     "plan_head": "d6d1d54ea21a18537cab068466554864dcda58a6",
+     "plan_then": "2dc3be4922334778cbd49b661b0e56a63bcaf70102573ae51ad49fc7d55c83fd",
+     "plan_now": "710bb23dcc7da95b7196e0269eed33f4a27094661bef6c820096bf265ea7148a"
     }
    ]
   },
@@ -55883,7 +55896,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T08:45:17Z",
+ "updated_at": "2026-11-14T08:47:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -55982,7 +55995,7 @@
   ]
  },
  "runner_sha": "d6d1d54ea21a18537cab068466554864dcda58a6",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "f5b7fd7dcd10a658f8d6d7ad8b7ebb0db0a15c2f",
