@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-14T01:10:48Z by runner e40ebe112f64 (actions).
+Updated 2026-11-14T01:11:03Z by runner a2cc1d943733 (actions).
 
-**Building: T280 in progress since 00:35Z; 304 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T280 in progress since 00:35Z; 303 of 431 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 304 of 434 build tasks (owner gates not counted)
+- **Tasks done:** 303 of 431 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 4: T447 claimed 01:03Z, lease until 04:03Z
 - **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -15,7 +15,7 @@ Updated 2026-11-14T01:10:48Z by runner e40ebe112f64 (actions).
 - BLOCKED T302: plan gap reported: PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emailed sign-up code; nothing in app/portals calls businesses::api::check_code (identity.rs:260), start_signup_check (email_verification.rs:134), verified_by_link (:178) or confirm (:363); templates/business_signup.html has no code input and no texts choice or text phone field (Entered.text_chosen at :344 and SignupConsent.text_phone at :373 can never come from a post). T302 (kit/prompts/T302.md:34-38, :158, :164) owns no templates or customer copy, yet TD-SEC-45 (T302.md:73) needs; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 52% of the context window, over its 50% limit
-- Strict plan check red: 31 problem(s) on tasks still to run (+200 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 31 problem(s) on tasks still to run (+197 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -23,7 +23,7 @@ Updated 2026-11-14T01:10:48Z by runner e40ebe112f64 (actions).
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | MERGE_PENDING | 2 | 67 min | 01:10Z | PLAN GAP: test-design.md:203 (TD-FEE-63) and D-2332 require a text pick of a tiers quote to store nothing and reply with |
 | T328 | picks and server: an ended pick offers the next quote (`paym | MERGE_PENDING | 2 | 61 min | 01:04Z | PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text canno |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z | PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emaile |
-| T448 | portals: the data-download mask joins digit runs across any  | done | 1 | 38 min | 00:49Z |  |
+| T448 |  | done | 1 | 38 min | 00:49Z |  |
 | T444 | intake (test): the job's ZIP is read only from a property in | MERGE_PENDING | 1 | 24 min | 00:31Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 25 min | 00:23Z |  |
 | T391 | calls, businesses, messaging and server: the main phone's "L | done | 1 | 47 min | 23:23Z |  |
@@ -113,8 +113,8 @@ Updated 2026-11-14T01:10:48Z by runner e40ebe112f64 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 304 of 434
+**Requirements verified:** 279 of 733 (38.1%) · partial 294 · unstarted 160
+**Tasks merged (throughput only):** 303 of 431
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -122,7 +122,7 @@ Updated 2026-11-14T01:10:48Z by runner e40ebe112f64 (actions).
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 20 | 35 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
-| consent | 12 | 19 | 4 | 35 |
+| consent | 14 | 17 | 4 | 35 |
 | fees | 14 | 37 | 1 | 52 |
 | intake | 26 | 14 | 3 | 43 |
 | job-cards | 18 | 6 | 0 | 24 |
