@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T06:55:22Z by runner 61c94cc79081 (actions).
+Updated 2026-11-14T06:55:53Z by runner f7cc24b1d073 (actions).
 
 **Building: T280 in progress since 06:32Z; 315 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T06:55:22Z by runner 61c94cc79081 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 06:32Z, lease until 09:32Z
 - **Week:** 37% used, 118.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:50Z, 5 min before this update
+- **Last run:** 06:55Z, 0 min before this update
 - **Keeper:** last ran 06:49Z, next wake 09:34Z
 
 ## Needs attention
@@ -19,8 +19,8 @@ Updated 2026-11-14T06:55:22Z by runner 61c94cc79081 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 2 | 30 min | 06:48Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T396 | businesses and messaging (harness): a phone a member links o | MERGE_PENDING | 2 | 21 min | 06:40Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 30 min | 06:48Z | merging main into the reviewed head conflicts in app/adapters/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 21 min | 06:40Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T352 | adapters and stand-in (harness): the PaymentIntent carries S | done | 1 | 51 min | 06:14Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 51 min | 06:03Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 51 min | 06:02Z |  |
