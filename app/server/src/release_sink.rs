@@ -17,6 +17,10 @@
 //! `WaitingForAddress` are success to the route; a database or vault failure is
 //! `ReleaseError::Database`, its 500, so Stripe sends the event again.
 //!
+//! T433 (FEE-021, D-1547): a paid clearing whose pick `picks` left (cancelled, expired) is a late
+//! success: in the settle's transaction `payments::api::late_success` queues its refund and Casey's
+//! alert, once per pick, and nothing is released.
+//!
 //! [`stripe_webhook`] builds the route's `StripeWebhook` from the settings (SEC-036, SEC-039,
 //! SEC-049): the Stripe client, the `whsec_…` signing secret, the configured account and mode,
 //! the SEC-040 client-address policy, the vault and the masked pool.
@@ -39,14 +43,15 @@ use askhava_core::api::{
 use askhava_intake::api::{ADDRESS_IN_KIND, job_homeowner};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use askhava_payments::api::{
-    Releasable, ReleaseError, ReleaseSink, StripeAccount, StripeWebhook, reclear_release,
+    MoneyEventError, PickNow, Releasable, ReleaseError, ReleaseSink, StripeAccount, StripeWebhook,
+    late_success, reclear_release,
 };
 use askhava_picks::api::{Released, Settled, awaiting_address, contact_choice, release, settle};
-use askhava_privacy::api::Vault;
+use askhava_privacy::api::{ReleaseBasis, Vault};
 use jiff::Timestamp;
 use secrecy::SecretString;
-use sqlx::PgPool;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
 use crate::release_minter;
 
@@ -93,7 +98,8 @@ impl PickReleaser {
     }
 
     /// Settles, mints and releases `cleared` (see the module docs; PICK-022, PRIV-005, BIZ-014,
-    /// D-1739): `MovedOn` for a pick that left awaiting confirm, else the release's answer.
+    /// D-1739): `MovedOn` for a pick that left awaiting confirm (a paid one's late-success refund
+    /// queued, FEE-021), else the release's answer.
     ///
     /// # Errors
     /// [`ReleaseError::Database`] when the settle, the contact lookup, the vault read or the
@@ -108,9 +114,27 @@ impl PickReleaser {
         let settled = settle(&mut tx, &cleared)
             .await
             .map_err(|_| ReleaseError::Database)?;
+        if settled == Settled::Left && matches!(cleared.basis(), ReleaseBasis::PaidCharge) {
+            moved_on_success(&mut tx, cleared.pick(), at).await?;
+        }
         tx.commit().await.map_err(|_| ReleaseError::Database)?;
         let keys = (&self.vault, &self.masked);
         release_settled(&self.pool, keys, (cleared, settled), at).await
+    }
+}
+
+/// FEE-021, D-1547 (T433): a verified paid success for a pick `picks` left (`Settled::Left`) is a
+/// late success: `payments::api::late_success` with `PickNow::MovedOn`, in the settle's
+/// transaction, queues its refund and raises Casey's alert once per pick; nothing is released. A
+/// pick with no stored charge has nothing to refund.
+async fn moved_on_success(
+    conn: &mut PgConnection,
+    pick: Uuid,
+    at: Timestamp,
+) -> Result<(), ReleaseError> {
+    match late_success(conn, pick, PickNow::MovedOn, at).await {
+        Ok(_) | Err(MoneyEventError::NothingCharged) => Ok(()),
+        Err(_) => Err(ReleaseError::Database),
     }
 }
 
