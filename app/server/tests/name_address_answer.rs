@@ -57,7 +57,7 @@ const TOKEN: &str = "fake_twilio_auth_token";
 const HER: &str = "+19285550172";
 const LAFTLY: &str = "+19285550100";
 /// Her answer: a made-up first name and street.
-const ANSWER: &str = "Testa 12 Juniperhollow Ave";
+const ANSWER: &str = "Testa 12 Sample Ave";
 /// An answer whose street holds a 911-list word, in lower case with a short number and no
 /// suffix, so neither the scrubber nor the address strip removes it.
 const SMOKE_STREET: &str = "Testa 21 smoke tree";
@@ -309,7 +309,7 @@ async fn td_int_42_a_regular_answer_lands_on_her_own_contact(pool: PgPool) {
         !holding(&pool, "86403").await.is_empty(),
         "the scan sees the ZIP"
     );
-    for needle in ["Testa", "Juniperhollow"] {
+    for needle in ["Testa", "Sample Ave"] {
         assert_eq!(
             holding(&pool, needle).await,
             Vec::<String>::new(),
@@ -327,7 +327,7 @@ async fn td_int_42_a_street_is_no_hazard_and_no_number_asks_again(pool: PgPool) 
     let logs = Logs::default();
     her_request(&pool, &logs, &[]).await;
     text(&pool, &logs, 2, "the unit upstairs").await;
-    text(&pool, &logs, 3, "Testa on Juniperhollow Avenue").await;
+    text(&pool, &logs, 3, "Testa on Sample Avenue").await;
     assert_eq!(
         queued(&pool, NAME_ADDRESS_TEMPLATE).await,
         2,
@@ -517,7 +517,7 @@ async fn td_int_42_an_emergency_release_that_waited_gets_the_address_once(pool: 
         panic!("not shown");
     };
     let street = view.address().expect("address").expose_secret().to_owned();
-    assert_eq!(street, "12 Juniperhollow Ave");
+    assert_eq!(street, "12 Sample Ave");
     text(&pool, &logs, 3, ANSWER).await;
     assert!(
         tasks(&pool, ADDRESS_IN_KIND).await.is_empty(),
