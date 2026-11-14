@@ -32464,7 +32464,7 @@
     "T415",
     "T450"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "business-signup-served",
    "type": "build",
@@ -32478,8 +32478,8 @@
     3600,
     3601
    ],
-   "reason": "plan gap reported: PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode|EmailCode in app/portals/src finds nothing, app/portals/src/tests/signup_code_screens.rs does not exist. T302 owns no portals file, so it cannot serve the email-code and identity-code steps (TD-SEC-45) without T450's Screen::IdentityCode, Screen::EmailCode, route constants and channel parser. kit/state.json on claude/kit-state has no T450 and T302's deps there stop at T415, so the runner started T302 before T450. Reviewer confirmed every claim.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode|EmailCode in app/portals/src finds nothing, app/portals/src/tests/signup_code_screens.rs does not exist. T302 owns no portals file, so it cannot serve the email-code and identity-code steps (TD-SEC-45) without T450's Screen::IdentityCode, Screen::EmailCode, route constants and channel parser. kit/state.json on claude/kit-state has no T450 and T302's deps there stop at T415, so the runner started T302 before T450. Reviewer confirmed every claim.",
+   "reason": null,
+   "last_failure": "PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode|EmailCode in app/portals/src finds nothing, app/portals/src/tests/signup_code_screens.rs does not exist. T302 owns no portals file, so it cannot serve the email-code and identity-code steps (TD-SEC-45) without T450's Screen::IdentityCode, Screen::EmailCode, route constants and channel parser. kit/state.json on claude/kit-state has no T450 and T302's deps there stop at T415, so the runner started T302 before T450. Reviewer confirmed every claim.\nre-queued after plan fix D-3619: attempt 2 claimed on a stale graph before #730 (dep T450); T450 is DONE",
    "history": [
     {
      "attempt": 1,
@@ -32541,6 +32541,19 @@
      "plan_head": "d997705c35e7d8be5f02fe0bca82b436e6e73085",
      "plan_then": "7797c705457bbd967739455d5566cb7dfdb7a77ab04b0b83ffcbc2b75c775c4d",
      "plan_now": "5b9b828e389f5f6f4ee17561fc61f6968b8a4a112843e65d5275921fd9565cbe"
+    },
+    {
+     "at": "2026-11-14T03:45:22Z",
+     "reason": "attempt 2 claimed on a stale graph before #730 (dep T450); T450 is DONE",
+     "by": "manual-62186fd4b26b",
+     "was": "plan gap reported: PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode|EmailCode in app/portals/src finds nothing, app/portals/src/tests/signup_code_screens.rs does not exist. T302 owns no portals file, so it cannot serve the email-code and identity-code steps (TD-SEC-45) without T450's Screen::IdentityCode, Screen::EmailCode, route constants and channel parser. kit/state.json on claude/kit-state has no T450 and T302's deps there stop at T415, so the runner started T302 before T450. Reviewer confirmed every claim.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-3619",
+     "plan_since": "2026-11-14T01:32:25Z",
+     "plan_base": "d997705c35e7d8be5f02fe0bca82b436e6e73085",
+     "plan_head": "c4076414e148a666aed851c924aa8e6079f21781",
+     "plan_then": "5b9b828e389f5f6f4ee17561fc61f6968b8a4a112843e65d5275921fd9565cbe",
+     "plan_now": "2dc3be4922334778cbd49b661b0e56a63bcaf70102573ae51ad49fc7d55c83fd"
     }
    ]
   },
@@ -54400,7 +54413,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T03:44:33Z",
+ "updated_at": "2026-11-14T03:45:22Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -54498,8 +54511,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f5b7fd7dcd10a658f8d6d7ad8b7ebb0db0a15c2f",
- "starter": "actions",
+ "runner_sha": "c4076414e148a666aed851c924aa8e6079f21781",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "09bfaf2c02fdbecbe6bf432c0718ab617da57a52",
