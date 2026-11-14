@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:12:11Z by runner 917b57db8442 (actions).
+Updated 2026-11-14T00:23:18Z by runner 44fcf6e39fe8 (actions).
 
-**Building: T437 in progress since 23:57Z; 301 of 434 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T437 in progress since 23:57Z; 301 of 428 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 301 of 434 build tasks (owner gates not counted)
+- **Tasks done:** 301 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T437 claimed 23:57Z, lease until 02:57Z; lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z; lane 6: T444 claimed 00:07Z, lease until 03:07Z; lane 7: T448 claimed 00:11Z, lease until 03:11Z
 - **Week:** 31% used, 126.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:08Z, 3 min before this update
+- **Last run:** 00:12Z, 10 min before this update
 - **Keeper:** last ran 00:08Z, next wake 03:00Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 30 problem(s) on tasks still to run (+197 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 31 problem(s) on tasks still to run (+197 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -104,12 +104,11 @@ Updated 2026-11-14T00:12:11Z by runner 917b57db8442 (actions).
 - 01:29Z Harness: fail CI, smoke and prehandin on leftover merge-conflict markers (D-3307) (#619)
 - 01:16Z Plan: T255 follow-ups (D-3384) and pre-flight 12, T426 owns the legal-docs test (D-3385) (#640)
 - 00:30Z Plan: rename Ask Hava to Laftly (Laftly LLC, laftly.com), D-3347 (#631)
-- 00:14Z Plan: T255 plan gap: re-clear builds Releasable from the stored success (D-3358) (#638)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 301 of 434
+**Requirements verified:** 281 of 733 (38.3%) · partial 292 · unstarted 160
+**Tasks merged (throughput only):** 301 of 428
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -117,10 +116,10 @@ Updated 2026-11-14T00:12:11Z by runner 917b57db8442 (actions).
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 20 | 35 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
-| consent | 12 | 19 | 4 | 35 |
+| consent | 14 | 17 | 4 | 35 |
 | fees | 14 | 37 | 1 | 52 |
-| intake | 26 | 14 | 3 | 43 |
-| job-cards | 18 | 6 | 0 | 24 |
+| intake | 27 | 13 | 3 | 43 |
+| job-cards | 19 | 5 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
 | lifecycle | 23 | 5 | 0 | 28 |
 | messaging | 24 | 19 | 2 | 45 |
