@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T02:25:26Z by runner bd1d928f7d1a (actions).
+Updated 2026-11-14T02:25:43Z by runner bd1d928f7d1a (actions).
 
 **Building: T437 in progress since 02:18Z; 307 of 435 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 307 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T437 claimed 02:18Z, lease until 05:18Z; lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 5: T341 claimed 02:03Z, lease until 05:03Z; lane 6: T449 claimed 01:42Z, lease until 04:42Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
+- **Lane:** lane 2: T437 claimed 02:18Z, lease until 05:18Z; lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 6: T449 claimed 01:42Z, lease until 04:42Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
 - **Week:** 33% used, 124.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:24Z, 0 min before this update
 - **Keeper:** last ran 02:24Z, next wake 04:43Z
@@ -21,10 +21,11 @@ Updated 2026-11-14T02:25:26Z by runner bd1d928f7d1a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T341 | picks (harness): a pick of a tiers quote names its tier, and | MERGE_PENDING | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 2 | 1 min | 01:33Z | PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode\|EmailCode in app/portals/src finds |
 | T447 | messaging: a passing vault error holds an outbox row instead | done | 1 | 26 min | 01:30Z |  |
-| T341 | picks (harness): a pick of a tiers quote names its tier, and | resync | 2 | 67 min | 01:10Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
+| T341 | picks (harness): a pick of a tiers quote names its tier, and | resync | 2 | 67 min | 01:10Z |  |
 | T328 | picks and server: an ended pick offers the next quote (`paym | done | 2 | 61 min | 01:04Z | PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text canno |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z |  |
 | T448 | portals: the data-download mask joins digit runs across any  | done | 1 | 38 min | 00:49Z |  |
@@ -158,9 +159,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T437 (lease until 2026-11-14T05:18:24Z)
 - lane 4: T433 (lease until 2026-11-14T05:23:41Z)
-- lane 5: T341 (lease until 2026-11-14T05:03:36Z)
 - lane 6: T449 (lease until 2026-11-14T04:42:12Z)
 - lane 7: T450 (lease until 2026-11-14T04:40:56Z)
 
 ## Last usage reading
-- {"task": "T280", "at": "2026-11-14T02:23:12Z", "input_tokens": 381, "output_tokens": 122417, "cache_creation_input_tokens": 401372, "cache_read_input_tokens": 23792819}
+- {"task": "T341", "at": "2026-11-14T02:25:25Z", "cache_creation_input_tokens": 96603, "output_tokens": 18190, "input_tokens": 85, "cache_read_input_tokens": 1569338}
