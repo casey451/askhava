@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT number_set_at AS \"set_at!\" FROM businesses.staff_phone WHERE id = $1 AND business_id = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "set_at!",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "businesses.staff_phone",
+            "name": "number_set_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "63a9024aebb3fff33c324456ad90471a8b71bf2f73a0b6a6483fe85bcf385df9"
+}
