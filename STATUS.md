@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T06:14:14Z by runner 284f8574abbd (actions).
+Updated 2026-11-14T06:14:35Z by runner 284f8574abbd (actions).
 
-**Building: T352 in progress since 05:22Z; 314 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 06:14Z; 314 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 314 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T352 claimed 05:22Z, lease until 08:22Z
+- **Lane:** idle since 06:14Z (no task in progress)
 - **Week:** 37% used, 114.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:11Z, 2 min before this update
 - **Keeper:** last ran 06:04Z, next wake 08:24Z
@@ -20,6 +20,7 @@ Updated 2026-11-14T06:14:14Z by runner 284f8574abbd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T352 | adapters and stand-in (harness): the PaymentIntent carries S | MERGE_PENDING | 1 | 51 min | 06:14Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 51 min | 06:03Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 51 min | 06:02Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 3 | 22 min | 05:44Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
@@ -163,7 +164,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T352 (lease until 2026-11-14T08:22:44Z)
 
 ## Last usage reading
-- {"task": "T396", "at": "2026-11-14T06:03:33Z", "input_tokens": 131, "cache_creation_input_tokens": 174760, "cache_read_input_tokens": 2647626, "output_tokens": 29348}
+- {"task": "T352", "at": "2026-11-14T06:14:13Z", "output_tokens": 29405, "input_tokens": 129, "cache_creation_input_tokens": 144997, "cache_read_input_tokens": 2505455}
