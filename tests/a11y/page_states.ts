@@ -6,7 +6,7 @@
 // its states and the seed function that stores one state with fake data and returns the path that
 // opens it. The checks (the route table, `NOT_PAGES`, the axe tags, which states run) live in
 // `fixtures.ts`, owner-only, so nothing here can narrow what is checked. Fake data only.
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 
 /** One seeded state of a page. */
@@ -164,6 +164,67 @@ const SIGNUP_STATES: readonly PageState[] = [
   ["business sign-up form", "What work do you do?", "Where your code goes", ""],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: SIGNUP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const ACTION_ROUTE = "/b/a/{kind}/{object}/{token}";
+
+/** The action kind each action-link state opens, by state name (T301). */
+const ACTION_KINDS: Readonly<Record<string, string>> = {
+  "action page: pause job cards": "pause",
+  "quote form from a card's Quote link": "quote",
+};
+
+/**
+ * Seeds an action-link state (T301, D-1955): a random token and object; the `portals.login_link`
+ * row holds the SHA-256 of `action:<kind>:<object>:<token>` (`:hash`), and `:object` is the
+ * object's ID in the state's SQL.
+ */
+function actionSeed(state: PageState): string {
+  const kind = ACTION_KINDS[state.name] ?? "";
+  const object = randomUUID();
+  const token = randomBytes(32).toString("hex");
+  const hash = createHash("sha256").update(`action:${kind}:${object}:${token}`).digest("hex");
+  const sql = state.sql.replaceAll(":object", object).replace(":hash", hash);
+  const database = process.env.DATABASE_URL ?? "";
+  const done = spawnSync("psql", [database, "-v", "ON_ERROR_STOP=1", "-q", "-c", sql], { encoding: "utf8" });
+  if (done.status !== 0) throw new Error(`seeding "${state.name}" failed: ${done.stderr}`);
+  return state.route.replace("{kind}", kind).replace("{object}", object).replace("{token}", token);
+}
+
+/** A live action link for a fake member of business `:object` (a session kind's object). */
+const PAUSE_LINK = `INSERT INTO portals.login_link (token_sha256, member_id, business_id, created_at, expires_at)
+  VALUES (decode(':hash', 'hex'), gen_random_uuid(), ':object', now() - interval '1 day', now() + interval '2 hours')`;
+
+/**
+ * An open AC repair job `:object` with its facts row, carded to a fake active business whose owner
+ * holds the live Quote link, its card kept and sent under its own digest (D-3189, D-3675).
+ */
+const QUOTE_LINK = `WITH b AS (INSERT INTO businesses.business (status, created_at, status_changed_at)
+      VALUES ('active', now(), now()) RETURNING id),
+    m AS (INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes,
+      confirm_and_billing, added_at) SELECT id, gen_random_uuid(), true, true, true, now() FROM b
+      RETURNING id, business_id),
+    j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
+      VALUES (':object', 'open', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    f AS (INSERT INTO jobs.job_facts (job_id, seq, category, job_types, set_at)
+      SELECT id, 1, 'hvac_repair', ARRAY['AC not cooling'], now() FROM j),
+    c AS (INSERT INTO quotes.job_card (job_id, business_id, handyman, sent_at)
+      SELECT j.id, b.id, false, now() FROM j, b),
+    s AS (INSERT INTO quotes.shown_card (request_id, job_id, digest, card_text, town, place,
+      photo_ids, category, candidates, emergency, recorded_at, sent_at)
+      SELECT gen_random_uuid(), j.id, left(encode(sha256(convert_to(t.body, 'UTF8')), 'hex'), 32),
+        t.body, 'Lake Havasu City', 'house', '{}', 'hvac_repair', ARRAY['AC not cooling'], false,
+        now(), now()
+      FROM j, (VALUES ('AC repair in Lake Havasu City. The AC runs but the air stays warm.')) AS t(body))
+    INSERT INTO portals.login_link (token_sha256, member_id, business_id, created_at, expires_at)
+      SELECT decode(':hash', 'hex'), m.id, m.business_id, now() - interval '1 day', now() + interval '2 hours' FROM m`;
+
+/** The email action links' pages (T301, BIZ-038): an action page and the priced quote form. */
+const ACTION_STATES: readonly PageState[] = [
+  ["action page: pause job cards", "Pause job cards", "Send quote for job", PAUSE_LINK],
+  ["quote form from a card's Quote link", "Send quote for job", "Fix these", QUOTE_LINK],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: ACTION_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -172,6 +233,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: SIGNIN_ROUTE, seed: (state) => state.route, states: SIGNIN_STATES },
   { route: SIGNIN_LINK_ROUTE, seed: tokenSeed, states: SIGNIN_LINK_STATES },
   { route: SIGNUP_ROUTE, seed: (state) => state.route, states: SIGNUP_STATES },
+  { route: ACTION_ROUTE, seed: actionSeed, states: ACTION_STATES },
 ];
 
 /** Every state of every page, in entry order. */
