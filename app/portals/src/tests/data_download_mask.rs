@@ -1,5 +1,6 @@
-//! TD-PRIV-23 (PRIV-031; T315, D-2205, D-3265): the "Download my data" masking catches a bare
-//! domain and a phone number split across lines, and keeps decimals, money and abbreviations.
+//! TD-PRIV-23 (PRIV-031; T315, T448, D-2205, D-3265, D-3592): the "Download my data" masking
+//! catches a bare domain and a phone number split across lines or any named separator, and keeps
+//! decimals, money and abbreviations.
 //! The existing download cases are `data_download::tests` (TD-PRIV-15), unchanged. Fake data only.
 
 use sqlx::types::Uuid;
@@ -103,4 +104,46 @@ fn td_priv_23_the_file_masks_both_in_quotes_and_messages() {
     assert!(file.contains("Text [removed]"));
     assert!(file.contains("Leaky faucet, about 3.5 hours"));
     assert!(!file.contains("acmeplumbing") && !file.contains("0142"));
+}
+
+/// PRIV-031, D-3592: a fake 555 number split by a slash, an underscore, a tab, a non-breaking
+/// space, an en dash or an em dash is masked; six digits with the same separators are not.
+#[test]
+fn a_number_split_by_any_named_separator_is_masked() {
+    for sep in ["/", "_", "\t", "\u{a0}", "\u{2013}", "\u{2014}"] {
+        let number = ["928", "555", "0100"].join(sep);
+        assert_eq!(
+            mask_contact_details(&format!("Call {number} now")),
+            "Call [removed] now",
+            "{sep:?}"
+        );
+        let short = ["92", "55", "01"].join(sep);
+        let kept = format!("Size {short} only");
+        assert_eq!(mask_contact_details(&kept), kept, "{sep:?}");
+    }
+}
+
+/// PRIV-031, D-3592: a minus sign, a figure dash and fullwidth digits also join a run.
+#[test]
+fn a_minus_sign_or_fullwidth_digits_are_masked() {
+    assert_eq!(
+        mask_contact_details("928\u{2212}555\u{2212}0100"),
+        "[removed]"
+    );
+    assert_eq!(
+        mask_contact_details("928\u{2012}555\u{2012}0100"),
+        "[removed]"
+    );
+    assert_eq!(
+        mask_contact_details("\u{ff19}\u{ff12}\u{ff18} 555 0100"),
+        "[removed]"
+    );
+}
+
+/// PRIV-031, D-3592: a comma, colon or dollar sign still ends a run, so money and durations stay.
+#[test]
+fn money_and_durations_are_never_joined() {
+    for words in ["$12,500.00, 3.5 hours", "Acme: $1,250.00, 3.5 hours"] {
+        assert_eq!(mask_contact_details(words), words);
+    }
 }
