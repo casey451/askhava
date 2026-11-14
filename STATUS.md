@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T21:25:35Z by runner 98ff1b8a941b (actions).
+Updated 2026-11-14T21:25:43Z by runner 98ff1b8a941b (actions).
 
-**Building: T300 in progress since 19:50Z; 332 of 459 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 21:25Z; 332 of 459 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 332 of 459 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 6: T300 claimed 19:50Z, lease until 00:21Z
+- **Lane:** idle since 21:25Z (no task in progress)
 - **Week:** 51% used, 88.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:25Z, 0 min before this update
 - **Keeper:** last ran 21:04Z, next wake 23:51Z
@@ -18,6 +18,7 @@ Updated 2026-11-14T21:25:35Z by runner 98ff1b8a941b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T300 | server and portals: the business portal is served behind the | MERGE_PENDING | 3 | 94 min | 21:25Z | PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T |
 | T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T468 | portals, businesses and messaging: public paths for sign-up' | MERGE_PENDING | 1 | 29 min | 20:19Z |  |
@@ -35,7 +36,7 @@ Updated 2026-11-14T21:25:35Z by runner 98ff1b8a941b (actions).
 | T466 | portals: one shared form stylesheet for native checkboxes an | done | 1 | 27 min | 13:27Z |  |
 | T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
 | T359 | payments: a successful charge writes its own charge ledger e | done | 3 | 72 min | 12:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
-| T300 | server and portals: the business portal is served behind the | BLOCKED | 2 | 16 min | 12:20Z | PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T |
+| T300 | server and portals: the business portal is served behind the | BLOCKED | 2 | 16 min | 12:20Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 3 | 23 min | 11:56Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | check_failed | 5 | 45 min | 11:56Z |  |
 | T329 | businesses: the eight business account events queued today ( | done | 2 | 65 min | 11:49Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
@@ -163,7 +164,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 6: T300 (lease until 2026-11-15T00:21:20Z)
 
 ## Last usage reading
-- {"task": "T459", "at": "2026-11-14T20:58:56Z", "cache_creation_input_tokens": 393220, "output_tokens": 114965, "cache_read_input_tokens": 18053303, "input_tokens": 354}
+- {"task": "T300", "at": "2026-11-14T21:25:24Z", "output_tokens": 131266, "input_tokens": 447, "cache_creation_input_tokens": 443781, "cache_read_input_tokens": 29526732}
