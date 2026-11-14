@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T23:37:08Z by runner be71ac45bc0f (actions).
+Updated 2026-11-14T23:37:28Z by runner be71ac45bc0f (actions).
 
-**Building: T486 in progress since 22:31Z; 337 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 23:37Z; 337 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 337 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 5: T486 claimed 22:31Z, lease until 01:31Z
+- **Lane:** idle since 23:37Z (no task in progress)
 - **Week:** 53% used, 84.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:31Z, 5 min before this update
 - **Keeper:** last ran 23:31Z, next wake 01:34Z
@@ -18,6 +18,7 @@ Updated 2026-11-14T23:37:08Z by runner be71ac45bc0f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T486 | businesses and catalog: the free-first-win join dates: a pub | MERGE_PENDING | 1 | 65 min | 23:37Z |  |
 | T451 | quotes, picks, jobs, payments and server: the "Your numbers" | MERGE_PENDING | 1 | 41 min | 23:30Z |  |
 | T445 | runner (harness): a failed nightly on an older head keeps th | MERGE_PENDING | 1 | 24 min | 23:29Z |  |
 | T301 | server and portals: the email action links are served (every | MERGE_PENDING | 3 | 27 min | 23:24Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
@@ -164,7 +165,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T486 (lease until 2026-11-15T01:31:30Z)
 
 ## Last usage reading
-- {"task": "T451", "at": "2026-11-14T23:30:25Z", "cache_read_input_tokens": 7710866, "cache_creation_input_tokens": 211913, "input_tokens": 185, "output_tokens": 60307}
+- {"task": "T486", "at": "2026-11-14T23:37:07Z", "cache_read_input_tokens": 6464600, "cache_creation_input_tokens": 223125, "input_tokens": 253, "output_tokens": 57770}
