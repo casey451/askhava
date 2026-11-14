@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-14T16:53:45Z by runner 858f0854e89f (actions).
+Updated 2026-11-14T17:12:47Z by runner c98af220344c (actions).
 
-**Stopped: main is red, only FIX-MAIN runs; 329 of 452 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Stopped: main is red, only FIX-MAIN runs; 329 of 453 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 329 of 452 build tasks (owner gates not counted)
+- **Tasks done:** 329 of 453 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane fix: FIX-MAIN claimed 16:24Z, lease until 19:24Z
+- **Lane:** lane fix: FIX-MAIN claimed 16:24Z, lease until 19:24Z
 - **Week:** 48% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:53Z, 0 min before this update
+- **Last run:** 16:53Z, 18 min before this update
 - **Keeper:** last ran 16:53Z, next wake 18:05Z
 
 ## Needs attention
 - MAIN IS RED: nightly; only FIX-MAIN runs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+106 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
+- Strict plan check red: 17 problem(s) on tasks still to run (+106 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -101,8 +101,6 @@ Updated 2026-11-14T16:53:45Z by runner 858f0854e89f (actions).
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 2 h 1 min | 18:26Z |  |
 | T281 | picks: the unreachable-homeowner steps run at 24, 48, 72 and | done | 1 | 107 min | 18:15Z |  |
 | T436 | portals, core and server: expired sessions are swept and old | done | 1 | 34 min | 17:52Z |  |
-| T273 | privacy: a photo's plaintext is returned only after its open | done | 1 | 41 min | 17:10Z |  |
-| T436 | portals, core and server: expired sessions are swept and old | resync | 1 | 28 min | 16:53Z |  |
 
 ### Plan and harness merges on main
 - 16:47Z Plan: pre-claim scout fixes for 27 stage-5 tasks (D-3744) (#793)
@@ -132,7 +130,7 @@ Updated 2026-11-14T16:53:45Z by runner 858f0854e89f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 575 · unstarted 158
-**Tasks merged (throughput only):** 329 of 452
+**Tasks merged (throughput only):** 329 of 453
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -167,7 +165,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 209 of 227 done
+- stage 4: 209 of 228 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
@@ -176,7 +174,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T459 (lease until 2026-11-14T18:02:50Z)
 - lane fix: FIX-MAIN (lease until 2026-11-14T19:24:32Z)
 
 ## Last usage reading

@@ -19263,7 +19263,8 @@
     "T230",
     "T231",
     "T386",
-    "T310"
+    "T310",
+    "T457"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19355,7 +19356,8 @@
     "T107",
     "T279",
     "T287",
-    "T378"
+    "T378",
+    "T466"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19369,7 +19371,8 @@
     "T106",
     "T107",
     "T108",
-    "T314"
+    "T314",
+    "T466"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19521,7 +19524,8 @@
     "T303",
     "T304",
     "T310",
-    "T414"
+    "T414",
+    "T408"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19533,7 +19537,9 @@
    "id": "T119",
    "deps": [
     "T103",
-    "T106"
+    "T106",
+    "T118",
+    "T307"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21130,7 +21136,8 @@
     "T106",
     "T067",
     "T103",
-    "T249"
+    "T249",
+    "T466"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23509,7 +23516,9 @@
    "id": "T216",
    "deps": [
     "T101",
-    "T166"
+    "T166",
+    "T102",
+    "T200"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -48064,7 +48073,8 @@
     "T200",
     "T158",
     "T364",
-    "T375"
+    "T375",
+    "T397"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -54996,7 +55006,7 @@
    "deps": [
     "T302"
    ],
-   "status": "IN_PROGRESS",
+   "status": "QUEUED",
    "attempts": 0,
    "slug": "signup-form-served",
    "type": "build",
@@ -55009,6 +55019,14 @@
     3725,
     3726,
     3727
+   ],
+   "stale_leases": [
+    {
+     "task": "T459",
+     "session": "actions-43607334490",
+     "expires": "2026-11-14T18:02:50Z",
+     "lane": "4"
+    }
    ]
   },
   {
@@ -55025,7 +55043,8 @@
   {
    "id": "T461",
    "deps": [
-    "T460"
+    "T460",
+    "T468"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -55432,6 +55451,17 @@
     "why": "auto-merge on #792 (gh pr merge)",
     "head": "87c063bb017bc5c4157c5b6742eb33eed3fdf505"
    }
+  },
+  {
+   "id": "T468",
+   "deps": [
+    "T302"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "signup-mail-paths",
+   "type": "build",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -58847,7 +58877,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T16:53:45Z",
+ "updated_at": "2026-11-14T17:12:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -58945,7 +58975,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "858f0854e89fd19613d380260521eb7624dbda03",
+ "runner_sha": "c98af220344c67cd4d9a1674ab1165342d56eb4e",
  "starter": "actions",
  "smoke_runs": [
   {
