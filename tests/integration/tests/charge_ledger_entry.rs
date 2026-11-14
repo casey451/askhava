@@ -43,11 +43,13 @@ const NOW: i64 = 1_794_000_000;
 type Answer = Result<PaymentIntent, AdapterError>;
 
 /// A scripted Stripe: a confirm answers `confirm`, a fetch answers `fetch`, a succeeded intent
-/// names its `ch_` charge only when `with_charge`; the reconcile lists `charges`.
+/// names its `ch_` charge only when `with_charge`, or `odd_charge` instead when set; the reconcile
+/// lists `charges`.
 struct FakeStripe {
     confirm: &'static str,
     fetch: &'static str,
     with_charge: bool,
+    odd_charge: Option<String>,
     charges: Mutex<Vec<StripeCharge>>,
 }
 
@@ -56,6 +58,7 @@ fn fake(confirm: &'static str, fetch: &'static str) -> FakeStripe {
         confirm,
         fetch,
         with_charge: true,
+        odd_charge: None,
         charges: Mutex::new(Vec::new()),
     }
 }
@@ -90,7 +93,7 @@ impl FakeStripe {
                 pick_id: pick.to_string(),
             },
             livemode: Some(false),
-            latest_charge: paid.then(|| charge_id(pick)),
+            latest_charge: paid.then(|| self.odd_charge.clone().unwrap_or_else(|| charge_id(pick))),
         })
     }
 }
@@ -381,6 +384,40 @@ async fn td_fee_64_a_success_with_no_charge_id_releases_nothing(pool: PgPool) {
     let full = fake("processing", "succeeded");
     check_round(&pool, &full, pick(1)).await;
     assert_eq!(booked(&pool, pick(1)).await, one_charge(pick(1)));
+}
+
+/// TD-FEE-64 (FEE-042, D-3134): a succeeded intent whose `latest_charge` is not a `ch_` ID of 1
+/// to 200 letters or digits (an empty tail, 201 characters, a stray sign, another prefix) is
+/// treated as no charge ID: the press stays undecided, the webhook is refused and nothing is booked.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_64_a_malformed_charge_id_releases_nothing(pool: PgPool) {
+    with_customer(&pool).await;
+    let odd = [
+        "ch_".to_owned(),
+        format!("ch_{}", "a".repeat(201)),
+        "ch_Fake-T359".to_owned(),
+        "py_FakeT359".to_owned(),
+    ];
+    for (n, id) in (20..).zip(odd) {
+        let mut stripe = fake("succeeded", "succeeded");
+        stripe.odd_charge = Some(id);
+        let outcome = press(&pool, &stripe, (pick(n), job(n))).await;
+        assert_eq!(outcome, ChargeOutcome::Pending);
+        assert_eq!(
+            webhook(&pool, &stripe, pick(n)).await,
+            Err(ReleaseError::Stripe)
+        );
+        assert_eq!(booked(&pool, pick(n)).await, (vec![], None, 0));
+    }
+    assert_eq!(ledger_rows(&pool).await, 0);
+    let ok = format!("ch_{}", "a".repeat(200));
+    let mut stripe = fake("succeeded", "succeeded");
+    stripe.odd_charge = Some(ok.clone());
+    let outcome = press(&pool, &stripe, (pick(30), job(30))).await;
+    assert_eq!(outcome, ChargeOutcome::Succeeded(intent_id(pick(30))));
+    let (_, evidence, receipts) = booked(&pool, pick(30)).await;
+    assert_eq!((evidence, receipts), (Some(ok), 1));
+    assert_eq!(ledger_rows(&pool).await, 1);
 }
 
 fn dates() -> JoinDates {
