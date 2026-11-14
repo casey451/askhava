@@ -67,7 +67,7 @@ pub use crate::job_texts::{
 };
 pub use crate::limits::{
     ALERT_TRIES, Admission, Key, Limit, LimitError, REQUESTS_ALL, REQUESTS_PER_IP,
-    REQUESTS_PER_PHONE, Window, admit, admit_new_request,
+    REQUESTS_PER_PHONE, Window, admit, admit_new_request, count_emergency_request,
 };
 pub use crate::matching::{
     Candidates, FitStep, KeywordReading, Opinion, Reading, TradeAnswer, TradeQuestion, TradeStep,
