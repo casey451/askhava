@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T04:06:42Z by runner ee7a75f4d72a (actions).
+Updated 2026-11-14T04:09:15Z by runner aff86ec723eb (actions).
 
-**Building: T302 in progress since 03:56Z; 311 of 435 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T302 in progress since 03:56Z; 311 of 436 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 311 of 435 build tasks (owner gates not counted)
+- **Tasks done:** 311 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T302 claimed 03:56Z, lease until 06:56Z; lane 7: T449 claimed 03:54Z, lease until 06:54Z
 - **Week:** 35% used, 123.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:06Z, 0 min before this update
+- **Last run:** 04:06Z, 2 min before this update
 - **Keeper:** last ran 04:06Z, next wake 06:56Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-14T04:06:42Z by runner ee7a75f4d72a (actions).
 - PLAN GAP T352 (since 2026-11-14T03:46:00Z, no attempt used; a plan change fixes it): T352: measures 53% of the context window, over its 50% limit; T352: dependency T433 is DONE but its owned file app/server/src/payment_jobs.rs is not on main; T352: dependency T433 is DONE but its owned file tests/integration/tests/payment_jobs.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 53% of the context window, over its 50% limit
-- Strict plan check red: 33 problem(s) on tasks still to run (+205 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 32 problem(s) on tasks still to run (+206 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -116,7 +116,7 @@ Updated 2026-11-14T04:06:42Z by runner ee7a75f4d72a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 311 of 435
+**Tasks merged (throughput only):** 311 of 436
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -151,7 +151,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 191 of 214 done
+- stage 4: 191 of 215 done
 - stage 5: 0 of 67 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
