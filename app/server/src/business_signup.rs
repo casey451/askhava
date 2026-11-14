@@ -9,7 +9,10 @@
 //! the E-SIGN box is never ticked on the served form (CON-019). The category list is the stored
 //! switched-on categories, labelled by the shipped class map (`stored_category_list`, BIZ-021);
 //! the fee box comes from the Confirm window setting (BIZ-030). The answer carries
-//! `Cache-Control: no-store`. The `POST` steps join this part in T459 to T461 (D-3676).
+//! `Cache-Control: no-store`. The later steps join this part in order (D-3676): T459 the form
+//! `POST` (BIZ-001, BIZ-016, SEC-014, SEC-015, SEC-034, SEC-048), T460 the identity steps
+//! (BIZ-002), T461 the service area and the email code (BIZ-019, BIZ-040, BIZ-058), T462 the inbox
+//! check (BIZ-042); this file names their IDs now because it exists before they run.
 
 use std::io;
 use std::sync::Arc;
