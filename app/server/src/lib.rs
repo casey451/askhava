@@ -41,6 +41,7 @@ pub mod inbound_text;
 pub mod inbound_voice;
 pub mod no_handler_alert;
 pub mod offdb_stream;
+pub mod payment_jobs;
 pub mod release_sink;
 pub mod request_timeout;
 pub mod static_files;
@@ -610,7 +611,8 @@ fn register_daily_lists(
 /// (`messaging.send_due`, [`outbox_sender`], T356, D-2628); with both vault keys, `intake`'s card
 /// sender ([`register_card_sender`], T251); `intake`'s opt-out event
 /// ([`register_opted_out_live`], T330); and `messaging`'s opt-out follow-up emails
-/// ([`register_optout_followup`], T357). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
+/// ([`register_optout_followup`], T357); and the seven Stripe `payments` jobs over the same Stripe
+/// client ([`payment_jobs`], T433). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
 /// checks every queued kind against it (TD-OPS-36).
 ///
 /// # Errors
@@ -652,7 +654,16 @@ where
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
     register_optout_followup(&mut registry, settings, &id_secret, pairs.clone())?;
-    register_unreachable(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
+    let stripe = stripe_client(settings, &pairs)?;
+    let parts = (&id_secret, &clock);
+    register_unreachable(
+        &mut registry,
+        settings,
+        parts,
+        stripe.clone(),
+        pairs.clone(),
+    )?;
+    payment_jobs::register(&mut registry, stripe, id_secret.clone(), Arc::clone(&clock));
     register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
     register_twilio_handlers(&mut registry, settings, (id_secret, clock), pairs)?;
     Ok(registry)
@@ -795,27 +806,19 @@ fn bad_postal() -> io::Error {
 }
 
 /// T281 (FEE-022, FEE-052, TXT-030, D-1845, D-3490): `picks.unreachable_step`,
-/// `picks.fraud_warning` and T314's `picks.dispute_opened` (FEE-050, D-2204), always registered, over `picks::api::StepParts`: the Stripe client of
-/// the Stripe webhook's settings (`release_sink::stripe_webhook`, read by [`stripe_wanted`]: unset
-/// in dev and CI, required in test and live), `ID_SECRET`, the vault and the footer postal line when set; a step
+/// `picks.fraud_warning` and T314's `picks.dispute_opened` (FEE-050, D-2204), always registered, over `picks::api::StepParts`: the worker's Stripe client
+/// ([`stripe_client`]: unset in dev and CI, required in test and live), `ID_SECRET`, the vault and the footer postal line when set; a step
 /// that needs a missing part fails and is retried, then dead-lettered with its alert.
 fn register_unreachable(
     registry: &mut Registry,
     settings: &Settings,
     (id_secret, clock): (&SecretString, &Arc<dyn Clock>),
+    stripe: Option<askhava_adapters::api::StripePayments>,
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     use askhava_messaging::api::{MailboxKind, PostalAddress};
     use askhava_picks::api::{
         StepParts, UNREACHABLE_STEP_KIND, run_dispute_opened, run_fraud_warning,
-    };
-    use secrecy::ExposeSecret;
-    let hooks = if stripe_wanted(settings, &pairs) {
-        let lazy = PgPool::connect_lazy(settings.database_url().expose_secret())
-            .map_err(|_| io::Error::other("setting ASKHAVA_DATABASE_URL has an invalid value"))?;
-        release_sink::stripe_webhook(settings, lazy, pairs.clone())?
-    } else {
-        None
     };
     let postal = settings.postal_address().ok().and_then(|line| {
         PostalAddress::new(line, MailboxKind::PoBox)
@@ -823,7 +826,7 @@ fn register_unreachable(
             .ok()
     });
     let parts = Arc::new(StepParts {
-        stripe: hooks.map(|h| h.stripe.clone()),
+        stripe,
         secret: id_secret.clone(),
         vault: vault_from(settings, pairs)?,
         postal,
@@ -850,6 +853,26 @@ fn register_unreachable(
         move |pool, task| run_fraud_warning(pool, Arc::clone(&parts), task, fraud_clock.now()),
     );
     Ok(())
+}
+
+/// The worker's one Stripe client, the Stripe webhook's (`release_sink::stripe_webhook`, read
+/// when [`stripe_wanted`]), shared by `picks`' steps and [`payment_jobs`] (D-3118, D-3134, T433):
+/// `None` in dev and CI without the webhook secret.
+///
+/// # Errors
+/// A missing or bad Stripe setting in test or live, named, never its value.
+fn stripe_client(
+    settings: &Settings,
+    pairs: &[(String, String)],
+) -> io::Result<Option<askhava_adapters::api::StripePayments>> {
+    use secrecy::ExposeSecret;
+    if !stripe_wanted(settings, pairs) {
+        return Ok(None);
+    }
+    let lazy = PgPool::connect_lazy(settings.database_url().expose_secret())
+        .map_err(|_| io::Error::other("setting ASKHAVA_DATABASE_URL has an invalid value"))?;
+    let hooks = release_sink::stripe_webhook(settings, lazy, pairs.to_vec())?;
+    Ok(hooks.map(|h| h.stripe.clone()))
 }
 
 /// Whether the Stripe webhook's settings are read for the worker: in test and live always (they

@@ -82,12 +82,18 @@ pub use crate::business_signup::{
     capability_page, capability_summary,
 };
 pub use crate::business_signup::{
+    CODE_SEND_ROUTE, CONSENT_AGAIN, ChannelPost, CodeProblem, EMAIL_CHECK_ROUTE,
+    EMAIL_RESEND_ROUTE, IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NO_EMAIL_HINT, NUMBER_OLD_ROUTE,
+    NoticeChoice, SIGNUP_FORM_ROUTE, sealed_signup_page,
+};
+pub use crate::business_signup::{
     CONSENT_MISSING, DoneError, DoneFacts, Entered, NOTICE_OFF, PEST_ATTESTATION, Parts,
     SIGNUP_ROUTE, Screen, SignupConsent, SignupRefusal, TEXT_PHONE_MISSING, done_facts, done_lines,
     fee_numbers, notice_line, notice_on, refusal_problem, signup_channels, signup_page,
     submit_signup,
 };
 pub use crate::checkin::{CHECK_IN_ROUTE, checkin_routes};
+pub use crate::confirm_pay::confirm_page_with_tier;
 pub use crate::confirm_pay::{
     CodeCheck, CodeSent, CodeStep, ConfirmCodes, ConfirmFacts, FEE_FREE_LINE, NoFee, PORTAL_LINK,
     PressReply, REFUND_LINE, check_confirm_code, confirm_code_needed, confirm_page,
