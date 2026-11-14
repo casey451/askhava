@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T19:33:25Z by runner 8a72c0065f44 (actions).
+Updated 2026-11-14T19:48:00Z by runner 8a72c0065f44 (actions).
 
-**Idle since 18:24Z; 329 of 459 done; week 50% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T467 in progress since 19:47Z; 329 of 459 done; week 50% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 329 of 459 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 18:24Z (no task in progress)
-- **Week:** 50% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:33Z, 0 min before this update
+- **Lane:** lane 1: T467 claimed 19:47Z, lease until 22:47Z
+- **Week:** 50% used, 94.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:33Z, 14 min before this update
 - **Keeper:** last ran 19:33Z, next wake 01:13Z
 
 ## Needs attention
@@ -97,7 +97,6 @@ Updated 2026-11-14T19:33:25Z by runner 8a72c0065f44 (actions).
 | T277 | intake and privacy: a check-in reply reaches its job, and a  | done | 1 | 45 min | 20:13Z |  |
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 48 min | 20:09Z |  |
 | T314 | payments and picks: a dispute's auto-submit mark and its tas | done | 1 | 29 min | 19:56Z |  |
-| T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z |  |
 
 ### Plan and harness merges on main
 - 19:20Z Harness: re-point the stale "second opt-out confirmation" mutant after T357 (D-3751) (#796)
@@ -124,36 +123,36 @@ Updated 2026-11-14T19:33:25Z by runner 8a72c0065f44 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 733 (0.0%) · partial 575 · unstarted 158
+**Requirements verified:** 306 of 733 (41.7%) · partial 269 · unstarted 158
 **Tasks merged (throughput only):** 329 of 459
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 29 | 6 | 35 |
-| ai | 0 | 24 | 5 | 29 |
-| businesses | 0 | 55 | 3 | 58 |
-| calls | 0 | 24 | 1 | 25 |
-| consent | 0 | 31 | 4 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 0 | 40 | 3 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 43 | 2 | 45 |
-| ops-recovery | 0 | 10 | 44 | 54 |
-| privacy | 0 | 29 | 2 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 55 | 1 | 56 |
-| recurring | 0 | 8 | 3 | 11 |
-| security | 0 | 50 | 5 | 55 |
+| accessibility | 14 | 15 | 6 | 35 |
+| ai | 11 | 13 | 5 | 29 |
+| businesses | 19 | 36 | 3 | 58 |
+| calls | 14 | 10 | 1 | 25 |
+| consent | 15 | 16 | 4 | 35 |
+| fees | 20 | 31 | 1 | 52 |
+| intake | 29 | 11 | 3 | 43 |
+| job-cards | 19 | 5 | 0 | 24 |
+| licensing | 38 | 10 | 0 | 48 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
+| ops-recovery | 1 | 9 | 44 | 54 |
+| privacy | 13 | 16 | 2 | 31 |
+| quiet-hours | 7 | 2 | 0 | 9 |
+| quotes-pick | 36 | 19 | 1 | 56 |
+| recurring | 8 | 0 | 3 | 11 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 0 | 11 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T16:07:56Z (week)): week: 96.6M used, 97.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T20:32:50Z.
+- Pacing (session_reading 2026-11-14T19:33:08Z (week)): week: 100.0M used, 94.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-25T07:00:40Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -168,7 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T467 (lease until 2026-11-14T22:47:47Z)
 
 ## Last usage reading
 - {"task": "FIX-MAIN", "at": "2026-11-14T17:42:42Z", "input_tokens": 136, "cache_read_input_tokens": 2071235, "output_tokens": 23445, "cache_creation_input_tokens": 108960}
