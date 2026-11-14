@@ -490,7 +490,7 @@ async fn new_pick(
     Ok(pick)
 }
 
-/// PICK-053, D-2332: writes the chosen package's index and name on `pick`, in the pick's
+/// PICK-053, D-2332, D-3575: writes the chosen package's index, name and price on `pick`, in the pick's
 /// transaction (migration 0179).
 async fn store_tier(
     tx: &mut PgConnection,
@@ -498,11 +498,13 @@ async fn store_tier(
     tier: &ChosenTier,
 ) -> Result<(), PicksError> {
     let index = i16::try_from(tier.index).map_err(|_| PicksError::Quotes)?;
+    let cents = i64::try_from(tier.cents).map_err(|_| PicksError::Quotes)?;
     sqlx::query!(
-        "UPDATE picks.pick SET tier_index = $2, tier_name = $3 WHERE id = $1",
+        "UPDATE picks.pick SET tier_index = $2, tier_name = $3, tier_cents = $4 WHERE id = $1",
         pick,
         index,
         tier.name,
+        cents,
     )
     .execute(tx)
     .await
@@ -695,28 +697,21 @@ pub async fn page_pick(
 }
 
 /// [`page_pick`] with the package `tier` chosen on a tiers quote (`None` for any other quote):
-/// a waiting pick of the same quote (and, when one is named, the same package) is
-/// [`PagePick::Same`]; the same quote with another package replaces it.
+/// a waiting pick of the same quote (and, when one is named, the same package at the same name
+/// and price, D-3575) is [`PagePick::Same`]; the same quote with another package replaces it.
 async fn pick_on_page(
     tx: &mut PgConnection,
     (job, paused): (Uuid, bool),
     (quote, tier): (usize, Option<&ChosenTier>),
     (actor, at): (Actor, Timestamp),
 ) -> Result<PagePick, PicksError> {
-    let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
-    let view = view(tx, job, paused).await?;
-    let open = quote
-        .checked_sub(1)
-        .and_then(|i| view.quotes.get(i))
-        .copied()
-        .unwrap_or(false);
-    if paused || !open || !status.takes_pick() {
+    let Some(view) = open_view(tx, (job, paused), quote).await? else {
         return Ok(PagePick::Taken);
-    }
+    };
     let waiting = models::waiting_pick(tx, job).await?;
     if let Some((id, q, _)) = waiting
         && usize::try_from(q).ok() == Some(quote)
-        && (tier.is_none() || stored_tier(tx, id).await? == tier.map(|t| t.index))
+        && (tier.is_none() || stored_tier(tx, id).await?.as_ref() == tier)
     {
         return Ok(PagePick::Same(id));
     }
@@ -725,32 +720,62 @@ async fn pick_on_page(
         .map(PagePick::Picked)
 }
 
-/// The package index stored on `pick`, if any (migration 0179).
-async fn stored_tier(tx: &mut PgConnection, pick: Uuid) -> Result<Option<usize>, PicksError> {
-    let index = sqlx::query_scalar!("SELECT tier_index FROM picks.pick WHERE id = $1", pick)
-        .fetch_one(tx)
-        .await
-        .map_err(|_| PicksError::Database)?;
-    Ok(index.and_then(|i| usize::try_from(i).ok()))
+/// PICK-012, PICK-045, CON-029: `job`'s view when quote `quote` can be picked on the page now
+/// (not paused, the quote open, the status taking a pick); `None` is [`PagePick::Taken`].
+async fn open_view(
+    tx: &mut PgConnection,
+    (job, paused): (Uuid, bool),
+    quote: usize,
+) -> Result<Option<JobView>, PicksError> {
+    let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
+    let view = view(tx, job, paused).await?;
+    let open = quote
+        .checked_sub(1)
+        .and_then(|i| view.quotes.get(i))
+        .copied()
+        .unwrap_or(false);
+    Ok((!paused && open && status.takes_pick()).then_some(view))
 }
 
-/// The package the homeowner chose on a tiers quote's page (PICK-053, D-2332): its place on the
-/// quote (0 for the first) and its name as the page showed it, so an edit since is caught.
+/// The package stored on `pick`, if any (migration 0179).
+async fn stored_tier(tx: &mut PgConnection, pick: Uuid) -> Result<Option<ChosenTier>, PicksError> {
+    let row = sqlx::query!(
+        "SELECT tier_index, tier_name, tier_cents FROM picks.pick WHERE id = $1",
+        pick
+    )
+    .fetch_one(tx)
+    .await
+    .map_err(|_| PicksError::Database)?;
+    Ok(match (row.tier_index, row.tier_name, row.tier_cents) {
+        (Some(index), Some(name), Some(cents)) => Some(ChosenTier {
+            index: usize::try_from(index).map_err(|_| PicksError::Database)?,
+            name,
+            cents: u64::try_from(cents).map_err(|_| PicksError::Database)?,
+        }),
+        _ => None,
+    })
+}
+
+/// The package the homeowner chose on a tiers quote's page (PICK-053, D-2332, D-3575): its place
+/// on the quote (0 for the first), its name and its price as the page showed them, so any edit
+/// since (a rename or a new price) is caught and no fee is fixed on a price she never saw.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ChosenTier {
     /// The package's place on the quote, 0 for the first.
     pub index: usize,
     /// The package's name as the page showed it.
     pub name: String,
+    /// The package's price in cents as the page showed it.
+    pub cents: u64,
 }
 
 impl ChosenTier {
-    /// The price of this package among `tiers`; none when that place holds another name or none
-    /// (the quote was edited since the page showed it).
+    /// The price of this package among `tiers`; none when that place holds another name, another
+    /// price or none (the quote was edited since the page showed it).
     fn price_in(&self, tiers: &[(String, u64)]) -> Option<u64> {
         tiers
             .get(self.index)
-            .filter(|(name, _)| *name == self.name)
+            .filter(|(name, cents)| *name == self.name && *cents == self.cents)
             .map(|(_, cents)| *cents)
     }
 }
@@ -760,17 +785,18 @@ impl ChosenTier {
 pub enum TierPick {
     /// The pick was taken, the same or refused as for [`page_pick`].
     Page(PagePick),
-    /// The quote is not a tiers quote with that package (none named, or edited since): nothing
-    /// was stored; show these package names, in order, to choose again (empty: no packages now).
+    /// The tiers quote no longer has that package at that name and price: nothing was stored;
+    /// show these package names, in order, to choose again.
     Choose(Vec<String>),
 }
 
 /// The page pick of package `tier` of tiers quote `quote` on `job`, inside the caller's
-/// transaction (PICK-012, PICK-053, PICK-038, FEE-001, D-2332): the fee is fixed from that
-/// package's price and the package is stored on the pick in the same transaction. A package the
-/// quote no longer has in that place, or a quote that is not a tiers quote, stores nothing and
-/// answers [`TierPick::Choose`] with the quote's packages; otherwise as [`page_pick`]. T440's
-/// quote page calls it; a pick of any other quote stays [`page_pick`].
+/// transaction (PICK-012, PICK-053, PICK-038, FEE-001, D-2332, D-3575): the fee is fixed from
+/// that package's price and the package is stored on the pick in the same transaction. A paused
+/// job, a closed quote or a job not taking a pick is [`PagePick::Taken`] first; a package the
+/// quote no longer has in that place at that name and price stores nothing and answers
+/// [`TierPick::Choose`] with the quote's packages; a quote that is not a tiers quote is
+/// [`page_pick`]. T440's quote page calls it; a pick of any other quote may stay [`page_pick`].
 ///
 /// # Errors
 ///
@@ -782,16 +808,19 @@ pub async fn page_pick_tier(
     actor: Actor,
     at: Timestamp,
 ) -> Result<TierPick, PicksError> {
-    let names = match quote_price(tx, job, quote).await? {
-        Some((_, Price::Tiers(tiers))) if tier.price_in(&tiers).is_some() => None,
-        Some((_, Price::Tiers(tiers))) => Some(tiers.into_iter().map(|(n, _)| n).collect()),
-        Some(_) => Some(Vec::new()),
-        None => None,
-    };
-    if let Some(names) = names {
-        return Ok(TierPick::Choose(names));
+    if open_view(tx, (job, paused), quote).await?.is_none() {
+        return Ok(TierPick::Page(PagePick::Taken));
     }
-    pick_on_page(tx, (job, paused), (quote, Some(tier)), (actor, at))
+    let chosen = match quote_price(tx, job, quote).await? {
+        Some((_, Price::Tiers(tiers))) if tier.price_in(&tiers).is_none() => {
+            return Ok(TierPick::Choose(
+                tiers.into_iter().map(|(n, _)| n).collect(),
+            ));
+        }
+        Some((_, Price::Tiers(_))) => Some(tier),
+        _ => None,
+    };
+    pick_on_page(tx, (job, paused), (quote, chosen), (actor, at))
         .await
         .map(TierPick::Page)
 }
