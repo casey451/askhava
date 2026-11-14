@@ -10,6 +10,7 @@ mod job_texts;
 mod prop_consent_first;
 mod prop_keyword_boundary;
 mod prop_optout_no_close;
+mod property_zip_town;
 mod question_bank;
 mod replies;
 mod routing_outcomes;
