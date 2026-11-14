@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO businesses.staff_phone (business_id, linked_by, is_main, linked_at) VALUES ($1, $2, $3, $4) RETURNING id",
+  "query": "INSERT INTO businesses.staff_phone (business_id, linked_by, is_main, linked_at, approved_at, number_set_at, number_set_by, number_end) VALUES ($1, $2, $3, $4, $5, $4, $2, $6) RETURNING id",
   "describe": {
     "columns": [
       {
@@ -20,12 +20,14 @@
         "Uuid",
         "Uuid",
         "Bool",
-        "Timestamptz"
+        "Timestamptz",
+        "Timestamptz",
+        "Bpchar"
       ]
     },
     "nullable": [
       false
     ]
   },
-  "hash": "0689d527b6a630ed45948a9d398ef9cf2346830c2197a406f114142cd8266b91"
+  "hash": "d1006c2ecc7527b76c2e885e53e975d35230277597f009dee374196d9d2ca105"
 }

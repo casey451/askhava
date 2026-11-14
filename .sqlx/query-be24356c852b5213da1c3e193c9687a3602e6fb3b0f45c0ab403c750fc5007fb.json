@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "DELETE FROM businesses.staff_phone WHERE linked_by = $1 AND business_id = $2 RETURNING id",
+  "query": "DELETE FROM businesses.staff_phone WHERE business_id = $2 AND (linked_by = $1 OR (number_set_by = $1 AND approved_at IS NULL)) RETURNING id",
   "describe": {
     "columns": [
       {
@@ -25,5 +25,5 @@
       false
     ]
   },
-  "hash": "c46edac37ae85d1d5e5be4a36b7bb7d3ce1a20fcc05de92f8950bf0a989eb61e"
+  "hash": "be24356c852b5213da1c3e193c9687a3602e6fb3b0f45c0ab403c750fc5007fb"
 }

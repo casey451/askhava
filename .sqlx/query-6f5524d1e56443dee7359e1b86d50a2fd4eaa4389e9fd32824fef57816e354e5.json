@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.staff_phone SET approved_at = $3, number_set_at = $4, number_set_by = $5, number_end = $6 WHERE id = $1 AND business_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz",
+        "Uuid",
+        "Bpchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6f5524d1e56443dee7359e1b86d50a2fd4eaa4389e9fd32824fef57816e354e5"
+}
