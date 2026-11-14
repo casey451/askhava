@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:52:28Z by runner 59bf29c0d24e (actions).
+Updated 2026-11-14T10:52:50Z by runner 59bf29c0d24e (actions).
 
 **Building: T452 in progress since 10:34Z; 318 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-14T10:52:28Z by runner 59bf29c0d24e (actions).
 - **Lane:** lane 1: T452 claimed 10:34Z, lease until 13:34Z; lane 3: T437 claimed 10:27Z, lease until 13:27Z; lane 4: T359 claimed 09:38Z, lease until 13:24Z; lane 5: T453 claimed 10:35Z, lease until 13:35Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z
 - **Week:** 41% used, 106.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:52Z, 0 min before this update
-- **Keeper:** last ran 10:51Z, next wake 13:27Z
+- **Keeper:** last ran 10:52Z, next wake 13:26Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
