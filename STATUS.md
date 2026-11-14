@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T06:56:12Z by runner f7cc24b1d073 (actions).
+Updated 2026-11-14T06:56:53Z by runner f7cc24b1d073 (actions).
 
-**Building: T437 in progress since 06:55Z; 315 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T396 in progress since 06:56Z; 315 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 315 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T437 claimed 06:55Z, lease until 09:55Z; lane 3: T280 claimed 06:32Z, lease until 09:32Z
-- **Week:** 37% used, 119.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:55Z, 0 min before this update
+- **Lane:** lane 1: T396 claimed 06:56Z, lease until 09:56Z; lane 2: T437 claimed 06:55Z, lease until 09:55Z; lane 3: T280 claimed 06:32Z, lease until 09:32Z
+- **Week:** 37% used, 118.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 06:56Z, 0 min before this update
 - **Keeper:** last ran 06:49Z, next wake 09:34Z
 
 ## Needs attention
@@ -150,7 +150,7 @@ Updated 2026-11-14T06:56:12Z by runner f7cc24b1d073 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T06:49:28Z (week)): week: 74.9M used, 119.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T06:26:20Z.
+- Pacing (session_reading 2026-11-14T06:49:28Z (week)): week: 75.4M used, 118.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T06:27:19Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -165,7 +165,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T396 (lease until 2026-11-14T09:56:42Z)
 - lane 2: T437 (lease until 2026-11-14T09:55:44Z)
 - lane 3: T280 (lease until 2026-11-14T09:32:17Z)
 
