@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:32:10Z by runner 24008eb1e197 (actions).
+Updated 2026-11-14T12:33:45Z by runner 24008eb1e197 (actions).
 
 **Building: T359 in progress since 11:24Z; 322 of 449 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T12:32:10Z by runner 24008eb1e197 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 3: T301 claimed 12:32Z, lease until 15:32Z
 - **Week:** 42% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:25Z, 6 min before this update
+- **Last run:** 12:32Z, 1 min before this update
 - **Keeper:** last ran 12:20Z, next wake 14:26Z
 
 ## Needs attention
@@ -121,7 +121,6 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 | T367 | jobs, messaging, privacy, intake and payments: the daily swe | done | 1 | 60 min | 14:23Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z |  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
-| T312 | intake: a street address written in lower case never trips t | done | 2 | 51 min | 12:32Z | session ended without handing in |
 
 ### Plan and harness merges on main
 - 10:42Z Plan: T329 notice-email copy gap (D-3687) (#768)
@@ -144,7 +143,6 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 - 15:02Z Plan: split T328 and trim T321 to fit the context limit (D-3468) (#676)
 - 14:47Z Plan: fix T386 and D-3445 plan gaps (D-3467) (#673)
 - 13:45Z Plan: shorten the critical path, drop legacy dependency edges (D-3446) (#671)
-- 12:32Z Plan: pre-flight 14, split three oversized build tasks; T111/T113 brand note (D-3445) (#668)
 
 ## Progress (requirements verified)
 
