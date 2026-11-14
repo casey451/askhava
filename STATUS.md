@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T13:47:41Z by runner aa64d53b5f18 (actions).
+Updated 2026-11-14T13:54:09Z by runner 3fd009c86341 (actions).
 
-**Building: T432 in progress since 12:42Z; 323 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T432 in progress since 12:42Z; 324 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 323 of 451 build tasks (owner gates not counted)
+- **Tasks done:** 324 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z; lane 5: T353 claimed 13:44Z, lease until 16:44Z
 - **Week:** 44% used, 104.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:47Z, 0 min before this update
+- **Last run:** 13:47Z, 6 min before this update
 - **Keeper:** last ran 13:47Z, next wake 15:44Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-14T13:47:41Z by runner aa64d53b5f18 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 4 | 38 min | 13:32Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
-| T466 | portals: one shared form stylesheet for native checkboxes an | MERGE_PENDING | 1 | 27 min | 13:27Z |  |
+| T466 | portals: one shared form stylesheet for native checkboxes an | done | 1 | 27 min | 13:27Z |  |
 | T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
 | T359 | payments: a successful charge writes its own charge ledger e | done | 3 | 72 min | 12:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 2 | 16 min | 12:20Z | PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T |
@@ -132,7 +132,7 @@ Updated 2026-11-14T13:47:41Z by runner aa64d53b5f18 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 272 of 733 (37.1%) · partial 303 · unstarted 158
-**Tasks merged (throughput only):** 323 of 451
+**Tasks merged (throughput only):** 324 of 451
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -167,7 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 203 of 226 done
+- stage 4: 204 of 226 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
