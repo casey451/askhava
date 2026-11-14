@@ -93,6 +93,7 @@ pub use crate::business_signup::{
     submit_signup,
 };
 pub use crate::checkin::{CHECK_IN_ROUTE, checkin_routes};
+pub use crate::confirm_pay::confirm_page_with_tier;
 pub use crate::confirm_pay::{
     CodeCheck, CodeSent, CodeStep, ConfirmCodes, ConfirmFacts, FEE_FREE_LINE, NoFee, PORTAL_LINK,
     PressReply, REFUND_LINE, check_confirm_code, confirm_code_needed, confirm_page,
