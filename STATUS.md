@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T07:55:29Z by runner 61c94cc79081 (actions).
+Updated 2026-11-14T07:55:45Z by runner 61c94cc79081 (actions).
 
 **Building: T280 in progress since 06:32Z; 315 of 436 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T07:55:29Z by runner 61c94cc79081 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 06:32Z, lease until 09:32Z
 - **Week:** 38% used, 117.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:54Z, 1 min before this update
+- **Last run:** 07:55Z, 0 min before this update
 - **Keeper:** last ran 07:54Z, next wake 09:35Z
 
 ## Needs attention
