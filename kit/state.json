@@ -39484,9 +39484,7 @@
    "plan_gap": {
     "at": "2026-11-14T03:46:00Z",
     "problems": [
-     "T352: measures 53% of the context window, over its 50% limit",
-     "T352: dependency T433 is DONE but its owned file app/server/src/payment_jobs.rs is not on main",
-     "T352: dependency T433 is DONE but its owned file tests/integration/tests/payment_jobs.rs is not on main"
+     "T352: measures 53% of the context window, over its 50% limit"
     ]
    }
   },
@@ -54549,7 +54547,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T04:14:44Z",
+ "updated_at": "2026-11-14T04:16:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -54647,8 +54645,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c4076414e148a666aed851c924aa8e6079f21781",
- "starter": "manual",
+ "runner_sha": "aff86ec723eb8749faf3b2de0e7272f97270ceeb",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "dd258e06710fb397062b6de2b6a442efa2f2e025",
