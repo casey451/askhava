@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T13:54:32Z by runner 702824aec771 (actions).
+Updated 2026-11-14T13:54:41Z by runner 702824aec771 (actions).
 
-**Building: T432 in progress since 12:42Z; 323 of 449 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T353 in progress since 13:44Z; 323 of 449 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 323 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z; lane 5: T353 claimed 13:44Z, lease until 16:44Z
+- **Lane:** lane 5: T353 claimed 13:44Z, lease until 16:44Z
 - **Week:** 44% used, 104.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:54Z, 0 min before this update
 - **Keeper:** last ran 13:47Z, next wake 15:44Z
@@ -18,6 +18,7 @@ Updated 2026-11-14T13:54:32Z by runner 702824aec771 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T432 | intake and server: ask the name-and-address question in prod | MERGE_PENDING | 1 | 71 min | 13:54Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 4 | 38 min | 13:32Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T466 |  | done | 1 | 27 min | 13:27Z |  |
 | T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
@@ -175,8 +176,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T432 (lease until 2026-11-14T15:42:31Z)
+- nothing
 - lane 5: T353 (lease until 2026-11-14T16:44:53Z)
 
 ## Last usage reading
-- {"task": "T437", "at": "2026-11-14T13:32:07Z", "cache_read_input_tokens": 1111233, "output_tokens": 15423, "input_tokens": 63, "cache_creation_input_tokens": 72423}
+- {"task": "T432", "at": "2026-11-14T13:54:21Z", "output_tokens": 130396, "input_tokens": 338, "cache_read_input_tokens": 19573409, "cache_creation_input_tokens": 416481}
