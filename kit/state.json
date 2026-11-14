@@ -51319,12 +51319,12 @@
      "resync": true
     }
    ],
-   "reviewed_sha": "07fe5e6871cca5447ee8a25b841228e3ad493290",
+   "reviewed_sha": "df5a2315483e0416659b08b95b342f2ffaf5cdb7",
    "review_lease": {
     "task": "T449",
-    "session": "actions-43547537919",
-    "expires": "2026-11-14T05:46:17Z",
-    "lane": "3"
+    "session": "actions-43552239868",
+    "expires": "2026-11-14T06:54:04Z",
+    "lane": "7"
    },
    "branch": "claude/task/T449-emergency-texts-counted",
    "auto_merge": {
@@ -51353,17 +51353,6 @@
     }
    ],
    "last_failure": "merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891)",
-   "merge_turn_since": "2026-11-14T03:24:42Z",
-   "update_merges": [
-    {
-     "from": "694a0c74a7f28aacc249350e183159cede9e9c38",
-     "to": "07fe5e6871cca5447ee8a25b841228e3ad493290",
-     "how": "adopted",
-     "at": "2026-11-14T03:24:42Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "runner_closed_prs": [
     740
    ],
@@ -51375,7 +51364,19 @@
      "app/server/CLAUDE.md"
     ],
     "at": "2026-11-14T03:38:19Z"
-   }
+   },
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "d7f67fffc26d17737970d75c1dd2908c54455adc",
+     "to": "df5a2315483e0416659b08b95b342f2ffaf5cdb7",
+     "main": "f4c4252669ecc8579c734604bd95b98812eb99f0",
+     "how": "hand-in",
+     "at": "2026-11-14T04:28:32Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T450",
@@ -54698,7 +54699,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T04:28:13Z",
+ "updated_at": "2026-11-14T04:28:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -54796,7 +54797,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f4c4252669ecc8579c734604bd95b98812eb99f0",
+ "runner_sha": "d7f67fffc26d17737970d75c1dd2908c54455adc",
  "starter": "actions",
  "smoke_runs": [
   {
