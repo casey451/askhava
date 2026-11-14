@@ -52623,7 +52623,7 @@
     "T426",
     "T438"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 4,
    "slug": "crate-notes-shared-and-full-by-bytes",
    "type": "harness",
@@ -53383,7 +53383,7 @@
      "at": "2026-11-14T11:33:09Z"
     }
    ],
-   "last_failure": "merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891)\nre-queued after plan fix D-3698: D-3698 (#777): T437 no longer edits crate CLAUDE.md/NOTES.md; the sweep moved to new T465",
+   "last_failure": "merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891)\nre-queued after plan fix D-3698: D-3698 (#777): T437 no longer edits crate CLAUDE.md/NOTES.md; the sweep moved to new T465\nre-queued after plan fix D-3752: D-3752 (#797): false 'reverted by FIX-MAIN' failure; T437's work is on main, this attempt re-verifies and hands in a decisions entry",
    "lane": "3",
    "stale_leases": [
     {
@@ -53393,7 +53393,7 @@
      "lane": "5"
     }
    ],
-   "reason": "reverted by FIX-MAIN (nightly red on 45c9090508ad)",
+   "reason": null,
    "requeues": [
     {
      "at": "2026-11-14T12:47:19Z",
@@ -53407,6 +53407,19 @@
      "plan_head": "d748674957307fb305250e16c417986da747341e",
      "plan_then": "a4903fbce5a5befc617a175751dfeb0fbb56a6a9c6238c84e67833809c5ce7f6",
      "plan_now": "bb8e7c7107f689bf14806686886249ddcc81c9b886014a7a54b6846fc76a4608"
+    },
+    {
+     "at": "2026-11-14T18:53:21Z",
+     "reason": "D-3752 (#797): false 'reverted by FIX-MAIN' failure; T437's work is on main, this attempt re-verifies and hands in a decisions entry",
+     "by": "manual-d8136d25ddd1",
+     "was": "reverted by FIX-MAIN (nightly red on 45c9090508ad)",
+     "attempts": 4,
+     "plan_fix": "D-3752",
+     "plan_since": "2026-11-14T12:53:27Z",
+     "plan_base": "d748674957307fb305250e16c417986da747341e",
+     "plan_head": "313f8ce9f228a1506e5a48475fd3628beb8322a9",
+     "plan_then": "bb8e7c7107f689bf14806686886249ddcc81c9b886014a7a54b6846fc76a4608",
+     "plan_now": "c7e8d1f61b6fcc6dda539ce439df513405759d2e7f2e29e17e1b146e251dbe28"
     }
    ],
    "update_merges": [
@@ -59139,7 +59152,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T18:51:00Z",
+ "updated_at": "2026-11-14T18:53:21Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -59237,8 +59250,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e55235d3251424cb410552741a4821c711a4d219",
- "starter": "actions",
+ "runner_sha": "313f8ce9f228a1506e5a48475fd3628beb8322a9",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",

@@ -1,20 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T18:51:00Z by runner e55235d32514 (actions).
+Updated 2026-11-14T18:53:21Z by runner 313f8ce9f228 (manual).
 
-**Idle since 18:24Z; 329 of 458 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 18:24Z; 329 of 459 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 329 of 458 build tasks (owner gates not counted)
+- **Tasks done:** 329 of 459 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 18:24Z (no task in progress)
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:50Z, 0 min before this update
+- **Last run:** 18:51Z, 2 min before this update
 - **Keeper:** last ran 18:50Z, next wake 00:30Z
 
 ## Needs attention
-- BLOCKED T437: reverted by FIX-MAIN (nightly red on 45c9090508ad)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 18 problem(s) on tasks still to run (+107 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
+- Strict plan check red: 17 problem(s) on tasks still to run (+107 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -101,6 +100,7 @@ Updated 2026-11-14T18:51:00Z by runner e55235d32514 (actions).
 | T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z |  |
 
 ### Plan and harness merges on main
+- 18:53Z Plan: T437 re-verification after a false FIX-MAIN failure; T474 so FIX-MAIN blames only what it reverted (D-3752) (#797)
 - 18:45Z Plan: email sending wired, pick-end texts complete, Can't-take route, T121 unblocked (T469–T473, D-3750) (#794)
 - 16:47Z Plan: pre-claim scout fixes for 27 stage-5 tasks (D-3744) (#793)
 - 16:40Z Plan: sign-up email code and activation link get real send paths, rate-limited (new T468, D-3743) (#791)
@@ -127,7 +127,7 @@ Updated 2026-11-14T18:51:00Z by runner e55235d32514 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 575 · unstarted 158
-**Tasks merged (throughput only):** 329 of 458
+**Tasks merged (throughput only):** 329 of 459
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
