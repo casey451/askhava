@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:46:57Z by runner 2fffb961d201 (actions).
+Updated 2026-11-14T22:47:21Z by runner 2fffb961d201 (actions).
 
-**Building: T301 in progress since 21:48Z; 335 of 469 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T485 in progress since 22:26Z; 335 of 469 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 335 of 469 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T301 claimed 21:48Z, lease until 00:48Z; lane 4: T485 claimed 22:26Z, lease until 01:26Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z
+- **Lane:** lane 4: T485 claimed 22:26Z, lease until 01:26Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z
 - **Week:** 52% used, 87.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:39Z, 7 min before this update
 - **Keeper:** last ran 22:39Z, next wake 00:50Z
@@ -20,6 +20,7 @@ Updated 2026-11-14T22:46:57Z by runner 2fffb961d201 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T301 | server and portals: the email action links are served (every | MERGE_PENDING | 3 | 58 min | 22:46Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
 | T443 | --after runs the full smoke itself on a fix-round hand-in; t | MERGE_PENDING | 1 | 35 min | 22:19Z |  |
 | T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z | PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No |
@@ -40,7 +41,7 @@ Updated 2026-11-14T22:46:57Z by runner 2fffb961d201 (actions).
 | T432 | intake and server: ask the name-and-address question in prod | done | 1 | 71 min | 13:54Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 4 | 38 min | 13:32Z |  |
 | T466 | portals: one shared form stylesheet for native checkboxes an | done | 1 | 27 min | 13:27Z |  |
-| T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
+| T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z |  |
 | T359 | payments: a successful charge writes its own charge ledger e | done | 3 | 72 min | 12:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 2 | 16 min | 12:20Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 3 | 23 min | 11:56Z |  |
@@ -166,9 +167,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T301 (lease until 2026-11-15T00:48:28Z)
 - lane 4: T485 (lease until 2026-11-15T01:26:33Z)
 - lane 5: T486 (lease until 2026-11-15T01:31:30Z)
 
 ## Last usage reading
-- {"task": "T443", "at": "2026-11-14T22:19:13Z", "input_tokens": 137, "output_tokens": 57078, "cache_read_input_tokens": 5418877, "cache_creation_input_tokens": 168251}
+- {"task": "T301", "at": "2026-11-14T22:46:56Z", "output_tokens": 101562, "cache_creation_input_tokens": 406076, "cache_read_input_tokens": 17422520, "input_tokens": 306}
