@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:50:00Z by runner a1b859ba739e (actions).
+Updated 2026-11-14T11:50:20Z by runner a1b859ba739e (actions).
 
 **Building: T359 in progress since 11:24Z; 321 of 449 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 321 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 4: T437 claimed 11:33Z, lease until 14:33Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
+- **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 4: T437 claimed 11:33Z, lease until 14:33Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
 - **Week:** 42% used, 107.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:48Z, 1 min before this update
 - **Keeper:** last ran 11:39Z, next wake 13:47Z
@@ -19,12 +19,13 @@ Updated 2026-11-14T11:50:00Z by runner a1b859ba739e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T329 | businesses: the eight business account events queued today ( | MERGE_PENDING | 2 | 65 min | 11:49Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
 | T453 | quotes: the job's quote rules are read from the stored job,  | done | 1 | 27 min | 11:02Z |  |
 | T452 | e2e and Ally (harness): a keyed web binary beside the suite' | done | 1 | 24 min | 10:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 31 min | 10:58Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T359 | payments: a successful charge writes its own charge ledger e | check_failed | 2 | 75 min | 10:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T435 | calls and server: calls and texts act for the business only  | done | 1 | 30 min | 10:46Z |  |
-| T329 | businesses: the eight business account events queued today ( | BLOCKED | 1 | 2 min | 10:28Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
+| T329 | businesses: the eight business account events queued today ( | BLOCKED | 1 | 2 min | 10:28Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 52 min | 10:25Z |  |
 | T398 | businesses: notice texts go only to approved phones, and a m | done | 1 | 38 min | 09:41Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 4 | 2 min | 09:18Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
@@ -173,8 +174,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T359 (lease until 2026-11-14T14:24:40Z)
 - lane 4: T437 (lease until 2026-11-14T14:33:09Z)
-- lane 6: T329 (lease until 2026-11-14T13:44:58Z)
 - lane 7: T302 (lease until 2026-11-14T14:10:31Z)
 
 ## Last usage reading
-- {"task": "T453", "at": "2026-11-14T11:02:46Z", "input_tokens": 75, "cache_creation_input_tokens": 84173, "output_tokens": 18771, "cache_read_input_tokens": 1645394}
+- {"task": "T329", "at": "2026-11-14T11:49:58Z", "cache_read_input_tokens": 11422642, "cache_creation_input_tokens": 353241, "output_tokens": 98706, "input_tokens": 261}
