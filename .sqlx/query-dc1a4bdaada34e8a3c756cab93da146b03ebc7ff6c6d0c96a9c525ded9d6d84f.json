@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM payments.ledger_entry e\n           WHERE e.business_id = $1 AND e.job_id = ANY($2) AND e.job_id <> $3\n             AND e.kind IN ('charge', 'free-first-win', 'repeat-customer', 'fee-free-job-type')\n             AND NOT EXISTS (SELECT 1 FROM payments.charge_evidence v\n                   JOIN payments.refund r ON r.pick_id = v.pick_id\n                  WHERE e.kind = 'charge' AND v.stripe_charge_id = e.stripe_id\n                    AND r.trigger IN ('late-success', 'fraud-warning')))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "exists",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "UuidArray",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "dc1a4bdaada34e8a3c756cab93da146b03ebc7ff6c6d0c96a9c525ded9d6d84f"
+}

@@ -7,11 +7,15 @@
 //! [`waive_at_confirm`] before any Stripe charge, with the pick's business, its [`JoinDates`] and
 //! the other jobs of the same customer still on record. That call decides, in this order:
 //!
-//! 1. a fee-free job type is not waived here ($0 already, written by `record_fee_at_confirm`);
+//! 1. a fee-free job type ($0 fixed at the pick) is not waived, but when its stored
+//!    `payments.pick_fee` row says fee-free, its $0 `fee-free-job-type` entry is written here, with
+//!    no card and no `may_confirm` proof, so `no_fee_release` clears it (FEE-036, FEE-045, D-2623);
 //! 2. a (business, job) already in the ledger keeps the answer it got then, writing nothing
 //!    (D-1422);
 //! 3. repeat work: the business already had a confirmed introduction on one of those jobs, so a
-//!    $0 `repeat-customer` entry, and the free first win is not touched (FEE-013);
+//!    $0 `repeat-customer` entry, and the free first win is not touched (FEE-013); a charge whose
+//!    pick was refunded with nothing released (a `late-success` or `fraud-warning` refund) was no
+//!    introduction and does not count;
 //! 4. a free first win: the business joined inside the 90-day window ([`in_free_win_window`]) and
 //!    neither it nor any business sharing one of its entity keys has used one, checked now, at
 //!    use (FEE-011); a $0 `free-first-win` entry plus a `payments.free_win` row holding the
@@ -30,6 +34,7 @@ use sqlx::{Connection, PgConnection};
 use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
 use crate::models::{BusinessId, EntityKey, FreeWinError, JoinDates};
 use crate::rules::PickedFee;
+use crate::service::CONFIRM_FEE_ACTION;
 
 /// The free-first-win window: 90 days after launch or after a category is switched on (FEE-010).
 pub const FREE_WIN_WINDOW_DAYS: i64 = 90;
@@ -122,10 +127,12 @@ pub enum Waiver {
     },
 }
 
-/// FEE-010 to FEE-013, D-069, D-151: decides at Confirm, before any charge, whether the pick is
-/// a repeat customer or the business's free first win, and writes the $0 entry (see the module
-/// docs for the order). A repeated call for the same job returns the answer the ledger already
-/// holds for it and writes nothing new, whatever else changed meanwhile (D-1422).
+/// FEE-010 to FEE-013, FEE-045, D-069, D-151: decides at Confirm, before any charge, whether the
+/// pick is a repeat customer or the business's free first win, and writes the $0 entry (see the
+/// module docs for the order); a fee-free job type answers [`Waiver::NotWaived`] after writing
+/// its own $0 entry when its stored fee row says fee-free. A repeated call for the same job
+/// returns the answer the ledger already holds for it and writes nothing new, whatever else
+/// changed meanwhile (D-1422).
 ///
 /// # Errors
 /// [`FreeWinError::Race`] when a shared key or this business's win was used by another Confirm
@@ -138,6 +145,7 @@ pub async fn waive_at_confirm(
     check: WinCheck<'_>,
 ) -> Result<Waiver, FreeWinError> {
     if check.picked.cents() == 0 {
+        fee_free_entry(conn, secret, &check).await?;
         return Ok(Waiver::NotWaived);
     }
     if let Some(decided) = decided(conn, &check).await? {
@@ -181,16 +189,45 @@ async fn decided(
     }))
 }
 
+/// FEE-045, D-1419, D-2623: writes the $0 `fee-free-job-type` entry of the check's business and
+/// job when a stored `payments.pick_fee` row of theirs says fee-free, under the key
+/// `record_fee_at_confirm` uses for it, so either writer appends it once; else nothing.
+async fn fee_free_entry(
+    conn: &mut PgConnection,
+    secret: &SecretString,
+    check: &WinCheck<'_>,
+) -> Result<(), FreeWinError> {
+    let fee_free = sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM payments.pick_fee
+           WHERE business_id = $1 AND job_id = $2 AND kind = 'fee_free') AS "found!""#,
+        check.business.0,
+        check.job,
+    )
+    .fetch_one(&mut *conn)
+    .await
+    .map_err(|_| FreeWinError::Database)?;
+    if fee_free {
+        append_zero(conn, secret, EntryKind::FeeFreeJobType, check).await?;
+    }
+    Ok(())
+}
+
 /// FEE-013, D-069: the business already had a confirmed introduction (charged, free first win,
-/// repeat or fee-free) on another of the customer's jobs.
+/// repeat or fee-free) on another of the customer's jobs. A charge whose pick was refunded with
+/// nothing released, a `late-success` or `fraud-warning` refund, was no introduction and is not
+/// counted; one refunded after a release (unreachable, cancelled) still is (D-2623).
 async fn is_repeat(conn: &mut PgConnection, check: &WinCheck<'_>) -> Result<bool, FreeWinError> {
     if check.same_customer_jobs.is_empty() {
         return Ok(false);
     }
     let found = sqlx::query_scalar!(
-        "SELECT EXISTS (SELECT 1 FROM payments.ledger_entry
-           WHERE business_id = $1 AND job_id = ANY($2) AND job_id <> $3
-             AND kind IN ('charge', 'free-first-win', 'repeat-customer', 'fee-free-job-type'))",
+        "SELECT EXISTS (SELECT 1 FROM payments.ledger_entry e
+           WHERE e.business_id = $1 AND e.job_id = ANY($2) AND e.job_id <> $3
+             AND e.kind IN ('charge', 'free-first-win', 'repeat-customer', 'fee-free-job-type')
+             AND NOT EXISTS (SELECT 1 FROM payments.charge_evidence v
+                   JOIN payments.refund r ON r.pick_id = v.pick_id
+                  WHERE e.kind = 'charge' AND v.stripe_charge_id = e.stripe_id
+                    AND r.trigger IN ('late-success', 'fraud-warning')))",
         check.business.0,
         check.same_customer_jobs,
         check.job,
@@ -275,17 +312,18 @@ async fn use_win(
     })
 }
 
-/// Appends the $0 entry of `kind` for the check's job and business (FEE-012, FEE-013, FEE-028).
+/// Appends the $0 entry of `kind` for the check's job and business (FEE-012, FEE-013, FEE-028,
+/// FEE-045).
 async fn append_zero(
     conn: &mut PgConnection,
     secret: &SecretString,
     kind: EntryKind,
     check: &WinCheck<'_>,
 ) -> Result<Appended, FreeWinError> {
-    let action = if kind == EntryKind::FreeFirstWin {
-        FREE_WIN_ACTION
-    } else {
-        REPEAT_ACTION
+    let action = match kind {
+        EntryKind::FreeFirstWin => FREE_WIN_ACTION,
+        EntryKind::FeeFreeJobType => CONFIRM_FEE_ACTION,
+        _ => REPEAT_ACTION,
     };
     let (job, business) = (check.job.to_string(), check.business.0.to_string());
     let key = IdempotencyKey::derive(secret, action, &[&job, &business]);

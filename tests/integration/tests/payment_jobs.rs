@@ -547,8 +547,10 @@ async fn td_fee_52_check_round_and_refund_check(pool: PgPool) {
 }
 
 /// TD-FEE-52 (FEE-019, FEE-042, FEE-047): the check round reads the stand-in's succeeded charge,
-/// then the worker stops before its evidence write; after the restart the retry stores the one
-/// success: one intent, one attempt, one evidence row, no refund and no second ledger row.
+/// then the worker stops before its evidence write, which leaves no ledger row either (the entry
+/// commits with the evidence); after the restart the retry stores the one success: one intent,
+/// one attempt, one evidence row, no refund and exactly one ledger row, the pick's own `charge`
+/// entry of the intent's 7500 cents under its per-pick key (TD-FEE-64, D-3658).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_52_check_round_stop_after_stripe_charges_once(pool: PgPool) {
     let server = stand_in();
@@ -564,6 +566,12 @@ async fn td_fee_52_check_round_stop_after_stripe_charges_once(pool: PgPool) {
     run_due(&pool, &registry(clock.clone(), Some(&server.1)), &clock).await;
     let evidence = "SELECT count(*) FROM payments.charge_evidence";
     assert_eq!(count(&pool, evidence).await, 0, "stopped before the write");
+    let ledger = "SELECT count(*) FROM payments.ledger_entry";
+    assert_eq!(
+        count(&pool, ledger).await,
+        0,
+        "no entry without its evidence"
+    );
     sqlx::raw_sql("DROP TRIGGER t433_stop ON payments.charge_evidence")
         .execute(&pool)
         .await
@@ -581,10 +589,12 @@ async fn td_fee_52_check_round_stop_after_stripe_charges_once(pool: PgPool) {
         count(&pool, "SELECT count(*) FROM payments.refund").await,
         0
     );
-    let ledger = "SELECT count(*) FROM payments.ledger_entry";
-    assert_eq!(
-        count(&pool, ledger).await,
-        0,
-        "the check writes no ledger row"
-    );
+    assert_eq!(count(&pool, ledger).await, 1, "exactly one ledger row");
+    let row: (String, i64, String) =
+        sqlx::query_as("SELECT kind, amount_cents, idempotency_key FROM payments.ledger_entry")
+            .fetch_one(&pool)
+            .await
+            .expect("the charge entry");
+    let entry = ("charge".to_owned(), 7500, format!("charge.{PICK}"));
+    assert_eq!(row, entry, "the pick's own charge entry");
 }
