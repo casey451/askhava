@@ -43,6 +43,7 @@ mod send_window;
 mod sender_held;
 mod sender_pending;
 mod service;
+mod signin_mail;
 mod status;
 mod templates;
 

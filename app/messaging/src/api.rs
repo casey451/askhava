@@ -107,6 +107,7 @@ pub use crate::service::{
     ANY_HOUR_TEMPLATES, Exemption, NewText, Relation, SEND_ACTION, To, delivery_status, enqueue,
     enqueue_exempt, may_text, send, sender_add, sender_business, sender_remove,
 };
+pub use crate::signin_mail::{LINK_MARK, SIGNIN_LINK_TEMPLATE, SignInLinkSender};
 pub use crate::status::DeliveryStatus;
 pub use crate::templates::{
     Audience, Encoding, Language, Registry, Segments, TemplateError, Text, count_segments,

@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT business_id, mailbox_id FROM businesses.team_member WHERE id = $1 AND removed_at IS NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "mailbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "mailbox_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "2413645afbc7e7b7ccbe7467552e0f49102a96b19a0ec3bd5ab59094e213ca33"
+}

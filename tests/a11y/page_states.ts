@@ -131,11 +131,33 @@ const CHECK_IN_STATES: readonly PageState[] = [
   ["check-in closed", "nothing to send for request", "You picked:", checkInPage("done")],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CHECK_IN_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const SIGNIN_ROUTE = "/b/sign-in";
+const SIGNIN_LINK_ROUTE = "/b/sign-in/{token}";
+
+/** The business sign-in form (T280, SEC-004): no seed, the plain path. */
+const SIGNIN_STATES: readonly PageState[] = [
+  ["business sign-in form", "Email address", "Press the button", ""],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: SIGNIN_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** A sign-in link's page (T280, SEC-026): a live link shows its button, an unknown one has ended. */
+const SIGNIN_LINK_STATES: readonly PageState[] = [
+  [
+    "business sign-in link open",
+    "Press the button to finish signing in",
+    "stopped working",
+    `INSERT INTO portals.login_link (token_sha256, member_id, business_id, created_at, expires_at)
+      VALUES (decode(':hash', 'hex'), gen_random_uuid(), gen_random_uuid(), now(), now() + interval '15 minutes')`,
+  ],
+  ["business sign-in link ended", "This sign-in link has stopped working", "Check your email", "SELECT 1"],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: SIGNIN_LINK_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
   { route: FEEDBACK_ROUTE, seed: tokenSeed, states: FEEDBACK_STATES },
   { route: CHECK_IN_ROUTE, seed: checkInSeed, states: CHECK_IN_STATES },
+  { route: SIGNIN_ROUTE, seed: (state) => state.route, states: SIGNIN_STATES },
+  { route: SIGNIN_LINK_ROUTE, seed: tokenSeed, states: SIGNIN_LINK_STATES },
 ];
 
 /** Every state of every page, in entry order. */
