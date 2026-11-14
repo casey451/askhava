@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T07:38:23Z by runner 6a489229f216 (actions).
+Updated 2026-11-14T07:38:40Z by runner 6a489229f216 (actions).
 
 **Building: T396 in progress since 06:56Z; 315 of 436 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 315 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T396 claimed 06:56Z, lease until 09:56Z; lane 2: T437 claimed 06:55Z, lease until 09:55Z; lane 3: T280 claimed 06:32Z, lease until 09:32Z; lane 4: T359 claimed 07:04Z, lease until 10:04Z
+- **Lane:** lane 1: T396 claimed 06:56Z, lease until 09:56Z; lane 3: T280 claimed 06:32Z, lease until 09:32Z; lane 4: T359 claimed 07:04Z, lease until 10:04Z
 - **Week:** 38% used, 117.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:36Z, 1 min before this update
+- **Last run:** 07:36Z, 2 min before this update
 - **Keeper:** last ran 07:36Z, next wake 09:35Z
 
 ## Needs attention
@@ -19,7 +19,8 @@ Updated 2026-11-14T07:38:23Z by runner 6a489229f216 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 30 min | 06:48Z | merging main into the reviewed head conflicts in app/adapters/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 2 | 42 min | 07:38Z | merging main into the reviewed head conflicts in app/adapters/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 30 min | 06:48Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 21 min | 06:40Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T352 | adapters and stand-in (harness): the PaymentIntent carries S | done | 1 | 51 min | 06:14Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 51 min | 06:03Z |  |
@@ -165,9 +166,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T396 (lease until 2026-11-14T09:56:42Z)
-- lane 2: T437 (lease until 2026-11-14T09:55:44Z)
 - lane 3: T280 (lease until 2026-11-14T09:32:17Z)
 - lane 4: T359 (lease until 2026-11-14T10:04:22Z)
 
 ## Last usage reading
-- {"task": "T437", "at": "2026-11-14T06:48:49Z", "cache_creation_input_tokens": 76486, "output_tokens": 12556, "input_tokens": 69, "cache_read_input_tokens": 1004666}
+- {"task": "T437", "at": "2026-11-14T07:38:22Z", "cache_read_input_tokens": 1240105, "output_tokens": 15047, "input_tokens": 90, "cache_creation_input_tokens": 85904}
