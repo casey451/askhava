@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T06:35:43Z by runner 6aa7f43d7bd8 (actions).
+Updated 2026-11-14T06:36:02Z by runner 6aa7f43d7bd8 (actions).
 
 **Building: T437 in progress since 06:17Z; 314 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-14T06:35:43Z by runner 6aa7f43d7bd8 (actions).
 - **Lane:** lane 1: T437 claimed 06:17Z, lease until 09:17Z; lane 3: T280 claimed 06:32Z, lease until 09:32Z; lane 6: T396 claimed 06:18Z, lease until 09:18Z
 - **Week:** 37% used, 118.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:35Z, 0 min before this update
-- **Keeper:** last ran 06:28Z, next wake 09:20Z
+- **Keeper:** last ran 06:36Z, next wake 09:20Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
