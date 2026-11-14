@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T01:16:38Z by runner 2df926e292cb (actions).
+Updated 2026-11-14T01:20:33Z by runner 2df926e292cb (actions).
 
 **Building: T280 in progress since 00:35Z; 304 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T01:16:38Z by runner 2df926e292cb (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 4: T447 claimed 01:03Z, lease until 04:03Z
 - **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:14Z, 2 min before this update
+- **Last run:** 01:19Z, 1 min before this update
 - **Keeper:** last ran 01:11Z, next wake 03:38Z
 
 ## Needs attention
@@ -81,7 +81,6 @@ Updated 2026-11-14T01:16:38Z by runner 2df926e292cb (actions).
 | T425 | Brand rename prep: the last integration tests and four secur | done | 1 | 28 min | 02:39Z |  |
 | T423 | Brand rename prep: integration tests (first-quote move to si | done | 1 | 66 min | 01:47Z |  |
 | T422 | Brand rename prep: integration tests (accepted-quote email t | done | 1 | 44 min | 01:20Z |  |
-| T421 | Brand rename prep: messaging, quotes, picks and portals unit | done | 1 | 26 min | 01:18Z |  |
 
 ### Plan and harness merges on main
 - 01:13Z Plan: T302 plan gap — new T450 sign-up code screens and verified consent (D-3602) (#730)
@@ -108,7 +107,6 @@ Updated 2026-11-14T01:16:38Z by runner 2df926e292cb (actions).
 - 04:27Z Harness: safety hand-in reports unreleased leases (D-3419) (#654)
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
 - 01:29Z Harness: fail CI, smoke and prehandin on leftover merge-conflict markers (D-3307) (#619)
-- 01:16Z Plan: T255 follow-ups (D-3384) and pre-flight 12, T426 owns the legal-docs test (D-3385) (#640)
 
 ## Progress (requirements verified)
 
