@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:54:16Z by runner 03f442eb20da (actions).
+Updated 2026-11-14T10:54:32Z by runner 03f442eb20da (actions).
 
 **Building: T452 in progress since 10:34Z; 318 of 436 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 318 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T452 claimed 10:34Z, lease until 13:34Z; lane 3: T437 claimed 10:27Z, lease until 13:27Z; lane 4: T359 claimed 09:38Z, lease until 13:24Z; lane 5: T453 claimed 10:35Z, lease until 13:35Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z
+- **Lane:** lane 1: T452 claimed 10:34Z, lease until 13:34Z; lane 3: T437 claimed 10:27Z, lease until 13:27Z; lane 5: T453 claimed 10:35Z, lease until 13:35Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z
 - **Week:** 41% used, 106.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:53Z, 1 min before this update
 - **Keeper:** last ran 10:52Z, next wake 13:26Z
@@ -18,6 +18,7 @@ Updated 2026-11-14T10:54:16Z by runner 03f442eb20da (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T359 | payments: a successful charge writes its own charge ledger e | MERGE_PENDING | 2 | 75 min | 10:54Z | PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, an |
 | T435 | calls and server: calls and texts act for the business only  | MERGE_PENDING | 1 | 30 min | 10:46Z |  |
 | T329 | businesses: the eight business account events queued today ( | BLOCKED | 1 | 2 min | 10:28Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 52 min | 10:25Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -28,7 +29,7 @@ Updated 2026-11-14T10:54:16Z by runner 03f442eb20da (actions).
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 1 | 5 min | 08:59Z | PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID |
 | T280 | server and messaging (harness): the business sign-in pages a | done | 4 | 91 min | 08:04Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T396 | businesses and messaging (harness): a phone a member links o | done | 2 | 56 min | 07:52Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
-| T359 | payments: a successful charge writes its own charge ledger e | BLOCKED | 1 | 39 min | 07:43Z | PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, an |
+| T359 | payments: a successful charge writes its own charge ledger e | BLOCKED | 1 | 39 min | 07:43Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 2 | 42 min | 07:38Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 30 min | 06:48Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 21 min | 06:40Z |  |
@@ -170,9 +171,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T452 (lease until 2026-11-14T13:34:24Z)
 - lane 3: T437 (lease until 2026-11-14T13:27:06Z)
-- lane 4: T359 (lease until 2026-11-14T13:24:04Z)
 - lane 5: T453 (lease until 2026-11-14T13:35:08Z)
 - lane 6: T329 (lease until 2026-11-14T13:44:58Z)
 
 ## Last usage reading
-- {"task": "T435", "at": "2026-11-14T10:46:23Z", "input_tokens": 124, "cache_read_input_tokens": 4052836, "cache_creation_input_tokens": 157780, "output_tokens": 39047}
+- {"task": "T359", "at": "2026-11-14T10:54:14Z", "output_tokens": 94841, "input_tokens": 321, "cache_read_input_tokens": 15945151, "cache_creation_input_tokens": 326456}
