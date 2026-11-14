@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-14T18:12:27Z by runner 14099277d223 (actions).
+Updated 2026-11-14T18:25:39Z by runner 52bf28dbe1c0 (actions).
 
-**Idle since 17:47Z; 328 of 453 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 18:24Z; 329 of 453 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 328 of 453 build tasks (owner gates not counted)
+- **Tasks done:** 329 of 453 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 17:47Z (no task in progress)
+- **Lane:** idle since 18:24Z (no task in progress)
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:12Z, 0 min before this update
+- **Last run:** 18:12Z, 13 min before this update
 - **Keeper:** last ran 18:12Z, next wake 23:52Z
 
 ## Needs attention
 - BLOCKED T437: reverted by FIX-MAIN (nightly red on 45c9090508ad)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 17 problem(s) on tasks still to run (+106 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
+- Strict plan check red: 18 problem(s) on tasks still to run (+107 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | FIX-MAIN |  | done | 1 | 78 min | 17:42Z |  |
 | T467 | picks: a pick whose fee terms changed before its Confirm end | MERGE_PENDING | 1 | 43 min | 16:28Z |  |
-| T439 | --after refuses a hand-in whose head no Opus reviewer approv | MERGE_PENDING | 1 | 44 min | 16:06Z |  |
+| T439 | --after refuses a hand-in whose head no Opus reviewer approv | done | 1 | 44 min | 16:06Z |  |
 | T465 | docs: move the entry lines left under each crate guide's `## | done | 1 | 31 min | 15:55Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | done | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 1 | 3 min | 14:30Z | PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs: |
@@ -100,7 +100,6 @@ Updated 2026-11-14T18:12:27Z by runner 14099277d223 (actions).
 | T314 | payments and picks: a dispute's auto-submit mark and its tas | done | 1 | 29 min | 19:56Z |  |
 | T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z |  |
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 2 h 1 min | 18:26Z |  |
-| T281 | picks: the unreachable-homeowner steps run at 24, 48, 72 and | done | 1 | 107 min | 18:15Z |  |
 
 ### Plan and harness merges on main
 - 16:47Z Plan: pre-claim scout fixes for 27 stage-5 tasks (D-3744) (#793)
@@ -129,7 +128,7 @@ Updated 2026-11-14T18:12:27Z by runner 14099277d223 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 575 · unstarted 158
-**Tasks merged (throughput only):** 328 of 453
+**Tasks merged (throughput only):** 329 of 453
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -164,7 +163,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 208 of 228 done
+- stage 4: 209 of 228 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
