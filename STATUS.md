@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T21:38:59Z by runner 5c153897b3f5 (actions).
+Updated 2026-11-14T21:39:21Z by runner 5c153897b3f5 (actions).
 
 **Idle since 21:38Z; 333 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T21:38:59Z by runner 5c153897b3f5 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 21:38Z (no task in progress)
 - **Week:** 51% used, 92.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:36Z, 2 min before this update
+- **Last run:** 21:39Z, 0 min before this update
 - **Keeper:** last ran 21:36Z, next wake 00:37Z
 
 ## Needs attention
@@ -97,7 +97,6 @@ Updated 2026-11-14T21:38:59Z by runner 5c153897b3f5 (actions).
 | T357 | server, messaging and intake: START into an open request res | done | 2 | 21 min | 22:14Z | Ci: failure; Lint and slow tests: failure / Lint and slow tests failed at step: Rust format and lint (clippy once, befor |
 | T438 | Token usage counts each reply once: dedupe transcript usage  | done | 2 | 19 min | 22:10Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 2 | 7 min | 22:01Z |  |
-| T354 | privacy: key rotation re-seals stored photos too, so droppin | done | 1 | 69 min | 21:39Z |  |
 
 ### Plan and harness merges on main
 - 19:52Z Plan: stage-5 readers and splits, CON-022 purge via definer functions, Spanish switch gates, replay functions (T475–T484, D-3753) (#798)
