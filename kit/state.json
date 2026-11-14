@@ -44940,8 +44940,8 @@
     "T322",
     "T220"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "phone-approval-hold",
    "type": "harness",
    "stage": "4",
@@ -44960,13 +44960,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 126,
      "head_sha": "cc677b54edd499531f6e12ca6aa1ffad660af7fd",
-     "pr": null,
-     "checks": null,
+     "pr": 747,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-14T04:09:13Z",
      "ended_at": "2026-11-14T04:54:20Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 6215393,
@@ -45003,7 +45048,8 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-14T04:55:02Z"
+   "merge_turn_since": "2026-11-14T04:55:02Z",
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_lic_30_reads_write_nothing_and_log_no_value ... FAILED\ntest td_lic_30_setting_accepted_and_absent_reads_unreadable ... ok\ntest td_lic_30_signup_record_reads_the_bound_number ... ok\ntest td_lic_30_unreadable_alert_follows_the_arizona_day ... ok\ntest td_lic_30_unreadable_reads_raise_one_alert_a_day ... ok\nfailures:\n---- td_lic_30_reads_write_nothing_and_log_no_value stdout ----\nthread 'td_lic_30_reads_write_nothing_and_log_no_value' (29339) panicked at tests/integration/tests/signup_own_record.rs:634:9:\nthe unreadable read is logged\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_lic_30_reads_write_nothing_and_log_no_value\ntest result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.42s\nerror: test failed, to rerun pass `-p askhava-integration --test signup_own_record`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T398",
@@ -50161,8 +50207,8 @@
     "T426",
     "T438"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "crate-notes-shared-and-full-by-bytes",
    "type": "harness",
    "stage": "4",
@@ -50317,13 +50363,50 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 19,
      "head_sha": "3a3945f3ac05c16ad2b76e4a6b35243159b27237",
-     "pr": null,
-     "checks": null,
+     "pr": 748,
+     "checks": [
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": null
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": null
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": null
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-14T04:25:12Z",
      "ended_at": "2026-11-14T05:04:56Z",
-     "result": "MERGE_PENDING",
+     "result": "update_conflict",
      "usage": {
       "worker": {
        "tokens": 385382,
@@ -50352,7 +50435,8 @@
    },
    "runner_closed_prs": [
     725,
-    738
+    738,
+    748
    ],
    "resyncs": [
     {
@@ -50382,8 +50466,11 @@
      "at": "2026-11-14T04:25:12Z"
     }
    ],
-   "last_failure": "merging main into the reviewed head conflicts in app/payments/CLAUDE.md, app/portals/CLAUDE.md, app/server/CLAUDE.md; a resync merges it in on this attempt (D-891)",
-   "lane": "3"
+   "last_failure": "merging main into the task branch conflicts in app/intake/CLAUDE.md again after 2 resyncs in this attempt, so this attempt fails and the next one starts from the branch with main merged in, or fresh from main when that still conflicts (D-583, D-620, D-891)",
+   "lane": "3",
+   "merge_turn_since": "2026-11-14T05:10:50Z",
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T440",
@@ -54845,7 +54932,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T05:08:37Z",
+ "updated_at": "2026-11-14T05:10:56Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -55757,5 +55844,16 @@
    ]
   }
  ],
+ "lane_strikes": {
+  "3": {
+   "count": 1,
+   "last": [
+    {
+     "at": "2026-11-14T05:10:50Z",
+     "why": "T437 update_conflict: merging main into the task branch conflicts in app/intake/CLAUDE.md again after 2 resyncs in this attempt, so this attempt fails and the next one starts from the branch with main merged in, or fresh f"
+    }
+   ]
+  }
+ },
  "lease_on": "claude/lease"
 }

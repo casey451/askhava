@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T05:08:37Z by runner d53bdd2875b8 (actions).
+Updated 2026-11-14T05:10:56Z by runner d53bdd2875b8 (actions).
 
 **Building: T393 in progress since 04:25Z; 313 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T05:08:37Z by runner d53bdd2875b8 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z
 - **Week:** 36% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:08Z, 0 min before this update
+- **Last run:** 05:08Z, 2 min before this update
 - **Keeper:** last ran 05:08Z, next wake 07:28Z
 
 ## Needs attention
@@ -21,8 +21,8 @@ Updated 2026-11-14T05:08:37Z by runner d53bdd2875b8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 39 min | 05:04Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md, app/portals/CLAUDE.md, app/server/CLAUDE.md; a  |
-| T396 | businesses and messaging (harness): a phone a member links o | MERGE_PENDING | 1 | 45 min | 04:54Z |  |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z | merging main into the task branch conflicts in app/intake/CLAUDE.md again after 2 resyncs in this attempt, so this attem |
+| T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 3 | 15 min | 04:11Z | PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as |
 | T440 | portals: the quote page's tier choice and the Confirm page's | done | 1 | 50 min | 03:43Z |  |
