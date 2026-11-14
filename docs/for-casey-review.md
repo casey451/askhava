@@ -2756,3 +2756,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## Business sign-up gets its code screens (D-3602, November 14)
 
 - The task that puts business sign-up online (T302) found that two screens were never planned: the one where the business types the code we send to the number on its license record, and the one where it types the code we email. The form also had no way to choose job texts or give a phone number for them. A new small task (T450) adds those screens and the choice (email stays the default; texts are only offered once business texting is on, with a phone box and the full consent wording before any code is sent). T302 then runs after it.
+
+## Three queued tasks fixed before they start; a runner slip closed (D-3618, D-3619, November 14)
+
+- A look ahead at the next tasks found three that could not finish as written. The phone-approval task (T396) now changes a function without breaking another task's test; the package-choice pages (T440) need to carry the chosen package through the two confirmation steps, but T440 had already started, so that fix waits until its worker reports it or the next plan change; and the business portal task (T300) can't yet fill the "Your numbers" panel or list a saved card, because nothing reads those numbers yet.
+- **What you'll see:** until a new small task (T451) adds those readers, the portal's "Your numbers" panel shows only fees, and the billing page shows no saved card. Nothing is wrong with the money; the numbers just aren't wired in yet.
+- **Runner slip:** one runner started the sign-up task (T302) using an old copy of the plan, before its new prerequisite (T450) was done. T302 gets one more try once T450 is in, and a queued runner fix (T445) makes the runner always use the latest plan before starting work.
