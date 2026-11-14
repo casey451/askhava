@@ -22,6 +22,9 @@
 //! pick of one stores nothing and replies with her quote-page link ([`PACKAGE_TEMPLATE`]); a
 //! per-visit price is priced on its stored visit schedule; this supersedes the NOTES.md T287 line's
 //! "a tiered quote, a per-visit period" have no fee.
+//! Never break (PICK-053, D-2332): a tier pick stores the package and its fee, a stale package
+//! (another name or price in that place) stores nothing, and the text reply keys its link token
+//! `IdSecret` v1; guarded by `tests/integration/tests/tier_and_visit_pick.rs`.
 
 use std::sync::OnceLock;
 

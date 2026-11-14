@@ -150,4 +150,3 @@
 - [-] (never 17) or at once on an emergency, the email copy for an untextable number, the 72-hour return and question, a waiting refund re-run and decided once, the retry after the close emailing once, the fraud-warning task: `tests/integration/tests/unreachable_steps.rs` (TD-JOB-14).
 - [-] (never 17) Never queue the missed-call text before its send time, never count `notice_attempted` before the text or email is queued, and never let a step act on an ended pick or a job that moved on except to finish a succeeded refund's decision on a Closed job.
 - [-] (never 18) never the ended quote: `tests/integration/tests/backup_choice.rs` (TD-PICK-32).
-- [FEE-031 FEE-053] (rules) FEE-031, FEE-053, D-1557: `run_receipt_notice` queues one `messaging.charge_receipt` task per pick to `notice_addresses(Money)` with the job number, fee and "Ask Hava introduction service, job <n>", only for a charge `payments::api::receipt_for` finds for that business;
