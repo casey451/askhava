@@ -23,11 +23,17 @@ export interface PageState {
   sql: string;
 }
 
+/**
+ * What a seed returns: the path that opens the state, or an absolute URL (on the keyed binary of
+ * tests/e2e/keyed.ts) or a path with the cookies `open` sets for its origin first (T452, D-3674).
+ */
+export type Seeded = string | { url: string; cookies: readonly { name: string; value: string }[] };
+
 /** One route's states and how to seed them. */
 export interface PageEntry {
   route: string;
-  /** Seeds `state` with fake data and returns the path that opens it. */
-  seed: (state: PageState) => string;
+  /** Seeds `state` with fake data and returns what opens it. */
+  seed: (state: PageState) => Seeded;
   states: readonly PageState[];
 }
 

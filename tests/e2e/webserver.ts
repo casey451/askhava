@@ -9,9 +9,17 @@
 // the Ci job creates the database and roles first), and (5) waits until the web binary answers on its
 // port. Both binaries get the per-run bearer secret from `controlSecret()` and one shared clock file,
 // so an advance made through the web binary also moves the worker's clock. The teardown sends SIGTERM
-// to all three and waits for them to exit. Fake data only: the secrets are random per run, kept in
+// to all four and waits for them to exit. Fake data only: the secrets are random per run, kept in
 // memory and in this process's environment, and never printed. A start-up failure names the process
 // and its exit code, never an environment value.
+//
+// The keyed binary (T452, D-3674): a second web binary from the same build on `keyedPort()`, no
+// worker of its own, with the suite's environment plus the Twilio Verify stand-in, a one-number
+// masked pool, its own ID secret and both vault keys, all fake and made per run, and no public base
+// URL (so it serves no webhook). The suite's own web binary and worker never see those values: their
+// environment is made before them, and the keyed values go into this process's environment under
+// `E2E_KEYED_*` names (which `appEnv` passes on but the app never reads) for `keyed.ts` in the test
+// workers, as `controlSecret()` does.
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -40,6 +48,34 @@ export function controlSecret(): string {
   return process.env[SECRET_KEY];
 }
 
+/** The keyed binary's port: the suite's web port plus 19 (D-3674). */
+export function keyedPort(): number {
+  return webPort() + 19;
+}
+
+/** The keyed binary's per-run fake ID secret and vault keys (`1:` and 32 random bytes in base64). */
+export interface KeyedSecrets {
+  idSecret: string;
+  vaultKey: string;
+  vaultIndexKey: string;
+}
+
+/**
+ * The run's keyed values, made by the first call (the setup, in the Playwright main process, before
+ * the workers start) and read from the environment the workers inherit, as `controlSecret()` is.
+ */
+export function keyedSecrets(): KeyedSecrets {
+  const key = (): string => `1:${randomBytes(32).toString("base64")}`;
+  process.env.E2E_KEYED_ID_SECRET ??= randomBytes(24).toString("hex");
+  process.env.E2E_KEYED_VAULT_KEY ??= key();
+  process.env.E2E_KEYED_VAULT_INDEX_KEY ??= key();
+  return {
+    idSecret: process.env.E2E_KEYED_ID_SECRET,
+    vaultKey: process.env.E2E_KEYED_VAULT_KEY,
+    vaultIndexKey: process.env.E2E_KEYED_VAULT_INDEX_KEY,
+  };
+}
+
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (value === undefined || value === "") {
@@ -66,6 +102,24 @@ function appEnv(scratch: string): NodeJS.ProcessEnv {
     // The license lists and the sign-up record reads come from the fake fixture directory (T385, D-2954).
     ASKHAVA_LICENSE_BASE_URL: `file://${join(REPO_ROOT, "tests", "fixtures", "license_source")}`,
     [SECRET_KEY]: controlSecret(),
+  };
+}
+
+/** The keyed binary's environment: the suite's `env` plus fake Verify, pool, ID secret and vault keys. */
+function keyedEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  const secrets = keyedSecrets();
+  return {
+    ...env,
+    PORT: String(keyedPort()),
+    ASKHAVA_TWILIO_ACCOUNT_SID: `AC${"0".repeat(32)}`,
+    ASKHAVA_TWILIO_AUTH_TOKEN: randomBytes(20).toString("hex"),
+    ASKHAVA_TWILIO_VERIFY_SERVICE_SID: `VA${"e".repeat(32)}`,
+    ASKHAVA_TWILIO_VERIFY_BASE_URL: `http://127.0.0.1:${String(STAND_IN_PORT)}/twilio`,
+    ASKHAVA_MASKED_POOL_SIZE: "1",
+    ASKHAVA_MASKED_NUMBERS: "+15005550100",
+    ASKHAVA_ID_SECRET: secrets.idSecret,
+    VAULT_KEY: secrets.vaultKey,
+    VAULT_INDEX_KEY: secrets.vaultIndexKey,
   };
 }
 
@@ -111,7 +165,7 @@ async function waitForPort(port: number, deadline: number): Promise<void> {
 
 /** Fails at once if something already listens on a port, so a stale server is not mistaken for ours. */
 async function requirePortsFree(): Promise<void> {
-  for (const port of [STAND_IN_PORT, webPort()]) {
+  for (const port of [STAND_IN_PORT, webPort(), keyedPort()]) {
     if (await canConnect(port)) throw new Error(`port ${String(port)} is already in use`);
   }
 }
@@ -147,8 +201,8 @@ export default async function setup(): Promise<() => Promise<void>> {
     const build = { ...env, SQLX_OFFLINE: "true" };
     run("cargo", ["build", "-p", "askhava-server", "--bins", "--features", "askhava-core/test-control"], build);
     run(join(REPO_ROOT, "target", "debug", "server"), ["migrate"], env);
-    const start = (name: string, command: string, args: string[]): Promise<never> => {
-      const child = spawn(command, args, { cwd: REPO_ROOT, env, stdio: "inherit" });
+    const start = (name: string, command: string, args: string[], childEnv = env): Promise<never> => {
+      const child = spawn(command, args, { cwd: REPO_ROOT, env: childEnv, stdio: "inherit" });
       children.push(child);
       return exitedEarly(name, child);
     };
@@ -156,10 +210,12 @@ export default async function setup(): Promise<() => Promise<void>> {
       start("stand-ins", "python3", ["-m", "stand_ins.server", "--port", String(STAND_IN_PORT)]),
       start("worker", join(REPO_ROOT, "target", "debug", "worker"), []),
       start("web", join(REPO_ROOT, "target", "debug", "server"), []),
+      start("keyed web", join(REPO_ROOT, "target", "debug", "server"), [], keyedEnv(env)),
     ];
     const deadline = Date.now() + START_TIMEOUT_MS;
+    const ports = [STAND_IN_PORT, webPort(), keyedPort()];
     await Promise.race([
-      Promise.all([waitForPort(STAND_IN_PORT, deadline), waitForPort(webPort(), deadline)]),
+      Promise.all(ports.map((port) => waitForPort(port, deadline))),
       ...crashes,
     ]);
   } catch (error) {

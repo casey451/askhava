@@ -57,6 +57,7 @@ mod notify;
 mod photos;
 mod quote_card;
 mod quote_facts;
+mod quote_rules;
 mod rules;
 mod service;
 mod update_texts;
