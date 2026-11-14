@@ -1,7 +1,7 @@
 //! TD-SEC-40 (SEC-004, SEC-014, SEC-025, SEC-026, SEC-048; T280, D-1844, D-2206, D-3562): the
 //! business sign-in pages served by the assembled router against PostgreSQL. No code
 //! configuration refuses to start; a link alone never signs in, a right code does; T272's link
-//! and try caps hold; the link email is queued once and its stored row never holds the link;
+//! and try caps hold; the link email goes once (its stored row: `messaging`'s `signin_mail` tests);
 //! T089's limits refuse before any email or Verify call; the code goes to the member's own
 //! texting line, else the member's own address, never to another member's line or the main
 //! phone, and to no one for a removed member. Fake addresses (`example`) and 555-01xx numbers.
@@ -319,22 +319,7 @@ async fn td_sec_40_a_link_signs_in_only_with_the_right_code(pool: PgPool) {
         "a GET only shows the button"
     );
     assert!(!opened.signed_in(), "opening the link signs no one in");
-    let token = link.trim_start_matches("/b/sign-in/");
-    let stored: i64 = sqlx::query_scalar(
-        "SELECT count(*) FROM messaging.email_outbox WHERE template_id = 'business_signin_link'",
-    )
-    .fetch_one(&pool)
-    .await
-    .expect("count");
-    assert_eq!(stored, 1, "the sign-in email queues once");
-    let leaked: i64 = sqlx::query_scalar(
-        "SELECT count(*) FROM messaging.email_outbox WHERE strpos(concat(subject, html, plain), $1) > 0",
-    )
-    .bind(token)
-    .fetch_one(&pool)
-    .await
-    .expect("count");
-    assert_eq!(leaked, 0, "the outbox never holds the link");
+    assert_eq!(w.mail.sent().len(), 1, "the sign-in email goes once");
     let mut browser = code_step(&w, &link, 3).await;
     let (_, page) = browser.press(&w.app, &link, "&code=000000").await;
     assert!(page.contains("If the code doesn't come") && !browser.signed_in());

@@ -139,3 +139,62 @@ impl<E: EmailAdapter + Send + Sync> EmailAdapter for WithLink<'_, E> {
         self.inner.remove_suppression(idempotency, address).await
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use askhava_core::api::MIGRATOR;
+    use sqlx::PgPool;
+
+    use super::*;
+
+    /// A provider that takes nothing, so the row stays unsent with its stored copy.
+    struct Refuses;
+
+    impl EmailAdapter for Refuses {
+        async fn send_email(
+            &self,
+            _: &IdempotencyKey,
+            _: &Email<'_>,
+        ) -> Result<String, AdapterError> {
+            Err(AdapterError::NotSent)
+        }
+        async fn remove_suppression(
+            &self,
+            _: &IdempotencyKey,
+            _: &str,
+        ) -> Result<(), AdapterError> {
+            Ok(())
+        }
+    }
+
+    /// TD-SEC-40 (SEC-026, SEC-018): a link queues one row, and the row never holds the link.
+    #[sqlx::test(migrator = "MIGRATOR")]
+    async fn td_sec_40_one_row_per_link_and_never_the_link(pool: PgPool) {
+        let secret = SecretString::from("fake-id-secret-for-tests".to_owned());
+        let postal = ("PO Box 1234, Faketown, AZ 00000", MailboxKind::PoBox);
+        let limit = DailyLimit::new(100, 90).expect("limit");
+        let sender = SignInLinkSender::new(secret, Refuses, postal, limit).expect("sender");
+        let token = "ab".repeat(32);
+        let link = SecretString::from(format!("https://example.test/b/sign-in/{token}"));
+        let address = SecretString::from("crew@x.example".to_owned());
+        let mut db = pool.acquire().await.expect("db");
+        for _ in 0..2 {
+            let to = (Uuid::from_u128(7), &address);
+            let sent = sender.send(&mut db, to, &link, Timestamp::now()).await;
+            assert!(sent.is_err(), "the provider refused");
+        }
+        let rows = sqlx::query_scalar!(
+            "SELECT concat(subject, html, plain) AS \"body!\" FROM messaging.email_outbox \
+             WHERE template_id = $1",
+            SIGNIN_LINK_TEMPLATE
+        )
+        .fetch_all(&mut *db)
+        .await
+        .expect("rows");
+        assert_eq!(rows.len(), 1, "one row per link");
+        assert!(
+            rows.iter()
+                .all(|b| b.contains(LINK_MARK) && !b.contains(&token))
+        );
+    }
+}
