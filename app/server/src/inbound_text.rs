@@ -48,7 +48,10 @@
 //! audit rows only, `on_inbound_text` is retried only when it listed nothing (an `Open` or
 //! `Resubscribed` repeat writes nothing), the HELP reply, the business auto reply, the paused
 //! emergency claim and the safety call are keyed per inbox row, and SEC-014's count and
-//! `receive_reply` share one savepoint, so a failed `receive_reply` keeps no count.
+//! `receive_reply` share one savepoint, so a failed `receive_reply` keeps no count. A 911-list
+//! first text that opened a new request is counted in SEC-015's all-numbers limit only after the
+//! delivery committed, best-effort and never refused ([`count_emergency`], D-3613); a retry's
+//! run ([`rerun`]) does not count it.
 
 use std::sync::Arc;
 
@@ -62,9 +65,9 @@ use askhava_intake::api::rules::{
     Check, Inbound, Settings as IntakeSettings, check, safety_call_trigger, wanted_language,
 };
 use askhava_intake::api::{
-    Admission, IntakeError, LimitError, SafetyCallAsk, TextIn, admit_new_request,
-    enqueue_safety_call, list_ask, on_opt_out, open_request_jobs, pause_on_repeat_cancel,
-    receive_reply, restart_after_start,
+    Admission, Handled, IntakeError, LimitError, Reply, SafetyCallAsk, TextIn, admit_new_request,
+    count_emergency_request, enqueue_safety_call, list_ask, on_opt_out, open_request_jobs,
+    pause_on_repeat_cancel, receive_reply, restart_after_start,
 };
 use askhava_messaging::api::{
     APP_OPT_OUT_WORDS, Detected, EmergencyFacts, FollowUp, HelpSettings, InboundText, InboxError,
@@ -227,6 +230,16 @@ enum Halt {
 
 type Step<T> = Result<T, Halt>;
 
+/// What a handled text leaves for after its delivery committed (SEC-015, D-3613).
+#[derive(Clone, Copy)]
+enum After {
+    /// Nothing more.
+    Nothing,
+    /// A 911-list first text opened a new request with no open request before (not a START that
+    /// resubscribed her): [`count_emergency`] counts it.
+    CountEmergency,
+}
+
 async fn inbound(
     State(h): State<Arc<Webhooks>>,
     uri: Uri,
@@ -311,15 +324,44 @@ async fn in_transaction(h: &Webhooks, hook: &VerifiedWebhook, kind: Kind) -> Ste
     let done = match kind {
         Kind::Text => text(h, &mut tx, hook, now).await,
         Kind::Status => match receive_status(&mut tx, hook, now).await {
-            Ok(_) => Ok(()),
+            Ok(_) => Ok(After::Nothing),
             Err(e) => Err(inbox_halt(e)),
         },
     };
     if matches!(done, Err(Halt::Database)) {
-        return done;
+        return done.map(|_| ());
     }
     tx.commit().await.map_err(|_| Halt::Database)?;
-    done
+    drop(conn);
+    if matches!(done, Ok(After::CountEmergency)) {
+        count_emergency(h, now).await;
+    }
+    done.map(|_| ())
+}
+
+/// The most [`count_emergency`] may add to an emergency delivery's answer, well inside the
+/// 10-second floor of `ASKHAVA_REQUEST_TIMEOUT_SECS`, so a flood's pool or `REQUESTS_ALL` row
+/// wait never turns the 911 text's 200 into a timeout (INT-002, D-3615).
+const EMERGENCY_COUNT_LIMIT: std::time::Duration = std::time::Duration::from_secs(2);
+
+/// SEC-015, INT-002, INT-004, D-3613, D-3615: counts a 911-list first text's new request in the
+/// all-numbers limit after its delivery committed, on its own pool connection, through
+/// `intake::api::count_emergency_request`, which raises the High alert past the limit and never
+/// refuses, within [`EMERGENCY_COUNT_LIMIT`]. A counter or alert error, or the limit passing
+/// (`Timeout`, the count dropped), is logged (its variant only: no phone, no body) and swallowed,
+/// so the 911 text, the request and the route's answer are as they were.
+async fn count_emergency(h: &Webhooks, now: Timestamp) {
+    let counted =
+        tokio::time::timeout(EMERGENCY_COUNT_LIMIT, count_emergency_request(&h.pool, now));
+    let error = match counted.await {
+        Ok(Ok(())) => return,
+        Ok(Err(e)) => variant(&e),
+        Err(_) => "Timeout".to_owned(),
+    };
+    tracing::warn!(
+        error,
+        "emergency request count failed; the emergency was handled"
+    );
 }
 
 /// The inbound-text steps, in order (TXT-012, PRIV-026, CON-008, CON-018, D-999). A homeowner's
@@ -330,7 +372,7 @@ async fn text(
     db: &mut PgConnection,
     hook: &VerifiedWebhook,
     now: Timestamp,
-) -> Step<()> {
+) -> Step<After> {
     let inbox_id = receive_inbound(db, hook, now)
         .await
         .map_err(inbox_halt)?
@@ -470,7 +512,7 @@ pub async fn rerun(
 ) -> Rerun {
     match handle(ctx, db, fields, (inbox_id, now), reach).await {
         Err(Halt::Ends(STOPPED)) => Rerun::Stopped,
-        Ok(()) | Err(Halt::Ends(_)) => Rerun::Done,
+        Ok(_) | Err(Halt::Ends(_)) => Rerun::Done,
         Err(Halt::Failed(step, error)) => Rerun::Failed(step, error, true),
         Err(Halt::Settled(step, error)) => Rerun::Failed(step, error, false),
         Err(Halt::Database) => Rerun::Database,
@@ -509,7 +551,7 @@ async fn handle(
     fields: &Fields<'_>,
     (inbox_id, now): (Uuid, Timestamp),
     reach: Reach,
-) -> Step<()> {
+) -> Step<After> {
     let (from, to) = match (fields.from, fields.to) {
         (Some(from), Some(to)) => (from, to),
         _ => return Err(Halt::Ends("no_number")),
@@ -533,9 +575,11 @@ async fn handle(
     }
     if relation == Relation::Business {
         if let Some(pin) = link_pin(words) {
-            return link(h, db, (contact, from), pin, now).await;
+            return link(h, db, (contact, from), pin, now)
+                .await
+                .map(|()| After::Nothing);
         }
-        return auto_reply(h, db, &msg).await;
+        return auto_reply(h, db, &msg).await.map(|()| After::Nothing);
     }
     paused_emergency(h, db, &msg, (to, now), false).await?;
     if let Some(error) = unread {
@@ -623,8 +667,10 @@ async fn owner_paused(db: &mut PgConnection) -> Step<bool> {
 /// With an open request, a LIST text gets its quoted businesses' public names read now
 /// ([`list_names`]); with none, SEC-014's new-request limit is counted first ([`admitted`]),
 /// except for a START that just took her number off the opt-out list (`resubscribed`, CON-015)
-/// and a 911-list text, which is never counted or refused, so the INT-002 safety text always
-/// runs (INT-002, INT-003, D-2206, D-3083, D-3087). The count and `receive_reply` share one
+/// and a 911-list text, which is never refused or counted here, so the INT-002 safety text always
+/// runs; a 911-list text that opened her first request is counted toward the all-numbers limit
+/// only after the delivery commits ([`count_emergency`], SEC-015, D-3613) (INT-002, INT-003,
+/// D-2206, D-3083, D-3087). The count and `receive_reply` share one
 /// savepoint, rolled back on a module error, so a text that fails here and is retried is counted
 /// once (SEC-014, D-2307).
 async fn intake(
@@ -632,7 +678,7 @@ async fn intake(
     db: &mut PgConnection,
     text: (&InboundText<'_>, &Read),
     at: (bool, Timestamp),
-) -> Step<()> {
+) -> Step<After> {
     let mut savepoint = db.begin().await.map_err(|_| Halt::Database)?;
     let done = intake_steps(h, &mut savepoint, text, at).await;
     match done {
@@ -640,7 +686,7 @@ async fn intake(
             savepoint.rollback().await.map_err(|_| Halt::Database)?
         }
         Err(Halt::Database) => {}
-        Ok(()) | Err(Halt::Ends(_)) => savepoint.commit().await.map_err(|_| Halt::Database)?,
+        Ok(_) | Err(Halt::Ends(_)) => savepoint.commit().await.map_err(|_| Halt::Database)?,
     }
     done
 }
@@ -649,12 +695,14 @@ async fn intake(
 /// A provider START (`OptOutType=START`) with an open request restarts it with the consent text
 /// and ends (CON-001, CON-015): decided from the keyword, not only from `resubscribed`, so a
 /// retry of a START whose lift already committed is still never heard as an answer (D-3480).
+/// A 911-list text with no open request before, not a resubscribing START, that opened one is
+/// [`After::CountEmergency`] (SEC-015, D-3613).
 async fn intake_steps(
     h: &Ctx<'_>,
     db: &mut PgConnection,
     (msg, read): (&InboundText<'_>, &Read),
     (resubscribed, now): (bool, Timestamp),
-) -> Step<()> {
+) -> Step<After> {
     let inbound = Inbound {
         words: msg.text,
         opt_out: read.flags.opt_out,
@@ -674,11 +722,11 @@ async fn intake_steps(
             return Err(Halt::Ends("restarted"));
         }
     }
-    let names = match open_request_jobs(db, msg.contact)
+    let open = open_request_jobs(db, msg.contact)
         .await
-        .map_err(intake_halt)?
-    {
-        Some(jobs) if list_ask(msg.text).is_some() => list_names(db, &jobs).await?,
+        .map_err(intake_halt)?;
+    let names = match &open {
+        Some(jobs) if list_ask(msg.text).is_some() => list_names(db, jobs).await?,
         Some(_) => Vec::new(),
         None if resubscribed || msg.emergency => Vec::new(),
         None => {
@@ -686,10 +734,26 @@ async fn intake_steps(
             Vec::new()
         }
     };
-    receive_reply(db, h.id_secret, &reply, (h.intake, names.as_slice()))
+    let replied = receive_reply(db, h.id_secret, &reply, (h.intake, names.as_slice()))
         .await
-        .map(|_| ())
-        .map_err(intake_halt)
+        .map_err(intake_halt)?;
+    let first = open.is_none() && msg.emergency && !resubscribed;
+    Ok(if first && opened(&replied) {
+        After::CountEmergency
+    } else {
+        After::Nothing
+    })
+}
+
+/// Whether `receive_reply` handled the text in a request (D-3613).
+fn opened(replied: &Reply) -> bool {
+    matches!(
+        replied,
+        Reply::Handled(Handled {
+            conversation: Some(_),
+            ..
+        })
+    )
 }
 
 /// SEC-014, SEC-015, D-1951, D-2206, D-3083: the new-request limit for a homeowner with no open
