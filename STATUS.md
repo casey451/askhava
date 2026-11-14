@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-14T08:54:35Z by runner d6d1d54ea21a (actions).
+Updated 2026-11-14T08:59:43Z by runner d6d1d54ea21a (actions).
 
 **Building: T398 in progress since 08:29Z; 317 of 436 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 317 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T398 claimed 08:29Z, lease until 11:29Z; lane 3: T300 claimed 08:54Z, lease until 11:54Z; lane 4: T359 claimed 08:06Z, lease until 11:06Z; lane 5: T437 claimed 08:49Z, lease until 11:49Z
+- **Lane:** lane 1: T398 claimed 08:29Z, lease until 11:29Z; lane 4: T359 claimed 08:06Z, lease until 11:06Z; lane 5: T437 claimed 08:49Z, lease until 11:49Z
 - **Week:** 39% used, 112.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:50Z, 3 min before this update
+- **Last run:** 08:54Z, 4 min before this update
 - **Keeper:** last ran 08:41Z, next wake 11:09Z
 
 ## Needs attention
+- BLOCKED T300: plan gap reported: PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID, ASKHAVA_TWILIO_AUTH_TOKEN, ASKHAVA_TWILIO_VERIFY_SERVICE_SID, VAULT_KEY or VAULT_INDEX_KEY, so business_signin.rs:129 uses NoVerify (every code send/check fails) and lib.rs:321 vault_from gives no vault; the browser half of TD-BIZ-42 cannot pass. Also tests/a11y/fixtures.ts:126-130 (owner-only since T267) opens page states with a bare page.goto and a seed returns only a path, so no signed-in /b page state can be axe-checked. Reviewer confirmed all three claims. Smallest fix; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T300 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 39 problem(s) on tasks still to run (+100 on DONE tasks); first: T398: stored context_pct 19% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T300 | server and portals: the business portal is served behind the | BLOCKED | 1 | 5 min | 08:59Z | PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID |
 | T280 | server and messaging (harness): the business sign-in pages a | done | 4 | 91 min | 08:04Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T396 | businesses and messaging (harness): a phone a member links o | done | 2 | 56 min | 07:52Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T359 | payments: a successful charge writes its own charge ledger e | BLOCKED | 1 | 39 min | 07:43Z | PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, an |
@@ -118,7 +120,6 @@ Updated 2026-11-14T08:54:35Z by runner d6d1d54ea21a (actions).
 - 11:16Z Harness: an API error session death does not use an attempt (D-3443) (#664)
 - 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
 - 09:02Z Plan: T255 plan gap 2, the address is written onto the homeowner's own contact (D-3431) (#660)
-- 08:55Z Plan: T428 plan gap, new prep task owns the six pinned tests (D-3430) (#659)
 
 ## Progress (requirements verified)
 
@@ -167,9 +168,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T398 (lease until 2026-11-14T11:29:38Z)
-- lane 3: T300 (lease until 2026-11-14T11:54:21Z)
 - lane 4: T359 (lease until 2026-11-14T11:06:27Z)
 - lane 5: T437 (lease until 2026-11-14T11:49:58Z)
 
 ## Last usage reading
-- {"task": "T280", "at": "2026-11-14T08:04:15Z", "cache_read_input_tokens": 4262742, "output_tokens": 34274, "cache_creation_input_tokens": 158940, "input_tokens": 161}
+- {"task": "T300", "at": "2026-11-14T08:59:42Z", "cache_read_input_tokens": 4932761, "input_tokens": 118, "output_tokens": 25719, "cache_creation_input_tokens": 153951}

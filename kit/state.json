@@ -32570,8 +32570,8 @@
     "T348",
     "T401"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "business-portal-served",
    "type": "build",
    "stage": "4",
@@ -32583,6 +32583,33 @@
     3666,
     3667,
     3668
+   ],
+   "reason": "plan gap reported: PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID, ASKHAVA_TWILIO_AUTH_TOKEN, ASKHAVA_TWILIO_VERIFY_SERVICE_SID, VAULT_KEY or VAULT_INDEX_KEY, so business_signin.rs:129 uses NoVerify (every code send/check fails) and lib.rs:321 vault_from gives no vault; the browser half of TD-BIZ-42 cannot pass. Also tests/a11y/fixtures.ts:126-130 (owner-only since T267) opens page states with a bare page.goto and a seed returns only a path, so no signed-in /b page state can be axe-checked. Reviewer confirmed all three claims. Smallest fix; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T300 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID, ASKHAVA_TWILIO_AUTH_TOKEN, ASKHAVA_TWILIO_VERIFY_SERVICE_SID, VAULT_KEY or VAULT_INDEX_KEY, so business_signin.rs:129 uses NoVerify (every code send/check fails) and lib.rs:321 vault_from gives no vault; the browser half of TD-BIZ-42 cannot pass. Also tests/a11y/fixtures.ts:126-130 (owner-only since T267) opens page states with a bare page.goto and a seed returns only a path, so no signed-in /b page state can be axe-checked. Reviewer confirmed all three claims. Smallest fix: a harness task before T300 adding the five fake settings to appEnv in webserver.ts, a way to seed a sealed fake vault contact, and a way for a page-state seed to sign the browser in. Router half (business_portal.rs, business_portal_route.rs) is doable meanwhile.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 92,
+     "head_sha": "d6d1d54ea21a18537cab068466554864dcda58a6",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-14T08:54:21Z",
+     "ended_at": "2026-11-14T08:59:42Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 4746906,
+       "turns": 50
+      },
+      "reviewer": {
+       "tokens": 365643,
+       "turns": 12
+      }
+     }
+    }
    ]
   },
   {
@@ -52761,12 +52788,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T280",
-   "at": "2026-11-14T08:04:15Z",
-   "cache_read_input_tokens": 4262742,
-   "output_tokens": 34274,
-   "cache_creation_input_tokens": 158940,
-   "input_tokens": 161
+   "task": "T300",
+   "at": "2026-11-14T08:59:42Z",
+   "cache_read_input_tokens": 4932761,
+   "input_tokens": 118,
+   "output_tokens": 25719,
+   "cache_creation_input_tokens": 153951
   },
   "source": "session_reading 2026-11-14T08:41:06Z (week)",
   "by_task": {
@@ -55936,17 +55963,27 @@
    },
    "T300": {
     "estimated_bytes": 443221,
-    "estimated_tokens": 1354731
+    "estimated_tokens": 1354731,
+    "usage_counting": "message_id",
+    "cache_read_input_tokens": 4932761,
+    "input_tokens": 118,
+    "output_tokens": 25719,
+    "cache_creation_input_tokens": 153951,
+    "worker_tokens": 4746906,
+    "worker_turns": 50,
+    "reviewer_tokens": 365643,
+    "reviewer_turns": 12,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-14T06:14:13Z",
-    "tokens": 2956506
+    "tokens": 3629570
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 108338250
+    "tokens": 109011314
    }
   },
   "session_reading": {
@@ -55957,7 +55994,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T08:54:35Z",
+ "updated_at": "2026-11-14T08:59:43Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
