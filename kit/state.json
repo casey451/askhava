@@ -55641,12 +55641,11 @@
      }
     }
    ],
-   "reviewed_sha": "87c063bb017bc5c4157c5b6742eb33eed3fdf505",
+   "reviewed_sha": "4bc09743fb834ea98a0b33d84f572d40ac2206c9",
    "review_lease": {
     "task": "T467",
-    "session": "actions-43611158067",
-    "expires": "2026-11-14T18:44:37Z",
-    "lane": "2"
+    "session": "actions-43633504148",
+    "expires": "2026-11-14T22:47:47Z"
    },
    "branch": "claude/task/T467-fee-terms-changed-end",
    "auto_merge": {
@@ -55654,7 +55653,6 @@
     "why": "auto-merge on #792 (gh pr merge)",
     "head": "87c063bb017bc5c4157c5b6742eb33eed3fdf505"
    },
-   "merge_turn_since": "2026-11-14T18:28:37Z",
    "runner_closed_prs": [
     792
    ],
@@ -55679,6 +55677,16 @@
     }
    ],
    "last_failure": "merging main into the reviewed head conflicts in app/picks/CLAUDE.md; a resync merges it in on this attempt (D-891)",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "4a551bf3b1ce3ac7cf00229569c6cbaae825d9ab",
+     "to": "4bc09743fb834ea98a0b33d84f572d40ac2206c9",
+     "main": "f0f2aa6b7eb98a9435a87c77a58a89d6de0815fe",
+     "how": "hand-in",
+     "at": "2026-11-14T20:15:26Z"
+    }
+   ],
    "update_waiting_since": null,
    "update_push_failures": null
   },
@@ -59330,7 +59338,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T20:10:48Z",
+ "updated_at": "2026-11-14T20:15:26Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -59428,7 +59436,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f0f2aa6b7eb98a9435a87c77a58a89d6de0815fe",
+ "runner_sha": "f5b1703d99ee0ed2dabffe02582bc3b6dce5de8e",
  "starter": "actions",
  "smoke_runs": [
   {
