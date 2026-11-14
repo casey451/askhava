@@ -24,7 +24,9 @@
 //! then, for a number that is not a linked business phone, `intake::api::receive_reply`
 //! (TXT-031, INT-019, D-999). A business phone's text goes to no homeowner path: its opt-out also
 //! calls `businesses::api::phone_stopped`, and any other text for which
-//! `businesses::api::auto_reply_due` holds queues `business_auto_reply` (BIZ-017, BIZ-032, D-1715).
+//! `businesses::api::auto_reply_due` holds queues `business_auto_reply` (BIZ-017, BIZ-032, D-1715),
+//! except a text that is exactly `LINK` and 4 digits (`calls::api::link_pin`), which goes only to
+//! `calls::api::link_reply` and gets no reply whether it linked or not (CALL-011, D-3079, T391).
 //! A first text whose new vault contact loses the unique phone index to a concurrent first text
 //! from the same phone continues with the winner's contact; if none is found the whole delivery
 //! rolls back, inbox row included, so Twilio sends it again (PRIV-001, TXT-012, D-1751). A status
@@ -54,6 +56,7 @@ use askhava_adapters::api::{Delivery, VerifiedWebhook, WebhookVendor, refuse, ve
 use askhava_businesses::api::{
     AUTO_REPLY_TEMPLATE, BusinessesError, ConsentError, auto_reply_due, phone_stopped, public_names,
 };
+use askhava_calls::api::{CallsError, link_pin, link_reply};
 use askhava_core::api::{Clock, Environment, NewTask, enqueue as enqueue_task};
 use askhava_intake::api::rules::{
     Check, Inbound, Settings as IntakeSettings, check, safety_call_trigger, wanted_language,
@@ -529,6 +532,9 @@ async fn handle(
         return Err(Halt::Ends(STOPPED));
     }
     if relation == Relation::Business {
+        if let Some(pin) = link_pin(words) {
+            return link(h, db, (contact, from), pin, now).await;
+        }
         return auto_reply(h, db, &msg).await;
     }
     paused_emergency(h, db, &msg, (to, now), false).await?;
@@ -933,6 +939,23 @@ async fn auto_reply(h: &Ctx<'_>, db: &mut PgConnection, msg: &InboundText<'_>) -
     Err(Halt::Ends("business_auto_reply"))
 }
 
+/// CALL-011, CALL-012, CALL-025, D-3079: a business phone's "LINK <PIN>" text, handed to
+/// `calls::api::link_reply` in the delivery's transaction. Linked or refused, it ends the same way
+/// with no auto-reply and no text answer, so the reply tells the sender nothing.
+async fn link(
+    h: &Ctx<'_>,
+    db: &mut PgConnection,
+    (business, from): (Uuid, &str),
+    pin: &str,
+    now: Timestamp,
+) -> Step<()> {
+    let from = SecretString::from(from.to_owned());
+    link_reply(db, h.vault, (business, &from), pin, now)
+        .await
+        .map_err(calls_halt)?;
+    Err(Halt::Ends("link"))
+}
+
 /// The vault contact of homeowner phone `from`, stored (phone only) on her first text (PRIV-001).
 /// Two first texts from one new phone race here (D-1751): the loser's `store_contact` answers
 /// `PhoneTaken` after its savepoint rolled back, so the winner's contact is looked up again in
@@ -1006,6 +1029,15 @@ fn quotes_halt(e: QuotesError) -> Halt {
         Halt::Database
     } else {
         Halt::Failed("quotes", variant(&e))
+    }
+}
+
+/// A database or audit-row failure in the LINK step is a database error (500, Twilio resends).
+fn calls_halt(e: CallsError) -> Halt {
+    if matches!(e, CallsError::Database | CallsError::Ops) {
+        Halt::Database
+    } else {
+        Halt::Failed("link", variant(&e))
     }
 }
 

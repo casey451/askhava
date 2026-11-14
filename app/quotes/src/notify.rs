@@ -449,6 +449,40 @@ pub async fn list_texts(
     numbered_texts(reader, job, &lines)
 }
 
+/// TXT-031, PICK-035, PICK-046, D-3579: the job's pickable quotes as `(number, line)` pairs in
+/// arrival order, the number the quote-page place "<n> YES" picks (as in [`list_texts`]) and the
+/// line the TXT-031 line alone in `language`, with no heading, "2 YES" line or footer; an
+/// unavailable or withdrawn quote gives no pair. `intake`'s PICK-046 text keeps the numbers
+/// `picks::api::lapse_plan` leaves her, so the lapsed business's own line never shows.
+///
+/// # Errors
+///
+/// [`QuotesError::Database`], or [`QuotesError::Business`] when a pickable quote's business has no
+/// name in `names`.
+pub async fn list_lines(
+    db: &mut PgConnection,
+    job_id: Uuid,
+    language: Language,
+    names: &[(Uuid, String)],
+) -> Result<Vec<(u32, String)>, QuotesError> {
+    let rows = models::list_rows(db, job_id).await?;
+    let mut lines = Vec::new();
+    for (i, row) in rows.into_iter().enumerate() {
+        let ListRow::Pickable(p) = row else {
+            continue;
+        };
+        let name = names.iter().find(|(id, _)| *id == p.business);
+        let item = Listed {
+            name: name.ok_or(QuotesError::Business)?.1.clone(),
+            price: p.price,
+            earliest_visit: p.earliest_visit,
+        };
+        let number = u32::try_from(i + 1).map_err(|_| QuotesError::Database)?;
+        lines.push((number, list_line(i + 1, &item, language == Language::Es)));
+    }
+    Ok(lines)
+}
+
 /// TXT-031, D-239: with more than one job in Quotes ready the homeowner is first asked which job,
 /// with one of her request numbers (`example`) as the example (D-1192).
 ///
