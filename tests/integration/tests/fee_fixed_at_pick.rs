@@ -127,6 +127,7 @@ fn succeeded(cents: i64) -> PaymentIntent {
             pick_id: "fake".to_owned(),
         },
         livemode: Some(false),
+        latest_charge: Some("ch_FakeT287".to_owned()),
     }
 }
 

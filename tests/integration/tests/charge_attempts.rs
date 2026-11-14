@@ -76,6 +76,7 @@ fn intent(status: &str) -> Answer {
             pick_id: "fake".to_owned(),
         },
         livemode: Some(false),
+        latest_charge: (status == "succeeded").then(|| "ch_FakeT062".to_owned()),
     })
 }
 
