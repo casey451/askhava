@@ -1,0 +1,47 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT c.license_number, c.checked_at AS \"checked_at!: jiff_sqlx::Timestamp\",\n                  (SELECT EXTRACT(YEAR FROM MIN(r.issued_on))::int2 FROM licensing.agency_record r\n                   WHERE r.license_number = c.license_number) AS \"since_year\"\n           FROM licensing.license_check c WHERE c.business_id = $1 AND c.status = 'active'\n           ORDER BY c.checked_at DESC, c.id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "license_number",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.license_check",
+            "name": "license_number"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "checked_at!: jiff_sqlx::Timestamp",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "licensing.license_check",
+            "name": "checked_at"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "since_year",
+        "type_info": "Int2",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "21c5b16eee3f2eda4098f149cb2b4b5ba73d5f9e8b418991009d396df9117692"
+}

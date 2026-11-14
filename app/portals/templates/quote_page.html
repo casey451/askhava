@@ -11,7 +11,11 @@
     paid or free, the quote she accepted shows above the list with the contact card, no reward
     (PICK-042, PICK-054, T388). A tiers quote's Pick form offers one radio per package, none
     preselected, with the error after no package or a stale one: "Error: " in the title and a
-    focused summary first in main linking to the first package (PICK-053, A11Y-030, D-3629). -#}
+    focused summary first in main linking to the first package (PICK-053, A11Y-030, D-3629). A
+    quote with stored facts shows its card's lines in place of the plain lines: name, license
+    lines, Google and Yelp as plain links (no stars, counts or excerpts), the "check it yourself"
+    line, PICK-040 facts and the business's words; lang="es" on a Spanish card (PICK-041,
+    BIZ-052, A11Y-004, T393). -#}
 {% block title %}{% if self.choose_error().is_some() %}Error: {% endif %}Your quotes for request {{ request }}{% endblock %}
 {% block main %}
 {% if let Some(n) = self.choose_error() %}<div id="tier-summary" role="alert" tabindex="-1" autofocus>
@@ -43,7 +47,7 @@
 <ol id="quotes" data-live="{{ live }}">
 {% for q in quotes %}
 <li id="quote-{{ q.number }}" data-number="{{ q.number }}" data-available="{{ !q.quote.unavailable }}" data-pickable="{{ pick_open }}" data-updated="{{ q.quote.updated_stamp() }}">
-<article aria-labelledby="quote-{{ q.number }}-title">
+<article aria-labelledby="quote-{{ q.number }}-title"{% if self.spanish() && self.card(q.number).is_some() %} lang="es"{% endif %}>
 {% if q.quote.withdrawn %}
 <h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }}</h2>
 <p>Withdrawn by the business.</p>
@@ -52,13 +56,16 @@
 <p>No longer available, so it can't be picked.</p>
 {% else %}
 <h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }}</h2>
-{% if let Some(updated) = q.quote.updated_line() %}
+{% if let Some(lines) = self.card(q.number) %}<ul class="card-lines">
+{% for line in lines %}<li>{% if let Some(href) = line.link %}<a href="{{ href }}">{{ line.text }}</a>{% else %}{{ line.text }}{% endif %}</li>
+{% endfor %}</ul>
+{% else %}{% if let Some(updated) = q.quote.updated_line() %}
 <p>{{ updated }}</p>
 {% endif %}
 <p>{{ askhava_core::api::brand().display_name() }} doesn't rank businesses; check it yourself.</p>
 <p>In their words:</p>
 <blockquote><p>{{ q.quote.original }}</p></blockquote>
-{% if pick_open %}
+{% endif %}{% if pick_open %}
 <form method="post" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="quote" value="{{ q.number }}">

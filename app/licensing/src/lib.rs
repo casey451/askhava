@@ -35,6 +35,7 @@
 //! Other crates reach it only through [`api`].
 
 pub mod api;
+mod card_facts;
 mod class_changes;
 mod class_map;
 mod daily_lists;
