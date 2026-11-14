@@ -55,6 +55,7 @@
 //! runs a capped batch of throttled lookups for the [`ActiveLicenses`] the composition gives;
 //! [`schedule_daily_lists`] seeds it, [`DailyListSettings`] holds its settings.
 
+pub use crate::card_facts::{CardFacts, CardFactsError, card_facts};
 pub use crate::class_changes::{
     ClassChange, RocList, bound_businesses, class_changes, latest_check_active, roc_lists,
 };

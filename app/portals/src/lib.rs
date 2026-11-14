@@ -54,6 +54,7 @@ mod notice_settings;
 mod owner_auth;
 mod photo_upload;
 mod pick_flow;
+mod quote_cards;
 mod quote_page;
 mod receipts_page;
 mod security;

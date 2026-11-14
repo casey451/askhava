@@ -21,6 +21,11 @@
 //! from `quotes::api::quoted_prices` and carried on [`ShownPage`] (not on [`PageView`]), each
 //! posting its place, price and name for the pick flow to check; `?choose=<n>` (the pick flow's
 //! answer to no package or a stale one) adds the error to card `n`'s choices.
+//!
+//! T393 (PICK-041, IC-71, D-3642 to D-3645): each shown quote with stored facts carries its card
+//! from `quote_cards` (name, license lines, review links, the "check it yourself" line, PICK-040
+//! facts), rendered as its lines with plain links; `?lang=es` gives the Spanish card lines
+//! (D-3645). A quote with no card keeps today's lines.
 
 use std::sync::Arc;
 
@@ -29,6 +34,7 @@ use askhava_core::api::{Clock, LinkToken};
 use askhava_intake::api::paused_by_homeowner;
 use askhava_jobs::api::quote_token::resolve;
 use askhava_jobs::api::{current, job_number};
+use askhava_licensing::api::{CardLanguage, CardLine};
 use askhava_picks::api::accepted_pick;
 use askhava_quotes::api::{
     AcceptedQuote, PageQuote, Price, QuotesError, accepted_quote, page_quotes, quoted_prices,
@@ -45,6 +51,7 @@ use sqlx::PgPool;
 
 use crate::confirm_pay::money;
 use crate::pick_flow::tier_value;
+use crate::quote_cards::{Cards, quote_cards};
 use crate::security::{WebSecurity, no_store, refuse_cross_site};
 use crate::session::{csrf_token, ensure_pre_session};
 
@@ -158,6 +165,16 @@ impl PageView {
     pub(crate) const fn choose_error(&self) -> Option<usize> {
         None
     }
+
+    /// The page alone carries no card; [`ShownPage`] adds them (PICK-041, T393).
+    pub(crate) const fn card(&self, _number: &usize) -> Option<&[CardLine]> {
+        None
+    }
+
+    /// The page alone shows its cards in English (D-3645).
+    pub(crate) const fn spanish(&self) -> bool {
+        false
+    }
 }
 
 /// One package radio on a tiers quote's card (PICK-053, D-2332): the value the pick flow reads
@@ -207,6 +224,10 @@ struct ShownPage {
     tiers: Vec<(usize, Vec<(String, u64)>)>,
     /// The quote whose card shows the "choose a package" error (`?choose=<n>`).
     again: Option<usize>,
+    /// Each carded quote's number and card lines (PICK-041, T393).
+    cards: Cards,
+    /// The card lines are Spanish (`?lang=es`, D-3645).
+    in_spanish: bool,
 }
 
 impl ShownPage {
@@ -238,6 +259,40 @@ impl ShownPage {
     fn choose_error(&self) -> Option<usize> {
         self.again.filter(|n| !self.packages(n).is_empty())
     }
+
+    /// Quote `number`'s card lines, none for a quote with no card (PICK-041, D-3134).
+    fn card(&self, number: &usize) -> Option<&[CardLine]> {
+        let card = self.cards.iter().find(|(n, _)| n == number);
+        card.map(|(_, lines)| lines.as_slice())
+    }
+
+    /// Whether the card lines are Spanish, so each card's line list carries `lang="es"` and its
+    /// English lines `lang="en"` (A11Y-004, D-3645, D-3646).
+    const fn spanish(&self) -> bool {
+        self.in_spanish
+    }
+}
+
+/// What the request asks beyond the token: the CSRF token, `choose=<n>` (PICK-053) and the card
+/// language (`lang=es`, D-3645).
+struct Asked {
+    csrf: String,
+    again: Option<usize>,
+    language: CardLanguage,
+}
+
+/// D-3645: the page's query, `choose=<n>` and `lang=es` in any order; anything else is ignored.
+fn page_query(query: Option<&str>) -> (Option<usize>, CardLanguage) {
+    let pairs = query.unwrap_or_default().split('&');
+    let mut asked = (None, CardLanguage::English);
+    for pair in pairs {
+        if let Some(n) = pair.strip_prefix("choose=") {
+            asked.0 = n.parse().ok();
+        } else if pair == "lang=es" {
+            asked.1 = CardLanguage::Spanish;
+        }
+    }
+    asked
 }
 
 impl std::ops::Deref for ShownPage {
@@ -293,9 +348,13 @@ async fn show(
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
     let csrf = csrf_token(&jar).unwrap_or_default();
-    let again = query.as_deref().and_then(|q| q.strip_prefix("choose="));
-    let again = again.and_then(|n| n.parse().ok());
-    let view = match load(&page, &token, (csrf, again)).await {
+    let (again, language) = page_query(query.as_deref());
+    let asked = Asked {
+        csrf,
+        again,
+        language,
+    };
+    let view = match load(&page, &token, asked).await {
         Ok(Some(view)) => view,
         Ok(None) => return StatusCode::NOT_FOUND.into_response(),
         Err(err) => {
@@ -316,11 +375,12 @@ async fn show(
 /// Pick buttons show while the job takes a pick (`JobStatus::takes_pick`: Quotes ready and
 /// Awaiting confirm, where a new pick replaces the waiting one; PICK-012, PICK-032, D-1516); the
 /// CON-028 line while a live job is paused by the homeowner; a tiers quote's packages and, for
-/// quote `again`, the "choose a package" error with them (PICK-053).
+/// quote `again`, the "choose a package" error with them (PICK-053); each shown quote's card in
+/// the asked language (PICK-041, T393).
 async fn load(
     page: &QuotePage,
     token: &LinkToken,
-    (csrf, again): (String, Option<usize>),
+    asked: Asked,
 ) -> Result<Option<ShownPage>, PageError> {
     let mut db = page.pool.acquire().await.map_err(|_| PageError::Read)?;
     let Some(job) = resolve(&mut db, token).await.map_err(|_| PageError::Read)? else {
@@ -334,17 +394,12 @@ async fn load(
     let request = job_number(&mut db, job)
         .await
         .map_err(|_| PageError::Read)?;
-    let still_open = if is_final {
-        false
-    } else {
-        paused_by_homeowner(&mut db, job)
+    let still_open = !is_final
+        && paused_by_homeowner(&mut db, job)
             .await
-            .map_err(|_| PageError::Read)?
-    };
-    let quotes = page_quotes(&mut db, job)
-        .await
-        .map_err(|_| PageError::Read)?;
-    let quotes = number_quotes(quotes);
+            .map_err(|_| PageError::Read)?;
+    let quotes = page_quotes(&mut db, job).await;
+    let quotes = number_quotes(quotes.map_err(|_| PageError::Read)?);
     let pick_open = row.status.takes_pick();
     let tiers = if pick_open {
         quote_packages(&mut db, job, &quotes)
@@ -353,12 +408,13 @@ async fn load(
     } else {
         Vec::new()
     };
+    let cards = quote_cards(&mut db, job, &quotes, asked.language).await;
     let view = PageView {
         request,
         still_open,
         live: !is_final,
         pick_open,
-        csrf,
+        csrf: asked.csrf,
         quotes,
     };
     let accepted_quote = accepted(&mut db, job).await?;
@@ -366,7 +422,9 @@ async fn load(
         page: view,
         accepted_quote,
         tiers,
-        again,
+        again: asked.again,
+        cards: cards.map_err(|_| PageError::Read)?,
+        in_spanish: asked.language == CardLanguage::Spanish,
     }))
 }
 
