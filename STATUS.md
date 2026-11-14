@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:54:53Z by runner e40ebe112f64 (actions).
+Updated 2026-11-14T00:55:02Z by runner e40ebe112f64 (actions).
 
 **Building: T341 in progress since 00:03Z; 303 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-14T00:54:53Z by runner e40ebe112f64 (actions).
 - **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z
 - **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:54Z, 0 min before this update
-- **Keeper:** last ran 00:51Z, next wake 03:05Z
+- **Keeper:** last ran 00:55Z, next wake 03:05Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emailed sign-up code; nothing in app/portals calls businesses::api::check_code (identity.rs:260), start_signup_check (email_verification.rs:134), verified_by_link (:178) or confirm (:363); templates/business_signup.html has no code input and no texts choice or text phone field (Entered.text_chosen at :344 and SignupConsent.text_phone at :373 can never come from a post). T302 (kit/prompts/T302.md:34-38, :158, :164) owns no templates or customer copy, yet TD-SEC-45 (T302.md:73) needs; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
