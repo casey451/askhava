@@ -162,7 +162,6 @@ def test_exact_file_ownership_does_not_cover_siblings() -> None:
     assert verify.check_paths(["pyproject.toml.bak"], t, [], [])
 
 
-
 def test_a_crate_notes_file_is_shared_exactly_where_its_crate_guide_is() -> None:
     """T437 (D-3474): app/<crate>/NOTES.md follows its crate CLAUDE.md into the shared paths, and nothing else does."""
     t = task("T010")

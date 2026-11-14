@@ -281,7 +281,6 @@ def test_td_word_34_test_folders_skipped_files_and_exemptions_pass(tmp_path: Pat
     assert guard(root, brand.load()) == []
 
 
-
 def test_td_word_34_a_crate_notes_file_is_skipped_but_a_source_file_is_not(tmp_path: Path) -> None:
     """T437 (D-3474): a crate's NOTES.md, like its CLAUDE.md, is never shown to a customer; app/ source still fails."""
     hit = planted('let s = "{brand}";\n')
@@ -289,6 +288,7 @@ def test_td_word_34_a_crate_notes_file_is_skipped_but_a_source_file_is_not(tmp_p
     assert guard(root, brand.load()) == []
     plant(root, {RS: hit})
     assert [p.split(" ", 1)[0] for p in guard(root, brand.load())] == [f"{RS}:1:"]
+
 
 def test_td_word_34_a_non_text_file_of_an_unlisted_type_fails(tmp_path: Path) -> None:
     root = plant(tmp_path, {"app/fake/data/blob.dat": b"\xff\xfe\x00Ask"})
