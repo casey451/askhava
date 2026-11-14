@@ -33,6 +33,7 @@ use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetReques
 use tower_http::trace::TraceLayer;
 
 pub mod business_contacts;
+pub mod business_portal;
 pub mod business_signin;
 pub mod business_signup;
 pub mod call_status;
@@ -101,22 +102,38 @@ pub struct RouterParts {
     hooks: Hooks,
     limit: RequestTimeout,
     statics: StaticRoot,
+    business: BusinessParts,
+}
+
+/// The business pages' parts: the served sign-in (T280), sign-up (T302) and the portal's vault
+/// (T300); each absent part serves less (sign-in, sign-up) or reads the webhooks' vault (portal).
+#[derive(Default)]
+struct BusinessParts {
     signin: Option<business_signin::ServedSignIn>,
     signup: Option<business_signup::ServedSignUp>,
+    vault: Option<Arc<Vault>>,
 }
 
 impl RouterParts {
     /// Adds the served business sign-in pages (T280, D-3055); without it none are served.
     #[must_use]
     pub fn with_sign_in(mut self, signin: business_signin::ServedSignIn) -> Self {
-        self.signin = Some(signin);
+        self.business.signin = Some(signin);
         self
     }
 
     /// Adds the served business sign-up (T302, D-3676); without it none is served.
     #[must_use]
     pub fn with_sign_up(mut self, signup: business_signup::ServedSignUp) -> Self {
-        self.signup = Some(signup);
+        self.business.signup = Some(signup);
+        self
+    }
+
+    /// Adds the vault the business portal's vault pages read (T300); without it they read the
+    /// webhooks' vault, else none (`business_portal::PortalVault`).
+    #[must_use]
+    pub fn with_vault(mut self, vault: Option<Vault>) -> Self {
+        self.business.vault = vault.map(Arc::new);
         self
     }
 }
@@ -127,8 +144,7 @@ impl From<Hooks> for RouterParts {
             hooks,
             limit: RequestTimeout::DEFAULT,
             statics: StaticRoot::default(),
-            signin: None,
-            signup: None,
+            business: BusinessParts::default(),
         }
     }
 }
@@ -140,8 +156,7 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
             hooks,
             limit,
             statics,
-            signin: None,
-            signup: None,
+            business: BusinessParts::default(),
         }
     }
 }
@@ -152,20 +167,30 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
             hooks,
             limit,
             statics,
-            signin: None,
-            signup: None,
+            business: BusinessParts::default(),
         }
     }
 }
 
-/// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given.
+/// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
+/// and the business portal (T300) over `pool`, always (`business_portal::served`).
 fn business_pages(
-    signin: Option<business_signin::ServedSignIn>,
-    signup: Option<business_signup::ServedSignUp>,
+    parts: BusinessParts,
+    pool: PgPool,
+    (webhooks, voice): (
+        Option<&Arc<inbound_text::Webhooks>>,
+        Option<&Arc<inbound_voice::VoiceHooks>>,
+    ),
 ) -> Router {
-    signin
+    let portal = business_portal::served(pool, parts.vault, (webhooks, voice));
+    (parts.signin)
         .map_or_else(Router::new, business_signin::ServedSignIn::into_router)
-        .merge(signup.map_or_else(Router::new, business_signup::ServedSignUp::into_router))
+        .merge(
+            parts
+                .signup
+                .map_or_else(Router::new, business_signup::ServedSignUp::into_router),
+        )
+        .merge(portal)
 }
 
 /// The app's router: every module's routes, merged once here (D-481), under
@@ -179,7 +204,9 @@ fn business_pages(
 /// headers on every response, a 404 included (T051). The parts' served business sign-in
 /// ([`business_signin::ServedSignIn`], T280) adds the two sign-in routes, always with the
 /// new-device code; its served sign-up ([`business_signup::ServedSignUp`], T302, T459) the form
-/// page at `/b/signup` and its `POST` at `/b/signup/start`. The homeowner's quote page is `portals`'
+/// page at `/b/signup` and its `POST` at `/b/signup/start`. The business portal
+/// ([`business_portal`], T300) is always merged; its vault pages read the parts' vault
+/// ([`RouterParts::with_vault`]), else the webhooks'. The homeowner's quote page is `portals`'
 /// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055); the
 /// private feedback page after Done is `/f/{token}` (`feedback`, T230); the check-in answer page
 /// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231). The built
@@ -203,10 +230,10 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         hooks,
         limit,
         statics,
-        signin,
-        signup,
+        business,
     } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
+    let business = business_pages(business, pool.clone(), (webhooks.as_ref(), voice.as_ref()));
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
@@ -236,7 +263,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(dialed)
         .merge(calls)
         .merge(stripe)
-        .merge(business_pages(signin, signup))
+        .merge(business)
         .merge(static_files::router(&statics))
         .layer(request_timeout::catch_panic())
         .layer(axum::middleware::from_fn_with_state(
