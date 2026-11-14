@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T04:43:02Z by runner f4c4252669ec (actions).
+Updated 2026-11-14T04:46:38Z by runner f4c4252669ec (actions).
 
-**Building: T393 in progress since 04:25Z; 312 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T393 in progress since 04:25Z; 313 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 312 of 436 build tasks (owner gates not counted)
+- **Tasks done:** 313 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 3: T437 claimed 04:25Z, lease until 07:25Z; lane 6: T396 claimed 04:09Z, lease until 07:09Z
 - **Week:** 36% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:42Z, 0 min before this update
+- **Last run:** 04:43Z, 3 min before this update
 - **Keeper:** last ran 04:43Z, next wake 07:12Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-14T04:43:02Z by runner f4c4252669ec (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T449 | server and intake: emergency first texts count toward the re | MERGE_PENDING | 1 | 34 min | 04:28Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 3 | 15 min | 04:11Z | PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as |
 | T440 | portals: the quote page's tier choice and the Confirm page's | done | 1 | 50 min | 03:43Z |  |
 | T344 | picks: the global daily Verify cap holds under concurrent co | done | 1 | 28 min | 03:23Z |  |
@@ -115,7 +115,7 @@ Updated 2026-11-14T04:43:02Z by runner f4c4252669ec (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 312 of 436
+**Tasks merged (throughput only):** 313 of 436
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -150,7 +150,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 192 of 215 done
+- stage 4: 193 of 215 done
 - stage 5: 0 of 67 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
