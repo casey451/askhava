@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:42:33Z by runner 24008eb1e197 (actions).
+Updated 2026-11-14T12:42:48Z by runner 24008eb1e197 (actions).
 
-**Idle since 12:40Z; 322 of 449 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T432 in progress since 12:42Z; 322 of 449 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 322 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 12:40Z (no task in progress)
-- **Week:** 43% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:41Z, 0 min before this update
+- **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z
+- **Week:** 43% used, 108.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 12:41Z, 1 min before this update
 - **Keeper:** last ran 12:41Z, next wake 13:01Z
 
 ## Needs attention
@@ -178,7 +178,7 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T12:20:30Z (week)): week: 85.8M used, 108.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T17:21:44Z.
+- Pacing (session_reading 2026-11-14T12:41:02Z (week)): week: 86.0M used, 108.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T17:32:11Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -193,7 +193,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T432 (lease until 2026-11-14T15:42:31Z)
 
 ## Last usage reading
 - {"task": "T301", "at": "2026-11-14T12:40:36Z", "output_tokens": 38675, "cache_creation_input_tokens": 173366, "cache_read_input_tokens": 5336508, "input_tokens": 120}
