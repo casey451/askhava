@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T04:29:20Z by runner 224fe4c7f956 (actions).
+Updated 2026-11-14T04:32:58Z by runner f4c4252669ec (actions).
 
-**Building: T393 in progress since 04:25Z; 312 of 435 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T393 in progress since 04:25Z; 312 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 312 of 435 build tasks (owner gates not counted)
+- **Tasks done:** 312 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 3: T437 claimed 04:25Z, lease until 07:25Z; lane 6: T396 claimed 04:09Z, lease until 07:09Z
 - **Week:** 36% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:29Z, 0 min before this update
+- **Last run:** 04:29Z, 3 min before this update
 - **Keeper:** last ran 04:29Z, next wake 07:11Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-14T04:29:20Z by runner 224fe4c7f956 (actions).
 - PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
 - PLAN GAP T352 (since 2026-11-14T03:46:00Z, no attempt used; a plan change fixes it): T352: measures 53% of the context window, over its 50% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 33 problem(s) on tasks still to run (+204 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 32 problem(s) on tasks still to run (+207 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -115,7 +115,7 @@ Updated 2026-11-14T04:29:20Z by runner 224fe4c7f956 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 312 of 435
+**Tasks merged (throughput only):** 312 of 436
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
