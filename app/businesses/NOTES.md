@@ -292,4 +292,3 @@
 - [CARD-024 CARD-001 CARD-002 BIZ-010] (task 249) cross-reference (D-3620): the build note of T249 is in `app/quotes/NOTES.md`: `grep -n '(task 249)' app/quotes/NOTES.md`.
 - [PICK-032 CON-028 CON-029 CALL-019] (task 330) cross-reference (D-3620): the build note of T330 is in `docs/build-notes.md`: `grep -n '(task 330)' docs/build-notes.md`.
 - [PICK-041 PICK-040 PICK-010 LIC-024] (task 393) cross-reference (D-3620): the build note of T393 is in `app/licensing/NOTES.md`: `grep -n '(task 393)' app/licensing/NOTES.md`.
-- [BIZ-033 BIZ-019 BIZ-037] (rules) T398, D-3659: `notice_recipients` lists only approved phones (a waiting one's person gets the email); `api::change_phone`/`change_phone_at` wrap `team`'s with `phone_link_notice`, keyed `businesses.phone_linked.<line>.<number_set_at µs>` (payload has `number_set_at`), so each member-set number emails the owner once. Test `tests/integration/tests/phone_approval_notices.rs`.
