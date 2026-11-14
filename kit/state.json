@@ -35317,7 +35317,7 @@
      "plan_now": "dff03eff12d6fd2739ab9a507353d4efae07be1c8c7d8cb93965fe652796d4a8"
     }
    ],
-   "reviewed_sha": "3578c6730944bf40db8811861681986d48b00127",
+   "reviewed_sha": "5f912618e44810cd5e7724f9b180ee1dddb9f5a4",
    "review_lease": {
     "task": "T328",
     "session": "actions-43526145276",
@@ -35337,10 +35337,23 @@
      "main": "e40ebe112f6403887d5fdca5aa153b1ba10df9a6",
      "how": "hand-in",
      "at": "2026-11-14T01:04:21Z"
+    },
+    {
+     "from": "3578c6730944bf40db8811861681986d48b00127",
+     "to": "5f912618e44810cd5e7724f9b180ee1dddb9f5a4",
+     "main": "22e740b2d39cf324a3e4a7eb7883c40361a67ab2",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-14T01:40:56Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-14T01:40:56Z"
   },
   {
    "id": "T329",
@@ -49698,7 +49711,7 @@
    "deps": [
     "T249"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "property-zip-town-test",
    "type": "build",
@@ -49718,13 +49731,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 51,
      "head_sha": "200cff5337a529bc28a55f1d2a759f0f32499a7d",
-     "pr": null,
-     "checks": null,
+     "pr": 726,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-14T00:07:03Z",
      "ended_at": "2026-11-14T00:31:14Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 1363213,
@@ -49790,7 +49860,16 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-14T00:51:16Z"
+   "merge_turn_since": "2026-11-14T00:51:16Z",
+   "merged_sha": "22e740b2d39cf324a3e4a7eb7883c40361a67ab2",
+   "merged_at": "2026-11-14T01:36:14Z",
+   "files": [
+    "app/intake/CLAUDE.md",
+    "app/intake/src/cards_out.rs",
+    "app/intake/src/tests/mod.rs",
+    "app/intake/src/tests/property_zip_town.rs",
+    "docs/decisions.md"
+   ]
   },
   {
    "id": "T445",
@@ -53151,7 +53230,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T01:36:47Z",
+ "updated_at": "2026-11-14T01:41:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T01:36:47Z by runner d997705c35e7 (actions).
+Updated 2026-11-14T01:41:07Z by runner d997705c35e7 (actions).
 
-**Building: T280 in progress since 00:35Z; 304 of 435 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T280 in progress since 00:35Z; 305 of 435 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 304 of 435 build tasks (owner gates not counted)
+- **Tasks done:** 305 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z
 - **Week:** 32% used, 128.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:36Z, 0 min before this update
+- **Last run:** 01:37Z, 4 min before this update
 - **Keeper:** last ran 01:36Z, next wake 03:38Z
 
 ## Needs attention
@@ -26,7 +26,7 @@ Updated 2026-11-14T01:36:47Z by runner d997705c35e7 (actions).
 | T328 | picks and server: an ended pick offers the next quote (`paym | MERGE_PENDING | 2 | 61 min | 01:04Z | PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text canno |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z |  |
 | T448 | portals: the data-download mask joins digit runs across any  | done | 1 | 38 min | 00:49Z |  |
-| T444 | intake (test): the job's ZIP is read only from a property in | MERGE_PENDING | 1 | 24 min | 00:31Z |  |
+| T444 | intake (test): the job's ZIP is read only from a property in | done | 1 | 24 min | 00:31Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 25 min | 00:23Z |  |
 | T391 | calls, businesses, messaging and server: the main phone's "L | done | 1 | 47 min | 23:23Z |  |
 | T415 | businesses, messaging and server: the production phone link  | done | 1 | 69 min | 23:15Z |  |
@@ -112,7 +112,7 @@ Updated 2026-11-14T01:36:47Z by runner d997705c35e7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 273 of 733 (37.2%) · partial 300 · unstarted 160
-**Tasks merged (throughput only):** 304 of 435
+**Tasks merged (throughput only):** 305 of 435
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -147,7 +147,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 184 of 214 done
+- stage 4: 185 of 214 done
 - stage 5: 0 of 67 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
