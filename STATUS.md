@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-14T01:31:40Z by runner e40ebe112f64 (actions).
+Updated 2026-11-14T01:32:32Z by runner 2df926e292cb (actions).
 
 **Building: T280 in progress since 00:35Z; 304 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 304 of 434 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z
-- **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 7: T302 claimed 01:32Z, lease until 04:32Z
+- **Week:** 32% used, 128.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:31Z, 0 min before this update
 - **Keeper:** last ran 01:31Z, next wake 03:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 52% of the context window, over its 50% limit
-- Strict plan check red: 31 problem(s) on tasks still to run (+200 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 32 problem(s) on tasks still to run (+200 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -138,7 +138,7 @@ Updated 2026-11-14T01:31:40Z by runner e40ebe112f64 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T01:02:12Z (week)): week: 70.1M used, 123.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T06:30:13Z.
+- Pacing (session_reading 2026-11-14T01:31:21Z (week)): week: 65.8M used, 128.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T06:54:07Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -155,6 +155,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T280 (lease until 2026-11-14T03:35:47Z)
+- lane 7: T302 (lease until 2026-11-14T04:32:25Z)
 
 ## Last usage reading
 - {"task": "T447", "at": "2026-11-14T01:30:38Z", "cache_creation_input_tokens": 105846, "cache_read_input_tokens": 2184689, "input_tokens": 92, "output_tokens": 28482}
