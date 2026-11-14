@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:20:30Z by runner f4b34241abcb (actions).
+Updated 2026-11-14T12:20:47Z by runner f4b34241abcb (actions).
 
 **Building: T359 in progress since 11:24Z; 322 of 449 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-14T12:20:30Z by runner f4b34241abcb (actions).
 - **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z
 - **Week:** 42% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:20Z, 0 min before this update
-- **Keeper:** last ran 12:09Z, next wake 14:27Z
+- **Keeper:** last ran 12:20Z, next wake 14:26Z
 
 ## Needs attention
 - BLOCKED T300: plan gap reported: PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T196 own them; T300 owns no templates or static files, kit/prompts/T300.md:160) draw native checkboxes and a radio with no styling; Chromium reports a 0px border and transparent fill, so tests/a11y/targets_contrast.spec.ts:80 (A11Y-007) fails on the new /b and /b/notices page states (same cause as D-1820 for the feedback page). Reviewer confirmed by reading. Smallest fix: a portals task before T300 giving those inputs a visible edge (like feedback.css) or one shared rule in ap; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T300 --plan-fix D-### --reason "..."` (D-2859)
@@ -32,7 +32,7 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 ##[error]Process completed with exit code 1.
 - BLOCKED T437: merging main into the task branch conflicts in app/businesses/CLAUDE.md again after 2 resyncs in this attempt, so this attempt fails and the next one starts from the branch with main merged in, or fresh from main when that still conflicts (D-583, D-620, D-891)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 32 problem(s) on tasks still to run (+102 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+102 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
