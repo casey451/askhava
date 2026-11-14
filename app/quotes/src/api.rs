@@ -123,6 +123,7 @@ pub use crate::quote_card::{
     review_lines, shown_card, switch_on,
 };
 pub use crate::quote_facts::{last_facts, stored_facts, submit_quote_with_facts};
+pub use crate::quote_rules::quote_rules;
 pub use crate::service::{
     card_holders, coverage, coverage_in_reach, send_cards, send_job_cards, send_job_cards_in_reach,
     send_late_cards, send_late_cards_in_reach,
