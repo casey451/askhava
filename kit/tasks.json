@@ -10417,7 +10417,7 @@
    "id": "T397",
    "slug": "phone-approval-page",
    "title": "server and portals: the owner approves or declines a member-linked phone on a portal page that names the member and the last 4 digits",
-   "goal": "Register row IC-95, the owner's page (D-3081; BIZ-033, BIZ-038, SEC-038, SEC-004, SEC-009, SEC-034, SEC-042, SEC-048; D-311, D-480, D-1848, D-2440, D-2636). After T396 (`businesses::api::approve_phone`, `reject_phone`, `waiting_phones`) and T364 (the served business step-up page, without which `require_step_up` can never pass in production). The owner has no page that lists a phone waiting for approval. (1) `app/portals/src/phone_approval.rs` and `app/portals/templates/phone_approval.html` (new): the owner's waiting-phones page; for each waiting phone, the sign-in email address of the member who set its number (a member has no stored name; the address is read from the vault in `server` by the member's `mailbox_id` with T412's `privacy::api::read_business_mailbox` under `BusinessPurpose::PhoneApproval` on a bare connection, D-1848, D-3262), the phone's last 4 digits (`number_end`) and the time its number was set (Arizona time, never a countdown), with an Approve and a Don't approve button, each its own form with the CSRF token and the phone's `number_set_at` as shown; a `POST` whose `number_set_at` no longer matches (a member changed the number since the page was shown) changes nothing and shows the page again with the new number's digits and a line saying the number changed; an empty state; works without JavaScript; route constants `PHONES_ROUTE` `/b/phones`, `APPROVE_PHONE_ROUTE` `/b/phones/approve` and `REJECT_PHONE_ROUTE` `/b/phones/reject` (the line in the form body, so T348's probe needs no path parameter). (2) `app/server/src/phone_approval.rs` (new) serves `GET /b/phones` and both `POST`s behind `portals::api::business_principal`: a signed-out request gets the 4xx answer with the `/b/sign-in` link; a member who is not the owner, another business's line and an unknown line get the one not-found answer and change nothing; every response is `no_store`; each `POST` passes `refuse_cross_site` and the CSRF check (a refusal is a security event), then `require_step_up` with `SensitiveChange::ApprovePhone` before the change's transaction (no fresh code: to the step-up page and back, nothing changed), then calls `approve_phone` or `reject_phone`; merged in the shared `app/server/src/lib.rs` and composed in `main.rs`. (3) Tests in `app/server/tests/phone_approval_route.rs` (TD-SEC-65) against the assembled router, fake data only. The page's `PAGE_STATES` entries (with and without a waiting phone) go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its three rows in `docs/architecture.md` section 13 are marked `yes`; its routes pass T348's doors unchanged (`tests/security/tests/auth_matrix.rs`, `app/server/tests/door_matrix.rs`), neither of which this task edits, and a route the probe cannot reach is reported, not worked around. The page's words go through the cold read and the copy panel. A link to the page from the portal home is left to that page's next owner, and the email's Approve link is T399's (D-3081). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Register row IC-95, the owner's page (D-3081; BIZ-033, BIZ-038, SEC-038, SEC-004, SEC-009, SEC-034, SEC-042, SEC-048; D-311, D-480, D-1848, D-2440, D-2636). After T396 (`businesses::api::approve_phone`, `reject_phone`, `waiting_phones`) and T364 (the served business step-up page, without which `require_step_up` can never pass in production). The owner has no page that lists a phone waiting for approval. (1) `app/portals/src/phone_approval.rs` and `app/portals/templates/phone_approval.html` (new): the owner's waiting-phones page; for each waiting phone, the sign-in email address of the member who set its number (a member has no stored name; the address is read from the vault in `server` by the member's `mailbox_id` with T412's `privacy::api::read_business_mailbox` under `BusinessPurpose::PhoneApproval` on a bare connection, D-1848, D-3262), the phone's last 4 digits (`number_end`) and the time its number was set (Arizona time, never a countdown), with an Approve and a Don't approve button, each its own form with the CSRF token and the phone's `number_set_at` as shown; a `POST` whose `number_set_at` no longer matches (a member changed the number since the page was shown) changes nothing and shows the page again with the new number's digits and a line saying the number changed; an empty state; works without JavaScript; route constants `PHONES_ROUTE` `/b/phones`, `APPROVE_PHONE_ROUTE` `/b/phones/approve` and `REJECT_PHONE_ROUTE` `/b/phones/reject` (the line in the form body, so T348's probe needs no path parameter). (2) `app/server/src/phone_approval.rs` (new) serves `GET /b/phones` and both `POST`s behind `portals::api::business_principal`: a signed-out request gets the 4xx answer with the `/b/sign-in` link; a member who is not the owner, another business's line and an unknown line get the one not-found answer and change nothing; every response is `no_store`; each `POST` passes `refuse_cross_site` and the CSRF check (a refusal is a security event), then `require_step_up` with `SensitiveChange::ApprovePhone` before the change's transaction (no fresh code: to the step-up page and back, nothing changed), then calls `approve_phone` or `reject_phone`; merged in the shared `app/server/src/lib.rs` and composed in `main.rs`. (3) Tests in `app/server/tests/phone_approval_route.rs` (TD-SEC-65) against the assembled router, fake data only. The page's `PAGE_STATES` entries (with and without a waiting phone) go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its three rows in `docs/architecture.md` section 13 are marked `yes`; its routes pass T348's doors unchanged (`tests/security/tests/auth_matrix.rs`, `app/server/tests/door_matrix.rs`), neither of which this task edits, and a route the probe cannot reach is reported, not worked around. The page's words go through the cold read and the copy panel. A link to the page from the portal home is left to that page's next owner, and the email's Approve link is T399's (D-3081). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Plan change D-3744: (a) `phone_approval.html` extends T200's `app/portals/templates/business_layout.html`, not `base.html`, as T364's and T375's signed-in business pages do, so it shows the business-only \"Get help\" link (D-3155, BIZ-047); T410's template check, after this task, lists it. (b) The vault the member's address is read from is the one in the `webhooks` part inside `build_router` (`inbound_text::Webhooks`' `pub vault`, `app/server/src/inbound_text.rs:148`), handed to this task's router where `build_router` merges it; no new `RouterParts` part is added, so `app/server/tests/door_matrix.rs` and `app/server/tests/route_wiring.rs` need no change. The router is merged with or without that part; without it (dev, `Ci` and the end-to-end runs, which set no public base URL) each waiting phone shows one fixed line in place of the address (words for the copy panel) and everything else is unchanged.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10468,13 +10468,14 @@
     "D-2636",
     "D-480",
     "D-1848",
-    "D-3262"
+    "D-3262",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
     "files": 4,
     "lines": 590,
-    "context_pct": 20
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -10489,7 +10490,7 @@
    "id": "T399",
    "slug": "approve-link",
    "title": "server: the email's Approve link approves the phone, only with the owner's session and step-up",
-   "goal": "Register row IC-95, the email's Approve link (D-3081; BIZ-033, BIZ-038, SEC-038, SEC-004, SEC-025, SEC-026, SEC-048; D-1955, D-2128). After T396 (`businesses::api::approve_phone`), T364 (the served business step-up page) and T306 (the last earlier owner of `app/server/src/action_links.rs`). The owner email's Approve action link (`ActionKind::Approve`, `app/portals/src/action_links.rs:59`, served by T301) only uses up the link: nothing approves the phone. (1) `app/server/src/action_links.rs`: the Approve link's `POST`, with a business session of that link's own owner and a step-up passed in the last 5 minutes (`require_step_up` with `SensitiveChange::ApprovePhone`, checked before the transaction), calls `approve_phone` for the link's object (the line `businesses.phone_linked` names) with the phone's current `number_set_at` in the transaction that uses the link, and only when the link was issued (`portals.login_link.created_at`) at or after that `number_set_at`: a link issued before the last number change approves nothing and stays unused, and the page says a newer email is on its way (the change queued one, T398); an expired link gets the one not-found answer and approves nothing; without that session it sends the person to sign in, without the step-up to the step-up page, and in both cases the link stays unused and nothing is approved; a refused approval (not waiting, taken, unknown) leaves the link unused and says the phone could not be approved; every other kind is unchanged. (2) Tests in `app/server/tests/approve_link_route.rs` (TD-SEC-66) against the assembled router, links seeded as `app/server/tests/action_links_route.rs` seeds them (D-1955's hash), fake data only. Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Register row IC-95, the email's Approve link (D-3081; BIZ-033, BIZ-038, SEC-038, SEC-004, SEC-025, SEC-026, SEC-048; D-1955, D-2128). After T396 (`businesses::api::approve_phone`), T364 (the served business step-up page) and T306 (the last earlier owner of `app/server/src/action_links.rs`). The owner email's Approve action link (`ActionKind::Approve`, `app/portals/src/action_links.rs:59`, served by T301) only uses up the link: nothing approves the phone. (1) `app/server/src/action_links.rs`: the Approve link's `POST`, with a business session of that link's own owner and a step-up passed in the last 5 minutes (`require_step_up` with `SensitiveChange::ApprovePhone`, checked before the transaction), calls `approve_phone` for the link's object (the line `businesses.phone_linked` names) with the phone's current `number_set_at` in the transaction that uses the link, and only when the link was issued at or after that `number_set_at`: a link issued before the last number change approves nothing and stays unused, and the page says a newer email is on its way (the change queued one, T398); an expired link gets the one not-found answer and approves nothing; without that session it sends the person to sign in, without the step-up to the step-up page, and in both cases the link stays unused and nothing is approved; a refused approval (not waiting, taken, unknown) leaves the link unused and says the phone could not be approved; every other kind is unchanged. (2) Tests in `app/server/tests/approve_link_route.rs` (TD-SEC-66) against the assembled router, links seeded as `app/server/tests/action_links_route.rs` seeds them (D-1955's hash), fake data only. Update the `server` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3744: `portals.login_link.created_at` is not the issue time: `mint_action_link` stores it `LINK_LIFE` back so action links never count toward the sign-in link limits (`app/portals/src/action_links.rs:9`, `:268`), `ActionGrant` carries no time, and `server` may not read `portals` tables. So this task owns `app/portals/src/action_links.rs` (after T148 and T199, done; T457, its only queued owner, follows it through T463 and T456) and `app/portals/src/models.rs` (T084, T086 and T272, all done): a new `models` function beside `use_link` (which `app/portals/src/business_auth.rs:1099` also calls, unchanged) uses the link and returns its `created_at`, and `ActionGrant` gains the issue time (`created_at + LINK_LIFE`) behind a new `issued_at()` accessor, so `use_action_link` and `open_action_link` keep their signatures and no other caller changes. The Approve route compares `issued_at()` with `number_set_at` in the transaction that used the link and rolls it back when the link is older, so the link stays unused. TD-SEC-66 seeds its links with `portals::api::mint_action_link`, never raw SQL, so each link's stored time is the backdated one production writes.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10507,7 +10508,9 @@
    ],
    "owns": [
     "app/server/src/action_links.rs",
-    "app/server/tests/approve_link_route.rs"
+    "app/server/tests/approve_link_route.rs",
+    "app/portals/src/action_links.rs",
+    "app/portals/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10532,12 +10535,13 @@
     "D-3081",
     "D-1955",
     "D-2128",
-    "D-480"
+    "D-480",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
-    "lines": 320,
+    "files": 4,
+    "lines": 420,
     "context_pct": 15
    },
    "checks": [
@@ -13987,7 +13991,7 @@
    "id": "T151",
    "slug": "help-requests",
    "title": "ops and messaging: HELP requests with one owner notification each and the plain-word auto-answers",
-   "goal": "Each HELP request produces one owner notification by alert email within the hourly and daily limits, its body scrubbed of contact details, inbound help emails arrive only through the signed webhook into `privacy`, and plain-word questions after HELP get the fixed auto-answers (CON-034, OPS-036, PRIV-026, PRIV-030). The `ops.help_request` and `ops.help_message` tables of architecture section 3 are created by this task's migration in the `ops` schema and written only through `app/ops/src/help_requests.rs` and `ops::api`; the owner's reply box and its link are T200's (TD-OPS-23); the HELP lines with their due dates are added to the digest's `digest_flags.rs` (T204's, extended here) (D-491). `messaging` cannot read `jobs`, `quotes` or `intake`, so `intake`'s inbound handler (`app/intake/src/handlers.rs`, T048's, extended here) puts the job fields the help texts and notification need (status, the LIST line from `quotes::api`, the quote-page link, trade, town, urgency) into the HELP event, and `messaging` composes from the event only. A business's \"Ask about a charge\" (T148) arrives as the `core.task` event `help_request_opened`, which this task's handler turns into one help request (D-492). It also corrects the module doc of `app/intake/src/handlers.rs` (lines 13 to 20), which says `answer_list` has no caller although T241's `receive_reply` calls it, and names `queue_call_back`'s callers as they now stand (fourth external audit F17, D-2206). Plan change D-3155: (a) no file this task owned saw a HELP text: `app/server/src/inbound_text.rs` answers HELP with `messaging::api::reply_to_help` and then halts (`Halt::Ends(\"help\")`, `:492` to `:501`) before intake, and plain follow-ups reach `intake::api::receive_reply` (`app/intake/src/replies.rs:43` to `:66`), never `handlers.rs`. So it also owns those two files (after T241, T277, T336, T357, T391 and T435, before T402 and T407): after `reply_to_help` answers, `inbound_text.rs` calls one new `intake::api` function in `handlers.rs` that gathers the job fields and opens or joins the help request (`ops::api`, notification by `messaging`, as above); a business text (\"why was I charged?\") takes the same call; and `receive_reply` first asks a new `handlers.rs` function whether the number's HELP was answered in the last 24 hours and, for a plain-word question (TD-CON-17), sends the fixed auto-answer and returns, the rest following today's path. (b) The opt-out half of TD-CON-17 (help email, quote-email reply, help-form \"no more texts\", owner-recorded request) is tested at `messaging::api::suppress` with `RevokeChannel::Email`, `EmailReply`, `HelpForm` and `Owner`: listed at once, channel and time logged, no text queued; the help form's detector and on-screen confirmation are T200's, the owner's record T108's, and the inbound-email route T133's (stage 6), which hands each email `privacy` has read to this task's entry point; until then the email cases (TD-OPS-11's automatic reply, TD-PRIV-11's sentinel body) run on `privacy::api::read_inbound_email`'s output, not over HTTP. (c) TD-OPS-20's notification half is this task's; its docs half (the Gate C checklist) is T122's. (d) The migration is `0193_help_requests.sql` (T321 needs two numbers before T109's 0196; moved up one by D-3262, one more by D-3263 and one more by D-3722).",
+   "goal": "Each HELP request produces one owner notification by alert email within the hourly and daily limits, its body scrubbed of contact details, inbound help emails arrive only through the signed webhook into `privacy`, and plain-word questions after HELP get the fixed auto-answers (CON-034, OPS-036, PRIV-026, PRIV-030). The `ops.help_request` and `ops.help_message` tables of architecture section 3 are created by this task's migration in the `ops` schema and written only through `app/ops/src/help_requests.rs` and `ops::api`; the owner's reply box and its link are T200's (TD-OPS-23); the HELP lines with their due dates are added to the digest's `digest_flags.rs` (T204's, extended here) (D-491). `messaging` cannot read `jobs`, `quotes` or `intake`, so `intake`'s inbound handler (`app/intake/src/handlers.rs`, T048's, extended here) puts the job fields the help texts and notification need (status, the LIST line from `quotes::api`, the quote-page link, trade, town, urgency) into the HELP event, and `messaging` composes from the event only. A business's \"Ask about a charge\" (T148) arrives as the `core.task` event `help_request_opened`, which this task's handler turns into one help request (D-492). It also corrects the module doc of `app/intake/src/handlers.rs` (lines 13 to 20), which says `answer_list` has no caller although T241's `receive_reply` calls it, and names `queue_call_back`'s callers as they now stand (fourth external audit F17, D-2206). Plan change D-3155: (a) no file this task owned saw a HELP text: `app/server/src/inbound_text.rs` answers HELP with `messaging::api::reply_to_help` and then halts (`Halt::Ends(\"help\")`, `:938` to `:945`) before intake, and plain follow-ups reach `intake::api::receive_reply` (`app/intake/src/replies.rs:43` to `:66`), never `handlers.rs`. So it also owns those two files (after T241, T277, T336, T357, T391 and T435, before T402 and T407): after `reply_to_help` answers, `inbound_text.rs` calls one new `intake::api` function in `handlers.rs` that gathers the job fields and opens or joins the help request (`ops::api`, notification by `messaging`, as above); a business text (\"why was I charged?\") takes the same call; and `receive_reply` first asks a new `handlers.rs` function whether the number's HELP was answered in the last 24 hours and, for a plain-word question (TD-CON-17), sends the fixed auto-answer and returns, the rest following today's path. (b) The opt-out half of TD-CON-17 (help email, quote-email reply, help-form \"no more texts\", owner-recorded request) is tested at `messaging::api::suppress` with `RevokeChannel::Email`, `EmailReply`, `HelpForm` and `Owner`: listed at once, channel and time logged, no text queued; the help form's detector and on-screen confirmation are T200's, the owner's record T108's, and the inbound-email route T133's (stage 6), which hands each email `privacy` has read to this task's entry point; until then the email cases (TD-OPS-11's automatic reply, TD-PRIV-11's sentinel body) run on `privacy::api::read_inbound_email`'s output, not over HTTP. (c) TD-OPS-20's notification half is this task's; its docs half (the Gate C checklist) is T122's. (d) The migration is `0193_help_requests.sql` (T321 needs two numbers before T109's 0196; moved up one by D-3262, one more by D-3263 and one more by D-3722). Plan change D-3744: its budget is 600 lines, the build limit; it is listed in D-3744 for a split in a later plan change.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14063,12 +14067,13 @@
     "D-3262",
     "D-3263",
     "D-3467",
-    "D-3722"
+    "D-3722",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
     "files": 9,
-    "lines": 400,
+    "lines": 600,
     "context_pct": 36
    },
    "checks": [
@@ -14174,7 +14179,7 @@
    "id": "T410",
    "slug": "business-get-help-link",
    "title": "portals: every signed-in business page shows the Get help link, and no other page does",
-   "goal": "Plan change D-3155 (BIZ-047; owner call put to a Fable agent under Casey's Nov 11 standing rule): BIZ-047 puts \"Get help\" on every business portal page, but the shared `app/site/templates/base.html` is extended by homeowner, owner and public pages too, so T200 gives it an empty `get_help` block and adds `app/portals/templates/business_layout.html`, which fills it. (1) The other signed-in business pages (`business_complaints.html`, `business_actions.html`, `job_release.html`, `confirm_pay.html`, `notice_log.html`, `notice_settings.html`, `why_charged.html`, `emergency_test_email.html`, `business_leave.html`) change only their `extends` line to `business_layout.html` (T364's `business_step_up.html` and T375's `job_types.html` already extend it: both run after T200 and before this task); nothing else in them changes and no page struct gains a field. The sign-in and sign-up pages (`business_signin.html`, `business_signup.html`, `capability_setup.html`, `email_check.html`) keep `base.html`: the form is behind the business session (T309). (2) `app/portals/src/tests/get_help_link.rs` (registered in the shared `app/portals/src/tests/mod.rs`) reads every template under `app/portals/templates/` and `app/site/templates/`: exactly the listed business pages, `business_step_up.html`, `job_types.html`, `business_home.html`, `business_billing.html` and `get_help.html` extend `business_layout.html`; `base.html`'s `get_help` block is empty; no other template fills it or links the Get help form; and one rendered business page holds the link while a rendered quote page, the owner sign-in page and a site page do not (TD-BIZ-23). The `portals` `CLAUDE.md` gains the rule that every new page served behind the business session extends `business_layout.html` and joins this list. Update the `portals` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3155 (BIZ-047; owner call put to a Fable agent under Casey's Nov 11 standing rule): BIZ-047 puts \"Get help\" on every business portal page, but the shared `app/site/templates/base.html` is extended by homeowner, owner and public pages too, so T200 gives it an empty `get_help` block and adds `app/portals/templates/business_layout.html`, which fills it. (1) The other signed-in business pages (`business_complaints.html`, `business_actions.html`, `job_release.html`, `confirm_pay.html`, `notice_log.html`, `notice_settings.html`, `why_charged.html`, `emergency_test_email.html`, `business_leave.html`) change only their `extends` line to `business_layout.html` (T364's `business_step_up.html`, T375's `job_types.html` and T397's `phone_approval.html` already extend it: each runs after T200 and before this task); nothing else in them changes and no page struct gains a field. The sign-in and sign-up pages (`business_signin.html`, `business_signup.html`, `capability_setup.html`, `email_check.html`) keep `base.html`: the form is behind the business session (T309). (2) `app/portals/src/tests/get_help_link.rs` (registered in the shared `app/portals/src/tests/mod.rs`) reads every template under `app/portals/templates/` and `app/site/templates/`: exactly the listed business pages, `business_step_up.html`, `job_types.html`, `phone_approval.html`, `business_home.html`, `business_billing.html` and `get_help.html` extend `business_layout.html`; `base.html`'s `get_help` block is empty; no other template fills it or links the Get help form; and one rendered business page holds the link while a rendered quote page, the owner sign-in page and a site page do not (TD-BIZ-23). The `portals` `CLAUDE.md` gains the rule that every new page served behind the business session extends `business_layout.html` and joins this list. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3744: T397 is a dependency and its `phone_approval.html` is in the list.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14183,7 +14188,8 @@
     "T200",
     "T158",
     "T364",
-    "T375"
+    "T375",
+    "T397"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -14218,13 +14224,14 @@
    ],
    "decisions": [
     "D-3155",
-    "D-3144"
+    "D-3144",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
     "files": 10,
     "lines": 150,
-    "context_pct": 21
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -14877,7 +14884,7 @@
    "id": "T202",
    "slug": "site-spanish-business-lines",
    "title": "site: Spanish pages, the business page blocks and the required-lines docs test",
-   "goal": "The Spanish pages exist with the Spanish key terms (the Spanish consent draft above the English consent text is T103's request page, WEB-006, D-493); the business page shows a sample card per open trade, the city-license guide and the \"Who runs Laftly\" block, in Spanish too; the business help page (`business_help.html`) holds the WEB-020 safety tip for people working alone; and a docs test finds each required line (quote-page lines, insurance line, privacy lines, independent-business line) on every page that needs it (WEB-002, WEB-019 to WEB-021, WORD-013). The business page also carries, in English and Spanish, the WEB-024 notice line that follows the business-texting switch, the WEB-025 Hava-name answer, both WORD-017 lines, the WORD-002 business statement, every number and offer from the spec (WEB-018), the BIZ-030 \"How you're charged\" summary and the REC-009 pricing copy (four months, capped at $75, the $150-a-month pool example in the $75 row); the Spanish business sign-up is `app/portals/templates/es_business_signup.html` (WEB-019); the required-lines checks of the quote page and quote cards (WORD-005 to WORD-007, WORD-014) are T052's page and T203's scan (D-493). Plan change D-3144 (WEB-019, D-2128): `es_business_signup.html` needs an Askama struct and a route, and `portals`' `SignupView` renders only `business_signup.html` (`app/portals/src/business_signup.rs:254`), so this task also owns that file and T302's `app/server/src/business_signup.rs`, after T302 (and through it T268, whose consent box the Spanish form carries too): `signup_page` renders `es_business_signup.html` through a second view with the same fields when `Parts.language` is `PageLanguage::Es` (already the WEB-024 line's language), and the served sign-up keeps every screen in Spanish when the request carries `lang=es` (the Spanish business page's sign-up link adds it, and a hidden field carries it through each `POST`), with no new route; the consent box's wording stays exactly what `businesses::api::consent_box` gives, since that text is what the consent record stores; the Spanish copy is a draft marked for native-speaker review (D-180). The site pages extend T101's `site_layout.html` and fill `banner_shown`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (a public `GET` must answer 200, D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3700 (A11Y-007): `es_business_signup.html` draws native checkboxes as `business_signup.html` does, which fail `tests/a11y/targets_contrast.spec.ts`'s `edgeProblems` (:46) while no stylesheet is loaded, so it carries `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/feedback.html:10` has it.",
+   "goal": "The Spanish pages exist with the Spanish key terms (the Spanish consent draft above the English consent text is T103's request page, WEB-006, D-493); the business page shows a sample card per open trade, the city-license guide and the \"Who runs Laftly\" block, in Spanish too; the business help page (`business_help.html`) holds the WEB-020 safety tip for people working alone; and a docs test finds each required line (quote-page lines, insurance line, privacy lines, independent-business line) on every page that needs it (WEB-002, WEB-019 to WEB-021, WORD-013). The business page also carries, in English and Spanish, the WEB-024 notice line that follows the business-texting switch, the WEB-025 Hava-name answer, both WORD-017 lines, the WORD-002 business statement, every number and offer from the spec (WEB-018), the BIZ-030 \"How you're charged\" summary and the REC-009 pricing copy (four months, capped at $75, the $150-a-month pool example in the $75 row); the Spanish business sign-up is `app/portals/templates/es_business_signup.html` (WEB-019); the required-lines checks of the quote page and quote cards (WORD-005 to WORD-007, WORD-014) are T052's page and T203's scan (D-493). Plan change D-3144 (WEB-019, D-2128): `es_business_signup.html` needs an Askama struct and a route, and `portals`' `SignupView` renders only `business_signup.html` (`app/portals/src/business_signup.rs:254`), so this task also owns that file and T302's `app/server/src/business_signup.rs`, after T302 (and through it T268, whose consent box the Spanish form carries too): `signup_page` renders `es_business_signup.html` through a second view with the same fields when `Parts.language` is `PageLanguage::Es` (already the WEB-024 line's language), and the served sign-up keeps every `Screen` step of the sign-up form in Spanish (`portals`' `Screen`, `app/portals/src/business_signup.rs:256`: every step `business_signup.html` renders) when the request carries `lang=es` (the Spanish business page's sign-up link adds it, and a hidden field carries it through each `POST`), with no new route; the consent box's wording stays exactly what `businesses::api::consent_box` gives, since that text is what the consent record stores; the Spanish copy is a draft marked for native-speaker review (D-180). The site pages extend T101's `site_layout.html` and fill `banner_shown`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (a public `GET` must answer 200, D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3700 (A11Y-007): `es_business_signup.html` draws native checkboxes as `business_signup.html` does, which fail `tests/a11y/targets_contrast.spec.ts`'s `edgeProblems` (:46) while no stylesheet is loaded, so it carries `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/feedback.html:10` has it. Plan change D-3744: \"every screen\" means those `Screen` steps. The email-check page (`email_check.html`, T149's) and the capability step (`capability_setup.html`, T155's and T464's) are separate pages this task does not own; their Spanish versions (the rest of WEB-019's \"business sign-up ... in Spanish\") are logged in D-3744 for a later plan change, not dropped.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14961,7 +14968,8 @@
     "D-3144",
     "D-2128",
     "D-3676",
-    "D-3700"
+    "D-3700",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
@@ -14982,7 +14990,7 @@
    "id": "T103",
    "slug": "site-web-chat",
    "title": "site: web chat with the consent text first, typing a verified mobile number is the opt-in",
-   "goal": "A homeowner can start a request by web chat as well as by text: the consent text sits above the chat box with no agree button, the opt-in is typing a mobile number and then its code (no AI call before the code), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021). While the AI-008 switch is on, the chat page shows \"An AI service helps word our questions.\" above the chat box (AI-026, D-492). The request page shows the full consent text (WEB-014's request-page clause; the legal pages are T221's) (D-493). This task's migration adds the request source column INT-047 records (the `g` link code, or 'text' for a request started by text), which T158's scorecard reads (D-493). The WEB-006 Spanish consent draft sits above the English consent text on the request page (D-493). A web-chat request that would open a new request calls `intake::api::admit_new_request` first, on the connection of the transaction that opens it, with her vault contact and the client IP (SEC-014, D-1951; T317 changed it to take a connection, D-2206); a refused one opens nothing and the page says to try again later. It adds one row per method and path the web chat and request page serve to section 13 (module `site`, Wired `yes`; the Public door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: `site` and `intake` may not call `adapters` (`kit/layers.json`), where Verify is (`adapters::api::VerifyAdapter`, `app/adapters/src/verify.rs:40`), so the chat's code step uses a trait in `app/intake/src/web_chat.rs` (send a code to a number, check it) that the composition implements over the Verify adapter in the new `app/server/src/chat_codes.rs` and hands to the chat router when `build_router` merges it, as `businesses::api::SenderLink` is implemented in `server` (D-963); AI-026's line reads the switch through T221's `intake::api::ai_on`; the chat and request pages extend T101's `site_layout.html` and fill `banner_shown`. Plan change D-3189 (PRIV-008): each web-chat message whose words describe a job goes to `quotes::api::keep_description` (T411) with one UUID per chat message as its message ID (since web chat has no inbox row), preferably a key the page sends with the message so a retried POST stores nothing twice, as T162's order does for texts.",
+   "goal": "A homeowner can start a request by web chat as well as by text: the consent text sits above the chat box with no agree button, the opt-in is typing a mobile number and then its code (no AI call before the code), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021). While the AI-008 switch is on, the chat page shows \"An AI service helps word our questions.\" above the chat box (AI-026, D-492). The request page shows the full consent text (WEB-014's request-page clause; the legal pages are T221's) (D-493). This task's migration adds the request source column INT-047 records (the `g` link code, or 'text' for a request started by text), which T158's scorecard reads (D-493). The WEB-006 Spanish consent draft sits above the English consent text on the request page (D-493). A web-chat request that would open a new request calls `intake::api::admit_new_request` first, on the connection of the transaction that opens it, with her vault contact and the client IP (SEC-014, D-1951; T317 changed it to take a connection, D-2206); a refused one opens nothing and the page says to try again later. It adds one row per method and path the web chat and request page serve to section 13 (module `site`, Wired `yes`; the Public door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: `site` and `intake` may not call `adapters` (`kit/layers.json`), where Verify is (`adapters::api::VerifyAdapter`, `app/adapters/src/verify.rs:40`), so the chat's code step uses a trait in `app/intake/src/web_chat.rs` (send a code to a number, check it) that the composition implements over the Verify adapter in the new `app/server/src/chat_codes.rs` and hands to the chat router through a new optional builder `RouterParts::with_chat_codes` in the shared `app/server/src/lib.rs` (as `with_sign_in` adds T280's part, `lib.rs:111`), which `main` (the shared `app/server/src/main.rs`) calls with the codes `chat_codes.rs` builds from `Settings`, as `businesses::api::SenderLink` is implemented in `server` (D-963, D-3744); AI-026's line reads the switch through T221's `intake::api::ai_on`; the chat and request pages extend T101's `site_layout.html` and fill `banner_shown`. Plan change D-3189 (PRIV-008): each web-chat message whose words describe a job goes to `quotes::api::keep_description` (T411) with one UUID per chat message as its message ID (since web chat has no inbox row), preferably a key the page sends with the message so a retried POST stores nothing twice, as T162's order does for texts. Plan change D-3744: `build_router` exposes no Verify client (`PickCodeKeys`' fields are private, `app/portals/src/pick_flow.rs:291`), and a new tuple part would have to be wired in `app/server/tests/door_matrix.rs` (`router`, `:651`) and `app/server/tests/route_wiring.rs`, which this task does not own. So the chat router is always merged; without the `with_chat_codes` part (those done route tests, dev and `Ci`) its code step sends and stores nothing and shows a line saying codes cannot be sent right now, answering below 500, as the page pick does without its keys; the end-to-end chat run uses T452's keyed binary, whose `main` gives the part.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15065,7 +15073,8 @@
     "D-3189",
     "D-3262",
     "D-3263",
-    "D-3722"
+    "D-3722",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
@@ -15086,7 +15095,7 @@
    "id": "T222",
    "slug": "journeys-full-variants",
    "title": "Journeys J1 and J2, the full variants: web chat, photos, question order, quote formats, share box, review links",
-   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15's J1 and J2 half, D-3263) go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page (`messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:198`, has no other caller), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by email through Twilio Verify's email channel (`app/picks/src/email_code.rs:113`, read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:344`), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier listing zero texts at the end of each journey. TD-TXT-15's Resend email checks (the safety email, quote, job-card and check-in emails) are parked: nothing in the app sends email to Resend yet (the server builds no `ResendEmail`, `app/server/src/lib.rs:724`, and no task drains the email outbox to a provider), so they wait for a future email-sender wiring task (D-3186's account mailer and the outbox send handler, with the e2e app pointed at the stand-in), which reads them with T414's `control.sentEmails`; this task neither builds that sender nor waits for it. J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492).",
+   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15's J1 and J2 half, D-3263) go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page (`messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:198`, has no other caller), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by email through Twilio Verify's email channel (`app/picks/src/email_code.rs:113`, read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:344`), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier listing zero texts at the end of each journey. TD-TXT-15's Resend email checks (the safety email, quote, job-card and check-in emails) are parked: nothing in the app sends email to Resend yet (the server builds no `ResendEmail`, `app/server/src/lib.rs:724`, and no task drains the email outbox to a provider), so they wait for a future email-sender wiring task (D-3186's account mailer and the outbox send handler, with the e2e app pointed at the stand-in), which reads them with T414's `control.sentEmails`; this task neither builds that sender nor waits for it. J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492). Plan change D-3744: J2's Confirm from the email with no session, HOLD, Away and BUSY are served by T457 (the Confirm link's code step), T456 (Hold and Away) and T463 (Busy), so this task depends on T457, which follows T463 and, through it, T456. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15107,7 +15116,8 @@
     "T230",
     "T231",
     "T386",
-    "T310"
+    "T310",
+    "T457"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -15152,7 +15162,8 @@
    "decisions": [
     "D-491",
     "D-492",
-    "D-3263"
+    "D-3263",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
@@ -15557,7 +15568,7 @@
    "id": "T204",
    "slug": "ops-pushes-digest-security-alerts",
    "title": "ops: phone pushes by alert email, the weekly digest, owner flags, the away setting and security-event alerts",
-   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840). T300 serves the business portal home before this task (D-2128): this task owns `app/server/src/business_portal.rs` too and keeps the served home working with what it adds. Fourth external audit F28 and SEC-051 (D-2207): the alert email sender is registered in `server::worker_registry` (the shared `app/server/src/lib.rs:456`, which has the `Settings` its configuration, the alert address (OPS-035), comes from; `register_handlers`, `:382`, takes none) on every path (D-3144), so a raised pushing alert reaches the email provider through the worker, and `tests/integration/tests/alert_routing.rs` proves it through the worker, never by calling the sender; and `messaging::api::check_webhook_silence` (SEC-051, `app/messaging/src/email.rs:762`), which nothing runs today, is run hourly by a worker task this task queues, after T320 made it raise through `ops::api::raise_kind_once`, so it keeps one open alert; this task's own daily volume check raises through `raise_alert_once` or `raise_kind_once` as well (D-3144). The weekly digest also counts the `ops` audit rows with action `messaging.optout_wrote_again` that T360 writes for CON-016 (a listed homeowner who wrote again without START and has no email on file), as a count with job numbers only (D-2629, TD-OPS-09); and the business statement shows a won dispute's `dispute-reversal` and `countering-fee-return` rows (T353) as a won dispute, in plain words (D-2625). Plan change D-3155: its migration is numbered 0192 (moved up one by D-3262, one more by D-3263 and one more by D-3722), so T151 and T321 fit before T109's 0196 (V9).",
+   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840). T300 serves the business portal home before this task (D-2128): this task owns `app/server/src/business_portal.rs` too and keeps the served home working with what it adds. Fourth external audit F28 and SEC-051 (D-2207): the alert email sender is registered in `server::worker_registry` (the shared `app/server/src/lib.rs:456`, which has the `Settings` its configuration, the alert address (OPS-035), comes from; `register_handlers`, `:382`, takes none) on every path (D-3144), so a raised pushing alert reaches the email provider through the worker, and `tests/integration/tests/alert_routing.rs` proves it through the worker, never by calling the sender; and `messaging::api::check_webhook_silence` (SEC-051, `app/messaging/src/email.rs:762`), which nothing runs today, is run hourly by a worker task this task queues, after T320 made it raise through `ops::api::raise_kind_once`, so it keeps one open alert; this task's own daily volume check raises through `raise_alert_once` or `raise_kind_once` as well (D-3144). The weekly digest also counts the `ops` audit rows with action `messaging.optout_wrote_again` that T360 writes for CON-016 (a listed homeowner who wrote again without START and has no email on file), as a count with job numbers only (D-2629, TD-OPS-09); and the business statement shows a won dispute's `dispute-reversal` and `countering-fee-return` rows (T353) as a won dispute, in plain words (D-2625). Plan change D-3155: its migration is numbered 0192 (moved up one by D-3262, one more by D-3263 and one more by D-3722), so T151 and T321 fit before T109's 0196 (V9). Plan change D-3744: its budget is 600 lines, the build limit; it is listed in D-3744 for a split in a later plan change.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15655,12 +15666,13 @@
     "D-3155",
     "D-3262",
     "D-3263",
-    "D-3722"
+    "D-3722",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
     "files": 9,
-    "lines": 400,
+    "lines": 600,
     "context_pct": 23
    },
    "checks": [
@@ -15873,7 +15885,7 @@
    "id": "T108",
    "slug": "owner-portal-tools",
    "title": "portals: owner tools for pauses, fee mode, categories and settings",
-   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043); the owner home also shows each week's opt-out rate by audience from T107's counts (CON-024), offers \"Call from the Laftly number\" for a pushed critical safety alert through T080's `calls::api` bridge (OPS-028), records Stripe's written answer for the PICK-048 auto-confirm box (date, reference, answer) as the `catalog` setting T209 reads through `catalog::api`, and shows each needs-review sign-up with its 4-day decision target (BIZ-027, TD-BIZ-07) (D-491). The owner home also holds the homeowner-texting switch, the launch channel and the record of a Twilio number suspension and its restore, through T279's `messaging::api` store, and the status banner's off switch through `ops::api` (D-1843). The fee-mode switch calls `payments::api::switch_fee_mode`, which stores the terms in force in `payments.fee_terms` (T287, D-1871); the owner portal keeps no copy of its own. T310 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser halves of TD-SEC-22 run in T303's spec and of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 in T310's, and `tests/e2e/owner_tools.spec.ts` checks what an unserved page allows (a signed-out request gets no owner detail). `ring_owner` takes the homeowner's number and the safety words and sends `owner_bridge_twiml` itself (T378, D-2762); this task calls that form. Plan change D-3155: (a) `ring_owner` needs a voice client, the owner's phone and a pool number, which no page or router state holds (`app/server/src/lib.rs:77` to `:82`), so the \"Call from the Laftly number\" press (fresh second factor) only queues one `core.task` of a new kind (the alert and press IDs, deduplicated per press); its handler registers in `worker_registry` (the shared `app/server/src/lib.rs`, which has the Twilio settings) and calls `calls::api::ring_owner` in T378's form, the owner's phone a new required-in-test-and-live `Settings` value in the shared `app/core/src/settings.rs`; the kind is registered, as `tests/integration/tests/task_registry.rs` requires. (b) CON-035's owner-recorded opt-out: the settings page takes a phone number the owner was asked by any other contact to stop texting (fresh second factor) and calls `messaging::api::suppress` with `RevokeChannel::Owner`, confirmed on screen, never by text (TD-CON-17's owner half).",
+   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043); the owner home also shows each week's opt-out rate by audience from T107's counts (CON-024), offers \"Call from the Laftly number\" for a pushed critical safety alert through T080's `calls::api` bridge (OPS-028), records Stripe's written answer for the PICK-048 auto-confirm box (date, reference, answer) through a new `quotes::api::file_stripe_answer` (D-3744, below), and shows each needs-review sign-up with its 4-day decision target (BIZ-027, TD-BIZ-07) (D-491). The owner home also holds the homeowner-texting switch, the launch channel and the record of a Twilio number suspension and its restore, through T279's `messaging::api` store, and the status banner's off switch through `ops::api` (D-1843). The fee-mode switch calls `payments::api::switch_fee_mode`, which stores the terms in force in `payments.fee_terms` (T287, D-1871); the owner portal keeps no copy of its own. T310 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser halves of TD-SEC-22 run in T303's spec and of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 in T310's, and `tests/e2e/owner_tools.spec.ts` checks what an unserved page allows (a signed-out request gets no owner detail). `ring_owner` takes the homeowner's number and the safety words and sends `owner_bridge_twiml` itself (T378, D-2762); this task calls that form. Plan change D-3155: (a) `ring_owner` needs a voice client, the owner's phone and a pool number, which no page or router state holds (`app/server/src/lib.rs:77` to `:82`), so the \"Call from the Laftly number\" press (fresh second factor) only queues one `core.task` of a new kind (the alert and press IDs, deduplicated per press); its handler registers in `worker_registry` (the shared `app/server/src/lib.rs`, which has the Twilio settings) and calls `calls::api::ring_owner` in T378's form, the owner's phone a new required-in-test-and-live `Settings` value in the shared `app/core/src/settings.rs`; the kind is registered, as `tests/integration/tests/task_registry.rs` requires. (b) CON-035's owner-recorded opt-out: the settings page takes a phone number the owner was asked by any other contact to stop texting (fresh second factor) and calls `messaging::api::suppress` with `RevokeChannel::Owner`, confirmed on screen, never by text (TD-CON-17's owner half). Plan change D-3744: (c) Stripe's written answer is not a `catalog` setting: it is the append-only `quotes.stripe_written_answer` table (`answered_on`, `reference` of 1 to 200 characters, `allows`, `filed_at`; `migrations/0156_quotes_auto_confirm.sql:34`, the app role SELECT and INSERT only), read by `quotes::api::stripe_answer_filed` (`app/quotes/src/auto_confirm_box.rs:219`, D-2783). This task owns `auto_confirm_box.rs` (after T209 and T428, both done) and adds `file_stripe_answer` there (one row per filing, the owner's date, reference and answer, `filed_at` the call's time), exported through the shared `app/quotes/src/api.rs`; the settings page calls it after the fresh second factor and shows the latest filing; `stripe_answer_filed` is unchanged. (d) Any of its templates that draws a native checkbox or radio (`owner_settings.html`, `owner_home.html`) links `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/feedback.html:10` does (D-3700, A11Y-007, A11Y-009); T466 is a dependency. Its budget is 600 lines.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15883,7 +15895,8 @@
     "T107",
     "T279",
     "T287",
-    "T378"
+    "T378",
+    "T466"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -15896,7 +15909,8 @@
     "app/portals/src/owner_portal.rs",
     "app/portals/templates/owner_home.html",
     "app/portals/templates/owner_settings.html",
-    "tests/e2e/owner_tools.spec.ts"
+    "tests/e2e/owner_tools.spec.ts",
+    "app/quotes/src/auto_confirm_box.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15938,13 +15952,16 @@
     "D-1843",
     "D-1871",
     "D-2762",
-    "D-3155"
+    "D-3155",
+    "D-2783",
+    "D-3700",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 350,
-    "context_pct": 24
+    "files": 5,
+    "lines": 600,
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -15959,7 +15976,7 @@
    "id": "T205",
    "slug": "portals-owner-refunds-audit",
    "title": "portals: owner refunds with a review step and the audit log viewer",
-   "goal": "The owner refunds a charge through a review step that issues one Stripe refund and one ledger row, a refund on a disputed charge being blocked; the owner portal alone has pause, refund and release powers; and the audit log viewer shows every action with its actor (FEE-026, SEC-006). T304 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser half of J3's refund and audit-log steps runs in T304's spec, and `tests/e2e/owner_refund.spec.ts` checks what an unserved page allows. The review step of a disputed charge also offers \"I submitted this dispute's evidence in Stripe myself\", which after a fresh second factor calls `payments::api::record_owner_submission` once (D-229, FEE-050; fourth external audit F44, D-2204).",
+   "goal": "The owner refunds a charge through a review step that issues one Stripe refund and one ledger row, a refund on a disputed charge being blocked; the owner portal alone has pause, refund and release powers; and the audit log viewer shows every action with its actor (FEE-026, SEC-006). T304 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser half of J3's refund and audit-log steps runs in T304's spec, and `tests/e2e/owner_refund.spec.ts` checks what an unserved page allows. The review step of a disputed charge also offers \"I submitted this dispute's evidence in Stripe myself\", which after a fresh second factor calls `payments::api::record_owner_submission` once (D-229, FEE-050; fourth external audit F44, D-2204). Plan change D-3744: if `owner_refund.html` or `owner_audit_log.html` draws a native checkbox or radio, that template links `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/feedback.html:10` does (D-3700, A11Y-007, A11Y-009); T466 is a dependency.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15968,7 +15985,8 @@
     "T106",
     "T107",
     "T108",
-    "T314"
+    "T314",
+    "T466"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16008,13 +16026,15 @@
     "D-074",
     "D-2204",
     "D-229",
-    "D-3155"
+    "D-3155",
+    "D-3700",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 23
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -16238,7 +16258,7 @@
    "id": "T111",
    "slug": "terms-homeowner-business",
    "title": "Draft homeowner and business terms with every required clause",
-   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030). The homeowner terms describe both ways of picking (the quote page and a \"<number> YES\" text pick, TERMS-001); both terms end with the TERMS-035 General section (severability, entire agreement, no waiver, transfer, notices, the 14-day business change notice and the homeowner rule that a change applies only to later requests), and the business terms add the 30-day write-first step and the TERMS-036 account-ending clause and no-promise sentence (D-492). The new summary file fails `scripts/check_legal_docs.py` until it is listed (`DOCUMENTS`, `:45`; any other `.md` under `docs/legal/` is an error, `:460`), so this task adds `business-terms-summary-es.md` to `DOCUMENTS` and to `BUSINESS_DOCUMENTS`, and moves `tests/test_check_legal_docs.py:53`'s count from 9 to 10; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) and DONE T291's, and the test belongs to no task (D-3263). The summary starts, as every draft does, with the English draft note line and a version line naming an English month (`check_header`, `scripts/check_legal_docs.py:360`), its body in Spanish. Brand: the brand is Laftly (Laftly LLC, laftly.com, D-3347, T428). Every 'Ask Hava', 'askhava.com' or 'Ask Hava:' text prefix in the decision quotes, research notes and examples of this prompt is historical and is written as 'Laftly', 'laftly.com' and 'Laftly:' (taken from core::api::brand() or app/core/data/brand.json) in every file this task owns; a test or checklist line that names the old brand is read as the Laftly one.",
+   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030). The homeowner terms describe both ways of picking (the quote page and a \"<number> YES\" text pick, TERMS-001); both terms end with the TERMS-035 General section (severability, entire agreement, no waiver, transfer, notices, the 14-day business change notice and the homeowner rule that a change applies only to later requests), and the business terms add the 30-day write-first step and the TERMS-036 account-ending clause and no-promise sentence (D-492). The new summary file fails `scripts/check_legal_docs.py` until it is listed (`DOCUMENTS`, `:45`; any other `.md` under `docs/legal/` is an error, `:460`), so this task adds `business-terms-summary-es.md` to `DOCUMENTS` and to `BUSINESS_DOCUMENTS`, and moves `tests/test_check_legal_docs.py:62`'s count from 9 to 10; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) and DONE T291's, and the test belongs to no task (D-3263). The summary starts, as every draft does, with the English draft note line and a version line naming an English month (`check_header`, `scripts/check_legal_docs.py:360`), its body in Spanish. Brand: the brand is Laftly (Laftly LLC, laftly.com, D-3347, T428). Every 'Ask Hava', 'askhava.com' or 'Ask Hava:' text prefix in the decision quotes, research notes and examples of this prompt is historical and is written as 'Laftly', 'laftly.com' and 'Laftly:' (taken from core::api::brand() or app/core/data/brand.json) in every file this task owns; a test or checklist line that names the old brand is read as the Laftly one.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -16334,7 +16354,8 @@
     "D-490",
     "D-492",
     "D-3263",
-    "D-3467"
+    "D-3467",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
@@ -16875,7 +16896,7 @@
    "id": "T118",
    "slug": "e2e-j3-operator",
    "title": "Journey J3 (operator) keyboard-only, with closing checks",
-   "goal": "Journey J3 (owner sign-in, pause, refund, fee mode, safe mode, audit viewer) runs end to end in Playwright, again keyboard-only, ending with the closing checks (A11Y-005, A11Y-021).",
+   "goal": "Journey J3 (owner sign-in, pause, refund, fee mode, safe mode, audit viewer) runs end to end in Playwright, again keyboard-only, ending with the closing checks (A11Y-005, A11Y-021). Plan change D-3744: J3 step 5's paused release that goes ahead once the alert is acknowledged is T408's held-release task (`app/server/src/release_hold.rs`, `payments::api::held_release`), so this task depends on T408. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16885,7 +16906,8 @@
     "T303",
     "T304",
     "T310",
-    "T414"
+    "T414",
+    "T408"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16915,7 +16937,8 @@
    ],
    "decisions": [
     "D-1143",
-    "D-3263"
+    "D-3263",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
@@ -16935,14 +16958,16 @@
    "id": "T119",
    "slug": "e2e-j4-outage",
    "title": "Journey J4 (vendor outage), with closing checks",
-   "goal": "Journey J4 (Twilio failing and suspended, Stripe unreachable, the AI down, then recovery) runs end to end in Playwright, keyboard-only too, ending with the closing checks and a clean nightly reconcile (A11Y-021).",
+   "goal": "Journey J4 (Twilio failing and suspended, Stripe unreachable, the AI down, then recovery) runs end to end in Playwright, keyboard-only too, ending with the closing checks and a clean nightly reconcile (A11Y-021). Plan change D-3744: J4's quote link that \"appears in the portal\" (TXT-014) is the homeowner portal T307 serves, and \"Casey's call list fills\" (TXT-023) is read on the owner pages T310 serves, which this task reaches through T118 (T118 depends on T303 and T310), so it depends on T118 and T307 (D-3263 assumed T119 followed T118; until now it did not). It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Its Resend email checks wait for the email-sender wiring task, as T118's do (D-3263).",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
     "T103",
-    "T106"
+    "T106",
+    "T118",
+    "T307"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16970,7 +16995,8 @@
     "TD-TXT-15"
    ],
    "decisions": [
-    "D-1143"
+    "D-1143",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
@@ -16990,7 +17016,7 @@
    "id": "T120",
    "slug": "privacy-sentinel",
    "title": "Sentinel test: J1 to J4 leave no contact detail outside the vault",
-   "goal": "With sentinel fake details run through J1 to J4, no non-vault table, log line, Sentry stub event, job card, AI input or pre-release business message contains them, and a browser-tamper test proves no fee, amount, business, quote or pick ID changed in a form or URL changes anything the signed-in person may not do (PRIV-005, PRIV-006, PRIV-016, PRIV-017, PRIV-019, PRIV-028, SEC-033).",
+   "goal": "With sentinel fake details run through J1 to J4, no non-vault table, log line, Sentry stub event, job card, AI input or pre-release business message contains them, and a browser-tamper test proves no fee, amount, business, quote or pick ID changed in a form or URL changes anything the signed-in person may not do (PRIV-005, PRIV-006, PRIV-016, PRIV-017, PRIV-019, PRIV-028, SEC-033). Plan change D-3744: its budget is 600 lines, the build limit; it is listed in D-3744 for a split in a later plan change. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17036,12 +17062,13 @@
    "decisions": [
     "D-453",
     "D-480",
-    "D-492"
+    "D-492",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
     "files": 3,
-    "lines": 400,
+    "lines": 600,
     "context_pct": 7
    },
    "checks": [
@@ -19117,7 +19144,7 @@
    "id": "T409",
    "slug": "door-probe-owner-session",
    "title": "server (harness): the door probe's owner actor signs in through owner sign-in, so owner pages can be probed",
-   "goal": "Plan change D-3155 (SEC-005, SEC-019, SEC-034; D-2440, D-1917): `app/server/tests/door_matrix.rs` (T348's, then T401's and T404's) signs the `Owner` actor in with a plain `start_session(Realm::Owner, <random id>)` (`signed_in`, `:873` to `:876`), which writes no `portals.owner_session` row, but `portals::api::owner_principal` reads the owner session through a join on `portals.owner_session` (`app/portals/src/models.rs:541` to `:549`), so every owner-gated route answers the owner's refusal and the probe's own-record check fails (`judge`, `:403` to `:409`) for the first `/owner/...` row a task marks `yes` (T303's sign-out and step-up, then T304, T305 and T310), whose goals say they edit neither matrix file. (1) The fixture bootstraps the one owner with `portals::api::bootstrap_owner` (a fake 32-character token and a fake pass phrase), takes the authenticator secret from the `OwnerEnrolment` it returns (`totp_secret`, base32, `app/portals/src/owner_auth.rs:189` to `:191`), decodes it with `totp_rs::Secret::Encoded(..).to_bytes()` (`totp-rs` is allowed, `kit/allowed_crates.txt:26`; added as a dev-dependency in the shared `app/server/Cargo.toml`) and signs the `Owner` actor in with `portals::api::owner_sign_in` and a TOTP code computed as `tests/security/tests/owner_auth.rs` does (`totp_code`, `sign_in`, `:35` to `:66`; RFC 6238, SHA-1, 30-second steps), at the probe's clock; no SQL is added to `door_matrix.rs` (`tests/integration/tests/architecture_migrations.rs` scans test files under `app/` too: `sqlx::query_scalar(..)` is a forbidden form and a query naming `portals.` from `server` a cross-schema finding), so the session is a real owner session with a fresh second factor (a step-up challenge still passes the owner's `POST` judgement as today). (2) One new case asserts `owner_principal` gives the fixture's owner session an owner and that a plain owner-realm `start_session` without the row gives `None`, so the fixture is proved before any owner route is served. Every other case, judgement, actor and assertion stays byte-identical, nothing is loosened, `tests/security/door_cases.txt` and `tests/security/tests/auth_matrix.rs` are unchanged (auth_matrix probes the `Owner` door nowhere: `:694`), and `door_matrix.rs` still names no `payments` item (TD-FEE-07). Fake data only. A harness task only because the file is a done task's test. Update `app/server/CLAUDE.md` (the door probe line) and `docs/decisions.md`.",
+   "goal": "Plan change D-3155 (SEC-005, SEC-019, SEC-034; D-2440, D-1917): `app/server/tests/door_matrix.rs` (T348's, then T401's and T404's) signs the `Owner` actor in with a plain `start_session(Realm::Owner, <random id>)` (`signed_in`, `:960` to `:975`), which writes no `portals.owner_session` row, but `portals::api::owner_principal` reads the owner session through a join on `portals.owner_session` (`app/portals/src/models.rs:541` to `:549`), so every owner-gated route answers the owner's refusal and the probe's own-record check fails (`judge`, `:426`) for the first `/owner/...` row a task marks `yes` (T303's sign-out and step-up, then T304, T305 and T310), whose goals say they edit neither matrix file. (1) The fixture bootstraps the one owner with `portals::api::bootstrap_owner` (a fake 32-character token and a fake pass phrase), takes the authenticator secret from the `OwnerEnrolment` it returns (`totp_secret`, base32, `app/portals/src/owner_auth.rs:189` to `:191`), decodes it with `totp_rs::Secret::Encoded(..).to_bytes()` (`totp-rs` is allowed, `kit/allowed_crates.txt:26`; added as a dev-dependency in the shared `app/server/Cargo.toml`) and signs the `Owner` actor in with `portals::api::owner_sign_in` and a TOTP code computed as `tests/security/tests/owner_auth.rs` does (`totp_code`, `sign_in`, `:35` to `:66`; RFC 6238, SHA-1, 30-second steps), at the probe's clock; no SQL is added to `door_matrix.rs` (`tests/integration/tests/architecture_migrations.rs` scans test files under `app/` too: `sqlx::query_scalar(..)` is a forbidden form and a query naming `portals.` from `server` a cross-schema finding), so the session is a real owner session with a fresh second factor (a step-up challenge still passes the owner's `POST` judgement as today). (2) One new case asserts `owner_principal` gives the fixture's owner session an owner and that a plain owner-realm `start_session` without the row gives `None`, so the fixture is proved before any owner route is served. Every other case, judgement, actor and assertion stays byte-identical, nothing is loosened, `tests/security/door_cases.txt` and `tests/security/tests/auth_matrix.rs` are unchanged (auth_matrix probes the `Owner` door nowhere: `:694`), and `door_matrix.rs` still names no `payments` item (TD-FEE-07). Fake data only. A harness task only because the file is a done task's test. Update `app/server/CLAUDE.md` (the door probe line) and `docs/decisions.md`. Plan change D-3744: the fixture signs each actor in once (`world`, `:988` to `:998`), but once T303 marks `POST /owner/sign-out` or \"Sign out everywhere\" `yes`, the owner's own probe of that row ends its session and every later owner row fails. So before each row probed as the `Owner` actor, the fixture signs the owner in again through `owner_sign_in` with a fresh TOTP step: the k-th sign-in at the probe's clock plus k times 30 seconds and the code for that time, because `use_totp_step` (`app/portals/src/models.rs:439`) refuses a step at or below the last one used. Every judgement stays as it is. Its budget is 200 lines. The re-signed sessions' second factor sits in the future of the routes' clock (`build_router` uses `SystemClock`, as the probe's sign-in router does, `app/server/tests/door_matrix.rs:934`), and `factor_fresh` refuses a future `factor_at` (`app/portals/src/owner_auth.rs:245` to `:248`), so a step-up-gated owner row answers the step-up challenge, which `judge` already accepts for the owner (`:423` to `:424`); no judgement changes.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -19150,13 +19177,14 @@
    "decisions": [
     "D-2440",
     "D-1917",
-    "D-3155"
+    "D-3155",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
     "files": 1,
-    "lines": 150,
-    "context_pct": 24
+    "lines": 200,
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -19171,7 +19199,7 @@
    "id": "T303",
    "slug": "owner-signin-served",
    "title": "server and portals: owner sign-in, sign-out and step-up are served",
-   "goal": "No task serves owner sign-in (D-2128): `portals::api` has `owner_signin_page`, `owner_sign_in`, `owner_principal`, `owner_step_up`, `owner_sign_out`, `sign_out_everywhere`, the passkey calls and the route constants `OWNER_SIGNIN_ROUTE` and `OWNER_PASSKEY_ROUTE` (T086), but `server::build_router` merges none of them, so J3 (T118) cannot sign in. (1) `app/server/src/owner_signin.rs` builds the owner sign-in page and its `POST` (password plus TOTP, or passkey, SEC-005), the passkey routes with `portals`' `static/passkey.ts` served beside the sign-in page, sign-out, \"Sign out everywhere\" and the step-up form, and exports the owner-session check (`owner_principal`: 12-hour session, 30 minutes idle) that T310, T304 and T305 use; none, a business or a homeowner session gets a 4xx with a link to `/owner/sign-in` and nothing else; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_signin_route.rs` (TD-SEC-46) and `tests/e2e/owner_signin_served.spec.ts`, which takes the browser half of TD-SEC-22: the TOTP path is the browser path (a passkey is checked in the route test); the spec creates the one owner by running the server binary's `bootstrap-owner` command (`app/server/src/main.rs`: `ASKHAVA_OWNER_BOOTSTRAP_TOKEN` of 32 or more characters in its environment, the password on standard input, the migration database URL) once per database, reads the authenticator secret it prints and computes the TOTP code in the spec. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. The password `POST` calls `portals::api::admit_owner_password` first, on the password step only and before the password is checked (D-1951; fourth external audit F12, D-2206). Plan change D-3155: the door probe's owner actor had no `portals.owner_session` row, so this task's owner-door rows (sign-out, \"Sign out everywhere\", step-up) would have been refused to the owner; T409 (a dependency) signs it in through `owner_sign_in`, and this task edits neither matrix file.",
+   "goal": "No task serves owner sign-in (D-2128): `portals::api` has `owner_signin_page`, `owner_sign_in`, `owner_principal`, `owner_step_up`, `owner_sign_out`, `sign_out_everywhere`, the passkey calls and the route constants `OWNER_SIGNIN_ROUTE` and `OWNER_PASSKEY_ROUTE` (T086), but `server::build_router` merges none of them, so J3 (T118) cannot sign in. (1) `app/server/src/owner_signin.rs` builds the owner sign-in page and its `POST` (password plus TOTP, or passkey, SEC-005), the passkey routes with `portals`' `static/passkey.ts` served beside the sign-in page, sign-out, \"Sign out everywhere\" and the step-up form, and exports the owner-session check (`owner_principal`: 12-hour session, 30 minutes idle) that T310, T304 and T305 use; none, a business or a homeowner session gets a 4xx with a link to `/owner/sign-in` and nothing else; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_signin_route.rs` (TD-SEC-46) and `tests/e2e/owner_signin_served.spec.ts`, which takes the browser half of TD-SEC-22: the TOTP path is the browser path (a passkey is checked in the route test); the spec creates the one owner by running the server binary's `bootstrap-owner` command (`app/server/src/main.rs`: `ASKHAVA_OWNER_BOOTSTRAP_TOKEN` of 32 or more characters in its environment, the password on standard input, the migration database URL) once per database, reads the authenticator secret it prints and computes the TOTP code in the spec. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. The password `POST` calls `portals::api::admit_owner_password` first, on the password step only and before the password is checked (D-1951; fourth external audit F12, D-2206). Plan change D-3155: the door probe's owner actor had no `portals.owner_session` row, so this task's owner-door rows (sign-out, \"Sign out everywhere\", step-up) would have been refused to the owner; T409 (a dependency) signs it in through `owner_sign_in`, and this task edits neither matrix file. Plan change D-3744: `bootstrap-owner` works once per database and Playwright runs every spec on one database and one worker, so the bootstrap and sign-in live in a new shared helper `tests/e2e/owner_session.ts` this task owns: it runs `bootstrap-owner` the first time it is asked (the environment and standard input above), keeps the password and authenticator secret in a file in the run's scratch folder so a later spec file or a restarted worker reuses them, and signs in with a TOTP code for a step the server has not taken yet (`use_totp_step`, `app/portals/src/models.rs:439`, refuses a reused step), waiting for or moving the test clock to the next 30-second step when the last sign-in used the current one. `owner_signin_served.spec.ts` uses it, and T304, T305, T310, T118, T119, T120 and T222 sign the owner in only through it. The cache also stores the last TOTP step used. A database the helper did not bootstrap in this run but that already has an owner (a local rerun: `tests/e2e/webserver.ts:192` makes a fresh scratch folder each run, while `:203` only migrates the same database) makes the helper fail at once with a clear message to drop and recreate the end-to-end database; `Ci` always starts from a fresh one.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19193,7 +19221,8 @@
    "owns": [
     "app/server/src/owner_signin.rs",
     "app/server/tests/owner_signin_route.rs",
-    "tests/e2e/owner_signin_served.spec.ts"
+    "tests/e2e/owner_signin_served.spec.ts",
+    "tests/e2e/owner_session.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -19225,13 +19254,14 @@
     "D-2206",
     "D-1951",
     "D-2633",
-    "D-3155"
+    "D-3155",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 600,
-    "context_pct": 17
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -19246,7 +19276,7 @@
    "id": "T304",
    "slug": "owner-tools-served",
    "title": "server and portals: the owner refund review, the audit log viewer and the health page are served",
-   "goal": "T205 builds the owner refund review step and the audit log viewer and T106 and T109 the health page, as portals pages no route serves (D-2128); J3 (T118) refunds a charge and reads the audit log. (1) `app/server/src/owner_tools.rs` builds those pages and the refund `POST` behind T303's owner session (T304 uses T303's owner-session check): the refund needs a fresh second factor (SEC-043), issues one Stripe refund and one ledger row, and is blocked on a disputed charge (FEE-026, SEC-006); no other realm reaches them (a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_tools_route.rs` (TD-SEC-47) and `tests/e2e/owner_tools_served.spec.ts`, which takes the browser half of J3's refund and audit-log steps that T205's spec cannot reach while the pages are unserved, signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It also serves T205's \"I submitted the evidence myself\" `POST` (fresh second factor, CSRF, `no_store`), which calls `payments::api::record_owner_submission` once (fourth external audit F44, D-2204). It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3155: (a) the door probe's owner signs in through `owner_sign_in` from T409 (through T303), so the owner rows are reached; (b) the health page shows each required secret as present, parsed and environment-matched (T106, OPS-008), which needs `Settings`, and `build_router` gets none (`app/server/src/lib.rs:130`): `main` (shared) computes a `SecretReport` from `Settings` (booleans per secret name, never a value, length or hash) and passes it through a new `From<(Hooks, RequestTimeout, SecretReport)> for RouterParts` in the shared `app/server/src/lib.rs`; the two existing `From` impls stay and give a report that says \"not checked\", so no done caller (`app/server/tests/route_wiring.rs`, `door_matrix.rs`) changes.",
+   "goal": "T205 builds the owner refund review step and the audit log viewer and T106 and T109 the health page, as portals pages no route serves (D-2128); J3 (T118) refunds a charge and reads the audit log. (1) `app/server/src/owner_tools.rs` builds those pages and the refund `POST` behind T303's owner session (T304 uses T303's owner-session check): the refund needs a fresh second factor (SEC-043), issues one Stripe refund and one ledger row, and is blocked on a disputed charge (FEE-026, SEC-006); no other realm reaches them (a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_tools_route.rs` (TD-SEC-47) and `tests/e2e/owner_tools_served.spec.ts`, which takes the browser half of J3's refund and audit-log steps that T205's spec cannot reach while the pages are unserved, signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It also serves T205's \"I submitted the evidence myself\" `POST` (fresh second factor, CSRF, `no_store`), which calls `payments::api::record_owner_submission` once (fourth external audit F44, D-2204). It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3155: (a) the door probe's owner signs in through `owner_sign_in` from T409 (through T303), so the owner rows are reached; (b) the health page shows each required secret as present, parsed and environment-matched (T106, OPS-008), which needs `Settings`, and `build_router` gets none (`app/server/src/lib.rs:130`): `main` (shared) computes a `SecretReport` from `Settings` (booleans per secret name, never a value, length or hash) and passes it through a new `From<(Hooks, RequestTimeout, StaticRoot, SecretReport)> for RouterParts` in the shared `app/server/src/lib.rs` (`main` already passes `(hooks, limit, statics)`, `app/server/src/main.rs:65`; D-3744); the three existing `From` impls (`lib.rs:124`, `:136`, `:149`) stay and give a report that says \"not checked\", so no done caller (`app/server/tests/route_wiring.rs`, `door_matrix.rs`) changes. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19298,7 +19328,8 @@
     "D-2128",
     "D-2204",
     "D-2440",
-    "D-3155"
+    "D-3155",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
@@ -19319,7 +19350,7 @@
    "id": "T305",
    "slug": "owner-reports-served",
    "title": "server and portals: the scorecard, the intake report, the money view and the owner help page are served",
-   "goal": "T158, T210 and T434 build the owner's scorecard, intake report and money view (with its expense-entry `POST`), and T200 the owner help page with its reply box, as portals pages no route serves (D-2128); the business Get help form is T309's. (1) `app/server/src/owner_reports.rs` builds them behind T303's owner session (none or another realm gets a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_reports_route.rs` (TD-SEC-48) and `tests/e2e/owner_reports_served.spec.ts`, which takes the browser half of TD-OPS-15 (T158's row), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
+   "goal": "T158, T210 and T434 build the owner's scorecard, intake report and money view (with its expense-entry `POST`), and T200 the owner help page with its reply box, as portals pages no route serves (D-2128); the business Get help form is T309's. (1) `app/server/src/owner_reports.rs` builds them behind T303's owner session (none or another realm gets a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_reports_route.rs` (TD-SEC-48) and `tests/e2e/owner_reports_served.spec.ts`, which takes the browser half of TD-OPS-15 (T158's row), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19366,13 +19397,14 @@
    "decisions": [
     "D-2128",
     "D-2440",
-    "D-3467"
+    "D-3467",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 19
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -19687,7 +19719,7 @@
    "id": "T310",
    "slug": "owner-portal-served",
    "title": "server and portals: the owner home and settings pages and their switches are served",
-   "goal": "T108 builds the owner home and settings pages (pause, fee mode, category and texting switches, the safe-mode acknowledgement, the needs-review sign-ups, the Stripe-answer record) as portals pages no route serves (D-2128); J3 (T118) pauses a trade and switches fee mode. (1) `app/server/src/owner_portal.rs` builds those pages and their `POST`s behind T303's owner session, each change needing the fresh second factor SEC-043 names; none or another realm gets a 4xx with a link to `/owner/sign-in`; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_portal_route.rs` (TD-SEC-50) and `tests/e2e/owner_portal_served.spec.ts`, which takes the browser halves of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 (T108's rows), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3155: the door probe's owner signs in through `owner_sign_in` from T409 (through T303), so the owner rows are reached; it also serves T108's \"Call from the Laftly number\" `POST` (fresh second factor, CSRF, `no_store`), which only queues T108's bridge task, and T108's owner-recorded opt-out `POST` (fresh second factor).",
+   "goal": "T108 builds the owner home and settings pages (pause, fee mode, category and texting switches, the safe-mode acknowledgement, the needs-review sign-ups, the Stripe-answer record) as portals pages no route serves (D-2128); J3 (T118) pauses a trade and switches fee mode. (1) `app/server/src/owner_portal.rs` builds those pages and their `POST`s behind T303's owner session, each change needing the fresh second factor SEC-043 names; none or another realm gets a 4xx with a link to `/owner/sign-in`; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_portal_route.rs` (TD-SEC-50) and `tests/e2e/owner_portal_served.spec.ts`, which takes the browser halves of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 (T108's rows), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3155: the door probe's owner signs in through `owner_sign_in` from T409 (through T303), so the owner rows are reached; it also serves T108's \"Call from the Laftly number\" `POST` (fresh second factor, CSRF, `no_store`), which only queues T108's bridge task, and T108's owner-recorded opt-out `POST` (fresh second factor). It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19732,7 +19764,8 @@
    "decisions": [
     "D-2128",
     "D-2440",
-    "D-3155"
+    "D-3155",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
@@ -21713,7 +21746,7 @@
    "id": "T158",
    "slug": "owner-scorecard-money",
    "title": "ops: the owner's pilot scorecard page with go and stop lines, and the masked-call answered share",
-   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); the \"Not a fit for us\" choice (PICK-057) is offered on the business job page, rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). The scorecard also shows OPS-046's first-six-weeks email panel and deferral alert and OPS-047's figures, including the median minutes a business spends on a quote from the optional quote-form field T148 stores (D-492). This task's migration adds `ops.not_a_fit_answer` (job, business, trade, reason, time) for PICK-057's monthly count and `ops.minutes_entry` for OPS-039's weekly minutes entry (architecture section 3) (D-493). T301 serves the action links and the job page before this task (D-2128): keep the signatures `app/server/src/action_links.rs` calls, add the \"Not a fit for us\" choice through new functions, and T306 serves it. T305 serves the scorecard (D-2128): the page function and route constant only, no `.route` in `server`; the browser half of TD-OPS-15 runs in T305's spec, and `tests/e2e/scorecard.spec.ts` checks what an unserved page allows. Plan change D-3155: its migration holds only `ops` tables, so it is `migrations/0198_ops_scorecard_inputs.sql` headed `-- ops (T158)` (`tests/integration/tests/architecture_migrations.rs`).",
+   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); the \"Not a fit for us\" choice (PICK-057) is offered on the business job page, rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). The scorecard also shows OPS-046's first-six-weeks email panel and deferral alert and OPS-047's figures, including the median minutes a business spends on a quote from the optional quote-form field T148 stores (D-492). This task's migration adds `ops.not_a_fit_answer` (job, business, trade, reason, time) for PICK-057's monthly count and `ops.minutes_entry` for OPS-039's weekly minutes entry (architecture section 3) (D-493). T301 serves the action links and the job page before this task (D-2128): keep the signatures `app/server/src/action_links.rs` calls, add the \"Not a fit for us\" choice through new functions, and T306 serves it. T305 serves the scorecard (D-2128): the page function and route constant only, no `.route` in `server`; the browser half of TD-OPS-15 runs in T305's spec, and `tests/e2e/scorecard.spec.ts` checks what an unserved page allows. Plan change D-3155: its migration holds only `ops` tables, so it is `migrations/0198_ops_scorecard_inputs.sql` headed `-- ops (T158)` (`tests/integration/tests/architecture_migrations.rs`). Plan change D-3744: `not_a_fit.html` (PICK-057's reasons), and any other template this task adds or extends that draws a native checkbox or radio, links `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/feedback.html:10` does (D-3700, A11Y-007, A11Y-009); T466 is a dependency.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -21722,7 +21755,8 @@
     "T106",
     "T067",
     "T103",
-    "T249"
+    "T249",
+    "T466"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -21777,7 +21811,9 @@
     "D-3155",
     "D-3262",
     "D-3263",
-    "D-3722"
+    "D-3722",
+    "D-3700",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
@@ -21798,7 +21834,7 @@
    "id": "T210",
    "slug": "intake-report-money-view",
    "title": "payments: the money view's sales-tax set-aside and manual expenses, outside the ledger",
-   "goal": "Plan change D-3445 split T210 in two: this task is the `payments` half (the money view's figures, the expenses table and its migration); T434 builds the portals pages (the money view page with its expense-entry `POST`, and the monthly intake report). The money view shows the 8.6% sales-tax set-aside and Casey's manual expenses beside the ledger totals, never entering the ledger (FEE-046). The manual expenses list is its own table `payments.expense` (this task's migration `0199_payments_expenses.sql`; architecture section 3 names it, D-491). A new `payments` table gets SELECT and INSERT only from the schema default (D-1495, T245): any wider privilege this task's code needs is an explicit `GRANT ... ON payments.<table> TO askhava_app` in its own migration, which T245's `tests/integration/tests/payments_grants.rs` reads and checks (TD-SEC-33). `app/payments/src/money_view.rs` computes the figures behind `payments::api` (`payments::api::money_view` (T067's) gains the `set_aside`, `expenses` and `left` lines; `payments::api::add_expense(&pool, &NewExpense, now)` stores one expense; `payments::api::money_view_csv(&pool, month)` returns the monthly CSV): the set-aside line is 8.6% (a setting) of fees collected, to the cent, until the ADOR ruling is filed; an expense entered through `add_expense` (the call T434's expense-entry `POST` makes) is stored in `payments.expense` and never becomes a ledger entry; collected, set aside, expenses and left add up; the monthly CSV rows carry those columns; the ledger lines, dispute and processing fee lines come only from the ledger as T067's `MoneyView` does (FEE-050 to FEE-052); the Stripe reconcile (FEE-030) is unchanged (D-410, D-444). Tests in `app/payments/src/tests/money_view.rs`, real PostgreSQL and fake data only (TD-FEE-29; TD-FEE-16's and TD-FEE-33's money-view cases). No portals file, page or route is this task's. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3445 split T210 in two: this task is the `payments` half (the money view's figures, the expenses table and its migration); T434 builds the portals pages (the money view page with its expense-entry `POST`, and the monthly intake report). The money view shows the 8.6% sales-tax set-aside and Casey's manual expenses beside the ledger totals, never entering the ledger (FEE-046). The manual expenses list is its own table `payments.expense` (this task's migration `0199_payments_expenses.sql`; architecture section 3 names it, D-491). A new `payments` table gets SELECT and INSERT only from the schema default (D-1495, T245): any wider privilege this task's code needs is an explicit `GRANT ... ON payments.<table> TO askhava_app` in its own migration, which T245's `tests/integration/tests/payments_grants.rs` reads and checks (TD-SEC-33). `app/payments/src/money_view.rs` computes the figures behind `payments::api` (a new `payments::api::owner_money_view` in this task's `money_view.rs` returns T067's `MoneyView` from `payments::api::money_view`, unchanged, with the `set_aside`, `expenses` and `left` lines beside it; `payments::api::add_expense(&pool, &NewExpense, now)` stores one expense; `payments::api::money_view_csv(&pool, month)` returns the monthly CSV): the set-aside line is 8.6% (a setting) of fees collected, to the cent, until the ADOR ruling is filed; an expense entered through `add_expense` (the call T434's expense-entry `POST` makes) is stored in `payments.expense` and never becomes a ledger entry; collected, set aside, expenses and left add up; the monthly CSV rows carry those columns; the ledger lines, dispute and processing fee lines come only from the ledger as T067's `MoneyView` does (FEE-050 to FEE-052); the Stripe reconcile (FEE-030) is unchanged (D-410, D-444). Tests in `app/payments/src/tests/money_view.rs`, real PostgreSQL and fake data only (TD-FEE-29; TD-FEE-16's and TD-FEE-33's money-view cases). No portals file, page or route is this task's. Update the `payments` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3744: `MoneyView` and `money_view` live in `app/payments/src/models.rs:797` and `app/payments/src/reconcile.rs:1004`, neither owned here, so both stay as they are and the new lines come from `owner_money_view`, exported through the shared `app/payments/src/api.rs`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -21846,7 +21882,8 @@
     "D-3262",
     "D-3263",
     "D-3467",
-    "D-3722"
+    "D-3722",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
@@ -21866,7 +21903,7 @@
    "id": "T434",
    "slug": "intake-report-money-view-pages",
    "title": "portals: the monthly intake accuracy report page and the money view page with its expense entry",
-   "goal": "Plan change D-3445 split T210 in two: T210 built the money view's figures, `payments.expense` and its migration in `payments`; this task builds the portals pages. The monthly report lists no-quote cards and \"need more info\" quotes by category and question set with the golden-set share (OPS-040). The money view's page and the expense-entry POST are the portals route `app/portals/src/money_view.rs` rendering `money_view.html` from T210's `payments::api` figures: `payments::api::money_view` (T067's) with its `set_aside`, `expenses` and `left` lines; `payments::api::add_expense(&pool, &NewExpense, now)` for the expense-entry `POST`; `payments::api::money_view_csv(&pool, month)` for the CSV download (set-aside, expenses, collected and left), computing no figure itself (FEE-046); the intake report is `app/portals/src/intake_report.rs` and its words sit in `intake_report.html` (D-492). The golden-set share comes from the stored runs T156 makes (`intake::api`) (D-493). T305 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`. Plan change D-3155 (owner call put to a Fable agent under Casey's Nov 11 standing rule): OPS-040's quotes that \"said the business needed more information\" are derived, not stored: a quote counts when `quotes.quote.confirm_on_site` is true or its `format` is `diagnostic_visit` (`migrations/0070_quotes_quote.sql:19`, `:30`); free-text notes are never parsed; a withdrawn quote (`withdrawn_at` set) is treated as in the no-quote list: only quotes not withdrawn count in either list. No column or table is added for it. Tests: `tests/integration/tests/intake_report.rs` (TD-OPS-16), which also drives the money view page and its expense-entry `POST` against real PostgreSQL, fake data only. Update the `portals` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3445 split T210 in two: T210 built the money view's figures, `payments.expense` and its migration in `payments`; this task builds the portals pages. The monthly report lists no-quote cards and \"need more info\" quotes by category and question set with the golden-set share (OPS-040). The money view's page and the expense-entry POST are the portals route `app/portals/src/money_view.rs` rendering `money_view.html` from T210's `payments::api` figures: `payments::api::owner_money_view` (T210's: T067's `MoneyView` with the `set_aside`, `expenses` and `left` lines beside it, D-3744); `payments::api::add_expense(&pool, &NewExpense, now)` for the expense-entry `POST`; `payments::api::money_view_csv(&pool, month)` for the CSV download (set-aside, expenses, collected and left), computing no figure itself (FEE-046); the intake report is `app/portals/src/intake_report.rs` and its words sit in `intake_report.html` (D-492). The golden-set share comes from the stored runs T156 makes (`intake::api`) (D-493). T305 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`. Plan change D-3155 (owner call put to a Fable agent under Casey's Nov 11 standing rule): OPS-040's quotes that \"said the business needed more information\" are derived, not stored: a quote counts when `quotes.quote.confirm_on_site` is true or its `format` is `diagnostic_visit` (`migrations/0070_quotes_quote.sql:19`, `:30`); free-text notes are never parsed; a withdrawn quote (`withdrawn_at` set) is treated as in the no-quote list: only quotes not withdrawn count in either list. No column or table is added for it. Tests: `tests/integration/tests/intake_report.rs` (TD-OPS-16), which also drives the money view page and its expense-entry `POST` against real PostgreSQL, fake data only. Update the `portals` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -21914,13 +21951,14 @@
     "D-3155",
     "D-3262",
     "D-3263",
-    "D-3467"
+    "D-3467",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
     "files": 5,
     "lines": 280,
-    "context_pct": 22
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -21989,7 +22027,7 @@
    "id": "T161",
    "slug": "wording-voice-scan",
    "title": "wording: the WORD-024 voice rule's pressure-word scan, the request/job numbering check per audience, and the CON-031 consent texts and \"Who runs Laftly\" record links checked against the spec",
-   "goal": "The WORD-024 voice rule's pressure-word scan, the request/job numbering check per audience and the CON-031 consent-text check against the spec run as docs tests; the \"Who runs Laftly\" record links are checked by rendering both blocks with their settings set and unset (`tests/e2e/who_runs_links.spec.ts`, TD-WEB-10); and the copy panel is wired (WORD-029, D-474): `tests/docs/test_ai_smell_app.py` checks every customer template and `tests/docs/test_site_copy_blocks.py` checks each page's blocks against `docs/copy/site-copy.md` (WORD-024, WORD-025, WORD-027 to WORD-029, CON-004, CON-031, WEB-021, D-491).",
+   "goal": "The WORD-024 voice rule's pressure-word scan, the request/job numbering check per audience and the CON-031 consent-text check against the spec run as docs tests; the \"Who runs Laftly\" record links are checked in the browser with their settings unset (`tests/e2e/who_runs_links.spec.ts`) and with them set and unset by rendering both blocks in a Rust test, `app/site/src/tests/who_runs.rs` (registered in the shared `app/site/src/tests/mod.rs`) (TD-WEB-10); and the copy panel is wired (WORD-029, D-474): `tests/docs/test_ai_smell_app.py` checks every customer template and `tests/docs/test_site_copy_blocks.py` checks each page's blocks against `docs/copy/site-copy.md` (WORD-024, WORD-025, WORD-027 to WORD-029, CON-004, CON-031, WEB-021, D-491). Plan change D-3744: the end-to-end suite starts one binary with a fixed environment (`tests/e2e/webserver.ts:87` to `:105`), so a browser test cannot set and unset the record-link settings; the set case is the Rust render test. The Rust test renders each block through the page function that reads the record-link settings, not a hand-built template struct.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -22012,7 +22050,8 @@
     "tests/e2e/who_runs_links.spec.ts",
     "tests/docs/test_ai_smell_app.py",
     "docs/ai_smell.yaml",
-    "tests/docs/test_site_copy_blocks.py"
+    "tests/docs/test_site_copy_blocks.py",
+    "app/site/src/tests/who_runs.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -22053,12 +22092,13 @@
     "D-419",
     "D-452",
     "D-474",
-    "D-1143"
+    "D-1143",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
-    "lines": 500,
+    "files": 8,
+    "lines": 550,
     "context_pct": 13
    },
    "checks": [
@@ -27379,14 +27419,16 @@
    "id": "T216",
    "slug": "site-textures",
    "title": "site: the hero photo and mark (photography assets)",
-   "goal": "Plan change D-3331 repurposes this task from the retired plaster, brass and paper textures to photography assets: the home hero photo `docs/design/photos/hero-kitchen.webp` and the mark `docs/design/brand/mark.svg` are served from `app/site/static/photos/hero-kitchen.webp` and `app/site/static/brand/mark.svg` with no metadata, and the stylesheet (`site.css`, which this task edits after T166) and the home template use them as DESIGN_SPEC section 5 says (the photo decorative with `alt=\"\"`, width and height set, never under text). The photo is a concept placeholder: licensed photos replace it at the same name and size before launch (a launch item for Casey, D-3331), so the file name is fixed and nothing else names the image. Plan change D-3144: the runtime image keeps only built `.js` files (`Dockerfile:17` to `:21`), so the assets are served from bytes compiled into the binary: this task adds each to T101's fixed list in `app/site/src/assets.rs` (owned here after T166), served at `/static/site/photos/<name>` as `image/webp` and `/static/site/brand/<name>` as `image/svg+xml`, with no `.route(` line.",
+   "goal": "Plan change D-3331 repurposes this task from the retired plaster, brass and paper textures to photography assets: the home hero photo `docs/design/photos/hero-kitchen.webp` and the mark `docs/design/brand/mark.svg` are served from `app/site/static/photos/hero-kitchen.webp` and `app/site/static/brand/mark.svg` with no metadata, and the stylesheet (`site.css`, which this task edits after T166) and the home template use them as DESIGN_SPEC section 5 says (the photo decorative with `alt=\"\"`, width and height set, never under text). The photo is a concept placeholder: licensed photos replace it at the same name and size before launch (a launch item for Casey, D-3331), so the file name is fixed and nothing else names the image. Plan change D-3144: the runtime image keeps only built `.js` files (`Dockerfile:17` to `:21`), so the assets are served from bytes compiled into the binary: this task adds each to T101's fixed list in `app/site/src/assets.rs` (owned here after T166), served at `/static/site/photos/<name>` as `image/webp` and `/static/site/brand/<name>` as `image/svg+xml`, with no `.route(` line. Plan change D-3744: the home template is T102's `app/site/templates/home.html`, and the mark sits beside the wordmark in the header and footer (DESIGN_SPEC section 5, 30 by 27 px), which live in `app/site/templates/base.html` (the header today) and T101's `site_layout.html`; so this task owns all three, after T102, T101 and T200 (the other queued owner of `base.html`), places the photo in `home.html` and the mark wherever T101 and T102 put the header and footer, and changes nothing else in them.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "site",
    "deps": [
     "T101",
-    "T166"
+    "T166",
+    "T102",
+    "T200"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -27398,7 +27440,10 @@
     "app/site/static/photos/hero-kitchen.webp",
     "app/site/static/brand/mark.svg",
     "app/site/static/site.css",
-    "app/site/src/assets.rs"
+    "app/site/src/assets.rs",
+    "app/site/templates/home.html",
+    "app/site/templates/base.html",
+    "app/site/templates/site_layout.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -27417,12 +27462,13 @@
     "D-451",
     "D-1143",
     "D-3144",
-    "D-3331"
+    "D-3331",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 100,
+    "files": 7,
+    "lines": 150,
     "context_pct": 9
    },
    "checks": [
@@ -27630,7 +27676,7 @@
    "id": "T218",
    "slug": "brain-phrase-scans",
    "title": "Wording and template scans from the brains: sales phrases, non-transactional invitations and text segments",
-   "goal": "A docs test fails any business page, template or document that uses a lead-selling phrase (\"ready to hire\", \"serious homeowners\", \"qualified\", \"pre-qualified\", \"high-intent\", a promise of jobs) or a win rate not computed from the ledger; a template test fails any notice holding a recruiting, referral, discount, survey, new-feature or social-media invitation from the list in docs/ai_smell.yaml; and a docs test over the template files reports every template's encoding and segment count and fails when the English consent text needs UCS-2 or more than 2 segments, or when any template grows past the segment count recorded beside it (TXT-044) (WORD-030, TXT-046, TXT-044). The same phrase scan also fails, in any letter case, any text in `app/*/templates/`, `app/messaging/templates/*.json`, `docs/copy/` or the public `docs/legal/` drafts that says or implies joining early locks in prices (\"price lock\" or \"price-lock\", \"lock in your rate\", \"founding rate\", \"grandfathered pricing\", \"your rate never goes up\"); internal records such as `docs/decisions.md` are not scanned (WORD-032, D-1494). Turning Spanish conversations on without the campaign note and sample recorded is refused in code (TXT-043's code half; the campaign document is T113's, TD-TXT-26) (D-493).",
+   "goal": "A docs test fails any business page, template or document that uses a lead-selling phrase (\"ready to hire\", \"serious homeowners\", \"qualified\", \"pre-qualified\", \"high-intent\", a promise of jobs) or a win rate not computed from the ledger; a template test fails any notice holding a recruiting, referral, discount, survey, new-feature or social-media invitation from the list in docs/ai_smell.yaml; and a docs test over the template files reports every template's encoding and segment count and fails when the English consent text needs UCS-2 or more than 2 segments, or when any template grows past the segment count recorded beside it (TXT-044) (WORD-030, TXT-046, TXT-044). The same phrase scan also fails, in any letter case, any text in `app/*/templates/`, `app/messaging/templates/*.json`, `docs/copy/` or the public `docs/legal/` drafts that says or implies joining early locks in prices (\"price lock\" or \"price-lock\", \"lock in your rate\", \"founding rate\", \"grandfathered pricing\", \"your rate never goes up\"); internal records such as `docs/decisions.md` are not scanned (WORD-032, D-1494). TXT-043's code half (turning Spanish conversations on is refused until the campaign note and sample are recorded; TD-TXT-26's first clause) is not this task's: `spanish_conversations_on` (`app/intake/src/rules.rs:48`) is a plain setting with no stored switch to guard, and this task owns only tests and docs, so it is logged in D-3744 for a later plan change and marked unassigned in TD-TXT-26 (`docs/test-design.md:418`), and this task's TD-TXT-26 tests never claim it; this task builds the rest of TD-TXT-26 (the campaign document is T113's) (D-493, D-3744).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -27678,7 +27724,8 @@
    "decisions": [
     "D-490",
     "D-1143",
-    "D-1494"
+    "D-1494",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
@@ -28627,7 +28674,7 @@
    "id": "T361",
    "slug": "pick-bound-to-business",
    "title": "quotes and picks: a quote keeps its number once shown, and a pick resolves to the business it was shown for",
-   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business, so a quote confirmed or edited after a later one, or a withdrawal, shifts the numbers and a pick can land on, notify and charge another business (D-2632 gives the sequence). Plan change D-3497 split this task in two: this task stores the shown number and binds the pick in `quotes` and `picks`; T441 makes the quote page and the review, pick and code forms use them. Today `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering; an AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`. Fix: (1) `migrations/0200_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; `page_quotes` and `list_rows` order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes only the order both share); a withdrawn quote keeps its place and number (T384 already keeps it in place, D-2912) and an unconfirmed edit keeps its number while it waits; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches callers through a new `quotes::api` read beside `page_quotes` (D-3144). (2) `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests, D-3144), and a new business-bound entry point beside it, reached through `picks::api`, takes the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret) and answers `Taken` when the number no longer maps to that business; the text pick answers `Taken` the same way; so nothing is stored, notified or charged for another business. The new entry point and the text pick resolve a number by its shown number, never its list position; until T441 merges, the quote page still numbers by position through `number_quotes`, so `page_pick` keeps resolving a number by its position in the list the page shows (now in shown-number order), and the page and the pick it posts always agree; T441 moves the page to the shown number and the new entry point together (D-3497). (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60) through `quotes::api` and `picks::api`, each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912). Every TD-PICK case passes unchanged. Update the `quotes` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business, so a quote confirmed or edited after a later one, or a withdrawal, shifts the numbers and a pick can land on, notify and charge another business (D-2632 gives the sequence). Plan change D-3497 split this task in two: this task stores the shown number and binds the pick in `quotes` and `picks`; T441 makes the quote page and the review, pick and code forms use them. Today `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering; an AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`. Fix: (1) `migrations/0200_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; `page_quotes` and `list_rows` order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes only the order both share); a withdrawn quote keeps its place and number (T384 already keeps it in place, D-2912) and an unconfirmed edit keeps its number while it waits; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches callers through a new `quotes::api` read beside `page_quotes` (D-3144). (2) `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests, D-3144), and a new business-bound entry point beside it, reached through `picks::api`, takes the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret) and answers `Taken` when the number no longer maps to that business; the text pick answers `Taken` the same way; so nothing is stored, notified or charged for another business. The new entry point and the text pick resolve a number by its shown number, never its list position; until T441 merges, the quote page still numbers by position through `number_quotes`, so `page_pick` keeps resolving a number by its position in the list the page shows (now in shown-number order), and the page and the pick it posts always agree; T441 moves the page to the shown number and the new entry point together (D-3497). (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60) through `quotes::api` and `picks::api`, each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912). Every TD-PICK case passes unchanged. Update the `quotes` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3744: its budget is 550 lines.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -28692,12 +28739,13 @@
     "D-3262",
     "D-3263",
     "D-3497",
-    "D-3722"
+    "D-3722",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
     "files": 6,
-    "lines": 380,
+    "lines": 550,
     "context_pct": 27
    },
    "checks": [
@@ -29074,7 +29122,7 @@
    "id": "T364",
    "slug": "business-step-up-served",
    "title": "server and portals: the business step-up code page is served, so team role changes, billing changes and notice-address changes can pass it",
-   "goal": "Nov 10 code review batch 2, the business step-up plan gap (D-2636; SEC-038): `require_step_up` (`app/portals/src/business_portal.rs:108`) passes only after `businesses::api::record_step_up` (`app/businesses/src/email_verification.rs:200`), which only tests call; no queued task serves the step-up code page, so every SEC-038 change (team role change and removal, `set_roles`/`remove_member` in `app/businesses/src/team.rs:339`, `:384`; billing changes, `change_fee_limit`/`change_saved_card`, `business_portal.rs:578`, `:596`; notice-address changes) fails closed in production; T300 serves only the billing GET and the channel change, T303 only the owner's step-up. `app/portals/src/step_up_page.rs` and `templates/business_step_up.html` build the page (send a Verify code to the member's own verified phone or email, enter it; the purpose-bound challenge of SEC-055 where T346 built it), and `app/server/src/business_step_up.rs` serves it and the POST routes for those changes behind the business session, CSRF and the per-IP and per-member code limits (SEC-014), each calling the existing `portals::api` function, so a change made within 5 minutes of a passed code goes through and any other is sent to the step-up page and back; a matrix section 13 row per route (T348's probe). The page's words go through the cold read and the copy panel. Tests: `app/server/tests/business_step_up_route.rs` (TD-SEC-64): a role change without a step-up redirects to the page and changes nothing; with a passed code within 5 minutes it changes the role once; after 5 minutes it asks again; a member without the role gets the not-found page; billing and notice-address changes the same; `tests/e2e/business_step_up_served.spec.ts` walks the step-up and a role change with no axe-core violation. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` (section 13) and `docs/decisions.md`. Plan change D-3144: `portals` has no function for a team role change, a member's removal, or a notice or backup address change behind `require_step_up` (`SensitiveChange::TeamRole`, `NoticeAddress` and `BackupAddress`, `app/portals/src/business_portal.rs:51` to `:69`, have no caller; the callers are the shared inbox, billing, auto-confirm and leaving), so the new `app/portals/src/guarded_changes.rs` adds them: a role change (`businesses::api::set_roles`, `app/businesses/src/team.rs:339`, which checks no code) and a removal (`remove_member`, `:384`) under `TeamRole`, a notice address change (`request_change`, `app/businesses/src/email_verification.rs:305`) under `NoticeAddress` and a backup address change (`request_backup`, `remove_backup`, `app/businesses/src/backup_address.rs:154`, `:256`) under `BackupAddress`, each calling `require_step_up` with its change and route first and turning `NeedsCode` into the step-up page, the `businesses` functions' own fresh-code checks staying; `app/server/src/business_step_up.rs` calls these. Plan change D-3155: its signed-in business page template extends T200's `app/portals/templates/business_layout.html` (not `base.html`), so it shows the business-only \"Get help\" link (BIZ-047); T410's template check, after this task, lists it. Plan change D-3262: `request_change` and `request_backup` take a mailbox ID (`app/businesses/src/email_verification.rs:305`, `app/businesses/src/backup_address.rs:154`), so `app/server/src/business_step_up.rs` mints the typed address's mailbox with T412's `privacy::api::mailbox_for` on the server, never taking a mailbox ID from the request.",
+   "goal": "Nov 10 code review batch 2, the business step-up plan gap (D-2636; SEC-038): `require_step_up` (`app/portals/src/business_portal.rs:108`) passes only after `businesses::api::record_step_up` (`app/businesses/src/email_verification.rs:200`), which only tests call; no queued task serves the step-up code page, so every SEC-038 change (team role change and removal, `set_roles`/`remove_member` in `app/businesses/src/team.rs:339`, `:384`; billing changes, `change_fee_limit`/`change_saved_card`, `business_portal.rs:578`, `:596`; notice-address changes) fails closed in production; T300 serves only the billing GET and the channel change, T303 only the owner's step-up. `app/portals/src/step_up_page.rs` and `templates/business_step_up.html` build the page (send a Verify code to the member's own verified phone or email, enter it; no new challenge purpose: SEC-055's `Purpose`, `app/portals/src/code_challenge.rs:24`, is homeowner-only and fixed by the CHECK in `migrations/0176_portals_code_challenge.sql:13`; the code's own record and checks are set out below, D-3744), and `app/server/src/business_step_up.rs` serves it and the POST routes for those changes behind the business session, CSRF and the per-IP and per-member code limits (SEC-014), each calling the existing `portals::api` function, so a change made within 5 minutes of a passed code goes through and any other is sent to the step-up page and back; a matrix section 13 row per route (T348's probe). The page's words go through the cold read and the copy panel. Tests: `app/server/tests/business_step_up_route.rs` (TD-SEC-64): a role change without a step-up redirects to the page and changes nothing; with a passed code within 5 minutes it changes the role once; after 5 minutes it asks again; a member without the role gets the not-found page; billing and notice-address changes the same; `tests/e2e/business_step_up_served.spec.ts` walks the step-up and a role change with no axe-core violation. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` (section 13) and `docs/decisions.md`. Plan change D-3144: `portals` has no function for a team role change, a member's removal, or a notice or backup address change behind `require_step_up` (`SensitiveChange::TeamRole`, `NoticeAddress` and `BackupAddress`, `app/portals/src/business_portal.rs:51` to `:69`, have no caller; the callers are the shared inbox, billing, auto-confirm and leaving), so the new `app/portals/src/guarded_changes.rs` adds them: a role change (`businesses::api::set_roles`, `app/businesses/src/team.rs:339`, which checks no code) and a removal (`remove_member`, `:384`) under `TeamRole`, a notice address change (`request_change`, `app/businesses/src/email_verification.rs:305`) under `NoticeAddress` and a backup address change (`request_backup`, `remove_backup`, `app/businesses/src/backup_address.rs:154`, `:256`) under `BackupAddress`, each calling `require_step_up` with its change and route first and turning `NeedsCode` into the step-up page, the `businesses` functions' own fresh-code checks staying; `app/server/src/business_step_up.rs` calls these. Plan change D-3155: its signed-in business page template extends T200's `app/portals/templates/business_layout.html` (not `base.html`), so it shows the business-only \"Get help\" link (BIZ-047); T410's template check, after this task, lists it. Plan change D-3262: `request_change` and `request_backup` take a mailbox ID (`app/businesses/src/email_verification.rs:305`, `app/businesses/src/backup_address.rs:154`), so `app/server/src/business_step_up.rs` mints the typed address's mailbox with T412's `privacy::api::mailbox_for` on the server, never taking a mailbox ID from the request. Plan change D-3744, review round 1 (SEC-055, `docs/spec/security.md:59`): business sign-in's Verify parts (`trait Codes` and `DeviceCodes`' fields, `app/portals/src/business_auth.rs:186` to `:211`) are private, and that file is T464's and T382's, so this task neither uses nor edits them. `step_up_page.rs` calls the `adapters::api::VerifyAdapter` it is given, the public `CodeAddress` (server's `MemberCodeAddress`, `app/server/src/business_signin.rs:293`) and `portals`' existing `pub(crate)` `models` functions, none edited: (a) reuse is decided on the server, per member, never from anything the request carries: a step-up record's stored token is the step-up prefix, the member and the 5-minute bucket of its mint time, exactly the string `step_up:<member>:<floor(unix seconds / 300)>` with no random part ever mixed in (the lookup computes the same plain SHA-256 of that string that `models::digest` stores, `app/portals/src/models.rs:36`, private there, so it is recomputed in this file), so it never opens as a sign-in or action link and a member has at most one per bucket; it lives 10 minutes (the Verify code's life) and its `created_at` is backdated by `LINK_LIFE` as action links are (`app/portals/src/action_links.rs:268`), so it never counts toward the sign-in link limits. On a send, this file's own query on `portals.login_link` (as `action_links.rs:315` reads it) looks up the signed-in member's records for the current bucket and the two before it (each binding's `token_sha256`, `member_id`, `expires_at` after now): a live, unused one is reused without resetting its tries, whatever token the request sent or left out; `used_at` is set both by a right code (`use_link`) and by tries running out (`use_up_link`), and the two are told apart by a `portals.code_try` row of that record with `outcome = 'right'` (`migrations/0167_portals_code_tries.sql:20`, `:24`; the app role may SELECT it, `:33`); a live one used up by 5 wrong tries (no `right` row) refuses the send until it expires, because Verify still holds that code (D-2348: truly 5 tries per code); the current bucket's record used by a right code means the member is still within the 5-minute step-up, and the page says so and sends nothing; only when none of these exists does it mint the current bucket's record with its own `INSERT ... ON CONFLICT (token_sha256) DO NOTHING` on `portals.login_link` (not `models::insert_link`, whose plain insert fails on the UNIQUE `token_sha256`) and then reads the record again, so of two simultaneous sends minting the same bucket the losing one reuses the winner's record (and its one send) and never answers 500 (a step-up passes for 5 minutes, so a member never needs a second record in the bucket of a right code). Every send also passes the SEC-014 per-IP and per-member limits, and is reserved and recorded with `reserve_code_send` and `finish_code_send` (`portals.code_send`, `migrations/0167_portals_code_tries.sql:14`; a reused record whose code was sent sends nothing again, as business sign-in sends once per link); (b) a check is refused before Verify is called unless the same lookup finds a live, unused record of the signed-in member whose send is `sent` (`code_sent`); (c) each try is reserved with `reserve_try` before the Verify call, capped at 5 per record (`portals.code_try`, `:20`), and finished with `finish_try`; the fifth wrong try uses the record up (`use_up_link`); (d) a right code uses the record with `models::use_link` on the same transaction as `businesses::api::record_step_up`, so a code confirms one step-up once. The server gets Verify through a new optional builder `RouterParts::with_step_up` in the shared `app/server/src/lib.rs` (as `with_sign_in`, `lib.rs:111`), which `main` (shared) sets from `Settings` as `ServedSignIn::from_settings` builds its Verify client (`app/server/src/business_signin.rs:109`); without it (the done route tests, dev and `Ci`) the step-up routes are still merged and the code step sends nothing and answers below 500, so `door_matrix.rs` and `route_wiring.rs` need no change. The budget stays 600 lines.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -29122,13 +29170,14 @@
     "D-2631",
     "D-3144",
     "D-3155",
-    "D-3262"
+    "D-3262",
+    "D-3744"
    ],
    "cites": [],
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 16
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -29136,7 +29185,8 @@
     "Ally"
    ],
    "branch": "claude/task/T364-business-step-up-served",
-   "prompt": "kit/prompts/T364.md"
+   "prompt": "kit/prompts/T364.md",
+   "acceptance": "TD-SEC-64 passes against PostgreSQL through the assembled router and in Playwright, with no axe-core violation; a second send with no token reuses the member's live step-up record and its tries continue from the first send's count (a sixth try across both sends is refused before Verify is called); two simultaneous sends for one member mint one record, the losing send reuses it, neither answers 500 and Verify is sent at most once; a right code uses the record in the same transaction as `record_step_up`; `door_matrix.rs` and `route_wiring.rs` pass unchanged."
   },
   {
    "id": "T366",
@@ -32073,13 +32123,14 @@
    "id": "T461",
    "slug": "signup-email-activation",
    "title": "server: business sign-up's service area, email code and activation are served",
-   "goal": "Plan change D-3676 (split from T302; BIZ-016, BIZ-019, BIZ-040, BIZ-049, BIZ-058, SEC-004; D-2128, D-3262, D-3602, D-3641): the rest of sign-up up to activation, in T302's `app/server/src/business_signup.rs`, on the existing route constants only (no new open path, so D-3641's list is unchanged). A correct email code activates an unflagged sign-up at once (`businesses::api::confirm`, `app/businesses/src/email_verification.rs:401`, calls `identity::settle`), and sign-up cannot finish without towns, a base ZIP and a radius (BIZ-058, `docs/spec/businesses.md:62`), so the order is: (1) `SERVICE_AREA_ROUTE` `POST` (the base ZIP and radius, `businesses::api::save_service_area`, BIZ-058, BIZ-049), allowed once the identity step is done; (2) `EMAIL_CHECK_ROUTE` `POST` (`/b/signup/email-code`), the emailed code step, refused until the service area is saved (`businesses::api::service_area` answers one) and before identity: `start_signup_check` sends it, `confirm_mailbox` (`email_verification.rs:363`'s `confirm`) checks it, both given the server's own `ASKHAVA_ID_SECRET` as their `secret` (the key `code_of`, `email_verification.rs:78`, derives the code from, so T464's TD-SEC-69 browser test can compute the code from T452's exported ID secret), a refused or expired code showing `Screen::EmailCode` with its problem; `EMAIL_RESEND_ROUTE` resends under the same rule. (3) Activation (BIZ-016): when the email step's `confirm` leaves the business `Active`, that response clears the `__Host-askhava-signup` cookie (`Max-Age=0`, same name and attributes), sends the owner the normal sign-in link to the verified sign-up email through the server's sign-in mailer (`business_signin::SignInMailer`; link plus code, SEC-004; no session is started without it) and shows the done screen (`Screen::Done` with `portals::api::done_facts`); when it leaves the business in `NeedsReview` (a flag), the done screen says so and the cookie stays, so nothing more is asked. Every later step reads the sign-up only from that verified cookie (T459's), never from a posted or path ID, and checks that the sign-up's stored state (its identity step, `businesses::api::Step`, code-sent and email-verified facts) allows that step now, and that the business's stored status (`businesses::api::AccountStatus`) is `Pending` or `NeedsReview`; a missing or bad binding (a wrong or altered MAC, ID or salt), a step out of order or a business in any other status is refused like any refusal (the screen again, no detail), changes nothing, sends nothing and calls no Verify (D-3641). The inbox check (BIZ-042) is not served here: it needs the owner's session and is T462's. Its rows in `docs/architecture.md` section 13 are marked `yes`. Tests: cases in `app/server/tests/business_signup_route.rs` (TD-SEC-45: the email code step is refused before the service area and before identity, accepts the right code and refuses a wrong one; the activating response clears the cookie and sends one sign-in email; a step taken after activation with a still-valid sign-up cookie is refused and changes nothing). Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3676 (split from T302; BIZ-016, BIZ-019, BIZ-040, BIZ-049, BIZ-058, SEC-004; D-2128, D-3262, D-3602, D-3641), revised by plan change D-3743 (the email paths come from T468; D-3186, D-752): the rest of sign-up up to activation, in T302's `app/server/src/business_signup.rs`, on the existing route constants only (no new open path, so D-3641's list is unchanged). A correct email code activates an unflagged sign-up at once (`businesses::api::confirm_mailbox`, `app/businesses/src/email_verification.rs:363`'s `confirm`, calls `identity::settle` at `:401`), and sign-up cannot finish without towns, a base ZIP and a radius (BIZ-058, `docs/spec/businesses.md:62`), so the order is: (1) `SERVICE_AREA_ROUTE` `POST` (the base ZIP and radius, `businesses::api::save_service_area`, BIZ-058, BIZ-049), allowed once the identity step is done; (2) `EMAIL_CHECK_ROUTE` `POST` (`/b/signup/email-code`), the emailed code step, refused until the service area is saved (`businesses::api::service_area` answers one) and before identity: `start_signup_check` opens the check and returns the code, emailing nothing itself (`email_verification.rs:134`); the server emails that code to the sign-up email through T468's `messaging::api::MailboxCodeSender` (BIZ-040: the code is sent to it), the mailbox from T468's `businesses::api::signup_mailbox` and the address opened with `privacy::api::read_business_mailbox` under `BusinessPurpose::AccountEmail` on a bare connection once the check is committed (D-752), never logged, stored or put in an error; `confirm_mailbox(conn, secret, (business, mailbox), code, now)` checks it; both are given the server's own `ASKHAVA_ID_SECRET` as their `secret` (the key `code_of`, `email_verification.rs:78`, derives the code from, so T464's TD-SEC-69 browser test can compute the code from T452's exported ID secret), a refused or expired code showing `Screen::EmailCode` with its problem; `EMAIL_RESEND_ROUTE` resends under the same rule. Every code send (the email step's first send and each resend) is counted first, in `app/server/src/business_signup.rs`, where the client IP is known (`portals::api::security_event_client`, as T459 reads it for `admit_sign_up`, SEC-040), through `intake::api::admit` as every portal limit is (`core::api::rate_limit_hit_on` underneath, one SEC-015 alert per scope and window): `portals::api::CODE_SENDS_PER_IP` (10 code sends per IP per hour, shared with the other portal code sends) and then a new `SIGNUP_EMAIL_CODES_PER_BUSINESS` limit in that file, `Limit::daily(\"signup.email_codes_per_business\", 5)` on `Key::Record(business)` (5 per Arizona day, the same per-destination cap PICK-055 gives portal code sends, `CODE_SENDS_PER_NUMBER`), so a holder of the sign-up cookie cannot flood the address or spend the email provider's daily quota (SEC-014, SEC-025). A refused or uncounted send (a counter error refuses too) calls neither `start_signup_check` nor the sender, so it opens no new check, queues and sends nothing and leaves the earlier code working, and shows the same `Screen::EmailCode` with no detail. (3) Activation (BIZ-016): when the email step's `confirm` leaves the business `Active`, that response clears the `__Host-askhava-signup` cookie (`Max-Age=0`, same name and attributes), sends the owner the normal sign-in link through T468's `portals::api::send_sign_in_link` with the server's sign-in mailer (`business_signin::SignInMailer`, which opens the address under `SignInLink`) to `SignInAddress { business, mailbox }`, the sign-up mailbox, which is the owner's (`submit_signup` adds the owner with it, `app/portals/src/business_signup.rs:674` to `:679`); the link then works as any sign-in link, with its new-device code (SEC-004; no session is started without it) and shows the done screen (`Screen::Done` with `portals::api::done_facts`); when it leaves the business in `NeedsReview` (a flag), the done screen says so and the cookie stays, so nothing more is asked. Every later step reads the sign-up only from that verified cookie (T459's), never from a posted or path ID, and checks that the sign-up's stored state (its identity step, `businesses::api::Step`, code-sent and email-verified facts) allows that step now, and that the business's stored status (`businesses::api::AccountStatus`) is `Pending` or `NeedsReview`; a missing or bad binding (a wrong or altered MAC, ID or salt), a step out of order or a business in any other status is refused like any refusal (the screen again, no detail), changes nothing, sends nothing and calls no Verify (D-3641). The served part takes the code sender and the sign-in mailer as it takes its other adapters; `from_settings` builds both with no sender while the app builds no Resend client (D-3186, as `ServedSignIn::from_settings` does, `app/server/src/business_signin.rs:133`), so in the served app the code and the link are not yet emailed (the screens are unchanged and T464's browser test computes the code, TD-SEC-69); the route tests build both over a recording fake provider. The inbox check (BIZ-042) is not served here: it needs the owner's session and is T462's. Its rows in `docs/architecture.md` section 13 are marked `yes`. Tests: cases in `app/server/tests/business_signup_route.rs` (TD-SEC-45: the email code step is refused before the service area and before identity, accepts the right code and refuses a wrong one; the code goes once to the sign-up address and only there (the fake provider records one email to it holding the code), a resend sends a new code and the earlier one stops working; a send past the per-business cap, and one past the per-IP cap, queues no `messaging.email_outbox` row, calls the provider no more, shows the same screen and leaves the earlier code working; the activating response clears the cookie and sends one sign-in email, to the owner's address, holding a `/b/sign-in/` link; a step taken after activation with a still-valid sign-up cookie is refused and changes nothing). Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "server",
    "deps": [
-    "T460"
+    "T460",
+    "T468"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -32104,7 +32155,8 @@
     "BIZ-016",
     "BIZ-019",
     "BIZ-040",
-    "BIZ-058"
+    "BIZ-058",
+    "SEC-014"
    ],
    "tests": [
     "TD-SEC-45"
@@ -32114,7 +32166,9 @@
     "D-3262",
     "D-3602",
     "D-3641",
-    "D-3676"
+    "D-3676",
+    "D-3186",
+    "D-3743"
    ],
    "cites": [],
    "budget": {
@@ -32128,7 +32182,8 @@
     "Ally"
    ],
    "branch": "claude/task/T461-signup-email-activation",
-   "prompt": "kit/prompts/T461.md"
+   "prompt": "kit/prompts/T461.md",
+   "acceptance": "`app/server/tests/business_signup_route.rs` passes against PostgreSQL with T459's and T460's cases unchanged: the service area and email code steps are refused out of order and after activation; the right email code, emailed once to the sign-up address through `MailboxCodeSender`, activates an unflagged sign-up, clears the `__Host-askhava-signup` cookie and sends exactly one sign-in link email to the owner's address through `send_sign_in_link`; a code send past `SIGNUP_EMAIL_CODES_PER_BUSINESS` (5 per Arizona day) or `CODE_SENDS_PER_IP` queues nothing, sends nothing and leaves the earlier code working; a wrong or expired code shows `Screen::EmailCode` with its problem and changes nothing; a flagged sign-up's done screen says it waits for review and keeps the cookie; `app/server/tests/business_signin_route.rs` and `tests/integration/tests/email_verification.rs` pass unchanged."
   },
   {
    "id": "T462",
@@ -32420,6 +32475,69 @@
    "branch": "claude/task/T467-fee-terms-changed-end",
    "prompt": "kit/prompts/T467.md",
    "acceptance": "`tests/integration/tests/fee_terms_changed_end.rs` passes against PostgreSQL: after a fee-mode switch the waiting pick ends `cancelled` with `end_reason` `fee_terms_changed` and its intent ended, no fee and no charge, and moves to her backup or returns the job to Quotes ready with exactly one current-version `pick_lapsed` event; with no switch, no stored fee, an attempt other than `declined`, a job in Payment pending or no waiting pick nothing changes and nothing is queued; a press racing the end either charges with the pick left waiting or is refused before any Stripe confirm with the pick ended, never both; \"Can't take it\" with no backup queues one `pick_lapsed` event; `share_and_cant_take.rs`, `backup_choice.rs`, `business_leaving.rs`, `pick_ended.rs`, `charge_attempts.rs` and `fee_fixed_at_pick.rs` pass unchanged."
+  },
+  {
+   "id": "T468",
+   "slug": "signup-mail-paths",
+   "title": "portals, businesses and messaging: public paths for sign-up's email code and its sign-in link at activation",
+   "goal": "Plan change D-3743 (the T461 plan gap a scout found; BIZ-040, SEC-004, SEC-018, SEC-025, SEC-026, PRIV-016; D-1725, D-1837, D-3186, D-3262, D-3676): T461 must email the sign-up's email code (BIZ-040: verified \"by a single-use link or 6-digit code sent to it\") and, on activation, the owner's normal sign-in link, but neither has a public path. A link is minted, stored and emailed only inside `portals` (`send_one` is private, `app/portals/src/business_auth.rs:694`; `models::new_link_token` and `admit_link` are `pub(crate)`, `app/portals/src/models.rs:28`, `:71`), and `SignInMail::send_link` (`business_auth.rs:138`) only emails a link it is handed. `start_signup_check` returns the code and emails nothing (`app/businesses/src/email_verification.rs:134`), `businesses::api` has no reader for the sign-up's mailbox ID, which `confirm_mailbox` (`:363`) needs, and nothing in the app emails a mailbox code. This task adds three thin public paths over code that exists; T461 composes them. (1) `app/portals/src/business_auth.rs`: `pub async fn send_sign_in_link<M: SignInMail>(db, mail: &M, to: SignInAddress, now) -> Result<(), PortalsError>` (one `pub use` line in the shared `app/portals/src/api.rs`). The body of `send_one` moves into a private function that takes the mailer instead of the `SignIn` state; `send_one` and the new function both call it, the new one with no next job: the same current-member check (nothing sent for a mailbox that is not a current member of `to.business`), the same `LINKS_PER_LIFE` cap under the member's lock (`admit_link`, D-1725, D-1837) and the same `{site()}/b/sign-in/<token>` link through `M::send_link`; its `///` comment says that `M` delivers the link only to `to.mailbox`'s own address, never to another (SEC-004). No other behaviour of `business_auth.rs` changes. (2) `app/businesses/src/email_verification.rs`: `pub async fn signup_mailbox(conn, business) -> Result<Uuid, EmailCheckError>` (one name in the shared `app/businesses/src/api.rs` export), the `businesses.signup` row's `mailbox_id` as `start_signup_check` reads it, `EmailCheckError::Database` for an unknown sign-up; `start_signup_check` and `confirm` keep their signatures. (3) `app/messaging/src/mailbox_code_mail.rs`: `MailboxCodeSender<E>`, built as T280's `SignInLinkSender` is (`app/messaging/src/signin_mail.rs`: the key secret, the provider, the checked postal line and the `DailyLimit`), whose `send(db, (mailbox, address), code, now)` queues one business email through `queue_account_email` from a new template `business_mailbox_code` (English, and Spanish marked draft, in the shared `app/messaging/templates/en.json` and `es.json`: the subject \"<brand short name>: Your email code\", the 6-digit code, that it works for the next 30 minutes (`CODE_LIFE`), and that a person who did not sign up can ignore it) and sends it at once with `send_email`. The code is a credential, so the stored row holds `CODE_MARK` (`[email code]`) in its place and the code goes in only on the way to the provider, through a wrapper like `signin_mail.rs`' `WithLink`; the row's key is the account-email key over the template, the mailbox and one ID keyed from the code and the send time (a repeat of one send is one email, SEC-018; a resend is a new one); the code is never logged. The sender counts nothing itself: its `///` comment says the caller admits every send first under SEC-014's per-IP and per-business limits (T461 does, where the client IP is known). `MailboxCodeSender`, `CODE_MARK` and the template ID are exported through the shared `app/messaging/src/api.rs` and `lib.rs`. The caller opens the address (`server`, under `privacy::api::BusinessPurpose::AccountEmail`, on a bare connection), as T280's sender is handed it; this task names no vault read. Tests, fake data only, in `tests/integration/tests/signup_mail_paths.rs` against PostgreSQL: `send_sign_in_link` stores one link for the owner and hands a recording `SignInMail` one `/b/sign-in/` link on the brand's site for that `SignInAddress`, sends nothing for a mailbox that is not a current member, and sends no more once `LINKS_PER_LIFE` links went in `LINK_LIFE`; `signup_mailbox` answers the mailbox `sign_up` stored and refuses an unknown business; `MailboxCodeSender::send` gives a recording `EmailAdapter` one email to the address whose text and HTML hold the code, a refusing provider leaves the stored row holding `CODE_MARK` and never the code, and a repeat of the same send queues and sends nothing more. Update the `portals`, `businesses` and `messaging` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "messaging",
+   "deps": [
+    "T302"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "copy": true,
+   "owns": [
+    "app/portals/src/business_auth.rs",
+    "app/businesses/src/email_verification.rs",
+    "app/messaging/src/mailbox_code_mail.rs",
+    "tests/integration/tests/signup_mail_paths.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/brains/rust-production.md",
+    "docs/brains/email-deliverability.md"
+   ],
+   "requirements": [
+    "BIZ-040",
+    "SEC-004",
+    "SEC-014"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1725",
+    "D-1837",
+    "D-3186",
+    "D-3262",
+    "D-3676",
+    "D-3743"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 400,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T468-signup-mail-paths",
+   "prompt": "kit/prompts/T468.md",
+   "acceptance": "`tests/integration/tests/signup_mail_paths.rs` passes against PostgreSQL: `send_sign_in_link` sends one stored link to the owner's `SignInAddress`, none to a mailbox that is not a current member and none past `LINKS_PER_LIFE`; `signup_mailbox` answers the sign-up's mailbox; `MailboxCodeSender` sends one email holding the code while the stored row holds only `CODE_MARK`, and a repeat sends nothing more; `app/server/tests/business_signin_route.rs`, `tests/security/tests/business_signin.rs`, `tests/integration/tests/notice_signin_link.rs` and `tests/integration/tests/email_verification.rs` pass unchanged; `check_copy.py` and `check_ai_smell.py` report 0 problems on the new template."
   }
  ]
 }
