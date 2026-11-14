@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T01:20:56Z by runner 2df926e292cb (actions).
+Updated 2026-11-14T01:30:40Z by runner e5eb9705e865 (actions).
 
 **Building: T280 in progress since 00:35Z; 304 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-14T01:20:56Z by runner 2df926e292cb (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 4: T447 claimed 01:03Z, lease until 04:03Z
 - **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:20Z, 0 min before this update
+- **Last run:** 01:23Z, 6 min before this update
 - **Keeper:** last ran 01:20Z, next wake 03:37Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 52% of the context window, over its 50% limit
-- Strict plan check red: 32 problem(s) on tasks still to run (+200 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 31 problem(s) on tasks still to run (+200 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -105,7 +105,6 @@ Updated 2026-11-14T01:20:56Z by runner 2df926e292cb (actions).
 - 04:59Z Harness: release a dead worker's lease early (D-3417) (#651)
 - 04:27Z Harness: safety hand-in reports unreleased leases (D-3419) (#654)
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
-- 01:29Z Harness: fail CI, smoke and prehandin on leftover merge-conflict markers (D-3307) (#619)
 
 ## Progress (requirements verified)
 
