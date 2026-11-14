@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T21:35:02Z by runner 886756c58552 (actions).
+Updated 2026-11-14T21:35:36Z by runner 1a0927467bbf (actions).
 
 **Building: T261 in progress since 21:34Z; 333 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-14T21:35:02Z by runner 886756c58552 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T261 claimed 21:34Z, lease until 00:34Z
 - **Week:** 51% used, 92.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:34Z, 0 min before this update
+- **Last run:** 21:35Z, 0 min before this update
 - **Keeper:** last ran 21:34Z, next wake 21:54Z
 
 ## Needs attention
 - BLOCKED T460: plan gap reported: PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-3641 needs the server to read the sign-up's stored state (identity Step, code_done, email verified) before each identity step, but no public businesses::api reader gives it: signup_email_waits is not exported (lib.rs:49 private mod), RecordFound::masked() cannot tell "no step yet" from step 1, check_code (identity.rs:267-271) takes a try before it finds no step, and the server crate has no SQL (R8). T460 owns only app/server/src/business_signup.rs and app/server/tests/business_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T460 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 21 problem(s) on tasks still to run (+109 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 16 problem(s) on tasks still to run (+108 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
