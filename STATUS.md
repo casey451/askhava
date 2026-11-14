@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T21:59:38Z by runner 3156fa10a309 (actions).
+Updated 2026-11-14T22:00:00Z by runner 3156fa10a309 (actions).
 
-**Building: T300 in progress since 21:41Z; 334 of 469 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T301 in progress since 21:48Z; 334 of 469 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 334 of 469 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T300 claimed 21:41Z, lease until 00:41Z; lane 2: T301 claimed 21:48Z, lease until 00:48Z; lane 3: T443 claimed 21:43Z, lease until 00:43Z
+- **Lane:** lane 2: T301 claimed 21:48Z, lease until 00:48Z; lane 3: T443 claimed 21:43Z, lease until 00:43Z
 - **Week:** 52% used, 89.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:58Z, 1 min before this update
 - **Keeper:** last ran 21:58Z, next wake 00:44Z
@@ -20,9 +20,10 @@ Updated 2026-11-14T21:59:38Z by runner 3156fa10a309 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T300 | server and portals: the business portal is served behind the | MERGE_PENDING | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z | PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No |
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
-| T300 | server and portals: the business portal is served behind the | resync | 3 | 94 min | 21:25Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
+| T300 | server and portals: the business portal is served behind the | resync | 3 | 94 min | 21:25Z |  |
 | T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T468 | portals, businesses and messaging: public paths for sign-up' | done | 1 | 29 min | 20:19Z |  |
@@ -166,9 +167,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T300 (lease until 2026-11-15T00:41:53Z)
+- nothing
 - lane 2: T301 (lease until 2026-11-15T00:48:28Z)
 - lane 3: T443 (lease until 2026-11-15T00:43:15Z)
 
 ## Last usage reading
-- {"task": "T261", "at": "2026-11-14T21:38:58Z", "cache_read_input_tokens": 2536330, "output_tokens": 19879, "input_tokens": 98, "cache_creation_input_tokens": 129385}
+- {"task": "T300", "at": "2026-11-14T21:59:37Z", "cache_creation_input_tokens": 45314, "output_tokens": 8322, "input_tokens": 52, "cache_read_input_tokens": 669398}
