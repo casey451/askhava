@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T01:14:07Z by runner d997705c35e7 (manual).
+Updated 2026-11-14T01:16:38Z by runner 2df926e292cb (actions).
 
-**Building: T280 in progress since 00:35Z; 304 of 435 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T280 in progress since 00:35Z; 304 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 304 of 435 build tasks (owner gates not counted)
+- **Tasks done:** 304 of 434 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 4: T447 claimed 01:03Z, lease until 04:03Z
 - **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:11Z, 2 min before this update
+- **Last run:** 01:14Z, 2 min before this update
 - **Keeper:** last ran 01:11Z, next wake 03:38Z
 
 ## Needs attention
@@ -82,7 +82,6 @@ Updated 2026-11-14T01:14:07Z by runner d997705c35e7 (manual).
 | T423 | Brand rename prep: integration tests (first-quote move to si | done | 1 | 66 min | 01:47Z |  |
 | T422 | Brand rename prep: integration tests (accepted-quote email t | done | 1 | 44 min | 01:20Z |  |
 | T421 | Brand rename prep: messaging, quotes, picks and portals unit | done | 1 | 26 min | 01:18Z |  |
-| T424 | Brand rename prep: integration tests (open-cards digest to s | done | 1 | 32 min | 01:15Z |  |
 
 ### Plan and harness merges on main
 - 01:13Z Plan: T302 plan gap — new T450 sign-up code screens and verified consent (D-3602) (#730)
@@ -113,31 +112,31 @@ Updated 2026-11-14T01:14:07Z by runner d997705c35e7 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 5 of 733 (0.7%) · partial 568 · unstarted 160
-**Tasks merged (throughput only):** 304 of 435
+**Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
+**Tasks merged (throughput only):** 304 of 434
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 29 | 6 | 35 |
-| ai | 0 | 24 | 5 | 29 |
-| businesses | 1 | 54 | 3 | 58 |
-| calls | 0 | 24 | 1 | 25 |
-| consent | 0 | 31 | 4 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 1 | 39 | 3 | 43 |
-| job-cards | 1 | 23 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 1 | 42 | 2 | 45 |
-| ops-recovery | 0 | 10 | 44 | 54 |
-| privacy | 0 | 29 | 2 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 55 | 1 | 56 |
-| recurring | 0 | 8 | 3 | 11 |
-| security | 1 | 49 | 5 | 55 |
+| accessibility | 15 | 14 | 6 | 35 |
+| ai | 11 | 13 | 5 | 29 |
+| businesses | 20 | 35 | 3 | 58 |
+| calls | 10 | 14 | 1 | 25 |
+| consent | 12 | 19 | 4 | 35 |
+| fees | 14 | 37 | 1 | 52 |
+| intake | 26 | 14 | 3 | 43 |
+| job-cards | 18 | 6 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 23 | 5 | 0 | 28 |
+| messaging | 24 | 19 | 2 | 45 |
+| ops-recovery | 2 | 8 | 44 | 54 |
+| privacy | 9 | 20 | 2 | 31 |
+| quiet-hours | 7 | 2 | 0 | 9 |
+| quotes-pick | 36 | 19 | 1 | 56 |
+| recurring | 6 | 2 | 3 | 11 |
+| security | 9 | 41 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 0 | 9 | 23 | 32 |
+| wording | 2 | 7 | 23 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
