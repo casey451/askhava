@@ -19135,7 +19135,9 @@
     "T432",
     "T437",
     "T442",
-    "T443"
+    "T443",
+    "T444",
+    "T445"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19661,7 +19663,8 @@
     "T430",
     "T432",
     "T438",
-    "T439"
+    "T439",
+    "T446"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -44325,7 +44328,9 @@
     "T336",
     "T357",
     "T391",
-    "T432"
+    "T432",
+    "T328",
+    "T446"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -49275,6 +49280,41 @@
    "slug": "after-smoke-fix-rounds",
    "type": "harness",
    "stage": "4"
+  },
+  {
+   "id": "T444",
+   "deps": [
+    "T249"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "property-zip-town-test",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T445",
+   "deps": [
+    "T443",
+    "T265"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "runner-stage-robustness",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T446",
+   "deps": [
+    "T328",
+    "T320"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pick-lapsed-email",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -52298,7 +52338,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T00:03:11Z",
+ "updated_at": "2026-11-14T00:07:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -52396,7 +52436,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a409b1914d2fdf291f258e8d9a9f827abeeddbea",
+ "runner_sha": "bc74ea9d3841a693b28f909b90b4d7a99708f9b5",
  "starter": "actions",
  "smoke_runs": [
   {
