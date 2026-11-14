@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT max(r.refused) FROM calls.link_reply_refusal r JOIN unnest($1::int4[], $2::bytea[]) AS k(v, d) ON r.key_version = k.v AND r.digest = k.d WHERE r.az_day = $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "max",
+        "type_info": "Int2",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "ByteaArray",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f6b7dd0b93c8b73e2edcb1bfe5817ba59d4f8c091e976d1977e144c373a0e10d"
+}

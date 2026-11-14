@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM calls.link_request WHERE business_id = $1 AND (expires_at <= $2 OR used_at IS NOT NULL)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "36e59718aea57140ef0cad8c5a7ef923e0a7a42d91712e3f64e910d81991122f"
+}
