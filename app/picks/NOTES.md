@@ -150,4 +150,3 @@
 - [-] (never 17) or at once on an emergency, the email copy for an untextable number, the 72-hour return and question, a waiting refund re-run and decided once, the retry after the close emailing once, the fraud-warning task: `tests/integration/tests/unreachable_steps.rs` (TD-JOB-14).
 - [-] (never 17) Never queue the missed-call text before its send time, never count `notice_attempted` before the text or email is queued, and never let a step act on an ended pick or a job that moved on except to finish a succeeded refund's decision on a Closed job.
 - [-] (never 18) never the ended quote: `tests/integration/tests/backup_choice.rs` (TD-PICK-32).
-- [PICK-046 PICK-035] (rules) T328, D-3571: `pick_ended::ended_businesses(job)` lists businesses whose pick on the job is `expired` or `payment_failed`, for PICK-046's quote list; `service::page_pick`/`view` still check only `unavailable` (older gap).

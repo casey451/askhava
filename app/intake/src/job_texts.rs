@@ -35,7 +35,9 @@
 use std::sync::Arc;
 
 use askhava_businesses::api::public_names;
-use askhava_core::api::{Claimed, HandlerError, IdSecret, NewTask, brand, enqueue};
+use askhava_core::api::{
+    Claimed, Clock, HandlerError, IdSecret, NewTask, SystemClock, brand, enqueue,
+};
 use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{
     CHECK_IN_DAY3, CHECK_IN_DAY14, FEEDBACK_REQUEST, PROBLEM_REPLY, TEXT_KIND, current, text_due,
@@ -180,9 +182,24 @@ pub enum JobTextStep {
     Skipped(JobTextSkip),
 }
 
+/// [`run_job_text_at`] at the system clock's now (D-1030 (A)). `server` registers
+/// [`run_job_text_at`]; this stays for `src/tests/job_texts.rs`, a file T328 may not change
+/// (D-3573).
+///
+/// # Errors
+///
+/// A fixed [`HandlerError`] sentence on a bad payload or a failed step.
+pub async fn run_job_text(
+    pool: PgPool,
+    keys: Arc<JobTextKeys>,
+    task: Claimed,
+) -> Result<(), HandlerError> {
+    run_job_text_at(pool, keys, task, SystemClock.now()).await
+}
+
 /// The `jobs.homeowner_text` handler `server` registers (D-1030 (A)): [`job_text_step`] on the
 /// task's payload at `now`, the worker clock's time, so a manual clock drives quiet hours in the
-/// registry tests (T328, D-3579, D-3573).
+/// registry tests (T328, D-3579).
 ///
 /// # Errors
 ///
