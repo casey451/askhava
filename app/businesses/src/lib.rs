@@ -67,6 +67,7 @@ mod service_area;
 mod sign_in_lines;
 mod signup;
 mod signup_record;
+mod signup_view;
 mod status;
 mod team;
 

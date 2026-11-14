@@ -147,6 +147,7 @@ pub use crate::signup::{
     waiting_on_record, waitlist_line, waitlisted,
 };
 pub use crate::signup_record::{RecordFound, SignupRecord, signup_record};
+pub use crate::signup_view::{SignupProgress, signup_progress};
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{
     Acting, MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember,

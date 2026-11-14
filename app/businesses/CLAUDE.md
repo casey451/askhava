@@ -24,6 +24,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - Backups and the release: `tests/security/tests/backup_address.rs` (TD-BIZ-19, TD-SEC-17); a backup is refused at confirmation when its mailbox is by then a current member's main address, a later `add_member` cannot make a verified backup a main address, and each mailbox is listed once: `tests/security/tests/backup_address_confirm.rs` (TD-BIZ-44); More: `(never 17)` in NOTES.md.
 - Known gaps (D-1715, D-3186): the card sender checks `may_get_cards` (T251's `quotes::card_pool`), business text sends do not yet check `may_text`, and the composition registers the welcome and STOP handlers with no mailer (no Resend client, no readable business address or phone digits), so those tasks retry and no activated business gets cards until a task passes one. Guarded by `tests/integration/tests/business_consent_wiring.rs`. More: `(never 18)` in NOTES.md.
 - `signup_mailbox` answers the mailbox `sign_up` stored and refuses an unknown sign-up: `tests/integration/tests/signup_mail_paths.rs` (T468).
+- `signup_progress` writes nothing, takes no lock or code try, and its `SignupProgress` carries only step, `code_done` and `email_verified` (PRIV-016): `tests/integration/tests/signup_progress.rs` (T485).
 - `join_facts` joins a business on its sign-up submit time and its sign-up trades only, never activation or a later checklist tick (FEE-010, D-152, D-3779): `tests/integration/tests/join_dates.rs`.
 
 ## Detail
