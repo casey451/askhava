@@ -32,6 +32,7 @@ use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
 
+pub mod business_contacts;
 pub mod call_status;
 pub mod catalog_start;
 pub mod checkin;
@@ -1302,7 +1303,8 @@ fn register_purge_handlers(registry: &mut Registry, clock: &Arc<dyn Clock>) {
 }
 
 /// PRIV-007 to PRIV-009, TXT-020, D-2641, D-1840: the daily body cut, the daily cut of kept
-/// problem words and the daily purge sweep (with `intake`'s request sweep) at `clock`'s now; a run's last failed attempt raises one
+/// problem words and the daily purge sweep (with `intake`'s request sweep, then the business contact
+/// sweep, T415) at `clock`'s now; a run's last failed attempt raises one
 /// `privacy.purge_failed` alert, and the next day's run is already queued.
 fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     let at = Arc::clone(clock);
@@ -1327,7 +1329,10 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
         async move {
             let outcome = async {
                 askhava_jobs::api::run_sweep_at(pool.clone(), task.clone(), now).await?;
-                askhava_intake::api::run_request_sweep_at(pool.clone(), task.clone(), now).await
+                askhava_intake::api::run_request_sweep_at(pool.clone(), task.clone(), now).await?;
+                business_contacts::sweep_business_contacts(&pool, now)
+                    .await
+                    .map(|_| ())
             };
             alert_if_last(&pool, &task, outcome.await).await
         }
