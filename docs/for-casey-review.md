@@ -2841,3 +2841,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - Code emails are capped: at most 5 a day for one sign-up and 10 an hour from one internet address, the same caps the homeowner code sends use. A press past the cap sends nothing, so nobody can flood an inbox or use up the email service's daily allowance.
 - The ask to give the later sign-up journey task (T464) more room was not done: build tasks are capped at 600 lines. If it runs out of room, a later planning change splits its browser test into its own task.
 - Same gap as before (D-3186): the app has no email sending service hooked up yet, so in the running app neither the code nor the link reaches a real inbox. No real business can finish sign-up until that is built. The tests use a fake mail service, and nothing needs you now.
+
+## A finished task wrongly failed when main turned red (D-3752, November 14)
+
+- A nightly test run failed after the notes-file task (T437) merged, so the runner blamed it as the latest merge. The fix-main step found the real cause elsewhere (an earlier texting change, being fixed separately) and undid nothing. Even so, when main turned green again the runner counted a failed attempt against T437 and blocked it, which held up the rest of this stage.
+- T437 gets one more attempt that only re-checks its work, already on main, and records that check. A new runner task (T474) makes the runner count a failure only when the fix-main step actually undid that task's files. No fee, wording or check changed. Nothing needs you.
