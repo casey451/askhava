@@ -8,7 +8,8 @@
     form before the Confirm form, and the code field (label, hint, error, kept as the pick code
     form's) sits in the Confirm form, so the press posts it; a failed code puts "Error: " in the
     title and a focused summary linking to the field first. "Can't take it" (PICK-050) stays on
-    every page with a form. -#}
+    every page with a form. A tiers quote's pick shows the package chosen and its price before the
+    fee line (PICK-021, PICK-053, T440). -#}
 {% block title %}{% if let Some(step) = code %}{% if step.error.is_some() %}Error: {% endif %}{% endif %}Confirm job {{ job_number }}{% endblock %}
 {% block main %}
 <h1>Confirm job {{ job_number }}</h1>
@@ -22,7 +23,8 @@
 </div>
 {% endif %}{% endif %}<h2>Before you confirm</h2>
 <ul>
-{% if paid %}<li id="fee-line">Introduction fee by job size: ${{ fee_dollars }}. {{ basis }}</li>
+{% if let Some(line) = package %}<li id="package-line">{{ line }}</li>
+{% endif %}{% if paid %}<li id="fee-line">Introduction fee by job size: ${{ fee_dollars }}. {{ basis }}</li>
 {% else %}<li id="fee-line">{{ no_fee_line }}</li>
 {% endif %}<li id="refund-line">{{ refund }}</li>
 <li id="terms-version">You're agreeing to business terms version {{ terms_version }}. <a href="/terms/business">Read the business terms</a></li>

@@ -9,10 +9,16 @@
     business" and no wording or Pick button; an edited one shows "Updated <time>" and carries the
     edit time in data-updated, so quote_page.ts swaps it (PICK-051, T384). While the job's pick is
     paid or free, the quote she accepted shows above the list with the contact card, no reward
-    (PICK-042, PICK-054, T388). -#}
-{% block title %}Your quotes for request {{ request }}{% endblock %}
+    (PICK-042, PICK-054, T388). A tiers quote's Pick form offers one radio per package, none
+    preselected, with the error after no package or a stale one: "Error: " in the title and a
+    focused summary first in main linking to the first package (PICK-053, A11Y-030, D-3629). -#}
+{% block title %}{% if self.choose_error().is_some() %}Error: {% endif %}Your quotes for request {{ request }}{% endblock %}
 {% block main %}
-<h1>Your quotes for request {{ request }}</h1>
+{% if let Some(n) = self.choose_error() %}<div id="tier-summary" role="alert" tabindex="-1" autofocus>
+<p>Your pick didn't go through. Nothing was picked.</p>
+<ul><li><a href="#quote-{{ n }}-tier-1">Choose one package for quote #{{ n }}</a></li></ul>
+</div>
+{% endif %}<h1>Your quotes for request {{ request }}</h1>
 {% if still_open %}
 <p>Your request {{ request }} is still open. Close it on your quote page.</p>
 {% endif %}
@@ -56,7 +62,12 @@
 <form method="post" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="quote" value="{{ q.number }}">
-<button type="submit">Pick #{{ q.number }}</button>
+{% let packages = self.packages(q.number) %}{% if !packages.is_empty() %}<fieldset{% if self.choose_again(q.number) %} aria-describedby="quote-{{ q.number }}-tier-error"{% endif %}>
+<legend>Choose a package</legend>
+{% if self.choose_again(q.number) %}<p id="quote-{{ q.number }}-tier-error" class="field-error">Error: Choose one package, then press Pick #{{ q.number }}. If you already chose one, the business has since changed its packages. Check the prices and choose again.</p>
+{% endif %}{% for p in packages %}<p><input type="radio" id="quote-{{ q.number }}-tier-{{ loop.index }}" name="tier" value="{{ p.value }}"> <label for="quote-{{ q.number }}-tier-{{ loop.index }}">{{ p.label }}</label></p>
+{% endfor %}</fieldset>
+{% endif %}<button type="submit">Pick #{{ q.number }}</button>
 <p>or reply {{ q.number }} YES</p>
 </form>
 {% endif %}
