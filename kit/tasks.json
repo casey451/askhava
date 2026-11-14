@@ -10220,7 +10220,7 @@
    "id": "T396",
    "slug": "phone-approval-hold",
    "title": "businesses and messaging (harness): a phone a member links or changes is held out of the sender directory until the owner approves it",
-   "goal": "Register row IC-95, the hold (D-3081; BIZ-033, CALL-012; D-311, D-288, D-963, D-1695, D-3079). BIZ-033 and CALL-012 say a phone linked by a team member other than the owner works only after the owner approves it, but nothing holds it back: `team::link_phone` (`app/businesses/src/team.rs:439`) and `team::change_phone` (`:503`) put the number's digests in `messaging.sender_directory` at once, so `messaging::api::sender_business` (the inbound text route's lookup) and `calls::routing::party_of` treat the phone as the business; `businesses.staff_phone` (`migrations/0056_businesses_team_members.sql:32`) has no approval column; and two DONE tests, `td_biz_34_a_staff_phone_follows_into_the_directory` in `tests/integration/tests/sender_directory_sync.rs` and the member-link case in `tests/integration/tests/team_members.rs`, assert the opposite of BIZ-033. After T391 (the last earlier owner of `app/businesses/src/reply_link.rs`, which adds the blocked phone on the main phone's LINK reply) and T322 (of `team.rs`). (1) `migrations/0186_businesses_phone_approval.sql` (new, headed `-- businesses (T396)`): `businesses.staff_phone.approved_at timestamptz DEFAULT now()` (a row inserted without naming it is approved, so the DONE tests that insert a staff phone row directly, `tests/integration/tests/business_notices.rs:135` and `business_consent.rs:62`, keep today's answer; every link by a member who is not the owner writes NULL explicitly, as the migration's comment says, and TD-BIZ-52 asserts it, D-3263), `number_set_at timestamptz` and `number_set_by uuid` (when and by which member the current number was set; every link and number change writes both, so an approval can name the exact number it approves), and `number_end char(4)` (the number's last 4 digits, staff data the owner needs to know which phone to approve, as the LINK notice already names them, D-078; never the whole number); every row that exists when it runs gets `approved_at = linked_at`, `number_set_at = linked_at` and `number_set_by = linked_by` (those phones were linked under the earlier rule, and no row exists outside a test database before Gate C); and `migrations/0187_messaging_sender_held.sql` (new, headed `-- messaging (T396)`, a file of its own because a migration may name only its own module's schema, `tests/integration/tests/architecture_migrations.rs`, D-3263): `messaging.sender_held` (line ID, index version, digest, business; unique on index version and digest; no number) with the app role's SELECT, INSERT and DELETE and nothing more. A phone's standing is `approved_at IS NOT NULL` alone. (2) `app/messaging/src/sender_held.rs` (new), through `messaging::api`: `sender_hold(db, line)` moves that line's directory digests into `sender_held` (a digest another waiting phone already holds is `SenderTaken`); `sender_release(db, line)` moves them back (a digest another phone now holds in the directory is `SenderTaken` and nothing moves); `sender_drop_held(db, line)`; and `sender_line(db, vault, phone)`, the directory's business and line for a number by the same `sender-dir` digests `sender_business` uses (for T398). Nothing logs a digest. (3) `app/businesses/src/team.rs`: every link and number change stores `number_end`, `number_set_at` (`now`; `change_phone` takes `now`) and `number_set_by`. The owner's link (the main phone always) stores `approved_at = now` and works at once. A link by any other member (`team_member.is_owner` false, even one holding both roles) stores `approved_at` NULL and, after `SenderLink::link`, calls `sender_hold` in the same transaction (`SenderTaken` is `PhoneTaken`), so the phone is in no directory lookup until approved. `change_phone` first calls `sender_drop_held` (so no old number stays held), then relinks: by the owner it sets `approved_at = now` and the new number works; by any other member it sets `approved_at` NULL and holds the new number, whether the phone was waiting, approved or linked by the owner, so a member can never put a working number in place by changing one. `unlink_phone` and `remove_member` also call `sender_drop_held`. `app/businesses/src/reply_link.rs`: the phone the main phone's LINK reply adds stores `approved_at = now` (the main phone's reply is the owner's act, CALL-012) and its `number_end` if it inserts the row itself; TD-CALL-24 passes unchanged. (4) `app/businesses/src/phone_approval.rs` (new), through `businesses::api`: `approve_phone(conn, by, (line, number_set_at), now)` and `reject_phone(conn, by, (line, number_set_at), now)`, where `number_set_at` is the value the owner was shown (a mismatch, because a member changed the number since, is a new `TeamError::NumberChanged` and nothing changes, so the owner never approves a number they did not see), owner only (any other member, a \"Confirm and billing\" member holding both roles included, is `NotAllowed`), each only on a waiting phone of the owner's own business (another business's line, an unknown line and a declined one are `UnknownPhone`; an approved one is a new `TeamError::NotWaiting`), in one transaction with one audit row of IDs only (`businesses.phone_approved`, `businesses.phone_rejected`). Approve sets `approved_at` and calls `sender_release` (`SenderTaken` is `PhoneTaken`: nothing changes and the phone stays waiting); reject deletes the staff phone row and its held digests, so it can never work, and a later link of the same number is a new waiting phone. Also `phone_standing(conn, line) -> Option<bool>` (whether `approved_at` is set; `None` for no such phone) for T398, and `waiting_phones(conn, business)` (line, the member who set the number, `number_end`, `number_set_at`) for T397's page. The SEC-038 step-up is the route's (T397, T399); the owner's email for a member's number change and the notice-recipient filter are T398's. (5) Tests in `tests/integration/tests/phone_approval.rs` (TD-BIZ-52) through `businesses::api` and `messaging::api::sender_business`, fake numbers only (555-01xx); the call and text routes are T398's. (6) The two DONE tests change only where BIZ-033 decides (TD-BIZ-34 as D-3081 rewords it): each phone a member links is first asserted absent from `sender_business`, then the owner approves it with `approve_phone`; in `td_biz_34_a_staff_phone_follows_into_the_directory` the member's `change_phone` leaves the new number absent too (and the old one absent) until the owner approves again, after which the existing assertions follow; every other input, expected value and assertion is unchanged. `app/businesses/src/tests/team.rs` changes only by the `now` argument `change_phone` gains. This is a harness task only because those three files belong to T220 (DONE). Update the `businesses` and `messaging` `CLAUDE.md` files, one line in `docs/architecture.md` section 10 found by grep (never the section whole), and `docs/decisions.md`. The owner's YES text (BIZ-033's text path) is not this task's (D-3081).",
+   "goal": "Register row IC-95, the hold (D-3081; BIZ-033, CALL-012; D-311, D-288, D-963, D-1695, D-3079). BIZ-033 and CALL-012 say a phone linked by a team member other than the owner works only after the owner approves it, but nothing holds it back: `team::link_phone` (`app/businesses/src/team.rs:483`) and `team::change_phone` (`:547`) put the number's digests in `messaging.sender_directory` at once, so `messaging::api::sender_business` (the inbound text route's lookup) and `calls::routing::party_of` treat the phone as the business; `businesses.staff_phone` (`migrations/0056_businesses_team_members.sql:32`) has no approval column; and two DONE tests, `td_biz_34_a_staff_phone_follows_into_the_directory` in `tests/integration/tests/sender_directory_sync.rs` and the member-link case in `tests/integration/tests/team_members.rs`, assert the opposite of BIZ-033. After T391 (the last earlier owner of `app/businesses/src/reply_link.rs`, which adds the blocked phone on the main phone's LINK reply) and T322 (of `team.rs`). (1) `migrations/0186_businesses_phone_approval.sql` (new, headed `-- businesses (T396)`): `businesses.staff_phone.approved_at timestamptz DEFAULT now()` (a row inserted without naming it is approved, so the DONE tests that insert a staff phone row directly, `tests/integration/tests/business_notices.rs:135` and `business_consent.rs:62`, keep today's answer; every link by a member who is not the owner writes NULL explicitly, as the migration's comment says, and TD-BIZ-52 asserts it, D-3263), `number_set_at timestamptz` and `number_set_by uuid` (when and by which member the current number was set; every link and number change writes both, so an approval can name the exact number it approves), and `number_end char(4)` (the number's last 4 digits, staff data the owner needs to know which phone to approve, as the LINK notice already names them, D-078; never the whole number); every row that exists when it runs gets `approved_at = linked_at`, `number_set_at = linked_at` and `number_set_by = linked_by` (those phones were linked under the earlier rule, and no row exists outside a test database before Gate C); and `migrations/0187_messaging_sender_held.sql` (new, headed `-- messaging (T396)`, a file of its own because a migration may name only its own module's schema, `tests/integration/tests/architecture_migrations.rs`, D-3263): `messaging.sender_held` (line ID, index version, digest, business; unique on index version and digest; no number) with the app role's SELECT, INSERT and DELETE and nothing more. A phone's standing is `approved_at IS NOT NULL` alone. (2) `app/messaging/src/sender_held.rs` (new), through `messaging::api`: `sender_hold(db, line)` moves that line's directory digests into `sender_held` (a digest another waiting phone already holds is `SenderTaken`); `sender_release(db, line)` moves them back (a digest another phone now holds in the directory is `SenderTaken` and nothing moves); `sender_drop_held(db, line)`; and `sender_line(db, vault, phone)`, the directory's business and line for a number by the same `sender-dir` digests `sender_business` uses (for T398). Nothing logs a digest. (3) `app/businesses/src/team.rs`: every link and number change stores `number_end`, `number_set_at` (`now`: a new `change_phone_at(..., now)` takes it, and `change_phone` keeps its signature and calls it with `Timestamp::now()`, so callers this task does not own, such as `app/server/tests/business_contacts.rs:147` (T415, DONE), compile unchanged; plan change D-3618) and `number_set_by`. The owner's link (the main phone always) stores `approved_at = now` and works at once. A link by any other member (`team_member.is_owner` false, even one holding both roles) stores `approved_at` NULL and, after `SenderLink::link`, calls `sender_hold` in the same transaction (`SenderTaken` is `PhoneTaken`), so the phone is in no directory lookup until approved. `change_phone` first calls `sender_drop_held` (so no old number stays held), then relinks: by the owner it sets `approved_at = now` and the new number works; by any other member it sets `approved_at` NULL and holds the new number, whether the phone was waiting, approved or linked by the owner, so a member can never put a working number in place by changing one. `unlink_phone` and `remove_member` also call `sender_drop_held`. `app/businesses/src/reply_link.rs`: the phone the main phone's LINK reply adds stores `approved_at = now` (the main phone's reply is the owner's act, CALL-012) and its `number_end` if it inserts the row itself; TD-CALL-24 passes unchanged. (4) `app/businesses/src/phone_approval.rs` (new), through `businesses::api`: `approve_phone(conn, by, (line, number_set_at), now)` and `reject_phone(conn, by, (line, number_set_at), now)`, where `number_set_at` is the value the owner was shown (a mismatch, because a member changed the number since, is a new `TeamError::NumberChanged` and nothing changes, so the owner never approves a number they did not see), owner only (any other member, a \"Confirm and billing\" member holding both roles included, is `NotAllowed`), each only on a waiting phone of the owner's own business (another business's line, an unknown line and a declined one are `UnknownPhone`; an approved one is a new `TeamError::NotWaiting`), in one transaction with one audit row of IDs only (`businesses.phone_approved`, `businesses.phone_rejected`). Approve sets `approved_at` and calls `sender_release` (`SenderTaken` is `PhoneTaken`: nothing changes and the phone stays waiting); reject deletes the staff phone row and its held digests, so it can never work, and a later link of the same number is a new waiting phone. Also `phone_standing(conn, line) -> Option<bool>` (whether `approved_at` is set; `None` for no such phone) for T398, and `waiting_phones(conn, business)` (line, the member who set the number, `number_end`, `number_set_at`) for T397's page. The SEC-038 step-up is the route's (T397, T399); the owner's email for a member's number change and the notice-recipient filter are T398's. (5) Tests in `tests/integration/tests/phone_approval.rs` (TD-BIZ-52) through `businesses::api` and `messaging::api::sender_business`, fake numbers only (555-01xx); the call and text routes are T398's. (6) The two DONE tests change only where BIZ-033 decides (TD-BIZ-34 as D-3081 rewords it): each phone a member links is first asserted absent from `sender_business`, then the owner approves it with `approve_phone`; in `td_biz_34_a_staff_phone_follows_into_the_directory` the member's `change_phone` leaves the new number absent too (and the old one absent) until the owner approves again, after which the existing assertions follow; every other input, expected value and assertion is unchanged. `app/businesses/src/tests/team.rs` changes only where a case needs a fixed time (`change_phone_at` in place of `change_phone`). This is a harness task only because those three files belong to T220 (DONE). Update the `businesses` and `messaging` `CLAUDE.md` files, one line in `docs/architecture.md`, the `businesses` line found by grep (never a section read whole), and `docs/decisions.md`. The owner's YES text (BIZ-033's text path) is not this task's (D-3081).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -10270,13 +10270,14 @@
     "D-311",
     "D-963",
     "D-078",
-    "D-3263"
+    "D-3263",
+    "D-3618"
    ],
    "cites": [],
    "budget": {
     "files": 10,
     "lines": 800,
-    "context_pct": 46
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -12153,7 +12154,7 @@
    "id": "T440",
    "slug": "tier-choice-pages",
    "title": "portals: the quote page's tier choice and the Confirm page's chosen tier",
-   "goal": "Plan change D-3497 split T341 in two: T341 stores and prices the chosen tier in `picks` and adds a tier-taking pick entry point beside `page_pick`, reached through `picks::api`; this task builds the pages (D-2332; PICK-021, PICK-053). (1) The quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`), and the code step calls T341's entry point with it; on T341's validation error for a missing or stale tier the page shows the choices again and nothing is stored. (2) The Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). (D-3118) Shapes that done code and tests build stay as they are: no new field on `quotes::api::PageQuote` (`app/quotes/src/api.rs:115`, which holds only the original text and is built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), on `PageView` or `Numbered` (`app/portals/src/quote_page.rs:117`, `:50`; `PageView` built by literal at `prop_arrival_order.rs:99`) or on `ConfirmFacts` (`app/portals/src/confirm_pay.rs:69`, built by literal in `tests/integration/tests/confirm_terms.rs:89` and `:120`). So `quote_page.rs` reads each tiers quote's tier names from `quotes::api::quoted_prices` and carries them beside the view the way `ShownPage` carries the accepted quote (D-3078: a field on `ShownPage`, a method on `PageView` answering none); the Confirm page takes the chosen tier through a new render entry point in `confirm_pay.rs` beside `confirm_page_with_code`, whose existing callers pass no tier, and a field on the private `ConfirmView` (`:92`). T261 and T132 (the later owners of `confirm_pay.rs`) and T308 and T393 (of `quote_page.rs`) run after this task. Tests in `tests/integration/tests/tier_pick_pages.rs` (TD-FEE-70) against real PostgreSQL, fake data only. Money: the overseer runs an independent money review of the hand-in. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` builds it with `serde_json::from_value`, never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge` (D-3134).",
+   "goal": "Plan change D-3497 split T341 in two: T341 stores and prices the chosen tier in `picks` and adds a tier-taking pick entry point beside `page_pick`, reached through `picks::api`; this task builds the pages (D-2332; PICK-021, PICK-053). (1) The quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`), and the code step calls T341's entry point with it; on T341's validation error for a missing or stale tier the page shows the choices again and nothing is stored. The chosen tier travels from the quote page through the review and code steps, which post the quote as a hidden field (`app/portals/templates/pick_review.html:40`, `pick_code.html:26`), to `store()` and `page_pick` (`app/portals/src/pick_flow.rs:1041`): this task also owns those two templates for one hidden `tier` input each and nothing else in them (plan change D-3618; T441, the later owner of both, runs after this task). (2) The Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). (D-3118) Shapes that done code and tests build stay as they are: no new field on `quotes::api::PageQuote` (`app/quotes/src/api.rs:115`, which holds only the original text and is built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), on `PageView` or `Numbered` (`app/portals/src/quote_page.rs:117`, `:50`; `PageView` built by literal at `prop_arrival_order.rs:99`) or on `ConfirmFacts` (`app/portals/src/confirm_pay.rs:69`, built by literal in `tests/integration/tests/confirm_terms.rs:89` and `:120`). So `quote_page.rs` reads each tiers quote's tier names from `quotes::api::quoted_prices` and carries them beside the view the way `ShownPage` carries the accepted quote (D-3078: a field on `ShownPage`, a method on `PageView` answering none); the Confirm page takes the chosen tier through a new render entry point in `confirm_pay.rs` beside `confirm_page_with_code`, whose existing callers pass no tier, and a field on the private `ConfirmView` (`:92`). T261 and T132 (the later owners of `confirm_pay.rs`) and T308 and T393 (of `quote_page.rs`) run after this task. Tests in `tests/integration/tests/tier_pick_pages.rs` (TD-FEE-70) against real PostgreSQL, fake data only. Money: the overseer runs an independent money review of the hand-in. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` builds it with `serde_json::from_value`, never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge` (D-3134).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -12187,7 +12188,9 @@
     "app/portals/src/quote_page.rs",
     "app/portals/src/confirm_pay.rs",
     "app/portals/templates/confirm_pay.html",
-    "tests/integration/tests/tier_pick_pages.rs"
+    "tests/integration/tests/tier_pick_pages.rs",
+    "app/portals/templates/pick_review.html",
+    "app/portals/templates/pick_code.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12210,11 +12213,12 @@
     "D-2210",
     "D-3118",
     "D-3134",
-    "D-3497"
+    "D-3497",
+    "D-3618"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 8,
     "lines": 380,
     "context_pct": 31
    },
@@ -14475,7 +14479,8 @@
     "T447",
     "T448",
     "T449",
-    "T450"
+    "T450",
+    "T451"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -15544,7 +15549,8 @@
     "T357",
     "T358",
     "T360",
-    "T353"
+    "T353",
+    "T451"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18799,7 +18805,7 @@
    "id": "T300",
    "slug": "business-portal-served",
    "title": "server and portals: the business portal is served behind the business session (home, a released job's page, billing and statements, notice settings)",
-   "goal": "No task serves the business portal (D-2116, D-2117): `server::build_router` merges no `/b` page, and `portals` exports the portal home, the released job's page, billing with its CSV statement and notice settings only as page functions with route constants (D-1728, D-1848, D-1896). (1) `app/server/src/business_portal.rs` builds the routes `GET /b` (`business_home_page`), `POST /b/open-cards` (`save_open_cards_times`), `GET /b/picks/{pick}` (`job_release_page`, which reads `picks::api::released_view` on every load with the session proof from `server::session_minter()`, D-1739), `GET /b/billing` (`billing_page`) and `GET /b/billing/statement.csv` (`statement_csv`), and `GET` and `POST /b/notices` (`notice_settings_page`, `change_channel`; the addresses read from the vault in `server`, D-1848), each page's facts built through each module's `api`; it merges them in the shared `app/server/src/lib.rs` and composes them in `main.rs`. Every route reads the person with `portals::api::business_principal`: no business person (signed out, a homeowner or owner session, a removed member) gets a 4xx answer with a link to `/b/sign-in` and no homeowner detail, so T085's signed-out checks in `tests/e2e/business_portal.spec.ts` stay true; a refusal (another business's pick, a role the page needs missing, an unknown ID) is the one not-found answer; every response is `no_store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF check (SEC-009, SEC-042), and a refusal is a security event (SEC-048). (2) Each served `GET` page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788), and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. (3) Tests: `app/server/tests/business_portal_route.rs` against the assembled router (TD-SEC-43 and the router half of TD-BIZ-42) and `tests/e2e/business_portal_served.spec.ts` (the browser half of TD-BIZ-42; T085's spec is not changed, D-2117). In that spec the fake owner signs in through the served sign-in pages with no read of any email: the spec seeds, through `psql` on `DATABASE_URL` as `tests/e2e/j1_reduced.spec.ts` seeds its quote token, the active business, its owner with a linked fake phone (555-01xx) that takes texts, and a `portals.login_link` row whose `token_sha256` is the SHA-256 of a token the spec chose, then opens `/b/sign-in/{token}`; the new-device code is the one the stand-in Verify issues for that phone, computed in the spec from its rule in `stand_ins/twilio.py` (`start_verification`: the sum of the E.164 number's character codes modulo 1,000,000, six digits); no test-control route, stand-in change or email read is needed. The complaints page, the \"Why was I charged?\" page, the emergency-email switch and the job page's notice log are T306's, the action links T301's and business sign-up T302's (D-2128). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. `GET /b/picks/{pick}` answers 200 only for a released pick (`picks::api::released_view`), so its row is probed with the released pick T401 adds to the probe's fixture; every other `{pick}` keeps the fixture's waiting pick. Keep each `.route(` call on one line (`tests/security/tests/auth_matrix.rs:289` expects it; rustfmt may wrap a long call, so bind the handler to a short local name first) (plan change D-3106).",
+   "goal": "No task serves the business portal (D-2116, D-2117): `server::build_router` merges no `/b` page, and `portals` exports the portal home, the released job's page, billing with its CSV statement and notice settings only as page functions with route constants (D-1728, D-1848, D-1896). (1) `app/server/src/business_portal.rs` builds the routes `GET /b` (`business_home_page`), `POST /b/open-cards` (`save_open_cards_times`), `GET /b/picks/{pick}` (`job_release_page`, which reads `picks::api::released_view` on every load with the session proof from `server::session_minter()`, D-1739), `GET /b/billing` (`billing_page`) and `GET /b/billing/statement.csv` (`statement_csv`), and `GET` and `POST /b/notices` (`notice_settings_page`, `change_channel`; the addresses read from the vault in `server`, D-1848), each page's facts built through each module's `api`; it merges them in the shared `app/server/src/lib.rs` and composes them in `main.rs`. Every route reads the person with `portals::api::business_principal`: no business person (signed out, a homeowner or owner session, a removed member) gets a 4xx answer with a link to `/b/sign-in` and no homeowner detail, so T085's signed-out checks in `tests/e2e/business_portal.spec.ts` stay true; a refusal (another business's pick, a role the page needs missing, an unknown ID) is the one not-found answer; every response is `no_store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF check (SEC-009, SEC-042), and a refusal is a security event (SEC-048). (2) Each served `GET` page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788), and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. (3) Tests: `app/server/tests/business_portal_route.rs` against the assembled router (TD-SEC-43 and the router half of TD-BIZ-42) and `tests/e2e/business_portal_served.spec.ts` (the browser half of TD-BIZ-42; T085's spec is not changed, D-2117). In that spec the fake owner signs in through the served sign-in pages with no read of any email: the spec seeds, through `psql` on `DATABASE_URL` as `tests/e2e/j1_reduced.spec.ts` seeds its quote token, the active business, its owner with a linked fake phone (555-01xx) that takes texts, and a `portals.login_link` row whose `token_sha256` is the SHA-256 of a token the spec chose, then opens `/b/sign-in/{token}`; the new-device code is the one the stand-in Verify issues for that phone, computed in the spec from its rule in `stand_ins/twilio.py` (`start_verification`: the sum of the E.164 number's character codes modulo 1,000,000, six digits); no test-control route, stand-in change or email read is needed. The complaints page, the \"Why was I charged?\" page, the emergency-email switch and the job page's notice log are T306's, the action links T301's and business sign-up T302's (D-2128). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. `GET /b/picks/{pick}` answers 200 only for a released pick (`picks::api::released_view`), so its row is probed with the released pick T401 adds to the probe's fixture; every other `{pick}` keeps the fixture's waiting pick. Keep each `.route(` call on one line (`tests/security/tests/auth_matrix.rs:289` expects it; rustfmt may wrap a long call, so bind the handler to a short local name first) (plan change D-3106). Plan change D-3618 (BIZ-025, BIZ-015): no `api` reads the per-business counts `business_home_page`'s `YourNumbers` (`app/portals/src/business_portal.rs:137`) holds, and none reads the saved cards `billing_page` takes as `&[PaymentMethod]` (the card rows are private to `payments`, `app/payments/src/models.rs:111`). So this task serves `/b` with `YourNumbers` whose `fees_cents` is the month's charged introduction fees from `payments::api::business_statement` and every other count `YourNumbers::default()`'s, and `/b/billing` with an empty method list; T451 adds the readers and fills both. TD-BIZ-42 asserts the panel and billing page, not their values, so it passes unchanged.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -18862,7 +18868,8 @@
     "D-2117",
     "D-2440",
     "D-3106",
-    "D-3263"
+    "D-3263",
+    "D-3618"
    ],
    "cites": [],
    "budget": {
@@ -19043,7 +19050,8 @@
     "D-2954",
     "D-3100",
     "D-3262",
-    "D-3602"
+    "D-3602",
+    "D-3619"
    ],
    "cites": [],
    "budget": {
@@ -19355,7 +19363,8 @@
     "T249",
     "T348",
     "T369",
-    "T404"
+    "T404",
+    "T451"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -29593,7 +29602,8 @@
     "T306",
     "T372",
     "T374",
-    "T200"
+    "T200",
+    "T451"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -30990,7 +31000,7 @@
    "id": "T445",
    "slug": "runner-stage-robustness",
    "title": "runner (harness): a failed nightly on an older head keeps the stages the last green nightly proved, and a re-staged task's stage follows kit/tasks.json",
-   "goal": "Runner robustness (D-3563 (e); D-486, D-1126, D-3499, D-3531). (1) On November 13 a one-in-a-hundred property-test miss failed `named-mutants` on nightly-main; a failed `kit/nightly.json` makes `scripts/stage_exit.py` `_nightly_problems` fail every stage, so `passed_stages` (called by `runner/__main__.py` `build`'s `gate`) is empty and no task is claimed until a green nightly, about 2 hours, even after main had moved on and was green; `main_red` already ignores a failed nightly on an older head (`runner/cycle.py` `_nightly_red_on_head`, about line 1264). Make the gate do the same: `.github/workflows/nightly-main.yml`'s `record` step also writes `last_green` (`{\"sha\", \"ran_at\"}`): this run's when it is green, else the `last_green` of the `kit/nightly.json` it replaces (absent when there is none), and `failures_since_green`: 0 on a green run, else the replaced file's value plus 1 (1 when the replaced file has none or there is none); every other key and the commit line stay as they are. A new pure `stage_exit.gate_nightly(nightly, main_head, is_ancestor)` returns the record unchanged unless its `conclusion` is `failure`, its `sha` is not `main_head` and is an ancestor of it (`is_ancestor` answers `True`), it carries a `last_green` with a `sha`, and its `failures_since_green` is exactly 1 (the first failure since the last green run; the nightly runs about once a day while `main` moves all day, so almost every failure is on an older head, and a second failure in a row is no longer chance: the gate closes); then it returns `{\"conclusion\": \"success\", \"sha\": <last_green sha>}`, so a stage whose merges that green run contained stays passed and a stage that needs a newer merge waits for a newer green nightly. `gate` passes `gate_nightly(env.read_nightly(), env.main_head(), git_is_ancestor(ROOT))` to `passed_stages`; `evaluate`, `passed_stages`, the command line, `runner/proof.py`'s stage proofs and `main_red` read the raw record as today. A failed nightly on main's current head always closes every stage (and sets `main_red` as today), whatever the counter says, and so does any second or later failure in a row. (2) `runner/state.py` `sync_graph` (about line 99) copies a changed `stage` onto every entry not DONE or SKIPPED, as it does `deps` (D-1126), so a plan change that re-stages a queued task takes effect (the parked D-3498 re-stage of T111 and T121 needs it). (A worker stop opening `MAIN RED:` that the runner confirms is left out: it would add `runner/cycle.py`.) Tests first, in the new `tests/test_runner_stage_robustness.py`: `gate_nightly` returns the last green record for a failure on an older head, the raw failure on main's head, on a SHA that is not an ancestor or when `is_ancestor` answers `None`, and with no `last_green`, and when `failures_since_green` is missing or 2 or more; two consecutive failed nightlies on older heads close every stage (`passed_stages` over `gate_nightly`'s answer is empty for a stage the last green run had passed); a success passes unchanged; `passed_stages` over the substituted record keeps a stage whose merges the last green SHA contains and closes one whose merge it does not; the `record` step's Python (read from the workflow file and run on fake records) keeps `last_green` across a failure and moves it on a success, and counts `failures_since_green` up across failures and back to 0 on a success; `sync_graph` moves a QUEUED entry's stage and leaves a DONE entry's. Every existing test passes unchanged.",
+   "goal": "Runner robustness (D-3563 (e); D-486, D-1126, D-3499, D-3531). (1) On November 13 a one-in-a-hundred property-test miss failed `named-mutants` on nightly-main; a failed `kit/nightly.json` makes `scripts/stage_exit.py` `_nightly_problems` fail every stage, so `passed_stages` (called by `runner/__main__.py` `build`'s `gate`) is empty and no task is claimed until a green nightly, about 2 hours, even after main had moved on and was green; `main_red` already ignores a failed nightly on an older head (`runner/cycle.py` `_nightly_red_on_head`, about line 1264). Make the gate do the same: `.github/workflows/nightly-main.yml`'s `record` step also writes `last_green` (`{\"sha\", \"ran_at\"}`): this run's when it is green, else the `last_green` of the `kit/nightly.json` it replaces (absent when there is none), and `failures_since_green`: 0 on a green run, else the replaced file's value plus 1 (1 when the replaced file has none or there is none); every other key and the commit line stay as they are. A new pure `stage_exit.gate_nightly(nightly, main_head, is_ancestor)` returns the record unchanged unless its `conclusion` is `failure`, its `sha` is not `main_head` and is an ancestor of it (`is_ancestor` answers `True`), it carries a `last_green` with a `sha`, and its `failures_since_green` is exactly 1 (the first failure since the last green run; the nightly runs about once a day while `main` moves all day, so almost every failure is on an older head, and a second failure in a row is no longer chance: the gate closes); then it returns `{\"conclusion\": \"success\", \"sha\": <last_green sha>}`, so a stage whose merges that green run contained stays passed and a stage that needs a newer merge waits for a newer green nightly. `gate` passes `gate_nightly(env.read_nightly(), env.main_head(), git_is_ancestor(ROOT))` to `passed_stages`; `evaluate`, `passed_stages`, the command line, `runner/proof.py`'s stage proofs and `main_red` read the raw record as today. A failed nightly on main's current head always closes every stage (and sets `main_red` as today), whatever the counter says, and so does any second or later failure in a row. (2) `runner/state.py` `sync_graph` (about line 99) copies a changed `stage` onto every entry not DONE or SKIPPED, as it does `deps` (D-1126), so a plan change that re-stages a queued task takes effect (the parked D-3498 re-stage of T111 and T121 needs it). (A worker stop opening `MAIN RED:` that the runner confirms is left out: it would add `runner/cycle.py`.) Tests first, in the new `tests/test_runner_stage_robustness.py`: `gate_nightly` returns the last green record for a failure on an older head, the raw failure on main's head, on a SHA that is not an ancestor or when `is_ancestor` answers `None`, and with no `last_green`, and when `failures_since_green` is missing or 2 or more; two consecutive failed nightlies on older heads close every stage (`passed_stages` over `gate_nightly`'s answer is empty for a stage the last green run had passed); a success passes unchanged; `passed_stages` over the substituted record keeps a stage whose merges the last green SHA contains and closes one whose merge it does not; the `record` step's Python (read from the workflow file and run on fake records) keeps `last_green` across a failure and moves it on a success, and counts `failures_since_green` up across failures and back to 0 on a success; `sync_graph` moves a QUEUED entry's stage and leaves a DONE entry's. (3) Plan change D-3619 (a stale-graph claim): on November 14 a run whose own checkout's `kit/tasks.json` predated main's (before #730 added T302's dependency T450) smoked main's head and claimed T302 from its older graph. Before any claim, `build` (`runner/__main__.py`) compares the run's `kit/tasks.json` with the one at the `origin/main` head it just fetched (`git show <head>:kit/tasks.json`); when they differ it reloads the graph, the stage gate and the pacer's task list from main's file before claiming, and when main's file cannot be read it claims nothing this cycle and logs why. Test (in the same new file): a checkout graph without a dependency that main's graph has never claims the task whose dependency is not DONE. Every existing test passes unchanged.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -31023,12 +31033,13 @@
     "D-486",
     "D-3499",
     "D-3531",
-    "D-3563"
+    "D-3563",
+    "D-3619"
    ],
    "cites": [],
    "budget": {
     "files": 5,
-    "lines": 300,
+    "lines": 380,
     "context_pct": 40
    },
    "checks": [
@@ -31333,6 +31344,65 @@
    "branch": "claude/task/T450-signup-code-screens",
    "prompt": "kit/prompts/T450.md",
    "acceptance": "`cargo test -p askhava-portals --lib tests::signup_code_screens` passes with every listed case, including that choosing text with the email-only wording ticked stores no Text consent and that a forged shown-channels field with a bad MAC stores nothing; every existing portals test passes unchanged; `scripts/check_copy.py` and `scripts/check_ai_smell.py` report 0 problems for the new words."
+  },
+  {
+   "id": "T451",
+   "slug": "your-numbers-readers",
+   "title": "quotes, picks, jobs, payments and server: the \"Your numbers\" panel and the saved cards get real readers",
+   "goal": "Plan change D-3618 follow-up (BIZ-025, BIZ-015, FEE-014; D-193, D-250, D-284, D-331, D-1912): T300 serves the portal home with `YourNumbers` (`app/portals/src/business_portal.rs:137`) holding only the month's fees (from `payments::api::business_statement`) and `YourNumbers::default()` for every other count, and `/b/billing` with no saved cards, because no `api` reads those per-business counts and the saved-card rows are private to `payments` (`app/payments/src/models.rs:111`). Add one public reader per owning module, each through its crate's shared `api` (one `mod` line, one `pub use`), each for one business and this calendar month in Arizona time, IDs and counts only: `app/quotes/src/business_numbers.rs` (cards sent, cards that ended without a quote, quotes sent, and the typical (median) quotes per job in each of the business's trades, in tenths, D-331); `app/picks/src/business_numbers.rs` (picks, picks confirmed, picks that ran out of time, D-284); `app/jobs/src/business_numbers.rs` (its picked jobs by the homeowner's DONE, NO and OTHER check-in replies, D-250; read where `jobs` stores them); and `app/payments/src/card_list.rs` (the business's saved cards not removed, brand and last four only, never the `pm_` ID or any other card data, FEE-014). Then `app/server/src/business_portal.rs` (T300's) fills `YourNumbers` from those readers and the statement and passes the saved cards to `billing_page` as `PaymentMethod`s; nothing else in it changes. Tests in the new `tests/integration/tests/business_numbers.rs` against PostgreSQL, fake data only: each count for a business with known cards, quotes, picks, confirms, a lapsed pick and one of each reply, last month's rows not counted, another business's never; the median with an even and an odd number of jobs; a removed card not listed; no `pm_` ID in the billing page. Every TD-BIZ-42 case passes unchanged. Update the `quotes`, `picks`, `jobs`, `payments` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "server",
+   "deps": [
+    "T300"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy"
+   ],
+   "owns": [
+    "app/quotes/src/business_numbers.rs",
+    "app/picks/src/business_numbers.rs",
+    "app/jobs/src/business_numbers.rs",
+    "app/payments/src/card_list.rs",
+    "app/server/src/business_portal.rs",
+    "tests/integration/tests/business_numbers.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/fees.md"
+   ],
+   "requirements": [
+    "BIZ-025",
+    "FEE-014"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-193",
+    "D-250",
+    "D-284",
+    "D-331",
+    "D-3618"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 500,
+    "context_pct": 4
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T451-your-numbers-readers",
+   "prompt": "kit/prompts/T451.md",
+   "acceptance": "`tests/integration/tests/business_numbers.rs` passes against PostgreSQL with every listed case; the portal home shows the real counts and `/b/billing` the saved cards' brand and last four only; every TD-BIZ-42 and existing test passes unchanged."
   }
  ]
 }
