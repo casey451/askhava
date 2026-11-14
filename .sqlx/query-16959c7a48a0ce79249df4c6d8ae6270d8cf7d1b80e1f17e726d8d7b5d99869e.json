@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT is_main FROM businesses.staff_phone WHERE id = $1 AND business_id = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "is_main",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.staff_phone",
+            "name": "is_main"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "16959c7a48a0ce79249df4c6d8ae6270d8cf7d1b80e1f17e726d8d7b5d99869e"
+}

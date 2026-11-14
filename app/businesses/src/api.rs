@@ -116,6 +116,7 @@ pub use crate::open_cards_times::{
 };
 pub use crate::pest_identity::{PestIdentity, pest_identity, record_pest_match};
 pub use crate::public_name::{PUBLIC_NAME_ALERT, public_names};
+pub use crate::reply_link::{is_main_phone, link_by_reply};
 pub use crate::rules::JobTypeChoice;
 pub use crate::rules::{Checks, Event, OwnHours, Widens};
 pub use crate::service::{
