@@ -40,7 +40,7 @@ RETIRED_BASELINE = Path("tests") / "brand_literal_baseline.json"
 BRAND_FILE = "app/core/data/brand.json"
 # Files that cannot hold customer text a literal check could read; anything else must be UTF-8.
 BINARY_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".woff", ".woff2"})
-SKIP_NAMES = frozenset({"CLAUDE.md", "Cargo.toml"})
+SKIP_NAMES = frozenset({"CLAUDE.md", "NOTES.md", "Cargo.toml"})  # a crate's notes are never customer copy (D-3474)
 EXEMPT_FILES = {
     "app/ai/data/word_022_phrases.json": "mirrors scripts/trace_spec.py's spec patterns (D-493)",
 }
@@ -279,6 +279,13 @@ def test_td_word_34_test_folders_skipped_files_and_exemptions_pass(tmp_path: Pat
         },
     )
     assert guard(root, brand.load()) == []
+
+
+def test_td_word_34_a_crate_notes_file_passes_while_a_source_file_still_fails(tmp_path: Path) -> None:
+    """D-3474, T437: a crate's NOTES.md, like its CLAUDE.md, is never shown to a customer."""
+    hit = planted('- [-] (task 437) the page says "{brand}"\n')
+    root = plant(tmp_path, {"app/fake/NOTES.md": hit, RS: hit})
+    assert [p.split(" ", 1)[0] for p in guard(root, brand.load())] == [f"{RS}:1:"]
 
 
 def test_td_word_34_a_non_text_file_of_an_unlisted_type_fails(tmp_path: Path) -> None:

@@ -214,3 +214,27 @@ def test_the_reservation_reads_the_limit_with_the_later_task_counted(tmp_path: P
     s = holding(tasks, "T020")
     assert lanes.exclusive_ids(["T010", "T002", "T004"], s, NOW, by_id(tasks), capped_limit) == ["T004"]
     assert lanes.exclusive_ids(["T002", "T004"], s, NOW, by_id(tasks), capped_limit) == ["T002", "T004"]  # no reservation: it may
+
+
+def test_a_crate_is_full_when_its_bytes_and_a_task_each_in_flight_and_next_pass_the_budget(tmp_path: Path) -> None:
+    """D-3474, T437: bytes on main plus (held + 1) * CRATE_DOC_TASK_BYTES over MAX_CRATE_DOC_BYTES is full."""
+    most, room = check_code_docs.MAX_CRATE_DOC_BYTES, check_code_docs.CRATE_DOC_TASK_BYTES
+    assert (most, room) == (8_192, 400)
+    for name, size in (("small", 2_000), ("edge", most - room), ("near", most - room + 1), ("two", most - 2 * room)):
+        (tmp_path / "app" / name).mkdir(parents=True)
+        (tmp_path / "app" / name / "CLAUDE.md").write_text("é" * (size // 2) + "x" * (size % 2), encoding="utf-8")  # UTF-8 bytes, 1 line
+    full = entry.crate_doc_full(tmp_path)
+    assert (full("small", 0), full("small", 1), full("edge", 0), full("near", 0)) == (False, False, False, True)
+    assert (full("two", 1), full("two", 2)) == (False, True)  # each task in flight counts 400 bytes
+
+
+def test_a_check_without_the_byte_constants_falls_back_to_the_line_rule(tmp_path: Path, monkeypatch: Any) -> None:
+    (tmp_path / "app" / "pay").mkdir(parents=True)
+    (tmp_path / "app" / "pay" / "CLAUDE.md").write_text("x" * 9_000 + "\n", encoding="utf-8")
+    assert entry.crate_doc_full(tmp_path)("pay", 0) is True
+    monkeypatch.delattr(check_code_docs, "CRATE_DOC_TASK_BYTES")
+    assert entry.crate_doc_full(tmp_path)("pay", 0) is False
+    monkeypatch.delattr(check_code_docs, "MAX_CRATE_DOC_BYTES")
+    full = entry.crate_doc_full(tmp_path)
+    (tmp_path / "app" / "pay" / "CLAUDE.md").write_text("line\n" * check_code_docs.MAX_CRATE_DOC_LINES, encoding="utf-8")
+    assert full("pay", 0) is True
