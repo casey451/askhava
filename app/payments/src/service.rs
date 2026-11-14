@@ -396,7 +396,9 @@ pub struct Confirmed<'a> {
 /// with the stored mode, never with the terms now, so a switch committed after the gate cannot
 /// make this write fail (D-1415). The key is derived from the job and business IDs only, so a
 /// repeat appends once (SEC-018, JOB-006). The amount is never re-read from a quote, a final bill
-/// or a reply.
+/// or a reply. Not the production writer (D-2623): a success's `charge` entry is written by the
+/// success path under its per-pick key (`book_success`) and a $0 entry by `waive_at_confirm`, so
+/// this must never be called for a charge; only done tests call it.
 ///
 /// # Errors
 ///

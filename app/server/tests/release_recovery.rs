@@ -32,9 +32,9 @@ use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
     BusinessId, ChargeOutcome, EntryKind, IntentStripe, LedgerEntry, NewEntry, PickNow, Press,
-    Releasable, STRIPE_WEBHOOK_PATH, StripeAccount, StripeWebhook, confirm_and_pay,
-    ensure_customer, ledger_append, money_view, no_fee_release, pick_fee, receipt_for,
-    stripe_webhook_routes,
+    Releasable, STRIPE_WEBHOOK_PATH, StripeAccount, StripeWebhook, business_statement,
+    confirm_and_pay, ensure_customer, ledger_append, money_view, no_fee_release, pick_fee,
+    receipt_for, stripe_webhook_routes,
 };
 use askhava_picks::api::{
     BUSINESS_NOTICE_KIND, LINE_RETRY_KIND, PagePick, Released, ViewAnswer, page_pick,
@@ -404,14 +404,27 @@ async fn had_line(pool: &PgPool, job: Uuid) -> bool {
     job_had_line(&mut db, job).await.expect("line")
 }
 
-/// The ledger holds no charge: the release writes no fee (FEE-032).
-async fn no_fee_written(pool: &PgPool) {
+/// One charge and no second fee: the ledger holds the $25 `paid()` charge, exactly one `charge`
+/// row for `pick`'s business and job, and the release writes no fee of its own (FEE-032,
+/// TD-FEE-64, D-3658).
+async fn one_charge_no_second_fee(pool: &PgPool, pick: Uuid) {
     let span = (
         Timestamp::UNIX_EPOCH,
         Timestamp::from_second(1_900_000_000).expect("t"),
     );
     let view = money_view(pool, span).await.expect("money");
-    assert_eq!(view.charges, 0);
+    assert_eq!(view.charges, 2500);
+    let mut db = pool.acquire().await.expect("db");
+    let fee = pick_fee(&mut db, pick).await.expect("fee").expect("stored");
+    drop(db);
+    let statement = business_statement(pool, fee.business.0, span)
+        .await
+        .expect("statement");
+    let charges = statement
+        .lines
+        .iter()
+        .filter(|l| l.kind == EntryKind::Charge && l.job == Some(fee.job));
+    assert_eq!(charges.count(), 1);
 }
 
 struct FakeStripe {
@@ -531,7 +544,7 @@ async fn number(pool: &PgPool, job: Uuid) -> i64 {
 
 /// TD-PICK-50 (PICK-022, CALL-001): a verified success moves the awaiting-confirm pick to paid,
 /// mints for her contact and releases; a duplicate delivery and two simultaneous ones give one
-/// release, one notice, one masked line and no fee.
+/// release, one notice, one masked line, one charge and no second fee.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_pick_50_a_verified_success_settles_paid_and_releases_once(pool: PgPool) {
     let (business, person, job, pick) = picked(&pool).await;
@@ -553,7 +566,7 @@ async fn td_pick_50_a_verified_success_settles_paid_and_releases_once(pool: PgPo
     assert!(closed.expect("close").is_some(), "one open line");
     let again = close_line(&mut db, (job, n), CloseReason::Expired, now()).await;
     assert!(again.expect("close").is_none(), "and only one");
-    no_fee_written(&pool).await;
+    one_charge_no_second_fee(&pool, pick).await;
     let all = tasks(&pool).await;
     assert_eq!(count(&all, BUSINESS_NOTICE_KIND, pick), 1);
     assert_eq!(count(&all, LINE_RETRY_KIND, pick), 0);
@@ -719,8 +732,8 @@ async fn td_pick_50_an_error_before_the_claim_leaves_the_line_retry_unspent(pool
 /// TD-PICK-49 (PICK-022, PICK-024, PRIV-005, BIZ-014, D-1565): a regular job's release claims its
 /// row and the vault read then fails, so Stripe gets the error; after a restart (a new pool,
 /// vault and sink) the resent event finds the release made, and the signed-in owner sees the
-/// details through the released view, again on a reload; one release notice, one charge, no
-/// fee, no plaintext outside the vault, and the line still opens through its retry.
+/// details through the released view, again on a reload; one release notice, one charge and no
+/// second fee, no plaintext outside the vault, and the line still opens through its retry.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_pick_49_a_failed_vault_read_recovers_and_shows_once(pool: PgPool) {
     let (business, person, job, pick) = picked(&pool).await;
@@ -746,7 +759,7 @@ async fn td_pick_49_a_failed_vault_read_recovers_and_shows_once(pool: PgPool) {
     let charge = receipt_for(&mut db, pick, business).await;
     assert!(charge.expect("receipt").is_some(), "one charge");
     drop(db);
-    no_fee_written(&after).await;
+    one_charge_no_second_fee(&after, pick).await;
     let all = tasks(&after).await;
     assert_eq!(count(&all, BUSINESS_NOTICE_KIND, pick), 1);
     no_plaintext(&all);

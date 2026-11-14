@@ -4,8 +4,10 @@
 //! [`record`] stores an attempt's answer with its audit row and, in that transaction: a decline
 //! or bank approval opens the card-fix window (1 business hour, 60 clock minutes on an emergency
 //! job, PICK-044) and queues [`CARD_FIX_KIND`], which `picks::money_notices` turns into the
-//! business's notice (FEE-020, D-492); a success writes the pick's one FEE-042 evidence record
-//! ([`write_evidence`], D-1474) and, on a pick `payments` already ended, queues its one
+//! business's notice (FEE-020, D-492); a success with the intent's `ch_` charge ID books the
+//! pick's FEE-042 evidence record, its `charge` ledger entry and its receipt ([`book_success`],
+//! D-1474, D-2623), a success without one is recorded as undecided, as an unreadable answer is
+//! ([`answered`], D-3134), and on a pick `payments` already ended, queues its one
 //! late-success refund and alert through `late_success` (FEE-021, D-2290), under the pick's
 //! `pick_intent` share lock so a concurrent [`end_pick`] is seen, and [`end_pick`] queues it for a
 //! success committed before it (D-2958); no answer from Stripe
@@ -31,7 +33,7 @@ use serde_json::{Value, json};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
-use crate::charge::{ATTEMPT_SUBJECT, ask_stripe, latest, write_evidence};
+use crate::charge::{ATTEMPT_SUBJECT, ask_stripe, book_success, is_charge_id, latest};
 use crate::late::late_success;
 use crate::models::{ChargeError, MoneyEventError, PickNow};
 use crate::status::AttemptStatus;
@@ -99,15 +101,28 @@ pub async fn charges_paused(conn: &mut PgConnection) -> Result<bool, ChargeError
     Ok(false)
 }
 
-/// Stores Stripe's answer `status` on attempt `try_no` if it may still change, with its audit
-/// row and the effects in the module docs, in one transaction; returns the status now stored.
+/// The status Stripe's answer `status` with the intent's `latest_charge` `charge` stands for: a
+/// success with no `ch_` ID is [`AttemptStatus::Sent`], undecided as an unreadable answer is, so
+/// a later fetch records it (FEE-037, FEE-042, D-3134).
+pub(crate) fn answered(status: AttemptStatus, charge: Option<&str>) -> AttemptStatus {
+    if status.paid() && !charge.is_some_and(is_charge_id) {
+        AttemptStatus::Sent
+    } else {
+        status
+    }
+}
+
+/// Stores Stripe's answer `status` (with the intent's `latest_charge`, read through [`answered`])
+/// on attempt `try_no` if it may still change, with its audit row and the effects in the module
+/// docs, in one transaction; returns the status now stored.
 pub(crate) async fn record(
     pool: &PgPool,
     pick: Uuid,
     try_no: i32,
-    status: AttemptStatus,
+    (status, charge): (AttemptStatus, Option<&str>),
     at: Timestamp,
 ) -> Result<AttemptStatus, ChargeError> {
+    let status = answered(status, charge);
     let mut tx = db(pool.begin().await)?;
     let from = db(sqlx::query_scalar!(
         "SELECT status FROM payments.charge_attempt WHERE pick_id = $1 AND try_no = $2 FOR UPDATE",
@@ -140,7 +155,7 @@ pub(crate) async fn record(
     audit(&mut tx, &entry)
         .await
         .map_err(|_| ChargeError::Database)?;
-    effects(&mut tx, (pick, try_no), status, at).await?;
+    effects(&mut tx, (pick, try_no), (status, charge), at).await?;
     db(tx.commit().await)?;
     Ok(status)
 }
@@ -149,13 +164,13 @@ pub(crate) async fn record(
 async fn effects(
     tx: &mut PgConnection,
     (pick, try_no): (Uuid, i32),
-    status: AttemptStatus,
+    (status, charge): (AttemptStatus, Option<&str>),
     at: Timestamp,
 ) -> Result<(), ChargeError> {
-    if status.paid() {
+    if let (true, Some(charge)) = (status.paid(), charge) {
         hold_pick(tx, pick).await?;
         end_timers(tx, pick, None, at).await?;
-        write_evidence(tx, pick, try_no, at).await?;
+        book_success(tx, (pick, try_no), charge, at).await?;
         late_success(tx, pick, PickNow::Payable, at)
             .await
             .map_err(|_| ChargeError::Database)?;
