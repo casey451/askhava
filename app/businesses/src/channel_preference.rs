@@ -125,7 +125,9 @@ pub async fn notice_channel(
 
 /// BIZ-019, BIZ-037, TXT-037, D-492: the people a notice of `purpose` goes to (the owner and every
 /// member whose roles fit it, owner first), each with their channels. While business texting is
-/// off (`business_texting_on` false) nobody gets a phone, whatever the stored choice.
+/// off (`business_texting_on` false) nobody gets a phone, whatever the stored choice. Only an
+/// approved phone (`approved_at` set) is listed, so a phone waiting for the owner's approval gets
+/// no notice text and a person whose only phones wait gets the email (BIZ-033, D-3081, IC-95).
 ///
 /// # Errors
 /// [`ChannelError::Database`].
@@ -140,7 +142,7 @@ pub async fn notice_recipients(
     let phones = if texts {
         sqlx::query!(
             "SELECT id, linked_by FROM businesses.staff_phone WHERE business_id = $1 \
-             ORDER BY linked_at, id",
+             AND approved_at IS NOT NULL ORDER BY linked_at, id",
             business
         )
         .fetch_all(&mut *conn)

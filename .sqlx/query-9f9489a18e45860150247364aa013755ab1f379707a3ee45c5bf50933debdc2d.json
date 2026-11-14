@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, linked_by FROM businesses.staff_phone WHERE business_id = $1 ORDER BY linked_at, id",
+  "query": "SELECT id, linked_by FROM businesses.staff_phone WHERE business_id = $1 AND approved_at IS NOT NULL ORDER BY linked_at, id",
   "describe": {
     "columns": [
       {
@@ -36,5 +36,5 @@
       false
     ]
   },
-  "hash": "ce1bca5b884ad5832d82145528f37888b5a232ad39354d2f20b17607cc714af6"
+  "hash": "9f9489a18e45860150247364aa013755ab1f379707a3ee45c5bf50933debdc2d"
 }
