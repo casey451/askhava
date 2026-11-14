@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T03:00:43Z by runner 55359c799ba4 (actions).
+Updated 2026-11-14T03:01:01Z by runner 55359c799ba4 (actions).
 
 **Building: T449 in progress since 02:46Z; 308 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 308 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T449 claimed 02:46Z, lease until 05:46Z; lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 5: T440 claimed 02:53Z, lease until 05:53Z; lane 6: T344 claimed 02:54Z, lease until 05:54Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
+- **Lane:** lane 3: T449 claimed 02:46Z, lease until 05:46Z; lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 5: T440 claimed 02:53Z, lease until 05:53Z; lane 6: T344 claimed 02:54Z, lease until 05:54Z
 - **Week:** 34% used, 120.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:58Z, 1 min before this update
+- **Last run:** 02:58Z, 2 min before this update
 - **Keeper:** last ran 02:58Z, next wake 04:43Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-14T03:00:43Z by runner 55359c799ba4 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T450 | portals: the sign-up code screens and the texts choice with  | MERGE_PENDING | 1 | 79 min | 03:00Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 23 min | 02:41Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/intake/CLAUDE.md, app/messaging/CLAUDE.md, app |
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | done | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
@@ -161,7 +162,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T433 (lease until 2026-11-14T05:23:41Z)
 - lane 5: T440 (lease until 2026-11-14T05:53:03Z)
 - lane 6: T344 (lease until 2026-11-14T05:54:46Z)
-- lane 7: T450 (lease until 2026-11-14T04:40:56Z)
 
 ## Last usage reading
-- {"task": "T437", "at": "2026-11-14T02:41:40Z", "output_tokens": 11467, "cache_creation_input_tokens": 58903, "cache_read_input_tokens": 828089, "input_tokens": 54}
+- {"task": "T450", "at": "2026-11-14T03:00:41Z", "cache_read_input_tokens": 5373860, "input_tokens": 162, "output_tokens": 68973, "cache_creation_input_tokens": 223376}
