@@ -2880,3 +2880,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - Signed-in businesses can now open their account home, billing with the statement download, notice settings and a released job's page. Anyone not signed in as a business gets a short page with a link to sign in; anything that isn't theirs gets the same "Page not found" page.
 - Two things are still missing because no part of the app reads them yet: the released job's page shows "Job 0" and no call list, and "Your numbers" shows only the fee total (as already planned for T451). A small follow-up is needed for the job number and call list. Nothing needs you.
+
+## A business's quote link: the fee shown, and a double tap (D-3672, D-3673, November 14)
+
+- The quote form a business opens from its email now shows the introduction fee by job size for its price whenever the form comes back to it (a missing fact, a note that was turned back, or the "bigger than your largest job" check). A quote with nothing wrong is still sent on the first press without the fee shown first, because the page has no price until it is sent; showing the fee as the price is typed needs a small browser extra that no task has built yet.
+- If a business presses "Send quote" twice quickly, the quote is sent once, but the second press shows a plain "not found" page instead of the quote they just sent, so they may think it failed. Fixing it needs a small change in the portal module that this task could not make; it is reported for the plan. No fee, wording or check changed. Nothing needs you.

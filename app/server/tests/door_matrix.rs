@@ -12,7 +12,7 @@
 //! a realm or owner route admits only its own people and refuses everyone else with a 4xx linking
 //! to its sign-in and no fixture detail; a homeowner or business route answers the other side's
 //! `{pick}` or `{complaint}` with the one not-found answer; an action link opens only for its
-//! minted kind, object and token (the path names no member, D-3093), and its `GET` changes nothing; a public `GET` needs no session and shows no
+//! minted kind, object and token (the path names no member, D-3093), and its `GET` changes nothing; a Quote link bound to Y on X's job, whose card never went to Y, is the one not-found answer (D-3706); a public `GET` needs no session and shows no
 //! fixture's personal data; every non-public response is `no-store`; every `POST`, cross-site or
 //! with a wrong CSRF token, is a 403 with one `csrf_rejected` security event (its log line,
 //! captured here, since `server` may read no module's table, TD-SEC-10) naming the route
@@ -61,8 +61,9 @@ use askhava_portals::api::{
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use askhava_quotes::api::{
-    CardBusiness, CardJob, Format, OfferTown, Price, QuoteForm, QuoteRules, parse_quote,
-    send_cards, submit_quote,
+    CardBusiness, CardFacts, CardJob, CardParts, DEFAULT_MIN_WORDS, Format, KeptCard, OfferTown,
+    Place, Price, QuoteForm, QuoteRules, build_card, card_digest, keep_card, mark_card_sent,
+    parse_quote, send_cards, submit_quote,
 };
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -700,7 +701,10 @@ fn card_job() -> CardJob {
     }
 }
 
-/// A job opened, carded to `business` and quoted by it, so it is in Quotes ready.
+/// A job opened, carded to `business` and quoted by it, so it is in Quotes ready. Its card is
+/// kept under its own digest and marked sent, as a real job's card is at approval and when it
+/// goes out, so `quotes::api::sent_card` returns it and its Quote link opens the form (D-3189,
+/// D-3706); the card is made from fake parts and its request ID is a fresh fake one.
 async fn quoted_job(db: &mut PgConnection, business: Uuid, now: Timestamp) -> Uuid {
     let job = create(db, now, false, AuditActor::System)
         .await
@@ -711,6 +715,27 @@ async fn quoted_job(db: &mut PgConnection, business: Uuid, now: Timestamp) -> Uu
     let map = ClassMap::shipped().expect("the shipped license map");
     let sent = send_cards(db, map, job, &card_job(), &[card_business(business)], now).await;
     assert_eq!(sent.expect("card").len(), 1);
+    let parts = CardParts {
+        category: "AC repair".to_owned(),
+        town: "Lake Havasu City".to_owned(),
+        place: Place::House,
+        description: "The AC runs but the air from the vents stays warm.".to_owned(),
+        answers: Vec::new(),
+        timing: None,
+        danger: None,
+        photos: Vec::new(),
+        concept: None,
+    };
+    let card = build_card(&parts, DEFAULT_MIN_WORDS);
+    let digest = card_digest(card.text());
+    let facts = CardFacts {
+        category: "hvac_repair".to_owned(),
+        candidates: vec!["AC not cooling".to_owned()],
+        emergency: false,
+    };
+    let kept = keep_card(db, (Uuid::new_v4(), job), &digest, &card, &facts, now).await;
+    assert_eq!(kept.expect("kept"), KeptCard::Stored);
+    assert!(mark_card_sent(db, job, &digest, now).await.expect("sent"));
     let form = QuoteForm {
         price: Price::Firm(32_500),
         notes: "Parts and labor included.".to_owned(),
@@ -1052,8 +1077,9 @@ async fn open(pool: &PgPool, link: &Minted) -> bool {
 /// An action-link row by `who` (SEC-025, SEC-026): X's fresh link opens, its `GET` changes
 /// nothing; another kind, another object, a token minted for Y's member on B's job (refused by
 /// its object, since the path names no member) or an unissued one is the one not-found answer,
-/// `no-store`; a token minted for Y's member on X's kind and object is bound to Y
-/// ([`probe_bound`]).
+/// `no-store`; a token minted for Y's member on X's kind and object is bound to Y, who holds no
+/// card for X's job, so it too is the one not-found answer ([`probe_bound`], D-3706). X's own
+/// Quote link opens on its carded job (`quoted_job` keeps and sends the card, D-3189).
 async fn probe_link(
     w: &World,
     (method, template): (&Method, &str),
@@ -1115,10 +1141,13 @@ async fn acted(pool: &PgPool, business: Uuid) -> usize {
     }
 }
 
-/// SEC-025, SEC-004, D-3614: a link minted for Y's member on X's kind and object (`mine`, a Quote
-/// link, `UseBy::LinkAlone`) acts as Y, the one person it is bound to, whoever's session is open:
-/// it opens as its own link does, and X's business gains no audit row and X's link is left as it
-/// was. A session kind (`UseBy::Session`: Away, on X's business) minted for Y and sent with X's
+/// SEC-025, SEC-004, BIZ-038, CARD-023, D-3614, D-3706: a link minted for Y's member on X's kind
+/// and object (`mine`, a Quote link, `UseBy::LinkAlone`) is bound to Y, the one person it names,
+/// whoever's session is open; X's card never went to Y, so there is no quote form for Y on X's
+/// job and the link is the one not-found answer for every session and both methods, neither X's
+/// nor Y's business gains an audit row, and X's link and Y's link both stay unused. A server that
+/// took the person from the session or from the job's own business would open X's carded form
+/// there and fail. A session kind (`UseBy::Session`: Away, on X's business) minted for Y and sent with X's
 /// session is the one not-found answer and acts as nobody: no audit row for X or Y, Y's link unused.
 async fn probe_bound(
     w: &World,
@@ -1142,11 +1171,18 @@ async fn probe_bound(
             )
         }
     };
-    let as_x = async || (acted(&w.pool, x.business).await, open(&w.pool, mine).await);
-    let before = as_x().await;
-    judge_opened(method, &get(&linked).await?)?;
-    if as_x().await != before {
-        return Err("Y's link on X's object acted as X (SEC-025)".to_owned());
+    let state = async || {
+        (
+            acted(&w.pool, x.business).await,
+            acted(&w.pool, y.business).await,
+            open(&w.pool, mine).await,
+            open(&w.pool, &linked).await,
+        )
+    };
+    let before = state().await;
+    judge_not_found(&get(&linked).await?, not_found)?;
+    if state().await != before || !before.2 || !before.3 {
+        return Err("Y's link on X's object acted or was used (SEC-025)".to_owned());
     }
     if who.actor != Actor::BusinessX {
         return Ok(());
