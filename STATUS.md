@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T05:04:56Z by runner 3a3945f3ac05 (actions).
+Updated 2026-11-14T05:05:23Z by runner 3a3945f3ac05 (actions).
 
 **Building: T393 in progress since 04:25Z; 313 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 313 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 3: T437 claimed 04:25Z, lease until 07:25Z
+- **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z
 - **Week:** 36% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:03Z, 1 min before this update
+- **Last run:** 05:05Z, 0 min before this update
 - **Keeper:** last ran 05:03Z, next wake 07:28Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-14T05:04:56Z by runner 3a3945f3ac05 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 39 min | 05:04Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md, app/portals/CLAUDE.md, app/server/CLAUDE.md; a  |
 | T396 | businesses and messaging (harness): a phone a member links o | MERGE_PENDING | 1 | 45 min | 04:54Z |  |
 | T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 3 | 15 min | 04:11Z | PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as |
@@ -29,7 +30,7 @@ Updated 2026-11-14T05:04:56Z by runner 3a3945f3ac05 (actions).
 | T433 | server and payments: every payments task runs in the product | done | 1 | 57 min | 03:21Z |  |
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 31 min | 03:17Z |  |
 | T450 | portals: the sign-up code screens and the texts choice with  | done | 1 | 79 min | 03:00Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 23 min | 02:41Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md, app/portals/CLAUDE.md, app/server/CLAUDE.md; a  |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 23 min | 02:41Z |  |
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | done | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
@@ -159,7 +160,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T393 (lease until 2026-11-14T07:25:53Z)
-- lane 3: T437 (lease until 2026-11-14T07:25:12Z)
 
 ## Last usage reading
-- {"task": "T396", "at": "2026-11-14T04:54:20Z", "cache_read_input_tokens": 6618237, "input_tokens": 171, "output_tokens": 53852, "cache_creation_input_tokens": 196244}
+- {"task": "T437", "at": "2026-11-14T05:04:56Z", "cache_creation_input_tokens": 48080, "input_tokens": 41, "output_tokens": 5676, "cache_read_input_tokens": 516448}
