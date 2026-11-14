@@ -32745,8 +32745,8 @@
     "T280",
     "T449"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 4,
+   "status": "BLOCKED",
+   "attempts": 5,
    "slug": "business-signup-served",
    "type": "build",
    "stage": "4",
@@ -32759,7 +32759,7 @@
     3600,
     3601
    ],
-   "reason": null,
+   "reason": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    > 80 |       expect(await page.evaluate(edgeProblems)).toEqual([]);\n         |                                                 ^\n      81 |     });\n      82 |   }\n      83 | }\n        at /home/runner/work/askhava/askhava/tests/a11y/targets_contrast.spec.ts:80:49\n    Error Context: test-results/a11y/targets_contrast-A11Y-006--5f80a-ness-sign-up-form-at-1280px/error-context.md\n  5 failed\n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/signup (business sign-up form) takes the text-spacing override at 320px \n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/signup (business sign-up form) takes the text-spacing override at 768px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 320px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 768px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 1280px \n  233 passed (1.3m)\n##[error]Process completed with exit code 1.",
    "last_failure": "PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 and 3; claim 1 is unrealistic but not enforced.\nre-queued after plan fix D-3676: split: T302 matrices+form page; T459-T462, T464",
    "history": [
     {
@@ -32859,13 +32859,50 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 137,
      "head_sha": "46fd9446326292c7ab13e24466018c6d4aa0a12d",
-     "pr": null,
-     "checks": null,
+     "pr": 775,
+     "checks": [
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": null
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": null
+      },
+      {
+       "name": "Coverage",
+       "conclusion": null
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-14T11:10:31Z",
      "ended_at": "2026-11-14T11:56:08Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 5769479,
@@ -57370,7 +57407,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T11:57:54Z",
+ "updated_at": "2026-11-14T12:02:19Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

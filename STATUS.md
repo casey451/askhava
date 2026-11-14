@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:57:54Z by runner f4b34241abcb (actions).
+Updated 2026-11-14T12:02:19Z by runner f4b34241abcb (actions).
 
 **Building: T359 in progress since 11:24Z; 321 of 449 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,10 +8,27 @@ Updated 2026-11-14T11:57:54Z by runner f4b34241abcb (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z
 - **Week:** 42% used, 107.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:57Z, 0 min before this update
+- **Last run:** 11:57Z, 4 min before this update
 - **Keeper:** last ran 11:57Z, next wake 14:27Z
 
 ## Needs attention
+- BLOCKED T302: Ally: failure
+Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
+    > 80 |       expect(await page.evaluate(edgeProblems)).toEqual([]);
+         |                                                 ^
+      81 |     });
+      82 |   }
+      83 | }
+        at /home/runner/work/askhava/askhava/tests/a11y/targets_contrast.spec.ts:80:49
+    Error Context: test-results/a11y/targets_contrast-A11Y-006--5f80a-ness-sign-up-form-at-1280px/error-context.md
+  5 failed
+    tests/a11y/reflow_spacing.spec.ts:101:7 › text spacing › A11Y-009: /b/signup (business sign-up form) takes the text-spacing override at 320px 
+    tests/a11y/reflow_spacing.spec.ts:101:7 › text spacing › A11Y-009: /b/signup (business sign-up form) takes the text-spacing override at 768px 
+    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 320px 
+    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 768px 
+    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 1280px 
+  233 passed (1.3m)
+##[error]Process completed with exit code 1.
 - PLAN GAP T301 (since 2026-11-14T11:24:40Z, no attempt used; a plan change fixes it): T301: dependency T453 is DONE but its owned file app/quotes/src/quote_rules.rs is not on main; T301: dependency T453 is DONE but its owned file tests/integration/tests/quote_rules.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 33 problem(s) on tasks still to run (+102 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
@@ -20,7 +37,7 @@ Updated 2026-11-14T11:57:54Z by runner f4b34241abcb (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 3 | 23 min | 11:56Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
-| T302 | server (harness): business sign-up's open doors and served p | MERGE_PENDING | 5 | 45 min | 11:56Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
+| T302 | server (harness): business sign-up's open doors and served p | check_failed | 5 | 45 min | 11:56Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T329 | businesses: the eight business account events queued today ( | MERGE_PENDING | 2 | 65 min | 11:49Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
 | T453 | quotes: the job's quote rules are read from the stored job,  | done | 1 | 27 min | 11:02Z |  |
 | T452 | e2e and Ally (harness): a keyed web binary beside the suite' | done | 1 | 24 min | 10:58Z |  |
