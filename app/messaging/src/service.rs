@@ -18,7 +18,7 @@
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
 use askhava_privacy::api::{
-    Field, IndexPurpose, Purpose, Reader, Vault, normalize_phone, read_contact,
+    Field, IndexPurpose, Purpose, Reader, Vault, VaultError, normalize_phone, read_contact,
 };
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
@@ -352,7 +352,11 @@ pub async fn delivery_status(
 
 /// The number to text: a homeowner's from the vault for contact `recipient` (PRIV-003, PRIV-004,
 /// D-849), a business phone as the caller gave it. `optout::send_checked` reads the number it
-/// checks against the suppression list here too, so both see the same number (D-1362).
+/// checks against the suppression list here too, so both see the same number (D-1362). A read
+/// that may pass (the vault's database or audit write) is [`OutboxError::Database`], so the
+/// sender holds the row for its retry; any other failed read, or no phone, is
+/// [`OutboxError::Recipient`], which the sender expires (CON-009, CON-013, TXT-021; D-3149,
+/// D-3581).
 pub(crate) async fn recipient_phone(
     db: &mut PgConnection,
     to: To<'_>,
@@ -368,7 +372,10 @@ pub(crate) async fn recipient_phone(
             &[Field::Phone],
         )
         .await
-        .map_err(|_| OutboxError::Recipient)?
+        .map_err(|e| match e {
+            VaultError::Database | VaultError::Audit => OutboxError::Database,
+            _ => OutboxError::Recipient,
+        })?
         .phone
         .ok_or(OutboxError::Recipient),
     }
