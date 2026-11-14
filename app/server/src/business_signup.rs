@@ -32,8 +32,9 @@ use askhava_adapters::api::{
     PaymentsAdapter, StripePayments,
 };
 use askhava_businesses::api::{
-    Flag, NameRefusal, SignUpForm, SignupError, SignupRecord, SignupSettings, record_match,
-    save_business_name, screen_names, signup_record, stored_category_list, stored_enabled,
+    ConsentChannel, Flag, NameRefusal, SignUpForm, SignupError, SignupRecord, SignupSettings,
+    record_match, save_business_name, screen_names, signup_record, stored_category_list,
+    stored_enabled, waitlisted,
 };
 use askhava_core::api::{Environment, IdSecret, LinkKind, LinkSalt, Settings, link_token};
 use askhava_intake::api::Admission;
@@ -305,7 +306,8 @@ impl<'a> Posted<'a> {
 impl Form {
     /// CON-019, D-2943, D-3262, BIZ-001: the consent from the verified seal (else the form again
     /// with `CONSENT_AGAIN`), the names screened (else the form again with the reason), the box
-    /// ticked (else `CONSENT_MISSING`, nothing minted), the mailbox minted from the typed address,
+    /// ticked (else `CONSENT_MISSING`, nothing minted), the text phone, categories and source
+    /// code checked (`checked_form`, nothing minted), the mailbox minted from the typed address,
     /// then `submit_signup`.
     async fn submit(&self, posted: &Posted<'_>, csrf: &str, now: Timestamp) -> Response {
         let channels = ChannelPost::parse(posted.0, TEXTING_ON, (&self.secret, csrf));
@@ -328,19 +330,15 @@ impl Form {
         let (Some((vault, directory)), Ok(map)) = (&self.start.vault, ClassMap::shipped()) else {
             return failure("vault or class map");
         };
+        let has_phone = channels.text_phone.is_some();
+        let mut form = match checked_form(posted, map, &chosen, has_phone) {
+            Ok(form) => form,
+            Err(refusal) => return self.refused(&refusal, entered, csrf).await,
+        };
         let Some(mailbox_id) = self.mailbox(vault, posted.get("email")).await else {
             return failure("mailbox");
         };
-        let form = SignUpForm {
-            categories: posted
-                .all("category")
-                .into_iter()
-                .map(str::to_owned)
-                .collect(),
-            mailbox_id,
-            heard_from: None,
-            g_code: None,
-        };
+        form.mailbox_id = mailbox_id;
         let consent = SignupConsent {
             ticked,
             channels: &chosen,
@@ -483,9 +481,10 @@ impl Form {
 }
 
 /// D-2943, D-2711, D-2712, LIC-015, LIC-016, LIC-047: the screened names, a pest business's
-/// complete attestation, an agency category's `btr_number` and the ROC number bound once by
-/// `check_license` (its result, or none before any ROC list or with no number). An incomplete
-/// attestation or a blank agency number records nothing for that agency.
+/// complete attestation, the `btr_number` for a home-inspection or alarm category (the BTR's
+/// licenses; never for septic pumping, whose ADEQ license the form has no field for, D-3726) and
+/// the ROC number bound once by `check_license` (its result, or none before any ROC list or with
+/// no number). An incomplete attestation or a blank agency number records nothing for that agency.
 async fn licenses(
     db: &mut PgConnection,
     business: Uuid,
@@ -511,7 +510,8 @@ async fn licenses(
             .map_err(|_| ())?;
     }
     let agencies = chosen.iter().filter_map(|c| Agency::for_category(c));
-    let agencies: Vec<Agency> = agencies.filter(|a| *a != Agency::PestManagement).collect();
+    let btr = |a: &Agency| matches!(a, Agency::HomeInspector | Agency::AlarmBusiness);
+    let agencies: Vec<Agency> = agencies.filter(btr).collect();
     if let Some(number) = posted.given("btr_number") {
         for agency in agencies {
             let recorded = record_agency_license(db, business, (agency, number), actor).await;
@@ -526,6 +526,33 @@ async fn licenses(
         Err(ImportError::NoList) => Ok(None),
         Err(_) => Err(()),
     }
+}
+
+/// CON-019, BIZ-001, BIZ-019, BIZ-053, D-3725: the form's refusals that `submit_signup` would give
+/// after the mailbox is minted (no channel, a text box with no phone, a category or source code
+/// `waitlisted` refuses), checked first so a refused form leaves no `privacy.business_mailbox`
+/// row behind. The mailbox is checked with a placeholder; the caller sets the minted one.
+fn checked_form(
+    posted: &Posted<'_>,
+    map: &ClassMap,
+    chosen: &[ConsentChannel],
+    has_phone: bool,
+) -> Result<SignUpForm, SignupRefusal> {
+    if chosen.is_empty() {
+        return Err(SignupRefusal::NoConsent);
+    }
+    if chosen.contains(&ConsentChannel::Text) && !has_phone {
+        return Err(SignupRefusal::NoTextPhone);
+    }
+    let categories = posted.all("category").into_iter().map(str::to_owned);
+    let form = SignUpForm {
+        categories: categories.collect(),
+        mailbox_id: Some(Uuid::nil()),
+        heard_from: None,
+        g_code: None,
+    };
+    waitlisted(map, &form).map_err(SignupRefusal::Signup)?;
+    Ok(form)
 }
 
 /// D-2943: the field a refused name is shown beside.

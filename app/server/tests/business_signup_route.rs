@@ -438,8 +438,9 @@ async fn td_sec_45_limits_and_cross_site_and_csrf_refusals(pool: PgPool) {
     assert!(mailboxes(&pool, "owner@example.test").await.is_empty());
 }
 
-/// TD-SEC-45 (CON-019, D-2943): a seal not made for this token, an untick or a refused name
-/// shows the form again with its reason and stores nothing.
+/// TD-SEC-45 (CON-019, D-2943, D-3725): a seal not made for this token, an untick, a refused
+/// name or a category the class map refuses shows the form again (with its reason where it has
+/// one) and stores nothing, not even the typed address's mailbox.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_sec_45_consent_seal_and_names_refused(pool: PgPool) {
     store_lists(&pool).await;
@@ -467,6 +468,11 @@ async fn td_sec_45_consent_seal_and_names_refused(pool: PgPool) {
         );
         assert_eq!(signed_up(&cookies), None);
     }
+    let unknown = typed(&b, &[("category", "not_a_category")], &["category"]);
+    let (status, cookies, cache, html) = post(&app, &b, &unknown, "same-origin").await;
+    assert_eq!((status, cache.as_str()), (StatusCode::OK, "no-store"));
+    assert!(html.contains("value=\"ROC100001\""), "the form again");
+    assert_eq!(signed_up(&cookies), None);
     assert!(mailboxes(&pool, "owner@example.test").await.is_empty());
 }
 
@@ -582,9 +588,10 @@ async fn td_biz_49_an_unreadable_record_changes_nothing(pool: PgPool) {
     }
 }
 
-/// TD-BIZ-49 (LIC-015, LIC-047, D-2711, D-2712, PRIV-016): the pest attestation with its record
-/// categories and an agency license are stored through T374's writers; the stored names are the
-/// typed ones, never the record's, and the record's email is no mailbox.
+/// TD-BIZ-49 (LIC-015, LIC-016, LIC-047, D-2711, D-2712, D-3726, PRIV-016): the pest attestation
+/// with its record categories and the BTR number's license are stored through T374's writers; the
+/// BTR number is never a septage hauler's ADEQ license; the stored names are the typed ones, never
+/// the record's, and the record's email is no mailbox.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_biz_49_pest_and_agency_writers_and_no_record_value_stored(pool: PgPool) {
     store_lists(&pool).await;
@@ -594,6 +601,7 @@ async fn td_biz_49_pest_and_agency_writers_and_no_record_value_stored(pool: PgPo
     let extra = [
         ("category", "pest_control"),
         ("category", "home_inspection"),
+        ("category", "septic_pumping"),
         ("pest_license", "yes"),
         ("pest_number", "PM-1234"),
         ("pest_category", "wood_destroying"),
@@ -607,6 +615,7 @@ async fn td_biz_49_pest_and_agency_writers_and_no_record_value_stored(pool: PgPo
     let parts = holder_for(&mut conn, business, HolderInputs::default()).await;
     let holder = parts.expect("holder").holder;
     assert!(holder.agencies.contains(&Agency::HomeInspector), "LIC-015");
+    assert!(!holder.agencies.contains(&Agency::SeptageHauler), "LIC-016");
     let pest = holder.pest.expect("LIC-047: the attestation");
     assert_eq!(pest.number(), "PM-1234");
     assert!(pest.holds(PestRecordCategory::WoodDestroying));
