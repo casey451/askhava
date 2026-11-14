@@ -32355,7 +32355,7 @@
     "T412",
     "T415"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "business-signup-served",
    "type": "build",
@@ -32369,8 +32369,8 @@
     3600,
     3601
    ],
-   "reason": "plan gap reported: PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emailed sign-up code; nothing in app/portals calls businesses::api::check_code (identity.rs:260), start_signup_check (email_verification.rs:134), verified_by_link (:178) or confirm (:363); templates/business_signup.html has no code input and no texts choice or text phone field (Entered.text_chosen at :344 and SignupConsent.text_phone at :373 can never come from a post). T302 (kit/prompts/T302.md:34-38, :158, :164) owns no templates or customer copy, yet TD-SEC-45 (T302.md:73) needs; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emailed sign-up code; nothing in app/portals calls businesses::api::check_code (identity.rs:260), start_signup_check (email_verification.rs:134), verified_by_link (:178) or confirm (:363); templates/business_signup.html has no code input and no texts choice or text phone field (Entered.text_chosen at :344 and SignupConsent.text_phone at :373 can never come from a post). T302 (kit/prompts/T302.md:34-38, :158, :164) owns no templates or customer copy, yet TD-SEC-45 (T302.md:73) needs the email code step and the e2e needs the identity-code step. No task in kit/tasks.json owns these screens (T202 depends on T302 and does not cover them). The form also posts to /b/signup/start, not SIGNUP_ROUTE. Proposed: a portals task before T302 adding the code-entry screens and the text choice/phone fields, T302 depending on it. Reviewer confirmed all claims.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emailed sign-up code; nothing in app/portals calls businesses::api::check_code (identity.rs:260), start_signup_check (email_verification.rs:134), verified_by_link (:178) or confirm (:363); templates/business_signup.html has no code input and no texts choice or text phone field (Entered.text_chosen at :344 and SignupConsent.text_phone at :373 can never come from a post). T302 (kit/prompts/T302.md:34-38, :158, :164) owns no templates or customer copy, yet TD-SEC-45 (T302.md:73) needs the email code step and the e2e needs the identity-code step. No task in kit/tasks.json owns these screens (T202 depends on T302 and does not cover them). The form also posts to /b/signup/start, not SIGNUP_ROUTE. Proposed: a portals task before T302 adding the code-entry screens and the text choice/phone fields, T302 depending on it. Reviewer confirmed all claims.\nre-queued after plan fix D-3602: T302 now depends on new T450 (sign-up code screens, verified consent)",
    "history": [
     {
      "attempt": 1,
@@ -32394,6 +32394,21 @@
        "turns": 13
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-14T01:14:07Z",
+     "reason": "T302 now depends on new T450 (sign-up code screens, verified consent)",
+     "by": "manual-5c9aed01b188",
+     "was": "plan gap reported: PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emailed sign-up code; nothing in app/portals calls businesses::api::check_code (identity.rs:260), start_signup_check (email_verification.rs:134), verified_by_link (:178) or confirm (:363); templates/business_signup.html has no code input and no texts choice or text phone field (Entered.text_chosen at :344 and SignupConsent.text_phone at :373 can never come from a post). T302 (kit/prompts/T302.md:34-38, :158, :164) owns no templates or customer copy, yet TD-SEC-45 (T302.md:73) needs; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3602",
+     "plan_since": "2026-11-14T00:51:46Z",
+     "plan_base": "e40ebe112f6403887d5fdca5aa153b1ba10df9a6",
+     "plan_head": "d997705c35e7d8be5f02fe0bca82b436e6e73085",
+     "plan_then": "7797c705457bbd967739455d5566cb7dfdb7a77ab04b0b83ffcbc2b75c775c4d",
+     "plan_now": "5b9b828e389f5f6f4ee17561fc61f6968b8a4a112843e65d5275921fd9565cbe"
     }
    ]
   },
@@ -53024,7 +53039,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T01:11:27Z",
+ "updated_at": "2026-11-14T01:14:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -53122,8 +53137,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a409b1914d2fdf291f258e8d9a9f827abeeddbea",
- "starter": "actions",
+ "runner_sha": "d997705c35e7d8be5f02fe0bca82b436e6e73085",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "900e97dabbc9a521604f22c9c1814e87a9b75608",
