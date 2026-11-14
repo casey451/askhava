@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T20:21:51Z by runner f0f2aa6b7eb9 (actions).
+Updated 2026-11-14T20:24:04Z by runner f0f2aa6b7eb9 (actions).
 
 **Building: T459 in progress since 19:49Z; 329 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T20:21:51Z by runner f0f2aa6b7eb9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T459 claimed 19:49Z, lease until 22:49Z; lane 6: T300 claimed 19:50Z, lease until 22:50Z; lane 7: T437 claimed 19:48Z, lease until 22:48Z
 - **Week:** 51% used, 88.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:21Z, 0 min before this update
+- **Last run:** 20:23Z, 0 min before this update
 - **Keeper:** last ran 20:21Z, next wake 22:50Z
 
 ## Needs attention
@@ -95,7 +95,6 @@ Updated 2026-11-14T20:21:51Z by runner f0f2aa6b7eb9 (actions).
 | T412 | privacy: each business member's sign-in address and texting  | done | 1 | 111 min | 21:18Z |  |
 | T442 | mutation (harness): every named mutant is killed by a determ | done | 1 | 59 min | 20:40Z |  |
 | T357 | server, messaging and intake: START into an open request res | check_failed | 1 | 23 min | 20:39Z |  |
-| T271 | server and calls (harness): the dialed leg asks for status c | done | 1 | 53 min | 20:22Z |  |
 
 ### Plan and harness merges on main
 - 19:52Z Plan: stage-5 readers and splits, CON-022 purge via definer functions, Spanish switch gates, replay functions (T475–T484, D-3753) (#798)
