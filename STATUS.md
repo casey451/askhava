@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:03:01Z by runner f4b34241abcb (actions).
+Updated 2026-11-14T12:03:39Z by runner f4b34241abcb (actions).
 
-**Building: T359 in progress since 11:24Z; 321 of 449 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T300 in progress since 12:03Z; 321 of 449 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 321 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z
-- **Week:** 42% used, 107.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:02Z, 0 min before this update
+- **Lane:** lane 1: T300 claimed 12:03Z, lease until 15:03Z; lane 2: T359 claimed 11:24Z, lease until 14:24Z
+- **Week:** 42% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 12:03Z, 0 min before this update
 - **Keeper:** last ran 12:03Z, next wake 14:27Z
 
 ## Needs attention
@@ -29,7 +29,6 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
     tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 1280px 
   233 passed (1.3m)
 ##[error]Process completed with exit code 1.
-- PLAN GAP T301 (since 2026-11-14T11:24:40Z, no attempt used; a plan change fixes it): T301: dependency T453 is DONE but its owned file app/quotes/src/quote_rules.rs is not on main; T301: dependency T453 is DONE but its owned file tests/integration/tests/quote_rules.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 33 problem(s) on tasks still to run (+102 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
@@ -175,7 +174,7 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T11:18:26Z (week)): week: 86.5M used, 107.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T16:34:32Z.
+- Pacing (session_reading 2026-11-14T12:02:43Z (week)): week: 85.8M used, 108.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T17:09:43Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -190,7 +189,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T300 (lease until 2026-11-14T15:03:16Z)
 - lane 2: T359 (lease until 2026-11-14T14:24:40Z)
 
 ## Last usage reading
