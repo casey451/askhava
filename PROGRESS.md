@@ -4677,3 +4677,4 @@
 - 2026-11-14T11:25:15Z runner f7c093395ac7 (actions): {"T359": "QUEUED -> IN_PROGRESS"}; T359 estimated 1.8M tokens (calibrated); week has 109.3M left (no five-hour budget, D-3056) after 2.7M still running in another lane (session_reading 2026-11-14T11:18:26Z (week)); claimed
 - 2026-11-14T11:25:27Z runner f7c093395ac7 (actions): {}
 - 2026-11-14T11:30:33Z runner f4b34241abcb (actions): {"T452": "MERGE_PENDING -> DONE"}
+- 2026-11-14T11:33:18Z runner 1d88b90f747c (actions): {"T437": "MERGE_PENDING -> QUEUED"}

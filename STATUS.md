@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:30:33Z by runner f4b34241abcb (actions).
+Updated 2026-11-14T11:33:18Z by runner 1d88b90f747c (actions).
 
 **Building: T359 in progress since 11:24Z; 321 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,20 +8,20 @@ Updated 2026-11-14T11:30:33Z by runner f4b34241abcb (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
 - **Week:** 41% used, 109.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:25Z, 5 min before this update
+- **Last run:** 11:30Z, 2 min before this update
 - **Keeper:** last ran 11:18Z, next wake 13:47Z
 
 ## Needs attention
 - PLAN GAP T301 (since 2026-11-14T11:24:40Z, no attempt used; a plan change fixes it): T301: dependency T453 is DONE but its owned file app/quotes/src/quote_rules.rs is not on main; T301: dependency T453 is DONE but its owned file tests/integration/tests/quote_rules.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 33 problem(s) on tasks still to run (+102 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T453 | quotes: the job's quote rules are read from the stored job,  | done | 1 | 27 min | 11:02Z |  |
 | T452 | e2e and Ally (harness): a keyed web binary beside the suite' | done | 1 | 24 min | 10:58Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 3 | 31 min | 10:58Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 31 min | 10:58Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T359 | payments: a successful charge writes its own charge ledger e | check_failed | 2 | 75 min | 10:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T435 | calls and server: calls and texts act for the business only  | done | 1 | 30 min | 10:46Z |  |
 | T329 | businesses: the eight business account events queued today ( | BLOCKED | 1 | 2 min | 10:28Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
@@ -123,7 +123,6 @@ Updated 2026-11-14T11:30:33Z by runner f4b34241abcb (actions).
 - 14:47Z Plan: fix T386 and D-3445 plan gaps (D-3467) (#673)
 - 13:45Z Plan: shorten the critical path, drop legacy dependency edges (D-3446) (#671)
 - 12:32Z Plan: pre-flight 14, split three oversized build tasks; T111/T113 brand note (D-3445) (#668)
-- 11:32Z Harness: fix-round hand-off, tighter output caps, crate_cap 2 (D-3444) (#665)
 
 ## Progress (requirements verified)
 
