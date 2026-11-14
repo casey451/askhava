@@ -13182,7 +13182,7 @@
     "T301",
     "T302",
     "T452",
-    "T462"
+    "T464"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -14488,7 +14488,8 @@
     "T459",
     "T460",
     "T461",
-    "T462"
+    "T462",
+    "T464"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -14882,7 +14883,7 @@
     "T201",
     "T165",
     "T302",
-    "T462"
+    "T464"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -18662,7 +18663,7 @@
    "id": "T236",
    "slug": "ai-call-budgets",
    "title": "AI-call budgets per conversation and per job, and no AI call before the area check",
-   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0203_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0203 (it was 0202) because T456's `0202_picks_businesses_hold_away.sql` runs before this task in the serial order (`scripts/validate_tasks.py` V9).",
+   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0204_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0204 (it was 0202) because T456's `0202_picks_hold_away.sql` and `0203_businesses_away_busy.sql` run before this task in the serial order (`scripts/validate_tasks.py` V9).",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -18685,7 +18686,7 @@
     "app/ai/src/service.rs",
     "app/ai/src/models.rs",
     "app/ai/src/switch.rs",
-    "migrations/0203_ai_call_budget.sql",
+    "migrations/0204_ai_call_budget.sql",
     "tests/integration/tests/ai_budget.rs",
     "app/intake/src/service.rs"
    ],
@@ -18908,8 +18909,8 @@
   {
    "id": "T301",
    "slug": "action-links-served",
-   "title": "server and portals: the email action links are served (every link's page; the quote form and Approve act)",
-   "goal": "No task serves the email action links (D-2128): `portals::api` has `open_action_link`, `use_action_link`, `action_page`, `quote_form_page` and `ask_about_charge` and the route constant `ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`, T148, \"not served yet\", D-1955), and `quotes::api::job_page` supplies the job page's data, but `server::build_router` merges none of it, so J2's quote form \"opens from its link\" (T099) cannot run. (1) `app/server/src/action_links.rs` builds `GET` and `POST` on `ACTION_ROUTE` for every `ActionKind`: `GET` calls `open_action_link` and shows `action_page` or, for a Quote link, `quote_form_page` with the job page's data, and changes nothing however often it is opened (SEC-026); only the page's `POST` with its CSRF token calls `use_action_link` in the caller's transaction and acts once (D-1955), for the kinds plan change D-3675 (below) gives this task; a token for another kind, object or person, an expired token or a removed member's token gets the one not-found answer and reads nothing; every response is `no_store`; the `POST` passes `refuse_cross_site` and a refusal is a security event (SEC-042, SEC-048); merged in the shared `app/server/src/lib.rs`. Later owners of `business_actions.rs` and `quotes::job_page` (T209, T212, T164, T214, T249, T158) keep the signatures this file calls, and T306 serves any page or action they add (D-2128). (2) Tests: `app/server/tests/action_links_route.rs` against the assembled router (TD-SEC-44's cases for what this task serves; the browser cases are TD-SEC-67, T455's, and TD-SEC-68, T457's, D-3675). Every page's `PAGE_STATES` entry (links seeded through `psql` as `tests/e2e/j1_reduced.spec.ts` seeds its token: the `portals.login_link` row holds the SHA-256 of `action:<kind>:<object>:<token>`, D-1955) goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Fourth external audit F12 (D-2206, D-1951): the quote form's `POST` calls `portals::api::admit_quote` with the business and the client address first; a refused quote is not stored and the page says to try again later. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Keep each `.route(` call on one line (`tests/security/tests/auth_matrix.rs:289` expects it; rustfmt may wrap a long call, so bind the handler to a short local name first) (plan change D-3106). Nov 11 code review batch 3, F6 (D-2710; BIZ-049, D-2508 (3), D-2510): the quote form's `POST`, before `submit_quote`, calls `portals::api::largest_job_warning` with the business's stored largest job; a price whose top is above it is not sent but shown again with `quote_form_page_warned`, and goes through only when the posted `over_largest` equals the warned cents; a business with no capability row is never warned (TD-BIZ-50, in `app/server/tests/action_links_route.rs`). Quote facts (D-3134; PICK-040): the quote form's `GET` pre-fills from `portals::api::prefill(quotes::api::last_facts(..))` (the business's last answers for the job's type, T406), and its `POST` parses them with `portals::api::parse_facts` (problems show the form again with their messages, nothing stored) and stores the quote with `quotes::api::submit_quote_with_facts` (T406) instead of `submit_quote`, so the quote and its facts commit together. The AI read-back confirm (`QuoteFormFacts.read_back`) stores through `submit_quote_with_facts` too, so a read-back quote also gets its facts and therefore its card (T393). Plan change D-3189 (CARD-023): the job page's data takes the card she approved (`PageParts.card`, `app/quotes/src/job_page.rs:33`); the quote form reads it with `quotes::api::sent_card(conn, job)` (T411), and a job with no sent card (none went out, or its text was deleted by \"Delete my data\" or the 3-year purge) gets the one not-found answer. Plan change D-3675 (plan gap reported on attempt 1; BIZ-038, SEC-004, SEC-025, SEC-026, PICK-053): not every kind can act yet, so this task's `POST` acts only for Quote (the quote form) and Approve; for Approve, with a business session of the link's own owner (`portals::api::session_may`), it uses the link and approves nothing, as T399 (which adds the approval) states. The `POST` of every other kind gets the one not-found answer, uses nothing and changes nothing: Pause, Resume and Ask about a charge are T455's, Hold and Away (nothing stores a Confirm end or an away time) are T456's, Busy is T463's, Confirm (its Verify code step and hand-off to T261's Confirm page) is T457's and Link this phone (no `calls` API links from a web action) is T458's; each kind's `GET` still shows its page and changes nothing (TD-SEC-44). The kinds `UseBy::Session` names (`app/portals/src/action_links.rs:66`) read the person with `portals::api::business_principal` for `action_page`'s `signed_in`. The quote form needs the job's quote rules, which no app code builds (`QuoteRules`, `app/quotes/src/intake.rs:245`, is made only in tests): its `GET` reads `quotes::api::quote_rules` (T453) and shows `portals::api::quote_form_page_priced` with a `PriceForm` for the rules' format (`quote_form_page` alone renders no price field, `app/portals/templates/business_actions.html:83`); its `POST` reads the posted price with `quotes::api::parse_price(format, fields)` and makes the quote with `quotes::api::parse_quote(form, &rules)` (the form's handyman certification tick sets the rules' `certified`) before `submit_quote_with_facts`; a refused price or bounce shows the form again with its message and stores nothing; a job with no rules (no card sent to this business, or a job type the catalog does not hold) gets the one not-found answer.",
+   "title": "server and portals: the email action links are served (every link's page; the quote form acts)",
+   "goal": "No task serves the email action links (D-2128): `portals::api` has `open_action_link`, `use_action_link`, `action_page`, `quote_form_page` and `ask_about_charge` and the route constant `ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`, T148, \"not served yet\", D-1955), and `quotes::api::job_page` supplies the job page's data, but `server::build_router` merges none of it, so J2's quote form \"opens from its link\" (T099) cannot run. (1) `app/server/src/action_links.rs` builds `GET` and `POST` on `ACTION_ROUTE` for every `ActionKind`: `GET` calls `open_action_link` and shows `action_page` or, for a Quote link, `quote_form_page` with the job page's data, and changes nothing however often it is opened (SEC-026); only the page's `POST` with its CSRF token calls `use_action_link` in the caller's transaction and acts once (D-1955), for the kinds plan change D-3675 (below) gives this task; a token for another kind, object or person, an expired token or a removed member's token gets the one not-found answer and reads nothing; every response is `no_store`; the `POST` passes `refuse_cross_site` and a refusal is a security event (SEC-042, SEC-048); merged in the shared `app/server/src/lib.rs`. Later owners of `business_actions.rs` and `quotes::job_page` (T209, T212, T164, T214, T249, T158) keep the signatures this file calls, and T306 serves any page or action they add (D-2128). (2) Tests: `app/server/tests/action_links_route.rs` against the assembled router (TD-SEC-44's cases for what this task serves; the browser cases are TD-SEC-67, T455's, and TD-SEC-68, T457's, D-3675). Every page's `PAGE_STATES` entry (links seeded through `psql` as `tests/e2e/j1_reduced.spec.ts` seeds its token: the `portals.login_link` row holds the SHA-256 of `action:<kind>:<object>:<token>`, D-1955) goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Fourth external audit F12 (D-2206, D-1951): the quote form's `POST` calls `portals::api::admit_quote` with the business and the client address first; a refused quote is not stored and the page says to try again later. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Keep each `.route(` call on one line (`tests/security/tests/auth_matrix.rs:289` expects it; rustfmt may wrap a long call, so bind the handler to a short local name first) (plan change D-3106). Nov 11 code review batch 3, F6 (D-2710; BIZ-049, D-2508 (3), D-2510): the quote form's `POST`, before `submit_quote`, calls `portals::api::largest_job_warning` with the business's stored largest job; a price whose top is above it is not sent but shown again with `quote_form_page_warned`, and goes through only when the posted `over_largest` equals the warned cents; a business with no capability row is never warned (TD-BIZ-50, in `app/server/tests/action_links_route.rs`). Quote facts (D-3134; PICK-040): the quote form's `GET` pre-fills from `portals::api::prefill(quotes::api::last_facts(..))` (the business's last answers for the job's type, T406), and its `POST` parses them with `portals::api::parse_facts` (problems show the form again with their messages, nothing stored) and stores the quote with `quotes::api::submit_quote_with_facts` (T406) instead of `submit_quote`, so the quote and its facts commit together. The AI read-back confirm (`QuoteFormFacts.read_back`) stores through `submit_quote_with_facts` too, so a read-back quote also gets its facts and therefore its card (T393). Plan change D-3189 (CARD-023): the job page's data takes the card she approved (`PageParts.card`, `app/quotes/src/job_page.rs:33`); the quote form reads it with `quotes::api::sent_card(conn, job)` (T411), and a job with no sent card (none went out, or its text was deleted by \"Delete my data\" or the 3-year purge) gets the one not-found answer. Plan change D-3675 (plan gap reported on attempt 1; BIZ-038, SEC-004, SEC-025, SEC-026, PICK-053): not every kind can act yet, so this task's `POST` acts only for Quote (the quote form). The `POST` of every other kind, after the cross-site and CSRF checks and before `open_action_link` or any other read (so its answer says nothing about the token and takes no token-dependent time), gets the one not-found answer, uses nothing and changes nothing: Approve is T399's (which also makes it use the link only when it approves; T399's goal sentence that T301 uses the link with no effect describes the earlier plan), Pause, Resume and Ask about a charge are T455's, Hold and Away (nothing stores a Confirm end or an away time) are T456's, Busy is T463's, Confirm (its Verify code step and hand-off to T261's Confirm page) is T457's and Link this phone (no `calls` API links from a web action) is T458's; each kind's `GET` still shows its page and changes nothing (TD-SEC-44). The kinds `UseBy::Session` names (`app/portals/src/action_links.rs:66`) read the person with `portals::api::business_principal` for `action_page`'s `signed_in`. The quote form needs the job's quote rules, which no app code builds (`QuoteRules`, `app/quotes/src/intake.rs:245`, is made only in tests): its `GET` reads `quotes::api::quote_rules` (T453) and shows `portals::api::quote_form_page_priced` with a `PriceForm` for the rules' format (`quote_form_page` alone renders no price field, `app/portals/templates/business_actions.html:83`); its `POST` reads the posted price with `quotes::api::parse_price(format, fields)` and makes the quote with `quotes::api::parse_quote(form, &rules)` (the form's handyman certification tick sets the rules' `certified`) before `submit_quote_with_facts`; a refused price or bounce shows the form again with its message and stores nothing; a job with no rules (no card sent to this business, or a job type the catalog does not hold) gets the one not-found answer.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -18987,13 +18988,13 @@
    ],
    "branch": "claude/task/T301-action-links-served",
    "prompt": "kit/prompts/T301.md",
-   "acceptance": "TD-SEC-44's router cases for every kind's page and for the Quote and Approve actions, and TD-BIZ-50, pass against PostgreSQL through the assembled router, and `Ally` passes with the new page states; every other kind's `POST` gets the one not-found answer and changes nothing; every T148, T199 and T300 case still passes."
+   "acceptance": "TD-SEC-44's router cases for every kind's page and for the Quote action, and TD-BIZ-50, pass against PostgreSQL through the assembled router, and `Ally` passes with the new page states; every other kind's `POST` gets the one not-found answer after the cross-site and CSRF checks, reads no token and changes nothing; every T148, T199 and T300 case still passes."
   },
   {
    "id": "T302",
    "slug": "business-signup-served",
    "title": "server (harness): business sign-up's open doors and served part, and its form page",
-   "goal": "No task serves business sign-up (D-2128). Plan change D-3676 (plan gap reported on attempt 4) splits the work into five ordered parts, each a pull request of its own: this task (the doors, the served part and the form page), then T459 (the form's `POST`), T460 (the identity steps), T461 (the email code, the inbox check, the service area and activation) and T462 (the capability step and the browser journey); the sample pick step is not part of sign-up (BIZ-042, D-462: it is offered the first time a person opens a real job card, `portals::api::sample_pick_on_open`). This task: (1) Plan change D-3641 (SEC-019, TD-SEC-61, TD-SEC-45): `tests/security/tests/auth_matrix.rs` (`door`, :146) and `app/server/tests/door_matrix.rs` (`door`, :161) treat only `/b/signup` itself as the open sign-up door. In each file's `door`, `path == \"/b/signup\"` becomes membership of one explicit list of exact paths built from `portals::api`'s constants, `SIGNUP_ROUTE`, `SIGNUP_FORM_ROUTE`, `CODE_SEND_ROUTE`, `NUMBER_OLD_ROUTE`, `LETTER_ROUTE`, `IDENTITY_CHECK_ROUTE`, `EMAIL_CHECK_ROUTE`, `EMAIL_RESEND_ROUTE` and `SERVICE_AREA_ROUTE` (never a prefix); `CAPABILITY_ROUTE` (`/b/signup/capability`, served behind `business_principal`) and every other `/b/...` path keep the Business door; `tests/security/door_cases.txt` gains a `SignIn` line for each listed step path, `Business /b/signup/capability`, `Business /b/signup/other` (a path under `/b/signup` that is not a step stays behind the Business door) and `Business /b/signup/start/x` (exact matching: a path below a step path is not a step); the `router()` of `app/server/tests/route_wiring.rs` (as T280 changed it) and of `door_matrix.rs` also builds the sign-up part from the same fake settings with `.expect` and passes it to `build_router`, so the sign-up rows marked `yes` reach their routes. No other assertion, probe, table rule or case changes. (2) `app/server/src/business_signup.rs`: the served sign-up part (built from settings as `business_signin::ServedSignIn::from_settings` builds its part, passed to `build_router` by `main.rs` and by both test routers), serving `GET` `SIGNUP_ROUTE` without a session with `portals::api::signup_page` and its form screen, the pre-session CSRF cookie and token (SEC-042, `portals::api::ensure_pre_session`) and the form's shown channels sealed for that token (`portals::api::sealed_signup_page`, `app/portals/src/business_signup.rs:889`), the E-SIGN box unticked (CON-019); merged in the shared `app/server/src/lib.rs`. Its `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` and its row in `docs/architecture.md` section 13 is marked `yes`. The part holds only what this task's route uses; each later part adds what its own steps need. (3) Tests: `app/server/tests/business_signup_route.rs` against the assembled router (TD-SEC-45's cases for the form page: served without a session, the box unticked, the shown channels sealed). Runs after T280 (the other unfinished owner of `route_wiring.rs`) and T449 (of `door_matrix.rs`); T409, the later owner of `door_matrix.rs`, runs after this task. Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "No task serves business sign-up (D-2128). Plan change D-3676 (plan gap reported on attempt 4) splits the work into six ordered parts, each a pull request of its own: this task (the doors, the served part and the form page), then T459 (the form's `POST`), T460 (the identity steps), T461 (the service area, the email code and activation), T462 (the inbox check behind the session) and T464 (the capability step and the browser journey); the sample pick step is not part of sign-up (BIZ-042, D-462: it is offered the first time a person opens a real job card, `portals::api::sample_pick_on_open`). This task: (1) Plan change D-3641 (SEC-019, TD-SEC-61, TD-SEC-45): `tests/security/tests/auth_matrix.rs` (`door`, :146) and `app/server/tests/door_matrix.rs` (`door`, :161) treat only `/b/signup` itself as the open sign-up door. In each file's `door`, `path == \"/b/signup\"` becomes membership of one explicit list of exact paths built from `portals::api`'s constants, `SIGNUP_ROUTE`, `SIGNUP_FORM_ROUTE`, `CODE_SEND_ROUTE`, `NUMBER_OLD_ROUTE`, `LETTER_ROUTE`, `IDENTITY_CHECK_ROUTE`, `EMAIL_CHECK_ROUTE`, `EMAIL_RESEND_ROUTE` and `SERVICE_AREA_ROUTE` (never a prefix); `CAPABILITY_ROUTE` (`/b/signup/capability`, served behind `business_principal`) and every other `/b/...` path keep the Business door; `tests/security/door_cases.txt` gains a `SignIn` line for each listed step path, `Business /b/signup/capability`, `Business /b/signup/other` (a path under `/b/signup` that is not a step stays behind the Business door) and `Business /b/signup/start/x` (exact matching: a path below a step path is not a step); the `router()` of `app/server/tests/route_wiring.rs` (as T280 changed it) and of `door_matrix.rs` also builds the sign-up part from the same fake settings with `.expect` and passes it to `build_router`, so the sign-up rows marked `yes` reach their routes. No other assertion, probe, table rule or case changes. (2) `app/server/src/business_signup.rs`: the served sign-up part (built from settings as `business_signin::ServedSignIn::from_settings` builds its part, passed to `build_router` by `main.rs` and by both test routers), serving `GET` `SIGNUP_ROUTE` without a session with `portals::api::signup_page` and its form screen, the pre-session CSRF cookie and token (SEC-042, `portals::api::ensure_pre_session`) and the form's shown channels sealed for that token (`portals::api::sealed_signup_page`, `app/portals/src/business_signup.rs:889`), the E-SIGN box unticked (CON-019); merged in the shared `app/server/src/lib.rs`. Its `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` and its row in `docs/architecture.md` section 13 is marked `yes`. The part holds only what this task's route uses; each later part adds what its own steps need. (3) Tests: `app/server/tests/business_signup_route.rs` against the assembled router (TD-SEC-45's cases for the form page: served without a session, the box unticked, the shown channels sealed). Runs after T280 (the other unfinished owner of `route_wiring.rs`) and T449 (of `door_matrix.rs`); T409, the later owner of `door_matrix.rs`, runs after this task. Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -28847,7 +28848,7 @@
     "T268",
     "T269",
     "T272",
-    "T462"
+    "T464"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -31602,7 +31603,7 @@
    "id": "T455",
    "slug": "action-links-act",
    "title": "server: the Pause, Resume and Ask about a charge email links act, and the action links run in a browser",
-   "goal": "Plan change D-3675 (split from T301; BIZ-028, BIZ-032, BIZ-038, SEC-025; D-1955, D-225): T301 serves the action route with `POST` acting only for Quote and Approve. This task makes the Pause, Resume and Ask about a charge links act once, in T301's `app/server/src/action_links.rs`, each through `use_action_link` in the caller's transaction, with a business session `portals::api::session_may` allows. (1) Pause and Resume: `businesses::api::pause_self` and `resume_self` (BIZ-028, BIZ-010). (2) Ask about a charge: the link's object is the charged pick (`payments.charge_evidence` is keyed by pick); `payments::api::receipt_for(conn, pick, business)` (`app/payments/src/receipts.rs:84`) gives its job and tier (none for another business: the one not-found answer); `portals::api::ask_about_charge` is called with `ChargeAsked { business, charge: pick, job }` and the page answers with `charge_answer` and the `/b/charges/{pick}` link (BIZ-032, D-225). A refused action (a business not active, a pause not its own) leaves the link unused, changes nothing and says why. Hold, Away and Busy keep T301's answer (T456 and T463 make them act). (3) Tests: cases in `app/server/tests/action_links_route.rs` (TD-SEC-44: each acts once, a used link acts no more, a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event) and TD-SEC-67 in `tests/e2e/action_links_served.spec.ts` with links seeded through `psql` (D-1955's hash): the quote form and the Hold page (its `GET`) in a browser, and a quote form `POST` past `admit_quote`'s per-business or per-IP limit stores nothing (D-2206); the Confirm link's browser case is T457's (TD-SEC-68). Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3675 (split from T301; BIZ-028, BIZ-032, BIZ-038, SEC-025; D-1955, D-225): T301 serves the action route with `POST` acting only for Quote (Approve is T399's). This task makes the Pause, Resume and Ask about a charge links act once, in T301's `app/server/src/action_links.rs`, each through `use_action_link` in the caller's transaction, with a business session `portals::api::session_may` allows. (1) Pause and Resume: `businesses::api::pause_self` and `resume_self` (BIZ-028, BIZ-010). (2) Ask about a charge: the link's object is the charged pick (`payments.charge_evidence` is keyed by pick); `payments::api::receipt_for(conn, pick, business)` (`app/payments/src/receipts.rs:84`) gives its job and tier (none for another business: the one not-found answer); `portals::api::ask_about_charge` is called with `ChargeAsked { business, charge: pick, job }` and the page answers with `charge_answer` and the `/b/charges/{pick}` link (BIZ-032, D-225). A refused action (a business not active, a pause not its own) leaves the link unused, changes nothing and says why. Hold, Away and Busy keep T301's answer (T456 and T463 make them act). (3) Tests: cases in `app/server/tests/action_links_route.rs` (TD-SEC-44: each acts once, a used link acts no more, a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event) and TD-SEC-67 in `tests/e2e/action_links_served.spec.ts` with links seeded through `psql` (D-1955's hash): the quote form and the Hold page (its `GET`) in a browser, and a quote form `POST` past `admit_quote`'s per-business or per-IP limit stores nothing (D-2206); the Confirm link's browser case is T457's (TD-SEC-68). Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -31660,7 +31661,7 @@
    "id": "T456",
    "slug": "hold-away-stored",
    "title": "picks, businesses and server: \"Hold for 2 more hours\" and \"Away until\" are stored, honoured and served from their email links",
-   "goal": "Plan change D-3675 (T301 plan gap; PICK-019, PICK-043, BIZ-034, BIZ-038; D-285, D-309): \"Hold for 2 more hours\" and \"Away until\" have rules but nothing they could change: no Confirm end is stored to extend (`picks.pick` has none, `migrations/0079_picks_code.sql:18`; the end lives only in the queued `picks.confirm_ends` task's payload, `app/picks/src/handlers.rs` `start_window`), `picks::api::extend_once` (`app/picks/src/confirm_reminders.rs:123`) only records a row nothing reads, `picks::api::away_until` and `away_for` (`app/picks/src/confirm.rs:494`, `:515`) only compute a time, and `picks::api::window_start` (`:535`) has no caller. (1) `migrations/0202_picks_businesses_hold_away.sql` adds `picks.pick.confirm_due` (`timestamptz NULL`) and `away_delayed` (`boolean NOT NULL DEFAULT false`), and `businesses.business.away_until` and `busy_until` (`timestamptz NULL`; `busy_until` is T463's). (2) A new `app/businesses/src/away_busy.rs`, through `businesses::api`: `set_away(conn, by, until, now)` stores an end the caller already bounded with `picks::api::away_until` (D-285), for the owner or a \"Confirm and billing\" member, with its audit row; `away_until(conn, business, now)` reads it (none once past). (3) `app/picks/src/handlers.rs`: `notice_sent` starts the window at `window_start(sent, away_until, emergency)` and stores `away_delayed` (a non-emergency pick arriving while the business is away starts its clock when away ends, with no text to the homeowner; an emergency pick never waits, BIZ-034); `start_window` writes `confirm_due`; a new `picks::api::hold_pick(conn, pick, ask, now, settings)`, in one transaction, locks the waiting pick, computes the new end with `picks::api::hold(ask, (now, confirm_due), rules)` (refused when `confirm_due` is unset, the pick was away-delayed or held, or the job is an emergency, PICK-043), stores it once through `extend_once` (a second Hold changes nothing), writes it to `confirm_due`, restarts `jobs`' backstop and queues `picks.confirm_ends` at it as `start_window` does (the earlier timer then finds a moved `timer_from` and does nothing). (4) `app/server/src/action_links.rs`: the Hold link's `POST` (the link alone, `UseBy::LinkAlone`) acts once through `use_action_link` and `hold_pick` with the pick's `HoldAsk`; the Away link's `POST`, with a business session `portals::api::session_may` allows, bounds the posted time with `away_until` and calls `set_away`; a refusal shows the page again with its reason and leaves the link unused. Tests: `tests/integration/tests/hold_away.rs` (the stored end, a Hold moving the window end once, the away-delayed start and its Hold refusal, roles) and cases in `app/server/tests/action_links_route.rs` (TD-SEC-44). Not in this task, logged in D-3675: the HOLD, ESPERA, AWAY and AUSENTE texts (`picks::api::read_time_word` has no production caller). Update the `businesses`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Plan change D-3675 (T301 plan gap; PICK-019, PICK-043, BIZ-034, BIZ-038; D-285, D-309): \"Hold for 2 more hours\" and \"Away until\" have rules but nothing they could change: no Confirm end is stored to extend (`picks.pick` has none, `migrations/0079_picks_code.sql:18`; the end lives only in the queued `picks.confirm_ends` task's payload, `app/picks/src/handlers.rs` `start_window`), `picks::api::extend_once` (`app/picks/src/confirm_reminders.rs:123`) only records a row nothing reads, `picks::api::away_until` and `away_for` (`app/picks/src/confirm.rs:494`, `:515`) only compute a time, and `picks::api::window_start` (`:535`) has no caller. (1) Two migrations, one schema each (TD-SEC-10: `tests/integration/tests/architecture_migrations.rs` refuses a migration naming another module's schema): `migrations/0202_picks_hold_away.sql` adds `picks.pick.confirm_due` (`timestamptz NULL`) and `away_delayed` (`boolean NOT NULL DEFAULT false`); `migrations/0203_businesses_away_busy.sql` adds `businesses.business.away_until` and `busy_until` (`timestamptz NULL`; `busy_until` is T463's). (2) A new `app/businesses/src/away_busy.rs`, through `businesses::api`: `set_away(conn, by, until, now)` stores an end the caller already bounded with `picks::api::away_until` (D-285), for the owner or a \"Confirm and billing\" member, with its audit row; `away_until(conn, business, now)` reads it (none once past). (3) `app/picks/src/handlers.rs`: `notice_sent` starts the window at `window_start(sent, away_until, emergency)` and stores `away_delayed` (a non-emergency pick arriving while the business is away starts its clock when away ends, with no text to the homeowner; an emergency pick never waits, BIZ-034); `start_window` writes `confirm_due`; a new `picks::api::hold_pick(conn, pick, ask, now, settings)`, in one transaction, locks the waiting pick, computes the new end with `picks::api::hold(ask, (now, confirm_due), rules)` (refused when `confirm_due` is unset, the pick was away-delayed or held, or the job is an emergency, PICK-043), stores it once through `extend_once` (a second Hold changes nothing), writes it to `confirm_due`, restarts `jobs`' backstop and queues `picks.confirm_ends` at it as `start_window` does (the earlier timer then finds a moved `timer_from` and does nothing). (4) `app/server/src/action_links.rs`: the Hold link's `POST` (the link alone, `UseBy::LinkAlone`) acts once through `use_action_link` and `hold_pick` with the pick's `HoldAsk`; the Away link's `POST`, with a business session `portals::api::session_may` allows, bounds the posted time with `away_until` and calls `set_away`; a refusal shows the page again with its reason and leaves the link unused. Tests: `tests/integration/tests/hold_away.rs` (the stored end, a Hold moving the window end once, the away-delayed start and its Hold refusal, roles) and cases in `app/server/tests/action_links_route.rs` (TD-SEC-44). Not in this task, logged in D-3675: the HOLD, ESPERA, AWAY and AUSENTE texts (`picks::api::read_time_word` has no production caller). Update the `businesses`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -31677,7 +31678,8 @@
     "privacy"
    ],
    "owns": [
-    "migrations/0202_picks_businesses_hold_away.sql",
+    "migrations/0202_picks_hold_away.sql",
+    "migrations/0203_businesses_away_busy.sql",
     "app/businesses/src/away_busy.rs",
     "app/picks/src/handlers.rs",
     "app/server/src/action_links.rs",
@@ -31703,7 +31705,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 600,
     "context_pct": 5
    },
@@ -31832,15 +31834,16 @@
   {
    "id": "T458",
    "slug": "link-phone-link-acts",
-   "title": "calls and server: the email's \"Link this phone\" link links the blocked phone from a signed-in session",
-   "goal": "Plan change D-3675 (T301 plan gap; CALL-011, CALL-012, BIZ-033, BIZ-038; D-078, D-311, D-3567): the \"Link this phone\" link's object is the blocked call's pending link (`calls.link_request`, T390), which holds only the caller's keyed digests, never the number; only the main phone's \"LINK <PIN>\" text can link it today (`calls::api::link_reply`, `app/calls/src/link_reply.rs:62`). (1) `app/calls/src/link_reply.rs` adds `calls::api::link_by_action(conn, (business, request), now)`: for a live pending link (`now < expires_at`, unused) of that business it runs, in a savepoint, the same steps a matching reply runs (`businesses::api::link_by_reply`, `messaging::api::sender_put_pending` with the pending digests, the pending link marked used and its digests deleted) and answers linked, or refused with no change (expired, used, another business's); no number or PIN is read, stored or logged. (2) `app/server/src/action_links.rs`: the Link this phone link's `POST`, with a business session `portals::api::session_may` allows, acts once through `use_action_link` and `link_by_action`; a refusal leaves the link unused and says the phone could not be linked. Tests: `tests/integration/tests/link_by_action.rs` and cases in `app/server/tests/action_links_route.rs` (TD-SEC-44). Not in this task, logged in D-3675: no production code mints action links into the CALL-011 email (`portals::api::mint_action_link` has no production caller). Update the `calls` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "title": "businesses, calls and server: the email's \"Link this phone\" link links the blocked phone from a signed-in session, a member's link waiting for the owner",
+   "goal": "Plan change D-3675 (T301 plan gap; CALL-011, CALL-012, BIZ-033, BIZ-038; D-078, D-311, D-3567): the \"Link this phone\" link's object is the blocked call's pending link (`calls.link_request`, T390), which holds only the caller's keyed digests, never the number; only the main phone's \"LINK <PIN>\" text can link it today (`calls::api::link_reply`, `app/calls/src/link_reply.rs:62`). (1) `businesses::api::link_by_reply` (`app/businesses/src/reply_link.rs:49`) always inserts the phone as linked and approved by the owner, which is right for the main phone's reply but not for a web action a \"Confirm and billing\" member may take (CALL-012: a phone a member other than the owner links works only after the owner approves it, BIZ-033). So `app/businesses/src/reply_link.rs` adds `link_pending_phone(conn, by: Acting, now)`: for the owner, as `link_by_reply`; for a \"Confirm and billing\" member, `linked_by` and `number_set_by` that member, `approved_at` NULL, and the owner's `PHONE_LINKED_KIND` email queued as `businesses::api::link_phone` queues it (`complaints::phone_link_notice`); anyone else is refused. `app/calls/src/link_reply.rs` adds `calls::api::link_by_action(conn, by: Acting, request, now)`: for a live pending link (`now < expires_at`, unused) of `by`'s business it runs, in a savepoint, `link_pending_phone`, `messaging::api::sender_put_pending` with the pending digests, then, for a member's link, `messaging::api::sender_hold` on the new line (so the phone stays out of the sender directory until T396's `approve_phone` releases it), marks the pending link used and deletes its digests; it answers linked (approved or waiting for the owner) or refused with no change (expired, used, another business's, a role that may not link); no number or PIN is read, stored or logged. (2) `app/server/src/action_links.rs`: the Link this phone link's `POST`, with a business session `portals::api::session_may` allows, acts once through `use_action_link` and `link_by_action` with the session's `Acting`; a member's link says the owner must approve the phone before it works; a refusal leaves the link unused and says the phone could not be linked. Tests: `tests/integration/tests/link_by_action.rs` and cases in `app/server/tests/action_links_route.rs` (TD-SEC-44). Not in this task, logged in D-3675: no production code mints action links into the CALL-011 email (`portals::api::mint_action_link` has no production caller). Update the `calls` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "calls",
    "deps": [
     "T391",
-    "T457"
+    "T457",
+    "T396"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -31850,6 +31853,7 @@
     "privacy"
    ],
    "owns": [
+    "app/businesses/src/reply_link.rs",
     "app/calls/src/link_reply.rs",
     "app/server/src/action_links.rs",
     "app/server/tests/action_links_route.rs",
@@ -31861,7 +31865,8 @@
     "docs/spec/businesses.md"
    ],
    "requirements": [
-    "CALL-011"
+    "CALL-011",
+    "CALL-012"
    ],
    "tests": [
     "TD-SEC-44"
@@ -31873,9 +31878,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 500,
-    "context_pct": 5
+    "context_pct": 6
    },
    "checks": [
     "Ci",
@@ -32019,15 +32024,14 @@
   {
    "id": "T461",
    "slug": "signup-email-activation",
-   "title": "server: business sign-up's email code, inbox check, service area and activation are served",
-   "goal": "Plan change D-3676 (split from T302; BIZ-016, BIZ-019, BIZ-040, BIZ-042, SEC-004; D-462, D-2128, D-3262, D-3602, D-3641): the rest of sign-up up to activation, in T302's `app/server/src/business_signup.rs`, on the existing route constants only (no new path, so D-3641's open list is unchanged). (1) `EMAIL_CHECK_ROUTE` `POST` (`/b/signup/email-code`): before the email is verified, the emailed code step: `start_signup_check` sends it, `verified_by_link` and `confirm_mailbox` (`email_verification.rs:363`'s `confirm`) check it, a refused or expired code showing `Screen::EmailCode` with its problem; `EMAIL_RESEND_ROUTE` resends. The email code step is refused before identity. (2) The inbox check (BIZ-042) is served at `EMAIL_CHECK_ROUTE` once the email is verified: its `GET` shows `portals::api::email_check_page` for the sign-up's owner member (`businesses::api::email_check` with `Acting` of the business and its owner), the mail-app choice coming back as `?app=` (the page's own `GET` form, `app/portals/templates/email_check.html:10`), and its `POST`s (the forms have no `action`, so they post to the same path) send the sample card (`businesses::api::send_sample_card`) or record the answer (`record_inbox_answer`); nothing there blocks activation (\"Skip for now\"). There is no sample pick step in sign-up (D-462). (3) `SERVICE_AREA_ROUTE` (the base ZIP and radius, BIZ-058, BIZ-049). (4) Activation (BIZ-016): the step that activates the business clears the `__Host-askhava-signup` cookie (`Max-Age=0`, same name and attributes) and sends the owner the normal sign-in link to the verified sign-up email through the server's sign-in mailer (`business_signin::SignInMailer`; link plus code, SEC-004; no session is started without it). Every later step reads the sign-up only from that verified cookie (T459's), never from a posted or path ID, and checks that the sign-up's stored state (its identity step, `businesses::api::Step`, code-sent and email-verified facts) allows that step now, and that the business's stored status (`businesses::api::AccountStatus`) is `Pending` or `NeedsReview`; a missing or bad binding (a wrong or altered MAC, ID or salt), a step out of order or a business in any other status is refused like any refusal (the screen again, no detail), changes nothing, sends nothing and calls no Verify (D-3641). Its rows in `docs/architecture.md` section 13 are marked `yes`, and the inbox check's `GET` gets its `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts`: the seed stores a verified sign-up through `psql` and returns T452's keyed binary URL with the `__Host-askhava-signup` cookie made with T452's exported ID secret by `link_token`'s rule (`app/core/src/ids.rs:68`, `:254`). Tests: cases in `app/server/tests/business_signup_route.rs` (TD-SEC-45: the email code step accepts the right code and refuses a wrong one; the inbox check after the email is verified; a step taken after activation with a still-valid sign-up cookie is refused and changes nothing, and the activating response clears the cookie). Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "title": "server: business sign-up's service area, email code and activation are served",
+   "goal": "Plan change D-3676 (split from T302; BIZ-016, BIZ-019, BIZ-040, BIZ-049, BIZ-058, SEC-004; D-2128, D-3262, D-3602, D-3641): the rest of sign-up up to activation, in T302's `app/server/src/business_signup.rs`, on the existing route constants only (no new open path, so D-3641's list is unchanged). A correct email code activates an unflagged sign-up at once (`businesses::api::confirm`, `app/businesses/src/email_verification.rs:401`, calls `identity::settle`), and sign-up cannot finish without towns, a base ZIP and a radius (BIZ-058, `docs/spec/businesses.md:62`), so the order is: (1) `SERVICE_AREA_ROUTE` `POST` (the base ZIP and radius, `businesses::api::save_service_area`, BIZ-058, BIZ-049), allowed once the identity step is done; (2) `EMAIL_CHECK_ROUTE` `POST` (`/b/signup/email-code`), the emailed code step, refused until the service area is saved (`businesses::api::service_area` answers one) and before identity: `start_signup_check` sends it, `confirm_mailbox` (`email_verification.rs:363`'s `confirm`) checks it, a refused or expired code showing `Screen::EmailCode` with its problem; `EMAIL_RESEND_ROUTE` resends under the same rule. (3) Activation (BIZ-016): when the email step's `confirm` leaves the business `Active`, that response clears the `__Host-askhava-signup` cookie (`Max-Age=0`, same name and attributes), sends the owner the normal sign-in link to the verified sign-up email through the server's sign-in mailer (`business_signin::SignInMailer`; link plus code, SEC-004; no session is started without it) and shows the done screen (`Screen::Done` with `portals::api::done_facts`); when it leaves the business in `NeedsReview` (a flag), the done screen says so and the cookie stays, so nothing more is asked. Every later step reads the sign-up only from that verified cookie (T459's), never from a posted or path ID, and checks that the sign-up's stored state (its identity step, `businesses::api::Step`, code-sent and email-verified facts) allows that step now, and that the business's stored status (`businesses::api::AccountStatus`) is `Pending` or `NeedsReview`; a missing or bad binding (a wrong or altered MAC, ID or salt), a step out of order or a business in any other status is refused like any refusal (the screen again, no detail), changes nothing, sends nothing and calls no Verify (D-3641). The inbox check (BIZ-042) is not served here: it needs the owner's session and is T462's. Its rows in `docs/architecture.md` section 13 are marked `yes`. Tests: cases in `app/server/tests/business_signup_route.rs` (TD-SEC-45: the email code step is refused before the service area and before identity, accepts the right code and refuses a wrong one; the activating response clears the cookie and sends one sign-in email; a step taken after activation with a still-valid sign-up cookie is refused and changes nothing). Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "server",
    "deps": [
-    "T460",
-    "T452"
+    "T460"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -32049,15 +32053,15 @@
     "docs/spec/accessibility.md"
    ],
    "requirements": [
+    "BIZ-016",
     "BIZ-019",
     "BIZ-040",
-    "BIZ-042"
+    "BIZ-058"
    ],
    "tests": [
     "TD-SEC-45"
    ],
    "decisions": [
-    "D-462",
     "D-2128",
     "D-3262",
     "D-3602",
@@ -32080,9 +32084,9 @@
   },
   {
    "id": "T462",
-   "slug": "signup-capability-journey",
-   "title": "server and portals: the sign-up capability step is served behind the first sign-in, and sign-up runs in a browser through activation",
-   "goal": "Plan change D-3676 (split from T302; BIZ-049, BIZ-004, BIZ-007, SEC-004; D-1709, D-2508, D-2709, D-2511, D-2128): (1) `portals::api::CAPABILITY_ROUTE` (`/b/signup/capability`), `GET` and `POST` for each capability screen (the one-page form and the guided sequence), served in T302's `app/server/src/business_signup.rs` behind `portals::api::business_principal` (it keeps the Business door, D-3641): the checklist from T368's entry point (the business's ROC classes, agency licenses, pest attestation and handyman standing, and the stored category switch), saved through `businesses::api::save_capability` (T369's after-hours rule); a tick outside the offer changes nothing and shows the form again; every response `no_store`; a cross-site or wrong-CSRF `POST` is refused and is a security event. (2) The first sign-in of an owner whose capability step is not saved lands on it: in `app/portals/src/business_auth.rs`'s `signin_post`, a sign-in with no `job` to go to whose person is the owner of a business with no saved capability row (`businesses::api::capabilities`, an absent key) answers 303 to `CAPABILITY_ROUTE` instead of the done page; every other sign-in is unchanged. Its rows in `docs/architecture.md` section 13 are marked `yes`, and its `GET`'s `PAGE_STATES` entry goes in `tests/a11y/page_states.ts` with a seeded business session (T452's cookie-carrying seeds). (3) Tests: cases in `app/server/tests/business_signup_route.rs` (TD-BIZ-49: the capability step shows the T368 checklist for the business's licenses, saves through `save_capability` with after-hours held back when nobody covers, a posted tick outside the offer changes nothing, the route answers only behind the business session and the sign-in after activation lands on the unsaved step) and TD-SEC-69 in `tests/e2e/business_signup_served.spec.ts` on T452's keyed binary: a fake R-37 plumbing sign-up on a fixture ROC record (T385's `file://` fixture directory) through activation and the capability step, the identity code computed from the stand-in Verify's rule for the record's fake phone (`stand_ins/twilio.py` `start_verification`), and the sign-up email marked verified by setting that sign-up's `businesses.mailbox_check.verified_at` through `psql` on `DATABASE_URL` (the emailed code is an HMAC under the binary's `ASKHAVA_ID_SECRET` and is never stored, D-2128; the email code step itself is proved in the route test). Update the `server` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "slug": "signup-inbox-check",
+   "title": "server: the sign-up inbox check is served behind the business session after activation",
+   "goal": "Plan change D-3676 (split from T302; BIZ-042, BIZ-040, SEC-004, SEC-034, SEC-042; D-462, D-2128, D-3641): the inbox check (BIZ-042) comes after the email is verified, and a correct email code activates the business (T461), after which every sign-up step refuses (D-3641); so it is served behind the business session. `app/server/src/business_signup.rs` adds a route constant `INBOX_CHECK_ROUTE` = `/b/signup/inbox`, a path under `/b/signup` that is not one of D-3641's nine open step paths and so keeps the Business door (`tests/security/door_cases.txt` pins `Business /b/signup/other` the same way; no door file changes), served behind `portals::api::business_principal`: its `GET` shows `portals::api::email_check_page` for the signed-in person (`businesses::api::email_check` with that person's `Acting`), the mail-app choice coming back as `?app=` (the page's own `GET` form, `app/portals/templates/email_check.html:10`); its `POST`s (the forms have no `action`, so they post to the same path) send the sample card (`businesses::api::send_sample_card`) or record the answer (`record_inbox_answer`); its \"Skip for now\" links to `/b`. There is no sample pick step here (D-462: `portals::api::sample_pick_on_open` offers it at the first real job card). Every response is `no_store`; a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event; a signed-out visitor gets the Business door's refusal. Its rows in `docs/architecture.md` section 13 are marked `yes`, and its `GET`'s `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` with a seeded business session (T452's cookie-carrying seeds; no vault is read). Tests: cases in `app/server/tests/business_signup_route.rs` (TD-SEC-45: the inbox check after activation for the signed-in owner, a sample sent and an answer stored once, refused without a session). Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -32100,8 +32104,68 @@
    ],
    "owns": [
     "app/server/src/business_signup.rs",
+    "app/server/tests/business_signup_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/accessibility.md"
+   ],
+   "requirements": [
+    "BIZ-042"
+   ],
+   "tests": [
+    "TD-SEC-45"
+   ],
+   "decisions": [
+    "D-462",
+    "D-2128",
+    "D-3641",
+    "D-3676"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 400,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T462-signup-inbox-check",
+   "prompt": "kit/prompts/T462.md"
+  },
+  {
+   "id": "T464",
+   "slug": "signup-capability-journey",
+   "title": "server and portals: the sign-up capability step is served after activation, linked from the first sign-in, and sign-up runs in a browser end to end",
+   "goal": "Plan change D-3676 (split from T302; BIZ-049, BIZ-004, BIZ-007, SEC-004; D-1709, D-2508, D-2709, D-2511, D-2128): (1) `portals::api::CAPABILITY_ROUTE` (`/b/signup/capability`), `GET` and `POST` for each capability screen (the one-page form and the guided sequence), served in T302's `app/server/src/business_signup.rs` behind `portals::api::business_principal` for the owner (it keeps the Business door, D-3641): the checklist from T368's entry point (the business's ROC classes, agency licenses, pest attestation and handyman standing, and the stored category switch), saved through `businesses::api::save_capability` (T369's after-hours rule); a tick outside the offer changes nothing and shows the form again; a saved step answers 303 to T462's inbox check (`/b/signup/inbox`); every response `no_store`; a cross-site or wrong-CSRF `POST` is refused and is a security event. (2) Reaching it after the first sign-in (D-2709's \"lands on it\", D-3676): sending every such sign-in straight to the step would break T280's `app/server/tests/business_signin_route.rs` (:311 to :331 expect \"You're signed in\") and the sign-ins of T452's and T454's specs, so the sign-in done screen keeps its words and, when the signed-in person is the owner of a business with no saved capability row (`businesses::api::capabilities`, an absent key), shows one more line linking to `CAPABILITY_ROUTE` first: `app/portals/src/business_auth.rs`'s `signin_post` passes that fact to the done screen and `app/portals/templates/business_signin.html` shows the link (words for the copy panel); every other sign-in is unchanged. Its rows in `docs/architecture.md` section 13 are marked `yes`, and its `GET`'s `PAGE_STATES` entry goes in `tests/a11y/page_states.ts` with a seeded owner session (T452's cookie-carrying seeds). (3) Tests: cases in `app/server/tests/business_signup_route.rs` (TD-BIZ-49: the capability step shows the T368 checklist for the business's licenses, saves through `save_capability` with after-hours held back when nobody covers, a posted tick outside the offer changes nothing, the route answers only behind the owner's session, and the done screen of an owner with no saved step links to it) and TD-SEC-69 in `tests/e2e/business_signup_served.spec.ts` on T452's keyed binary: a fake R-37 plumbing sign-up on a fixture ROC record (T385's `file://` fixture directory) through every step and activation, the identity code computed from the stand-in Verify's rule for the record's fake phone (`stand_ins/twilio.py` `start_verification`), the emailed code computed as the app computes it, with T452's exported ID secret (`code_of`, `app/businesses/src/email_verification.rs:78`: `IdempotencyKey::derive` (`app/adapters/src/base.rs:40`) over `businesses.mailbox_code`, the `businesses.mailbox_check` row's ID and its `sent_at` in Unix seconds, both read through `psql` on `DATABASE_URL`; the first 12 hex digits as a number, modulo 1,000,000, six digits) and typed into the real email step, so activation happens through `confirm` and `settle`; then the sign-in link's sign-in (the link seeded as T452's spec seeds one), the done screen's link to the capability step, the step saved, and the inbox check. Update the `server` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "server",
+   "deps": [
+    "T462",
+    "T452"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "copy": true,
+   "owns": [
+    "app/server/src/business_signup.rs",
     "app/server/tests/business_signup_route.rs",
     "app/portals/src/business_auth.rs",
+    "app/portals/templates/business_signin.html",
     "tests/e2e/business_signup_served.spec.ts"
    ],
    "reads": [
@@ -32115,7 +32179,6 @@
    "requirements": [],
    "tests": [
     "TD-BIZ-49",
-    "TD-SEC-45",
     "TD-SEC-69"
    ],
    "decisions": [
@@ -32128,7 +32191,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 600,
     "context_pct": 16
    },
@@ -32137,8 +32200,8 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T462-signup-capability-journey",
-   "prompt": "kit/prompts/T462.md"
+   "branch": "claude/task/T464-signup-capability-journey",
+   "prompt": "kit/prompts/T464.md"
   }
  ]
 }

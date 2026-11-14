@@ -550,12 +550,13 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /b/signup/old | portals | T460 |
 | POST | /b/signup/letter | portals | T460 |
 | POST | /b/signup/identity-code | portals | T460 |
-| GET | /b/signup/email-code | portals | T461 |
 | POST | /b/signup/email-code | portals | T461 |
 | POST | /b/signup/email-code/resend | portals | T461 |
 | POST | /b/signup/service-area | portals | T461 |
-| GET | /b/signup/capability | portals | T462 |
-| POST | /b/signup/capability | portals | T462 |
+| GET | /b/signup/inbox | portals | T462 |
+| POST | /b/signup/inbox | portals | T462 |
+| GET | /b/signup/capability | portals | T464 |
+| POST | /b/signup/capability | portals | T464 |
 | GET | /b/complaints | portals | T306 |
 | POST | /b/complaints/{complaint}/reply | portals | T306 |
 | GET | /b/charges/{pick} | portals | T306 |
