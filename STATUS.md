@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T20:15:26Z by runner f5b1703d99ee (actions).
+Updated 2026-11-14T20:15:45Z by runner f5b1703d99ee (actions).
 
-**Building: T467 in progress since 19:47Z; 329 of 459 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T474 in progress since 19:51Z; 329 of 459 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 329 of 459 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T467 claimed 19:47Z, lease until 22:47Z; lane 2: T474 claimed 19:51Z, lease until 22:51Z; lane 3: T468 claimed 19:50Z, lease until 22:50Z; lane 4: T459 claimed 19:49Z, lease until 22:49Z; lane 6: T300 claimed 19:50Z, lease until 22:50Z; lane 7: T437 claimed 19:48Z, lease until 22:48Z
+- **Lane:** lane 2: T474 claimed 19:51Z, lease until 22:51Z; lane 3: T468 claimed 19:50Z, lease until 22:50Z; lane 4: T459 claimed 19:49Z, lease until 22:49Z; lane 6: T300 claimed 19:50Z, lease until 22:50Z; lane 7: T437 claimed 19:48Z, lease until 22:48Z
 - **Week:** 51% used, 88.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:11Z, 4 min before this update
 - **Keeper:** last ran 20:10Z, next wake 22:50Z
@@ -18,8 +18,9 @@ Updated 2026-11-14T20:15:26Z by runner f5b1703d99ee (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T467 | picks: a pick whose fee terms changed before its Confirm end | MERGE_PENDING | 1 | 27 min | 20:15Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | FIX-MAIN |  | done | 1 | 78 min | 17:42Z |  |
-| T467 | picks: a pick whose fee terms changed before its Confirm end | resync | 1 | 43 min | 16:28Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T467 | picks: a pick whose fee terms changed before its Confirm end | resync | 1 | 43 min | 16:28Z |  |
 | T439 | --after refuses a hand-in whose head no Opus reviewer approv | done | 1 | 44 min | 16:06Z |  |
 | T465 | docs: move the entry lines left under each crate guide's `## | done | 1 | 31 min | 15:55Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | done | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
@@ -165,7 +166,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T467 (lease until 2026-11-14T22:47:47Z)
+- nothing
 - lane 2: T474 (lease until 2026-11-14T22:51:18Z)
 - lane 3: T468 (lease until 2026-11-14T22:50:05Z)
 - lane 4: T459 (lease until 2026-11-14T22:49:23Z)
@@ -173,4 +174,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 7: T437 (lease until 2026-11-14T22:48:36Z)
 
 ## Last usage reading
-- {"task": "FIX-MAIN", "at": "2026-11-14T17:42:42Z", "input_tokens": 136, "cache_read_input_tokens": 2071235, "output_tokens": 23445, "cache_creation_input_tokens": 108960}
+- {"task": "T467", "at": "2026-11-14T20:15:24Z", "output_tokens": 15076, "cache_creation_input_tokens": 99712, "cache_read_input_tokens": 1266847, "input_tokens": 64}
