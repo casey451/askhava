@@ -39,6 +39,8 @@ webauthn-rs = { workspace = true, features = ["danger-allow-state-serialisation"
 
 [dev-dependencies]
 proptest = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true }
 
 [lints]
 workspace = true
