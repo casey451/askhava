@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-14T16:46:53Z by runner 858f0854e89f (actions).
+Updated 2026-11-14T16:48:06Z by runner c98af220344c (manual).
 
-**Stopped: main is red, only FIX-MAIN runs; 329 of 452 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Stopped: main is red, only FIX-MAIN runs; 329 of 453 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 329 of 452 build tasks (owner gates not counted)
+- **Tasks done:** 329 of 453 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane fix: FIX-MAIN claimed 16:24Z, lease until 19:24Z
 - **Week:** 48% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:46Z, 0 min before this update
+- **Last run:** 16:46Z, 1 min before this update
 - **Keeper:** last ran 16:46Z, next wake 18:05Z
 
 ## Needs attention
 - MAIN IS RED: nightly; only FIX-MAIN runs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+106 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
+- Strict plan check red: 17 problem(s) on tasks still to run (+106 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -105,6 +105,7 @@ Updated 2026-11-14T16:46:53Z by runner 858f0854e89f (actions).
 | T436 | portals, core and server: expired sessions are swept and old | resync | 1 | 28 min | 16:53Z |  |
 
 ### Plan and harness merges on main
+- 16:47Z Plan: pre-claim scout fixes for 27 stage-5 tasks (D-3744) (#793)
 - 16:40Z Plan: sign-up email code and activation link get real send paths, rate-limited (new T468, D-3743) (#791)
 - 15:37Z Plan: fee_terms_changed pick end reason (new T467) so T261's Confirm page can end a pick safely (D-3722) (#788)
 - 13:12Z Plan: T301 door-matrix Quote-link cases follow BIZ-038/CARD-023; action pages link forms.css (D-3706) (#781)
@@ -131,7 +132,7 @@ Updated 2026-11-14T16:46:53Z by runner 858f0854e89f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 575 · unstarted 158
-**Tasks merged (throughput only):** 329 of 452
+**Tasks merged (throughput only):** 329 of 453
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
