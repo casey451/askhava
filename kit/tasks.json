@@ -12154,7 +12154,7 @@
    "id": "T440",
    "slug": "tier-choice-pages",
    "title": "portals: the quote page's tier choice and the Confirm page's chosen tier",
-   "goal": "Plan change D-3497 split T341 in two: T341 stores and prices the chosen tier in `picks` and adds a tier-taking pick entry point beside `page_pick`, reached through `picks::api`; this task builds the pages (D-2332; PICK-021, PICK-053). (1) The quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`), and the code step calls T341's entry point with it; on T341's validation error for a missing or stale tier the page shows the choices again and nothing is stored. The chosen tier travels from the quote page through the review and code steps, which post the quote as a hidden field (`app/portals/templates/pick_review.html:40`, `pick_code.html:26`), to `store()` and `page_pick` (`app/portals/src/pick_flow.rs:1041`): this task also owns those two templates for one hidden `tier` input each and nothing else in them (plan change D-3618; T441, the later owner of both, runs after this task). (2) The Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). (D-3118) Shapes that done code and tests build stay as they are: no new field on `quotes::api::PageQuote` (`app/quotes/src/api.rs:115`, which holds only the original text and is built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), on `PageView` or `Numbered` (`app/portals/src/quote_page.rs:117`, `:50`; `PageView` built by literal at `prop_arrival_order.rs:99`) or on `ConfirmFacts` (`app/portals/src/confirm_pay.rs:69`, built by literal in `tests/integration/tests/confirm_terms.rs:89` and `:120`). So `quote_page.rs` reads each tiers quote's tier names from `quotes::api::quoted_prices` and carries them beside the view the way `ShownPage` carries the accepted quote (D-3078: a field on `ShownPage`, a method on `PageView` answering none); the Confirm page takes the chosen tier through a new render entry point in `confirm_pay.rs` beside `confirm_page_with_code`, whose existing callers pass no tier, and a field on the private `ConfirmView` (`:92`). T261 and T132 (the later owners of `confirm_pay.rs`) and T308 and T393 (of `quote_page.rs`) run after this task. Tests in `tests/integration/tests/tier_pick_pages.rs` (TD-FEE-70) against real PostgreSQL, fake data only. Money: the overseer runs an independent money review of the hand-in. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` builds it with `serde_json::from_value`, never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge` (D-3134).",
+   "goal": "Plan change D-3497 split T341 in two: T341 stores and prices the chosen tier in `picks` and adds a tier-taking pick entry point beside `page_pick`, reached through `picks::api`; this task builds the pages (D-2332; PICK-021, PICK-053). (1) The quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`), and the code step calls T341's entry point with it; on T341's validation error for a missing or stale tier the page shows the choices again and nothing is stored. (2) The Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). (D-3118) Shapes that done code and tests build stay as they are: no new field on `quotes::api::PageQuote` (`app/quotes/src/api.rs:115`, which holds only the original text and is built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), on `PageView` or `Numbered` (`app/portals/src/quote_page.rs:117`, `:50`; `PageView` built by literal at `prop_arrival_order.rs:99`) or on `ConfirmFacts` (`app/portals/src/confirm_pay.rs:69`, built by literal in `tests/integration/tests/confirm_terms.rs:89` and `:120`). So `quote_page.rs` reads each tiers quote's tier names from `quotes::api::quoted_prices` and carries them beside the view the way `ShownPage` carries the accepted quote (D-3078: a field on `ShownPage`, a method on `PageView` answering none); the Confirm page takes the chosen tier through a new render entry point in `confirm_pay.rs` beside `confirm_page_with_code`, whose existing callers pass no tier, and a field on the private `ConfirmView` (`:92`). T261 and T132 (the later owners of `confirm_pay.rs`) and T308 and T393 (of `quote_page.rs`) run after this task. Tests in `tests/integration/tests/tier_pick_pages.rs` (TD-FEE-70) against real PostgreSQL, fake data only. Money: the overseer runs an independent money review of the hand-in. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` builds it with `serde_json::from_value`, never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge` (D-3134).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -12188,9 +12188,7 @@
     "app/portals/src/quote_page.rs",
     "app/portals/src/confirm_pay.rs",
     "app/portals/templates/confirm_pay.html",
-    "tests/integration/tests/tier_pick_pages.rs",
-    "app/portals/templates/pick_review.html",
-    "app/portals/templates/pick_code.html"
+    "tests/integration/tests/tier_pick_pages.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12213,12 +12211,11 @@
     "D-2210",
     "D-3118",
     "D-3134",
-    "D-3497",
-    "D-3618"
+    "D-3497"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 6,
     "lines": 380,
     "context_pct": 31
    },
