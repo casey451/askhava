@@ -49,7 +49,7 @@
   "scripts/brand.py": "13d78b9984835e09b072aa5386a2429ba9f65395a6c2ca03677f7ac8c1173d8d",
   "scripts/check_ai_smell.py": "52c625e72630922705b642a20c8a33e2a9a6a8501e32d4687733ec5fe71b40cb",
   "scripts/check_catalog.py": "22059b11f6cd4d8241344302857716a969dfc6434c298106646b8bdd648e86dd",
-  "scripts/check_code_docs.py": "ac8a37fe53ad1f5edb8736eea41668cb63f3f5b1a97319969c880dded2517390",
+  "scripts/check_code_docs.py": "f3da2477ae7e99a255b918418e4fe2252883b69ab3309bee27a29bf9f7000163",
   "scripts/check_conflict_markers.py": "0c9985939c76ce85863f70275c88aaef5adb769cd3e938ec7de0e717eb4e0869",
   "scripts/check_copy.py": "cde92b2b75bd96ec1c365e0c11161591a93e4010277ada417169c87a1a6db459",
   "scripts/check_crates.py": "6191806bd18621eb13b6ead908507c4150859ce587426670dd26d1c55a8666bc",

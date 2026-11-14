@@ -22,6 +22,16 @@ def _under(path: str, patterns: Iterable[str]) -> bool:
     return any(_matches(path, p) for p in patterns)
 
 
+# D-3474: a crate's NOTES.md (one entry per line, union-merged through .gitattributes) is shared exactly when
+# its CLAUDE.md is, so every task may add its lines there without a new kit/tasks.json shared path.
+CRATE_NOTES = re.compile(r"^(app/[^/]+/)NOTES\.md$")
+
+
+def _shared_notes(path: str, shared: tuple[str, ...]) -> bool:
+    match = CRATE_NOTES.match(path)
+    return bool(match) and _under(f"{match.group(1)}CLAUDE.md", shared)
+
+
 def check_paths(
     changed: Iterable[str],
     task: dict[str, Any],
@@ -30,6 +40,7 @@ def check_paths(
 ) -> list[str]:
     """Violations in a diff: not owned, or protected without a harness task."""
     protected = tuple(protected)
+    shared = tuple(shared)
     owns = tuple(task.get("owns", []))
     problems: list[str] = []
     for path in sorted(set(changed)):
@@ -39,7 +50,7 @@ def check_paths(
             problems.append(f"{path}: runner state is written only by the runner")
         elif _under(path, protected) and task.get("type") != "harness":
             problems.append(f"{path}: protected path, harness tasks only")
-        elif not _under(path, owns) and not _under(path, shared):
+        elif not _under(path, owns) and not _under(path, shared) and not _shared_notes(path, shared):
             problems.append(f"{path}: not owned by {task.get('id')}")
     return problems
 
