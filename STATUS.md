@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T18:59:23Z by runner 313f8ce9f228 (actions).
+Updated 2026-11-14T19:10:56Z by runner 313f8ce9f228 (manual).
 
 **Idle since 18:24Z; 329 of 459 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T18:59:23Z by runner 313f8ce9f228 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 18:24Z (no task in progress)
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:59Z, 0 min before this update
+- **Last run:** 18:59Z, 11 min before this update
 - **Keeper:** last ran 18:59Z, next wake 00:39Z
 
 ## Needs attention
@@ -122,7 +122,6 @@ Updated 2026-11-14T18:59:23Z by runner 313f8ce9f228 (actions).
 - 20:53Z Plan: T438 plan gap, leave the ledger windows as today (D-3536) (#696)
 - 19:27Z Plan: pre-flight 15, split T341 and T361 (D-3497) (#691)
 - 19:23Z Plan: deterministic kills for proptest-only named mutants (D-3499) (#694)
-- 19:02Z Plan: report-only symbol pre-flight in plan_health (D-3496) (#688)
 
 ## Progress (requirements verified)
 
