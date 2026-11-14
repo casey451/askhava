@@ -50,7 +50,7 @@ use askhava_intake::api::{Answer, TextIn, receive_text, record_answer};
 use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{JobStatus, create, job_number, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
-use askhava_ops::api::Actor as AuditActor;
+use askhava_ops::api::{Actor as AuditActor, AuditRow, export_audit};
 use askhava_picks::api::{PagePick, ViewAnswer, page_pick, released_view};
 use askhava_portals::api::{
     ActionKind, ActionTarget, CookieJar, PortalsError, Realm, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE,
@@ -760,7 +760,16 @@ async fn her_request(db: &mut PgConnection, side: usize, job: Uuid, now: Timesta
 
 /// A Quote link for `object`, minted for `team`'s owner (SEC-025, `portals::api` as T148's tests).
 async fn mint(db: &mut PgConnection, team: Team, object: Uuid, now: Timestamp) -> Minted {
-    let kind = ActionKind::Quote;
+    mint_kind(db, team, (ActionKind::Quote, object), now).await
+}
+
+/// A `kind` link for `object`, minted for `team`'s owner (SEC-025).
+async fn mint_kind(
+    db: &mut PgConnection,
+    team: Team,
+    (kind, object): (ActionKind, Uuid),
+    now: Timestamp,
+) -> Minted {
     let target = ActionTarget {
         kind,
         object,
@@ -1023,7 +1032,8 @@ async fn open(pool: &PgPool, link: &Minted) -> bool {
 /// An action-link row by `who` (SEC-025, SEC-026): X's fresh link opens, its `GET` changes
 /// nothing; another kind, another object, a token minted for Y's member on B's job (refused by
 /// its object, since the path names no member) or an unissued one is the one not-found answer,
-/// `no-store`.
+/// `no-store`; a token minted for Y's member on X's kind and object is bound to Y
+/// ([`probe_bound`]).
 async fn probe_link(
     w: &World,
     (method, template): (&Method, &str),
@@ -1063,9 +1073,76 @@ async fn probe_link(
     for link in wrong {
         judge_not_found(&get(link).await?, &not_found)?;
     }
+    probe_bound(w, (method, template), who, (&mine, &not_found)).await?;
     let before = open(&w.pool, &mine).await;
     judge_opened(method, &get(mine.clone()).await?)?;
     judge_unchanged(method, before, open(&w.pool, &mine).await)
+}
+
+/// The business audit rows that name `business` as their actor, read through
+/// `ops::api::export_audit` page by page.
+async fn acted(pool: &PgPool, business: Uuid) -> usize {
+    let mut db = pool.acquire().await.expect("db");
+    let (mut after, mut rows) = (0, 0);
+    loop {
+        let page = export_audit(&mut db, after, i64::MAX).await.expect("audit");
+        let Some(last) = page.last() else {
+            return rows;
+        };
+        after = last.id;
+        let by = |r: &&AuditRow| r.actor_kind == "business" && r.actor_id == Some(business);
+        rows += page.iter().filter(by).count();
+    }
+}
+
+/// SEC-025, SEC-004, D-3614: a link minted for Y's member on X's kind and object (`mine`, a Quote
+/// link, `UseBy::LinkAlone`) acts as Y, the one person it is bound to, whoever's session is open:
+/// it opens as its own link does, and X's business gains no audit row and X's link is left as it
+/// was. A session kind (`UseBy::Session`: Away, on X's business) minted for Y and sent with X's
+/// session is the one not-found answer and acts as nobody: no audit row for X or Y, Y's link unused.
+async fn probe_bound(
+    w: &World,
+    (method, template): (&Method, &str),
+    who: &Who,
+    (mine, not_found): (&Minted, &Reply),
+) -> Result<(), String> {
+    let [x, y] = w.teams;
+    let mut db = w.pool.acquire().await.expect("db");
+    let now = Timestamp::now();
+    let linked = mint_kind(&mut db, y, (mine.kind, mine.object), now).await;
+    let session = mint_kind(&mut db, y, (ActionKind::Away, x.business), now).await;
+    drop(db);
+    let ids = w.fx.ids_on(template, 0);
+    let get = |link: &Minted| {
+        let path = fill(template, ids, link);
+        async move {
+            let path = path?;
+            Ok::<_, String>(
+                send(&w.app, (method, &path), &who.jar, Site::Own, Uuid::new_v4()).await,
+            )
+        }
+    };
+    let as_x = async || (acted(&w.pool, x.business).await, open(&w.pool, mine).await);
+    let before = as_x().await;
+    judge_opened(method, &get(&linked).await?)?;
+    if as_x().await != before {
+        return Err("Y's link on X's object acted as X (SEC-025)".to_owned());
+    }
+    if who.actor != Actor::BusinessX {
+        return Ok(());
+    }
+    let both = async || {
+        (
+            acted(&w.pool, x.business).await,
+            acted(&w.pool, y.business).await,
+        )
+    };
+    let before = both().await;
+    judge_not_found(&get(&session).await?, not_found)?;
+    if both().await != before || !open(&w.pool, &session).await {
+        return Err("X's session acted through Y's session-kind link (SEC-025)".to_owned());
+    }
+    Ok(())
 }
 
 /// SEC-048: `who`'s cross-site and wrong-token `POST`s to `template` are each a 403 with one
