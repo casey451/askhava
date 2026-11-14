@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T21:39:40Z by runner 886756c58552 (actions).
+Updated 2026-11-14T21:40:35Z by runner 2aad8a530a2f (actions).
 
-**Idle since 21:38Z; 333 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 21:39Z; 334 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 333 of 469 build tasks (owner gates not counted)
+- **Tasks done:** 334 of 469 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 21:38Z (no task in progress)
+- **Lane:** idle since 21:39Z (no task in progress)
 - **Week:** 51% used, 92.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:39Z, 0 min before this update
 - **Keeper:** last ran 21:39Z, next wake 21:59Z
@@ -24,7 +24,7 @@ Updated 2026-11-14T21:39:40Z by runner 886756c58552 (actions).
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T300 | server and portals: the business portal is served behind the | MERGE_PENDING | 3 | 94 min | 21:25Z | PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T |
 | T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T468 | portals, businesses and messaging: public paths for sign-up' | done | 1 | 29 min | 20:19Z |  |
 | T474 | harness: clearing a red main counts a failed attempt against | done | 1 | 26 min | 20:18Z |  |
 | T467 | picks: a pick whose fee terms changed before its Confirm end | done | 1 | 27 min | 20:15Z |  |
@@ -123,7 +123,7 @@ Updated 2026-11-14T21:39:40Z by runner 886756c58552 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 304 of 733 (41.5%) · partial 272 · unstarted 157
-**Tasks merged (throughput only):** 333 of 469
+**Tasks merged (throughput only):** 334 of 469
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -158,7 +158,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 213 of 229 done
+- stage 4: 214 of 229 done
 - stage 5: 0 of 86 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
