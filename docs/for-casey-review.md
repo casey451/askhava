@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Business account emails: four of them had no words yet, so the step that sends them now writes them (D-3687, November 14)
+
+- **What happened.** The step that emails businesses about account events (T329) stopped: four of its emails had no words written anywhere (an old address told its notice address changed, the owner told after-hours emergency requests are off, the other addresses told one address is bouncing, and the owner told a team member linked a phone).
+- **What changed.** T329 now writes those four emails itself, in English and Spanish, with the usual plain-language checks and two independent read-throughs. The phone-linked email tells the owner the phone works only after they press Approve, with that button's link.
+- **Nothing needs you now.**
+
 ## Business sign-in, portal, email links and sign-up: three stuck steps split into smaller ones (D-3674, D-3675, D-3676, November 14)
 
 - **What happened.** The steps that put the business portal, the email action links and business sign-up online (T300, T301, T302) all stopped on planning gaps. The test server could not send a sign-in code or read the locked contact store, so no signed-in business page could be tested in a browser; most email links had nothing they could change yet (no saved "away" time, no saved Confirm deadline for "Hold", no way to link a phone from a web page); and sign-up was far too big for one session and also put the "send a sample pick" step in sign-up, where an earlier decision (D-462) had moved it to the first real job card.
