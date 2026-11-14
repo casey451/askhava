@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-14T14:11:00Z by runner 3fd009c86341 (actions).
+Updated 2026-11-14T14:12:20Z by runner 49857763a082 (actions).
 
-**Building: T302 in progress since 14:01Z; 324 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T302 in progress since 14:01Z; 325 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 324 of 451 build tasks (owner gates not counted)
+- **Tasks done:** 325 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T302 claimed 14:01Z, lease until 17:01Z; lane 5: T353 claimed 13:44Z, lease until 16:44Z
 - **Week:** 44% used, 104.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:10Z, 0 min before this update
+- **Last run:** 14:11Z, 1 min before this update
 - **Keeper:** last ran 14:10Z, next wake 16:47Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 33 problem(s) on tasks still to run (+104 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
+- Strict plan check red: 31 problem(s) on tasks still to run (+105 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T432 | intake and server: ask the name-and-address question in prod | MERGE_PENDING | 1 | 71 min | 13:54Z |  |
+| T432 | intake and server: ask the name-and-address question in prod | done | 1 | 71 min | 13:54Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 4 | 38 min | 13:32Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T466 | portals: one shared form stylesheet for native checkboxes an | done | 1 | 27 min | 13:27Z |  |
 | T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
@@ -133,7 +133,7 @@ Updated 2026-11-14T14:11:00Z by runner 3fd009c86341 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 272 of 733 (37.1%) · partial 303 · unstarted 158
-**Tasks merged (throughput only):** 324 of 451
+**Tasks merged (throughput only):** 325 of 451
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -168,7 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 204 of 226 done
+- stage 4: 205 of 226 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
