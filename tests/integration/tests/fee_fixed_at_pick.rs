@@ -367,8 +367,9 @@ async fn td_fee_48_a_text_pick_and_a_page_pick_each_fix_one_fee(pool: PgPool) {
     );
 }
 
-/// TD-FEE-48 (FEE-005, D-1871): a tiered quote names no one price, so its fee can't be fixed:
-/// the page pick fails, its transaction rolls back and no pick, fee or move is stored.
+/// TD-FEE-48 (FEE-005, D-1871, D-2332): a page pick of a tiered quote that names no tier has no
+/// one price, so its fee can't be fixed: the pick fails, its transaction rolls back and no pick,
+/// fee or move is stored (a pick naming its tier is TD-FEE-63's, `tier_and_visit_pick.rs`).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_48_a_pick_whose_fee_cannot_be_fixed_stores_no_pick(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");

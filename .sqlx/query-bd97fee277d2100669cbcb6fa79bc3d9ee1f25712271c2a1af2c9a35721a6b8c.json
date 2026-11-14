@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE picks.pick SET tier_index = $2, tier_name = $3, tier_cents = $4 WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int2",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "bd97fee277d2100669cbcb6fa79bc3d9ee1f25712271c2a1af2c9a35721a6b8c"
+}
