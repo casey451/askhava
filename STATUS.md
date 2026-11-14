@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T14:37:59Z by runner 49857763a082 (actions).
+Updated 2026-11-14T14:38:09Z by runner 49857763a082 (actions).
 
 **Building: T300 in progress since 14:35Z; 326 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-14T14:37:59Z by runner 49857763a082 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 7: T300 claimed 14:35Z, lease until 17:35Z
 - **Week:** 44% used, 104.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:37Z, 0 min before this update
-- **Keeper:** last ran 14:37Z, next wake 17:38Z
+- **Last run:** 14:38Z, 0 min before this update
+- **Keeper:** last ran 14:38Z, next wake 17:38Z
 
 ## Needs attention
 - BLOCKED T261: plan gap reported: PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs:95); migrations/0158_picks_share_box.sql:28-29 CHECK allows only replaced/paused/ineligible/cant_take. T261 goal (1) and D-1871 (3) need the pick to end through the Can't take it path with its own reason, but T261 owns neither app/picks nor migrations, and no other task in kit/tasks.json builds a new reason (only T287 and T261 mention it). Reviewer confirmed with file:line evidence. Secondary: the task needs about 11 files and over 600 lines against a 7-file, 600-line budget.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason "..."` (D-2859)
