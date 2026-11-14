@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T15:55:37Z by runner c86acdd42f81 (actions).
+Updated 2026-11-14T15:56:08Z by runner c86acdd42f81 (actions).
 
 **Building: T439 in progress since 15:21Z; 328 of 451 done; week 46% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 328 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T439 claimed 15:21Z, lease until 18:21Z; lane 2: T467 claimed 15:44Z, lease until 18:44Z; lane 3: T465 claimed 15:24Z, lease until 18:24Z; lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane 7: T300 claimed 14:35Z, lease until 17:35Z
+- **Lane:** lane 1: T439 claimed 15:21Z, lease until 18:21Z; lane 2: T467 claimed 15:44Z, lease until 18:44Z; lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane 7: T300 claimed 14:35Z, lease until 17:35Z
 - **Week:** 46% used, 98.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:54Z, 1 min before this update
+- **Last run:** 15:55Z, 0 min before this update
 - **Keeper:** last ran 15:50Z, next wake 17:38Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-14T15:55:37Z by runner c86acdd42f81 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T465 | docs: move the entry lines left under each crate guide's `## | MERGE_PENDING | 1 | 31 min | 15:55Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | done | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 1 | 3 min | 14:30Z | PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs: |
 | T353 | payments: a won dispute records the countering fee's return  | done | 1 | 30 min | 14:15Z |  |
@@ -174,9 +175,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T439 (lease until 2026-11-14T18:21:13Z)
 - lane 2: T467 (lease until 2026-11-14T18:44:37Z)
-- lane 3: T465 (lease until 2026-11-14T18:24:06Z)
 - lane 4: T459 (lease until 2026-11-14T18:02:50Z)
 - lane 7: T300 (lease until 2026-11-14T17:35:44Z)
 
 ## Last usage reading
-- {"task": "T302", "at": "2026-11-14T14:36:29Z", "cache_creation_input_tokens": 80829, "output_tokens": 12198, "input_tokens": 74, "cache_read_input_tokens": 1454153}
+- {"task": "T465", "at": "2026-11-14T15:55:36Z", "cache_read_input_tokens": 243674, "output_tokens": 3653, "input_tokens": 26, "cache_creation_input_tokens": 35992}
