@@ -12,7 +12,12 @@
     the radius beside towns served; a refusal keeps both values, opens the title with "Error: ",
     focuses a summary of links and repeats each message by its field. T268 (CON-019, PICK-049,
     D-1715): the E-SIGN consent box before the Terms link, never rendered checked; a post without
-    the tick comes back with the `consent` problem in the summary and by the box. -#}
+    the tick comes back with the `consent` problem in the summary and by the box. T450 (BIZ-036,
+    BIZ-040, BIZ-042, CON-019, TXT-035, A11Y-030, D-3602): every form posts to a route constant;
+    while texting is on, the email, text or both choice (email preselected) and the text phone
+    field, always rendered, never shown or hidden by script, its error beside it; the box after
+    them with its shown channels and their seal in hidden fields; the two code screens, one
+    one-time-code input each, the refusal beside it. -#}
 {% block title %}{{ title }}{% endblock %}
 {% block main %}
 <h1>{{ title }}</h1>
@@ -31,11 +36,13 @@
 </section>
 {% endif %}
 {% if !categories.is_empty() %}
-<form method="post" action="/b/signup/start" id="signup-form" novalidate>
+<form method="post" action="{{ crate::business_signup::SIGNUP_FORM_ROUTE }}" id="signup-form" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
-{% if let Some((field, reason)) = entered.problem %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<input type="hidden" name="consent_channels" value="{{ consent_channels }}">
+<input type="hidden" name="consent_seal" value="{{ consent_seal }}">
+{% if let Some((_, reason)) = entered.problem %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
 <h2>Fix the entry marked below</h2>
-<p><a href="#{{ field.replace('_', "-") }}">{{ reason }}</a></p>
+<p><a href="#{{ problem_anchor() }}">{{ reason }}</a></p>
 </div>
 {% endif %}
 <fieldset id="names"><legend>The name on your quotes</legend>
@@ -67,7 +74,15 @@
 </fieldset>
 <p><label for="email">Email for job requests and picks</label>
 <input type="email" id="email" name="email" autocomplete="email"></p>
-<fieldset id="categories"><legend>What work do you do?</legend>
+{% if texting_on %}<fieldset id="notice-choice"><legend>How do you want to get job requests, and hear when a homeowner picks you?</legend>
+{% for (value, label, on) in choices %}<p><input type="radio" id="notice-{{ value }}" name="notice_channel" value="{{ value }}"{% if *on %} checked{% endif %}>
+<label for="notice-{{ value }}">{{ label }}</label></p>
+{% endfor %}</fieldset>
+<p><label for="text-phone">Mobile number, used only for job texts</label>
+<span id="text-phone-hint">Fill this in if you chose text or both.</span>
+{% if let Some(m) = phone_error() %}<span id="text-phone-error" class="error">Error: {{ m }}</span>{% endif %}
+<input type="tel" id="text-phone" name="text_phone" autocomplete="tel" aria-describedby="text-phone-hint{% if phone_error().is_some() %} text-phone-error{% endif %}"{% if phone_error().is_some() %} aria-invalid="true"{% endif %}></p>
+{% endif %}<fieldset id="categories"><legend>What work do you do?</legend>
 {% for (code, name, label) in categories %}<p><input type="checkbox" id="cat-{{ code }}" name="category" value="{{ code }}">
 <label for="cat-{{ code }}">{{ name }} ({{ label }})</label></p>
 {% endfor %}</fieldset>
@@ -118,10 +133,25 @@
 <button type="submit">Next</button>
 </form>
 {% endif %}
-{% for (action, label) in buttons %}
-<form method="post" action="/b/signup/{{ action }}" novalidate>
+{% if let Some(code) = code_form %}
+<form method="post" action="{{ code.action }}" id="code-form" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
-<button type="submit" id="button-{{ action }}">{{ label }}</button>
+{% if let Some(m) = code.error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix the entry marked below</h2>
+<p><a href="#code">{{ m }}</a></p>
+</div>
+{% endif %}
+<p><label for="code">6-digit code</label>
+<span id="code-hint">{{ code.hint }}</span>
+{% if let Some(m) = code.error %}<span id="code-error" class="error">Error: {{ m }}</span>{% endif %}
+<input type="text" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-hint{% if code.error.is_some() %} code-error{% endif %}"{% if code.error.is_some() %} aria-invalid="true"{% endif %}></p>
+<button type="submit">Next</button>
+</form>
+{% endif %}
+{% for (action, id, label) in buttons %}
+<form method="post" action="{{ action }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<button type="submit" id="button-{{ id }}">{{ label }}</button>
 </form>
 {% endfor %}
 {% endblock %}
