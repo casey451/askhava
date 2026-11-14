@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T03:17:56Z by runner 694a0c74a7f2 (actions).
+Updated 2026-11-14T03:18:12Z by runner 694a0c74a7f2 (actions).
 
-**Building: T449 in progress since 02:46Z; 308 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T433 in progress since 02:23Z; 308 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 308 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T449 claimed 02:46Z, lease until 05:46Z; lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 5: T440 claimed 02:53Z, lease until 05:53Z; lane 6: T344 claimed 02:54Z, lease until 05:54Z
+- **Lane:** lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 5: T440 claimed 02:53Z, lease until 05:53Z; lane 6: T344 claimed 02:54Z, lease until 05:54Z
 - **Week:** 34% used, 120.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:15Z, 2 min before this update
+- **Last run:** 03:15Z, 3 min before this update
 - **Keeper:** last ran 03:14Z, next wake 05:25Z
 
 ## Needs attention
@@ -21,9 +21,10 @@ Updated 2026-11-14T03:17:56Z by runner 694a0c74a7f2 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T449 | server and intake: emergency first texts count toward the re | MERGE_PENDING | 1 | 31 min | 03:17Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T450 | portals: the sign-up code screens and the texts choice with  | MERGE_PENDING | 1 | 79 min | 03:00Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 23 min | 02:41Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/intake/CLAUDE.md, app/messaging/CLAUDE.md, app |
-| T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | done | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 2 | 1 min | 01:33Z | PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode\|EmailCode in app/portals/src finds |
@@ -155,10 +156,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T449 (lease until 2026-11-14T05:46:17Z)
 - lane 4: T433 (lease until 2026-11-14T05:23:41Z)
 - lane 5: T440 (lease until 2026-11-14T05:53:03Z)
 - lane 6: T344 (lease until 2026-11-14T05:54:46Z)
 
 ## Last usage reading
-- {"task": "T450", "at": "2026-11-14T03:00:41Z", "cache_read_input_tokens": 5373860, "input_tokens": 162, "output_tokens": 68973, "cache_creation_input_tokens": 223376}
+- {"task": "T449", "at": "2026-11-14T03:17:55Z", "cache_read_input_tokens": 815557, "input_tokens": 54, "output_tokens": 11146, "cache_creation_input_tokens": 59945}

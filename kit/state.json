@@ -50673,7 +50673,7 @@
     "T404",
     "T348"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "emergency-texts-counted",
    "type": "build",
@@ -50747,6 +50747,30 @@
        "turns": 29
       }
      }
+    },
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 35,
+     "head_sha": "694a0c74a7f28aacc249350e183159cede9e9c38",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-14T02:46:17Z",
+     "ended_at": "2026-11-14T03:17:55Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 595397,
+       "turns": 19
+      },
+      "reviewer": {
+       "tokens": 291305,
+       "turns": 9
+      }
+     },
+     "resync": true
     }
    ],
    "reviewed_sha": "694a0c74a7f28aacc249350e183159cede9e9c38",
@@ -50759,17 +50783,8 @@
    "branch": "claude/task/T449-emergency-texts-counted",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #737 (gh pr merge)",
-    "head": "dccb88acba4dc599c3cc83dfb504433c35fbaf41"
-   },
-   "resync": {
-    "attempt": 1,
-    "from": "dccb88acba4dc599c3cc83dfb504433c35fbaf41",
-    "main": "f5b7fd7dcd10a658f8d6d7ad8b7ebb0db0a15c2f",
-    "paths": [
-     "app/server/CLAUDE.md"
-    ],
-    "at": "2026-11-14T02:46:17Z"
+    "why": "auto-merge on #740 (gh pr merge)",
+    "head": "694a0c74a7f28aacc249350e183159cede9e9c38"
    },
    "resyncs": [
     {
@@ -50782,8 +50797,7 @@
      "at": "2026-11-14T02:46:17Z"
     }
    ],
-   "last_failure": "merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891)",
-   "head_check_since": null
+   "last_failure": "merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891)"
   },
   {
    "id": "T450",
@@ -50887,12 +50901,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T450",
-   "at": "2026-11-14T03:00:41Z",
-   "cache_read_input_tokens": 5373860,
-   "input_tokens": 162,
-   "output_tokens": 68973,
-   "cache_creation_input_tokens": 223376
+   "task": "T449",
+   "at": "2026-11-14T03:17:55Z",
+   "cache_read_input_tokens": 815557,
+   "input_tokens": 54,
+   "output_tokens": 11146,
+   "cache_creation_input_tokens": 59945
   },
   "source": "session_reading 2026-11-14T02:47:16Z (week)",
   "by_task": {
@@ -53948,14 +53962,14 @@
     "estimated_bytes": 200914,
     "estimated_tokens": 616333,
     "usage_counting": "message_id",
-    "cache_read_input_tokens": 5906615,
-    "cache_creation_input_tokens": 237413,
-    "input_tokens": 209,
-    "output_tokens": 59671,
-    "worker_tokens": 4910865,
-    "worker_turns": 75,
-    "reviewer_tokens": 1293043,
-    "reviewer_turns": 29,
+    "cache_read_input_tokens": 6722172,
+    "cache_creation_input_tokens": 297358,
+    "input_tokens": 263,
+    "output_tokens": 70817,
+    "worker_tokens": 5506262,
+    "worker_turns": 94,
+    "reviewer_tokens": 1584348,
+    "reviewer_turns": 38,
     "last_model": "claude-opus-5-5"
    },
    "T433": {
@@ -53974,11 +53988,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-14T01:10:02Z",
-    "tokens": 6926112
+    "tokens": 7078812
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 96628490
+    "tokens": 96781190
    }
   },
   "session_reading": {
@@ -53989,7 +54003,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T03:17:56Z",
+ "updated_at": "2026-11-14T03:18:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
