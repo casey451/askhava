@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-14T02:24:36Z by runner 0d5dc61a17e7 (actions).
+Updated 2026-11-14T02:25:26Z by runner bd1d928f7d1a (actions).
 
-**Building: T437 in progress since 02:18Z; 307 of 434 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T437 in progress since 02:18Z; 307 of 435 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 307 of 434 build tasks (owner gates not counted)
+- **Tasks done:** 307 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T437 claimed 02:18Z, lease until 05:18Z; lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 5: T341 claimed 02:03Z, lease until 05:03Z; lane 6: T449 claimed 01:42Z, lease until 04:42Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
 - **Week:** 33% used, 124.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -16,7 +16,7 @@ Updated 2026-11-14T02:24:36Z by runner 0d5dc61a17e7 (actions).
 - PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 53% of the context window, over its 50% limit
-- Strict plan check red: 30 problem(s) on tasks still to run (+198 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 33 problem(s) on tasks still to run (+203 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -111,16 +111,16 @@ Updated 2026-11-14T02:24:36Z by runner 0d5dc61a17e7 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 307 of 434
+**Requirements verified:** 273 of 733 (37.2%) · partial 300 · unstarted 160
+**Tasks merged (throughput only):** 307 of 435
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 14 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 20 | 35 | 3 | 58 |
+| businesses | 17 | 38 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
-| consent | 12 | 19 | 4 | 35 |
+| consent | 11 | 20 | 4 | 35 |
 | fees | 14 | 37 | 1 | 52 |
 | intake | 26 | 14 | 3 | 43 |
 | job-cards | 18 | 6 | 0 | 24 |

@@ -37965,12 +37965,12 @@
      "plan_now": "f25756b20652c2df210cc823ec0f24c59e3f0e57184e1b9757f82a4f8d4b07f6"
     }
    ],
-   "reviewed_sha": "a2cc1d94373373f2bfe46f2935c7cff3adc07dba",
+   "reviewed_sha": "3c542c7ea7fa347a136d1bff210db0b039b9ddba",
    "review_lease": {
     "task": "T341",
-    "session": "actions-43526531712",
-    "expires": "2026-11-14T03:03:00Z",
-    "lane": "2"
+    "session": "actions-43543307663",
+    "expires": "2026-11-14T05:03:36Z",
+    "lane": "5"
    },
    "branch": "claude/task/T341-tier-and-visit-schedule-at-pick",
    "auto_merge": {
@@ -37978,7 +37978,6 @@
     "why": "auto-merge on #731 (gh pr merge)",
     "head": "a2cc1d94373373f2bfe46f2935c7cff3adc07dba"
    },
-   "merge_turn_since": "2026-11-14T02:03:36Z",
    "runner_closed_prs": [
     731
    ],
@@ -38000,6 +37999,16 @@
       "docs/for-casey-review.md"
      ],
      "at": "2026-11-14T02:03:36Z"
+    }
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "bd1d928f7d1a8043037d1fa8f2d39771047ad246",
+     "to": "3c542c7ea7fa347a136d1bff210db0b039b9ddba",
+     "main": "918581713bc4d82184921a94a50e48710fa2dd45",
+     "how": "hand-in",
+     "at": "2026-11-14T02:25:26Z"
     }
    ],
    "update_waiting_since": null,
@@ -53687,7 +53696,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T02:24:36Z",
+ "updated_at": "2026-11-14T02:25:26Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -53785,7 +53794,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0d5dc61a17e77a2b3f5355d1a775d38c0d6f9016",
+ "runner_sha": "bd1d928f7d1a8043037d1fa8f2d39771047ad246",
  "starter": "actions",
  "smoke_runs": [
   {
