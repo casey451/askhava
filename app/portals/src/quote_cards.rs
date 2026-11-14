@@ -10,14 +10,15 @@
 //! "Updated <time>" line. A business `public_names` leaves out shows [`CARD_FALLBACK_NAME`] (D-3642),
 //! never a name from anywhere else. A quote with no stored facts, or a job with no stored
 //! category, gets no card and keeps the page's number and Pick button (D-3134, D-3643). A pest
-//! card leads with the LIC-047 attested line (D-3644). No homeowner detail and no business phone
+//! card leads with the LIC-047 attested line (D-3644). A no-license card the latest city list
+//! does not match drops the city-license line (D-3646). No homeowner detail and no business phone
 //! or address is read here (PICK-010).
 
 use askhava_businesses::api::{Insurance, Known, business_names, holding, public_names};
 use askhava_jobs::api::job_facts;
 use askhava_licensing::api::{
-    Agency, CardFacts, CardLanguage, CardLine, CityRecord, Issuer, LicenseFacts, card_facts,
-    licensed_lines, no_license_lines,
+    Agency, CardFacts, CardLanguage, CardLine, CityRecord, HANDYMAN_CARD_LINE, Issuer,
+    LicenseFacts, card_facts, licensed_lines, no_license_lines,
 };
 use askhava_quotes::api::{CardSource, shown_card, stored_facts};
 use sqlx::PgConnection;
@@ -120,7 +121,10 @@ async fn license_lines(
     {
         None => Ok(Vec::new()),
         Some(CardFacts::Licensed(list)) => licensed(&list, language),
-        Some(CardFacts::NoLicense(mut facts)) => {
+        Some(CardFacts::NoLicense {
+            mut facts,
+            city_listed,
+        }) => {
             let parts = holding(db, business, Known::default())
                 .await
                 .map_err(read)?;
@@ -129,7 +133,11 @@ async fn license_lines(
                 .map_err(read)?;
             facts.handyman = parts.holder.handyman;
             facts.insurance = record.insurance.map(|i| i == Insurance::Yes);
-            no_license_lines(&facts, language).map_err(read)
+            let mut lines = no_license_lines(&facts, language).map_err(read)?;
+            if !city_listed {
+                lines.remove(usize::from(facts.handyman));
+            }
+            Ok(lines)
         }
     }
 }
@@ -145,6 +153,12 @@ fn licensed(list: &[LicenseFacts], language: CardLanguage) -> Result<Vec<CardLin
         lines.extend(licensed_lines(facts, language).map_err(read)?);
     }
     Ok(lines)
+}
+
+/// A11Y-004, D-3644, D-3646: whether `line` keeps its English words on a Spanish card (the
+/// LIC-024 and LIC-047 lines), so the page marks it `lang="en"`.
+pub(crate) fn english_line(line: &CardLine) -> bool {
+    line.text == HANDYMAN_CARD_LINE || line.link.as_deref() == Some(PEST_SEARCH_LINK)
 }
 
 /// LIC-047: the self-attested pest line for license `number`, linked to the license search.

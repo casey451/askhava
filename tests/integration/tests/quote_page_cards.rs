@@ -20,12 +20,15 @@ use askhava_jobs::api::{JobStatus, move_to, record_job_facts};
 use askhava_licensing::api::LicenseKind;
 use askhava_ops::api::Actor;
 use askhava_portals::api::{CARD_FALLBACK_NAME, quote_page_routes};
+use askhava_privacy::api::{Vault, mailbox_for, store_staff_phone};
 use askhava_quotes::api::{
     DayPart, Format, Parts, Permit, Price, QuoteFacts, QuoteForm, QuoteRules, Spanish, Submitted,
     TripFee, parse_quote, submit_quote_with_facts,
 };
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
+use base64::Engine as _;
+use base64::engine::general_purpose::STANDARD;
 use jiff::Timestamp;
 use jiff::civil::date;
 use secrecy::SecretString;
@@ -141,6 +144,22 @@ async fn roc_license(db: &mut Db, id: Uuid) {
     sql(db, "INSERT INTO licensing.license_check (business_id, source, license_number, list_date, status, checked_at) VALUES ($1, 'roc', '312345', '2026-11-01', 'active', '2026-11-01T09:00:00-07:00')", &[id]).await;
 }
 
+/// Business `id`'s fake sealed email address and main phone (PICK-010: never on the page).
+async fn contacts(db: &mut Db, id: Uuid) {
+    let key = |b: u8| SecretString::from(format!("1:{}", STANDARD.encode([b; 32])));
+    let url = SecretString::from("postgres://askhava_app@db.invalid:5432/askhava".to_owned());
+    let vault = Vault::new(&key(0x31), &key(0x41), &url).expect("vault keys");
+    let mailbox = mailbox_for(db, &vault, "sample.pipes@example.com")
+        .await
+        .expect("mailbox");
+    let (member, line) = (Uuid::from_u128(0x393_0010), Uuid::from_u128(0x393_0011));
+    sql(db, "INSERT INTO businesses.team_member (id, business_id, mailbox_id, is_owner, cards_and_quotes, confirm_and_billing, added_at) VALUES ($1, $2, $3, true, true, true, now())", &[member, id, mailbox]).await;
+    sql(db, "INSERT INTO businesses.staff_phone (id, business_id, linked_by, is_main, linked_at) VALUES ($1, $2, $3, true, now())", &[line, id, member]).await;
+    store_staff_phone(db, &vault, line, "(928) 555-0177")
+        .await
+        .expect("phone");
+}
+
 async fn token(db: &mut Db, job: Uuid) -> LinkToken {
     let key = SecretString::from("fake-id-secret-for-tests-00000001".to_owned());
     let secret = IdSecret::new(1, key).expect("secret");
@@ -188,8 +207,9 @@ fn check_line() -> String {
 /// TD-PICK-62 (PICK-041, LIC-026, LIC-024, LIC-038, BIZ-052, PICK-010): an ROC business's card
 /// shows its trade name, the check line with the ROC link, its since-line and its given Google and
 /// Yelp links as plain links; a handyman with no usable name shows the fallback, LIC-024 first and
-/// no review link; a no-license business shows the dated city line; the top sentence once, the
-/// check line once per card, no homeowner detail and no business phone or address.
+/// no review link and, off the city list, no city line; a no-license business shows the dated
+/// city line; the top sentence once, the check line once per card, no homeowner detail and no
+/// business phone or email address; a later Inactive check drops the ROC line (D-3646).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_62_roc_handyman_and_city_cards(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
@@ -202,6 +222,7 @@ async fn td_pick_62_roc_handyman_and_city_cards(pool: PgPool) {
         .await
         .expect("name");
     roc_license(&mut db, roc).await;
+    contacts(&mut db, roc).await;
     sql(&mut db, "INSERT INTO businesses.review_link (business_id, google_url, yelp_url, changed_at) VALUES ($1, 'https://g.page/sample-pipes', 'https://www.yelp.com/biz/sample-pipes', now())", &[roc]).await;
     sql(&mut db, "INSERT INTO businesses.signup (business_id, mailbox_id, submitted_at, trades) VALUES ($1, $1, now(), '{handyman}')", &[handyman]).await;
     let own = ("Sample Lake Cleaners", None);
@@ -242,11 +263,8 @@ async fn td_pick_62_roc_handyman_and_city_cards(pool: PgPool) {
         assert!(!second.contains(other), "{other}: {second}");
     }
     let lic_024 = "Not a licensed contractor. Only for jobs under $1,000 total with no permit.";
-    let handyman_at = second.find(lic_024).expect("LIC-024 line");
-    let city_at = second
-        .find("City business license on file")
-        .expect("city line");
-    assert!(handyman_at < city_at);
+    assert!(second.contains(lic_024), "{second}");
+    assert!(!second.contains("City business license"), "{second}");
     assert!(!second.contains("Google") && !second.contains("Yelp") && !second.contains("ROC #"));
     let third = item(&body, 3);
     assert!(third.contains("<li>Sample Lake Cleaners</li>"));
@@ -268,14 +286,28 @@ async fn td_pick_62_roc_handyman_and_city_cards(pool: PgPool) {
         "rating:",
         "reviews)",
         "tel:",
+        "mailto:",
+        "555-0177",
+        "5550177",
+        "sample.pipes@example.com",
         "my kitchen sink",
     ] {
         assert!(!body.contains(banned), "{banned}");
     }
+    sql(&mut db, "INSERT INTO licensing.license_check (business_id, source, license_number, list_date, status, checked_at) VALUES ($1, 'roc', '312345', '2026-11-10', 'inactive', '2026-11-10T09:00:00-07:00')", &[roc]).await;
+    let lapsed = page(&pool, &mut db, job, "").await;
+    let first = item(&lapsed, 1);
+    assert!(first.contains("<li>Sample Pipes</li>"), "{first}");
+    assert!(
+        !first.contains("ROC #") && !first.contains("showed Active"),
+        "{first}"
+    );
+    assert!(!first.contains("ROC license since"), "{first}");
 }
 
 /// TD-PICK-62 (LIC-034, LIC-047): an inspector's card shows the Board's check line with its link;
-/// a pest attester's card shows the LIC-047 line with the Department's search and no check line.
+/// a pest attester's card shows the LIC-047 line with the Department's search and no check line,
+/// and no pest line once a homeowner's report paused it (D-3646).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_62_agency_and_pest_cards(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
@@ -306,11 +338,24 @@ async fn td_pick_62_agency_and_pest_cards(pool: PgPool) {
     );
     assert!(!card.contains("showed Active"));
     assert_eq!(body.matches(&check_line()).count(), 1);
+    sql(
+        &mut db,
+        "UPDATE licensing.business_license SET paused_at = now() WHERE business_id = $1",
+        &[pest],
+    )
+    .await;
+    let paused = page(&pool, &mut db, pests, "").await;
+    let card = item(&paused, 1);
+    assert!(
+        !card.contains("PMB-1234") && !card.contains(search),
+        "{card}"
+    );
 }
 
-/// TD-PICK-62 (PICK-041, LIC-026, D-3645): `?lang=es` gives the Spanish card lines in a card
-/// marked `lang="es"`, the Spanish check line once; a quote with no stored facts keeps the plain
-/// lines and its Pick button (D-3134).
+/// TD-PICK-62 (PICK-041, LIC-026, LIC-024, LIC-038, D-3645, D-3646): `?lang=es` gives the
+/// Spanish card lines (ROC, fallback name, city, insurance) in a line list marked `lang="es"`,
+/// the LIC-024 line marked `lang="en"`, the Spanish check line once per card; a quote with no
+/// stored facts keeps the plain lines and its Pick button (D-3134).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_62_spanish_page_gives_spanish_lines(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
@@ -321,17 +366,56 @@ async fn td_pick_62_spanish_page_gives_spanish_lines(pool: PgPool) {
     save_business_name(&mut db, roc, names, None)
         .await
         .expect("name");
+    let handyman = quote(&mut db, job, 2).await;
+    sql(&mut db, "INSERT INTO businesses.signup (business_id, mailbox_id, submitted_at, trades) VALUES ($1, $1, now(), '{handyman}')", &[handyman]).await;
+    sql(
+        &mut db,
+        "UPDATE businesses.business SET insured = true WHERE id = $1",
+        &[handyman],
+    )
+    .await;
+    let city = quote(&mut db, job, 3).await;
+    let own = ("Sample Lake Cleaners", None);
+    save_business_name(&mut db, city, own, None)
+        .await
+        .expect("name");
+    let list = Uuid::from_u128(0x393_0003);
+    sql(&mut db, "INSERT INTO licensing.list_import (id, source, list_date, rows_recorded, rows_skipped) VALUES ($1, 'city', '2026-11-01', 1, 0)", &[list]).await;
+    sql(&mut db, "INSERT INTO licensing.city_license_entry (import_id, source, list_date, business_name, issued_on) VALUES ($1, 'city', '2026-11-01', 'SAMPLE LAKE CLEANERS', '2019-06-01')", &[list]).await;
     let body = page(&pool, &mut db, job, "?lang=es").await;
     let card = item(&body, 1);
-    assert!(card.contains("lang=\"es\""), "{card}");
+    assert!(
+        card.contains("<ul class=\"card-lines\" lang=\"es\">"),
+        "{card}"
+    );
+    assert!(
+        !card.contains("<article aria-labelledby=\"quote-1-title\" lang"),
+        "{card}"
+    );
     assert!(card.contains("<li>Sample Desert Pipes LLC</li>"));
     let roc_es = "ROC #312345 figuraba como Activa en el sitio web del ROC cuando lo revisamos el 1 de noviembre de 2026. Compruébelo usted mismo.";
     assert!(card.contains(roc_es), "{card}");
     assert!(card.contains("Palabras del negocio: Sample wording 1"));
     assert!(!card.contains(ROC_LINE));
     let es = "no califica ni ordena a los negocios; revise este negocio usted mismo.";
-    assert_eq!(body.matches(es).count(), 1);
+    assert_eq!(body.matches(es).count(), 3);
     assert!(!body.contains(CHECK_LINE));
+    let second = item(&body, 2);
+    let fallback = format!("<li>{}</li>", CARD_FALLBACK_NAME[1]);
+    assert!(second.contains(&fallback), "{second}");
+    let lic_024 = "Not a licensed contractor. Only for jobs under $1,000 total with no permit.";
+    assert!(
+        second.contains(&format!("<li lang=\"en\">{lic_024}</li>")),
+        "{second}"
+    );
+    assert!(
+        second.contains("<li>Seguro (informado por el negocio): Sí</li>"),
+        "{second}"
+    );
+    assert!(!second.contains("Licencia comercial"), "{second}");
+    let third = item(&body, 3);
+    let city_es = "<li>Licencia comercial de la ciudad registrada desde 2019</li>";
+    assert!(third.contains(city_es), "{third}");
     sql(
         &mut db,
         "DELETE FROM quotes.quote_facts WHERE business_id = $1",
@@ -345,5 +429,5 @@ async fn td_pick_62_spanish_page_gives_spanish_lines(pool: PgPool) {
         "{card}"
     );
     assert!(!card.contains("Sample Desert Pipes LLC"));
-    assert_eq!(plain.matches(&check_line()).count(), 1);
+    assert_eq!(plain.matches(&check_line()).count(), 3);
 }

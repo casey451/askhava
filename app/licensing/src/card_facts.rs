@@ -3,11 +3,13 @@
 //!
 //! [`card_facts`] reads the category's license rule from the stored catalog and, from the rows
 //! `holder_for` reads, the license that makes the business eligible: for an ROC category its
-//! latest daily check that showed Active (the number as checked, the Arizona day of that check and
-//! the original-issue year the ROC list gives), for an agency category its `business_license` row
-//! (the day it was recorded as the check day; a pest row is self-attested, so `licensed_lines`
-//! gives it no check line, LIC-047). With none of these the card is a no-license card: the year of
-//! the matching entry on the latest city list, when it has one (LIC-038). Read only: no table,
+//! latest daily check, the one `holder_for` reads, only when it showed Active (the number as
+//! checked, the Arizona day of that check and the original-issue year the ROC list gives), for an
+//! agency category its `business_license` row unless a homeowner's report paused it, as
+//! `holder_for` reads a paused row as reported wrong (the day it was recorded as the check day; a
+//! pest row is self-attested, so `licensed_lines` gives it no check line, LIC-047; D-3646). With
+//! none of these the card is a no-license card: whether the latest city list matches the business
+//! and the year of the matching entry, when it has one (LIC-038, D-3646). Read only: no table,
 //! column or writer. Licensing never calls `businesses`, so the handyman tick and the insurance
 //! answer of [`NoLicenseFacts`] are left `false` and `None` for `portals::quote_cards` to fill.
 
@@ -35,12 +37,18 @@ pub enum CardFacts {
     /// The licenses that make it eligible, ROC first (LIC-026, LIC-034, LIC-047).
     Licensed(Vec<LicenseFacts>),
     /// A no-license card; `handyman` and `insurance` are the caller's to fill (LIC-024, LIC-038).
-    NoLicense(NoLicenseFacts),
+    NoLicense {
+        /// The card's facts; `city_since_year` is the matching city entry's year.
+        facts: NoLicenseFacts,
+        /// Whether the latest city list matches the business; without a match the card makes no
+        /// city-license claim (D-3646).
+        city_listed: bool,
+    },
 }
 
 /// PICK-041, LIC-026, LIC-034, LIC-038, LIC-047, D-3642: the card facts of `business` on a job of
 /// catalog `category`, or none for a category the catalog does not hold. `city_names` are the
-/// business's own names for the city-list year; `None` gives a city line with no year.
+/// business's own names for the city-list match; `None` matches nothing.
 ///
 /// # Errors
 ///
@@ -68,19 +76,24 @@ pub async fn card_facts(
     if !licenses.is_empty() {
         return Ok(Some(CardFacts::Licensed(licenses)));
     }
-    let city_since_year = match city_names {
+    let city = match city_names {
         Some(names) => city_year(conn, names).await?,
         None => None,
     };
-    Ok(Some(CardFacts::NoLicense(NoLicenseFacts {
+    let facts = NoLicenseFacts {
         handyman: false,
-        city_since_year,
+        city_since_year: city.flatten(),
         insurance: None,
-    })))
+    };
+    Ok(Some(CardFacts::NoLicense {
+        facts,
+        city_listed: city.is_some(),
+    }))
 }
 
-/// LIC-026, LIC-037: the business's latest daily check that showed its ROC license Active, with
-/// the earliest original-issue year any ROC list gives that number; none without such a check.
+/// LIC-026, LIC-037, D-3646: the business's latest daily check, when it showed the ROC license
+/// Active, with the earliest original-issue year any ROC list gives that number; none without a
+/// check or when the latest one did not show Active.
 async fn roc_facts(
     conn: &mut PgConnection,
     business: Uuid,
@@ -88,15 +101,16 @@ async fn roc_facts(
     let row = sqlx::query!(
         r#"SELECT c.license_number, c.checked_at AS "checked_at!: jiff_sqlx::Timestamp",
                   (SELECT EXTRACT(YEAR FROM MIN(r.issued_on))::int2 FROM licensing.agency_record r
-                   WHERE r.license_number = c.license_number) AS "since_year"
-           FROM licensing.license_check c WHERE c.business_id = $1 AND c.status = 'active'
+                   WHERE r.license_number = c.license_number) AS "since_year",
+                  c.status = 'active' AS "active!"
+           FROM licensing.license_check c WHERE c.business_id = $1
            ORDER BY c.checked_at DESC, c.id DESC LIMIT 1"#,
         business,
     )
     .fetch_optional(&mut *conn)
     .await
     .map_err(|_| CardFactsError::Database)?;
-    Ok(row.map(|r| LicenseFacts {
+    Ok(row.filter(|r| r.active).map(|r| LicenseFacts {
         issuer: Issuer::Roc,
         number: r.license_number,
         checked_on: arizona_time(r.checked_at.to_jiff()).date(),
@@ -104,8 +118,8 @@ async fn roc_facts(
     }))
 }
 
-/// LIC-034, LIC-047: the business's `agency` license row, its recorded day as the check day; the
-/// row carries no issue year.
+/// LIC-034, LIC-047, D-3646: the business's `agency` license row, its recorded day as the check
+/// day; the row carries no issue year. A row a homeowner's report paused gives none.
 async fn agency_facts(
     conn: &mut PgConnection,
     business: Uuid,
@@ -113,7 +127,8 @@ async fn agency_facts(
 ) -> Result<Option<LicenseFacts>, CardFactsError> {
     let row = sqlx::query!(
         r#"SELECT license_number, recorded_at AS "recorded_at!: jiff_sqlx::Timestamp"
-           FROM licensing.business_license WHERE business_id = $1 AND agency = $2"#,
+           FROM licensing.business_license WHERE business_id = $1 AND agency = $2
+                 AND paused_at IS NULL"#,
         business,
         agency.code(),
     )
@@ -128,12 +143,12 @@ async fn agency_facts(
     }))
 }
 
-/// LIC-038: the earliest issue year of the latest city list's entries that match `names` by the
-/// LIC-011 rule; none when no entry matches or none has a date.
+/// LIC-038, D-3646: none when no entry of the latest city list matches `names` by the LIC-011
+/// rule, else the earliest issue year of the matching entries (none when none has a date).
 async fn city_year(
     conn: &mut PgConnection,
     names: &CityRecord,
-) -> Result<Option<i16>, CardFactsError> {
+) -> Result<Option<Option<i16>>, CardFactsError> {
     let rows = sqlx::query!(
         r#"SELECT business_name, trade_name, owner_name, license_number,
                   EXTRACT(YEAR FROM issued_on)::int2 AS "year"
@@ -144,7 +159,7 @@ async fn city_year(
     .fetch_all(&mut *conn)
     .await
     .map_err(|_| CardFactsError::Database)?;
-    Ok(rows
+    let years: Vec<Option<i16>> = rows
         .into_iter()
         .filter_map(|r| {
             let entry = CityRecord {
@@ -154,7 +169,8 @@ async fn city_year(
                 license_number: r.license_number,
             };
             let matched = city_list_standing(names, std::slice::from_ref(&entry));
-            (matched == CityListStanding::Matched).then_some(r.year)?
+            (matched == CityListStanding::Matched).then_some(r.year)
         })
-        .min())
+        .collect();
+    Ok((!years.is_empty()).then(|| years.into_iter().flatten().min()))
 }

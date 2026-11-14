@@ -266,7 +266,8 @@ impl ShownPage {
         card.map(|(_, lines)| lines.as_slice())
     }
 
-    /// Whether the card lines are Spanish, so the cards carry `lang="es"` (A11Y-004, D-3645).
+    /// Whether the card lines are Spanish, so each card's line list carries `lang="es"` and its
+    /// English lines `lang="en"` (A11Y-004, D-3645, D-3646).
     const fn spanish(&self) -> bool {
         self.in_spanish
     }

@@ -47,7 +47,7 @@
 <ol id="quotes" data-live="{{ live }}">
 {% for q in quotes %}
 <li id="quote-{{ q.number }}" data-number="{{ q.number }}" data-available="{{ !q.quote.unavailable }}" data-pickable="{{ pick_open }}" data-updated="{{ q.quote.updated_stamp() }}">
-<article aria-labelledby="quote-{{ q.number }}-title"{% if self.spanish() && self.card(q.number).is_some() %} lang="es"{% endif %}>
+<article aria-labelledby="quote-{{ q.number }}-title">
 {% if q.quote.withdrawn %}
 <h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }}</h2>
 <p>Withdrawn by the business.</p>
@@ -56,8 +56,8 @@
 <p>No longer available, so it can't be picked.</p>
 {% else %}
 <h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }}</h2>
-{% if let Some(lines) = self.card(q.number) %}<ul class="card-lines">
-{% for line in lines %}<li>{% if let Some(href) = line.link %}<a href="{{ href }}">{{ line.text }}</a>{% else %}{{ line.text }}{% endif %}</li>
+{% if let Some(lines) = self.card(q.number) %}<ul class="card-lines"{% if self.spanish() %} lang="es"{% endif %}>
+{% for line in lines %}<li{% if self.spanish() && crate::quote_cards::english_line(line) %} lang="en"{% endif %}>{% if let Some(href) = line.link %}<a href="{{ href }}">{{ line.text }}</a>{% else %}{{ line.text }}{% endif %}</li>
 {% endfor %}</ul>
 {% else %}{% if let Some(updated) = q.quote.updated_line() %}
 <p>{{ updated }}</p>
