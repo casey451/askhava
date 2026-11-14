@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T02:13:25Z by runner a9be821a3861 (actions).
+Updated 2026-11-14T02:17:20Z by runner 918581713bc4 (actions).
 
-**Building: T280 in progress since 00:35Z; 306 of 435 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T280 in progress since 00:35Z; 307 of 435 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 306 of 435 build tasks (owner gates not counted)
+- **Tasks done:** 307 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 5: T341 claimed 02:03Z, lease until 05:03Z; lane 6: T449 claimed 01:42Z, lease until 04:42Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
 - **Week:** 33% used, 127.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:13Z, 0 min before this update
+- **Last run:** 02:13Z, 3 min before this update
 - **Keeper:** last ran 02:13Z, next wake 03:38Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-14T02:13:25Z by runner a9be821a3861 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 2 | 1 min | 01:33Z | PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode\|EmailCode in app/portals/src finds |
-| T447 | messaging: a passing vault error holds an outbox row instead | MERGE_PENDING | 1 | 26 min | 01:30Z |  |
+| T447 | messaging: a passing vault error holds an outbox row instead | done | 1 | 26 min | 01:30Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | resync | 2 | 67 min | 01:10Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T328 | picks and server: an ended pick offers the next quote (`paym | done | 2 | 61 min | 01:04Z | PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text canno |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z |  |
@@ -110,7 +110,7 @@ Updated 2026-11-14T02:13:25Z by runner a9be821a3861 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 273 of 733 (37.2%) · partial 300 · unstarted 160
-**Tasks merged (throughput only):** 306 of 435
+**Tasks merged (throughput only):** 307 of 435
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -145,7 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 186 of 214 done
+- stage 4: 187 of 214 done
 - stage 5: 0 of 67 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
