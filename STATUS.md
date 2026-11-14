@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:33:10Z by runner 8b2105cd4bc7 (actions).
+Updated 2026-11-14T22:39:01Z by runner 8b2105cd4bc7 (actions).
 
-**Building: T301 in progress since 21:48Z; 334 of 471 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T301 in progress since 21:48Z; 335 of 471 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 334 of 471 build tasks (owner gates not counted)
+- **Tasks done:** 335 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T301 claimed 21:48Z, lease until 00:48Z; lane 4: T485 claimed 22:26Z, lease until 01:26Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z
 - **Week:** 52% used, 87.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:33Z, 0 min before this update
+- **Last run:** 22:33Z, 5 min before this update
 - **Keeper:** last ran 22:33Z, next wake 00:51Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-14T22:33:10Z by runner 8b2105cd4bc7 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T443 | --after runs the full smoke itself on a fix-round hand-in; t | MERGE_PENDING | 1 | 35 min | 22:19Z |  |
-| T300 | server and portals: the business portal is served behind the | MERGE_PENDING | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
+| T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z | PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No |
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T300 | server and portals: the business portal is served behind the | resync | 3 | 94 min | 21:25Z |  |
@@ -120,7 +120,7 @@ Updated 2026-11-14T22:33:10Z by runner 8b2105cd4bc7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 334 of 471
+**Tasks merged (throughput only):** 335 of 471
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -155,7 +155,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 214 of 231 done
+- stage 4: 215 of 231 done
 - stage 5: 0 of 86 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done

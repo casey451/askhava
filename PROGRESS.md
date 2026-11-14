@@ -5070,3 +5070,4 @@
 - 2026-11-14T22:31:40Z runner 8b2105cd4bc7 (actions): {"T486": "QUEUED -> IN_PROGRESS"}; T486 estimated 1.1M tokens (calibrated); week has 87.3M left (no five-hour budget, D-3056) after 2.7M still running in another lane (session_reading 2026-11-14T22:27:30Z (week)); claimed
 - 2026-11-14T22:32:48Z runner 8b2105cd4bc7 (actions): {}
 - 2026-11-14T22:33:10Z runner 8b2105cd4bc7 (actions): {}
+- 2026-11-14T22:39:01Z runner 8b2105cd4bc7 (actions): {"T300": "MERGE_PENDING -> DONE"}
