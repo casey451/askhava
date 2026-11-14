@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T13:58:27Z by runner aa64d53b5f18 (actions).
+Updated 2026-11-14T13:58:47Z by runner aa64d53b5f18 (actions).
 
 **Building: T353 in progress since 13:44Z; 324 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-14T13:58:27Z by runner aa64d53b5f18 (actions).
 - **Lane:** lane 5: T353 claimed 13:44Z, lease until 16:44Z
 - **Week:** 44% used, 104.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:58Z, 0 min before this update
-- **Keeper:** last ran 13:56Z, next wake 16:46Z
+- **Keeper:** last ran 13:58Z, next wake 16:47Z
 
 ## Needs attention
 - PLAN GAP T261 (since 2026-11-14T13:57:58Z, no attempt used; a plan change fixes it): T261: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main
