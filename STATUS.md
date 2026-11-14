@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:57:12Z by runner 3b9687af32d2 (actions).
+Updated 2026-11-14T22:57:39Z by runner 3b9687af32d2 (actions).
 
 **Building: T486 in progress since 22:31Z; 336 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T22:57:12Z by runner 3b9687af32d2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T486 claimed 22:31Z, lease until 01:31Z; lane 6: T451 claimed 22:48Z, lease until 01:48Z
 - **Week:** 53% used, 85.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:55Z, 1 min before this update
+- **Last run:** 22:57Z, 0 min before this update
 - **Keeper:** last ran 22:55Z, next wake 01:33Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-14T22:57:12Z by runner 3b9687af32d2 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T485 | businesses: a public read-only reader of a sign-up's identit | MERGE_PENDING | 1 | 28 min | 22:54Z |  |
-| T301 | server and portals: the email action links are served (every | MERGE_PENDING | 3 | 58 min | 22:46Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
+| T301 | server and portals: the email action links are served (every | resync | 3 | 58 min | 22:46Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
 | T443 | --after runs the full smoke itself on a fix-round hand-in; t | done | 1 | 35 min | 22:19Z |  |
 | T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z | PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No |
