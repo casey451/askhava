@@ -143,8 +143,7 @@ pub use crate::signup_record::{RecordFound, SignupRecord, signup_record};
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{
     Acting, MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember,
-    add_member, add_owner, change_phone, change_phone_at, members, remove_member, set_roles,
-    unlink_phone,
+    add_member, add_owner, members, remove_member, set_roles, unlink_phone,
 };
 
 /// SEC-038, D-480: whether `by`, a current member of `by.business`, passed a Verify code (to their
@@ -309,4 +308,60 @@ pub async fn link_phone(
         })?;
     tx.commit().await.map_err(|_| TeamError::Database)?;
     Ok(line)
+}
+
+/// Changes a phone's number as `team::change_phone` does (CALL-012), at the current time, with
+/// the owner email of [`change_phone_at`] (BIZ-033, D-3081, IC-95).
+///
+/// # Errors
+///
+/// As [`change_phone_at`].
+pub async fn change_phone(
+    conn: &mut PgConnection,
+    dir: &impl SenderLink,
+    (by, line): (Acting, Uuid),
+    number: &SecretString,
+) -> Result<(), TeamError> {
+    let mut tx = conn.begin().await.map_err(|_| TeamError::Database)?;
+    crate::team::change_phone(&mut tx, dir, (by, line), number).await?;
+    owner_told(&mut tx, by, line, Timestamp::now()).await?;
+    tx.commit().await.map_err(|_| TeamError::Database)
+}
+
+/// Changes a phone's number as `team::change_phone_at` does (CALL-012) and, in the same
+/// transaction, queues a fresh owner [`PHONE_LINKED_KIND`] email for the new number when the
+/// member changing it is not the owner, so the owner is told of every number they are asked to
+/// approve (BIZ-033, D-3081, IC-95).
+///
+/// # Errors
+///
+/// As `team::change_phone_at`; [`TeamError::Database`] or `Audit` when the email request fails.
+pub async fn change_phone_at(
+    conn: &mut PgConnection,
+    dir: &impl SenderLink,
+    (by, line): (Acting, Uuid),
+    number: &SecretString,
+    now: Timestamp,
+) -> Result<(), TeamError> {
+    let mut tx = conn.begin().await.map_err(|_| TeamError::Database)?;
+    crate::team::change_phone_at(&mut tx, dir, (by, line), number, now).await?;
+    owner_told(&mut tx, by, line, now).await?;
+    tx.commit().await.map_err(|_| TeamError::Database)
+}
+
+/// Queues the owner's [`PHONE_LINKED_KIND`] email for phone `line`'s current number in `tx`
+/// (BIZ-033), mapping its errors to the team's.
+async fn owner_told(
+    tx: &mut PgConnection,
+    by: Acting,
+    line: Uuid,
+    now: Timestamp,
+) -> Result<(), TeamError> {
+    crate::complaints::phone_link_notice(tx, by, line, now)
+        .await
+        .map(|_| ())
+        .map_err(|e| match e {
+            ComplaintError::Audit => TeamError::Audit,
+            _ => TeamError::Database,
+        })
 }
