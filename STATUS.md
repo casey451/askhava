@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-14T05:51:31Z by runner cb121f8344a1 (actions).
+Updated 2026-11-14T05:59:53Z by runner cb121f8344a1 (actions).
 
-**Building: T437 in progress since 05:10Z; 313 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T437 in progress since 05:10Z; 314 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 313 of 436 build tasks (owner gates not counted)
+- **Tasks done:** 314 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T437 claimed 05:10Z, lease until 08:10Z; lane 3: T396 claimed 05:11Z, lease until 08:11Z; lane 4: T352 claimed 05:22Z, lease until 08:22Z
 - **Week:** 37% used, 114.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:51Z, 0 min before this update
+- **Last run:** 05:51Z, 8 min before this update
 - **Keeper:** last ran 05:51Z, next wake 08:13Z
 
 ## Needs attention
 - BLOCKED T280: session ended without handing in
 - BLOCKED T302: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 44 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 24% but it measures 17%; regenerate
+- Strict plan check red: 43 problem(s) on tasks still to run (+99 on DONE tasks); first: T396: stored context_pct 24% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 3 | 22 min | 05:44Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
-| T393 | portals and licensing: the served quote page's cards show ea | MERGE_PENDING | 1 | 74 min | 05:40Z |  |
+| T393 | portals and licensing: the served quote page's cards show ea | done | 1 | 74 min | 05:40Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z | merging main into the task branch conflicts in app/intake/CLAUDE.md again after 2 resyncs in this attempt, so this attem |
 | T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
@@ -117,7 +117,7 @@ Updated 2026-11-14T05:51:31Z by runner cb121f8344a1 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 313 of 436
+**Tasks merged (throughput only):** 314 of 436
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -152,7 +152,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 193 of 215 done
+- stage 4: 194 of 215 done
 - stage 5: 0 of 67 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
