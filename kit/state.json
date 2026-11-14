@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T353",
+ "current": "T302",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -28320,13 +28320,7 @@
    "attempts": 0,
    "slug": "served-confirm-route",
    "type": "build",
-   "stage": "4",
-   "plan_gap": {
-    "at": "2026-11-14T13:57:58Z",
-    "problems": [
-     "T261: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main"
-    ]
-   }
+   "stage": "4"
   },
   {
    "id": "T264",
@@ -32688,13 +32682,7 @@
      "plan_then": "3f871725ebd1d49c11cf5b4f3c910aae2ea9d4a67b0ad60b0c6621fcf6a35b9c",
      "plan_now": "00d747c159c6a3ba5f2a728a0a2dfbaf4a07b2abae8abff722a92b1bfaa9447c"
     }
-   ],
-   "plan_gap": {
-    "at": "2026-11-14T13:57:58Z",
-    "problems": [
-     "T300: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main"
-    ]
-   }
+   ]
   },
   {
    "id": "T301",
@@ -32830,13 +32818,13 @@
     "T449",
     "T466"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 5,
    "slug": "business-signup-served",
    "type": "build",
    "stage": "4",
-   "attempt_started_at": "2026-11-14T11:10:31Z",
-   "lane": "7",
+   "attempt_started_at": "2026-11-14T14:01:27Z",
+   "lane": "4",
    "decision_ids": [
     3597,
     3598,
@@ -33090,13 +33078,7 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null,
-   "plan_gap": {
-    "at": "2026-11-14T13:57:58Z",
-    "problems": [
-     "T302: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main"
-    ]
-   }
+   "update_push_failures": null
   },
   {
    "id": "T303",
@@ -54762,7 +54744,7 @@
    "cache_read_input_tokens": 19573409,
    "cache_creation_input_tokens": 416481
   },
-  "source": "session_reading 2026-11-14T13:37:58Z (week)",
+  "source": "session_reading 2026-11-14T13:58:27Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -57771,8 +57753,8 @@
     "last_model": "claude-opus-5-5"
    },
    "T302": {
-    "estimated_bytes": 501257,
-    "estimated_tokens": 1528510,
+    "estimated_bytes": 517121,
+    "estimated_tokens": 1576328,
     "usage_counting": "message_id",
     "input_tokens": 549,
     "output_tokens": 156064,
@@ -58073,7 +58055,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T13:58:47Z",
+ "updated_at": "2026-11-14T14:01:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -58171,17 +58153,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "aa64d53b5f1878280c82485863f4a44171738ecf",
+ "runner_sha": "3fd009c86341bf0e5a859e26bea93de3c3808b73",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "d6d1d54ea21a18537cab068466554864dcda58a6",
-   "ok": true,
-   "at": "2026-11-14T09:02:18Z",
-   "why": "start routine (ancestry reuse of 6aa7f43d7bd8, 2026-11-14T06:17:58Z)",
-   "reused": "2026-11-14T06:17:58Z",
-   "base": "6aa7f43d7bd8c04503956e5e0efc899a614cb538"
-  },
   {
    "sha": "d6d1d54ea21a18537cab068466554864dcda58a6",
    "ok": true,
@@ -58330,24 +58304,32 @@
    "why": "start routine (ancestry reuse of 24008eb1e197, 2026-11-14T12:42:31Z)",
    "reused": "2026-11-14T12:42:31Z",
    "base": "24008eb1e19737579c21e276ea4b2218f35cdea1"
+  },
+  {
+   "sha": "3fd009c86341bf0e5a859e26bea93de3c3808b73",
+   "ok": true,
+   "at": "2026-11-14T14:01:27Z",
+   "why": "start routine (ancestry reuse of 24008eb1e197, 2026-11-14T12:42:31Z)",
+   "reused": "2026-11-14T12:42:31Z",
+   "base": "24008eb1e19737579c21e276ea4b2218f35cdea1"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T353 estimated 1.4M tokens (calibrated); week has 104.7M left (no five-hour budget, D-3056) after 1.3M still running in another lane (session_reading 2026-11-14T13:37:58Z (week)); claimed",
-  "at": "2026-11-14T13:44:53Z",
+  "last": "T302 estimated 1.6M tokens (calibrated); week has 104.6M left (no five-hour budget, D-3056) after 1.4M still running in another lane (session_reading 2026-11-14T13:58:27Z (week)); claimed",
+  "at": "2026-11-14T14:01:27Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 89325848,
+    "used": 89352922,
     "budget": 194000000,
-    "left": 104674152,
+    "left": 104647078,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 282689037,
-  "projected_finish": "2026-11-24T18:33:04Z"
+  "remaining_estimate": 281846228,
+  "projected_finish": "2026-11-24T18:05:49Z"
  },
  "main_red_history": [
   {

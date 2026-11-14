@@ -1,20 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-14T13:58:47Z by runner aa64d53b5f18 (actions).
+Updated 2026-11-14T14:01:46Z by runner 3fd009c86341 (actions).
 
-**Building: T353 in progress since 13:44Z; 324 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T302 in progress since 14:01Z; 324 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 324 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 5: T353 claimed 13:44Z, lease until 16:44Z
-- **Week:** 44% used, 104.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:58Z, 0 min before this update
+- **Lane:** lane 4: T302 claimed 14:01Z, lease until 17:01Z; lane 5: T353 claimed 13:44Z, lease until 16:44Z
+- **Week:** 44% used, 104.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:59Z, 2 min before this update
 - **Keeper:** last ran 13:58Z, next wake 16:47Z
 
 ## Needs attention
-- PLAN GAP T261 (since 2026-11-14T13:57:58Z, no attempt used; a plan change fixes it): T261: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main
-- PLAN GAP T300 (since 2026-11-14T13:57:58Z, no attempt used; a plan change fixes it): T300: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main
-- PLAN GAP T302 (since 2026-11-14T13:57:58Z, no attempt used; a plan change fixes it): T302: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 33 problem(s) on tasks still to run (+104 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
@@ -164,7 +161,7 @@ Updated 2026-11-14T13:58:47Z by runner aa64d53b5f18 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T13:37:58Z (week)): week: 89.3M used, 104.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T18:33:04Z.
+- Pacing (session_reading 2026-11-14T13:58:27Z (week)): week: 89.4M used, 104.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T18:05:49Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -180,6 +177,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 4: T302 (lease until 2026-11-14T17:01:27Z)
 - lane 5: T353 (lease until 2026-11-14T16:44:53Z)
 
 ## Last usage reading
