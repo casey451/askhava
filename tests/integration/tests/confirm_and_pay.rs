@@ -72,6 +72,7 @@ fn intent(status: &str, amount: i64, pick: Uuid, livemode: Option<bool>) -> Answ
             pick_id: pick.to_string(),
         },
         livemode,
+        latest_charge: (status == "succeeded").then(|| "ch_FakeT066".to_owned()),
     })
 }
 
