@@ -1,15 +1,15 @@
 # Ask Hava build status
 
-Updated 2026-11-14T01:34:07Z by runner d997705c35e7 (actions).
+Updated 2026-11-14T01:34:28Z by runner 2df926e292cb (actions).
 
-**Building: T280 in progress since 00:35Z; 304 of 435 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T280 in progress since 00:35Z; 304 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 304 of 435 build tasks (owner gates not counted)
+- **Tasks done:** 304 of 434 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z
 - **Week:** 32% used, 128.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:33Z, 0 min before this update
-- **Keeper:** last ran 01:31Z, next wake 03:38Z
+- **Last run:** 01:34Z, 0 min before this update
+- **Keeper:** last ran 01:34Z, next wake 03:38Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode|EmailCode in app/portals/src finds nothing, app/portals/src/tests/signup_code_screens.rs does not exist. T302 owns no portals file, so it cannot serve the email-code and identity-code steps (TD-SEC-45) without T450's Screen::IdentityCode, Screen::EmailCode, route constants and channel parser. kit/state.json on claude/kit-state has no T450 and T302's deps there stop at T415, so the runner started T302 before T450. Reviewer confirmed every claim.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
@@ -111,16 +111,16 @@ Updated 2026-11-14T01:34:07Z by runner d997705c35e7 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 273 of 733 (37.2%) · partial 300 · unstarted 160
-**Tasks merged (throughput only):** 304 of 435
+**Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
+**Tasks merged (throughput only):** 304 of 434
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 14 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 17 | 38 | 3 | 58 |
+| businesses | 20 | 35 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
-| consent | 11 | 20 | 4 | 35 |
+| consent | 12 | 19 | 4 | 35 |
 | fees | 14 | 37 | 1 | 52 |
 | intake | 26 | 14 | 3 | 43 |
 | job-cards | 18 | 6 | 0 | 24 |
