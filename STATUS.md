@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T06:50:11Z by runner f7cc24b1d073 (actions).
+Updated 2026-11-14T06:55:22Z by runner 61c94cc79081 (actions).
 
-**Building: T280 in progress since 06:32Z; 314 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T280 in progress since 06:32Z; 315 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 314 of 436 build tasks (owner gates not counted)
+- **Tasks done:** 315 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 06:32Z, lease until 09:32Z
 - **Week:** 37% used, 118.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:49Z, 0 min before this update
+- **Last run:** 06:50Z, 5 min before this update
 - **Keeper:** last ran 06:49Z, next wake 09:34Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-14T06:50:11Z by runner f7cc24b1d073 (actions).
 |---|---|---|---|---|---|---|
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 2 | 30 min | 06:48Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T396 | businesses and messaging (harness): a phone a member links o | MERGE_PENDING | 2 | 21 min | 06:40Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
-| T352 | adapters and stand-in (harness): the PaymentIntent carries S | MERGE_PENDING | 1 | 51 min | 06:14Z |  |
+| T352 | adapters and stand-in (harness): the PaymentIntent carries S | done | 1 | 51 min | 06:14Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 51 min | 06:03Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 51 min | 06:02Z |  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 3 | 22 min | 05:44Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
@@ -121,7 +121,7 @@ Updated 2026-11-14T06:50:11Z by runner f7cc24b1d073 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 314 of 436
+**Tasks merged (throughput only):** 315 of 436
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -156,7 +156,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 194 of 215 done
+- stage 4: 195 of 215 done
 - stage 5: 0 of 67 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
