@@ -55055,7 +55055,7 @@
    "deps": [
     "T437"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "crate-doc-sweep",
    "type": "docs",
@@ -55075,13 +55075,70 @@
      "model": "claude-sonnet-5-5",
      "model_evidence_count": 10,
      "head_sha": "c86acdd42f81e1226a46254cc5566ead357c62cb",
-     "pr": null,
-     "checks": null,
+     "pr": 789,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-sonnet-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-14T15:24:06Z",
      "ended_at": "2026-11-14T15:55:36Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 205455,
@@ -55118,7 +55175,35 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-14T16:01:47Z"
+   "merge_turn_since": "2026-11-14T16:01:47Z",
+   "merged_sha": "858f0854e89fd19613d380260521eb7624dbda03",
+   "merged_at": "2026-11-14T16:12:20Z",
+   "files": [
+    "app/adapters/CLAUDE.md",
+    "app/adapters/NOTES.md",
+    "app/businesses/CLAUDE.md",
+    "app/businesses/NOTES.md",
+    "app/calls/CLAUDE.md",
+    "app/calls/NOTES.md",
+    "app/intake/CLAUDE.md",
+    "app/intake/NOTES.md",
+    "app/licensing/CLAUDE.md",
+    "app/licensing/NOTES.md",
+    "app/messaging/CLAUDE.md",
+    "app/messaging/NOTES.md",
+    "app/payments/CLAUDE.md",
+    "app/payments/NOTES.md",
+    "app/picks/CLAUDE.md",
+    "app/picks/NOTES.md",
+    "app/portals/CLAUDE.md",
+    "app/portals/NOTES.md",
+    "app/privacy/CLAUDE.md",
+    "app/privacy/NOTES.md",
+    "app/quotes/CLAUDE.md",
+    "app/quotes/NOTES.md",
+    "app/server/CLAUDE.md",
+    "app/server/NOTES.md"
+   ]
   },
   {
    "id": "T466",
@@ -58706,7 +58791,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T16:08:13Z",
+ "updated_at": "2026-11-14T16:13:59Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -58804,7 +58889,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "45c9090508ad57c4bf49d0dbd85bc2f04129222f",
+ "runner_sha": "858f0854e89fd19613d380260521eb7624dbda03",
  "starter": "actions",
  "smoke_runs": [
   {

@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T16:08:13Z by runner 45c9090508ad (actions).
+Updated 2026-11-14T16:13:59Z by runner 858f0854e89f (actions).
 
-**Stopped: main is red, only FIX-MAIN runs; 328 of 452 done; week 47% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Stopped: main is red, only FIX-MAIN runs; 329 of 452 done; week 47% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 328 of 452 build tasks (owner gates not counted)
+- **Tasks done:** 329 of 452 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T467 claimed 15:44Z, lease until 18:44Z; lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane 7: T300 claimed 14:35Z, lease until 17:35Z
 - **Week:** 47% used, 98.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:08Z, 0 min before this update
+- **Last run:** 16:08Z, 5 min before this update
 - **Keeper:** last ran 16:08Z, next wake 17:38Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-14T16:08:13Z by runner 45c9090508ad (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T439 | --after refuses a hand-in whose head no Opus reviewer approv | MERGE_PENDING | 1 | 44 min | 16:06Z |  |
-| T465 | docs: move the entry lines left under each crate guide's `## | MERGE_PENDING | 1 | 31 min | 15:55Z |  |
+| T465 | docs: move the entry lines left under each crate guide's `## | done | 1 | 31 min | 15:55Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | done | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 1 | 3 min | 14:30Z | PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs: |
 | T353 | payments: a won dispute records the countering fee's return  | done | 1 | 30 min | 14:15Z |  |
@@ -131,7 +131,7 @@ Updated 2026-11-14T16:08:13Z by runner 45c9090508ad (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 575 · unstarted 158
-**Tasks merged (throughput only):** 328 of 452
+**Tasks merged (throughput only):** 329 of 452
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -166,7 +166,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 208 of 227 done
+- stage 4: 209 of 227 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
