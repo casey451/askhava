@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T16:28:35Z by runner 87c063bb017b (actions).
+Updated 2026-11-14T16:28:49Z by runner 45c9090508ad (actions).
 
 **Stopped: main is red, only FIX-MAIN runs; 329 of 452 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,12 +9,12 @@ Updated 2026-11-14T16:28:35Z by runner 87c063bb017b (actions).
 - **Lane:** lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane fix: FIX-MAIN claimed 16:24Z, lease until 19:24Z
 - **Week:** 48% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:28Z, 0 min before this update
-- **Keeper:** last ran 16:27Z, next wake 18:05Z
+- **Keeper:** last ran 16:28Z, next wake 18:05Z
 
 ## Needs attention
 - MAIN IS RED: nightly; only FIX-MAIN runs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 28 problem(s) on tasks still to run (+106 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+106 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
