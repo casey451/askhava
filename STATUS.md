@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:20:08Z by runner 2aad8a530a2f (actions).
+Updated 2026-11-14T22:20:27Z by runner cd684b993949 (actions).
 
 **Building: T301 in progress since 21:48Z; 334 of 469 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 334 of 469 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T301 claimed 21:48Z, lease until 00:48Z; lane 3: T443 claimed 21:43Z, lease until 00:43Z
+- **Lane:** lane 2: T301 claimed 21:48Z, lease until 00:48Z
 - **Week:** 52% used, 89.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:19Z, 0 min before this update
+- **Last run:** 22:20Z, 0 min before this update
 - **Keeper:** last ran 22:20Z, next wake 00:46Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-14T22:20:08Z by runner 2aad8a530a2f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T443 | --after runs the full smoke itself on a fix-round hand-in; t | MERGE_PENDING | 1 | 35 min | 22:19Z |  |
 | T300 | server and portals: the business portal is served behind the | MERGE_PENDING | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z | PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No |
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
@@ -165,7 +166,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T301 (lease until 2026-11-15T00:48:28Z)
-- lane 3: T443 (lease until 2026-11-15T00:43:15Z)
 
 ## Last usage reading
-- {"task": "T300", "at": "2026-11-14T21:59:37Z", "cache_creation_input_tokens": 45314, "output_tokens": 8322, "input_tokens": 52, "cache_read_input_tokens": 669398}
+- {"task": "T443", "at": "2026-11-14T22:19:13Z", "input_tokens": 137, "output_tokens": 57078, "cache_read_input_tokens": 5418877, "cache_creation_input_tokens": 168251}
