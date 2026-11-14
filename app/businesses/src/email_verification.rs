@@ -137,11 +137,7 @@ pub async fn start_signup_check(
     business: Uuid,
     now: Timestamp,
 ) -> Result<Option<String>, EmailCheckError> {
-    let q = sqlx::query_scalar!(
-        "SELECT mailbox_id FROM businesses.signup WHERE business_id = $1",
-        business
-    );
-    let mailbox = db(q.fetch_one(&mut *conn).await)?;
+    let mailbox = signup_mailbox(conn, business).await?;
     let o = Opening {
         business,
         mailbox,
@@ -150,6 +146,22 @@ pub async fn start_signup_check(
         requested_by: None,
     };
     open_check(conn, secret, o, now).await
+}
+
+/// BIZ-040 (T468, D-3743): the opaque mailbox ID of `business`'s sign-up email, the mailbox
+/// [`start_signup_check`] checks and [`confirm`] takes, so the caller can email the code to it.
+///
+/// # Errors
+/// [`EmailCheckError::Database`], also for an unknown sign-up.
+pub async fn signup_mailbox(
+    conn: &mut PgConnection,
+    business: Uuid,
+) -> Result<Uuid, EmailCheckError> {
+    let q = sqlx::query_scalar!(
+        "SELECT mailbox_id FROM businesses.signup WHERE business_id = $1",
+        business
+    );
+    db(q.fetch_one(conn).await)
 }
 
 /// BIZ-040: whether the sign-up email has an unverified check, which holds activation.
