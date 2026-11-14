@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T04:18:02Z by runner aff86ec723eb (actions).
+Updated 2026-11-14T04:18:22Z by runner f4c4252669ec (actions).
 
-**Building: T396 in progress since 04:09Z; 311 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T396 in progress since 04:09Z; 312 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 311 of 436 build tasks (owner gates not counted)
+- **Tasks done:** 312 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 6: T396 claimed 04:09Z, lease until 07:09Z; lane 7: T449 claimed 03:54Z, lease until 06:54Z
 - **Week:** 36% used, 121.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:17Z, 0 min before this update
+- **Last run:** 04:18Z, 0 min before this update
 - **Keeper:** last ran 04:18Z, next wake 06:57Z
 
 ## Needs attention
@@ -16,13 +16,13 @@ Updated 2026-11-14T04:18:02Z by runner aff86ec723eb (actions).
 - PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
 - PLAN GAP T352 (since 2026-11-14T03:46:00Z, no attempt used; a plan change fixes it): T352: measures 53% of the context window, over its 50% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 32 problem(s) on tasks still to run (+206 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 32 problem(s) on tasks still to run (+207 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 3 | 15 min | 04:11Z | PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as |
-| T440 | portals: the quote page's tier choice and the Confirm page's | MERGE_PENDING | 1 | 50 min | 03:43Z |  |
+| T440 | portals: the quote page's tier choice and the Confirm page's | done | 1 | 50 min | 03:43Z |  |
 | T344 | picks: the global daily Verify cap holds under concurrent co | done | 1 | 28 min | 03:23Z |  |
 | T433 | server and payments: every payments task runs in the product | done | 1 | 57 min | 03:21Z |  |
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 31 min | 03:17Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -117,7 +117,7 @@ Updated 2026-11-14T04:18:02Z by runner aff86ec723eb (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 311 of 436
+**Tasks merged (throughput only):** 312 of 436
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -152,7 +152,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 191 of 215 done
+- stage 4: 192 of 215 done
 - stage 5: 0 of 67 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
