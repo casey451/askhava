@@ -1,22 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-14T05:19:05Z by runner d53bdd2875b8 (actions).
+Updated 2026-11-14T05:22:36Z by runner ed877c17983d (actions).
 
 **Building: T393 in progress since 04:25Z; 313 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 313 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 2: T437 claimed 05:10Z, lease until 08:10Z; lane 3: T396 claimed 05:11Z, lease until 08:11Z
-- **Week:** 37% used, 119.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:18Z, 0 min before this update
+- **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 2: T437 claimed 05:10Z, lease until 08:10Z; lane 3: T396 claimed 05:11Z, lease until 08:11Z; lane 6: T280 claimed 05:22Z, lease until 08:22Z
+- **Week:** 37% used, 115.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 05:19Z, 3 min before this update
 - **Keeper:** last ran 05:19Z, next wake 07:28Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
-- PLAN GAP T352 (since 2026-11-14T03:46:00Z, no attempt used; a plan change fixes it): T352: measures 53% of the context window, over its 50% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 33 problem(s) on tasks still to run (+207 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 44 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 24% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -143,7 +141,7 @@ Updated 2026-11-14T05:19:05Z by runner d53bdd2875b8 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T05:08:18Z (week)): week: 74.8M used, 119.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T02:41:46Z.
+- Pacing (session_reading 2026-11-14T05:18:46Z (week)): week: 78.9M used, 115.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T07:25:43Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -161,6 +159,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T393 (lease until 2026-11-14T07:25:53Z)
 - lane 2: T437 (lease until 2026-11-14T08:10:50Z)
 - lane 3: T396 (lease until 2026-11-14T08:11:35Z)
+- lane 6: T280 (lease until 2026-11-14T08:22:22Z)
 
 ## Last usage reading
 - {"task": "T437", "at": "2026-11-14T05:04:56Z", "cache_creation_input_tokens": 48080, "input_tokens": 41, "output_tokens": 5676, "cache_read_input_tokens": 516448}
