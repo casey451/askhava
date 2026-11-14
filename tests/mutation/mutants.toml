@@ -212,7 +212,7 @@ target = "--test optout_flow"
 tests = ["td_con_05", "td_con_20", "td_con_13"]
 mutants = [
   { name = "send path skips the opt-out check", find = "if !rules::may_send_to(listing, &template, &subject, now) {", replace = "if false && !rules::may_send_to(listing, &template, &subject, now) {" },
-  { name = "a second opt-out confirmation", find = "let answered = by_provider || listed || !added;", replace = "let answered = by_provider;" },
+  { name = "a second opt-out confirmation", find = "let answered = (by_provider, listed || !added);", replace = "let answered = (by_provider, false);" },
   { name = "a 21610 failure retried", find = "    models::block(&mut tx, id).await?;\n", replace = "" },
 ]
 
