@@ -4814,3 +4814,4 @@
 - 2026-11-14T14:36:04Z runner 49857763a082 (actions): {"T300": "QUEUED -> IN_PROGRESS"}; T300 estimated 1.4M tokens (calibrated); week has 104.4M left (no five-hour budget, D-3056) after 1.6M still running in another lane (session_reading 2026-11-14T14:33:15Z (week)); claimed
 - 2026-11-14T14:36:31Z runner 3c989ea34ac1 (actions): {}
 - 2026-11-14T14:36:47Z runner 49857763a082 (actions): {}
+- 2026-11-14T14:37:00Z runner 3c989ea34ac1 (actions): {"T302": "IN_PROGRESS -> MERGE_PENDING"}
