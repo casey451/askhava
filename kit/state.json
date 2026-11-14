@@ -19155,7 +19155,8 @@
     "T461",
     "T462",
     "T464",
-    "T465"
+    "T465",
+    "T466"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -28312,7 +28313,8 @@
     "T359",
     "T362",
     "T421",
-    "T319"
+    "T319",
+    "T466"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32586,7 +32588,8 @@
     "T199",
     "T348",
     "T401",
-    "T452"
+    "T452",
+    "T466"
    ],
    "status": "QUEUED",
    "attempts": 2,
@@ -32796,7 +32799,8 @@
     "T415",
     "T450",
     "T280",
-    "T449"
+    "T449",
+    "T466"
    ],
    "status": "QUEUED",
    "attempts": 5,
@@ -43378,7 +43382,8 @@
     "T372",
     "T374",
     "T200",
-    "T451"
+    "T451",
+    "T466"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -54311,7 +54316,8 @@
    "id": "T464",
    "deps": [
     "T462",
-    "T452"
+    "T452",
+    "T466"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -54328,6 +54334,21 @@
    "attempts": 0,
    "slug": "crate-doc-sweep",
    "type": "docs",
+   "stage": "4"
+  },
+  {
+   "id": "T466",
+   "deps": [
+    "T230",
+    "T294",
+    "T421",
+    "T362",
+    "T452"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portal-forms-stylesheet",
+   "type": "build",
    "stage": "4"
   }
  ],
@@ -57646,7 +57667,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T12:56:19Z",
+ "updated_at": "2026-11-14T12:59:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -57745,7 +57766,7 @@
   ]
  },
  "runner_sha": "091f183d8d0bf86ee4b3c1988b224bd212cf5acf",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "d6d1d54ea21a18537cab068466554864dcda58a6",
