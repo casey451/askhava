@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-14T02:18:33Z by runner a9be821a3861 (actions).
+Updated 2026-11-14T02:18:52Z by runner a9be821a3861 (actions).
 
-**Building: T280 in progress since 00:35Z; 307 of 435 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T437 in progress since 02:18Z; 307 of 435 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 307 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 5: T341 claimed 02:03Z, lease until 05:03Z; lane 6: T449 claimed 01:42Z, lease until 04:42Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
-- **Week:** 33% used, 127.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T437 claimed 02:18Z, lease until 05:18Z; lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 5: T341 claimed 02:03Z, lease until 05:03Z; lane 6: T449 claimed 01:42Z, lease until 04:42Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
+- **Week:** 33% used, 122.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:17Z, 1 min before this update
 - **Keeper:** last ran 02:13Z, next wake 03:38Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode|EmailCode in app/portals/src finds nothing, app/portals/src/tests/signup_code_screens.rs does not exist. T302 owns no portals file, so it cannot serve the email-code and identity-code steps (TD-SEC-45) without T450's Screen::IdentityCode, Screen::EmailCode, route constants and channel parser. kit/state.json on claude/kit-state has no T450 and T302's deps there stop at T415, so the runner started T302 before T450. Reviewer confirmed every claim.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 52% of the context window, over its 50% limit
+- PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 53% of the context window, over its 50% limit
 - Strict plan check red: 33 problem(s) on tasks still to run (+203 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
@@ -138,7 +138,7 @@ Updated 2026-11-14T02:18:33Z by runner a9be821a3861 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T01:36:24Z (week)): week: 67.0M used, 127.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T05:29:16Z.
+- Pacing (session_reading 2026-11-14T02:13:04Z (week)): week: 71.2M used, 122.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T06:35:30Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -154,6 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T437 (lease until 2026-11-14T05:18:24Z)
 - lane 3: T280 (lease until 2026-11-14T03:35:47Z)
 - lane 5: T341 (lease until 2026-11-14T05:03:36Z)
 - lane 6: T449 (lease until 2026-11-14T04:42:12Z)
