@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T04:25:37Z by runner f4c4252669ec (actions).
+Updated 2026-11-14T04:26:06Z by runner f4c4252669ec (actions).
 
-**Building: T437 in progress since 04:25Z; 312 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T393 in progress since 04:25Z; 312 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 312 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T437 claimed 04:25Z, lease until 07:25Z; lane 6: T396 claimed 04:09Z, lease until 07:09Z; lane 7: T449 claimed 03:54Z, lease until 06:54Z
-- **Week:** 36% used, 119.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:18Z, 7 min before this update
+- **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 3: T437 claimed 04:25Z, lease until 07:25Z; lane 6: T396 claimed 04:09Z, lease until 07:09Z; lane 7: T449 claimed 03:54Z, lease until 06:54Z
+- **Week:** 36% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:25Z, 0 min before this update
 - **Keeper:** last ran 04:18Z, next wake 06:57Z
 
 ## Needs attention
@@ -143,7 +143,7 @@ Updated 2026-11-14T04:25:37Z by runner f4c4252669ec (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T04:17:36Z (week)): week: 74.7M used, 119.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T01:41:00Z.
+- Pacing (session_reading 2026-11-14T04:17:36Z (week)): week: 75.3M used, 118.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T01:41:41Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -158,7 +158,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T393 (lease until 2026-11-14T07:25:53Z)
 - lane 3: T437 (lease until 2026-11-14T07:25:12Z)
 - lane 6: T396 (lease until 2026-11-14T07:09:13Z)
 - lane 7: T449 (lease until 2026-11-14T06:54:04Z)
