@@ -2875,3 +2875,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The Confirm page (T261) has to decide whether a business gets its free first win, which depends on when it joined and when its trade opened. The app never read the join date and never recorded when a trade was switched on. A new task (T486) adds both. From now on, the first time a trade is switched on is recorded.
 - How the plan reads the rule: only the trades picked on the sign-up form count. The 90 days run from the latest time a trade was switched on, so a trade that closes and reopens after launch gets a fresh 90 days. Only you can switch trades, and a business gets one free win at most, so switching back and forth gives nothing extra. A business that joined in time keeps its free win even if its trade is switched off later. Trades already on today count as open from before launch, so the launch window covers them.
 - Sixteen later tasks' database change files were renumbered by one to keep the order. No fee, wording or check changed, and nothing needs you now.
+
+## The business portal is served (T300, D-3664, November 14)
+
+- Signed-in businesses can now open their account home, billing with the statement download, notice settings and a released job's page. Anyone not signed in as a business gets a short page with a link to sign in; anything that isn't theirs gets the same "Page not found" page.
+- Two things are still missing because no part of the app reads them yet: the released job's page shows "Job 0" and no call list, and "Your numbers" shows only the fee total (as already planned for T451). A small follow-up is needed for the job number and call list. Nothing needs you.
