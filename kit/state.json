@@ -28320,7 +28320,13 @@
    "attempts": 0,
    "slug": "served-confirm-route",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-14T13:57:58Z",
+    "problems": [
+     "T261: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T264",
@@ -32682,7 +32688,13 @@
      "plan_then": "3f871725ebd1d49c11cf5b4f3c910aae2ea9d4a67b0ad60b0c6621fcf6a35b9c",
      "plan_now": "00d747c159c6a3ba5f2a728a0a2dfbaf4a07b2abae8abff722a92b1bfaa9447c"
     }
-   ]
+   ],
+   "plan_gap": {
+    "at": "2026-11-14T13:57:58Z",
+    "problems": [
+     "T300: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T301",
@@ -33078,7 +33090,13 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "plan_gap": {
+    "at": "2026-11-14T13:57:58Z",
+    "problems": [
+     "T302: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T303",
@@ -58055,7 +58073,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T13:58:05Z",
+ "updated_at": "2026-11-14T13:58:18Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T13:58:05Z by runner aa64d53b5f18 (actions).
+Updated 2026-11-14T13:58:18Z by runner aa64d53b5f18 (actions).
 
 **Building: T353 in progress since 13:44Z; 324 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,10 +8,13 @@ Updated 2026-11-14T13:58:05Z by runner aa64d53b5f18 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T353 claimed 13:44Z, lease until 16:44Z
 - **Week:** 44% used, 104.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:57Z, 0 min before this update
+- **Last run:** 13:57Z, 1 min before this update
 - **Keeper:** last ran 13:56Z, next wake 16:46Z
 
 ## Needs attention
+- PLAN GAP T261 (since 2026-11-14T13:57:58Z, no attempt used; a plan change fixes it): T261: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main
+- PLAN GAP T300 (since 2026-11-14T13:57:58Z, no attempt used; a plan change fixes it): T300: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main
+- PLAN GAP T302 (since 2026-11-14T13:57:58Z, no attempt used; a plan change fixes it): T302: dependency T466 is DONE but its owned file app/portals/src/tests/forms_css.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 33 problem(s) on tasks still to run (+104 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
