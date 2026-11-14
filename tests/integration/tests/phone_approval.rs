@@ -209,10 +209,13 @@ async fn td_biz_52_the_owners_links_work_at_once(pool: PgPool) {
     let staff = link(&mut db, &dir, t.owner, "928-555-0125", 3).await;
     assert_eq!(found(&mut db, &dir, "928-555-0124").await, Some(t.business));
     assert_eq!(found(&mut db, &dir, "928-555-0125").await, Some(t.business));
-    for (line, minute) in [(main, 2), (staff, 3)] {
+    for (line, minute, end) in [(main, 2, "0124"), (staff, 3, "0125")] {
         let refused = approve_phone(&mut db, t.owner, (line, at(minute)), at(4)).await;
         assert_eq!(refused, Err(TeamError::NotWaiting));
-        assert!(!set_facts(&mut db, line).await.3);
+        assert_eq!(
+            set_facts(&mut db, line).await,
+            (at(minute), t.owner.member, end.to_owned(), false)
+        );
     }
     let reply = link_by_reply(&mut db, t.business, at(5))
         .await
@@ -222,6 +225,15 @@ async fn td_biz_52_the_owners_links_work_at_once(pool: PgPool) {
         .expect("file");
     assert_eq!(found(&mut db, &dir, "928-555-0126").await, Some(t.business));
     assert_eq!(phone_standing(&mut db, reply).await, Ok(Some(true)));
+    let (set_at, by, end): (jiff_sqlx::Timestamp, Uuid, Option<String>) = sqlx::query_as(
+        "SELECT number_set_at, number_set_by, number_end FROM businesses.staff_phone \
+         WHERE id = $1",
+    )
+    .bind(reply)
+    .fetch_one(&mut *db)
+    .await
+    .expect("reply phone");
+    assert_eq!((set_at.to_jiff(), by, end), (at(5), t.owner.member, None));
     assert!(
         waiting_phones(&mut db, t.business)
             .await
@@ -265,7 +277,30 @@ async fn td_biz_52_a_members_change_waits_again(pool: PgPool) {
         .await
         .expect("owner change");
     assert_eq!(found(&mut db, &dir, "928-555-0132").await, Some(t.business));
-    assert!(!set_facts(&mut db, owners).await.3);
+    assert_eq!(
+        set_facts(&mut db, owners).await,
+        (at(6), t.owner.member, "0132".to_owned(), false)
+    );
+}
+
+/// TD-BIZ-52: the owner's change of a waiting phone puts the new number in place approved, with
+/// the owner as the one who set it, and leaves no held digest of the old number.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_52_the_owners_change_of_a_waiting_phone_works_at_once(pool: PgPool) {
+    let dir = directory();
+    let mut db = pool.acquire().await.expect("connection");
+    let t = team(&mut db, 0x1f0).await;
+    let line = link(&mut db, &dir, t.biller, "928-555-0140", 2).await;
+    change_phone_at(&mut db, &dir, (t.owner, line), &n("928-555-0141"), at(3))
+        .await
+        .expect("owner change");
+    assert_eq!(
+        set_facts(&mut db, line).await,
+        (at(3), t.owner.member, "0141".to_owned(), false)
+    );
+    assert_eq!(found(&mut db, &dir, "928-555-0141").await, Some(t.business));
+    assert_eq!(found(&mut db, &dir, "928-555-0140").await, None);
+    assert_eq!(count(&mut db, HELD, line).await, 0);
 }
 
 /// TD-BIZ-52: a waiting phone changed from A to B, then approved, finds B and never A, with no
@@ -322,4 +357,33 @@ async fn td_biz_52_removal_drops_held_digests_and_no_number_is_stored(pool: PgPo
     .expect("dump");
     assert!(dump.contains("\"0135\""));
     assert!(!dump.contains("5550135") && !dump.contains("555-0135"));
+}
+
+/// TD-BIZ-52, D-3640: an owner-linked phone a "Confirm and billing" member changed to a number
+/// that waits is dropped when that member is removed: its held digest is gone and the owner can
+/// no longer approve it, so the removed member's number never works.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_52_removal_drops_a_waiting_number_the_member_set(pool: PgPool) {
+    let dir = directory();
+    let mut db = pool.acquire().await.expect("connection");
+    let t = team(&mut db, 0x200).await;
+    let line = link(&mut db, &dir, t.owner, "928-555-0142", 2).await;
+    change_phone_at(&mut db, &dir, (t.biller, line), &n("928-555-0143"), at(3))
+        .await
+        .expect("member change");
+    assert_eq!(count(&mut db, HELD, line).await, 1);
+    remove_member(&mut db, t.owner, t.biller.member, at(4))
+        .await
+        .expect("remove");
+    assert_eq!(count(&mut db, HELD, line).await, 0);
+    let refused = approve_phone(&mut db, t.owner, (line, at(3)), at(5)).await;
+    assert_eq!(refused, Err(TeamError::UnknownPhone));
+    assert_eq!(found(&mut db, &dir, "928-555-0143").await, None);
+    assert_eq!(count(&mut db, APPROVED_AUDIT, line).await, 0);
+    assert!(
+        waiting_phones(&mut db, t.business)
+            .await
+            .expect("w")
+            .is_empty()
+    );
 }

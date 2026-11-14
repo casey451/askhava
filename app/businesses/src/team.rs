@@ -464,8 +464,8 @@ pub async fn set_roles(
 }
 
 /// Removes `member` of `by.business` (only the owner may, and never the owner, BIZ-023): unlinks
-/// every phone it linked and takes each out of the sender directory (CALL-012, D-491), and
-/// enqueues one [`MEMBER_REMOVED_KIND`] event so `portals` ends its sessions (TD-BIZ-06), all
+/// every phone it linked, and every waiting phone whose number it set (D-3640), and takes each
+/// out of the sender directory and the held digests (CALL-012, D-491, BIZ-033), and enqueues one [`MEMBER_REMOVED_KIND`] event so `portals` ends its sessions (TD-BIZ-06), all
 /// with their audit rows in one transaction.
 ///
 /// # Errors
@@ -492,8 +492,8 @@ pub async fn remove_member(
     .execute(&mut *tx)
     .await)?;
     let lines = db(sqlx::query_scalar!(
-        "DELETE FROM businesses.staff_phone WHERE linked_by = $1 AND business_id = $2 \
-         RETURNING id",
+        "DELETE FROM businesses.staff_phone WHERE business_id = $2 \
+         AND (linked_by = $1 OR (number_set_by = $1 AND approved_at IS NULL)) RETURNING id",
         member,
         m.business
     )
