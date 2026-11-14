@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T05:23:12Z by runner ed877c17983d (actions).
+Updated 2026-11-14T05:23:40Z by runner ed877c17983d (actions).
 
 **Building: T393 in progress since 04:25Z; 313 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T05:23:12Z by runner ed877c17983d (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 2: T437 claimed 05:10Z, lease until 08:10Z; lane 3: T396 claimed 05:11Z, lease until 08:11Z; lane 4: T352 claimed 05:22Z, lease until 08:22Z; lane 6: T280 claimed 05:22Z, lease until 08:22Z
 - **Week:** 37% used, 114.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:22Z, 0 min before this update
+- **Last run:** 05:23Z, 0 min before this update
 - **Keeper:** last ran 05:19Z, next wake 07:28Z
 
 ## Needs attention
@@ -88,6 +88,7 @@ Updated 2026-11-14T05:23:12Z by runner ed877c17983d (actions).
 | T420 | Brand rename prep: intake and ai unit tests take the brand f | done | 1 | 28 min | 06:38Z |  |
 
 ### Plan and harness merges on main
+- 05:23Z Plan: T302 door-matrix gap — exact open sign-up step paths, browser-bound sign-up steps (D-3641) (#745)
 - 05:15Z Plan: move build notes out of architecture.md into crate NOTES.md; prompts shrink (D-3620) (#744)
 - 03:45Z Plan: pre-claim scout fixes (T396, T300 + new T451) and stale-graph claim guard (D-3618, D-3619) (#733)
 - 01:13Z Plan: T302 plan gap — new T450 sign-up code screens and verified consent (D-3602) (#730)
