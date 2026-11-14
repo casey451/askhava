@@ -52533,8 +52533,8 @@
     "T426",
     "T438"
    ],
-   "status": "DONE",
-   "attempts": 3,
+   "status": "BLOCKED",
+   "attempts": 4,
    "slug": "crate-notes-shared-and-full-by-bytes",
    "type": "harness",
    "stage": "4",
@@ -53303,7 +53303,7 @@
      "lane": "5"
     }
    ],
-   "reason": null,
+   "reason": "reverted by FIX-MAIN (nightly red on 45c9090508ad)",
    "requeues": [
     {
      "at": "2026-11-14T12:47:19Z",
@@ -58915,7 +58915,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T17:50:57Z",
+ "updated_at": "2026-11-14T18:05:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -59014,16 +59014,8 @@
   ]
  },
  "runner_sha": "14099277d223faf0b2f412c251439608eac4f3ce",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
-   "ok": true,
-   "at": "2026-11-14T10:27:06Z",
-   "why": "start routine (ancestry reuse of d0b8abeaf423, 2026-11-14T10:15:37Z)",
-   "reused": "2026-11-14T10:15:37Z",
-   "base": "d0b8abeaf423ddea381d59d7b7b6d017589a3776"
-  },
   {
    "sha": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
    "ok": true,
@@ -59172,27 +59164,16 @@
    "why": "start routine (ancestry reuse of 49857763a082, 2026-11-14T14:27:19Z)",
    "reused": "2026-11-14T14:27:19Z",
    "base": "49857763a082bd7cc92c26c79feef4ee8dc51282"
+  },
+  {
+   "sha": "14099277d223faf0b2f412c251439608eac4f3ce",
+   "ok": true,
+   "at": "2026-11-14T18:05:10Z",
+   "why": "verify FIX-MAIN (pre-session)",
+   "seconds": 746
   }
  ],
- "main_red": {
-  "check": "nightly",
-  "sha": "45c9090508ad57c4bf49d0dbd85bc2f04129222f",
-  "task": "T437",
-  "revert_sha": "c97c4d0feb12e99f49a885155edb1bdaeb71f188",
-  "files": [
-   "docs/architecture.md",
-   "docs/decisions.md",
-   "kit/plan.lock",
-   "runner/__main__.py",
-   "runner/verify.py",
-   "scripts/check_code_docs.py",
-   "tests/docs/test_brand_literals.py",
-   "tests/test_runner_crate_cap.py",
-   "tests/test_runner_crate_merge.py",
-   "tests/test_runner_logic.py"
-  ],
-  "set_at": "2026-11-14T16:07:33Z"
- },
+ "main_red": null,
  "pacing": {
   "last": "FIX-MAIN estimated 4.4M tokens (calibrated); week has 97.4M left (no five-hour budget, D-3056) after 2.6M still running in another lane (session_reading 2026-11-14T16:07:56Z (week)); claimed",
   "at": "2026-11-14T16:24:32Z",
@@ -59250,6 +59231,27 @@
    "set_at": "2026-10-31T19:43:49Z",
    "cleared_at": "2026-10-31T21:34:47Z",
    "cleared_on": "9f8528ea93518b9eaf33d98eb969158a87953e5a"
+  },
+  {
+   "check": "nightly",
+   "sha": "45c9090508ad57c4bf49d0dbd85bc2f04129222f",
+   "task": "T437",
+   "revert_sha": "c97c4d0feb12e99f49a885155edb1bdaeb71f188",
+   "files": [
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "kit/plan.lock",
+    "runner/__main__.py",
+    "runner/verify.py",
+    "scripts/check_code_docs.py",
+    "tests/docs/test_brand_literals.py",
+    "tests/test_runner_crate_cap.py",
+    "tests/test_runner_crate_merge.py",
+    "tests/test_runner_logic.py"
+   ],
+   "set_at": "2026-11-14T16:07:33Z",
+   "cleared_at": "2026-11-14T18:05:10Z",
+   "cleared_on": "14099277d223faf0b2f412c251439608eac4f3ce"
   }
  ],
  "smoke_env_problems": [

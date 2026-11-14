@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-14T17:50:57Z by runner 14099277d223 (manual).
+Updated 2026-11-14T18:05:15Z by runner 14099277d223 (actions).
 
-**Stopped: main is red, only FIX-MAIN runs; 329 of 453 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 17:47Z; 328 of 453 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 329 of 453 build tasks (owner gates not counted)
+- **Tasks done:** 328 of 453 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 17:47Z (no task in progress)
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:49Z, 1 min before this update
+- **Last run:** 17:51Z, 14 min before this update
 - **Keeper:** last ran 17:43Z, next wake 18:03Z
 
 ## Needs attention
-- MAIN IS RED: nightly; only FIX-MAIN runs
+- BLOCKED T437: reverted by FIX-MAIN (nightly red on 45c9090508ad)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 17 problem(s) on tasks still to run (+106 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
 
@@ -101,7 +101,6 @@ Updated 2026-11-14T17:50:57Z by runner 14099277d223 (manual).
 | T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z |  |
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 2 h 1 min | 18:26Z |  |
 | T281 | picks: the unreachable-homeowner steps run at 24, 48, 72 and | done | 1 | 107 min | 18:15Z |  |
-| T436 | portals, core and server: expired sessions are swept and old | done | 1 | 34 min | 17:52Z |  |
 
 ### Plan and harness merges on main
 - 16:47Z Plan: pre-claim scout fixes for 27 stage-5 tasks (D-3744) (#793)
@@ -130,7 +129,7 @@ Updated 2026-11-14T17:50:57Z by runner 14099277d223 (manual).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 575 · unstarted 158
-**Tasks merged (throughput only):** 329 of 453
+**Tasks merged (throughput only):** 328 of 453
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -165,7 +164,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 209 of 228 done
+- stage 4: 208 of 228 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
