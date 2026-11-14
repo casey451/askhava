@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM calls.link_request_digest WHERE request_id = $1 RETURNING index_version, digest",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "index_version",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "calls.link_request_digest",
+            "name": "index_version"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "digest",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "calls.link_request_digest",
+            "name": "digest"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "19dcf0d228efa8434307b6a8d146db4addd035908f39a2956cf663f954c43def"
+}
