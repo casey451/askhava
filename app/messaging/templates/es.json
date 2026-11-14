@@ -642,5 +642,11 @@
     "draft": true,
     "segments": 2,
     "text": "{brand_short}: ¿{business} le mandó un correo electrónico y acordaron una hora? Responda SÍ o NO."
+  },
+  "business_signin_link": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "{brand_short}: Este es su enlace para iniciar sesión. Funciona una vez, durante los próximos 15 minutos: {link} Si no pidió iniciar sesión, puede ignorar este correo."
   }
 }

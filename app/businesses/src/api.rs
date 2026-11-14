@@ -127,6 +127,7 @@ pub use crate::service_area::{
     MAX_RADIUS_MILES, MIN_RADIUS_MILES, ServiceArea, ServiceAreaProblem, StoredServiceArea,
     businesses_in_towns, save_service_area, service_area,
 };
+pub use crate::sign_in_lines::{SignInLines, sign_in_lines};
 pub use crate::signup::{
     ContactKind, EntityValues, FeeNumbers, HeardFrom, LIST_DELAY_KEY, MaskedContact,
     NUMBER_OLD_BUTTON, RECORD_UPDATED_TEMPLATE, REPEAT_FREE_DAYS, REVIEW_TARGET_KEY, RecordSeen,

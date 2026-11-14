@@ -246,11 +246,19 @@ fn router() -> Router {
     let voice = askhava_server::voice_hooks(&settings, webhooks.as_ref(), pairs.clone())
         .expect("voice hooks");
     let pick_keys = askhava_server::pick_code_keys(&settings, pairs.clone()).expect("pick keys");
-    let stripe = askhava_server::release_sink::stripe_webhook(&settings, pool.clone(), pairs)
-        .expect("stripe hooks");
+    let stripe =
+        askhava_server::release_sink::stripe_webhook(&settings, pool.clone(), pairs.clone())
+            .expect("stripe hooks");
     let all = webhooks.is_some() && voice.is_some() && pick_keys.is_some() && stripe.is_some();
     assert!(all, "every optional part of build_router is configured");
-    askhava_server::build_router(pool, control.router(), (webhooks, voice, pick_keys, stripe))
+    let signin = askhava_server::business_signin::ServedSignIn::from_settings(
+        &settings,
+        pool.clone(),
+        pairs,
+    )
+    .expect("sign-in part");
+    let parts = askhava_server::RouterParts::from((webhooks, voice, pick_keys, stripe));
+    askhava_server::build_router(pool, control.router(), parts.with_sign_in(signin))
 }
 
 /// `path` with each `{name}` segment filled with a fake value.
