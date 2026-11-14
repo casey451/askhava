@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-14T08:05:26Z by runner 6aa7f43d7bd8 (actions).
+Updated 2026-11-14T08:06:42Z by runner 3975566c5e67 (actions).
 
-**Idle since 08:04Z; 315 of 436 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T359 in progress since 08:06Z; 315 of 436 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 315 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 08:04Z (no task in progress)
-- **Week:** 38% used, 117.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:05Z, 0 min before this update
+- **Lane:** lane 4: T359 claimed 08:06Z, lease until 11:06Z
+- **Week:** 38% used, 118.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 08:05Z, 1 min before this update
 - **Keeper:** last ran 08:05Z, next wake 08:25Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 43 problem(s) on tasks still to run (+97 on DONE tasks); first: T396: stored context_pct 24% but it measures 17%; regenerate
+- Strict plan check red: 41 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 24% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -152,7 +152,7 @@ Updated 2026-11-14T08:05:26Z by runner 6aa7f43d7bd8 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T06:49:28Z (week)): week: 76.6M used, 117.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T06:38:15Z.
+- Pacing (session_reading 2026-11-14T08:05:04Z (week)): week: 76.0M used, 118.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T07:49:49Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -168,6 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 4: T359 (lease until 2026-11-14T11:06:27Z)
 
 ## Last usage reading
 - {"task": "T280", "at": "2026-11-14T08:04:15Z", "cache_read_input_tokens": 4262742, "output_tokens": 34274, "cache_creation_input_tokens": 158940, "input_tokens": 161}
