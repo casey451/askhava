@@ -1,22 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-14T15:00:17Z by runner eeddc510e237 (actions).
+Updated 2026-11-14T15:03:02Z by runner 60169623421c (actions).
 
-**Building: T300 in progress since 14:35Z; 327 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T459 in progress since 15:02Z; 327 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 327 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 7: T300 claimed 14:35Z, lease until 17:35Z
-- **Week:** 44% used, 104.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:00Z, 0 min before this update
+- **Lane:** lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane 7: T300 claimed 14:35Z, lease until 17:35Z
+- **Week:** 44% used, 104.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:00Z, 2 min before this update
 - **Keeper:** last ran 15:00Z, next wake 17:38Z
 
 ## Needs attention
 - BLOCKED T261: plan gap reported: PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs:95); migrations/0158_picks_share_box.sql:28-29 CHECK allows only replaced/paused/ineligible/cant_take. T261 goal (1) and D-1871 (3) need the pick to end through the Can't take it path with its own reason, but T261 owns neither app/picks nor migrations, and no other task in kit/tasks.json builds a new reason (only T287 and T261 mention it). Reviewer confirmed with file:line evidence. Secondary: the task needs about 11 files and over 600 lines against a 7-file, 600-line budget.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T301 (since 2026-11-14T14:59:27Z, no attempt used; a plan change fixes it): T301: dependency T302 is DONE but its owned file app/server/src/business_signup.rs is not on main; T301: dependency T302 is DONE but its owned file app/server/tests/business_signup_route.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T459 (since 2026-11-14T14:59:27Z, no attempt used; a plan change fixes it): T459: dependency T302 is DONE but its owned file app/server/src/business_signup.rs is not on main; T459: dependency T302 is DONE but its owned file app/server/tests/business_signup_route.rs is not on main
-- Strict plan check red: 31 problem(s) on tasks still to run (+105 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
+- Strict plan check red: 31 problem(s) on tasks still to run (+106 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -130,7 +128,6 @@ Updated 2026-11-14T15:00:17Z by runner eeddc510e237 (actions).
 - 19:02Z Plan: report-only symbol pre-flight in plan_health (D-3496) (#688)
 - 18:48Z Plan: crate guides to ≤8 KB, detail one entry per line in NOTES.md (D-3474) (#687)
 - 17:36Z Plan: count usage once per message, prove fix rounds were re-reviewed (D-3475) (#685)
-- 15:02Z Plan: split T328 and trim T321 to fit the context limit (D-3468) (#676)
 
 ## Progress (requirements verified)
 
@@ -163,7 +160,7 @@ Updated 2026-11-14T15:00:17Z by runner eeddc510e237 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T14:33:15Z (week)): week: 89.6M used, 104.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T17:10:46Z.
+- Pacing (session_reading 2026-11-14T14:59:51Z (week)): week: 89.4M used, 104.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T16:59:26Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -179,6 +176,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 4: T459 (lease until 2026-11-14T18:02:50Z)
 - lane 7: T300 (lease until 2026-11-14T17:35:44Z)
 
 ## Last usage reading
