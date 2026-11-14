@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:50:40Z by runner a1b859ba739e (actions).
+Updated 2026-11-14T11:51:02Z by runner 9fcdbb33f44a (actions).
 
 **Building: T359 in progress since 11:24Z; 321 of 449 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,12 +9,12 @@ Updated 2026-11-14T11:50:40Z by runner a1b859ba739e (actions).
 - **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 4: T437 claimed 11:33Z, lease until 14:33Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
 - **Week:** 42% used, 107.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:50Z, 0 min before this update
-- **Keeper:** last ran 11:39Z, next wake 13:47Z
+- **Keeper:** last ran 11:51Z, next wake 14:13Z
 
 ## Needs attention
 - PLAN GAP T301 (since 2026-11-14T11:24:40Z, no attempt used; a plan change fixes it): T301: dependency T453 is DONE but its owned file app/quotes/src/quote_rules.rs is not on main; T301: dependency T453 is DONE but its owned file tests/integration/tests/quote_rules.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 34 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
