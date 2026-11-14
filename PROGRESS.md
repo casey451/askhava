@@ -4623,3 +4623,4 @@
 - 2026-11-14T10:30:51Z runner d0b8abeaf423 (actions): {}
 - 2026-11-14T10:34:01Z runner 9fcdbb33f44a (manual): {}
 - 2026-11-14T10:34:26Z runner 9fcdbb33f44a (actions): {"T452": "None -> QUEUED", "T454": "None -> QUEUED", "T453": "None -> QUEUED", "T455": "None -> QUEUED", "T456": "None -> QUEUED", "T463": "None -> QUEUED", "T457": "None -> QUEUED", "T458": "None -> QUEUED", "T459": "None -> QUEUED", "T460": "None -> QUEUED", "T461": "None -> QUEUED", "T462": "None -> QUEUED", "T464": "None -> QUEUED"}
+- 2026-11-14T10:34:35Z runner 9fcdbb33f44a (actions): {"T452": "QUEUED -> IN_PROGRESS"}; T452 estimated 1.4M tokens (calibrated); week has 108.4M left (no five-hour budget, D-3056) after 3.6M still running in another lane (session_reading 2026-11-14T10:30:21Z (week)); claimed

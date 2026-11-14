@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:34:26Z by runner 9fcdbb33f44a (actions).
+Updated 2026-11-14T10:34:35Z by runner 9fcdbb33f44a (actions).
 
-**Building: T435 in progress since 10:15Z; 318 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T452 in progress since 10:34Z; 318 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 318 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 3: T437 claimed 10:27Z, lease until 13:27Z; lane 4: T359 claimed 09:38Z, lease until 13:24Z
-- **Week:** 41% used, 107.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T452 claimed 10:34Z, lease until 13:34Z; lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 3: T437 claimed 10:27Z, lease until 13:27Z; lane 4: T359 claimed 09:38Z, lease until 13:24Z
+- **Week:** 41% used, 108.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:34Z, 0 min before this update
 - **Keeper:** last ran 10:30Z, next wake 13:17Z
 
@@ -152,7 +152,7 @@ Updated 2026-11-14T10:34:26Z by runner 9fcdbb33f44a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T10:26:30Z (week)): week: 86.2M used, 107.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T09:15:45Z.
+- Pacing (session_reading 2026-11-14T10:30:21Z (week)): week: 85.6M used, 108.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T18:10:31Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -167,7 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T452 (lease until 2026-11-14T13:34:24Z)
 - lane 2: T435 (lease until 2026-11-14T13:15:37Z)
 - lane 3: T437 (lease until 2026-11-14T13:27:06Z)
 - lane 4: T359 (lease until 2026-11-14T13:24:04Z)
