@@ -757,7 +757,7 @@
    "budget": {
     "files": 5,
     "lines": 150,
-    "context_pct": 61
+    "context_pct": 68
    },
    "checks": [
     "Ci",
@@ -823,7 +823,7 @@
    "budget": {
     "files": 10,
     "lines": 200,
-    "context_pct": 17
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -1445,7 +1445,7 @@
    "budget": {
     "files": 8,
     "lines": 350,
-    "context_pct": 26
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -2012,7 +2012,7 @@
    "budget": {
     "files": 8,
     "lines": 550,
-    "context_pct": 35
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -2289,7 +2289,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 19
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -3549,7 +3549,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 29
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -4051,7 +4051,7 @@
    "budget": {
     "files": 2,
     "lines": 250,
-    "context_pct": 20
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -4768,7 +4768,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 33
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -5292,7 +5292,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 34
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -5732,7 +5732,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -5843,7 +5843,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 41
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -6063,7 +6063,7 @@
    "budget": {
     "files": 7,
     "lines": 350,
-    "context_pct": 24
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -6135,7 +6135,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 24
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -6340,7 +6340,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 25
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -6510,7 +6510,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 35
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -6661,7 +6661,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 40
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -6754,7 +6754,7 @@
    "budget": {
     "files": 11,
     "lines": 750,
-    "context_pct": 48
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -6921,7 +6921,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 21
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -7126,7 +7126,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 24
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -7549,7 +7549,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 20
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -7860,7 +7860,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 41
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -7924,7 +7924,7 @@
    "budget": {
     "files": 3,
     "lines": 800,
-    "context_pct": 39
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -8363,7 +8363,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 33
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -8926,7 +8926,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 26
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -9069,7 +9069,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 34
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -9148,7 +9148,7 @@
    "budget": {
     "files": 13,
     "lines": 550,
-    "context_pct": 45
+    "context_pct": 49
    },
    "checks": [
     "Ci",
@@ -9960,7 +9960,7 @@
    "budget": {
     "files": 12,
     "lines": 650,
-    "context_pct": 48
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -10032,7 +10032,7 @@
    "budget": {
     "files": 4,
     "lines": 550,
-    "context_pct": 41
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -10205,7 +10205,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 18
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -10276,7 +10276,7 @@
    "budget": {
     "files": 10,
     "lines": 800,
-    "context_pct": 46
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -10339,7 +10339,7 @@
    "budget": {
     "files": 3,
     "lines": 260,
-    "context_pct": 19
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -10401,7 +10401,7 @@
    "budget": {
     "files": 3,
     "lines": 320,
-    "context_pct": 19
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -10473,7 +10473,7 @@
    "budget": {
     "files": 4,
     "lines": 590,
-    "context_pct": 20
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -10537,7 +10537,7 @@
    "budget": {
     "files": 2,
     "lines": 320,
-    "context_pct": 15
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -10624,7 +10624,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 40
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -10685,7 +10685,7 @@
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -10815,7 +10815,7 @@
    "budget": {
     "files": 14,
     "lines": 450,
-    "context_pct": 50
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -11898,7 +11898,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 26
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -12216,7 +12216,7 @@
    "budget": {
     "files": 6,
     "lines": 380,
-    "context_pct": 31
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -12270,7 +12270,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 22
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -12401,7 +12401,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 24
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -12471,7 +12471,7 @@
    "budget": {
     "files": 6,
     "lines": 350,
-    "context_pct": 44
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -12536,7 +12536,7 @@
    "budget": {
     "files": 3,
     "lines": 800,
-    "context_pct": 36
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -12673,7 +12673,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 33
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -12749,7 +12749,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 25
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -13084,7 +13084,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 23
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -13217,7 +13217,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 8
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -13614,7 +13614,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 33
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -13784,7 +13784,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 31
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -14064,7 +14064,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 36
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -14154,7 +14154,7 @@
    "budget": {
     "files": 10,
     "lines": 300,
-    "context_pct": 24
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -14219,7 +14219,7 @@
    "budget": {
     "files": 10,
     "lines": 150,
-    "context_pct": 21
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -14509,7 +14509,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 58
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -14589,7 +14589,7 @@
    "budget": {
     "files": 8,
     "lines": 600,
-    "context_pct": 12
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -14666,7 +14666,7 @@
    "budget": {
     "files": 9,
     "lines": 350,
-    "context_pct": 10
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -14754,7 +14754,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -14841,7 +14841,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -14943,7 +14943,7 @@
    "budget": {
     "files": 9,
     "lines": 450,
-    "context_pct": 21
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -15046,7 +15046,7 @@
    "budget": {
     "files": 8,
     "lines": 550,
-    "context_pct": 17
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -15217,7 +15217,7 @@
    "budget": {
     "files": 1,
     "lines": 250,
-    "context_pct": 8
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -15299,7 +15299,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 8
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -15393,7 +15393,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 22
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -15461,7 +15461,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 19
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -15476,7 +15476,7 @@
    "id": "T320",
    "slug": "ops-alert-open-once",
    "title": "ops: a check that runs on a schedule raises its alert once while its condition lasts",
-   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051), narrowed by plan change D-3144: a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:762`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. A rule on every raise is not wanted: two done tests expect a second open alert of one kind and subject, each event its own alert (`tests/integration/tests/disputes.rs:458`, two early fraud warnings on one pick raised through `app/payments/src/refunds.rs:90`; `tests/security/tests/cookies_csrf.rs:343`, the subject-less SEC-048 burst alert once per hour, `app/portals/src/security.rs:345` to `:348`), so `raise_alert` (`app/ops/src/service.rs:96`) and `ops.alert` stay as they are (no unique index, no migration) and a repeating check raises through a once function. (1) `ops::api::raise_alert_once` (`app/ops/src/api.rs:292`: kind and subject under an advisory lock, `None` when one is open) already exists; this task adds its subject-less twin `raise_kind_once(db, kind, severity)` in `service.rs`, exported through the shared `api.rs`, under the same kind of lock keyed on the kind alone, open meaning an unresolved row of that kind with no subject. (2) `check_webhook_silence` (owned here) raises through it, so it opens one alert while webhooks stay silent and a new one only after that one is resolved. Read every caller of `raise_alert` (about 60) and list in the decision each that runs on a schedule (a repeating check rather than one event) and whether it already raises once; one this task does not own is named for its owning task, not changed. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34). Every existing test that raises alerts passes unchanged. Update the `ops` and `messaging` `CLAUDE.md` files and `docs/decisions.md`, and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079).",
+   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051), narrowed by plan change D-3144: a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:762`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. A rule on every raise is not wanted: two done tests expect a second open alert of one kind and subject, each event its own alert (`tests/integration/tests/disputes.rs:458`, two early fraud warnings on one pick raised through `app/payments/src/refunds.rs:90`; `tests/security/tests/cookies_csrf.rs:343`, the subject-less SEC-048 burst alert once per hour, `app/portals/src/security.rs:345` to `:348`), so `raise_alert` (`app/ops/src/service.rs:96`) and `ops.alert` stay as they are (no unique index, no migration) and a repeating check raises through a once function. (1) `ops::api::raise_alert_once` (`app/ops/src/api.rs:292`: kind and subject under an advisory lock, `None` when one is open) already exists; this task adds its subject-less twin `raise_kind_once(db, kind, severity)` in `service.rs`, exported through the shared `api.rs`, under the same kind of lock keyed on the kind alone, open meaning an unresolved row of that kind with no subject. (2) `check_webhook_silence` (owned here) raises through it, so it opens one alert while webhooks stay silent and a new one only after that one is resolved. Read every caller of `raise_alert` (about 60) and list in the decision each that runs on a schedule (a repeating check rather than one event) and whether it already raises once; one this task does not own is named for its owning task, not changed. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34). Every existing test that raises alerts passes unchanged. Update the `ops` and `messaging` `CLAUDE.md` files and `docs/decisions.md`, and add this task's build-note line at the end of `app/ops/NOTES.md` (the template's rule; D-3620, D-3079).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15517,7 +15517,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 17
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -15633,7 +15633,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 28
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -15704,7 +15704,7 @@
    "budget": {
     "files": 5,
     "lines": 300,
-    "context_pct": 20
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -15761,7 +15761,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 18
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -15776,7 +15776,7 @@
    "id": "T321",
    "slug": "consent-five-year-purge",
    "title": "messaging, intake and privacy: consent records, keyword events and message logs go 5 years after a number's last message",
-   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` opt-out-event and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0193_messaging_consent_purge.sql` (headed `-- messaging (T321)`) and `migrations/0194_intake_consent_purge.sql` (headed `-- intake (T321)`, the `intake.consent_record` grant only; `tests/integration/tests/architecture_migrations.rs` fails a migration naming another module's schema) grant the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files and `docs/decisions.md`, and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3468). Plan change D-3155: (a) the clock: nothing records which number an inbound text came from (`messaging.inbox` holds only `message_sid` and `received_at`, `migrations/0043_messaging_inbox_delivery.sql:22` to `:26`), so the messaging migration adds `messaging.inbox_contact` (`inbox_id` primary key referencing `messaging.inbox`, `contact_id` (no `REFERENCES privacy.*`: a cross-schema foreign key fails `tests/integration/tests/architecture_migrations.rs`), `received_at`; SELECT and INSERT for the app role, DELETE with the rest), written once per inbound text by `messaging::api::on_inbound_text` (`app/messaging/src/optout.rs`, owned here after T357; `ON CONFLICT DO NOTHING`, so a resent delivery adds nothing); a number's last message is the later of its newest `inbox_contact.received_at` and its newest `messaging.outbox` row for that `recipient_id`; texts received before this task have no row and count from the outbox only (no live data exists before Gate C); architecture section 3 lists the table. (b) STOP, HELP and START: there is no keyword-event table; STOP and START (every channel) are `messaging.optout_event` rows, and a HELP is its inbox row and the HELP reply's outbox row, so it goes with the message logs; no table is added for them. (c) The numbers are 0193 and 0194 (T151 at 0192, T204 at 0191, each moved up one by D-3262 and one more by D-3263), both before T109's 0195 (V9).",
+   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` opt-out-event and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0193_messaging_consent_purge.sql` (headed `-- messaging (T321)`) and `migrations/0194_intake_consent_purge.sql` (headed `-- intake (T321)`, the `intake.consent_record` grant only; `tests/integration/tests/architecture_migrations.rs` fails a migration naming another module's schema) grant the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files and `docs/decisions.md`, and add this task's build-note line at the end of `app/messaging/NOTES.md` (the template's rule; D-3620, D-3079, D-3468). Plan change D-3155: (a) the clock: nothing records which number an inbound text came from (`messaging.inbox` holds only `message_sid` and `received_at`, `migrations/0043_messaging_inbox_delivery.sql:22` to `:26`), so the messaging migration adds `messaging.inbox_contact` (`inbox_id` primary key referencing `messaging.inbox`, `contact_id` (no `REFERENCES privacy.*`: a cross-schema foreign key fails `tests/integration/tests/architecture_migrations.rs`), `received_at`; SELECT and INSERT for the app role, DELETE with the rest), written once per inbound text by `messaging::api::on_inbound_text` (`app/messaging/src/optout.rs`, owned here after T357; `ON CONFLICT DO NOTHING`, so a resent delivery adds nothing); a number's last message is the later of its newest `inbox_contact.received_at` and its newest `messaging.outbox` row for that `recipient_id`; texts received before this task have no row and count from the outbox only (no live data exists before Gate C); architecture section 3 lists the table. (b) STOP, HELP and START: there is no keyword-event table; STOP and START (every channel) are `messaging.optout_event` rows, and a HELP is its inbox row and the HELP reply's outbox row, so it goes with the message logs; no table is added for them. (c) The numbers are 0193 and 0194 (T151 at 0192, T204 at 0191, each moved up one by D-3262 and one more by D-3263), both before T109's 0195 (V9).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15830,7 +15830,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 20
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -15915,7 +15915,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 24
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -15985,7 +15985,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 23
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -16068,7 +16068,7 @@
    "budget": {
     "files": 10,
     "lines": 450,
-    "context_pct": 8
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -16134,7 +16134,7 @@
    "budget": {
     "files": 6,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -16193,7 +16193,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 7
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -16562,7 +16562,7 @@
    "budget": {
     "files": 8,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -16626,7 +16626,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -16687,7 +16687,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 8
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -16760,7 +16760,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 8
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -16830,7 +16830,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 5
+    "context_pct": 6
    },
    "checks": [
     "Ci",
@@ -16890,7 +16890,7 @@
    "budget": {
     "files": 2,
     "lines": 550,
-    "context_pct": 6
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -16945,7 +16945,7 @@
    "budget": {
     "files": 2,
     "lines": 550,
-    "context_pct": 6
+    "context_pct": 8
    },
    "checks": [
     "Ci",
@@ -17011,7 +17011,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 7
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -17073,7 +17073,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 7
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -17162,7 +17162,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 6
+    "context_pct": 7
    },
    "checks": [
     "Ci",
@@ -17219,7 +17219,7 @@
    "budget": {
     "files": 1,
     "lines": 400,
-    "context_pct": 2
+    "context_pct": 3
    },
    "checks": [
     "Ci",
@@ -17278,7 +17278,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 6
+    "context_pct": 8
    },
    "checks": [
     "Ci",
@@ -17293,7 +17293,7 @@
    "id": "T126",
    "slug": "cleanup-stage5",
    "title": "Stage 5 cleanup: dead code, duplicates, docs up to date (end of Phase 1)",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7, 8, 9, 11 and 12 and its off-database records and recovery notes (found by grep, never loaded whole) brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479). `tests/task_kinds_deferred.json` (T327) must hold, at this stage's end, only kinds whose owner task is still queued, each with its reason; any other entry is reported in the task report for the next plan change to remove or justify (D-2290).",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7, 8, 9, 11 and 12 and the build notes in `app/*/NOTES.md` and `docs/build-notes.md` (found by grep, never loaded whole; D-3620) brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479). `tests/task_kinds_deferred.json` (T327) must hold, at this stage's end, only kinds whose owner task is still queued, each with its reason; any other entry is reported in the task report for the next plan change to remove or justify (D-2290).",
    "type": "cleanup",
    "phase": 1,
    "stage": "5",
@@ -17408,7 +17408,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 39
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -17567,7 +17567,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 10
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -17684,7 +17684,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 14
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -17772,7 +17772,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 20
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -17862,7 +17862,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 19
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -17940,7 +17940,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 11
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -18008,7 +18008,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 7
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -18059,7 +18059,7 @@
    "budget": {
     "files": 1,
     "lines": 100,
-    "context_pct": 7
+    "context_pct": 8
    },
    "checks": [
     "Ci",
@@ -18074,7 +18074,7 @@
    "id": "T298",
    "slug": "ai-endpoint-client",
    "title": "adapters: the AI endpoint settings and the real Claude client, the stand-in by default",
-   "goal": "IC-23's first half (D-2065): the app has no AI endpoint setting (the only AI keys are `ASKHAVA_AI_MODEL`, `ASKHAVA_AI_TIMEOUT_SECONDS` and `ASKHAVA_AI_DAILY_CAP`, `app/core/src/settings.rs:68` to `:70`) and its only AI client, `StandInAi` (`app/adapters/src/ai.rs:35`), takes only an `http` base URL on a loopback IP literal and sends the fixed non-key `stand-in`, so the Railway test project cannot reach the real Claude API (AI-009, `BUILD_BRIEF.md:194`). In `app/adapters/src/ai.rs` add, beside `StandInAi`, the AI endpoint settings and one client for the real Claude Messages API, behind the existing `AiAdapter` trait so `ai::api::AdapterTransport` wraps either client unchanged. Settings, read from the same pairs `Settings::from_pairs` took, each key added to `KEYS` in `app/core/src/settings.rs` (shared): `ASKHAVA_ADAPTER_MODE_AI` (`stand_in` or `api`; default `stand_in` in dev, ci and test, `api` in live), `ASKHAVA_AI_BASE_URL` (default `http://127.0.0.1:4010/anthropic`, the stand-in server, in `stand_in` mode and `https://api.anthropic.com` in `api` mode) and `ASKHAVA_AI_API_KEY`. Rules: `stand_in` is refused in live (SEC-032) and takes only an `http` base URL on a loopback IP literal, as `StandInAi::new` does, so T297's fault proxy on a loopback port can stand in front of the stand-in; `api` is refused in dev and ci (AI-009: no real AI key before the Phase 2 Railway test project) and takes only `https://api.anthropic.com` (that scheme and host, port 443, no userinfo, path or query), so no setting can send scrubbed text to another host (AI-001); `api` needs the key and `stand_in` refuses one, except that in live a missing key never stops start-up: the settings then give an AI-off endpoint that names `ASKHAVA_AI_API_KEY` (no client, never a value), so an AI-off launch at Gate C starts and T299 runs every step on the AI-off path with a high alert (overseer's decision, D-2065); so a real key is never configured where only the stand-in may be reached (the stand-in also rejects any `sk-ant-` key, `stand_ins/server.py:92`). The key is a `SecretString` read from the app host's secret variables (SEC-001, `BUILD_BRIEF.md:64`): it is sent only as the `x-api-key` header to that one host through `VendorHttp` (no redirects, no proxy from the environment) and never appears in `Debug`, `Display`, an error, a log line, a span or Sentry; every error names the key, never the value. The real client posts only to `/v1/messages`, with the same `anthropic-version` header and idempotency key as `StandInAi` (AI-001, SEC-018). Keep `StandInAi::new` and the tests that call it (`app/adapters/src/tests/ssrf_guard.rs`, not this task's) working unchanged. No test reaches the real API or any non-loopback host (AI-009): the `api` mode is tested through its settings rules, the request it would send checked without leaving the machine (with a fake key sentinel that matches no secret-scanner rule), and the key's redaction. Nothing in the app calls the new client yet: T299 builds it at start-up and calls it from intake (IC-23's second half, D-2065). Update `app/adapters/CLAUDE.md` and the `ai` row of `docs/architecture.md` section 7 (both shared). The schema it sends is T376's (D-2760).",
+   "goal": "IC-23's first half (D-2065): the app has no AI endpoint setting (the only AI keys are `ASKHAVA_AI_MODEL`, `ASKHAVA_AI_TIMEOUT_SECONDS` and `ASKHAVA_AI_DAILY_CAP`, `app/core/src/settings.rs:68` to `:70`) and its only AI client, `StandInAi` (`app/adapters/src/ai.rs:35`), takes only an `http` base URL on a loopback IP literal and sends the fixed non-key `stand-in`, so the Railway test project cannot reach the real Claude API (AI-009, `BUILD_BRIEF.md:194`). In `app/adapters/src/ai.rs` add, beside `StandInAi`, the AI endpoint settings and one client for the real Claude Messages API, behind the existing `AiAdapter` trait so `ai::api::AdapterTransport` wraps either client unchanged. Settings, read from the same pairs `Settings::from_pairs` took, each key added to `KEYS` in `app/core/src/settings.rs` (shared): `ASKHAVA_ADAPTER_MODE_AI` (`stand_in` or `api`; default `stand_in` in dev, ci and test, `api` in live), `ASKHAVA_AI_BASE_URL` (default `http://127.0.0.1:4010/anthropic`, the stand-in server, in `stand_in` mode and `https://api.anthropic.com` in `api` mode) and `ASKHAVA_AI_API_KEY`. Rules: `stand_in` is refused in live (SEC-032) and takes only an `http` base URL on a loopback IP literal, as `StandInAi::new` does, so T297's fault proxy on a loopback port can stand in front of the stand-in; `api` is refused in dev and ci (AI-009: no real AI key before the Phase 2 Railway test project) and takes only `https://api.anthropic.com` (that scheme and host, port 443, no userinfo, path or query), so no setting can send scrubbed text to another host (AI-001); `api` needs the key and `stand_in` refuses one, except that in live a missing key never stops start-up: the settings then give an AI-off endpoint that names `ASKHAVA_AI_API_KEY` (no client, never a value), so an AI-off launch at Gate C starts and T299 runs every step on the AI-off path with a high alert (overseer's decision, D-2065); so a real key is never configured where only the stand-in may be reached (the stand-in also rejects any `sk-ant-` key, `stand_ins/server.py:92`). The key is a `SecretString` read from the app host's secret variables (SEC-001, `BUILD_BRIEF.md:64`): it is sent only as the `x-api-key` header to that one host through `VendorHttp` (no redirects, no proxy from the environment) and never appears in `Debug`, `Display`, an error, a log line, a span or Sentry; every error names the key, never the value. The real client posts only to `/v1/messages`, with the same `anthropic-version` header and idempotency key as `StandInAi` (AI-001, SEC-018). Keep `StandInAi::new` and the tests that call it (`app/adapters/src/tests/ssrf_guard.rs`, not this task's) working unchanged. No test reaches the real API or any non-loopback host (AI-009): the `api` mode is tested through its settings rules, the request it would send checked without leaving the machine (with a fake key sentinel that matches no secret-scanner rule), and the key's redaction. Nothing in the app calls the new client yet: T299 builds it at start-up and calls it from intake (IC-23's second half, D-2065). Update `app/adapters/CLAUDE.md` and the `ai` row of the adapter table in `docs/architecture.md` (`grep -n '(Claude API)' docs/architecture.md`; both shared). The schema it sends is T376's (D-2760).",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -18125,7 +18125,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -18197,7 +18197,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 9
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -18247,7 +18247,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 5
+    "context_pct": 7
    },
    "checks": [
     "Ci",
@@ -18311,7 +18311,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 8
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -18379,7 +18379,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 17
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -18498,7 +18498,7 @@
    "budget": {
     "files": 8,
     "lines": 800,
-    "context_pct": 13
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -18556,7 +18556,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 10
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -18623,7 +18623,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 6
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -18702,7 +18702,7 @@
    "budget": {
     "files": 8,
     "lines": 600,
-    "context_pct": 21
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -18784,7 +18784,7 @@
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 24
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -18868,7 +18868,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 19
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -18951,7 +18951,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 18
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -19049,7 +19049,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 20
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -19102,7 +19102,7 @@
    "budget": {
     "files": 1,
     "lines": 150,
-    "context_pct": 24
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -19177,7 +19177,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 17
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -19250,7 +19250,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -19318,7 +19318,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 19
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -19407,7 +19407,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 14
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -19480,7 +19480,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 14
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -19545,7 +19545,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 19
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -19615,7 +19615,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -19681,7 +19681,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -19781,7 +19781,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 12
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -19870,7 +19870,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 12
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -20019,7 +20019,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -20085,7 +20085,7 @@
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 3
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20132,7 +20132,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 7
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -20212,7 +20212,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 47
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -20581,7 +20581,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 29
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -20906,7 +20906,7 @@
    "budget": {
     "files": 8,
     "lines": 600,
-    "context_pct": 41
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -21199,7 +21199,7 @@
    "budget": {
     "files": 7,
     "lines": 300,
-    "context_pct": 40
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -21353,7 +21353,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 31
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -21410,7 +21410,7 @@
    "budget": {
     "files": 3,
     "lines": 250,
-    "context_pct": 10
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -21641,7 +21641,7 @@
    "budget": {
     "files": 8,
     "lines": 450,
-    "context_pct": 24
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -21725,7 +21725,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 28
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -21793,7 +21793,7 @@
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 18
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -21861,7 +21861,7 @@
    "budget": {
     "files": 5,
     "lines": 280,
-    "context_pct": 22
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -21916,7 +21916,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -22000,7 +22000,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 13
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -22157,7 +22157,7 @@
    "budget": {
     "files": 10,
     "lines": 500,
-    "context_pct": 24
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -22379,7 +22379,7 @@
    "budget": {
     "files": 9,
     "lines": 550,
-    "context_pct": 22
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -22446,7 +22446,7 @@
    "budget": {
     "files": 8,
     "lines": 500,
-    "context_pct": 20
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -22537,7 +22537,7 @@
    "budget": {
     "files": 14,
     "lines": 420,
-    "context_pct": 39
+    "context_pct": 43
    },
    "checks": [
     "Ci",
@@ -22679,7 +22679,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 18
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -22879,7 +22879,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 24
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -22960,7 +22960,7 @@
    "budget": {
     "files": 7,
     "lines": 480,
-    "context_pct": 19
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -23098,7 +23098,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 20
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -23233,7 +23233,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 41
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -23401,7 +23401,7 @@
    "budget": {
     "files": 8,
     "lines": 600,
-    "context_pct": 21
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -23471,7 +23471,7 @@
    "id": "T261",
    "slug": "served-confirm-route",
    "title": "portals and server (harness): the served Confirm page under the real middleware, the payment page's own Stripe CSP, and truthful bank-approval handling",
-   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `adapters::api::StripePayments` as the `IntentStripe` (`app/payments/src/intent_http.rs:15`; no `StripeHttp` exists, and the bank approval's client secret comes from `StripePayments`'s own intent answers, D-2076 (2); D-3100): only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` counts as a component test of the script only, never as journey evidence (D-1754), and changes in one case only (D-3100): its fake `handleNextAction` answers success at once, so after (3) its TD-FEE-25 3-D Secure case could never see the \"Your bank wants to check\" line it asserts (`:123`); that case holds the fake's answer until it has asserted that line and the `3ds` call, then releases it; the stand-in likewise holds its answer to the page's state ask until the case has asserted the checking line, then releases it; every other case, the stand-in page and the fake's other calls stay byte-identical; this one case is why the task is a harness task (only a harness task changes an earlier task's test). Update the `portals` and `server` `CLAUDE.md` files, add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3100) and `docs/decisions.md`. The Confirm route is served only after T433 (D-3468's half of T328) registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick, (business, job))` with the pick's own business and job (`app/payments/src/release_proof.rs:237`; since T337 it reads the pick's stored fee row and refuses any other pair; D-3100) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58). The Confirm route is served only after T340, T341 and T440 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3055 (T232's pieces, which it builds but cannot serve): on `GET` the route calls T232's Confirm-page first-opening stamp; on each `POST` it applies T232's shared-inbox fresh-code check before `may_confirm` and stores T232's business-terms record (`businesses::api::record_confirm_terms`, channel `confirm_page`, the pick ID) in the press's transaction. `tests/e2e/confirm_served.spec.ts` also checks that the served page carries the \"Can't take it\" link to `/b/picks/{pick}/cant-take` (the page behind it is served by T306) and that reloading the page stores no terms row, and `confirm_route.rs` that with \"This inbox is shared\" on a Confirm inside a live session asks for a fresh code and charges nothing without it (the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32).",
+   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `adapters::api::StripePayments` as the `IntentStripe` (`app/payments/src/intent_http.rs:15`; no `StripeHttp` exists, and the bank approval's client secret comes from `StripePayments`'s own intent answers, D-2076 (2); D-3100): only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` counts as a component test of the script only, never as journey evidence (D-1754), and changes in one case only (D-3100): its fake `handleNextAction` answers success at once, so after (3) its TD-FEE-25 3-D Secure case could never see the \"Your bank wants to check\" line it asserts (`:123`); that case holds the fake's answer until it has asserted that line and the `3ds` call, then releases it; the stand-in likewise holds its answer to the page's state ask until the case has asserted the checking line, then releases it; every other case, the stand-in page and the fake's other calls stay byte-identical; this one case is why the task is a harness task (only a harness task changes an earlier task's test). Update the `portals` and `server` `CLAUDE.md` files, add this task's build-note line at the end of `app/portals/NOTES.md` (the template's rule; D-3620, D-3079, D-3100) and `docs/decisions.md`. The Confirm route is served only after T433 (D-3468's half of T328) registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick, (business, job))` with the pick's own business and job (`app/payments/src/release_proof.rs:237`; since T337 it reads the pick's stored fee row and refuses any other pair; D-3100) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58). The Confirm route is served only after T340, T341 and T440 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3055 (T232's pieces, which it builds but cannot serve): on `GET` the route calls T232's Confirm-page first-opening stamp; on each `POST` it applies T232's shared-inbox fresh-code check before `may_confirm` and stores T232's business-terms record (`businesses::api::record_confirm_terms`, channel `confirm_page`, the pick ID) in the press's transaction. `tests/e2e/confirm_served.spec.ts` also checks that the served page carries the \"Can't take it\" link to `/b/picks/{pick}/cant-take` (the page behind it is served by T306) and that reloading the page stores no terms row, and `confirm_route.rs` that with \"This inbox is shared\" on a Confirm inside a live session asks for a fresh code and charges nothing without it (the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -23561,7 +23561,7 @@
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 29
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -23681,7 +23681,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 10
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -23822,7 +23822,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 26
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -24097,7 +24097,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 37
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -24158,7 +24158,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 19
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -24351,7 +24351,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 20
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -24561,7 +24561,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 20
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -24632,7 +24632,7 @@
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 41
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -24774,7 +24774,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 18
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -24951,7 +24951,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -25066,7 +25066,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 22
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -25416,7 +25416,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 39
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -25477,7 +25477,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 25
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -25608,7 +25608,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 41
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -25667,7 +25667,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 33
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -25860,7 +25860,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 43
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -25921,7 +25921,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 30
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -26125,7 +26125,7 @@
    "budget": {
     "files": 8,
     "lines": 450,
-    "context_pct": 29
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -26323,7 +26323,7 @@
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 19
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -26393,7 +26393,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 24
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -26468,7 +26468,7 @@
    "budget": {
     "files": 11,
     "lines": 700,
-    "context_pct": 28
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -26683,7 +26683,7 @@
    "id": "T329",
    "slug": "business-event-emails",
    "title": "businesses: the eight business account events queued today (backup change, phone linked, sample card and pick, notice-address change and return, emergency test, after-hours off) are emailed",
-   "goal": "Fifth external audit AH-001 (D-2287; SEC-024, BIZ-033, BIZ-040, BIZ-042, BIZ-007; D-2011 (3)): `businesses` queues eight `core.task` kinds that no handler sends: `businesses.backup_changed` (`app/businesses/src/backup_address.rs:29`, words `backup_changed_words`; SEC-024), `businesses.phone_linked` (`app/businesses/src/complaints.rs:44`; BIZ-033's owner email with the Approve link), `businesses.sample_card` and `businesses.sample_pick` (`app/businesses/src/deliverability_check.rs:27`, :29, words `sample_card_words`, `sample_pick_words`; BIZ-042), `businesses.notice_address_changed` (`app/businesses/src/email_verification.rs:38`, the old address told, SEC-024) and `businesses.notice_address_returned` (:40, the owner's other verified addresses told, BIZ-040), `businesses.emergency_test` (`app/businesses/src/emergency_switch.rs:27`, words `emergency_test_words`; BIZ-042) and `businesses.after_hours_off` (:30, the owner told, with the re-test link when `reason` is suspended; BIZ-007). `app/businesses/src/notice_emails.rs` handles each: it renders that kind's words in the person's language and queues one email per recipient through `messaging::api`'s email outbox (the SEC-028 footer and sender, keyed per task so a retry stores nothing twice), using the action links `portals` already builds where the spec names one; registered in the shared `app/server/src/lib.rs`. A payload field a spec line does not explain is not invented: stop and report it. Tests in `tests/integration/tests/business_event_emails.rs` through the worker (TD-BIZ-45): each kind reaches the fake email provider once with its words, to the right people only, in English and Spanish; a repeat run sends nothing. Update the `businesses` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`. Nov 11 code review batch 3, F6 (b) (D-2706; BIZ-050, BIZ-018, D-2593, D-2596): it also handles `businesses.license_change` (`app/businesses/src/capability.rs`, `LICENSE_CHANGE_KIND`, words `license_change_words`): one email to the owner's account address in the owner's language, naming the removed and the newly offered job types and why; where the catalog has no Spanish job-type name the Spanish email gives the catalog name, and the gap is logged in `docs/for-casey-review.md` (D-2596 (2)); TD-BIZ-45 gains the kind. Plan change D-3112: `businesses.phone_linked`'s owner email carries BIZ-033's Approve action link, which only `portals` mints (`portals::api::mint_action_link`, `app/portals/src/action_links.rs:251`) and `businesses` may not call `portals` (`kit/layers.json`): `notice_emails.rs` takes the link from a trait it defines, implemented in the shared `app/server/src/lib.rs` with `mint_action_link` where `register_handlers` (`:380`) registers the handler, as T268's handlers are (as `team.rs`'s directory is implemented in the composition), and every other link the same way. Each handler reads only the payload fields it needs and ignores any other, so a field a later task adds (T398's `number_set_at`, if that plan lands) changes nothing.",
+   "goal": "Fifth external audit AH-001 (D-2287; SEC-024, BIZ-033, BIZ-040, BIZ-042, BIZ-007; D-2011 (3)): `businesses` queues eight `core.task` kinds that no handler sends: `businesses.backup_changed` (`app/businesses/src/backup_address.rs:29`, words `backup_changed_words`; SEC-024), `businesses.phone_linked` (`app/businesses/src/complaints.rs:44`; BIZ-033's owner email with the Approve link), `businesses.sample_card` and `businesses.sample_pick` (`app/businesses/src/deliverability_check.rs:27`, :29, words `sample_card_words`, `sample_pick_words`; BIZ-042), `businesses.notice_address_changed` (`app/businesses/src/email_verification.rs:38`, the old address told, SEC-024) and `businesses.notice_address_returned` (:40, the owner's other verified addresses told, BIZ-040), `businesses.emergency_test` (`app/businesses/src/emergency_switch.rs:27`, words `emergency_test_words`; BIZ-042) and `businesses.after_hours_off` (:30, the owner told, with the re-test link when `reason` is suspended; BIZ-007). `app/businesses/src/notice_emails.rs` handles each: it renders that kind's words in the person's language and queues one email per recipient through `messaging::api`'s email outbox (the SEC-028 footer and sender, keyed per task so a retry stores nothing twice), using the action links `portals` already builds where the spec names one; registered in the shared `app/server/src/lib.rs`. A payload field a spec line does not explain is not invented: stop and report it. Tests in `tests/integration/tests/business_event_emails.rs` through the worker (TD-BIZ-45): each kind reaches the fake email provider once with its words, to the right people only, in English and Spanish; a repeat run sends nothing. Update the `businesses` `CLAUDE.md` and `docs/decisions.md`, and add this task's build-note line at the end of `app/businesses/NOTES.md` (the template's rule; D-3620). Nov 11 code review batch 3, F6 (b) (D-2706; BIZ-050, BIZ-018, D-2593, D-2596): it also handles `businesses.license_change` (`app/businesses/src/capability.rs`, `LICENSE_CHANGE_KIND`, words `license_change_words`): one email to the owner's account address in the owner's language, naming the removed and the newly offered job types and why; where the catalog has no Spanish job-type name the Spanish email gives the catalog name, and the gap is logged in `docs/for-casey-review.md` (D-2596 (2)); TD-BIZ-45 gains the kind. Plan change D-3112: `businesses.phone_linked`'s owner email carries BIZ-033's Approve action link, which only `portals` mints (`portals::api::mint_action_link`, `app/portals/src/action_links.rs:251`) and `businesses` may not call `portals` (`kit/layers.json`): `notice_emails.rs` takes the link from a trait it defines, implemented in the shared `app/server/src/lib.rs` with `mint_action_link` where `register_handlers` (`:380`) registers the handler, as T268's handlers are (as `team.rs`'s directory is implemented in the composition), and every other link the same way. Each handler reads only the payload fields it needs and ignores any other, so a field a later task adds (T398's `number_set_at`, if that plan lands) changes nothing.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26734,7 +26734,7 @@
    "budget": {
     "files": 2,
     "lines": 500,
-    "context_pct": 36
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -26803,7 +26803,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 36
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -26939,7 +26939,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 19
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -26998,7 +26998,7 @@
    "budget": {
     "files": 3,
     "lines": 320,
-    "context_pct": 26
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -27059,7 +27059,7 @@
    "budget": {
     "files": 3,
     "lines": 260,
-    "context_pct": 26
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -27225,7 +27225,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 10
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -27293,7 +27293,7 @@
    "budget": {
     "files": 8,
     "lines": 200,
-    "context_pct": 10
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -27351,7 +27351,7 @@
    "budget": {
     "files": 4,
     "lines": 100,
-    "context_pct": 9
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -27421,7 +27421,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 19
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -27612,7 +27612,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 7
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -27674,7 +27674,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 39
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -27935,7 +27935,7 @@
    "budget": {
     "files": 13,
     "lines": 350,
-    "context_pct": 47
+    "context_pct": 46
    },
    "checks": [
     "Ci",
@@ -28005,7 +28005,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 28
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -28066,7 +28066,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 25
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -28188,7 +28188,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 24
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -28266,7 +28266,7 @@
    "budget": {
     "files": 7,
     "lines": 750,
-    "context_pct": 27
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -28397,7 +28397,7 @@
    "budget": {
     "files": 3,
     "lines": 150,
-    "context_pct": 20
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -28472,7 +28472,7 @@
    "budget": {
     "files": 8,
     "lines": 550,
-    "context_pct": 37
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -28536,7 +28536,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 20
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -28620,7 +28620,7 @@
    "budget": {
     "files": 6,
     "lines": 380,
-    "context_pct": 32
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -28700,7 +28700,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 14
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -28782,7 +28782,7 @@
    "budget": {
     "files": 6,
     "lines": 260,
-    "context_pct": 27
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -28854,7 +28854,7 @@
    "budget": {
     "files": 5,
     "lines": 350,
-    "context_pct": 30
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -28921,7 +28921,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 22
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -28979,7 +28979,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 23
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -29047,7 +29047,7 @@
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 16
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -29437,7 +29437,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 10
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -29570,7 +29570,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 20
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -29634,7 +29634,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 15
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -29714,7 +29714,7 @@
    "budget": {
     "files": 8,
     "lines": 650,
-    "context_pct": 13
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -29785,7 +29785,7 @@
    "budget": {
     "files": 8,
     "lines": 200,
-    "context_pct": 35
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -29850,7 +29850,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 10
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -30039,7 +30039,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 10
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -30112,7 +30112,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 20
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -30189,7 +30189,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 21
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -30328,7 +30328,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 20
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -30399,7 +30399,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 20
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -30470,7 +30470,7 @@
    "budget": {
     "files": 8,
     "lines": 600,
-    "context_pct": 9
+    "context_pct": 16
    },
    "branch": "claude/task/T416-perf-db-metrics",
    "prompt": "kit/prompts/T416.md",
@@ -30528,7 +30528,7 @@
    "budget": {
     "files": 5,
     "lines": 700,
-    "context_pct": 6
+    "context_pct": 13
    },
    "branch": "claude/task/T417-perf-route-bench",
    "prompt": "kit/prompts/T417.md",
@@ -30592,7 +30592,7 @@
    "budget": {
     "files": 7,
     "lines": 480,
-    "context_pct": 9
+    "context_pct": 16
    },
    "branch": "claude/task/T418-perf-vitals-ci-report",
    "prompt": "kit/prompts/T418.md",
@@ -30718,7 +30718,7 @@
    "id": "T439",
    "slug": "fix-round-review-proof",
    "title": "--after refuses a hand-in whose head no Opus reviewer approved or whose commits no worker made",
-   "goal": "Enforce the re-review of fix rounds (D-3475; D-584, D-1328, D-2506, D-3444; BUILD_BRIEF.md:250): `--after` (`runner/__main__.py` `after`, `runner/github_env.py` `collect_result`) records the hand-in head as `reviewed_sha` whatever ran last; it checks only that the reviewer transcripts ran on the reviewer model (`cycle.py` line 501). Before D-3444, 3 of 4 sampled fix rounds merged with no reviewer run after the fix commit (T249, T372, T423), and in T423 the Sonnet main session committed itself. Evidence available at `--after`: the worker and reviewer subagent transcripts (`find_transcripts`, `~/.claude/projects/*/*/subagents/agent-<id>.jsonl`), whose lines hold the model, the assistant text and each tool result's text; git on the runner's checkout; the hand-off file. The reviewer today states no verdict and no head, so: (1) `.github/workflows/backup-runner.yml` step 4 (and 4c, 5b and 3c, which re-run it): the reviewer runs `git rev-parse HEAD` itself on the task branch before reading the diff and ends its report with exactly one line `REVIEW-VERDICT: APPROVED <40-hex head>` or `REVIEW-VERDICT: FINDINGS`; every worker and fix-round worker commits with plain `git commit` (no `-q`, output not filtered or redirected), so Git's `[<branch> <abbrev>]` line reaches its transcript; after any fix commit, including a worker redoing a commit after a (b) hold, the session runs a NEW reviewer that must approve the new head over the new head and passes every reviewer agent id to step 5. (2) New `runner/review_proof.py` (standard library; called from `collect_result` for outcome `submitted`, on the worker's head BEFORE `_hand_in_in_order`'s runner commit and the pre-hand-in gate). Rule (a), approval of the head: when the task has a reviewer (`cycle.reviewer_model`), some reviewer transcript must, counting only `subagents/agent-*.jsonl` paths from `--reviewer-agent`, never one also given by `--worker-agent` and never one holding a `[<branch> <abbrev>]` commit line (a reviewer that committed is no reviewer), in an assistant text block (never a tool result or a quoted prompt), have as its LAST verdict line `REVIEW-VERDICT: APPROVED H` with H the full hand-in head, must hold a tool result containing H (its own `git rev-parse`), and its own models must pass the same rule as `cycle._review_problems` (`runner/cycle.py:500-505`: `reviewer_model(task)` with `known_models`), so a D-2225 model-window or fallback reviewer passes; an approval of any earlier commit, a `FINDINGS` last verdict, or a verdict only in another role's transcript does not count. Since the approval names the exact head, any commit after the last reviewed one fails (a). Rule (b), who committed: for each commit in `git rev-list H ^<main base> ^<branch start>` (branch start: new hand-off field `branch_start`, the prepared branch's existing `base_sha` from `_prepare`, the local task branch tip at the claim; when it is missing, because `prepare_branch` returned `{}` (`runner/github_env.py:1966`, dry run or a git failure), (b) is skipped with a log line naming why (no `remote_at_start` fallback: it would judge the runner's own prepared merge); so the runner's own prepared merge and earlier attempts' commits are not judged), a non-merge commit needs a worker transcript (passed via `--worker-agent`, a `subagents/` path) whose tool result holds Git's commit summary line naming it (`[<branch> <abbrev>]`, abbrev at least 7 hex and a unique prefix of the full SHA); a merge commit passes when its second parent is on `origin/main` and its tree equals `git merge-tree --write-tree` of its parents (a clean, unedited merge adds no authored content), else it needs the same line. Commits made by the main session itself leave no line in any worker transcript, so they fail; this is the closest checkable rule: the evidence proves a worker subagent's tool ran the commit, not who asked for it, and transcripts are files on the runner's disk with the same trust as D-1328's model evidence. (3) Refusal: each rule may hold the hand-in once (`prehandin_holds` style, separate hand-off counters `review_holds_a` and `review_holds_b`, each at most 1), printing `runner: review_missing` with the unapproved or unproven commits, so the session runs a new reviewer (or has a worker redo the commit, after which a fresh reviewer must approve the new head, as the workflow text says) and `--after` again; a rule failing again after its hold fails the attempt as `tests_failed` with a log naming each commit (short SHA, subject) and the rule, nothing pushed, as any failed hand-in. A task without a reviewer skips (a) only. `collect_result`'s new parameter defaults to no check, so existing callers and tests keep their behaviour; `after()` always passes it. Failure drills and tests (new `tests/test_runner_review_proof.py`; no existing test changes, every existing runner test passes): T249's shape (fix commit after the approval) refused; T423's shape (a commit whose summary line is only in the main session's transcript) refused; approval of an earlier SHA refused; `FINDINGS` after an `APPROVED` refused; a verdict quoted in a tool result or in the worker's transcript ignored; a reviewer transcript on a non-reviewer model refused and a model-window or fallback reviewer accepted; a reviewer path also given as `--worker-agent` ignored; a reviewer transcript holding a commit line ignored; an approval without its `rev-parse` tool result refused; a clean main merge accepted and an edited merge without a summary line refused; an ambiguous or 6-hex abbrev refused; the decisions reorder commit and the runner's prepared merge not judged; no `base_sha` skipping (b) with its log line; (a) and (b) each holding once on their own counter, then `tests_failed`; the happy path (worker commit, fix commit, new reviewer approving the head) accepted and `reviewed_sha` set; the workflow step text. Update `docs/architecture.md` section 12 and `docs/decisions.md`.",
+   "goal": "Enforce the re-review of fix rounds (D-3475; D-584, D-1328, D-2506, D-3444; BUILD_BRIEF.md:250): `--after` (`runner/__main__.py` `after`, `runner/github_env.py` `collect_result`) records the hand-in head as `reviewed_sha` whatever ran last; it checks only that the reviewer transcripts ran on the reviewer model (`cycle.py` line 501). Before D-3444, 3 of 4 sampled fix rounds merged with no reviewer run after the fix commit (T249, T372, T423), and in T423 the Sonnet main session committed itself. Evidence available at `--after`: the worker and reviewer subagent transcripts (`find_transcripts`, `~/.claude/projects/*/*/subagents/agent-<id>.jsonl`), whose lines hold the model, the assistant text and each tool result's text; git on the runner's checkout; the hand-off file. The reviewer today states no verdict and no head, so: (1) `.github/workflows/backup-runner.yml` step 4 (and 4c, 5b and 3c, which re-run it): the reviewer runs `git rev-parse HEAD` itself on the task branch before reading the diff and ends its report with exactly one line `REVIEW-VERDICT: APPROVED <40-hex head>` or `REVIEW-VERDICT: FINDINGS`; every worker and fix-round worker commits with plain `git commit` (no `-q`, output not filtered or redirected), so Git's `[<branch> <abbrev>]` line reaches its transcript; after any fix commit, including a worker redoing a commit after a (b) hold, the session runs a NEW reviewer that must approve the new head over the new head and passes every reviewer agent id to step 5. (2) New `runner/review_proof.py` (standard library; called from `collect_result` for outcome `submitted`, on the worker's head BEFORE `_hand_in_in_order`'s runner commit and the pre-hand-in gate). Rule (a), approval of the head: when the task has a reviewer (`cycle.reviewer_model`), some reviewer transcript must, counting only `subagents/agent-*.jsonl` paths from `--reviewer-agent`, never one also given by `--worker-agent` and never one holding a `[<branch> <abbrev>]` commit line (a reviewer that committed is no reviewer), in an assistant text block (never a tool result or a quoted prompt), have as its LAST verdict line `REVIEW-VERDICT: APPROVED H` with H the full hand-in head, must hold a tool result containing H (its own `git rev-parse`), and its own models must pass the same rule as `cycle._review_problems` (`runner/cycle.py:500-505`: `reviewer_model(task)` with `known_models`), so a D-2225 model-window or fallback reviewer passes; an approval of any earlier commit, a `FINDINGS` last verdict, or a verdict only in another role's transcript does not count. Since the approval names the exact head, any commit after the last reviewed one fails (a). Rule (b), who committed: for each commit in `git rev-list H ^<main base> ^<branch start>` (branch start: new hand-off field `branch_start`, the prepared branch's existing `base_sha` from `_prepare`, the local task branch tip at the claim; when it is missing, because `prepare_branch` returned `{}` (`runner/github_env.py:1966`, dry run or a git failure), (b) is skipped with a log line naming why (no `remote_at_start` fallback: it would judge the runner's own prepared merge); so the runner's own prepared merge and earlier attempts' commits are not judged), a non-merge commit needs a worker transcript (passed via `--worker-agent`, a `subagents/` path) whose tool result holds Git's commit summary line naming it (`[<branch> <abbrev>]`, abbrev at least 7 hex and a unique prefix of the full SHA); a merge commit passes when its second parent is on `origin/main` and its tree equals `git merge-tree --write-tree` of its parents (a clean, unedited merge adds no authored content), else it needs the same line. Commits made by the main session itself leave no line in any worker transcript, so they fail; this is the closest checkable rule: the evidence proves a worker subagent's tool ran the commit, not who asked for it, and transcripts are files on the runner's disk with the same trust as D-1328's model evidence. (3) Refusal: each rule may hold the hand-in once (`prehandin_holds` style, separate hand-off counters `review_holds_a` and `review_holds_b`, each at most 1), printing `runner: review_missing` with the unapproved or unproven commits, so the session runs a new reviewer (or has a worker redo the commit, after which a fresh reviewer must approve the new head, as the workflow text says) and `--after` again; a rule failing again after its hold fails the attempt as `tests_failed` with a log naming each commit (short SHA, subject) and the rule, nothing pushed, as any failed hand-in. A task without a reviewer skips (a) only. `collect_result`'s new parameter defaults to no check, so existing callers and tests keep their behaviour; `after()` always passes it. Failure drills and tests (new `tests/test_runner_review_proof.py`; no existing test changes, every existing runner test passes): T249's shape (fix commit after the approval) refused; T423's shape (a commit whose summary line is only in the main session's transcript) refused; approval of an earlier SHA refused; `FINDINGS` after an `APPROVED` refused; a verdict quoted in a tool result or in the worker's transcript ignored; a reviewer transcript on a non-reviewer model refused and a model-window or fallback reviewer accepted; a reviewer path also given as `--worker-agent` ignored; a reviewer transcript holding a commit line ignored; an approval without its `rev-parse` tool result refused; a clean main merge accepted and an edited merge without a summary line refused; an ambiguous or 6-hex abbrev refused; the decisions reorder commit and the runner's prepared merge not judged; no `base_sha` skipping (b) with its log line; (a) and (b) each holding once on their own counter, then `tests_failed`; the happy path (worker commit, fix commit, new reviewer approving the head) accepted and `reviewed_sha` set; the workflow step text. Update `docs/decisions.md` and add one bullet to the \"Keeping this file true\" list of `docs/architecture.md` (`grep -n 'Keeping this file true' docs/architecture.md`; read only the bullets near yours, never the list whole; D-3620).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -30762,7 +30762,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 38
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -30923,7 +30923,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 42
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -31029,7 +31029,7 @@
    "budget": {
     "files": 5,
     "lines": 300,
-    "context_pct": 40
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -31083,7 +31083,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 10
+    "context_pct": 11
    },
    "checks": [
     "Ci",

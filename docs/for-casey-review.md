@@ -2755,3 +2755,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## Business sign-up gets its code screens (D-3602, November 14)
 
 - The task that puts business sign-up online (T302) found that two screens were never planned: the one where the business types the code we send to the number on its license record, and the one where it types the code we email. The form also had no way to choose job texts or give a phone number for them. A new small task (T450) adds those screens and the choice (email stays the default; texts are only offered once business texting is on, with a phone box and the full consent wording before any code is sent). T302 then runs after it.
+
+## The design file sheds its build history (D-3620, November 14)
+
+- `docs/architecture.md` had grown to almost half a megabyte, and most of it (about 290 KB) was a diary: one "what this task built" paragraph per finished task. Every worker told to read one of those sections carried all of it on every turn, and every task adding its paragraph to the same spot caused merge clashes. Those 180 paragraphs now live, word for word, in the notes file of the part of the app each one is about (`app/<part>/NOTES.md`), one short line each, findable by task number; 24 that belong to no single part, or can't sit under `app/`, are in `docs/build-notes.md`. A script proved nothing was lost or doubled.
+- From now on a task writes its "what I built" line in that notes file, never in the design file, and a test fails the build if one slips back in. The design file keeps only the design (now about 200 KB).
+- Effect on the waiting tasks: the typical task's starting load drops from about 20% to 14% of the working memory, the largest from 62% to 46%, and only 4 tasks are above 40% (9 before). Two tasks already in progress (T280, T341) wrote a diary paragraph and will need one automatic re-sync.
