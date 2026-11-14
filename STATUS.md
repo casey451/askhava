@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T06:03:49Z by runner ea3a1daa4b9b (actions).
+Updated 2026-11-14T06:03:57Z by runner ea3a1daa4b9b (actions).
 
-**Building: T396 in progress since 05:11Z; 314 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T352 in progress since 05:22Z; 314 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 314 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T396 claimed 05:11Z, lease until 08:11Z; lane 4: T352 claimed 05:22Z, lease until 08:22Z
+- **Lane:** lane 4: T352 claimed 05:22Z, lease until 08:22Z
 - **Week:** 37% used, 114.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:03Z, 0 min before this update
 - **Keeper:** last ran 06:03Z, next wake 08:14Z
@@ -20,11 +20,12 @@ Updated 2026-11-14T06:03:49Z by runner ea3a1daa4b9b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T396 | businesses and messaging (harness): a phone a member links o | MERGE_PENDING | 2 | 51 min | 06:03Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 2 | 51 min | 06:02Z | merging main into the task branch conflicts in app/intake/CLAUDE.md again after 2 resyncs in this attempt, so this attem |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 3 | 22 min | 05:44Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T393 | portals and licensing: the served quote page's cards show ea | done | 1 | 74 min | 05:40Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z |  |
-| T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
+| T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z |  |
 | T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 3 | 15 min | 04:11Z | PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as |
 | T440 | portals: the quote page's tier choice and the Confirm page's | done | 1 | 50 min | 03:43Z |  |
@@ -162,8 +163,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T396 (lease until 2026-11-14T08:11:35Z)
 - lane 4: T352 (lease until 2026-11-14T08:22:44Z)
 
 ## Last usage reading
-- {"task": "T437", "at": "2026-11-14T06:02:28Z", "output_tokens": 11034, "cache_read_input_tokens": 1064060, "cache_creation_input_tokens": 64995, "input_tokens": 65}
+- {"task": "T396", "at": "2026-11-14T06:03:33Z", "input_tokens": 131, "cache_creation_input_tokens": 174760, "cache_read_input_tokens": 2647626, "output_tokens": 29348}
