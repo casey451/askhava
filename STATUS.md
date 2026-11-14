@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T21:17:42Z by runner 1a0927467bbf (actions).
+Updated 2026-11-14T21:21:20Z by runner 842f9544640d (actions).
 
-**Building: T300 in progress since 19:50Z; 332 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T300 in progress since 19:50Z; 332 of 459 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 332 of 469 build tasks (owner gates not counted)
+- **Tasks done:** 332 of 459 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 6: T300 claimed 19:50Z, lease until 23:48Z
+- **Lane:** lane 6: T300 claimed 19:50Z, lease until 00:21Z
 - **Week:** 51% used, 88.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:04Z, 13 min before this update
+- **Last run:** 21:04Z, 16 min before this update
 - **Keeper:** last ran 21:04Z, next wake 23:51Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 16 problem(s) on tasks still to run (+108 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
+- Strict plan check red: 19 problem(s) on tasks still to run (+107 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -93,8 +93,6 @@ Updated 2026-11-14T21:17:42Z by runner 1a0927467bbf (actions).
 | T438 | Token usage counts each reply once: dedupe transcript usage  | done | 2 | 19 min | 22:10Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 2 | 7 min | 22:01Z |  |
 | T354 | privacy: key rotation re-seals stored photos too, so droppin | done | 1 | 69 min | 21:39Z |  |
-| T335 | adapters, payments and stand-in (harness): the reconcile's p | done | 1 | 59 min | 21:20Z |  |
-| T412 | privacy: each business member's sign-in address and texting  | done | 1 | 111 min | 21:18Z |  |
 
 ### Plan and harness merges on main
 - 19:52Z Plan: stage-5 readers and splits, CON-022 purge via definer functions, Spanish switch gates, replay functions (T475–T484, D-3753) (#798)
@@ -120,14 +118,14 @@ Updated 2026-11-14T21:17:42Z by runner 1a0927467bbf (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 304 of 733 (41.5%) · partial 272 · unstarted 157
-**Tasks merged (throughput only):** 332 of 469
+**Requirements verified:** 306 of 733 (41.7%) · partial 270 · unstarted 157
+**Tasks merged (throughput only):** 332 of 459
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 14 | 15 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 18 | 37 | 3 | 58 |
+| businesses | 19 | 36 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
 | fees | 20 | 31 | 1 | 52 |
@@ -139,7 +137,7 @@ Updated 2026-11-14T21:17:42Z by runner 1a0927467bbf (actions).
 | ops-recovery | 1 | 10 | 43 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
+| quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 10 | 40 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
@@ -165,7 +163,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 6: T300 (lease until 2026-11-14T23:48:55Z)
+- lane 6: T300 (lease until 2026-11-15T00:21:20Z)
 
 ## Last usage reading
 - {"task": "T459", "at": "2026-11-14T20:58:56Z", "cache_creation_input_tokens": 393220, "output_tokens": 114965, "cache_read_input_tokens": 18053303, "input_tokens": 354}
