@@ -300,3 +300,5 @@
 - [BIZ-033] (rules) T398, D-3659: `notice_recipients` lists only phones with `approved_at`; `phone_link_notice` keyed by `number_set_at`; `api::change_phone` emails the owner.
 - [SEC-024 BIZ-033 BIZ-040] (task 329) `src/notice_emails.rs` sends `NOTICE_KINDS`.
 - [BIZ-040] (task 468) D-3759: `email_verification::signup_mailbox(conn, business)` reads `businesses.signup.mailbox_id` (the mailbox `start_signup_check` checks and `confirm` takes); `EmailCheckError::Database` for an unknown sign-up. Test `tests/integration/tests/signup_mail_paths.rs`.
+- [FEE-010] (rules) `join_date::join_facts(conn, business)` reads `businesses.signup` only: `joined()` is `submitted_at` (D-152, never activation), `trades()` the stored sign-up `trades` (never a later checklist tick, D-3779); `None` with no sign-up row. Read-only; the caller adds `catalog::api::trades_opened` and the launch setting to build `payments::api::JoinDates`.
+- [FEE-010] (task 486) `join_facts` and `JoinFacts` for the free first win's join date; tests `tests/integration/tests/join_dates.rs` (D-3779, D-3785).

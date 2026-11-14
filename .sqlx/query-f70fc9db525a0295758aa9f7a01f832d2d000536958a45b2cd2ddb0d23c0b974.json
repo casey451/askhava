@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT (extract(epoch FROM switched_on_at) * 1000000)::bigint AS \"micros!\"\n           FROM catalog.category WHERE code = ANY($1) AND switched_on_at IS NOT NULL\n           ORDER BY code",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "micros!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f70fc9db525a0295758aa9f7a01f832d2d000536958a45b2cd2ddb0d23c0b974"
+}
