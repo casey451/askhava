@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T18:25:39Z by runner 52bf28dbe1c0 (actions).
+Updated 2026-11-14T18:28:42Z by runner 52bf28dbe1c0 (actions).
 
 **Idle since 18:24Z; 329 of 453 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T18:25:39Z by runner 52bf28dbe1c0 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 18:24Z (no task in progress)
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:12Z, 13 min before this update
+- **Last run:** 18:25Z, 2 min before this update
 - **Keeper:** last ran 18:12Z, next wake 23:52Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-14T18:25:39Z by runner 52bf28dbe1c0 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | FIX-MAIN |  | done | 1 | 78 min | 17:42Z |  |
-| T467 | picks: a pick whose fee terms changed before its Confirm end | MERGE_PENDING | 1 | 43 min | 16:28Z |  |
+| T467 | picks: a pick whose fee terms changed before its Confirm end | resync | 1 | 43 min | 16:28Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T439 | --after refuses a hand-in whose head no Opus reviewer approv | done | 1 | 44 min | 16:06Z |  |
 | T465 | docs: move the entry lines left under each crate guide's `## | done | 1 | 31 min | 15:55Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | done | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
@@ -99,7 +99,6 @@ Updated 2026-11-14T18:25:39Z by runner 52bf28dbe1c0 (actions).
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 48 min | 20:09Z |  |
 | T314 | payments and picks: a dispute's auto-submit mark and its tas | done | 1 | 29 min | 19:56Z |  |
 | T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z |  |
-| T357 | server, messaging and intake: START into an open request res | resync | 1 | 2 h 1 min | 18:26Z |  |
 
 ### Plan and harness merges on main
 - 16:47Z Plan: pre-claim scout fixes for 27 stage-5 tasks (D-3744) (#793)
