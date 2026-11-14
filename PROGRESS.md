@@ -4315,3 +4315,4 @@
 - 2026-11-14T03:56:33Z runner 224fe4c7f956 (actions): {"T302": "QUEUED -> IN_PROGRESS"}; T302 estimated 2.1M tokens (calibrated); week has 123.4M left (no five-hour budget, D-3056) after 616k still running in another lane (session_reading 2026-11-14T03:44:11Z (week)); claimed
 - 2026-11-14T04:01:05Z runner ee7a75f4d72a (actions): {}
 - 2026-11-14T04:01:36Z runner ee7a75f4d72a (actions): {}
+- 2026-11-14T04:01:58Z runner ee7a75f4d72a (actions): {"T344": "MERGE_PENDING -> DONE"}
