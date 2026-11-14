@@ -55519,7 +55519,7 @@
    "deps": [
     "T459"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "signup-identity-served",
    "type": "build",
@@ -55533,8 +55533,8 @@
     3772,
     3773
    ],
-   "reason": "plan gap reported: PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-3641 needs the server to read the sign-up's stored state (identity Step, code_done, email verified) before each identity step, but no public businesses::api reader gives it: signup_email_waits is not exported (lib.rs:49 private mod), RecordFound::masked() cannot tell \"no step yet\" from step 1, check_code (identity.rs:267-271) takes a try before it finds no step, and the server crate has no SQL (R8). T460 owns only app/server/src/business_signup.rs and app/server/tests/business_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T460 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-3641 needs the server to read the sign-up's stored state (identity Step, code_done, email verified) before each identity step, but no public businesses::api reader gives it: signup_email_waits is not exported (lib.rs:49 private mod), RecordFound::masked() cannot tell \"no step yet\" from step 1, check_code (identity.rs:267-271) takes a try before it finds no step, and the server crate has no SQL (R8). T460 owns only app/server/src/business_signup.rs and app/server/tests/business_signup_route.rs; no queued task (T382, T468, T475-T484) adds the reader. Smallest fix: T460 also owns a new app/businesses/src/signup_progress.rs with one public reader businesses::api::signup_progress(conn, business) -> Result<SignupProgress { step: Option<Step>, code_done: bool, email_waits: bool }, BusinessesError>, exported by one pub use line in api.rs. Reviewer confirmed the claim with file:line evidence (PLAN-GAP: CONFIRMED). T461 inherits the same need.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-3641 needs the server to read the sign-up's stored state (identity Step, code_done, email verified) before each identity step, but no public businesses::api reader gives it: signup_email_waits is not exported (lib.rs:49 private mod), RecordFound::masked() cannot tell \"no step yet\" from step 1, check_code (identity.rs:267-271) takes a try before it finds no step, and the server crate has no SQL (R8). T460 owns only app/server/src/business_signup.rs and app/server/tests/business_signup_route.rs; no queued task (T382, T468, T475-T484) adds the reader. Smallest fix: T460 also owns a new app/businesses/src/signup_progress.rs with one public reader businesses::api::signup_progress(conn, business) -> Result<SignupProgress { step: Option<Step>, code_done: bool, email_waits: bool }, BusinessesError>, exported by one pub use line in api.rs. Reviewer confirmed the claim with file:line evidence (PLAN-GAP: CONFIRMED). T461 inherits the same need.\nre-queued after plan fix D-3779: D-3779 (#807): T485 adds businesses::api::signup_progress; T460 waits on T485",
    "history": [
     {
      "attempt": 1,
@@ -55558,6 +55558,21 @@
        "turns": 15
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-14T22:19:18Z",
+     "reason": "D-3779 (#807): T485 adds businesses::api::signup_progress; T460 waits on T485",
+     "by": "manual-d345e2070dd4",
+     "was": "plan gap reported: PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-3641 needs the server to read the sign-up's stored state (identity Step, code_done, email verified) before each identity step, but no public businesses::api reader gives it: signup_email_waits is not exported (lib.rs:49 private mod), RecordFound::masked() cannot tell \"no step yet\" from step 1, check_code (identity.rs:267-271) takes a try before it finds no step, and the server crate has no SQL (R8). T460 owns only app/server/src/business_signup.rs and app/server/tests/business_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T460 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3779",
+     "plan_since": "2026-11-14T21:27:25Z",
+     "plan_base": "886756c58552857f84204969b016a076a779a1e3",
+     "plan_head": "8b2105cd4bc7b0dc7397ed968617a12fe8fb5962",
+     "plan_then": "76515c09779048a2cfe04a28ba6f8b2920401f6af4f167f3828e7fd6215aa0ab",
+     "plan_now": "1bd344f4005ee8408924d2ddc51385d6d98930cf7d053ef502fb1538773c9172"
     }
    ]
   },
@@ -60117,7 +60132,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T22:18:59Z",
+ "updated_at": "2026-11-14T22:19:18Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -60215,8 +60230,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "2aad8a530a2fa45628384d21319ca5c96dad3e11",
- "starter": "actions",
+ "runner_sha": "8b2105cd4bc7b0dc7397ed968617a12fe8fb5962",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "aa64d53b5f1878280c82485863f4a44171738ecf",
