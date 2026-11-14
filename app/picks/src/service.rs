@@ -983,8 +983,10 @@ fn arizona() -> TimeZone {
 
 /// Sends a 6-digit pick code by Verify (PICK-013, PICK-055, D-366): a text, or a voice call only
 /// when `ask.via` is her tap. The cooldown, then the caps of [`send_allowed`] are checked and the
-/// send recorded in one short transaction; a global cap hit raises one High alert per Arizona
-/// day. Verify is called after the commit, under a key derived from the send's row (SEC-018).
+/// send recorded in one short transaction, under the contact's lock and then the Arizona day's
+/// (D-2335), so the global cap holds under concurrency; a global cap hit raises one High alert
+/// per Arizona day. Verify is called after the commit, under a key derived from the send's row
+/// (SEC-018).
 ///
 /// # Errors
 ///
@@ -1011,6 +1013,7 @@ pub async fn send_code<V: VerifyAdapter>(
     {
         return Ok(CodeSent::Refused(SendRefused::CoolingDown(until)));
     }
+    lock_verify_day(&mut tx, &day.to_string()).await?;
     let counts = models::send_counts(&mut tx, ids, since).await?;
     let ask = SendAsk {
         local_hour: local.hour(),
@@ -1037,6 +1040,22 @@ pub async fn send_code<V: VerifyAdapter>(
         .await
         .map_err(|_| PicksError::Verify)?;
     Ok(CodeSent::Sent)
+}
+
+/// Serializes every code send of one Arizona day, keyed to `day` (`YYYY-MM-DD`), so the global
+/// daily count read by `send_counts` and the send recorded after it cannot interleave with another
+/// contact's: the global cap holds under concurrency (PICK-055, D-2335). Transaction-level, so it
+/// is released at the commit, before Verify is called; taken after the contact's lock, always in
+/// that order.
+async fn lock_verify_day(tx: &mut PgConnection, day: &str) -> Result<(), PicksError> {
+    sqlx::query!(
+        "SELECT pg_advisory_xact_lock(hashtextextended('picks.verify_day:' || $1::text, 55))",
+        day
+    )
+    .execute(tx)
+    .await
+    .map(|_| ())
+    .map_err(|_| PicksError::Database)
 }
 
 async fn cap_alert(tx: &mut PgConnection) -> Result<(), PicksError> {
