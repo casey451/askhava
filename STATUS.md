@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T03:21:41Z by runner 2833aa337c34 (actions).
+Updated 2026-11-14T03:21:56Z by runner 2833aa337c34 (actions).
 
-**Building: T433 in progress since 02:23Z; 309 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T440 in progress since 02:53Z; 309 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 309 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 5: T440 claimed 02:53Z, lease until 05:53Z; lane 6: T344 claimed 02:54Z, lease until 05:54Z
+- **Lane:** lane 5: T440 claimed 02:53Z, lease until 05:53Z; lane 6: T344 claimed 02:54Z, lease until 05:54Z
 - **Week:** 34% used, 120.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:21Z, 0 min before this update
 - **Keeper:** last ran 03:19Z, next wake 05:25Z
@@ -21,6 +21,7 @@ Updated 2026-11-14T03:21:41Z by runner 2833aa337c34 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T433 | server and payments: every payments task runs in the product | MERGE_PENDING | 1 | 57 min | 03:21Z |  |
 | T449 | server and intake: emergency first texts count toward the re | MERGE_PENDING | 1 | 31 min | 03:17Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T450 | portals: the sign-up code screens and the texts choice with  | done | 1 | 79 min | 03:00Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 23 min | 02:41Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/intake/CLAUDE.md, app/messaging/CLAUDE.md, app |
@@ -156,9 +157,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T433 (lease until 2026-11-14T05:23:41Z)
 - lane 5: T440 (lease until 2026-11-14T05:53:03Z)
 - lane 6: T344 (lease until 2026-11-14T05:54:46Z)
 
 ## Last usage reading
-- {"task": "T449", "at": "2026-11-14T03:17:55Z", "cache_read_input_tokens": 815557, "input_tokens": 54, "output_tokens": 11146, "cache_creation_input_tokens": 59945}
+- {"task": "T433", "at": "2026-11-14T03:21:29Z", "cache_creation_input_tokens": 330722, "input_tokens": 286, "output_tokens": 95527, "cache_read_input_tokens": 12111910}
