@@ -2790,3 +2790,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## Paid charges now show in the books; two old tests updated to match (D-3658, November 14)
 
 - The task that records each successful charge in the money ledger (T359) found two older tests that still expected no ledger entry after a charge. Both were really checking that nothing is charged twice; they now expect exactly one charge entry for the pick and still catch any second one. Free picks are untouched and still expect no charge. T359 gets one more try.
+
+## Business account emails are written; Spanish job-type names are missing (D-3682 to D-3685, November 14)
+
+- The emails a business gets after an account change (a changed notice or backup address, a bouncing address, a phone a team member linked, the sample job card and pick, the emergency test, after-hours emergencies turned off or paused, and job types changed by a license update) now have their English and Spanish words and a sender. They still wait to go out until business email addresses can be read by the sender.
+- When a team member's email bounces, only the owner is told (at the owner's own working addresses), since the email names the bouncing address.
+- The "Approve" link in the phone-linked email works for 7 days.
+- The catalog has no Spanish job-type names, so the Spanish license-change email names job types in English. Adding Spanish names to the catalog would fix it.
