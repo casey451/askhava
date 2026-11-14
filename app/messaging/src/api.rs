@@ -101,6 +101,7 @@ pub use crate::rules::{
     SPANISH_OPT_OUT_WORDS, classify, decide, detect_opt_out, may_send_to, plan_release, retry,
 };
 pub use crate::send_window::{SendWindow, send_window, window};
+pub use crate::sender_pending::{sender_line, sender_put_pending};
 pub use crate::service::{
     ANY_HOUR_TEMPLATES, Exemption, NewText, Relation, SEND_ACTION, To, delivery_status, enqueue,
     enqueue_exempt, may_text, send, sender_add, sender_business, sender_remove,
@@ -273,4 +274,30 @@ pub async fn homeowner_has_email(
     crate::email::homeowner_email(db, vault, contact)
         .await
         .map(|email| email.is_some())
+}
+
+/// BIZ-040, SEC-024, D-3262 (T415): the mailbox ID of every business email not yet sent and
+/// queued within the 7 days before `now`, so the contact sweep keeps the address it goes to (an
+/// old address must still get its change notice and a bounce must still find its mailbox); a row
+/// stuck in `sending` keeps no address past that week. IDs only, each once.
+///
+/// # Errors
+///
+/// [`EmailError::Database`].
+pub async fn unsent_business_mailboxes(
+    db: &mut sqlx::PgConnection,
+    now: jiff::Timestamp,
+) -> Result<Vec<sqlx::types::Uuid>, EmailError> {
+    use jiff_sqlx::ToSqlx;
+    let week = now
+        .checked_sub(jiff::SignedDuration::from_hours(7 * 24))
+        .map_err(|_| EmailError::Database)?;
+    sqlx::query_scalar!(
+        "SELECT DISTINCT recipient_id FROM messaging.email_outbox WHERE recipient_kind = 'business' \
+         AND status <> 'sent' AND queued_at > $1::timestamptz",
+        week.to_sqlx() as _
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| EmailError::Database)
 }

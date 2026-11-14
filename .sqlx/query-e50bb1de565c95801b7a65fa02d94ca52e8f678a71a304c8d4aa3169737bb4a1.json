@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT m.mailbox_id AS \"id!\" FROM businesses.team_member m JOIN businesses.business b ON b.id = m.business_id WHERE CASE WHEN b.status = 'removed' THEN b.status_changed_at >= $1::timestamptz ELSE m.removed_at IS NULL OR m.removed_at >= $1::timestamptz END UNION SELECT a.mailbox_id FROM businesses.backup_address a JOIN businesses.team_member m ON m.id = a.member_id JOIN businesses.business b ON b.id = a.business_id WHERE CASE WHEN b.status = 'removed' THEN b.status_changed_at >= $1::timestamptz ELSE (a.removed_at IS NULL AND m.removed_at IS NULL) OR a.removed_at >= $1::timestamptz OR m.removed_at >= $1::timestamptz END UNION SELECT v.id FROM businesses.mailbox_check c JOIN businesses.business b ON b.id = c.business_id LEFT JOIN businesses.team_member m ON m.id = COALESCE(c.change_for, c.member_id) CROSS JOIN LATERAL (VALUES (c.mailbox_id), (c.replaces)) AS v (id) WHERE v.id IS NOT NULL AND CASE WHEN b.status = 'removed' THEN b.status_changed_at >= $1::timestamptz ELSE (c.open AND m.removed_at IS NULL) OR m.removed_at >= $1::timestamptz OR COALESCE(c.verified_at, c.sent_at) >= $1::timestamptz END",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "e50bb1de565c95801b7a65fa02d94ca52e8f678a71a304c8d4aa3169737bb4a1"
+}

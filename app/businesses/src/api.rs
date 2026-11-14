@@ -68,6 +68,7 @@ pub use crate::consent::{
     no_calls_line, phone_stopped, record_consent, recruiting_email, request_welcome,
     stop_recruiting, stopped_email_line, welcome_card_line, welcome_lines, welcome_sent,
 };
+pub use crate::contact_ids::{ContactIds, contact_ids_in_use};
 pub use crate::coverage_notice::{
     BAD_COVERAGE_PAYLOAD, CoverageMailer, NO_COVERAGE_SENDER, run_coverage_notice,
 };
@@ -115,6 +116,7 @@ pub use crate::open_cards_times::{
 };
 pub use crate::pest_identity::{PestIdentity, pest_identity, record_pest_match};
 pub use crate::public_name::{PUBLIC_NAME_ALERT, public_names};
+pub use crate::reply_link::{is_main_phone, link_by_reply};
 pub use crate::rules::JobTypeChoice;
 pub use crate::rules::{Checks, Event, OwnHours, Widens};
 pub use crate::service::{

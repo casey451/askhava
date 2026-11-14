@@ -18,6 +18,7 @@
 pub mod api;
 mod handlers;
 mod lifecycle;
+mod link_reply;
 mod link_request;
 mod models;
 mod pins;
