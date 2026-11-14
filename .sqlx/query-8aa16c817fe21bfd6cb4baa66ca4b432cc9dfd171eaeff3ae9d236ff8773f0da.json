@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT business_id FROM picks.pick WHERE job_id = $1 AND status IN ($2, $3)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "business_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "8aa16c817fe21bfd6cb4baa66ca4b432cc9dfd171eaeff3ae9d236ff8773f0da"
+}

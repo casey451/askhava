@@ -37,11 +37,14 @@ pub enum PickStatus {
     NoShow,
     /// FEE-052: an early fraud warning refunded the charge before the release (T191).
     FraudRefunded,
+    /// FEE-018, FEE-020, FEE-041: `payments` ended the pick before it was paid (Stripe unreachable,
+    /// the card-fix window ran out, the fee limit), `payments::api::PICK_ENDED_KIND` (T328).
+    PaymentFailed,
 }
 
 impl PickStatus {
     /// Every status, in the order of the enum.
-    pub const ALL: [Self; 7] = [
+    pub const ALL: [Self; 8] = [
         Self::AwaitingConfirm,
         Self::Expired,
         Self::Cancelled,
@@ -49,6 +52,7 @@ impl PickStatus {
         Self::Free,
         Self::NoShow,
         Self::FraudRefunded,
+        Self::PaymentFailed,
     ];
 
     /// The stored code name.
@@ -62,6 +66,7 @@ impl PickStatus {
             Self::Free => "free",
             Self::NoShow => "no_show",
             Self::FraudRefunded => "fraud_refunded",
+            Self::PaymentFailed => "payment_failed",
         }
     }
 }
@@ -93,7 +98,8 @@ pub(crate) fn settle_step(code: &str, basis: ReleaseBasis) -> SettleStep {
                 | PickStatus::Expired
                 | PickStatus::Cancelled
                 | PickStatus::NoShow
-                | PickStatus::FraudRefunded,
+                | PickStatus::FraudRefunded
+                | PickStatus::PaymentFailed,
             ),
             _,
         ) => SettleStep::Leave,
@@ -120,7 +126,8 @@ pub const fn shows_release(status: PickStatus) -> bool {
         | PickStatus::Expired
         | PickStatus::Cancelled
         | PickStatus::NoShow
-        | PickStatus::FraudRefunded => false,
+        | PickStatus::FraudRefunded
+        | PickStatus::PaymentFailed => false,
     }
 }
 
