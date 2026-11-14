@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:56:34Z by runner 5c318427f473 (actions).
+Updated 2026-11-14T11:56:42Z by runner 46fd94463262 (actions).
 
 **Building: T359 in progress since 11:24Z; 321 of 449 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 321 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 4: T437 claimed 11:33Z, lease until 14:33Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
+- **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 4: T437 claimed 11:33Z, lease until 14:33Z
 - **Week:** 42% used, 107.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:56Z, 0 min before this update
 - **Keeper:** last ran 11:56Z, next wake 14:13Z
@@ -14,11 +14,12 @@ Updated 2026-11-14T11:56:34Z by runner 5c318427f473 (actions).
 ## Needs attention
 - PLAN GAP T301 (since 2026-11-14T11:24:40Z, no attempt used; a plan change fixes it): T301: dependency T453 is DONE but its owned file app/quotes/src/quote_rules.rs is not on main; T301: dependency T453 is DONE but its owned file tests/integration/tests/quote_rules.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 33 problem(s) on tasks still to run (+102 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T302 | server (harness): business sign-up's open doors and served p | MERGE_PENDING | 5 | 45 min | 11:56Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T329 | businesses: the eight business account events queued today ( | MERGE_PENDING | 2 | 65 min | 11:49Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
 | T453 | quotes: the job's quote rules are read from the stored job,  | done | 1 | 27 min | 11:02Z |  |
 | T452 | e2e and Ally (harness): a keyed web binary beside the suite' | done | 1 | 24 min | 10:58Z |  |
@@ -28,7 +29,7 @@ Updated 2026-11-14T11:56:34Z by runner 5c318427f473 (actions).
 | T329 | businesses: the eight business account events queued today ( | BLOCKED | 1 | 2 min | 10:28Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 52 min | 10:25Z |  |
 | T398 | businesses: notice texts go only to approved phones, and a m | done | 1 | 38 min | 09:41Z |  |
-| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 4 | 2 min | 09:18Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
+| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 4 | 2 min | 09:18Z |  |
 | T301 | server and portals: the email action links are served (every | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
 | T398 | businesses: notice texts go only to approved phones, and a m | resync | 1 | 32 min | 09:01Z |  |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 1 | 5 min | 08:59Z | PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID |
@@ -174,7 +175,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T359 (lease until 2026-11-14T14:24:40Z)
 - lane 4: T437 (lease until 2026-11-14T14:33:09Z)
-- lane 7: T302 (lease until 2026-11-14T14:10:31Z)
 
 ## Last usage reading
-- {"task": "T329", "at": "2026-11-14T11:49:58Z", "cache_read_input_tokens": 11422642, "cache_creation_input_tokens": 353241, "output_tokens": 98706, "input_tokens": 261}
+- {"task": "T302", "at": "2026-11-14T11:56:08Z", "cache_read_input_tokens": 6479070, "cache_creation_input_tokens": 207502, "input_tokens": 213, "output_tokens": 47656}
