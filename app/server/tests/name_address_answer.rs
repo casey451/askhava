@@ -1,14 +1,15 @@
 //! TD-INT-42 (T432, D-3431, D-3701 to D-3704; INT-027, INT-029, INT-002, PRIV-001): the
 //! name-and-address question through Twilio's real inbound-text route on a real database. A
 //! regular job is asked it once, after the area check; her answer lands on her own vault contact
-//! (the one the release reads) and no second contact row is made; no database text column and no
-//! log line holds the name or the street; an answer naming a street like a 911-list word opens no
+//! (the one the release reads) and no second contact row is made; no audit row and no log line
+//! holds the name or the street; an answer naming a street like a 911-list word opens no
 //! 911 text; an answer with no street number is asked again once; an emergency job whose release
 //! waited for the address has it released once through T255's path.
 //!
-//! The ZIP step is not wired to a live text yet (D-3431), so the area check runs through
-//! `intake::api::answer_zip`; every other row comes through module APIs. Fake data only
-//! (555-01xx numbers, made-up names and streets).
+//! The ZIP step is not wired to a live text yet (D-3702), so her first text and the area check
+//! run through `intake::api::receive_text` and `answer_zip`; this crate reads no module's table
+//! (TD-SEC-10), so what was asked is read through `name_address_open`, the audit log and the
+//! intake replies. Fake data only (555-01xx numbers, made-up names and streets).
 
 use std::collections::BTreeSet;
 use std::fmt::Write as _;
@@ -20,17 +21,19 @@ use askhava_core::api::{
     Claimed, Environment, Guarded, MIGRATOR, ManualClock, Settings, WorkerId, claim,
 };
 use askhava_intake::api::rules::{
-    Check, Inbound, NAME_ADDRESS_TEMPLATE, SAFETY_TEMPLATE, Settings as IntakeSettings, check,
+    Check, Inbound, NAME_ADDRESS_TEMPLATE, Settings as IntakeSettings, check,
 };
 use askhava_intake::api::{
-    ADDRESS_IN_KIND, Answer, TextIn, ZipStep, answer_zip, record_answer, run_address_needed,
+    ADDRESS_IN_KIND, Answer, RawReply, Reply, Taken, TextIn, ZipStep, answer_zip,
+    ask_last_question, emergency_events, name_address_open, receive_raw_reply, receive_text,
+    record_answer, run_address_needed, safe_hold,
 };
 use askhava_jobs::api::{JobStatus, create, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::{Actor, export_audit};
 use askhava_payments::api::{EntryKind, LedgerEntry, NewEntry, ledger_append, no_fee_release};
 use askhava_picks::api::{ADDRESS_NEEDED_KIND, PagePick, Released, page_pick};
-use askhava_privacy::api::{CONTACT_FIELDS_SET, NewContact, Vault, store_contact};
+use askhava_privacy::api::{CONTACT_FIELDS_SET, NewContact, Vault, find_by_phone, store_contact};
 use askhava_quotes::api::{
     CardBusiness, CardJob, Format, OfferTown, Price, QuoteForm, QuoteRules, Submitted, parse_quote,
     send_cards, submit_quote,
@@ -45,8 +48,8 @@ use hmac::{Hmac, KeyInit, Mac};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
 use sha1::Sha1;
+use sqlx::PgPool;
 use sqlx::types::Uuid;
-use sqlx::{AssertSqlSafe, PgPool};
 use tower::ServiceExt;
 use tracing::field::{Field, Visit};
 use tracing::span::{Attributes, Id, Record};
@@ -164,9 +167,25 @@ async fn text(pool: &PgPool, logs: &Logs, n: u32, words: &str) {
     assert_eq!(answer.status(), StatusCode::OK);
 }
 
-/// Her vault contact (phone only), her request opened by a route text, each of `jobs` named in
+/// One of her texts as `intake` reads it: plain scrubbed words, no flags.
+fn her_text(contact: Uuid, words: &str) -> TextIn<'_> {
+    TextIn {
+        inbox_id: Uuid::new_v4(),
+        contact,
+        inbound: Inbound {
+            words,
+            opt_out: false,
+            help: false,
+            emergency: false,
+            ai_spanish: None,
+        },
+        received_at: now(),
+    }
+}
+
+/// Her vault contact (phone only), her request opened by her first text, each of `jobs` named in
 /// it and her ZIP checked: `(contact, request)`.
-async fn her_request(pool: &PgPool, logs: &Logs, jobs: &[Uuid]) -> (Uuid, Uuid) {
+async fn her_request(pool: &PgPool, jobs: &[Uuid]) -> (Uuid, Uuid) {
     let mut db = pool.acquire().await.expect("db");
     let new = NewContact {
         phone: Some(SecretString::from(HER)),
@@ -175,17 +194,10 @@ async fn her_request(pool: &PgPool, logs: &Logs, jobs: &[Uuid]) -> (Uuid, Uuid) 
     let contact = store_contact(&mut db, &vault(), &new)
         .await
         .expect("contact");
-    drop(db);
-    text(pool, logs, 1, "my AC is out").await;
-    let mut db = pool.acquire().await.expect("db");
-    let request: Uuid = sqlx::query_scalar(
-        "SELECT c.id FROM intake.conversation c JOIN intake.homeowner h ON h.id = c.homeowner_id \
-         WHERE h.contact_id = $1 AND c.closed_at IS NULL",
-    )
-    .bind(contact)
-    .fetch_one(&mut *db)
-    .await
-    .expect("open request");
+    let (secret, settings) = (secret(), IntakeSettings::default());
+    let first = her_text(contact, "my AC is out");
+    let handled = receive_text(&mut db, &secret, &first, settings).await;
+    let request = handled.expect("request").conversation.expect("open");
     for (i, job) in jobs.iter().enumerate() {
         let code = job.simple().to_string();
         let question = format!("job.hvac.p{i}");
@@ -198,150 +210,102 @@ async fn her_request(pool: &PgPool, logs: &Logs, jobs: &[Uuid]) -> (Uuid, Uuid) 
         };
         record_answer(&mut db, &answer).await.expect("job named");
     }
-    let zip = TextIn {
-        inbox_id: Uuid::new_v4(),
-        contact,
-        inbound: Inbound {
-            words: "86403",
-            opt_out: false,
-            help: false,
-            emergency: false,
-            ai_spanish: None,
-        },
-        received_at: now(),
-    };
-    let (secret, settings) = (secret(), IntakeSettings::default());
+    let zip = her_text(contact, "86403");
     let step = answer_zip(&mut db, &secret, (&zip, request), settings).await;
     assert!(matches!(step.expect("zip"), ZipStep::Stored(_)));
     (contact, request)
 }
 
-/// How many texts of `template` were queued.
-async fn queued(pool: &PgPool, template: &str) -> i64 {
-    sqlx::query_scalar("SELECT count(*) FROM messaging.outbox WHERE template_id = $1")
-        .bind(template)
-        .fetch_one(pool)
-        .await
-        .expect("outbox")
+/// Whether her name-and-address question is open now.
+async fn open(pool: &PgPool, contact: Uuid) -> bool {
+    let mut db = pool.acquire().await.expect("db");
+    name_address_open(&mut db, contact).await.expect("open")
 }
 
-async fn count(pool: &PgPool, sql: &'static str) -> i64 {
-    sqlx::query_scalar(sql)
-        .fetch_one(pool)
-        .await
-        .expect("count")
-}
-
-async fn fields_set(pool: &PgPool) -> usize {
+/// The audit log, each row's `Debug` text, and the subjects of the `action` rows.
+async fn audit(pool: &PgPool, action: &str) -> (String, Vec<Uuid>) {
     let mut db = pool.acquire().await.expect("db");
     let rows = export_audit(&mut db, 0, 1000).await.expect("export");
-    rows.iter()
-        .filter(|r| r.action == CONTACT_FIELDS_SET)
-        .count()
-}
-
-/// Every text, varchar and JSON column of every app table holding `needle` (any case), by name.
-async fn holding(pool: &PgPool, needle: &str) -> Vec<String> {
-    let columns: Vec<(String, String, String)> = sqlx::query_as(
-        "SELECT table_schema::text, table_name::text, column_name::text \
-         FROM information_schema.columns c JOIN information_schema.tables t \
-         USING (table_schema, table_name) WHERE t.table_type = 'BASE TABLE' \
-         AND table_schema NOT IN ('pg_catalog', 'information_schema', 'public') \
-         AND data_type IN ('text', 'character varying', 'json', 'jsonb', 'ARRAY')",
-    )
-    .fetch_all(pool)
-    .await
-    .expect("columns");
-    let mut found = Vec::new();
-    for (schema, table, column) in columns {
-        let sql = format!(
-            "SELECT count(*) FROM \"{schema}\".\"{table}\" WHERE \"{column}\"::text ILIKE $1"
-        );
-        let hits: i64 = sqlx::query_scalar(AssertSqlSafe(sql))
-            .bind(format!("%{needle}%"))
-            .fetch_one(pool)
-            .await
-            .expect("scan");
-        if hits > 0 {
-            found.push(format!("{schema}.{table}.{column}"));
-        }
-    }
-    found
+    let of = rows.iter().filter(|r| r.action == action);
+    (format!("{rows:?}"), of.map(|r| r.subject_id).collect())
 }
 
 /// TD-INT-42: a regular job is asked once, after the area check; her answer goes onto her own
-/// contact (no second contact row), and no stored column or log line holds the name or street.
+/// contact (no second contact row), and no audit row or log line holds the name or street. The
+/// intake answers hold codes only (their `choice` column takes no capital letter or space).
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_int_42_a_regular_answer_lands_on_her_own_contact(pool: PgPool) {
     let logs = Logs::default();
-    let (contact, request) = her_request(&pool, &logs, &[]).await;
-    assert_eq!(
-        queued(&pool, NAME_ADDRESS_TEMPLATE).await,
-        0,
-        "not before a reply"
-    );
+    let (contact, request) = her_request(&pool, &[]).await;
+    assert!(!open(&pool, contact).await, "not before a reply");
     text(&pool, &logs, 2, "the unit upstairs").await;
-    assert_eq!(
-        queued(&pool, NAME_ADDRESS_TEMPLATE).await,
-        1,
-        "asked after the area check"
-    );
-    let contacts = count(&pool, "SELECT count(*) FROM privacy.contact").await;
+    assert!(open(&pool, contact).await, "asked after the area check");
+    let mut db = pool.acquire().await.expect("db");
+    let reply = her_text(contact, "the unit upstairs");
+    let twice = ask_last_question(&mut db, &secret(), (&reply, request), false).await;
+    assert_eq!(twice.expect("ask"), None, "asked once per request");
+    drop(db);
     text(&pool, &logs, 3, ANSWER).await;
-    let stored: String = sqlx::query_scalar(
-        "SELECT choice FROM intake.intake_answer WHERE conversation_id = $1 \
-         AND question_id = 'address_contact'",
-    )
-    .bind(request)
-    .fetch_one(&pool)
-    .await
-    .expect("address contact");
-    assert_eq!(stored, contact.simple().to_string(), "her own contact");
-    assert_eq!(fields_set(&pool).await, 2, "one audit row per field, once");
+    assert!(!open(&pool, contact).await, "answered");
+    let (_, set) = audit(&pool, CONTACT_FIELDS_SET).await;
     assert_eq!(
-        count(&pool, "SELECT count(*) FROM privacy.contact").await,
-        contacts
+        set,
+        vec![contact, contact],
+        "name and street on her own contact"
     );
+    let (_, made) = audit(&pool, "contact_created").await;
+    assert_eq!(made.len(), 1, "no second contact row");
+    let mut db = pool.acquire().await.expect("db");
+    let found = find_by_phone(&mut db, &vault(), HER).await.expect("find");
+    assert_eq!(found, Some(contact), "the contact the release reads");
+    drop(db);
     text(&pool, &logs, 4, "thanks").await;
-    assert_eq!(queued(&pool, NAME_ADDRESS_TEMPLATE).await, 1, "asked once");
-    assert_eq!(fields_set(&pool).await, 2, "a later text is no answer");
-    assert!(
-        !holding(&pool, "86403").await.is_empty(),
-        "the scan sees the ZIP"
-    );
+    assert!(!open(&pool, contact).await, "not asked again");
+    let (all, set) = audit(&pool, CONTACT_FIELDS_SET).await;
+    assert_eq!(set.len(), 2, "a later text is no answer");
+    let lines = logs.0.lock().expect("logs").clone();
     for needle in ["Testa", "Sample Ave"] {
-        assert_eq!(
-            holding(&pool, needle).await,
-            Vec::<String>::new(),
-            "{needle}"
-        );
-        let all = logs.0.lock().expect("logs").clone();
-        assert!(!all.contains(needle), "a log line holds {needle}");
+        assert!(!all.contains(needle), "an audit row holds {needle}");
+        assert!(!lines.contains(needle), "a log line holds {needle}");
     }
 }
 
-/// TD-INT-42, D-165: an answer whose street reads like a 911-list word opens no 911 text, and an
-/// answer with no street number is asked again once, with nothing written.
+/// TD-INT-42, D-165: an answer with no street number writes nothing and is asked again once; an
+/// answer whose street reads like a 911-list word opens no 911 text and is stored.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_int_42_a_street_is_no_hazard_and_no_number_asks_again(pool: PgPool) {
     let logs = Logs::default();
-    her_request(&pool, &logs, &[]).await;
+    let (contact, request) = her_request(&pool, &[]).await;
     text(&pool, &logs, 2, "the unit upstairs").await;
     text(&pool, &logs, 3, "Testa on Sample Avenue").await;
-    assert_eq!(
-        queued(&pool, NAME_ADDRESS_TEMPLATE).await,
-        2,
-        "asked again once"
-    );
-    assert_eq!(fields_set(&pool).await, 0);
+    assert!(open(&pool, contact).await, "still waiting for the address");
+    assert!(audit(&pool, CONTACT_FIELDS_SET).await.1.is_empty());
+    let raw = SecretString::from("Testa near Sample Avenue");
+    let msg = her_text(contact, "Testa near Sample Avenue");
+    let keys = RawReply {
+        raw: &raw,
+        vault: &vault(),
+    };
+    let mut db = pool.acquire().await.expect("db");
+    let settings = (IntakeSettings::default(), &[][..]);
+    let reply = receive_raw_reply(&mut db, &secret(), (&msg, keys), settings).await;
+    let Reply::NameAddress(Taken::Again, handled) = reply.expect("reply") else {
+        panic!("not asked again");
+    };
+    let asked: Vec<&str> = handled.texts.iter().map(|q| q.template).collect();
+    assert_eq!(asked, vec![NAME_ADDRESS_TEMPLATE], "asked again once");
     assert!(
         matches!(check(SMOKE_STREET, false), Check::Match(_)),
         "the same words in any other reply would be a 911-list match"
     );
+    drop(db);
     text(&pool, &logs, 4, SMOKE_STREET).await;
-    assert_eq!(queued(&pool, SAFETY_TEMPLATE).await, 0, "no 911 text");
-    assert_eq!(fields_set(&pool).await, 2, "name and street written");
-    assert_eq!(queued(&pool, NAME_ADDRESS_TEMPLATE).await, 2);
+    let mut db = pool.acquire().await.expect("db");
+    let events = emergency_events(&mut db, request).await.expect("events");
+    assert!(events.is_empty(), "no 911 text");
+    assert!(!safe_hold(&mut db, request).await.expect("hold"));
+    assert_eq!(audit(&pool, CONTACT_FIELDS_SET).await.1.len(), 2);
+    assert!(!open(&pool, contact).await, "answered");
 }
 
 fn masked() -> MaskedPool {
@@ -494,7 +458,7 @@ async fn td_int_42_an_emergency_release_that_waited_gets_the_address_once(pool: 
         .expect("owner");
     drop(db);
     let job = emergency_job(&pool, business).await;
-    her_request(&pool, &logs, &[job]).await;
+    let (contact, _) = her_request(&pool, &[job]).await;
     let mut tx = pool.begin().await.expect("tx");
     let picked = page_pick(&mut tx, (job, false), 1, Actor::System, now()).await;
     tx.commit().await.expect("commit");
@@ -508,7 +472,7 @@ async fn td_int_42_an_emergency_release_that_waited_gets_the_address_once(pool: 
             .await
             .expect("asked again");
     }
-    assert_eq!(queued(&pool, NAME_ADDRESS_TEMPLATE).await, 1);
+    assert!(open(&pool, contact).await, "T255 asked again");
     text(&pool, &logs, 2, ANSWER).await;
     let arrived = tasks(&pool, ADDRESS_IN_KIND).await;
     assert_eq!(arrived.len(), 1, "one address_in event");
