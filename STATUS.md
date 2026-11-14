@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:14:41Z by runner f7c093395ac7 (actions).
+Updated 2026-11-14T11:15:01Z by runner f7c093395ac7 (actions).
 
 **Building: T329 in progress since 10:44Z; 319 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-14T11:14:41Z by runner f7c093395ac7 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 6: T329 claimed 10:44Z, lease until 13:44Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
 - **Week:** 41% used, 110.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:13Z, 1 min before this update
-- **Keeper:** last ran 11:13Z, next wake 13:47Z
+- **Last run:** 11:14Z, 0 min before this update
+- **Keeper:** last ran 11:15Z, next wake 13:48Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -99,7 +99,6 @@ Updated 2026-11-14T11:14:41Z by runner f7c093395ac7 (actions).
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z |  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T312 | intake: a street address written in lower case never trips t | done | 2 | 51 min | 12:32Z | session ended without handing in |
-| T428 | Switch the brand file to Laftly and re-issue the legal recor | done | 3 | 46 min | 11:14Z | session ended without handing in |
 
 ### Plan and harness merges on main
 - 10:42Z Plan: T329 notice-email copy gap (D-3687) (#768)
