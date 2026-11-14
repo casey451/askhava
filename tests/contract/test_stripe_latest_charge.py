@@ -2,11 +2,13 @@
 
 Against the in-process fake (`stand_ins/stripe.py`) and over HTTP (`stand_ins/server.py`): a
 confirmed and a fetched succeeded intent carry `latest_charge` as a `ch_` ID string (unexpanded,
-as Stripe sends it; D-3118 keeps the `expand[]=latest_charge` swap as it is), and an intent not
-yet succeeded carries none (FEE-042, SEC-030, D-2623). Each body has every field the Rust
-`PaymentIntent` (`app/adapters/src/payments.rs`) requires, so it decodes; that struct's own test
-`td_fee_66_the_intent_decodes_its_latest_charge` decodes the same shapes, with and without the
-field. Fake data only.
+as Stripe sends it; D-3118 keeps the `expand[]=latest_charge` swap as it is), and the stand-in
+gives an intent not yet succeeded none (FEE-042, SEC-030, D-2623). Real Stripe differs after a
+decline: the intent is `requires_payment_method` and `latest_charge` names the failed charge, so
+only `status == "succeeded"` decides payment, never the presence of a `ch_` ID (D-3647). Each
+body has every field the Rust `PaymentIntent` (`app/adapters/src/payments.rs`) requires, so it
+decodes; that struct's own test `td_fee_66_the_intent_decodes_its_latest_charge` decodes the same
+shapes, with and without the field. Fake data only.
 """
 
 from __future__ import annotations
@@ -96,7 +98,10 @@ def test_td_fee_66_an_approved_three_d_secure_intent_names_its_charge() -> None:
 
 
 def test_td_fee_66_a_declined_intent_has_no_charge() -> None:
-    """TD-FEE-66: a declined confirm leaves the intent without a `latest_charge`."""
+    """TD-FEE-66: in the stand-in, a declined confirm leaves the intent unpaid and without a charge.
+
+    Real Stripe would name the failed charge in `latest_charge`; the unpaid status is what counts.
+    """
     fake = stripe.FakeStripe()
     pi = unconfirmed(fake, "pick-fake-352c")
     status, _ = fake.confirm_payment_intent(pi["id"], {"payment_method": DECLINE_CARD}, "pick-fake-352c-try1")

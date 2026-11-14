@@ -55,10 +55,12 @@ pub struct PaymentIntent {
     /// omits it, D-727). The release check (SEC-030) treats `None` as a
     /// mismatch in every mode, never as test mode.
     pub livemode: Option<bool>,
-    /// Stripe's `latest_charge`, unexpanded: the `ch_…` ID of a succeeded intent's charge,
-    /// for the charge ledger entry and evidence record (FEE-042, SEC-030, D-2623). `None`
-    /// when Stripe sent none (not yet succeeded) or a body lacks the field; requiring it on a
-    /// succeeded intent is the release check's job, not the decode's.
+    /// Stripe's `latest_charge`, unexpanded: the `ch_…` ID of the intent's most recent charge,
+    /// for the charge ledger entry and evidence record (FEE-042, SEC-030, D-2623). It is no
+    /// proof of payment: after a decline real Stripe names the failed charge here while the
+    /// status is `requires_payment_method`, so only `status == "succeeded"` decides payment.
+    /// `None` when Stripe sent `null` (no charge attempted yet) or a body lacks the field;
+    /// requiring it on a succeeded intent is the release check's job (T359), not the decode's.
     #[serde(default)]
     pub latest_charge: Option<String>,
 }
