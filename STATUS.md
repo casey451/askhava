@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T08:04:16Z by runner 684c172de6b4 (actions).
+Updated 2026-11-14T08:04:37Z by runner 684c172de6b4 (actions).
 
-**Building: T280 in progress since 06:32Z; 315 of 436 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 08:04Z; 315 of 436 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 315 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T280 claimed 06:32Z, lease until 09:32Z
+- **Lane:** idle since 08:04Z (no task in progress)
 - **Week:** 38% used, 117.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:01Z, 2 min before this update
+- **Last run:** 08:01Z, 3 min before this update
 - **Keeper:** last ran 08:01Z, next wake 09:35Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-14T08:04:16Z by runner 684c172de6b4 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T280 | server and messaging (harness): the business sign-in pages a | MERGE_PENDING | 4 | 91 min | 08:04Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T396 | businesses and messaging (harness): a phone a member links o | MERGE_PENDING | 2 | 56 min | 07:52Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T359 | payments: a successful charge writes its own charge ledger e | BLOCKED | 1 | 39 min | 07:43Z | PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, an |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 2 | 42 min | 07:38Z | merging main into the reviewed head conflicts in app/adapters/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -27,7 +28,7 @@ Updated 2026-11-14T08:04:16Z by runner 684c172de6b4 (actions).
 | T352 | adapters and stand-in (harness): the PaymentIntent carries S | done | 1 | 51 min | 06:14Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 51 min | 06:03Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 51 min | 06:02Z |  |
-| T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 3 | 22 min | 05:44Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
+| T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 3 | 22 min | 05:44Z |  |
 | T393 | portals and licensing: the served quote page's cards show ea | done | 1 | 74 min | 05:40Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z |  |
@@ -167,7 +168,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T280 (lease until 2026-11-14T09:32:17Z)
 
 ## Last usage reading
-- {"task": "T396", "at": "2026-11-14T07:52:51Z", "cache_read_input_tokens": 1555070, "input_tokens": 89, "cache_creation_input_tokens": 83514, "output_tokens": 16615}
+- {"task": "T280", "at": "2026-11-14T08:04:15Z", "cache_read_input_tokens": 4262742, "output_tokens": 34274, "cache_creation_input_tokens": 158940, "input_tokens": 161}
