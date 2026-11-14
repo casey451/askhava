@@ -28379,7 +28379,7 @@
     "T466",
     "T467"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "served-confirm-route",
    "type": "build",
@@ -28393,8 +28393,8 @@
     3720,
     3721
    ],
-   "reason": "plan gap reported: PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No reader for businesses.signup.submitted_at (written app/businesses/src/models.rs:296, never read); catalog.category has no switch-on timestamp (migrations/0027_catalog_module.sql:15-26); no task in kit/tasks.json (T475-T484 included) builds them; T261 owns no businesses or catalog file. Reviewer confirmed. same_customer_jobs (intake::api::job_homeowner + jobs_of_contact) and the launch-date/Stripe-key settings (shared core settings.rs) are sourceable by T261. Needed: a task a; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No reader for businesses.signup.submitted_at (written app/businesses/src/models.rs:296, never read); catalog.category has no switch-on timestamp (migrations/0027_catalog_module.sql:15-26); no task in kit/tasks.json (T475-T484 included) builds them; T261 owns no businesses or catalog file. Reviewer confirmed. same_customer_jobs (intake::api::job_homeowner + jobs_of_contact) and the launch-date/Stripe-key settings (shared core settings.rs) are sourceable by T261. Needed: a task adding a businesses join-date reader and a catalog switch-on time (migration plus reader), with T261 depending on it.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No reader for businesses.signup.submitted_at (written app/businesses/src/models.rs:296, never read); catalog.category has no switch-on timestamp (migrations/0027_catalog_module.sql:15-26); no task in kit/tasks.json (T475-T484 included) builds them; T261 owns no businesses or catalog file. Reviewer confirmed. same_customer_jobs (intake::api::job_homeowner + jobs_of_contact) and the launch-date/Stripe-key settings (shared core settings.rs) are sourceable by T261. Needed: a task adding a businesses join-date reader and a catalog switch-on time (migration plus reader), with T261 depending on it.\nre-queued after plan fix D-3779: D-3779 (#807): T486 adds switched_on_at, trades_opened and join_facts for JoinDates; T261 waits on T486",
    "history": [
     {
      "attempt": 1,
@@ -28456,6 +28456,19 @@
      "plan_head": "45c9090508ad57c4bf49d0dbd85bc2f04129222f",
      "plan_then": "7fd31dec5c95a2748475fa6c18a1506e84a7a4091b3eead22f8b3a6aa5b7af68",
      "plan_now": "a6fe785c7e2abc7b44f860efeebedd4f0f502a1a99bb74bea66940bd3896653b"
+    },
+    {
+     "at": "2026-11-14T22:19:27Z",
+     "reason": "D-3779 (#807): T486 adds switched_on_at, trades_opened and join_facts for JoinDates; T261 waits on T486",
+     "by": "manual-698cd1b2d491",
+     "was": "plan gap reported: PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No reader for businesses.signup.submitted_at (written app/businesses/src/models.rs:296, never read); catalog.category has no switch-on timestamp (migrations/0027_catalog_module.sql:15-26); no task in kit/tasks.json (T475-T484 included) builds them; T261 owns no businesses or catalog file. Reviewer confirmed. same_customer_jobs (intake::api::job_homeowner + jobs_of_contact) and the launch-date/Stripe-key settings (shared core settings.rs) are sourceable by T261. Needed: a task a; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-3779",
+     "plan_since": "2026-11-14T21:34:37Z",
+     "plan_base": "5c153897b3f566976c5c9eeb10c4b635b9c8d8e8",
+     "plan_head": "8b2105cd4bc7b0dc7397ed968617a12fe8fb5962",
+     "plan_then": "a6fe785c7e2abc7b44f860efeebedd4f0f502a1a99bb74bea66940bd3896653b",
+     "plan_now": "2667e8ec71a6f76cfaf02ac87a0217beb8e3b8710dec46dfb7c3be1fdc023d80"
     }
    ]
   },
@@ -60132,7 +60145,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T22:19:18Z",
+ "updated_at": "2026-11-14T22:19:27Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

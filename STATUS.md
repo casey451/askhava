@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:19:18Z by runner 8b2105cd4bc7 (manual).
+Updated 2026-11-14T22:19:27Z by runner 8b2105cd4bc7 (manual).
 
 **Building: T301 in progress since 21:48Z; 334 of 471 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -12,7 +12,6 @@ Updated 2026-11-14T22:19:18Z by runner 8b2105cd4bc7 (manual).
 - **Keeper:** last ran 22:14Z, next wake 00:45Z
 
 ## Needs attention
-- BLOCKED T261: plan gap reported: PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No reader for businesses.signup.submitted_at (written app/businesses/src/models.rs:296, never read); catalog.category has no switch-on timestamp (migrations/0027_catalog_module.sql:15-26); no task in kit/tasks.json (T475-T484 included) builds them; T261 owns no businesses or catalog file. Reviewer confirmed. same_customer_jobs (intake::api::job_homeowner + jobs_of_contact) and the launch-date/Stripe-key settings (shared core settings.rs) are sourceable by T261. Needed: a task a; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 19 problem(s) on tasks still to run (+109 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
 
