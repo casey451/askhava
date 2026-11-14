@@ -4463,3 +4463,4 @@
 - 2026-11-14T06:29:30Z runner f7cc24b1d073 (manual): {"T280": "BLOCKED -> QUEUED"}
 - 2026-11-14T06:32:25Z runner 6aa7f43d7bd8 (actions): {}
 - 2026-11-14T06:32:45Z runner 6aa7f43d7bd8 (actions): {"T280": "QUEUED -> IN_PROGRESS"}; T280 estimated 901k tokens (calibrated); week has 118.3M left (no five-hour budget, D-3056) after 1.7M still running in another lane (session_reading 2026-11-14T06:27:42Z (week)); claimed
+- 2026-11-14T06:32:58Z runner 6aa7f43d7bd8 (actions): {}
