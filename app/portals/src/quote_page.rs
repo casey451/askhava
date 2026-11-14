@@ -153,6 +153,11 @@ impl PageView {
     pub(crate) const fn choose_again(&self, _number: &usize) -> bool {
         false
     }
+
+    /// The page alone has no failed Pick, so no error title or summary (A11Y-030, D-3629).
+    pub(crate) const fn choose_error(&self) -> Option<usize> {
+        None
+    }
 }
 
 /// One package radio on a tiers quote's card (PICK-053, D-2332): the value the pick flow reads
@@ -225,6 +230,13 @@ impl ShownPage {
     /// Whether quote `number`'s card shows the "choose a package" error (PICK-053).
     fn choose_again(&self, number: &usize) -> bool {
         self.again == Some(*number)
+    }
+
+    /// The quote whose failed Pick puts "Error: " in the title and the focused error summary,
+    /// linking to its first package, first in `<main>`; only a card with packages (A11Y-030,
+    /// PICK-053, D-3629).
+    fn choose_error(&self) -> Option<usize> {
+        self.again.filter(|n| !self.packages(n).is_empty())
     }
 }
 

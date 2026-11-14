@@ -262,6 +262,21 @@ async fn picks(db: &mut PgConnection, job: Uuid) -> i64 {
         .expect("picks")
 }
 
+/// A11Y-030 (PICK-053, D-3629): after a failed Pick the title begins "Error: " and the focused
+/// error summary is the first element in `<main>`, linking to quote #1's first package radio.
+fn assert_choose_error_summary(shown: &str) {
+    assert!(shown.contains("<title>Error: "), "{shown}");
+    let main = shown.split("<main").nth(1).expect("main");
+    let first = main.split_once('>').expect("main tag").1.trim_start();
+    assert!(
+        first.starts_with("<div id=\"tier-summary\" role=\"alert\" tabindex=\"-1\" autofocus>"),
+        "{first}"
+    );
+    assert!(first.contains("<a href=\"#quote-1-tier-1\">"), "{first}");
+    assert!(shown.contains("id=\"quote-1-tier-1\""), "{shown}");
+    assert_eq!(shown.matches("autofocus").count(), 1, "{shown}");
+}
+
 /// TD-FEE-70 (PICK-053): quote #1's Pick offers its three packages, none preselected; the firm
 /// quote #2 offers none. No package, a forged one or one the business changed since is the card
 /// again with its error, and no pick is stored.
@@ -287,7 +302,10 @@ async fn td_fee_70_no_or_stale_package_shows_the_choices_and_stores_nothing(pool
     );
     let shown = page.quote_page("?choose=1").await;
     assert!(shown.contains("id=\"quote-1-tier-error\""), "{shown}");
-    assert!(!page.quote_page("").await.contains("tier-error"));
+    assert_choose_error_summary(&shown);
+    let clean = page.quote_page("").await;
+    assert!(!clean.contains("tier-error") && !clean.contains("tier-summary"));
+    assert!(!clean.contains("<title>Error: "), "{clean}");
     for (tail, form) in [("", ("tier", plus.as_str())), ("/pick", ("share", "yes"))] {
         let (status, _) = page.post(tail, &[("quote", "1"), form]).await;
         assert_eq!(status, StatusCode::OK, "{tail}");
