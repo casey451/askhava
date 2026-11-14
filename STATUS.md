@@ -1,24 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-14T07:42:19Z by runner 61c94cc79081 (actions).
+Updated 2026-11-14T07:43:46Z by runner 61c94cc79081 (actions).
 
 **Building: T396 in progress since 06:56Z; 315 of 436 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 315 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T396 claimed 06:56Z, lease until 09:56Z; lane 3: T280 claimed 06:32Z, lease until 09:32Z; lane 4: T359 claimed 07:04Z, lease until 10:04Z
+- **Lane:** lane 1: T396 claimed 06:56Z, lease until 09:56Z; lane 3: T280 claimed 06:32Z, lease until 09:32Z
 - **Week:** 38% used, 117.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:42Z, 0 min before this update
+- **Last run:** 07:42Z, 1 min before this update
 - **Keeper:** last ran 07:42Z, next wake 09:35Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T359: plan gap reported: PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, and app/server/tests/release_recovery.rs:414 (T254, TD-PICK-49/50, no_fee_written) asserts money_view charges == 0. Both contradict TD-FEE-64 (a success by confirm, check round or webhook leaves one charge ledger entry). T359 owns neither file (kit/tasks.json: T433 owns payment_jobs.rs, T254 owns release_recovery.rs). Reviewer confirmed. Smallest fix: a harness change letting T359 adopt both tests, tightened to expect exactly one charge row keyed charge.<pick>. Staged attempt (; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T359 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 42 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 24% but it measures 17%; regenerate
+- Strict plan check red: 41 problem(s) on tasks still to run (+97 on DONE tasks); first: T396: stored context_pct 24% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T359 | payments: a successful charge writes its own charge ledger e | BLOCKED | 1 | 39 min | 07:43Z | PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, an |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 2 | 42 min | 07:38Z | merging main into the reviewed head conflicts in app/adapters/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 30 min | 06:48Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 21 min | 06:40Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
@@ -166,7 +168,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T396 (lease until 2026-11-14T09:56:42Z)
 - lane 3: T280 (lease until 2026-11-14T09:32:17Z)
-- lane 4: T359 (lease until 2026-11-14T10:04:22Z)
 
 ## Last usage reading
-- {"task": "T437", "at": "2026-11-14T07:38:22Z", "cache_read_input_tokens": 1240105, "output_tokens": 15047, "input_tokens": 90, "cache_creation_input_tokens": 85904}
+- {"task": "T359", "at": "2026-11-14T07:43:46Z", "cache_read_input_tokens": 8173224, "input_tokens": 166, "output_tokens": 65639, "cache_creation_input_tokens": 188334}
