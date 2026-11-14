@@ -35,7 +35,7 @@ use crate::base::{AdapterError, Auth, IdempotencyKey, VendorHttp, is_vendor_id};
 
 /// The fields of a Stripe PaymentIntent the release check compares after the
 /// re-fetch: livemode, customer, amount, currency and pick (PICK-022, SEC-030,
-/// SEC-039). Every field but `livemode` is required, so a body missing one
+/// SEC-039). Every field but `livemode` and `latest_charge` is required, so a body missing one
 /// fails with [`AdapterError::Decode`].
 #[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
 pub struct PaymentIntent {
@@ -55,6 +55,14 @@ pub struct PaymentIntent {
     /// omits it, D-727). The release check (SEC-030) treats `None` as a
     /// mismatch in every mode, never as test mode.
     pub livemode: Option<bool>,
+    /// Stripe's `latest_charge`, unexpanded: the `ch_…` ID of the intent's most recent charge,
+    /// for the charge ledger entry and evidence record (FEE-042, SEC-030, D-2623). It is no
+    /// proof of payment: after a decline real Stripe names the failed charge here while the
+    /// status is `requires_payment_method`, so only `status == "succeeded"` decides payment.
+    /// `None` when Stripe sent `null` (no charge attempted yet) or a body lacks the field;
+    /// requiring it on a succeeded intent is the release check's job (T359), not the decode's.
+    #[serde(default)]
+    pub latest_charge: Option<String>,
 }
 
 /// The metadata on a PaymentIntent: the pick it pays for (PICK-022).
@@ -639,7 +647,7 @@ mod tests {
 
     use secrecy::{ExposeSecret, SecretString};
 
-    use super::{ChargeList, StripePayments, ThreeDs};
+    use super::{ChargeList, PaymentIntent, StripePayments, ThreeDs};
     use crate::base::{AdapterError, IdempotencyKey};
 
     /// A client for a vendor that answers one request with `answer` and hands back the request
@@ -918,5 +926,27 @@ mod tests {
             .submit_dispute_evidence(&key("x"), "ch_fake1", &form)
             .await;
         assert!(matches!(refused, Err(AdapterError::InvalidId)));
+    }
+
+    /// A stand-in shaped PaymentIntent body, `latest_charge` given as raw JSON or left out.
+    fn intent_body(status: &str, latest_charge: Option<&str>) -> String {
+        let charge = latest_charge.map_or(String::new(), |c| format!(r#","latest_charge":{c}"#));
+        format!(
+            r#"{{"id":"pi_fake66","object":"payment_intent","status":"{status}","amount":7500,"currency":"usd","customer":"cus_fake66","metadata":{{"pick_id":"pick-fake-66"}}{charge}}}"#
+        )
+    }
+
+    /// TD-FEE-66 (FEE-042, SEC-030, D-2623): a succeeded intent decodes with its `ch_` charge
+    /// ID; Stripe's `null` on an unpaid intent and a body without the field decode to `None`.
+    #[test]
+    fn td_fee_66_the_intent_decodes_its_latest_charge() {
+        let decode = |body: String| serde_json::from_str::<PaymentIntent>(&body).expect("decodes");
+        let paid = decode(intent_body("succeeded", Some(r#""ch_fake66""#)));
+        assert_eq!(paid.latest_charge.as_deref(), Some("ch_fake66"));
+        let unpaid = decode(intent_body("requires_payment_method", Some("null")));
+        assert_eq!(unpaid.latest_charge, None);
+        let without = decode(intent_body("requires_payment_method", None));
+        assert_eq!(without.latest_charge, None);
+        assert_eq!(without.id, "pi_fake66");
     }
 }

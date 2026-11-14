@@ -72,6 +72,7 @@ impl PaymentsAdapter for FakeStripe {
                 pick_id: pick_of(pick.parse().expect("n")).to_string(),
             },
             livemode: Some(false),
+            latest_charge: Some(id.replacen("pi_", "ch_", 1)),
         })
     }
     async fn create_refund(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {

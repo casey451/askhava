@@ -81,3 +81,4 @@
 - [SEC-032 OPS-017 CON-030 AI-022] (kit 8) cross-reference (D-3620): the build note of K8 is in `docs/build-notes.md`: `grep -n '(kit 8)' docs/build-notes.md`.
 - [SEC-016 TXT-013 TXT-014 CARD-019] (task 377) cross-reference (D-3620): the build note of T377 is in `app/core/NOTES.md`: `grep -n '(task 377)' app/core/NOTES.md`.
 - [SEC-016] (task 378) cross-reference (D-3620): the build note of T378 is in `app/calls/NOTES.md`: `grep -n '(task 378)' app/calls/NOTES.md`.
+- [FEE-042 SEC-030] (owns) T352, D-3647: `PaymentIntent.latest_charge` (`Option<String>`, `#[serde(default)]`) is Stripe's unexpanded `ch_` ID of the latest charge; never proof of payment (a decline may name a failed charge), only `status == "succeeded"` is. Tests: `td_fee_66_the_intent_decodes_its_latest_charge`, `tests/contract/test_stripe_latest_charge.py` (TD-FEE-66).
