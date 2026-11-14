@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-14T09:02:31Z by runner d6d1d54ea21a (actions).
+Updated 2026-11-14T09:02:48Z by runner d6d1d54ea21a (actions).
 
-**Building: T359 in progress since 08:06Z; 317 of 436 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T398 in progress since 09:02Z; 317 of 436 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 317 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T359 claimed 08:06Z, lease until 11:06Z; lane 5: T437 claimed 08:49Z, lease until 11:49Z
-- **Week:** 39% used, 112.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T398 claimed 09:02Z, lease until 12:02Z; lane 4: T359 claimed 08:06Z, lease until 11:06Z; lane 5: T437 claimed 08:49Z, lease until 11:49Z
+- **Week:** 39% used, 113.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:02Z, 0 min before this update
 - **Keeper:** last ran 09:01Z, next wake 11:08Z
 
@@ -120,7 +120,6 @@ Updated 2026-11-14T09:02:31Z by runner d6d1d54ea21a (actions).
 - 11:32Z Harness: fix-round hand-off, tighter output caps, crate_cap 2 (D-3444) (#665)
 - 11:16Z Harness: an API error session death does not use an attempt (D-3443) (#664)
 - 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
-- 09:02Z Plan: T255 plan gap 2, the address is written onto the homeowner's own contact (D-3431) (#660)
 
 ## Progress (requirements verified)
 
@@ -153,7 +152,7 @@ Updated 2026-11-14T09:02:31Z by runner d6d1d54ea21a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T08:41:06Z (week)): week: 81.4M used, 112.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T08:49:47Z.
+- Pacing (session_reading 2026-11-14T09:01:19Z (week)): week: 80.3M used, 113.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T08:57:44Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -169,6 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T398 (lease until 2026-11-14T12:02:18Z)
 - lane 4: T359 (lease until 2026-11-14T11:06:27Z)
 - lane 5: T437 (lease until 2026-11-14T11:49:58Z)
 
