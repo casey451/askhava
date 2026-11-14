@@ -16,7 +16,9 @@
 //! card (`sent_card`, D-3189) and the job page, parses the price, facts and note, warns once
 //! above the business's largest job (`largest_job_warning`, D-2710), checks the quote with
 //! `parse_quote` and stores it with `submit_quote_with_facts`; any problem rolls back and shows
-//! the form again, so the link stays unused. Every other kind's `POST` gets the one not-found
+//! the form again, so the link stays unused; the form shown again with a parsed price carries
+//! its introduction fee by job size lines (PICK-039, D-3672). A used link's repeat `POST` is the
+//! 404, an open gap (D-3673). Every other kind's `POST` gets the one not-found
 //! answer before any token read (D-3675). A wrong kind, object, person, an ended, used or
 //! unknown token, a removed member's token and a job with no sent card or no rules all get the
 //! same bare 404. Every response is `no-store`.
@@ -28,17 +30,18 @@ use askhava_businesses::api::capabilities;
 use askhava_core::api::{Clock, SystemClock};
 use askhava_intake::api::Admission;
 use askhava_jobs::api::{job_facts, job_number};
+use askhava_payments::api::{JobCodes, JobFeeFacts, resolve_fee_facts};
 use askhava_portals::api::{
     ACTION_ROUTE, ActionFacts, ActionKind, ActionLinkError, CookieJar, CsrfField, CsrfForm,
     FactsForm, LargestWarning, PriceForm, QuoteFormFacts, UseBy, WebSecurity, action_page,
-    admit_quote, business_principal, csrf_token, ensure_pre_session, job_details_page,
+    admit_quote, business_principal, csrf_token, ensure_pre_session, fee_lines, job_details_page,
     largest_job_warning, open_action_link, parse_facts, prefill, quote_form_page_priced,
     refuse_cross_site, security_event_client, use_action_link,
 };
 use askhava_portals::api::{JobPageLinks, no_store};
 use askhava_quotes::api::{
-    Bounce, NoteProblem, PageParts, PriceFields, PriceProblem, QuoteForm, QuoteRules, Submitted,
-    check_note, job_page, last_facts, parse_price, parse_quote, quote_rules, sent_card,
+    Bounce, NoteProblem, PageParts, Price, PriceFields, PriceProblem, QuoteForm, QuoteRules,
+    Submitted, check_note, job_page, last_facts, parse_price, parse_quote, quote_rules, sent_card,
     submit_quote_with_facts,
 };
 use axum::extract::{FromRef, Path, Request, State};
@@ -239,6 +242,7 @@ struct ReadForm {
     rules: QuoteRules,
     facts: QuoteFormFacts,
     parts: PageParts,
+    fees: Option<JobFeeFacts>,
 }
 
 /// CARD-023, PICK-053, D-3189: the form's rules, counts and pre-fill for `link`; not found when
@@ -267,8 +271,7 @@ async fn read_form(
         .map_err(failed)?;
     let shown = shown.ok_or(Stop::NotFound)?;
     let number = job_number(tx, job).await.map_err(failed)?;
-    let job_type = job_facts(tx, job).await.map_err(failed)?;
-    let job_type = job_type.and_then(|f| f.job_types.into_iter().next());
+    let (fees, job_type) = fee_facts(tx, job).await?;
     let last = match job_type {
         Some(t) => last_facts(tx, business, &t).await.map_err(failed)?,
         None => None,
@@ -287,7 +290,38 @@ async fn read_form(
         rules,
         facts,
         parts,
+        fees,
     })
+}
+
+/// FEE-004, FEE-045, D-2331, D-3672: the job's fee facts from its latest stored codes through
+/// `payments::api::resolve_fee_facts` (none when unsettled), and its first job type.
+async fn fee_facts(
+    tx: &mut PgConnection,
+    job: Uuid,
+) -> Result<(Option<JobFeeFacts>, Option<String>), Stop> {
+    let row = job_facts(tx, job).await.map_err(failed)?;
+    let codes = row.as_ref().map(|r| JobCodes {
+        category: &r.category,
+        job_types: &r.job_types,
+    });
+    let fees = resolve_fee_facts(tx, codes).await.map_err(failed)?;
+    Ok((fees, row.and_then(|r| r.job_types.into_iter().next())))
+}
+
+/// PICK-039, FEE-043, D-3672: the introduction fee by job size lines for a parsed `price` on a
+/// job with settled fee facts; none when the facts are unsettled or the price can't carry a fee
+/// yet. A diagnostic visit (or hourly with no hours) is priced as one; a monthly price has a period.
+fn fee_lines_for(fees: Option<JobFeeFacts>, price: &Price) -> Vec<String> {
+    let Some(fees) = fees else {
+        return Vec::new();
+    };
+    let diagnostic_visit = matches!(
+        price,
+        Price::VisitFee(_) | Price::Hourly { hours: None, .. }
+    );
+    let has_period = matches!(price, Price::Monthly { .. });
+    fee_lines(price, fees.period_job(diagnostic_visit, has_period)).unwrap_or_default()
 }
 
 /// The price part for `rules`' format with the posted `fields` and `note`.
@@ -544,7 +578,10 @@ fn bounced(bounce: Bounce) -> Problems {
 /// The form again with the posted values and `problems` (A11Y-030); nothing was stored.
 fn again(form: &ReadForm, csrf: &str, posted: &Posted, problems: &Problems) -> Option<String> {
     let fields = posted.price();
+    let parsed = parse_price(form.rules.format, &fields).ok();
+    let fee_lines = parsed.map(|(p, _)| fee_lines_for(form.fees, &p));
     let facts = QuoteFormFacts {
+        fee_lines: fee_lines.unwrap_or_default(),
         values: posted.facts(),
         same_as_last: false,
         problems: problems.facts.clone(),

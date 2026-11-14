@@ -437,6 +437,10 @@ async fn td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number(pool: PgP
         missing.text.contains("Error: "),
         "a missing price and facts show the form again"
     );
+    assert!(
+        missing.text.contains("<ul id=\"fee-lines\"></ul>"),
+        "no fee line without a price"
+    );
     let mut db = pool.acquire().await.expect("db");
     let none = stored_facts(&mut db, w.job, w.team.business)
         .await
@@ -522,6 +526,7 @@ async fn largest_job(w: &World, largest: LargestJob) {
     saved.await.expect("capability");
 }
 
+/// PICK-039, D-3672: the warned form, priced, shows its fee lines.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_50_a_quote_over_the_largest_job_is_warned_then_sent_once(pool: PgPool) {
     let w = world(&pool).await;
@@ -539,6 +544,10 @@ async fn td_biz_50_a_quote_over_the_largest_job_is_warned_then_sent_once(pool: P
             .contains("name=\"over_largest\" value=\"32500\"")
     );
     assert!(unused(&w, &path).await, "a warned quote is not sent");
+    assert!(
+        warned.text.contains("<ul id=\"fee-lines\"><li>If picked,"),
+        "the warned form shows the introduction fee by job size before submit (PICK-039)"
+    );
     let other = format!("{}&over_largest=30000", firm());
     let again = send(&w, (&Method::POST, &path, &other), Site::Own).await;
     assert!(
