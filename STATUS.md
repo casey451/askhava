@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:07:32Z by runner bc74ea9d3841 (actions).
+Updated 2026-11-14T00:07:54Z by runner dd258e06710f (actions).
 
-**Building: T437 in progress since 23:57Z; 301 of 431 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T437 in progress since 23:57Z; 301 of 428 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 301 of 431 build tasks (owner gates not counted)
+- **Tasks done:** 301 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T437 claimed 23:57Z, lease until 02:57Z; lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z; lane 6: T444 claimed 00:07Z, lease until 03:07Z
 - **Week:** 31% used, 127.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:03Z, 4 min before this update
+- **Last run:** 00:07Z, 0 min before this update
 - **Keeper:** last ran 00:01Z, next wake 03:00Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 30 problem(s) on tasks still to run (+197 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 31 problem(s) on tasks still to run (+197 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -79,6 +79,7 @@ Updated 2026-11-14T00:07:32Z by runner bc74ea9d3841 (actions).
 | T372 | businesses and licensing: each recorded ROC list re-applies  | done | 1 | 81 min | 01:07Z |  |
 
 ### Plan and harness merges on main
+- 00:07Z Plan: follow-up tasks T447–T449 from spot-review of pre-D-3444 fix rounds (D-3581) (#724)
 - 00:00Z Plan: fix T280/T328/T341 plan gaps; T444–T446; nightly gate robustness (D-3562, D-3563, D-3579, D-3580) (#723)
 - 21:01Z Plan: fewer smoke runs, scoped fix rounds, batched reads, decision excerpts (D-3530) (#698)
 - 20:53Z Plan: T438 plan gap, leave the ledger windows as today (D-3536) (#696)
@@ -107,8 +108,8 @@ Updated 2026-11-14T00:07:32Z by runner bc74ea9d3841 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 279 of 733 (38.1%) · partial 294 · unstarted 160
-**Tasks merged (throughput only):** 301 of 431
+**Requirements verified:** 281 of 733 (38.3%) · partial 292 · unstarted 160
+**Tasks merged (throughput only):** 301 of 428
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -118,8 +119,8 @@ Updated 2026-11-14T00:07:32Z by runner bc74ea9d3841 (actions).
 | calls | 10 | 14 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 14 | 37 | 1 | 52 |
-| intake | 26 | 14 | 3 | 43 |
-| job-cards | 18 | 6 | 0 | 24 |
+| intake | 27 | 13 | 3 | 43 |
+| job-cards | 19 | 5 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
 | lifecycle | 23 | 5 | 0 | 28 |
 | messaging | 24 | 19 | 2 | 45 |
