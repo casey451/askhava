@@ -35153,7 +35153,7 @@
     "T332",
     "T340"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "payment-jobs-registered",
    "type": "build",
@@ -35167,8 +35167,8 @@
     3572,
     3573
    ],
-   "reason": "plan gap reported: PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text cannot be sent from picks: picks may not depend on intake (kit/layers.json), and picks.pick stores no homeowner contact (migrations/0079_picks_code.sql:18-32). payments.pick_ended fires when no picks.release row exists, so release.contact_id is unavailable. The jobs.homeowner_text path (app/intake/src/job_texts.rs:56-74, 128-136, 358) has no PICK-046 template, no quote-list link, no EmergencyJob exemption, and is keyed once per job. Reviewer confirmed. Fix: a task that adds a pick; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T328 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text cannot be sent from picks: picks may not depend on intake (kit/layers.json), and picks.pick stores no homeowner contact (migrations/0079_picks_code.sql:18-32). payments.pick_ended fires when no picks.release row exists, so release.contact_id is unavailable. The jobs.homeowner_text path (app/intake/src/job_texts.rs:56-74, 128-136, 358) has no PICK-046 template, no quote-list link, no EmergencyJob exemption, and is keyed once per job. Reviewer confirmed. Fix: a task that adds a pick_lapsed template to intake, or a job-to-contact lookup picks may use; then T328 queues it.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text cannot be sent from picks: picks may not depend on intake (kit/layers.json), and picks.pick stores no homeowner contact (migrations/0079_picks_code.sql:18-32). payments.pick_ended fires when no picks.release row exists, so release.contact_id is unavailable. The jobs.homeowner_text path (app/intake/src/job_texts.rs:56-74, 128-136, 358) has no PICK-046 template, no quote-list link, no EmergencyJob exemption, and is keyed once per job. Reviewer confirmed. Fix: a task that adds a pick_lapsed template to intake, or a job-to-contact lookup picks may use; then T328 queues it.\nre-queued after plan fix D-3579: PICK-046 pick_lapsed event via intake",
    "history": [
     {
      "attempt": 1,
@@ -35192,6 +35192,21 @@
        "turns": 20
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-14T00:01:39Z",
+     "reason": "PICK-046 pick_lapsed event via intake",
+     "by": "manual-191e99f2c55d",
+     "was": "plan gap reported: PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text cannot be sent from picks: picks may not depend on intake (kit/layers.json), and picks.pick stores no homeowner contact (migrations/0079_picks_code.sql:18-32). payments.pick_ended fires when no picks.release row exists, so release.contact_id is unavailable. The jobs.homeowner_text path (app/intake/src/job_texts.rs:56-74, 128-136, 358) has no PICK-046 template, no quote-list link, no EmergencyJob exemption, and is keyed once per job. Reviewer confirmed. Fix: a task that adds a pick; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T328 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3579",
+     "plan_since": "2026-11-13T22:56:22Z",
+     "plan_base": "31c17d5aa447f0a57b77cad6d11b3f01ddc7ac45",
+     "plan_head": "bc74ea9d3841a693b28f909b90b4d7a99708f9b5",
+     "plan_then": "1512a2d61bd3c06257bcdb30e2da67aa53be37b94b4dc91819cece0b8fc994b5",
+     "plan_now": "dff03eff12d6fd2739ab9a507353d4efae07be1c8c7d8cb93965fe652796d4a8"
     }
    ]
   },
@@ -52262,7 +52277,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T00:01:32Z",
+ "updated_at": "2026-11-14T00:01:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
