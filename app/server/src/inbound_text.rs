@@ -27,6 +27,11 @@
 //! `businesses::api::auto_reply_due` holds queues `business_auto_reply` (BIZ-017, BIZ-032, D-1715),
 //! except a text that is exactly `LINK` and 4 digits (`calls::api::link_pin`), which goes only to
 //! `calls::api::link_reply` and gets no reply whether it linked or not (CALL-011, D-3079, T391).
+//! A directory hit counts as the business's only if `businesses::api::phone_standing` is not
+//! `Some(false)`: a staff phone waiting for the owner's approval takes an unknown number's path,
+//! so its STOP, LINK or other text never acts for the business; `None` (no staff phone row) keeps
+//! the business. Read in the delivery's transaction (CALL-012, BIZ-033, D-3081, D-3677, T435;
+//! test `tests/integration/tests/phone_approval_routes.rs`, TD-CALL-25).
 //! A first text whose new vault contact loses the unique phone index to a concurrent first text
 //! from the same phone continues with the winner's contact; if none is found the whole delivery
 //! rolls back, inbox row included, so Twilio sends it again (PRIV-001, TXT-012, D-1751). A status
@@ -57,7 +62,8 @@ use std::sync::Arc;
 
 use askhava_adapters::api::{Delivery, VerifiedWebhook, WebhookVendor, refuse, verify_webhook};
 use askhava_businesses::api::{
-    AUTO_REPLY_TEMPLATE, BusinessesError, ConsentError, auto_reply_due, phone_stopped, public_names,
+    AUTO_REPLY_TEMPLATE, BusinessesError, ConsentError, auto_reply_due, phone_standing,
+    phone_stopped, public_names,
 };
 use askhava_calls::api::{CallsError, link_pin, link_reply};
 use askhava_core::api::{Clock, Environment, NewTask, enqueue as enqueue_task};
@@ -75,7 +81,7 @@ use askhava_messaging::api::{
     ProviderKeyword, RESUBSCRIBE_WORDS, Relation, SendingNumber, detect_opt_out, emergency_plan,
     enqueue, keyword, listed_by, load_lines, on_inbound_text, queue_optout_followup,
     queue_paused_safety, raise_emergency, receive_inbound, receive_status, render, reply_to_help,
-    sender_business,
+    sender_line,
 };
 use askhava_ops::api::{
     Actor, AuditEntry, BannerBy, Change, NewAlert, OpsError, Severity, Switch, audit, is_paused,
@@ -968,15 +974,26 @@ fn plain_read(raw: &str, words: &InboundWords<'_>) -> Read {
 }
 
 /// Who wrote from `from`: a linked business phone's business (D-492), else the homeowner's vault
-/// contact. She just wrote, so TXT-009's "written first" holds for any reply (D-1308).
+/// contact. She just wrote, so TXT-009's "written first" holds for any reply (D-1308). A phone
+/// whose staff phone row waits for the owner's approval takes an unknown number's path, so its
+/// STOP, LINK or other text never acts for the business; a directory line with no staff phone row
+/// stays the business's (CALL-012, BIZ-033, D-3081, D-3263).
 async fn sender(db: &mut PgConnection, vault: &Vault, from: &str) -> Step<(Uuid, Relation)> {
-    match sender_business(db, vault, from)
-        .await
-        .map_err(outbox_halt)?
-    {
+    let business = match sender_line(db, vault, from).await.map_err(outbox_halt)? {
+        Some((id, line)) if acts_for_business(db, line).await? => Some(id),
+        _ => None,
+    };
+    match business {
         Some(id) => Ok((id, Relation::Business)),
         None => Ok((homeowner(db, vault, from).await?, Relation::OpenRequest)),
     }
+}
+
+/// Whether directory phone `line` may act for its business: not a staff phone row still waiting
+/// for the owner's approval (CALL-012, BIZ-033, D-3081). Read in the delivery's transaction.
+async fn acts_for_business(db: &mut PgConnection, line: Uuid) -> Step<bool> {
+    let standing = phone_standing(db, line).await.map_err(|_| Halt::Database)?;
+    Ok(standing != Some(false))
 }
 
 /// BIZ-032, D-1715: the reply to a business phone's text that `auto_reply_due` says needs one,

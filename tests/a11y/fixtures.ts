@@ -9,14 +9,17 @@
 // entry fails `axe_all_pages.spec.ts`, so a new page can't be skipped. Which states run
 // (`STATES_TO_CHECK`), the route table, `NOT_PAGES`, the axe tags and the fixture stay here, so the
 // shared data file can never narrow what is checked. `pageUrl` seeds a state once per worker with
-// its own route's seed function. The check functions run in the page and return a
+// its own route's seed function; a seed may return a URL with cookies (T452, D-3674), which `open`
+// sets for that URL's origin before it loads the page, so a page behind a session is checked too.
+// The check functions run in the page and return a
 // list of problems, empty when the page passes; the specs assert it is empty, and their planted
 // cases assert a planted fault is reported. Fake data only.
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { AxeBuilder } from "@axe-core/playwright";
 import { test as base, expect, type Page } from "@playwright/test";
-import { PAGE_ENTRIES, PAGE_STATES, type PageState } from "./page_states";
+import { webPort } from "../e2e/webserver";
+import { PAGE_ENTRIES, PAGE_STATES, type PageState, type Seeded } from "./page_states";
 
 /** The three widths every page and state is checked at (A11Y-001, A11Y-002). */
 export const WIDTHS = [320, 768, 1280] as const;
@@ -33,6 +36,7 @@ export const REVIEWED_INCOMPLETE: readonly string[] = [];
  */
 const NOT_PAGES: readonly (readonly [string, string])[] = [
   ["/static/portals/feedback.css", "the feedback page's stylesheet, checked through /f/{token} (T230)"],
+  ["/b/billing/statement.csv", "T300's CSV statement, a download checked through /b/billing"],
   ["nest_service(&mount)", "server's built browser scripts at /static/<crate>/, files not pages, run by the pages that load them (T362)"],
 ];
 const notAPage = (entry: string): boolean => NOT_PAGES.some(([listed]) => listed === entry);
@@ -93,8 +97,18 @@ export { PAGE_STATES, type PageState };
 /** The `(route, state)` pairs to run: every state of every route in the route table. */
 export const STATES_TO_CHECK = PAGE_STATES.filter((state) => ROUTES.includes(state.route));
 
+/** The cookies a seed returned, by the URL it returned with them; `open` sets them (D-3674). */
+const SEED_COOKIES = new Map<string, Exclude<Seeded, string>>();
+
+/** Records a seed's cookies for `open` and returns the URL or path that opens its state (D-3674). */
+export function seededUrl(seeded: Seeded): string {
+  if (typeof seeded === "string") return seeded;
+  SEED_COOKIES.set(seeded.url, seeded);
+  return seeded.url;
+}
+
 /**
- * Seeds `state` with its own route's seed function and returns the path that opens it
+ * Seeds `state` with its own route's seed function and returns the URL or path that opens it
  * (TD-A11Y-03). A route with no entry, or with more than one, fails rather than guess.
  */
 function seed(state: PageState): string {
@@ -103,7 +117,7 @@ function seed(state: PageState): string {
   if (entry === undefined || entries.length > 1) {
     throw new Error(`${String(entries.length)} page_states.ts entries for ${state.route}; want exactly one`);
   }
-  return entry.seed(state);
+  return seededUrl(entry.seed(state));
 }
 
 /** Fixtures: `pageUrl(state)` seeds a state once per worker and returns its path. */
@@ -123,9 +137,24 @@ export const test = base.extend<object, { pageUrl: (state: PageState) => string 
 
 export { expect };
 
-/** Opens `state` at `width` wide and `height` tall and waits for it to load. */
+/**
+ * Opens `state` at `width` wide and `height` tall and waits for it to load, after setting the
+ * cookies its seed returned as a `__Host-` cookie needs them: host-only on the URL's host, path `/`,
+ * `Secure`, `HttpOnly`, `SameSite=Lax` (D-3674). A path resolves against the suite's web binary.
+ */
 export async function open(page: Page, url: string, width: number, height = 900): Promise<void> {
   await page.setViewportSize({ width, height });
+  const domain = new URL(url, `http://127.0.0.1:${String(webPort())}`).hostname;
+  const cookies = (SEED_COOKIES.get(url)?.cookies ?? []).map(({ name, value }) => ({
+    name,
+    value,
+    domain,
+    path: "/",
+    secure: true,
+    httpOnly: true,
+    sameSite: "Lax" as const,
+  }));
+  if (cookies.length > 0) await page.context().addCookies(cookies);
   const reply = await page.goto(url);
   expect(reply?.status(), url.replace(/[0-9a-f]{64}/, "{token}")).toBe(200);
 }
