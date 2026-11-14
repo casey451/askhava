@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T16:03:12Z by runner 45c9090508ad (actions).
+Updated 2026-11-14T16:03:33Z by runner 45c9090508ad (actions).
 
 **Building: T439 in progress since 15:21Z; 328 of 452 done; week 47% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-14T16:03:12Z by runner 45c9090508ad (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T439 claimed 15:21Z, lease until 18:21Z; lane 2: T467 claimed 15:44Z, lease until 18:44Z; lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane 7: T300 claimed 14:35Z, lease until 17:35Z
 - **Week:** 47% used, 98.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:02Z, 0 min before this update
-- **Keeper:** last ran 16:02Z, next wake 17:38Z
+- **Last run:** 16:03Z, 0 min before this update
+- **Keeper:** last ran 16:03Z, next wake 17:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -102,7 +102,6 @@ Updated 2026-11-14T16:03:12Z by runner 45c9090508ad (actions).
 | T436 | portals, core and server: expired sessions are swept and old | resync | 1 | 28 min | 16:53Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | done | 2 | 22 min | 16:46Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T319 | portals and server: security-event rows are capped per addre | done | 1 | 17 min | 16:40Z |  |
-| T386 | messaging (harness): the pick notice's "Can't take it" line  | resync | 2 | 35 min | 16:03Z |  |
 
 ### Plan and harness merges on main
 - 15:37Z Plan: fee_terms_changed pick end reason (new T467) so T261's Confirm page can end a pick safely (D-3722) (#788)
