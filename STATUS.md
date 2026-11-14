@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:26:52Z by runner d6d1d54ea21a (actions).
+Updated 2026-11-14T10:27:12Z by runner d0b8abeaf423 (actions).
 
 **Building: T435 in progress since 10:15Z; 318 of 436 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T10:26:52Z by runner d6d1d54ea21a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 4: T359 claimed 09:38Z, lease until 13:24Z; lane 5: T329 claimed 10:25Z, lease until 13:25Z
 - **Week:** 41% used, 110.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:26Z, 0 min before this update
+- **Last run:** 10:27Z, 0 min before this update
 - **Keeper:** last ran 10:26Z, next wake 13:17Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-14T10:26:52Z by runner d6d1d54ea21a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 3 | 52 min | 10:25Z | merging main into the task branch conflicts in app/businesses/CLAUDE.md, app/messaging/CLAUDE.md, app/portals/CLAUDE.md, |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 52 min | 10:25Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T398 | businesses: notice texts go only to approved phones, and a m | done | 1 | 38 min | 09:41Z |  |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 4 | 2 min | 09:18Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T301 | server and portals: the email action links are served (the q | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
