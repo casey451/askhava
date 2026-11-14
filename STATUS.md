@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T01:10:17Z by runner a2cc1d943733 (actions).
+Updated 2026-11-14T01:10:26Z by runner a2cc1d943733 (actions).
 
-**Building: T341 in progress since 00:03Z; 303 of 431 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T280 in progress since 00:35Z; 303 of 431 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 303 of 431 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 4: T447 claimed 01:03Z, lease until 04:03Z
+- **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 4: T447 claimed 01:03Z, lease until 04:03Z
 - **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:10Z, 0 min before this update
 - **Keeper:** last ran 01:05Z, next wake 03:05Z
@@ -20,6 +20,7 @@ Updated 2026-11-14T01:10:17Z by runner a2cc1d943733 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T341 | picks (harness): a pick of a tiers quote names its tier, and | MERGE_PENDING | 2 | 67 min | 01:10Z | PLAN GAP: test-design.md:203 (TD-FEE-63) and D-2332 require a text pick of a tiers quote to store nothing and reply with |
 | T328 | picks and server: an ended pick offers the next quote (`paym | MERGE_PENDING | 2 | 61 min | 01:04Z | PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text canno |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z | PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emaile |
 | T448 |  | done | 1 | 38 min | 00:49Z |  |
@@ -28,7 +29,7 @@ Updated 2026-11-14T01:10:17Z by runner a2cc1d943733 (actions).
 | T391 | calls, businesses, messaging and server: the main phone's "L | done | 1 | 47 min | 23:23Z |  |
 | T415 | businesses, messaging and server: the production phone link  | done | 1 | 69 min | 23:15Z |  |
 | T355 | picks: the release claim re-checks the pick under its row lo | done | 1 | 59 min | 23:11Z |  |
-| T341 | picks (harness): a pick of a tiers quote names its tier, and | BLOCKED | 1 | 3 min | 23:11Z | PLAN GAP: test-design.md:203 (TD-FEE-63) and D-2332 require a text pick of a tiers quote to store nothing and reply with |
+| T341 | picks (harness): a pick of a tiers quote names its tier, and | BLOCKED | 1 | 3 min | 23:11Z |  |
 | T328 | picks and server: an ended pick offers the next quote (`paym | BLOCKED | 1 | 4 min | 23:00Z |  |
 | T340 | picks and payments: the fee at the pick uses the job's lates | done | 1 | 40 min | 22:32Z |  |
 | T357 | server, messaging and intake: START into an open request res | done | 2 | 21 min | 22:14Z | Ci: failure; Lint and slow tests: failure / Lint and slow tests failed at step: Rust format and lint (clippy once, befor |
@@ -157,9 +158,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T341 (lease until 2026-11-14T03:03:00Z)
 - lane 3: T280 (lease until 2026-11-14T03:35:47Z)
 - lane 4: T447 (lease until 2026-11-14T04:03:49Z)
 
 ## Last usage reading
-- {"task": "T328", "at": "2026-11-14T01:04:07Z", "cache_creation_input_tokens": 358033, "output_tokens": 99748, "cache_read_input_tokens": 14639577, "input_tokens": 327}
+- {"task": "T341", "at": "2026-11-14T01:10:02Z", "output_tokens": 85338, "cache_creation_input_tokens": 296400, "cache_read_input_tokens": 10686488, "input_tokens": 295}
