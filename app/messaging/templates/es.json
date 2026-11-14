@@ -355,6 +355,12 @@
     "segments": 2,
     "text": "{brand_short}: No hay una cotización {quoted} para elegir en la solicitud {job}. Responda LISTA para ver sus cotizaciones."
   },
+  "text_pick_package": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "{brand_short}: La cotización {quoted} de la solicitud {job} ofrece varios paquetes. Todavía no hay nada elegido. Elija el que quiera en su página de cotizaciones: {link}"
+  },
   "text_pick_confirmed": {
     "audience": "homeowner",
     "draft": true,
