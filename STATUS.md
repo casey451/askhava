@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T20:52:04Z by runner 6e50abaf42cd (actions).
+Updated 2026-11-14T20:52:43Z by runner 1a0927467bbf (actions).
 
-**Building: T459 in progress since 19:49Z; 330 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T459 in progress since 19:49Z; 331 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 330 of 469 build tasks (owner gates not counted)
+- **Tasks done:** 331 of 469 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T459 claimed 19:49Z, lease until 22:49Z; lane 6: T300 claimed 19:50Z, lease until 23:48Z
 - **Week:** 51% used, 88.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:51Z, 0 min before this update
+- **Last run:** 20:52Z, 0 min before this update
 - **Keeper:** last ran 20:52Z, next wake 22:52Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-14T20:52:04Z by runner 6e50abaf42cd (actions).
 |---|---|---|---|---|---|---|
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T468 | portals, businesses and messaging: public paths for sign-up' | MERGE_PENDING | 1 | 29 min | 20:19Z |  |
-| T474 | harness: clearing a red main counts a failed attempt against | MERGE_PENDING | 1 | 26 min | 20:18Z |  |
+| T474 | harness: clearing a red main counts a failed attempt against | done | 1 | 26 min | 20:18Z |  |
 | T467 | picks: a pick whose fee terms changed before its Confirm end | done | 1 | 27 min | 20:15Z |  |
 | FIX-MAIN |  | done | 1 | 78 min | 17:42Z |  |
 | T467 | picks: a pick whose fee terms changed before its Confirm end | resync | 1 | 43 min | 16:28Z |  |
@@ -122,7 +122,7 @@ Updated 2026-11-14T20:52:04Z by runner 6e50abaf42cd (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 304 of 733 (41.5%) · partial 272 · unstarted 157
-**Tasks merged (throughput only):** 330 of 469
+**Tasks merged (throughput only):** 331 of 469
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -157,7 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 210 of 229 done
+- stage 4: 211 of 229 done
 - stage 5: 0 of 86 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
