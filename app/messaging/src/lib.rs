@@ -41,6 +41,7 @@ mod retries;
 mod rules;
 mod send_window;
 mod service;
+mod signin_mail;
 mod status;
 mod templates;
 
