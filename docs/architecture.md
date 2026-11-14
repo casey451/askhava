@@ -544,7 +544,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /b/sign-in/{token} | portals | yes |
 | GET | /b/a/{kind}/{object}/{token} | portals | T301 |
 | POST | /b/a/{kind}/{object}/{token} | portals | T301 |
-| GET | /b/signup | portals | T302 |
+| GET | /b/signup | portals | yes |
 | POST | /b/signup/start | portals | T459 |
 | POST | /b/signup/send | portals | T460 |
 | POST | /b/signup/old | portals | T460 |

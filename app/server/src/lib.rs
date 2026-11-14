@@ -34,6 +34,7 @@ use tower_http::trace::TraceLayer;
 
 pub mod business_contacts;
 pub mod business_signin;
+pub mod business_signup;
 pub mod call_status;
 pub mod catalog_start;
 pub mod checkin;
@@ -101,6 +102,7 @@ pub struct RouterParts {
     limit: RequestTimeout,
     statics: StaticRoot,
     signin: Option<business_signin::ServedSignIn>,
+    signup: Option<business_signup::ServedSignUp>,
 }
 
 impl RouterParts {
@@ -108,6 +110,13 @@ impl RouterParts {
     #[must_use]
     pub fn with_sign_in(mut self, signin: business_signin::ServedSignIn) -> Self {
         self.signin = Some(signin);
+        self
+    }
+
+    /// Adds the served business sign-up (T302, D-3676); without it none is served.
+    #[must_use]
+    pub fn with_sign_up(mut self, signup: business_signup::ServedSignUp) -> Self {
+        self.signup = Some(signup);
         self
     }
 }
@@ -119,6 +128,7 @@ impl From<Hooks> for RouterParts {
             limit: RequestTimeout::DEFAULT,
             statics: StaticRoot::default(),
             signin: None,
+            signup: None,
         }
     }
 }
@@ -131,6 +141,7 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
             limit,
             statics,
             signin: None,
+            signup: None,
         }
     }
 }
@@ -142,8 +153,19 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
             limit,
             statics,
             signin: None,
+            signup: None,
         }
     }
+}
+
+/// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given.
+fn business_pages(
+    signin: Option<business_signin::ServedSignIn>,
+    signup: Option<business_signup::ServedSignUp>,
+) -> Router {
+    signin
+        .map_or_else(Router::new, business_signin::ServedSignIn::into_router)
+        .merge(signup.map_or_else(Router::new, business_signup::ServedSignUp::into_router))
 }
 
 /// The app's router: every module's routes, merged once here (D-481), under
@@ -156,7 +178,8 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
 /// routes in the release build (SEC-035, D-739). The outermost layer sets the SEC-012 security
 /// headers on every response, a 404 included (T051). The parts' served business sign-in
 /// ([`business_signin::ServedSignIn`], T280) adds the two sign-in routes, always with the
-/// new-device code. The homeowner's quote page is `portals`'
+/// new-device code; its served sign-up ([`business_signup::ServedSignUp`], T302) the form page
+/// at `/b/signup`. The homeowner's quote page is `portals`'
 /// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055); the
 /// private feedback page after Done is `/f/{token}` (`feedback`, T230); the check-in answer page
 /// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231). The built
@@ -181,6 +204,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         limit,
         statics,
         signin,
+        signup,
     } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
@@ -212,7 +236,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(dialed)
         .merge(calls)
         .merge(stripe)
-        .merge(signin.map_or_else(Router::new, business_signin::ServedSignIn::into_router))
+        .merge(business_pages(signin, signup))
         .merge(static_files::router(&statics))
         .layer(request_timeout::catch_panic())
         .layer(axum::middleware::from_fn_with_state(

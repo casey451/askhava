@@ -8,6 +8,14 @@ Asset /static/portals/feedback.css
 SignIn /b/sign-in
 SignIn /b/sign-in/{token}
 SignIn /b/signup
+SignIn /b/signup/start
+SignIn /b/signup/send
+SignIn /b/signup/old
+SignIn /b/signup/letter
+SignIn /b/signup/identity-code
+SignIn /b/signup/email-code
+SignIn /b/signup/email-code/resend
+SignIn /b/signup/service-area
 SignIn /h/sign-in
 SignIn /h/sign-in/code
 SignIn /owner/sign-in
@@ -39,3 +47,6 @@ Business /b
 Business /b/account
 Business /b/picks/{pick}
 Business /b/complaints/{complaint}/reply
+Business /b/signup/capability
+Business /b/signup/other
+Business /b/signup/start/x
