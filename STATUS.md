@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:54:34Z by runner 3b304089dcaf (actions).
+Updated 2026-11-14T22:54:54Z by runner 3b304089dcaf (actions).
 
-**Building: T485 in progress since 22:26Z; 335 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T486 in progress since 22:31Z; 335 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 335 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T485 claimed 22:26Z, lease until 01:26Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z; lane 6: T451 claimed 22:48Z, lease until 01:48Z
+- **Lane:** lane 5: T486 claimed 22:31Z, lease until 01:31Z; lane 6: T451 claimed 22:48Z, lease until 01:48Z
 - **Week:** 53% used, 85.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:51Z, 3 min before this update
 - **Keeper:** last ran 22:51Z, next wake 01:29Z
@@ -18,6 +18,7 @@ Updated 2026-11-14T22:54:34Z by runner 3b304089dcaf (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T485 | businesses: a public read-only reader of a sign-up's identit | MERGE_PENDING | 1 | 28 min | 22:54Z |  |
 | T301 | server and portals: the email action links are served (every | MERGE_PENDING | 3 | 58 min | 22:46Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
 | T443 | --after runs the full smoke itself on a fix-round hand-in; t | MERGE_PENDING | 1 | 35 min | 22:19Z |  |
 | T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
@@ -165,9 +166,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T485 (lease until 2026-11-15T01:26:33Z)
 - lane 5: T486 (lease until 2026-11-15T01:31:30Z)
 - lane 6: T451 (lease until 2026-11-15T01:48:26Z)
 
 ## Last usage reading
-- {"task": "T301", "at": "2026-11-14T22:46:56Z", "output_tokens": 101562, "cache_creation_input_tokens": 406076, "cache_read_input_tokens": 17422520, "input_tokens": 306}
+- {"task": "T485", "at": "2026-11-14T22:54:33Z", "cache_read_input_tokens": 1799594, "output_tokens": 19464, "input_tokens": 76, "cache_creation_input_tokens": 92606}
