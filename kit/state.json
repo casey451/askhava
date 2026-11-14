@@ -19389,7 +19389,8 @@
     "T100",
     "T204",
     "T151",
-    "T106"
+    "T106",
+    "T476"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19401,7 +19402,8 @@
    "id": "T110",
    "deps": [
     "T109",
-    "T377"
+    "T377",
+    "T481"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19706,7 +19708,17 @@
     "T470",
     "T471",
     "T472",
-    "T473"
+    "T473",
+    "T475",
+    "T476",
+    "T477",
+    "T478",
+    "T479",
+    "T480",
+    "T481",
+    "T482",
+    "T483",
+    "T484"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21147,7 +21159,10 @@
     "T067",
     "T103",
     "T249",
-    "T466"
+    "T466",
+    "T477",
+    "T478",
+    "T479"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -33309,7 +33324,9 @@
     "T106",
     "T109",
     "T314",
-    "T348"
+    "T348",
+    "T475",
+    "T476"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -33353,7 +33370,8 @@
     "T369",
     "T404",
     "T451",
-    "T455"
+    "T455",
+    "T483"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -33412,7 +33430,8 @@
    "deps": [
     "T303",
     "T108",
-    "T348"
+    "T348",
+    "T484"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -55764,6 +55783,126 @@
     3767,
     3768
    ]
+  },
+  {
+   "id": "T475",
+   "deps": [
+    "T100"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "health-figure-readers",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T476",
+   "deps": [
+    "T106",
+    "T475"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "health-page",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T481",
+   "deps": [
+    "T100"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "replay-sent-and-charge-rebuild",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T483",
+   "deps": [
+    "T204",
+    "T200"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "away-setting-business-home",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T484",
+   "deps": [
+    "T108",
+    "T205",
+    "T378"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-bridge-optout-stripe-answer",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T477",
+   "deps": [
+    "T100"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "scorecard-inputs-money",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T478",
+   "deps": [
+    "T100",
+    "T103"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "scorecard-inputs-requests",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T479",
+   "deps": [
+    "T067",
+    "T103",
+    "T249",
+    "T466",
+    "T301"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "not-a-fit-and-scorecard-entries",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T480",
+   "deps": [
+    "T407",
+    "T470"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "spanish-conversations-switch",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T482",
+   "deps": [
+    "T151"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "help-plain-word-answers",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -59191,7 +59330,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T19:52:34Z",
+ "updated_at": "2026-11-14T19:58:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -59289,7 +59428,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "8a72c0065f442d8490a5124ceb10edffd07127fd",
+ "runner_sha": "f0f2aa6b7eb98a9435a87c77a58a89d6de0815fe",
  "starter": "actions",
  "smoke_runs": [
   {

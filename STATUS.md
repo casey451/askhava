@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T19:52:34Z by runner 8a72c0065f44 (actions).
+Updated 2026-11-14T19:58:15Z by runner f0f2aa6b7eb9 (actions).
 
-**Building: T467 in progress since 19:47Z; 329 of 459 done; week 50% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T467 in progress since 19:47Z; 329 of 469 done; week 50% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 329 of 459 build tasks (owner gates not counted)
+- **Tasks done:** 329 of 469 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T467 claimed 19:47Z, lease until 22:47Z; lane 2: T474 claimed 19:51Z, lease until 22:51Z; lane 3: T468 claimed 19:50Z, lease until 22:50Z; lane 4: T459 claimed 19:49Z, lease until 22:49Z; lane 6: T300 claimed 19:50Z, lease until 22:50Z; lane 7: T437 claimed 19:48Z, lease until 22:48Z
 - **Week:** 50% used, 88.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:52Z, 0 min before this update
+- **Last run:** 19:52Z, 5 min before this update
 - **Keeper:** last ran 19:52Z, next wake 22:50Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 17 problem(s) on tasks still to run (+107 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
+- Strict plan check red: 16 problem(s) on tasks still to run (+107 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -96,7 +96,6 @@ Updated 2026-11-14T19:52:34Z by runner 8a72c0065f44 (actions).
 | T318 | calls, picks and quotes: the who's-calling text goes out at  | done | 1 | 52 min | 20:18Z |  |
 | T277 | intake and privacy: a check-in reply reaches its job, and a  | done | 1 | 45 min | 20:13Z |  |
 | T357 | server, messaging and intake: START into an open request res | resync | 1 | 48 min | 20:09Z |  |
-| T314 | payments and picks: a dispute's auto-submit mark and its tas | done | 1 | 29 min | 19:56Z |  |
 
 ### Plan and harness merges on main
 - 19:52Z Plan: stage-5 readers and splits, CON-022 purge via definer functions, Spanish switch gates, replay functions (T475–T484, D-3753) (#798)
@@ -124,14 +123,14 @@ Updated 2026-11-14T19:52:34Z by runner 8a72c0065f44 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 306 of 733 (41.7%) · partial 269 · unstarted 158
-**Tasks merged (throughput only):** 329 of 459
+**Requirements verified:** 304 of 733 (41.5%) · partial 271 · unstarted 158
+**Tasks merged (throughput only):** 329 of 469
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 14 | 15 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 19 | 36 | 3 | 58 |
+| businesses | 18 | 37 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
 | fees | 20 | 31 | 1 | 52 |
@@ -143,7 +142,7 @@ Updated 2026-11-14T19:52:34Z by runner 8a72c0065f44 (actions).
 | ops-recovery | 1 | 9 | 44 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 36 | 19 | 1 | 56 |
+| quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 10 | 40 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
@@ -161,7 +160,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 209 of 229 done
-- stage 5: 0 of 76 done
+- stage 5: 0 of 86 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
