@@ -9,13 +9,14 @@
 //! hour each open their request and queue their 911 text, and raise one High
 //! `intake.requests_all` alert with no subject; with the counter failing (a fake trigger on its
 //! table), an emergency first text still opens its request and queues its 911 text, and the
-//! failure is logged with no phone or body. All data is fake.
+//! failure is logged with no phone or body; a second emergency text inside her open request and
+//! a resubscribing START with emergency words count nothing. All data is fake.
 
 use std::sync::{Arc, Mutex};
 
 use askhava_core::api::{Environment, ManualClock};
-use askhava_intake::api::REQUESTS_ALL;
 use askhava_intake::api::rules::Settings as IntakeSettings;
+use askhava_intake::api::{REQUESTS_ALL, REQUESTS_PER_PHONE};
 use askhava_privacy::api::Vault;
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
@@ -75,6 +76,15 @@ fn encode(text: &str) -> String {
 
 /// Text `words` from `from` as MessageSid number `sid`, signed; the route's status.
 async fn text(hooks: &Arc<Webhooks>, sid: u32, from: &str, words: &str) -> StatusCode {
+    text_with(hooks, (sid, from, words), &[]).await
+}
+
+/// [`text`] with `extra` webhook fields, such as `OptOutType`.
+async fn text_with(
+    hooks: &Arc<Webhooks>,
+    (sid, from, words): (u32, &str, &str),
+    extra: &[(&'static str, &str)],
+) -> StatusCode {
     let sid = format!("SM{sid:032}");
     let mut fields = vec![
         ("MessageSid", sid.as_str()),
@@ -82,6 +92,7 @@ async fn text(hooks: &Arc<Webhooks>, sid: u32, from: &str, words: &str) -> Statu
         ("To", ASK_HAVA),
         ("Body", words),
     ];
+    fields.extend_from_slice(extra);
     let body: Vec<String> = fields
         .iter()
         .map(|(n, v)| format!("{n}={}", encode(v)))
@@ -110,6 +121,16 @@ async fn count(pool: &PgPool, sql: &'static str) -> i64 {
         .fetch_one(pool)
         .await
         .expect("count")
+}
+
+/// The all-numbers limit's hits this hour (0 with no row).
+async fn all_hits(pool: &PgPool) -> i64 {
+    let sql = "SELECT COALESCE(SUM(hits), 0)::bigint FROM core.rate_limit WHERE bucket = $1";
+    sqlx::query_scalar(sql)
+        .bind(format!("{}:all", REQUESTS_ALL.scope))
+        .fetch_one(pool)
+        .await
+        .expect("hits")
 }
 
 /// The all-numbers alerts: severity and subject.
@@ -146,14 +167,48 @@ async fn sec_015_a_burst_of_emergency_first_texts_is_alerted_never_refused(pool:
         101,
         "every one gets the 911 text"
     );
-    let hits: i64 =
-        sqlx::query_scalar("SELECT hits::bigint FROM core.rate_limit WHERE bucket = $1")
-            .bind(format!("{}:all", REQUESTS_ALL.scope))
+    assert_eq!(all_hits(&pool).await, 101, "each one is counted");
+    let per_phone: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM core.rate_limit WHERE bucket LIKE $1")
+            .bind(format!("{}%", REQUESTS_PER_PHONE.scope))
             .fetch_one(&pool)
             .await
-            .expect("hits");
-    assert_eq!(hits, 101, "each one is counted");
+            .expect("per-phone buckets");
+    assert_eq!(per_phone, 0, "no phone's own bucket is touched");
     assert_eq!(burst_alerts(&pool).await, vec![("high".to_owned(), None)]);
+}
+
+/// SEC-015, D-3613: a second emergency text from the same phone lands in her open request and
+/// counts nothing more: only the text that opened the request is counted.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn sec_015_an_emergency_inside_her_open_request_counts_nothing(pool: PgPool) {
+    let h = hooks(&pool);
+    assert_eq!(text(&h, 1, HOME, GAS).await, StatusCode::OK);
+    assert_eq!(text(&h, 2, HOME, GAS).await, StatusCode::OK);
+    assert_eq!(count(&pool, REQUESTS).await, 1, "one request");
+    assert_eq!(all_hits(&pool).await, 1, "only the first is counted");
+}
+
+/// SEC-015, CON-015, D-3613: a START that takes her number off the opt-out list and carries
+/// emergency words opens her request and counts nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn sec_015_a_resubscribing_emergency_start_counts_nothing(pool: PgPool) {
+    let h = hooks(&pool);
+    let stop = text_with(&h, (1, HOME, "STOP"), &[("OptOutType", "STOP")]).await;
+    assert_eq!(stop, StatusCode::OK);
+    let words = format!("START {GAS}");
+    let start = text_with(&h, (2, HOME, &words), &[("OptOutType", "START")]).await;
+    assert_eq!(start, StatusCode::OK);
+    assert_eq!(
+        count(&pool, REQUESTS).await,
+        1,
+        "the START opens her request"
+    );
+    assert_eq!(
+        all_hits(&pool).await,
+        0,
+        "a resubscribing START counts nothing"
+    );
 }
 
 /// Every app (non-sqlx) log line's fields, for the test's thread.

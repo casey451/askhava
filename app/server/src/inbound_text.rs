@@ -339,18 +339,29 @@ async fn in_transaction(h: &Webhooks, hook: &VerifiedWebhook, kind: Kind) -> Ste
     done.map(|_| ())
 }
 
-/// SEC-015, INT-002, INT-004, D-3613: counts a 911-list first text's new request in the
+/// The most [`count_emergency`] may add to an emergency delivery's answer, well inside the
+/// 10-second floor of `ASKHAVA_REQUEST_TIMEOUT_SECS`, so a flood's pool or `REQUESTS_ALL` row
+/// wait never turns the 911 text's 200 into a timeout (INT-002, D-3615).
+const EMERGENCY_COUNT_LIMIT: std::time::Duration = std::time::Duration::from_secs(2);
+
+/// SEC-015, INT-002, INT-004, D-3613, D-3615: counts a 911-list first text's new request in the
 /// all-numbers limit after its delivery committed, on its own pool connection, through
 /// `intake::api::count_emergency_request`, which raises the High alert past the limit and never
-/// refuses. A counter or alert error is logged (its variant only: no phone, no body) and
-/// swallowed, so the 911 text, the request and the route's answer are as they were.
+/// refuses, within [`EMERGENCY_COUNT_LIMIT`]. A counter or alert error, or the limit passing
+/// (`Timeout`, the count dropped), is logged (its variant only: no phone, no body) and swallowed,
+/// so the 911 text, the request and the route's answer are as they were.
 async fn count_emergency(h: &Webhooks, now: Timestamp) {
-    if let Err(e) = count_emergency_request(&h.pool, now).await {
-        tracing::warn!(
-            error = variant(&e),
-            "emergency request count failed; the emergency was handled"
-        );
-    }
+    let counted =
+        tokio::time::timeout(EMERGENCY_COUNT_LIMIT, count_emergency_request(&h.pool, now));
+    let error = match counted.await {
+        Ok(Ok(())) => return,
+        Ok(Err(e)) => variant(&e),
+        Err(_) => "Timeout".to_owned(),
+    };
+    tracing::warn!(
+        error,
+        "emergency request count failed; the emergency was handled"
+    );
 }
 
 /// The inbound-text steps, in order (TXT-012, PRIV-026, CON-008, CON-018, D-999). A homeowner's
@@ -656,8 +667,10 @@ async fn owner_paused(db: &mut PgConnection) -> Step<bool> {
 /// With an open request, a LIST text gets its quoted businesses' public names read now
 /// ([`list_names`]); with none, SEC-014's new-request limit is counted first ([`admitted`]),
 /// except for a START that just took her number off the opt-out list (`resubscribed`, CON-015)
-/// and a 911-list text, which is never counted or refused, so the INT-002 safety text always
-/// runs (INT-002, INT-003, D-2206, D-3083, D-3087). The count and `receive_reply` share one
+/// and a 911-list text, which is never refused or counted here, so the INT-002 safety text always
+/// runs; a 911-list text that opened her first request is counted toward the all-numbers limit
+/// only after the delivery commits ([`count_emergency`], SEC-015, D-3613) (INT-002, INT-003,
+/// D-2206, D-3083, D-3087). The count and `receive_reply` share one
 /// savepoint, rolled back on a module error, so a text that fails here and is retried is counted
 /// once (SEC-014, D-2307).
 async fn intake(
