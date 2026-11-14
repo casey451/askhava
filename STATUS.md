@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T09:41:03Z by runner 6e3bc3d8db0a (actions).
+Updated 2026-11-14T09:41:21Z by runner 6e3bc3d8db0a (actions).
 
 **Building: T437 in progress since 09:33Z; 317 of 436 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 317 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T437 claimed 09:33Z, lease until 12:33Z; lane 2: T398 claimed 09:02Z, lease until 12:02Z; lane 4: T359 claimed 09:38Z, lease until 12:38Z
+- **Lane:** lane 1: T437 claimed 09:33Z, lease until 12:33Z; lane 4: T359 claimed 09:38Z, lease until 12:38Z
 - **Week:** 39% used, 114.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:40Z, 0 min before this update
 - **Keeper:** last ran 09:40Z, next wake 12:04Z
@@ -21,9 +21,10 @@ Updated 2026-11-14T09:41:03Z by runner 6e3bc3d8db0a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T398 | businesses: notice texts go only to approved phones, and a m | MERGE_PENDING | 1 | 38 min | 09:41Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 4 | 2 min | 09:18Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T301 | server and portals: the email action links are served (the q | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
-| T398 | businesses: notice texts go only to approved phones, and a m | resync | 1 | 32 min | 09:01Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T398 | businesses: notice texts go only to approved phones, and a m | resync | 1 | 32 min | 09:01Z |  |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 1 | 5 min | 08:59Z | PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID |
 | T280 | server and messaging (harness): the business sign-in pages a | done | 4 | 91 min | 08:04Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T396 | businesses and messaging (harness): a phone a member links o | done | 2 | 56 min | 07:52Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
@@ -170,8 +171,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T437 (lease until 2026-11-14T12:33:11Z)
-- lane 2: T398 (lease until 2026-11-14T12:02:18Z)
 - lane 4: T359 (lease until 2026-11-14T12:38:51Z)
 
 ## Last usage reading
-- {"task": "T302", "at": "2026-11-14T09:18:21Z", "cache_creation_input_tokens": 69542, "cache_read_input_tokens": 637134, "output_tokens": 10223, "input_tokens": 38}
+- {"task": "T398", "at": "2026-11-14T09:41:02Z", "input_tokens": 65, "output_tokens": 10688, "cache_read_input_tokens": 734170, "cache_creation_input_tokens": 61607}
