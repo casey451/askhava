@@ -190,6 +190,7 @@ fn intent(state: &str) -> Result<PaymentIntent, AdapterError> {
             pick_id: "fake".to_owned(),
         },
         livemode: Some(false),
+        latest_charge: (state == "succeeded").then(|| "ch_FakeT286".to_owned()),
     })
 }
 

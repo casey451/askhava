@@ -430,6 +430,7 @@ impl FakeStripe {
                 pick_id: self.pick.to_string(),
             },
             livemode: Some(false),
+            latest_charge: Some(id.replacen("pi_", "ch_", 1)),
         }
     }
 }
