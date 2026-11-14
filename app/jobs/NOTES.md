@@ -128,3 +128,4 @@
 - [PICK-040 PICK-051] (task 406) cross-reference (D-3620): the build note of T406 is in `app/quotes/NOTES.md`: `grep -n '(task 406)' app/quotes/NOTES.md`.
 - [INT-043 TXT-041] (task 162) cross-reference (D-3620): the build note of T162 is in `app/quotes/NOTES.md`: `grep -n '(task 162)' app/quotes/NOTES.md`.
 - [FEE-045 FEE-005 FEE-004 FEE-007] (task 340) cross-reference (D-3620): the build note of T340 is in `app/picks/NOTES.md`: `grep -n '(task 340)' app/picks/NOTES.md`.
+- [PICK-053 PICK-038 REC-010 REC-011] (task 341) cross-reference (D-3620): the build note of T341 is in `app/picks/NOTES.md`: `grep -n '(task 341)' app/picks/NOTES.md`.

@@ -232,3 +232,4 @@
 - [CARD-024 CARD-001 CARD-002 BIZ-010] (task 249) the radius and the base ZIP stay in `businesses.service_area` and the centroids in the compiled-in reviewed table, so recovery is the database restore alone. Known gaps: no production caller computes intake's coverage count yet; it must use `coverage_in_reach` on `card_pool`'s reach (D-3362); the pool reads each business one query at a time (D-3360).
 - [CARD-024 CARD-001 CARD-002 BIZ-010] (task 249) Tests: `app/quotes/src/tests/radius_matching.rs`, `tests/integration/tests/radius_matching.rs` (TD-CARD-13, TD-BIZ-38).
 - [FEE-018 FEE-020 FEE-041 PICK-046] (task 328) cross-reference (D-3620): the build note of T328 is in `app/picks/NOTES.md`: `grep -n '(task 328)' app/picks/NOTES.md`.
+- [PICK-053 PICK-038 REC-010 REC-011] (task 341) cross-reference (D-3620): the build note of T341 is in `app/picks/NOTES.md`: `grep -n '(task 341)' app/picks/NOTES.md`.
