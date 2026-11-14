@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:46:59Z by runner 24008eb1e197 (actions).
+Updated 2026-11-14T12:47:19Z by runner d74867495730 (manual).
 
-**Building: T432 in progress since 12:42Z; 322 of 449 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T432 in progress since 12:42Z; 322 of 450 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 322 of 449 build tasks (owner gates not counted)
+- **Tasks done:** 322 of 450 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z
 - **Week:** 43% used, 108.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:46Z, 0 min before this update
+- **Last run:** 12:47Z, 0 min before this update
 - **Keeper:** last ran 12:45Z, next wake 15:45Z
 
 ## Needs attention
@@ -31,7 +31,6 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
     tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 1280px 
   233 passed (1.3m)
 ##[error]Process completed with exit code 1.
-- BLOCKED T437: merging main into the task branch conflicts in app/businesses/CLAUDE.md again after 2 resyncs in this attempt, so this attempt fails and the next one starts from the branch with main merged in, or fresh from main when that still conflicts (D-583, D-620, D-891)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 33 problem(s) on tasks still to run (+103 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
@@ -126,6 +125,7 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 | T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 
 ### Plan and harness merges on main
+- 12:46Z Plan: split T437 so the NOTES.md rule lands before the crate-doc sweep (D-3698) (#777)
 - 10:42Z Plan: T329 notice-email copy gap (D-3687) (#768)
 - 10:21Z Plan: restructure the business sign-in chain — T300/T301/T302 gaps, 13 ordered follow-up tasks (D-3674, D-3675, D-3676) (#765)
 - 07:59Z Plan: T359 adopts two charge-ledger test expectations (TD-FEE-64), records the checked intent amount (D-3658) (#759)
@@ -149,31 +149,31 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 274 of 733 (37.4%) · partial 301 · unstarted 158
-**Tasks merged (throughput only):** 322 of 449
+**Requirements verified:** 4 of 733 (0.5%) · partial 571 · unstarted 158
+**Tasks merged (throughput only):** 322 of 450
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 15 | 14 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 18 | 37 | 3 | 58 |
-| calls | 10 | 14 | 1 | 25 |
-| consent | 12 | 19 | 4 | 35 |
-| fees | 14 | 37 | 1 | 52 |
-| intake | 26 | 14 | 3 | 43 |
-| job-cards | 18 | 6 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 23 | 5 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
-| ops-recovery | 2 | 8 | 44 | 54 |
-| privacy | 9 | 20 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 9 | 41 | 5 | 55 |
+| accessibility | 0 | 29 | 6 | 35 |
+| ai | 0 | 24 | 5 | 29 |
+| businesses | 0 | 55 | 3 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 31 | 4 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 1 | 39 | 3 | 43 |
+| job-cards | 1 | 23 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 1 | 42 | 2 | 45 |
+| ops-recovery | 0 | 10 | 44 | 54 |
+| privacy | 0 | 29 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 55 | 1 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 1 | 49 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 0 | 11 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
