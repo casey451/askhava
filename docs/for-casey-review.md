@@ -2869,6 +2869,18 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - Sending the business sign-up form now saves the business, its email, its agreement, its names and its licenses, ties the browser to that sign-up with a secure cookie, checks its license record and shows where its code will go. A business whose record has no usable contact is saved and waits for your review.
 - Not built yet: when the public license record can't be read, the business gets a plain "try again" error with no words of ours, because no page text exists for it yet; a pest business that doesn't tick the license box is saved without a pest license, so it gets no pest jobs; and the form has no box for a septic pumper's ADEQ septage-hauler license, so a septic business is saved without one and gets no septic jobs until that box is added (its BTR number is never taken as that license, D-3726). A form that is sent back now leaves no saved email behind (D-3725). No fee, wording or check changed. Nothing needs you.
 
+## Two missing readers for sign-up and the free first win (D-3779, November 14)
+
+- The sign-up steps (T460) need to check how far a sign-up has got before each step, and nothing in the app let them read that. A small new task (T485) adds that read. It shows only the step reached, whether the code was passed and whether the email was checked, never any contact details.
+- The Confirm page (T261) has to decide whether a business gets its free first win, which depends on when it joined and when its trade opened. The app never read the join date and never recorded when a trade was switched on. A new task (T486) adds both. From now on, the first time a trade is switched on is recorded.
+- How the plan reads the rule: only the trades picked on the sign-up form count. The 90 days run from the latest time a trade was switched on, so a trade that closes and reopens after launch gets a fresh 90 days. Only you can switch trades, and a business gets one free win at most, so switching back and forth gives nothing extra. A business that joined in time keeps its free win even if its trade is switched off later. Trades already on today count as open from before launch, so the launch window covers them.
+- Sixteen later tasks' database change files were renumbered by one to keep the order. No fee, wording or check changed, and nothing needs you now.
+
+## The business portal is served (T300, D-3664, November 14)
+
+- Signed-in businesses can now open their account home, billing with the statement download, notice settings and a released job's page. Anyone not signed in as a business gets a short page with a link to sign in; anything that isn't theirs gets the same "Page not found" page.
+- Two things are still missing because no part of the app reads them yet: the released job's page shows "Job 0" and no call list, and "Your numbers" shows only the fee total (as already planned for T451). A small follow-up is needed for the job number and call list. Nothing needs you.
+
 ## A business's quote link: the fee shown, and a double tap (D-3672, D-3673, November 14)
 
 - The quote form a business opens from its email now shows the introduction fee by job size for its price whenever the form comes back to it (a missing fact, a note that was turned back, or the "bigger than your largest job" check). A quote with nothing wrong is still sent on the first press without the fee shown first, because the page has no price until it is sent; showing the fee as the price is typed needs a small browser extra that no task has built yet.

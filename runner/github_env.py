@@ -120,6 +120,10 @@ PREHANDIN_TIMEOUT = 240  # seconds for its --quick part (about 20 s measured), w
 PREHANDIN_RED = "pre-hand-in gate red"  # how a gate failure's log starts; runner/__main__.py `after` holds on it (D-1300)
 PREHANDIN_LINES = 30  # the gate output's last lines kept in the failure log, each cut to EXCERPT_WIDTH,
 PREHANDIN_CAP = 3000  # and at most this many characters of them (the end kept), so last_failure stays small
+# A fix round's head (D-3530): `--after` runs the full scripts/smoke.sh on it itself, in the background as D-2560's
+# `--pre-smoke` (PRE_SMOKE_HEAD), keyed to the head in the local hand-off file; runner/__main__.py holds on these.
+AFTER_SMOKE_PENDING = "runner smoke pending"  # how a still-running run's log starts
+AFTER_SMOKE_RED = "runner smoke red"  # how a red run's log starts (smoke exit 1)
 UPDATE_ATTEMPTS = 5  # update_state's read-transform-push tries (D-515)
 UPDATE_ERRORS = (RuntimeError, ValueError, OSError, subprocess.SubprocessError)  # a failed read or push: one lost try
 RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
@@ -444,6 +448,18 @@ def _pre_result(head: str) -> tuple[dict[str, Any] | None, str]:
     if pre.get("sha") != head:
         return None, f"the pre-session smoke ran on {str(pre.get('sha'))[:12]}, main is now {head[:12]}"
     return pre, ""
+
+
+def _smoke_tail(pre: dict[str, Any]) -> str:
+    """A finished background smoke's output for `after_smoke` (D-3530): SMOKE_PRE_LOG's last PREHANDIN_LINES rows,
+    each redacted (`_redact_gate_row`) and cut to EXCERPT_WIDTH, at most PREHANDIN_CAP characters (the end kept);
+    the result's `last` line when the log is gone."""
+    try:
+        rows = (smoke_target_dir().parent / SMOKE_PRE_LOG).read_text(encoding="utf-8", errors="replace").strip().splitlines()
+    except OSError:
+        rows = []
+    rows = [_redact_gate_row(r)[:EXCERPT_WIDTH] for r in rows] or [_redact_gate_row(str(pre.get("last") or ""))[:EXCERPT_WIDTH]]
+    return "\n".join(rows[-PREHANDIN_LINES:])[-PREHANDIN_CAP:]
 
 
 def warm_commands(tree: Path) -> list[list[str]]:
@@ -2258,13 +2274,15 @@ class GitHubEnv:
     def collect_result(
         self, task: dict[str, Any], outcome: str, transcripts: list[str], reviewer_transcripts: list[str],
         log: str = "", reset_at: datetime | None = None, proof: review_proof.Proof | None = None,
+        smoke: dict[str, Any] | None = None,
     ) -> WorkerResult:
         """A WorkerResult from what the runner reads itself: git diff --no-renames and the transcripts.
         With a `proof` (`--after` passes one), a submitted head must first pass `review_proof.check` on the
         worker's own head, or the hand-in fails with its REVIEW_MISSING log before any runner commit, gate
         or push (D-3728); without one nothing is checked. A submitted head whose docs/decisions.md has new
         entries filed before its base's last entry gets a runner commit on top that moves them to the end
-        (`_hand_in_in_order`, D-1029)."""
+        (`_hand_in_in_order`, D-1029). With `smoke` (a fix round's hand-off record, `--after` passes one) a head
+        that passed the gate also gets the runner's own full smoke (`after_smoke`, D-3530)."""
         branch = self.branch_for(task["id"])
         base = self.main_head()
         head = self.git("rev-parse", f"refs/heads/{branch}", check=False)
@@ -2281,6 +2299,7 @@ class GitHubEnv:
         if outcome == "submitted" and base:
             head = self._hand_in_in_order(branch, head, base)
             red = self.prehandin(branch, head, base)  # a red gate fails the hand-in before any review record or push (D-1300)
+            red = red or (self.after_smoke(head, smoke) if smoke is not None else "")  # a fix round's head (D-3530)
             outcome, log = ("tests_failed", red) if red else (outcome, log)
         changed = self.git("diff", "--no-renames", "--name-only", f"{base}...{head}", check=False) if head else ""
         evidence, usage = read_transcripts(transcripts)
@@ -2333,6 +2352,72 @@ class GitHubEnv:
         self.log.append(f"pre-hand-in gate on {head[:12]}: red; {last}")
         tail = "\n".join(rows[-PREHANDIN_LINES:])[-PREHANDIN_CAP:]
         return f"{PREHANDIN_RED} on {head[:12]} (bash scripts/prehandin.sh, D-1300):\n{tail}"
+
+    def after_smoke(self, head: str, run: dict[str, Any]) -> str:
+        """The runner's own full smoke of a fix round's head, outside the model (D-3530): '' lets the hand-in
+        through (green, or no verdict: a dry run, no Actions job, a head git cannot check out, a timeout, a run
+        that ended without a result, any exit but 0 or 1, each logged as `prehandin` does); AFTER_SMOKE_PENDING
+        while it runs; AFTER_SMOKE_RED with its last lines (redacted, capped) on exit 1. `run` is the hand-off's
+        record {sha, job, pid, then exit, timed_out, output}, updated in place: a call on the same head takes its
+        result or waits for the same run, a new head stops the old run and starts a new one. The run is
+        `--pre-smoke` for the head started detached (`bg_start`, PRE_SMOKE_HEAD): the smoke's own tree, seed,
+        pinned mtimes and environment (D-1890, D-2028), waited for up to `smoke_wait` per runner call (D-2560)."""
+        why = "dry-run" if self.dry_run else "" if job_id() else "no Actions job"
+        if not why and run.get("sha") != head and not self._has_commit(head):
+            why = f"no worktree of {head[:12]}"
+        if why:
+            self.log.append(f"runner smoke on {head[:12]}: not run ({why}; let through)")
+            return ""
+        if run.get("sha") != head or ("exit" not in run and run.get("job") != job_id()):
+            self._start_after_smoke(head, run)
+        if "exit" not in run:
+            self._await_after_smoke(head, run)
+        return self._after_smoke_verdict(head, run)
+
+    def _start_after_smoke(self, head: str, run: dict[str, Any]) -> None:
+        """Stop this job's background smoke while one still runs (an earlier head's), then start `--pre-smoke` for
+        `head` detached and record it in SMOKE_BG, as `_background_smoke` does, and in `run` (D-3530, D-2560)."""
+        base = smoke_target_dir().parent
+        bg = _read_json(base / SMOKE_BG) or {}
+        if bg.get("job") == job_id() and isinstance(bg.get("pid"), int) and self.bg_alive(bg["pid"]):
+            self.log.append(f"the background smoke of {str(bg.get('sha'))[:12]} {self.bg_stop()}: the hand-in's head is now {head[:12]}")
+        (base / SMOKE_BG_CHILD).unlink(missing_ok=True)
+        pid = self.bg_start(head, self.root)
+        _write_json(base / SMOKE_BG, {"sha": head, "job": job_id(), "pid": pid, "at": _utc_now()})
+        _mark_smoke_ran()
+        run.clear()
+        run.update(sha=head, job=job_id(), pid=pid)
+        self.log.append(f"runner smoke on {head[:12]}: started in the background (pid {pid}, D-3530)")
+
+    def _await_after_smoke(self, head: str, run: dict[str, Any]) -> None:
+        """Wait for the run's result until `smoke_wait` after `wait_from` (D-2560) and put it in `run`: exit,
+        timed_out and output (`_smoke_tail`); a run that ended without a result is exit 124, no verdict."""
+        pid, deadline = run.get("pid"), self.wait_from + self.smoke_wait
+        while True:
+            alive = isinstance(pid, int) and self.bg_alive(pid)
+            pre, _ = _pre_result(head)
+            if pre is not None:
+                run.update(exit=int(pre["exit"]), timed_out=pre.get("timed_out") is True, output=_smoke_tail(pre))
+                return
+            if not alive:
+                run.update(exit=124, timed_out=False, output="the background smoke ended without a result")
+                return
+            if self.monotonic() >= deadline:
+                return
+            self.sleep(min(SMOKE_POLL, max(0.0, deadline - self.monotonic())))
+
+    def _after_smoke_verdict(self, head: str, run: dict[str, Any]) -> str:
+        """`after_smoke`'s answer from `run`, with one cycle-log line (D-3530)."""
+        if "exit" not in run:
+            self.log.append(f"runner smoke on {head[:12]}: still running in the background ({round(self.smoke_wait)} s per runner call)")
+            return f"{AFTER_SMOKE_PENDING} on {head[:12]} (bash scripts/smoke.sh, D-3530)"
+        code, output = run.get("exit"), str(run.get("output") or "")
+        last = output.strip().splitlines()[-1] if output.strip() else ""
+        if code == 1 and run.get("timed_out") is not True:
+            self.log.append(f"runner smoke on {head[:12]}: red; {last}")
+            return f"{AFTER_SMOKE_RED} on {head[:12]} (bash scripts/smoke.sh, D-3530):\n{output}"
+        self.log.append(f"runner smoke on {head[:12]}: exit {code}; {last}" + ("" if code == 0 else " (not a verdict: let through)"))
+        return ""
 
     def _decisions_in_order(self, branch: str, head: str, main: str) -> str | None:
         """`UpdateMerge.in_order` of `head`: a commit on top of it whose docs/decisions.md has the new
