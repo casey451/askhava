@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T06:48:51Z by runner 424ca0f62420 (actions).
+Updated 2026-11-14T06:49:09Z by runner 424ca0f62420 (actions).
 
-**Building: T437 in progress since 06:17Z; 314 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T280 in progress since 06:32Z; 314 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 314 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T437 claimed 06:17Z, lease until 09:17Z; lane 3: T280 claimed 06:32Z, lease until 09:32Z
+- **Lane:** lane 3: T280 claimed 06:32Z, lease until 09:32Z
 - **Week:** 37% used, 118.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:43Z, 5 min before this update
 - **Keeper:** last ran 06:43Z, next wake 09:20Z
@@ -19,10 +19,11 @@ Updated 2026-11-14T06:48:51Z by runner 424ca0f62420 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 2 | 30 min | 06:48Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T396 | businesses and messaging (harness): a phone a member links o | MERGE_PENDING | 2 | 21 min | 06:40Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T352 | adapters and stand-in (harness): the PaymentIntent carries S | MERGE_PENDING | 1 | 51 min | 06:14Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 51 min | 06:03Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 51 min | 06:02Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 51 min | 06:02Z |  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 3 | 22 min | 05:44Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T393 | portals and licensing: the served quote page's cards show ea | done | 1 | 74 min | 05:40Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z |  |
@@ -163,8 +164,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T437 (lease until 2026-11-14T09:17:58Z)
+- nothing
 - lane 3: T280 (lease until 2026-11-14T09:32:17Z)
 
 ## Last usage reading
-- {"task": "T396", "at": "2026-11-14T06:40:06Z", "cache_creation_input_tokens": 73362, "output_tokens": 9597, "cache_read_input_tokens": 869547, "input_tokens": 54}
+- {"task": "T437", "at": "2026-11-14T06:48:49Z", "cache_creation_input_tokens": 76486, "output_tokens": 12556, "input_tokens": 69, "cache_read_input_tokens": 1004666}
