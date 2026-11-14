@@ -25,7 +25,12 @@
    "lane": "4"
   },
   "5": null,
-  "6": null,
+  "6": {
+   "task": "T300",
+   "session": "actions-43633649974",
+   "expires": "2026-11-14T22:50:38Z",
+   "lane": "6"
+  },
   "7": {
    "task": "T437",
    "session": "actions-43633651815",
@@ -34,7 +39,7 @@
   },
   "fix": null
  },
- "seq": 4894,
+ "seq": 4895,
  "runner_sha": "8a72c0065f442d8490a5124ceb10edffd07127fd",
  "starter": "actions"
 }
