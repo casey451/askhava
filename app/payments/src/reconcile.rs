@@ -22,6 +22,10 @@
 //! it once Stripe finishes); `failed` or `canceled` is a failure with the alert. A
 //! `refund-reversal` entry counts against the refunds in the match and in `ledger_facts`.
 //!
+//! T353 (D-2625, D-3134): a dispute the ledger shows won (a `dispute-reversal` row, written by the
+//! `charge.dispute.closed` webhook) is left out of both sides of the match, so only disputes not
+//! won are compared; the readers fold a `dispute-reversal` as a negative dispute.
+//!
 //! T288 (D-1872): a charge a run reads but cannot settle (its writes failed, its refund was refused
 //! or is still pending, or its ledger charge and refund differ from Stripe's) is stored in
 //! `payments.reconcile_open` with the facts read, coded by [`OpenWhy`]. Every run then retries
@@ -48,6 +52,7 @@
 //! Stripe's amount with one High `payments.refund_amount_mismatch`, another currency at the charge
 //! with one High `payments.refund_amount_unconfirmed` (D-3065).
 
+use std::collections::HashSet;
 use std::future::Future;
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey, PaymentsAdapter};
@@ -62,7 +67,9 @@ use sqlx::{PgConnection, PgPool};
 
 use crate::charge::charge_key;
 use crate::late::LATE_TRIGGER;
-use crate::ledger::{EntryKind, LedgerEntry, NewEntry, REFUND_REVERSAL_CODE, ledger_append};
+use crate::ledger::{
+    DISPUTE_REVERSAL_CODE, EntryKind, LedgerEntry, NewEntry, REFUND_REVERSAL_CODE, ledger_append,
+};
 use crate::models::{
     MoneyEventError, MoneyTotals, MoneyView, PickFacts, RefundOutcome, RefundWhy, StripeCharge,
     plan_charge,
@@ -393,8 +400,10 @@ async fn add_totals(
         refunded: a.refunded + b.refunded,
         disputed: a.disputed + b.disputed,
     };
-    report.stripe = sum(report.stripe, MoneyTotals::of_stripe(known));
-    report.ledger = sum(report.ledger, ledger_totals(pool, known).await?);
+    let (ledger, won) = ledger_totals(pool, known).await?;
+    let open: Vec<StripeCharge> = known.iter().map(|c| without_won(c, &won)).collect();
+    report.stripe = sum(report.stripe, MoneyTotals::of_stripe(&open));
+    report.ledger = sum(report.ledger, ledger);
     Ok(())
 }
 
@@ -477,7 +486,7 @@ async fn one_charge(
 /// The ledger's gross charge and refund for one charge equal Stripe's; disputes are the webhook's
 /// (`record_dispute`) and stay in the run-wide FEE-030 match only (D-1872).
 async fn ledger_agrees(pool: &PgPool, held: &StripeCharge) -> Result<bool, MoneyEventError> {
-    let ledger = ledger_totals(pool, std::slice::from_ref(held)).await?;
+    let (ledger, _) = ledger_totals(pool, std::slice::from_ref(held)).await?;
     let stripe = MoneyTotals::of_stripe([held]);
     Ok(ledger.charged == stripe.charged && ledger.refunded == stripe.refunded)
 }
@@ -878,11 +887,14 @@ async fn alert_open(pool: &PgPool, now: Timestamp) -> Result<usize, MoneyEventEr
     Ok(usize::try_from(open).unwrap_or(usize::MAX))
 }
 
-/// The ledger's gross charges, refunds and disputes over the given charges' IDs (FEE-030).
+/// The ledger's gross charges, refunds and disputes over the given charges' IDs (FEE-030), and
+/// the listed disputes already won: those with a `dispute-reversal` row, whose `dispute` and
+/// reversal are both left out, as [`without_won`] leaves them out of Stripe's side, so only
+/// disputes not won are compared, with no Stripe read (FEE-029, FEE-050, D-2625, D-3134).
 async fn ledger_totals(
     pool: &PgPool,
     charges: &[StripeCharge],
-) -> Result<MoneyTotals, MoneyEventError> {
+) -> Result<(MoneyTotals, HashSet<String>), MoneyEventError> {
     let ids: Vec<String> = charges.iter().map(|c| c.id.clone()).collect();
     let intents: Vec<String> = charges.iter().map(|c| c.payment_intent.clone()).collect();
     let disputes: Vec<String> = charges
@@ -890,25 +902,45 @@ async fn ledger_totals(
         .filter_map(|c| c.dispute.as_ref().map(|(d, _)| d.clone()))
         .collect();
     let rows = db(sqlx::query!(
-        "SELECT kind, amount_cents FROM payments.ledger_entry
+        "SELECT kind, amount_cents, stripe_id FROM payments.ledger_entry
           WHERE (kind = 'charge' AND stripe_id = ANY($1))
              OR (kind IN ('refund', 'refund-reversal') AND stripe_id = ANY($2))
-             OR (kind = 'dispute' AND stripe_id = ANY($3))",
+             OR (kind IN ('dispute', 'dispute-reversal') AND stripe_id = ANY($3))",
         &ids,
         &intents,
         &disputes,
     )
     .fetch_all(pool)
     .await)?;
-    let entries = rows.iter().filter_map(|r| fold(&r.kind, r.amount_cents));
-    Ok(MoneyView::from_entries(entries).gross())
+    let won: HashSet<String> = rows
+        .iter()
+        .filter(|r| r.kind == DISPUTE_REVERSAL_CODE)
+        .filter_map(|r| r.stripe_id.clone())
+        .collect();
+    let entries = rows
+        .iter()
+        .filter(|r| r.stripe_id.as_ref().is_none_or(|id| !won.contains(id)))
+        .filter_map(|r| fold(&r.kind, r.amount_cents));
+    Ok((MoneyView::from_entries(entries).gross(), won))
+}
+
+/// The charge as Stripe's side of the FEE-030 match counts it: without its dispute when the
+/// ledger shows that dispute won (D-2625).
+fn without_won(charge: &StripeCharge, won: &HashSet<String>) -> StripeCharge {
+    let mut charge = charge.clone();
+    charge.dispute = charge.dispute.filter(|(d, _)| !won.contains(d));
+    charge
 }
 
 /// A stored entry as the money view folds it: its kind and cents, a `refund-reversal` as a
-/// negative refund (FEE-028, FEE-030, D-1753, D-2068); `None` for an unknown code.
+/// negative refund (FEE-028, FEE-030, D-1753, D-2068) and a `dispute-reversal` as a negative
+/// dispute (D-2625); `None` for an unknown code.
 fn fold(code: &str, cents: i64) -> Option<(EntryKind, i64)> {
     if code == REFUND_REVERSAL_CODE {
         return Some((EntryKind::Refund, -cents));
+    }
+    if code == DISPUTE_REVERSAL_CODE {
+        return Some((EntryKind::Dispute, -cents));
     }
     EntryKind::ALL
         .into_iter()

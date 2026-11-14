@@ -790,7 +790,9 @@ impl MoneyTotals {
 
 /// The owner money view and a statement's totals, in cents, folded from ledger entries only
 /// (FEE-030, FEE-046, FEE-051). A `dispute` entry holds the amount plus `DISPUTE_FEE_CENTS`
-/// (T066), so its fee is split out to `dispute_fees` with the countering fees.
+/// (T066), so its fee is split out to `dispute_fees` with the countering fees; a won dispute's
+/// `dispute-reversal` comes in as a negative `Dispute` and takes back only the amount, never the
+/// fee (D-2625).
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct MoneyView {
     /// Introduction fees charged.
@@ -800,7 +802,7 @@ pub struct MoneyView {
     pub refunds: i64,
     /// Credits given.
     pub credits: i64,
-    /// Disputed amounts, without fees.
+    /// Disputed amounts, without fees, less the amounts of disputes won (D-2625).
     pub disputes: i64,
     /// Stripe dispute fees and countering fees, less countering fees returned.
     pub dispute_fees: i64,
@@ -821,7 +823,7 @@ impl MoneyView {
                 EntryKind::Refund => v.refunds += cents,
                 EntryKind::Credit => v.credits += cents,
                 EntryKind::Dispute => {
-                    let fee = cents.min(DISPUTE_FEE_CENTS);
+                    let fee = cents.clamp(0, DISPUTE_FEE_CENTS);
                     v.disputes += cents - fee;
                     v.dispute_fees += fee;
                 }
