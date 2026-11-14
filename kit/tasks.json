@@ -14474,7 +14474,8 @@
     "T445",
     "T447",
     "T448",
-    "T449"
+    "T449",
+    "T450"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -18965,7 +18966,7 @@
    "id": "T302",
    "slug": "business-signup-served",
    "title": "server and portals: business sign-up is served (every sign-up screen, the email check and the sample pick step)",
-   "goal": "No task serves business sign-up (D-2128): `portals::api` has `signup_page` with its `Screen`s and `done_facts`, and `email_check_page` and `sample_pick_page` (T193, T149), with the route constant `SIGNUP_ROUTE` (`/b/signup`), but `server::build_router` merges none of them, so J2 step 1 (T099) cannot run. (1) `app/server/src/business_signup.rs` builds `GET` and `POST` on `SIGNUP_ROUTE` for each screen in order, without a session (the pre-session CSRF cookie, SEC-042), through `businesses::api`'s sign-up, identity and email-verification calls, then the email check and sample-pick screens after the email is verified (BIZ-042); T089's sign-up limits hold through the route; a screen holding a record contact is `no_store`; a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event (SEC-048); merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/business_signup_route.rs` against the assembled router (TD-SEC-45) and `tests/e2e/business_signup_served.spec.ts`, a fake R-37 sign-up on a fixture ROC record through activation, the identity code computed from the stand-in Verify's rule for the record's fake phone (`stand_ins/twilio.py` `start_verification`), and the sign-up email marked verified by setting that sign-up's `businesses.mailbox_check.verified_at` through `psql` on `DATABASE_URL` (the emailed code is an HMAC under `ASKHAVA_ID_SECRET`, which the web server's environment draws at random and the spec cannot read, and it is never stored, D-2128); the email code step itself is proved in the route test. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Each sign-up `POST` calls `portals::api::admit_sign_up` first (D-1951; fourth external audit F12, D-2206). Nov 11 code review batch 3, F6 (D-2709; BIZ-049, BIZ-004, BIZ-007, D-2508 (2), D-2511): it also serves `portals::api::CAPABILITY_ROUTE` (`/b/signup/capability`), `GET` and `POST` for each capability screen (the one-page form and the guided sequence); the path falls under `door()`'s Business rule (`tests/security/tests/auth_matrix.rs:109`), so it is served behind `portals::api::business_principal`: at activation the owner is sent the normal sign-in link to the verified sign-up email (link plus code, SEC-004; no session is started without it), and the first sign-in of an owner whose capability step is not saved lands on it; the checklist from T368's entry point (the business's ROC classes, agency licenses, pest attestation and handyman standing, and the stored category switch), saved through `businesses::api::save_capability` (T369's after-hours rule); a tick outside the offer changes nothing and shows the form again; route cases in `app/server/tests/business_signup_route.rs` (TD-BIZ-49). Nov 11 code review batch 3 (D-2711, D-2712): the sign-up `POST` stores what the holder read needs: a pest business's attestation, license number and record categories through `licensing::api::record_pest_attestation` (LIC-047), and an agency-category business's license number through `licensing::api::record_agency_license` (LIC-015, LIC-016; the number from T165's form field), both T374's; the Handyman category choice is already stored in `businesses.signup.trades` and is how T374 reads handyman standing; TD-BIZ-49 gains these cases. Plan change D-2943 (BIZ-022): the sign-up `POST` also stores the business name and trade name from T165's form fields through `businesses::api::save_business_name` (T165), a refused name showing the screen again with its reason; for a no-license business the same stored business name and trade name are the `CityRecord` names it passes (through `businesses::api::holding`'s `Known.city_names`) to LIC-011's city-list match (D-255), and no match follows LIC-011, BIZ-003 and BIZ-016 (pending until a later daily list matches; a flagged sign-up waits in needs review); TD-BIZ-49 gains those cases. Plan change D-2954 (BIZ-002, BIZ-016, D-059, D-1699): the sign-up reads the business's own public record through T385: the server's license source is `adapters::api::LicenseLists` on `ASKHAVA_LICENSE_BASE_URL`, checked by `check_base_url`, required in `test` and `live` (start-up stops naming the key) and, when absent in `ci` or `dev`, every read `Unreadable` (T385's `file://` fixture directory in the e2e). The ROC number is bound server-side once: at the license match, after the names are saved, the sign-up calls `licensing::api::check_license` with the number from that step's form, and every later read (the name flag, the license match, every identity screen) goes through `businesses::api::signup_record(conn, source, business)`, which reads the bound number and never a number from the request; a number posted on any later screen changes nothing. The read's name flag goes to `record_match` with the license match, so a name that agrees with neither the record's business name nor its DBA waits in needs review (BIZ-016); a city-list or pest business's contact comes from its matched city-list row's record (LIC-011, LIC-048); each identity screen builds `RecordContacts`, `RecordSeen` and the masked contact from a read made in that request, never stored, logged or put in an error, and only screens that need a contact or the name check read; `NoContact` is `Flag::NoRecordContact` (needs review, BIZ-002), while `Unreadable` and `Unbound` change nothing and show the screen again asking the business to try again shortly; the e2e's identity code goes to T385's fixture record phone; TD-BIZ-49 gains these cases. Plan change D-3262: the sign-up email's mailbox ID is minted server-side by T412's `privacy::api::mailbox_for` from the typed address in the final submit request (never taken from the request or an earlier screen), and the sign-up's text phone is linked through T415's `server` `ContactDirectory` (the production `SenderLink`), so the owner can later sign in and get codes; route cases in `app/server/tests/business_signup_route.rs` (TD-SEC-45) show the stored mailbox matches `mailboxes_of` for the typed address.",
+   "goal": "No task serves business sign-up (D-2128): `portals::api` has `signup_page` with its `Screen`s and `done_facts`, and `email_check_page` and `sample_pick_page` (T193, T149), with the route constant `SIGNUP_ROUTE` (`/b/signup`), but `server::build_router` merges none of them, so J2 step 1 (T099) cannot run. (1) `app/server/src/business_signup.rs` builds `GET` and `POST` on `SIGNUP_ROUTE` for each screen in order, without a session (the pre-session CSRF cookie, SEC-042), through `businesses::api`'s sign-up, identity and email-verification calls, then the email check and sample-pick screens after the email is verified (BIZ-042); T089's sign-up limits hold through the route; a screen holding a record contact is `no_store`; a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event (SEC-048); merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/business_signup_route.rs` against the assembled router (TD-SEC-45) and `tests/e2e/business_signup_served.spec.ts`, a fake R-37 sign-up on a fixture ROC record through activation, the identity code computed from the stand-in Verify's rule for the record's fake phone (`stand_ins/twilio.py` `start_verification`), and the sign-up email marked verified by setting that sign-up's `businesses.mailbox_check.verified_at` through `psql` on `DATABASE_URL` (the emailed code is an HMAC under `ASKHAVA_ID_SECRET`, which the web server's environment draws at random and the spec cannot read, and it is never stored, D-2128); the email code step itself is proved in the route test. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Each sign-up `POST` calls `portals::api::admit_sign_up` first (D-1951; fourth external audit F12, D-2206). Nov 11 code review batch 3, F6 (D-2709; BIZ-049, BIZ-004, BIZ-007, D-2508 (2), D-2511): it also serves `portals::api::CAPABILITY_ROUTE` (`/b/signup/capability`), `GET` and `POST` for each capability screen (the one-page form and the guided sequence); the path falls under `door()`'s Business rule (`tests/security/tests/auth_matrix.rs:109`), so it is served behind `portals::api::business_principal`: at activation the owner is sent the normal sign-in link to the verified sign-up email (link plus code, SEC-004; no session is started without it), and the first sign-in of an owner whose capability step is not saved lands on it; the checklist from T368's entry point (the business's ROC classes, agency licenses, pest attestation and handyman standing, and the stored category switch), saved through `businesses::api::save_capability` (T369's after-hours rule); a tick outside the offer changes nothing and shows the form again; route cases in `app/server/tests/business_signup_route.rs` (TD-BIZ-49). Nov 11 code review batch 3 (D-2711, D-2712): the sign-up `POST` stores what the holder read needs: a pest business's attestation, license number and record categories through `licensing::api::record_pest_attestation` (LIC-047), and an agency-category business's license number through `licensing::api::record_agency_license` (LIC-015, LIC-016; the number from T165's form field), both T374's; the Handyman category choice is already stored in `businesses.signup.trades` and is how T374 reads handyman standing; TD-BIZ-49 gains these cases. Plan change D-2943 (BIZ-022): the sign-up `POST` also stores the business name and trade name from T165's form fields through `businesses::api::save_business_name` (T165), a refused name showing the screen again with its reason; for a no-license business the same stored business name and trade name are the `CityRecord` names it passes (through `businesses::api::holding`'s `Known.city_names`) to LIC-011's city-list match (D-255), and no match follows LIC-011, BIZ-003 and BIZ-016 (pending until a later daily list matches; a flagged sign-up waits in needs review); TD-BIZ-49 gains those cases. Plan change D-2954 (BIZ-002, BIZ-016, D-059, D-1699): the sign-up reads the business's own public record through T385: the server's license source is `adapters::api::LicenseLists` on `ASKHAVA_LICENSE_BASE_URL`, checked by `check_base_url`, required in `test` and `live` (start-up stops naming the key) and, when absent in `ci` or `dev`, every read `Unreadable` (T385's `file://` fixture directory in the e2e). The ROC number is bound server-side once: at the license match, after the names are saved, the sign-up calls `licensing::api::check_license` with the number from that step's form, and every later read (the name flag, the license match, every identity screen) goes through `businesses::api::signup_record(conn, source, business)`, which reads the bound number and never a number from the request; a number posted on any later screen changes nothing. The read's name flag goes to `record_match` with the license match, so a name that agrees with neither the record's business name nor its DBA waits in needs review (BIZ-016); a city-list or pest business's contact comes from its matched city-list row's record (LIC-011, LIC-048); each identity screen builds `RecordContacts`, `RecordSeen` and the masked contact from a read made in that request, never stored, logged or put in an error, and only screens that need a contact or the name check read; `NoContact` is `Flag::NoRecordContact` (needs review, BIZ-002), while `Unreadable` and `Unbound` change nothing and show the screen again asking the business to try again shortly; the e2e's identity code goes to T385's fixture record phone; TD-BIZ-49 gains these cases. Plan change D-3262: the sign-up email's mailbox ID is minted server-side by T412's `privacy::api::mailbox_for` from the typed address in the final submit request (never taken from the request or an earlier screen), and the sign-up's text phone is linked through T415's `server` `ContactDirectory` (the production `SenderLink`), so the owner can later sign in and get codes; route cases in `app/server/tests/business_signup_route.rs` (TD-SEC-45) show the stored mailbox matches `mailboxes_of` for the typed address. Plan change D-3602 (plan gap reported): the identity-code and email-code screens, the texts choice and the text phone field are T450's (`Screen::IdentityCode`, `Screen::EmailCode`, the form's channel parser and the step route constants); this task serves each step on T450's route constants, calls `businesses::api::check_code` on the identity code and `start_signup_check`, `verified_by_link` and `confirm_mailbox` (`email_verification.rs:363`'s `confirm`) on the email code, and builds `SignupConsent` from T450's parser; it changes no `portals` file.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -18987,7 +18988,8 @@
     "T385",
     "T400",
     "T412",
-    "T415"
+    "T415",
+    "T450"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19040,7 +19042,8 @@
     "D-2943",
     "D-2954",
     "D-3100",
-    "D-3262"
+    "D-3262",
+    "D-3602"
    ],
    "cites": [],
    "budget": {
@@ -31263,6 +31266,69 @@
    "branch": "claude/task/T449-emergency-texts-counted",
    "prompt": "kit/prompts/T449.md",
    "acceptance": "In `emergency_request_limits.rs`, 101 emergency first texts in an hour raise the SEC-015 High alert and none is refused, and with the counter failing an emergency first text still opens its request and queues its reply; in `door_matrix.rs`, a token minted for member Y on X's kind and object acts as Y, never as X; every existing TD-SEC, TD-INT and TD-SEC-61 case passes unchanged."
+  },
+  {
+   "id": "T450",
+   "slug": "signup-code-screens",
+   "title": "portals: the sign-up code screens and the texts choice with its phone field",
+   "goal": "Plan change D-3602 (plan gap reported by T302; BIZ-002, BIZ-036, BIZ-040, BIZ-042, CON-019, TXT-035, A11Y-030; D-2128, D-2943): `portals`' sign-up (`app/portals/src/business_signup.rs`, `Screen` at :226) has no screen to type the identity code sent to the record contact or the code emailed to the sign-up address, and `app/portals/templates/business_signup.html` has no code input, no texts choice and no text phone field, so `Entered.text_chosen` (:344) and `SignupConsent.text_phone` (:373) can never come from a post, and the form posts to `/b/signup/start`, a path no constant names. This task adds only what T302 serves; it calls no `businesses::api` code check (T302's `server` route calls `check_code`, `start_signup_check`, `verified_by_link` and `confirm_mailbox`). (1) Route constants beside `SIGNUP_ROUTE`, one per sign-up `POST` step (the form, the identity code, the email code and its resend), each under `/b/signup/`, and every form's `action` taken from them. (2) Two screens: `Screen::IdentityCode` (after `Contact`: one code input with its label, `autocomplete=\"one-time-code\"`, `inputmode=\"numeric\"`, the masked contact it went to, a refused or expired code shown as an error beside the field, A11Y-030) and `Screen::EmailCode` (BIZ-040, BIZ-042: the code input, \"No email? Check your Spam or Junk folder.\" and a resend button). (3) On the form, the notice-channel choice (BIZ-036): email preselected; text and both offered only while business texting is on (TXT-035), never preselected; choosing text shows a text phone field (`type=\"tel\"`, `autocomplete=\"tel\"`); the consent box stays unticked, after the choice, with its full CON-019 wording naming every chosen channel and \"Laftly never places recorded or automated calls to you.\" ahead of any code being sent; `TEXT_PHONE_MISSING` shows beside the phone field. (4) A pure parser for the form's channel and phone fields giving `Entered.text_chosen` and the text phone (never logged), so T302 builds `SignupConsent` from a post. English only: the Spanish page is T202's. Tests in the new `app/portals/src/tests/signup_code_screens.rs` (one `mod` line in the shared `tests/mod.rs`), fake data only: each screen renders its input, label, error and the route it posts to; text is not offered while texting is off; choosing text without a phone gives `TEXT_PHONE_MISSING`; the consent wording names texts only when chosen; every form posts to a route constant. Every existing `portals` test passes unchanged. Update the `portals` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "portals",
+   "deps": [
+    "T193",
+    "T199",
+    "T155",
+    "T268",
+    "T165",
+    "T248",
+    "T294"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "copy": true,
+   "owns": [
+    "app/portals/src/business_signup.rs",
+    "app/portals/templates/business_signup.html",
+    "app/portals/src/tests/signup_code_screens.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/consent.md",
+    "docs/spec/accessibility.md"
+   ],
+   "requirements": [
+    "BIZ-036",
+    "BIZ-042",
+    "CON-019"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-2128",
+    "D-2943",
+    "D-3602"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 400,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T450-signup-code-screens",
+   "prompt": "kit/prompts/T450.md",
+   "acceptance": "`cargo test -p askhava-portals --lib tests::signup_code_screens` passes with every listed case; every existing portals test passes unchanged; `scripts/check_copy.py` and `scripts/check_ai_smell.py` report 0 problems for the new words."
   }
  ]
 }
