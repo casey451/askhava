@@ -1,20 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T13:38:19Z by runner c37dc9c0f001 (actions).
+Updated 2026-11-14T13:45:08Z by runner aa64d53b5f18 (actions).
 
 **Building: T432 in progress since 12:42Z; 323 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 323 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z
-- **Week:** 44% used, 106.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:38Z, 0 min before this update
+- **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z; lane 5: T353 claimed 13:44Z, lease until 16:44Z
+- **Week:** 44% used, 104.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:38Z, 6 min before this update
 - **Keeper:** last ran 13:38Z, next wake 15:45Z
 
 ## Needs attention
-- PLAN GAP T353 (since 2026-11-14T13:35:50Z, no attempt used; a plan change fixes it): T353: dependency T359 is DONE but its owned file migrations/0183_payments_charge_id.sql is not on main; T353: dependency T359 is DONE but its owned file tests/integration/tests/charge_ledger_entry.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 33 problem(s) on tasks still to run (+103 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+104 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -105,7 +104,6 @@ Updated 2026-11-14T13:38:19Z by runner c37dc9c0f001 (actions).
 | T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z |  |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | resync | 1 | 39 min | 14:30Z |  |
 | T367 | jobs, messaging, privacy, intake and payments: the daily swe | done | 1 | 60 min | 14:23Z |  |
-| T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z |  |
 
 ### Plan and harness merges on main
 - 13:12Z Plan: T301 door-matrix Quote-link cases follow BIZ-038/CARD-023; action pages link forms.css (D-3706) (#781)
@@ -163,7 +161,7 @@ Updated 2026-11-14T13:38:19Z by runner c37dc9c0f001 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T12:54:58Z (week)): week: 87.9M used, 106.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T18:38:54Z.
+- Pacing (session_reading 2026-11-14T13:37:58Z (week)): week: 89.3M used, 104.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T18:33:04Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -179,6 +177,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T432 (lease until 2026-11-14T15:42:31Z)
+- lane 5: T353 (lease until 2026-11-14T16:44:53Z)
 
 ## Last usage reading
 - {"task": "T437", "at": "2026-11-14T13:32:07Z", "cache_read_input_tokens": 1111233, "output_tokens": 15423, "input_tokens": 63, "cache_creation_input_tokens": 72423}
