@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:18:47Z by runner f7c093395ac7 (actions).
+Updated 2026-11-14T11:24:54Z by runner f7c093395ac7 (actions).
 
-**Building: T329 in progress since 10:44Z; 319 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T329 in progress since 10:44Z; 320 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 319 of 449 build tasks (owner gates not counted)
+- **Tasks done:** 320 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 6: T329 claimed 10:44Z, lease until 13:44Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
 - **Week:** 41% used, 110.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:18Z, 0 min before this update
+- **Last run:** 11:19Z, 5 min before this update
 - **Keeper:** last ran 11:18Z, next wake 13:47Z
 
 ## Needs attention
@@ -18,10 +18,10 @@ Updated 2026-11-14T11:18:47Z by runner f7c093395ac7 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T453 | quotes: the job's quote rules are read from the stored job,  | MERGE_PENDING | 1 | 27 min | 11:02Z |  |
+| T453 | quotes: the job's quote rules are read from the stored job,  | done | 1 | 27 min | 11:02Z |  |
 | T452 | e2e and Ally (harness): a keyed web binary beside the suite' | MERGE_PENDING | 1 | 24 min | 10:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 3 | 31 min | 10:58Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T359 | payments: a successful charge writes its own charge ledger e | MERGE_PENDING | 2 | 75 min | 10:54Z | PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, an |
+| T359 | payments: a successful charge writes its own charge ledger e | check_failed | 2 | 75 min | 10:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T435 | calls and server: calls and texts act for the business only  | done | 1 | 30 min | 10:46Z |  |
 | T329 | businesses: the eight business account events queued today ( | BLOCKED | 1 | 2 min | 10:28Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 52 min | 10:25Z |  |
@@ -127,7 +127,7 @@ Updated 2026-11-14T11:18:47Z by runner f7c093395ac7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 274 of 733 (37.4%) · partial 299 · unstarted 160
-**Tasks merged (throughput only):** 319 of 449
+**Tasks merged (throughput only):** 320 of 449
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -162,7 +162,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 199 of 224 done
+- stage 4: 200 of 224 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
