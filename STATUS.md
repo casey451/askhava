@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-14T14:27:37Z by runner 49857763a082 (actions).
+Updated 2026-11-14T14:30:34Z by runner 49857763a082 (actions).
 
-**Building: T261 in progress since 14:27Z; 325 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T302 in progress since 14:01Z; 325 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 325 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T261 claimed 14:27Z, lease until 17:27Z; lane 4: T302 claimed 14:01Z, lease until 17:01Z
+- **Lane:** lane 4: T302 claimed 14:01Z, lease until 17:01Z
 - **Week:** 44% used, 104.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:16Z, 11 min before this update
+- **Last run:** 14:27Z, 2 min before this update
 - **Keeper:** last ran 14:16Z, next wake 17:04Z
 
 ## Needs attention
+- BLOCKED T261: plan gap reported: PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs:95); migrations/0158_picks_share_box.sql:28-29 CHECK allows only replaced/paused/ineligible/cant_take. T261 goal (1) and D-1871 (3) need the pick to end through the Can't take it path with its own reason, but T261 owns neither app/picks nor migrations, and no other task in kit/tasks.json builds a new reason (only T287 and T261 mention it). Reviewer confirmed with file:line evidence. Secondary: the task needs about 11 files and over 600 lines against a 7-file, 600-line budget.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 31 problem(s) on tasks still to run (+105 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 1 | 3 min | 14:30Z | PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs: |
 | T353 | payments: a won dispute records the countering fee's return  | MERGE_PENDING | 1 | 30 min | 14:15Z |  |
 | T432 | intake and server: ask the name-and-address question in prod | done | 1 | 71 min | 13:54Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 4 | 38 min | 13:32Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
@@ -104,7 +106,6 @@ Updated 2026-11-14T14:27:37Z by runner 49857763a082 (actions).
 | T266 | portals, picks and privacy: the homeowner's contact choice a | done | 2 | 66 min | 15:48Z | session ended without handing in |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | done | 1 | 24 min | 15:05Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z |  |
-| T330 | picks, intake and server: a withdrawn pick tells its busines | resync | 1 | 39 min | 14:30Z |  |
 
 ### Plan and harness merges on main
 - 13:12Z Plan: T301 door-matrix Quote-link cases follow BIZ-038/CARD-023; action pages link forms.css (D-3706) (#781)
@@ -177,8 +178,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T261 (lease until 2026-11-14T17:27:19Z)
 - lane 4: T302 (lease until 2026-11-14T17:01:27Z)
 
 ## Last usage reading
-- {"task": "T353", "at": "2026-11-14T14:15:19Z", "cache_creation_input_tokens": 179375, "cache_read_input_tokens": 5945056, "output_tokens": 45123, "input_tokens": 149}
+- {"task": "T261", "at": "2026-11-14T14:30:33Z", "output_tokens": 11875, "cache_read_input_tokens": 1445207, "cache_creation_input_tokens": 96920, "input_tokens": 65}

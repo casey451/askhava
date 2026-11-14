@@ -28316,8 +28316,8 @@
     "T319",
     "T466"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "served-confirm-route",
    "type": "build",
    "stage": "4",
@@ -28329,6 +28329,33 @@
     3719,
     3720,
     3721
+   ],
+   "reason": "plan gap reported: PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason \"cant_take\" (models::end_pick is pub(crate), models.rs:95); migrations/0158_picks_share_box.sql:28-29 CHECK allows only replaced/paused/ineligible/cant_take. T261 goal (1) and D-1871 (3) need the pick to end through the Can't take it path with its own reason, but T261 owns neither app/picks nor migrations, and no other task in kit/tasks.json builds a new reason (only T287 and T261 mention it). Reviewer confirmed with file:line evidence. Secondary: the task needs about 11 files and over 600 lines against a 7-file, 600-line budget.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason \"cant_take\" (models::end_pick is pub(crate), models.rs:95); migrations/0158_picks_share_box.sql:28-29 CHECK allows only replaced/paused/ineligible/cant_take. T261 goal (1) and D-1871 (3) need the pick to end through the Can't take it path with its own reason, but T261 owns neither app/picks nor migrations, and no other task in kit/tasks.json builds a new reason (only T287 and T261 mention it). Reviewer confirmed with file:line evidence. Secondary: the task needs about 11 files and over 600 lines against a 7-file, 600-line budget. Nothing was committed.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 38,
+     "head_sha": "49857763a082bd7cc92c26c79feef4ee8dc51282",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-14T14:27:19Z",
+     "ended_at": "2026-11-14T14:30:33Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 1290129,
+       "turns": 22
+      },
+      "reviewer": {
+       "tokens": 263938,
+       "turns": 10
+      }
+     }
+    }
    ]
   },
   {
@@ -54883,12 +54910,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T353",
-   "at": "2026-11-14T14:15:19Z",
-   "cache_creation_input_tokens": 179375,
-   "cache_read_input_tokens": 5945056,
-   "output_tokens": 45123,
-   "input_tokens": 149
+   "task": "T261",
+   "at": "2026-11-14T14:30:33Z",
+   "output_tokens": 11875,
+   "cache_read_input_tokens": 1445207,
+   "cache_creation_input_tokens": 96920,
+   "input_tokens": 65
   },
   "source": "session_reading 2026-11-14T14:15:57Z (week)",
   "by_task": {
@@ -58194,17 +58221,27 @@
    },
    "T261": {
     "estimated_bytes": 604061,
-    "estimated_tokens": 1841995
+    "estimated_tokens": 1841995,
+    "usage_counting": "message_id",
+    "output_tokens": 11875,
+    "cache_read_input_tokens": 1445207,
+    "cache_creation_input_tokens": 96920,
+    "input_tokens": 65,
+    "worker_tokens": 1290129,
+    "worker_turns": 22,
+    "reviewer_tokens": 263938,
+    "reviewer_turns": 10,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-14T11:49:58Z",
-    "tokens": 9440751
+    "tokens": 9694131
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 123822825
+    "tokens": 124076205
    }
   },
   "session_reading": {
@@ -58215,7 +58252,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T14:27:37Z",
+ "updated_at": "2026-11-14T14:30:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
