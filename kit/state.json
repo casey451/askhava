@@ -30322,7 +30322,16 @@
      "plan_now": "98f64a819b361d30945e8249f14dae7ba799f43dbb1e2dd1706f431c8b8a84be"
     }
    ],
-   "lane": "3"
+   "lane": "3",
+   "reviewed_sha": "3cb6fa1344d75aaad4f8c497d28d500188edfed5",
+   "review_lease": {
+    "task": "T280",
+    "session": "actions-43533238269",
+    "expires": "2026-11-14T03:35:47Z",
+    "lane": "3"
+   },
+   "branch": "claude/task/T280-business-signin-served",
+   "head_check_since": null
   },
   {
    "id": "T281",
@@ -53567,7 +53576,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T02:22:25Z",
+ "updated_at": "2026-11-14T02:23:13Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -53665,8 +53674,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "918581713bc4d82184921a94a50e48710fa2dd45",
- "starter": "manual",
+ "runner_sha": "3cb6fa1344d75aaad4f8c497d28d500188edfed5",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "4bc0aa878dc0c3a9408753088149406b63b51c17",
