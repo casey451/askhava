@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-14T21:28:29Z by runner 1a0927467bbf (actions).
+Updated 2026-11-14T21:31:55Z by runner 886756c58552 (actions).
 
-**Building: T460 in progress since 21:27Z; 332 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 21:31Z; 332 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 332 of 469 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 5: T460 claimed 21:27Z, lease until 00:27Z
+- **Lane:** idle since 21:31Z (no task in progress)
 - **Week:** 51% used, 92.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:28Z, 0 min before this update
+- **Last run:** 21:28Z, 3 min before this update
 - **Keeper:** last ran 21:28Z, next wake 00:29Z
 
 ## Needs attention
+- BLOCKED T460: plan gap reported: PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-3641 needs the server to read the sign-up's stored state (identity Step, code_done, email verified) before each identity step, but no public businesses::api reader gives it: signup_email_waits is not exported (lib.rs:49 private mod), RecordFound::masked() cannot tell "no step yet" from step 1, check_code (identity.rs:267-271) takes a try before it finds no step, and the server crate has no SQL (R8). T460 owns only app/server/src/business_signup.rs and app/server/tests/business_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T460 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 16 problem(s) on tasks still to run (+108 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+109 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T300 | server and portals: the business portal is served behind the | MERGE_PENDING | 3 | 94 min | 21:25Z | PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T |
 | T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
@@ -164,7 +166,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T460 (lease until 2026-11-15T00:27:25Z)
 
 ## Last usage reading
-- {"task": "T300", "at": "2026-11-14T21:25:24Z", "output_tokens": 131266, "input_tokens": 447, "cache_creation_input_tokens": 443781, "cache_read_input_tokens": 29526732}
+- {"task": "T460", "at": "2026-11-14T21:31:55Z", "output_tokens": 21402, "input_tokens": 107, "cache_creation_input_tokens": 135581, "cache_read_input_tokens": 3273109}
