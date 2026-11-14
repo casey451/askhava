@@ -30119,7 +30119,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 13
+    "context_pct": 20
    },
    "checks": [
     "Ci",
