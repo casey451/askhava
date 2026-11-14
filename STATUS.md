@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T02:45:50Z by runner f5b7fd7dcd10 (actions).
+Updated 2026-11-14T02:46:24Z by runner 918581713bc4 (actions).
 
 **Building: T433 in progress since 02:23Z; 308 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T02:45:50Z by runner f5b7fd7dcd10 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
 - **Week:** 34% used, 124.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:43Z, 2 min before this update
+- **Last run:** 02:46Z, 0 min before this update
 - **Keeper:** last ran 02:42Z, next wake 04:43Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-14T02:45:50Z by runner f5b7fd7dcd10 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 23 min | 02:41Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/intake/CLAUDE.md, app/messaging/CLAUDE.md, app |
-| T449 | server and intake: emergency first texts count toward the re | MERGE_PENDING | 1 | 47 min | 02:29Z |  |
+| T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | done | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 2 | 1 min | 01:33Z | PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode\|EmailCode in app/portals/src finds |
