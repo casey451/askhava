@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T01:20:33Z by runner 2df926e292cb (actions).
+Updated 2026-11-14T01:20:56Z by runner 2df926e292cb (actions).
 
 **Building: T280 in progress since 00:35Z; 304 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-14T01:20:33Z by runner 2df926e292cb (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 4: T447 claimed 01:03Z, lease until 04:03Z
 - **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:19Z, 1 min before this update
-- **Keeper:** last ran 01:11Z, next wake 03:38Z
+- **Last run:** 01:20Z, 0 min before this update
+- **Keeper:** last ran 01:20Z, next wake 03:37Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -80,7 +80,6 @@ Updated 2026-11-14T01:20:33Z by runner 2df926e292cb (actions).
 | T426 | Brand rename prep: notice-address and sign-in security tests | done | 1 | 35 min | 02:49Z |  |
 | T425 | Brand rename prep: the last integration tests and four secur | done | 1 | 28 min | 02:39Z |  |
 | T423 | Brand rename prep: integration tests (first-quote move to si | done | 1 | 66 min | 01:47Z |  |
-| T422 | Brand rename prep: integration tests (accepted-quote email t | done | 1 | 44 min | 01:20Z |  |
 
 ### Plan and harness merges on main
 - 01:13Z Plan: T302 plan gap — new T450 sign-up code screens and verified consent (D-3602) (#730)
