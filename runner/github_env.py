@@ -62,7 +62,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from runner import model_window, state as st, status, verify
+from runner import model_window, review_proof, state as st, status, verify
 from runner.cycle import DROP_MARKER, WorkerResult
 from runner.update_merge import UpdateMerge
 from runner.state import State
@@ -2257,11 +2257,14 @@ class GitHubEnv:
 
     def collect_result(
         self, task: dict[str, Any], outcome: str, transcripts: list[str], reviewer_transcripts: list[str],
-        log: str = "", reset_at: datetime | None = None,
+        log: str = "", reset_at: datetime | None = None, proof: review_proof.Proof | None = None,
     ) -> WorkerResult:
         """A WorkerResult from what the runner reads itself: git diff --no-renames and the transcripts.
-        A submitted head whose docs/decisions.md has new entries filed before its base's last entry gets
-        a runner commit on top that moves them to the end (`_hand_in_in_order`, D-1029)."""
+        With a `proof` (`--after` passes one), a submitted head must first pass `review_proof.check` on the
+        worker's own head, or the hand-in fails with its REVIEW_MISSING log before any runner commit, gate
+        or push (D-3728); without one nothing is checked. A submitted head whose docs/decisions.md has new
+        entries filed before its base's last entry gets a runner commit on top that moves them to the end
+        (`_hand_in_in_order`, D-1029)."""
         branch = self.branch_for(task["id"])
         base = self.main_head()
         head = self.git("rev-parse", f"refs/heads/{branch}", check=False)
@@ -2273,6 +2276,8 @@ class GitHubEnv:
         if remote and not self._is_ancestor(remote, head):
             # The push would be rejected as a non-fast-forward, and the runner never force-pushes (D-583).
             return WorkerResult("tests_failed", log=NOT_BUILT_ON.format(branch=branch), branch=branch, head_sha=head)
+        refused = review_proof.check(task, branch, head, base, proof, self._git_out, self.log) if proof and outcome == "submitted" else ""
+        outcome, log = ("tests_failed", refused) if refused else (outcome, log)
         if outcome == "submitted" and base:
             head = self._hand_in_in_order(branch, head, base)
             red = self.prehandin(branch, head, base)  # a red gate fails the hand-in before any review record or push (D-1300)
@@ -2284,6 +2289,11 @@ class GitHubEnv:
         usage = {k: usage.get(k, 0) + review_usage.get(k, 0) for k in {*usage, *review_usage}}  # both count (pacing)
         return WorkerResult(outcome, [p for p in changed.splitlines() if p], evidence, reset_at, log, branch, head, review, usage,
                             self._commits_ahead(base, head), split)
+
+    def _git_out(self, *args: str) -> str | None:
+        """`git <args>` on the checkout: its stripped stdout, or None when git exits non-zero."""
+        code, out, _ = self._run(["git", *args], None, self.root)
+        return out.strip() if code == 0 else None
 
     def prehandin(self, branch: str, head: str, main: str) -> str:
         """'' when main's scripts/prehandin.sh --quick passes on `head` against `main`, else the failure log
