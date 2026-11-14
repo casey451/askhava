@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T05:40:26Z by runner aef59759411c (actions).
+Updated 2026-11-14T05:40:45Z by runner aef59759411c (actions).
 
-**Building: T393 in progress since 04:25Z; 313 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T437 in progress since 05:10Z; 313 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 313 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 2: T437 claimed 05:10Z, lease until 08:10Z; lane 3: T396 claimed 05:11Z, lease until 08:11Z; lane 4: T352 claimed 05:22Z, lease until 08:22Z; lane 6: T280 claimed 05:22Z, lease until 08:22Z
+- **Lane:** lane 2: T437 claimed 05:10Z, lease until 08:10Z; lane 3: T396 claimed 05:11Z, lease until 08:11Z; lane 4: T352 claimed 05:22Z, lease until 08:22Z; lane 6: T280 claimed 05:22Z, lease until 08:22Z
 - **Week:** 37% used, 114.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:34Z, 5 min before this update
+- **Last run:** 05:34Z, 6 min before this update
 - **Keeper:** last ran 05:34Z, next wake 07:28Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-14T05:40:26Z by runner aef59759411c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T393 | portals and licensing: the served quote page's cards show ea | MERGE_PENDING | 1 | 74 min | 05:40Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z | merging main into the task branch conflicts in app/intake/CLAUDE.md again after 2 resyncs in this attempt, so this attem |
 | T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
@@ -157,11 +158,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T393 (lease until 2026-11-14T07:25:53Z)
+- nothing
 - lane 2: T437 (lease until 2026-11-14T08:10:50Z)
 - lane 3: T396 (lease until 2026-11-14T08:11:35Z)
 - lane 4: T352 (lease until 2026-11-14T08:22:44Z)
 - lane 6: T280 (lease until 2026-11-14T08:22:22Z)
 
 ## Last usage reading
-- {"task": "T437", "at": "2026-11-14T05:04:56Z", "cache_creation_input_tokens": 48080, "input_tokens": 41, "output_tokens": 5676, "cache_read_input_tokens": 516448}
+- {"task": "T393", "at": "2026-11-14T05:40:24Z", "input_tokens": 340, "output_tokens": 103902, "cache_read_input_tokens": 15004532, "cache_creation_input_tokens": 345766}
