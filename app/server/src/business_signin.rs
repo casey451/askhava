@@ -47,10 +47,12 @@ use askhava_portals::api::{
 use askhava_privacy::api::{
     BusinessPurpose, Vault, mailboxes_of, read_business_mailbox, read_staff_phone,
 };
+use axum::Form;
 use axum::Router;
-use axum::body::{Body, to_bytes};
-use axum::extract::Request;
-use axum::http::{Method, StatusCode};
+use axum::body::{Body, Bytes, to_bytes};
+use axum::extract::{FromRequest, Request};
+use axum::http::header::CONTENT_TYPE;
+use axum::http::{HeaderMap, Method, StatusCode};
 use axum::middleware::{Next, from_fn};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
@@ -145,18 +147,28 @@ async fn note_client(request: Request, next: Next) -> Response {
     let Ok(bytes) = to_bytes(body, FORM_LIMIT).await else {
         return StatusCode::PAYLOAD_TOO_LARGE.into_response();
     };
-    let code_try = parts.method == Method::POST && has_code(&bytes);
+    let code_try = parts.method == Method::POST && has_code(&parts.headers, &bytes).await;
     let request = Request::from_parts(parts, Body::from(bytes));
     CLIENT
         .scope(Client { ip, code_try }, next.run(request))
         .await
 }
 
-/// Whether a form body has a `code` field with a value.
-fn has_code(body: &[u8]) -> bool {
-    body.split(|b| *b == b'&')
-        .filter_map(|pair| pair.strip_prefix(b"code="))
-        .any(|value| value.iter().any(|b| !matches!(b, b'+' | b' ')))
+/// Whether a form body has a `code` field with a value, decoded as the handler's `Form` decodes
+/// it, so a percent-encoded field name (`cod%65=`) still counts as a code try (SEC-014,
+/// D-2206, D-3220). A body `Form` refuses never reaches the handler's code step.
+async fn has_code(headers: &HeaderMap, body: &Bytes) -> bool {
+    let mut request = Request::new(Body::from(body.clone()));
+    *request.method_mut() = Method::POST;
+    if let Some(kind) = headers.get(CONTENT_TYPE) {
+        request.headers_mut().insert(CONTENT_TYPE, kind.clone());
+    }
+    let Ok(Form(pairs)) = Form::<Vec<(String, String)>>::from_request(request, &()).await else {
+        return false;
+    };
+    pairs
+        .iter()
+        .any(|(name, value)| name == "code" && !value.trim().is_empty())
 }
 
 /// Whether `admitted` let the request through; an error refuses (D-1951).

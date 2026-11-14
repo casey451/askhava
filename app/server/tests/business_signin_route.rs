@@ -360,6 +360,21 @@ async fn td_sec_40_the_link_and_try_caps_hold_through_the_route(pool: PgPool) {
     assert_eq!(w.mail.sent().len(), 5, "five links a member in 15 minutes");
 }
 
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn d_3220_an_encoded_code_field_name_still_counts_as_a_try(pool: PgPool) {
+    let w = world(&pool).await;
+    let link = ask(&w, "owner@x.example", 1).await.expect("emailed");
+    let mut browser = code_step(&w, &link, 2).await;
+    let now = w.now;
+    exhaust(|_| admit_code_try(&pool, (ip(2), None), now)).await;
+    let (status, _) = browser
+        .press(&w.app, &link, &format!("&cod%65={RIGHT}"))
+        .await;
+    assert_eq!(status, 500, "an encoded name is a code try too");
+    assert!(!browser.signed_in());
+    assert_eq!(w.verify.checks(), 0, "past the per-IP limit no Verify call");
+}
+
 /// Spends `admit` from new clients until it refuses.
 async fn exhaust<F, Fut>(admit: F)
 where
