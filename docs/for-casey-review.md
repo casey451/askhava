@@ -2850,3 +2850,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - On an emergency job that text goes at once, any hour, as the rules allow for her pick texts; otherwise it waits for 8 a.m. to 8 p.m. The same task also fixes an emergency pick that runs out its 60 minutes: until now the job went back to her quotes but the pick just sat there, with no move to her backup and no text.
 - T472 serves the "Can't take it" page that the Confirm page and the pick email already link to. T473 pins one test-server image by its exact fingerprint, which the supply-chain security test (T121) needs; T121 also tightens two sign-in forms to refuse unknown fields.
 - Still open, written down in D-3750: the alerts to your phone at 70% of the daily and 80% of the monthly email allowance aren't built yet, and they are needed before launch, since 100 emails a day can run out. No fee, amount or check changed. Nothing needs you now.
+
+## A finished task wrongly failed when main turned red (D-3752, November 14)
+
+- A nightly test run failed after the notes-file task (T437) merged, so the runner blamed it as the latest merge. The fix-main step found the real cause elsewhere (an earlier texting change, being fixed separately) and undid nothing. Even so, when main turned green again the runner counted a failed attempt against T437 and blocked it, which held up the rest of this stage.
+- T437 gets one more attempt that only re-checks its work, already on main, and records that check. A new runner task (T474) makes the runner count a failure only when the fix-main step actually undid that task's files. No fee, wording or check changed. Nothing needs you.
