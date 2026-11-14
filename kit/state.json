@@ -23865,40 +23865,30 @@
   {
    "id": "FIX-MAIN",
    "deps": [],
-   "status": "DONE",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 0,
    "type": "harness",
    "model": "claude-sonnet-5-5",
    "reviewer_model": "claude-opus-5-5",
    "owns": [
-    ".sqlx/query-0031b2035f3954d59c004e8f21fc911a5eaa6835d99057417e4cf441ac822eb8.json",
-    ".sqlx/query-afc2fda06cb4ac2aff8f42f84bae858395c9647aaf47313a22d89219ad5b0017.json",
-    "Cargo.lock",
-    "app/intake/CLAUDE.md",
-    "app/intake/Cargo.toml",
-    "app/intake/src/api.rs",
-    "app/intake/src/golden_run.rs",
-    "app/intake/src/lib.rs",
-    "app/intake/src/models.rs",
-    "app/intake/src/question_bank.rs",
-    "app/intake/src/routing_confidence.rs",
-    "app/intake/src/tests/mod.rs",
-    "app/intake/src/tests/question_bank.rs",
-    "app/server/Cargo.toml",
-    "app/server/src/bin/worker.rs",
     "docs/architecture.md",
     "docs/decisions.md",
-    "docs/for-casey-review.md",
-    "migrations/0083_intake_golden_result.sql",
-    "tests/integration/tests/routing_confidence.rs"
+    "kit/plan.lock",
+    "runner/__main__.py",
+    "runner/verify.py",
+    "scripts/check_code_docs.py",
+    "tests/docs/test_brand_literals.py",
+    "tests/test_runner_crate_cap.py",
+    "tests/test_runner_crate_merge.py",
+    "tests/test_runner_logic.py"
    ],
    "slug": "revert",
-   "branch": "claude/task/FIX-MAIN-a2",
-   "revert_sha": "26b176e5aab228dba7e0637bc909b6516f1692b6",
-   "offending_task": "T156",
-   "goal": "Fix main. First option: `git revert --no-edit 26b176e5aab228dba7e0637bc909b6516f1692b6` (the merge of T156). Patch over only if the revert itself would break main, and say why in the report.",
+   "branch": "claude/task/FIX-MAIN-revert",
+   "revert_sha": "c97c4d0feb12e99f49a885155edb1bdaeb71f188",
+   "offending_task": "T437",
+   "goal": "Fix main. First option: `git revert --no-edit c97c4d0feb12e99f49a885155edb1bdaeb71f188` (the merge of T437), then `git checkout origin/main -- docs/decisions.md` so the log keeps every entry (it is append-only; the reverted task's entries stand as history, D-1088) and append your own entry at the end; if the revert touches a protected or locked path, end the commit message with a `Plan-Change: D-<your entry>` trailer. Patch over only if the revert itself would break main, and say why in the report.",
    "retry_after": null,
-   "last_failure": "Governance: failure; Ci: failure; Ci: failure; Checks: failure; Checks: failure\nChecks failed at step: Plan lock and change rules (docs/governance.md)\nCi failed at step: Both jobs passed",
+   "last_failure": null,
    "reason": null,
    "attempt_started_at": "2026-10-31T20:06:00Z",
    "stale_leases": [
@@ -24102,7 +24092,10 @@
     "docs/for-casey-review.md",
     "migrations/0083_intake_golden_result.sql",
     "tests/integration/tests/routing_confidence.rs"
-   ]
+   ],
+   "fix_main_rounds": [],
+   "blocked_at": null,
+   "escalated_at": null
   },
   {
    "id": "T234",
@@ -58713,7 +58706,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T16:06:59Z",
+ "updated_at": "2026-11-14T16:07:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -58811,7 +58804,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "60169623421c01251f4d1c431415f9e5682284ef",
+ "runner_sha": "45c9090508ad57c4bf49d0dbd85bc2f04129222f",
  "starter": "actions",
  "smoke_runs": [
   {
@@ -58972,7 +58965,25 @@
    "base": "49857763a082bd7cc92c26c79feef4ee8dc51282"
   }
  ],
- "main_red": null,
+ "main_red": {
+  "check": "nightly",
+  "sha": "45c9090508ad57c4bf49d0dbd85bc2f04129222f",
+  "task": "T437",
+  "revert_sha": "c97c4d0feb12e99f49a885155edb1bdaeb71f188",
+  "files": [
+   "docs/architecture.md",
+   "docs/decisions.md",
+   "kit/plan.lock",
+   "runner/__main__.py",
+   "runner/verify.py",
+   "scripts/check_code_docs.py",
+   "tests/docs/test_brand_literals.py",
+   "tests/test_runner_crate_cap.py",
+   "tests/test_runner_crate_merge.py",
+   "tests/test_runner_logic.py"
+  ],
+  "set_at": "2026-11-14T16:07:33Z"
+ },
  "pacing": {
   "last": "T467 estimated 1.3M tokens (calibrated); week has 98.4M left (no five-hour budget, D-3056) after 3.6M still running in another lane (session_reading 2026-11-14T15:39:46Z (week)); claimed",
   "at": "2026-11-14T15:44:37Z",
