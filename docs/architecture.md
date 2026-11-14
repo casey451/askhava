@@ -543,6 +543,8 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /b/notices | portals | T300 |
 | GET | /b/picks/{pick}/confirm | portals | T261 |
 | POST | /b/picks/{pick}/confirm | portals | T261 |
+| GET | /b/picks/{pick}/cant-take | portals | T472 |
+| POST | /b/picks/{pick}/cant-take | portals | T472 |
 | GET | /b/sign-in | portals | yes |
 | POST | /b/sign-in | portals | yes |
 | GET | /b/sign-in/{token} | portals | yes |
