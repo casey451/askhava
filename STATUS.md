@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T01:30:40Z by runner e5eb9705e865 (actions).
+Updated 2026-11-14T01:30:58Z by runner e5eb9705e865 (actions).
 
 **Building: T280 in progress since 00:35Z; 304 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 304 of 434 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 4: T447 claimed 01:03Z, lease until 04:03Z
+- **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z
 - **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:23Z, 6 min before this update
+- **Last run:** 01:23Z, 7 min before this update
 - **Keeper:** last ran 01:20Z, next wake 03:37Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-14T01:30:40Z by runner e5eb9705e865 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T447 | messaging: a passing vault error holds an outbox row instead | MERGE_PENDING | 1 | 26 min | 01:30Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | MERGE_PENDING | 2 | 67 min | 01:10Z | PLAN GAP: test-design.md:203 (TD-FEE-63) and D-2332 require a text pick of a tiers quote to store nothing and reply with |
 | T328 | picks and server: an ended pick offers the next quote (`paym | MERGE_PENDING | 2 | 61 min | 01:04Z | PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text canno |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z | PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emaile |
@@ -154,7 +155,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T280 (lease until 2026-11-14T03:35:47Z)
-- lane 4: T447 (lease until 2026-11-14T04:03:49Z)
 
 ## Last usage reading
-- {"task": "T341", "at": "2026-11-14T01:10:02Z", "output_tokens": 85338, "cache_creation_input_tokens": 296400, "cache_read_input_tokens": 10686488, "input_tokens": 295}
+- {"task": "T447", "at": "2026-11-14T01:30:38Z", "cache_creation_input_tokens": 105846, "cache_read_input_tokens": 2184689, "input_tokens": 92, "output_tokens": 28482}
