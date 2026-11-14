@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T13:11:25Z by runner 091f183d8d0b (actions).
+Updated 2026-11-14T13:11:43Z by runner 091f183d8d0b (actions).
 
 **Building: T432 in progress since 12:42Z; 322 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-14T13:11:25Z by runner 091f183d8d0b (actions).
 - **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z; lane 3: T437 claimed 12:53Z, lease until 15:53Z; lane 4: T466 claimed 12:59Z, lease until 15:59Z
 - **Week:** 44% used, 106.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:11Z, 0 min before this update
-- **Keeper:** last ran 13:05Z, next wake 15:45Z
+- **Keeper:** last ran 13:11Z, next wake 15:44Z
 
 ## Needs attention
 - BLOCKED T301: plan gap reported: PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires 200 for the fixture's own Quote link GET and for Y's Quote link on X's job. T301's goal (D-3189, CARD-023) requires the one not-found answer for a job with no sent card. Nothing in door_matrix.rs or door_matrix/released_pick.rs calls keep_card/mark_card_sent/sent_card (quoted_job only send_cards + submit_quote); job_page returns None without holds_card (app/quotes/src/job_page.rs:155). Y holds no card on X's job, so even a carded fixture does not fix case (b). Marking sectio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason "..."` (D-2859)
