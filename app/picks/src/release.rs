@@ -41,6 +41,12 @@
 //!
 //! T281 (D-1845): the claim's transaction also queues the unreachable-homeowner steps 24, 48, 72
 //! and 96 hours after it (`unreachable_steps::schedule_steps`), each once per pick.
+//!
+//! T355 (PICK-022, PRIV-005, FEE-052, D-2627): the claim's transaction first locks the pick's row
+//! and re-checks it ([`claim_still_open`]): an ended pick, one out of the proof's status or one
+//! with a `picks.fraud_hold` row (written by `unreachable_refund::fraud_warning` before its refund)
+//! is `MovedOn`, before any vault read on a regular job; on an emergency job the refused claim
+//! follows the read but shows and releases nothing.
 
 use askhava_adapters::api::MaskedPool;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
@@ -61,7 +67,7 @@ use sqlx::{Acquire, PgConnection, PgPool};
 use crate::models::{self, PicksError, ReleaseTarget};
 use crate::money_notices::BUSINESS_NOTICE_KIND;
 use crate::settle::LINE_RETRY_KIND;
-use crate::status::release_status;
+use crate::status::{PickStatus, release_status};
 use crate::unreachable_steps::schedule_steps;
 
 /// The release email's template (PICK-024, D-454): job number and sign-in link only.
@@ -429,8 +435,10 @@ async fn claim_then_read(
     at: Timestamp,
 ) -> Result<Released, PicksError> {
     let binding = (proof.basis(), proof.contact_id(), email_chosen);
-    if !record(conn, (pick, target), binding, at).await? {
-        return Ok(Released::Already);
+    match record(conn, (pick, target), binding, at).await? {
+        Claim::Claimed => {}
+        Claim::Already => return Ok(Released::Already),
+        Claim::MovedOn => return Ok(Released::MovedOn),
     }
     let details = open(conn, vault, proof, email_chosen).await?;
     Ok(Released::Shown(ReleaseView::from_details(details)))
@@ -438,7 +446,9 @@ async fn claim_then_read(
 
 /// An emergency job: the vault is read to learn whether the address is in; without it nothing is
 /// released and she is asked again, else the release is claimed (INT-029, TD-INT-34). Two racing
-/// proofs may both read; only the one whose claim wins is shown (D-1564).
+/// proofs may both read; only the one whose claim wins is shown (D-1564). A claim refused under
+/// the pick's lock (ended, moved on or held for a fraud warning) follows the read but shows and
+/// releases nothing (D-2627).
 async fn read_then_claim(
     conn: &mut PgConnection,
     vault: &Vault,
@@ -453,10 +463,10 @@ async fn read_then_claim(
         ask_again(conn, (pick, target.job), at).await?;
         return Ok(Released::WaitingForAddress);
     }
-    Ok(if record(conn, (pick, target), binding, at).await? {
-        Released::Shown(ReleaseView::from_details(details))
-    } else {
-        Released::Already
+    Ok(match record(conn, (pick, target), binding, at).await? {
+        Claim::Claimed => Released::Shown(ReleaseView::from_details(details)),
+        Claim::Already => Released::Already,
+        Claim::MovedOn => Released::MovedOn,
     })
 }
 
@@ -522,30 +532,90 @@ pub async fn check_ins_at_release(
     Ok(true)
 }
 
+/// What the claim found under the pick's row lock (PICK-022, FEE-052, D-2627).
+enum Claim {
+    /// The release row and its notice committed now.
+    Claimed,
+    /// Another call released the pick first.
+    Already,
+    /// The pick ended, left the wanted status or holds a fraud warning: nothing released.
+    MovedOn,
+}
+
+/// PICK-022, PRIV-005, FEE-052, D-2627: in the caller's transaction, locks pick `pick`'s row
+/// (`SELECT ... FOR UPDATE`, the lock the fraud path takes too), then, in a separate statement
+/// under that lock, answers whether it still has status `want`, no end and no `picks.fraud_hold`
+/// row; an unknown pick answers `false`. The release claim asks it before its row is written, so
+/// a pick whose fraud warning committed its hold is never released, and a fraud warning that
+/// waits on a claim's lock then sees the claim's release row. It writes nothing.
+///
+/// # Errors
+/// `Database`.
+pub async fn claim_still_open(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    want: PickStatus,
+) -> Result<bool, PicksError> {
+    let locked = sqlx::query_scalar!("SELECT id FROM picks.pick WHERE id = $1 FOR UPDATE", pick)
+        .fetch_optional(&mut *tx)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    if locked.is_none() {
+        return Ok(false);
+    }
+    sqlx::query_scalar!(
+        r#"SELECT (p.status = $2 AND p.ended_at IS NULL
+             AND NOT EXISTS (SELECT 1 FROM picks.fraud_hold h WHERE h.pick_id = p.id)) AS "open!"
+           FROM picks.pick p WHERE p.id = $1"#,
+        pick,
+        want.code(),
+    )
+    .fetch_one(tx)
+    .await
+    .map_err(|_| PicksError::Database)
+}
+
 /// Stores the one release row, bound to the proof's contact and her email choice (D-1739), and
 /// queues the notice in one transaction, with the check-ins of a Connected job
 /// ([`check_ins_at_release`]), or one High [`RELEASE_NO_RECIPIENT_ALERT`] when the
-/// business has no recipient; false when another call released first (PICK-022, PICK-024, R11,
-/// D-1561).
+/// business has no recipient; `Already` when another call released first (PICK-022, PICK-024,
+/// R11, D-1561). It first takes the pick's row lock through [`claim_still_open`] and answers
+/// `MovedOn`, writing nothing, for a pick ended, no longer in the proof's status or held by a
+/// fraud warning (FEE-052, D-2627).
 async fn record(
     conn: &mut PgConnection,
     (pick, target): (Uuid, &ReleaseTarget),
     (basis, contact, email_chosen): (ReleaseBasis, Uuid, bool),
     at: Timestamp,
-) -> Result<bool, PicksError> {
+) -> Result<Claim, PicksError> {
     let code = match basis {
         ReleaseBasis::PaidCharge => "paid",
         ReleaseBasis::NoFeeDue => "no_fee",
     };
     let (job, business) = (target.job, target.business);
     let mut tx = conn.begin().await.map_err(|_| PicksError::Database)?;
+    if !claim_still_open(&mut tx, pick, release_status(basis)).await? {
+        return Ok(Claim::MovedOn);
+    }
     let bound = (code, contact, email_chosen);
     if !models::insert_release(&mut tx, (pick, job, business), bound, at).await? {
-        return Ok(false);
+        return Ok(Claim::Already);
     }
     check_ins_at_release(&mut tx, (job, business), at).await?;
     schedule_steps(&mut tx, pick, at).await?;
-    let to = notice_addresses(&mut tx, business, NoticePurpose::PicksAndRelease)
+    notify_business(&mut tx, (pick, job, business), at).await?;
+    tx.commit().await.map_err(|_| PicksError::Database)?;
+    Ok(Claim::Claimed)
+}
+
+/// Queues the release notice to `business`'s pick-and-release recipients, or raises one High
+/// [`RELEASE_NO_RECIPIENT_ALERT`] when it has none, in the claim's transaction (PICK-024, D-1561).
+async fn notify_business(
+    tx: &mut PgConnection,
+    (pick, job, business): (Uuid, Uuid, Uuid),
+    at: Timestamp,
+) -> Result<(), PicksError> {
+    let to = notice_addresses(tx, business, NoticePurpose::PicksAndRelease)
         .await
         .map_err(|_| PicksError::Database)?;
     if to.is_empty() {
@@ -554,23 +624,105 @@ async fn record(
             severity: Severity::High,
             subject: Some(("pick", pick)),
         };
-        raise_alert(&mut tx, &alert)
+        raise_alert(tx, &alert)
             .await
             .map_err(|_| PicksError::Database)?;
     } else {
-        let number = job_number(&mut tx, job)
-            .await
-            .map_err(|_| PicksError::Job)?;
+        let number = job_number(tx, job).await.map_err(|_| PicksError::Job)?;
         let mut notice = NewTask::new(
             BUSINESS_NOTICE_KIND,
             release_notice(business, pick, &to, number),
             at,
         );
         notice.dedupe_key = Some(format!("{BUSINESS_NOTICE_KIND}.{RELEASE_TEMPLATE}.{pick}"));
-        enqueue(&mut tx, &notice)
+        enqueue(tx, &notice)
             .await
             .map_err(|_| PicksError::Database)?;
     }
-    tx.commit().await.map_err(|_| PicksError::Database)?;
-    Ok(true)
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    //! TD-PICK-59 (PICK-022, PRIV-005, FEE-052, D-2627, D-3559): `record`, the release claim
+    //! itself, refuses a pick whose fraud warning committed its `picks.fraud_hold` row, writing
+    //! no release row, and claims the same pick without one. Fake IDs only.
+
+    use askhava_jobs::api::create;
+    use askhava_ops::api::Actor;
+    use jiff::Timestamp;
+    use sqlx::types::Uuid;
+    use sqlx::{PgConnection, PgPool};
+
+    use super::{Claim, PickStatus, ReleaseBasis, ReleaseTarget, record};
+
+    /// A paid pick of a new business on a new job, with a fraud hold when `held`.
+    async fn paid_pick(db: &mut PgConnection, held: bool) -> (Uuid, ReleaseTarget) {
+        let now = Timestamp::now();
+        let business = askhava_businesses::api::create(db, false, now)
+            .await
+            .expect("business");
+        let job = create(db, now, false, Actor::System).await.expect("job");
+        let pick = sqlx::query_scalar!(
+            "INSERT INTO picks.pick (job_id, business_id, quote_number, channel, status, \
+             picked_at) VALUES ($1, $2, 1, 'page', $3, now()) RETURNING id",
+            job,
+            business,
+            PickStatus::Paid.code(),
+        )
+        .fetch_one(&mut *db)
+        .await
+        .expect("pick");
+        if held {
+            sqlx::query!(
+                "INSERT INTO picks.fraud_hold (pick_id, held_at) VALUES ($1, now())",
+                pick
+            )
+            .execute(&mut *db)
+            .await
+            .expect("hold");
+        }
+        let target = ReleaseTarget {
+            job,
+            business,
+            ended: false,
+            confirmed: true,
+            released: false,
+        };
+        (pick, target)
+    }
+
+    /// The pick's `picks.release` rows.
+    async fn releases(db: &mut PgConnection, pick: Uuid) -> i64 {
+        sqlx::query_scalar!(
+            r#"SELECT count(*) AS "n!" FROM picks.release WHERE pick_id = $1"#,
+            pick
+        )
+        .fetch_one(db)
+        .await
+        .expect("count")
+    }
+
+    /// TD-PICK-59 (b) on the claim path: a held pick is `MovedOn` with no release row; the same
+    /// pick without a hold is `Claimed` with one.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn td_pick_59_record_refuses_a_held_pick_and_claims_an_unheld_one(pool: PgPool) {
+        let mut db = pool.acquire().await.expect("conn");
+        let contact = Uuid::from_u128(0xc355_0002);
+        let basis = (ReleaseBasis::PaidCharge, contact, false);
+        let (held, target) = paid_pick(&mut db, true).await;
+        let claim = record(&mut db, (held, &target), basis, Timestamp::now()).await;
+        assert!(
+            matches!(claim, Ok(Claim::MovedOn)),
+            "a held pick is refused"
+        );
+        assert_eq!(releases(&mut db, held).await, 0);
+        let (open, target) = paid_pick(&mut db, false).await;
+        let claim = record(&mut db, (open, &target), basis, Timestamp::now()).await;
+        assert!(
+            matches!(claim, Ok(Claim::Claimed)),
+            "an unheld pick is claimed"
+        );
+        assert_eq!(releases(&mut db, open).await, 1);
+    }
 }

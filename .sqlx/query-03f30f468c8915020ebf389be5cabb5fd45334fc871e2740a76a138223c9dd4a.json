@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO picks.fraud_hold (pick_id, held_at) VALUES ($1, $2) ON CONFLICT (pick_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "03f30f468c8915020ebf389be5cabb5fd45334fc871e2740a76a138223c9dd4a"
+}
