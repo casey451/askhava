@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T19:26:56Z by runner 8a72c0065f44 (actions).
+Updated 2026-11-14T19:31:43Z by runner 8a72c0065f44 (actions).
 
 **Idle since 18:24Z; 329 of 459 done; week 50% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T19:26:56Z by runner 8a72c0065f44 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 18:24Z (no task in progress)
 - **Week:** 50% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:26Z, 0 min before this update
+- **Last run:** 19:31Z, 0 min before this update
 - **Keeper:** last ran 19:26Z, next wake 01:06Z
 
 ## Needs attention
@@ -121,7 +121,6 @@ Updated 2026-11-14T19:26:56Z by runner 8a72c0065f44 (actions).
 - 00:00Z Plan: fix T280/T328/T341 plan gaps; T444–T446; nightly gate robustness (D-3562, D-3563, D-3579, D-3580) (#723)
 - 21:01Z Plan: fewer smoke runs, scoped fix rounds, batched reads, decision excerpts (D-3530) (#698)
 - 20:53Z Plan: T438 plan gap, leave the ledger windows as today (D-3536) (#696)
-- 19:27Z Plan: pre-flight 15, split T341 and T361 (D-3497) (#691)
 
 ## Progress (requirements verified)
 
