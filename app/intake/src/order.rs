@@ -12,7 +12,8 @@
 //! narrowing facts row (a refused row is logged with IDs only and changes nothing, D-2330);
 //! [`show_built_card`] builds the step-12 card from her stored words, stores it with `keep_card`
 //! and shows it in one transaction; [`choose_with_card`] stores the emergency path's card before
-//! `answer_choice` can release the job (INT-029); [`spanish_line`] sends TXT-041's line once.
+//! `answer_choice` can release the job (INT-029); [`spanish_line`] sends TXT-041's line once;
+//! [`ask_last_question`] asks step 11, the name and address, once per request (INT-027, D-3702).
 //! No raw words are stored and none go into a log line.
 
 use askhava_jobs::api::{FactsError, Recorded as Facts, record_job_facts};
@@ -27,7 +28,10 @@ use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
-use crate::conversation::{Answer, Recorded, queue_text, record_answer};
+use crate::conversation::{
+    ADDRESS_CONTACT, Answer, NAME_ADDRESS_ASKED, Recorded, ask_name_address, queue_text,
+    record_answer,
+};
 use crate::emergency::{Choice, choice};
 use crate::models::{self, IntakeError};
 use crate::rules::{Settings, wanted_language};
@@ -256,6 +260,55 @@ async fn build_and_keep(
         .await
         .map_err(quotes)?;
     Ok(built)
+}
+
+/// INT-027, INT-029, INT-043, D-238, D-437, D-3702: step 11, just before step 12's
+/// [`show_built_card`]. Asks `ask_name_address` once per request, under the homeowner lock: only
+/// in an open request with its consent record, no 911 text waiting for SAFE, this request's area
+/// check done (a property stored since it opened), and no earlier ask or answer. `None` when
+/// nothing is asked.
+///
+/// # Errors
+///
+/// `ask_name_address`'s errors or [`IntakeError::Database`]; nothing is kept on an error.
+pub async fn ask_last_question(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+    spanish_on: bool,
+) -> Result<Option<Queued>, IntakeError> {
+    let Some((homeowner, true)) = models::conversation_state(db, conversation).await? else {
+        return Ok(None);
+    };
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    models::lock_homeowner(&mut tx, homeowner).await?;
+    let state = models::release_state(&mut tx, conversation).await?;
+    if !state.consented || state.waiting_safe || !due_to_ask(&mut tx, conversation).await? {
+        return Ok(None);
+    }
+    let asked = ask_name_address(&mut tx, secret, msg, conversation, spanish_on).await?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(asked)
+}
+
+/// Whether request `conversation` reached step 11 and was never asked it: a property of its
+/// homeowner stored since the request opened (the area check, INT-049), and no
+/// `name_address_asked` or `address_contact` row (INT-027, D-3702).
+async fn due_to_ask(db: &mut PgConnection, conversation: Uuid) -> Result<bool, IntakeError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM intake.property p WHERE p.homeowner_id = c.homeowner_id
+               AND p.created_at >= c.opened_at)
+             AND NOT EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = c.id
+               AND a.question_id IN ($2, $3)) AS "due!"
+           FROM intake.conversation c WHERE c.id = $1"#,
+        conversation,
+        NAME_ADDRESS_ASKED,
+        ADDRESS_CONTACT
+    )
+    .fetch_optional(db)
+    .await
+    .map(|due| due.unwrap_or(false))
+    .map_err(|_| IntakeError::Database)
 }
 
 /// INT-041, CARD-007, D-3189: step 12. Builds and stores the card, then `show_card` shows it, in
