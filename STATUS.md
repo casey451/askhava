@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T20:04:55Z by runner f0f2aa6b7eb9 (actions).
+Updated 2026-11-14T20:10:28Z by runner f0f2aa6b7eb9 (actions).
 
 **Building: T467 in progress since 19:47Z; 329 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T20:04:55Z by runner f0f2aa6b7eb9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T467 claimed 19:47Z, lease until 22:47Z; lane 2: T474 claimed 19:51Z, lease until 22:51Z; lane 3: T468 claimed 19:50Z, lease until 22:50Z; lane 4: T459 claimed 19:49Z, lease until 22:49Z; lane 6: T300 claimed 19:50Z, lease until 22:50Z; lane 7: T437 claimed 19:48Z, lease until 22:48Z
 - **Week:** 51% used, 88.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:04Z, 0 min before this update
+- **Last run:** 20:10Z, 0 min before this update
 - **Keeper:** last ran 20:04Z, next wake 22:49Z
 
 ## Needs attention
@@ -95,7 +95,6 @@ Updated 2026-11-14T20:04:55Z by runner f0f2aa6b7eb9 (actions).
 | T271 | server and calls (harness): the dialed leg asks for status c | done | 1 | 53 min | 20:22Z |  |
 | T318 | calls, picks and quotes: the who's-calling text goes out at  | done | 1 | 52 min | 20:18Z |  |
 | T277 | intake and privacy: a check-in reply reaches its job, and a  | done | 1 | 45 min | 20:13Z |  |
-| T357 | server, messaging and intake: START into an open request res | resync | 1 | 48 min | 20:09Z |  |
 
 ### Plan and harness merges on main
 - 19:52Z Plan: stage-5 readers and splits, CON-022 purge via definer functions, Spanish switch gates, replay functions (T475–T484, D-3753) (#798)
