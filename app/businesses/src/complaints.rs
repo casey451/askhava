@@ -10,7 +10,8 @@
 //! [`reply`] before the box closes (BIZ-029); [`run_box_closed`] then lists the complaint for
 //! Casey's digest as one [`DIGEST_ALERT`] row and [`for_casey`] shows it with the reply.
 //! [`phone_link_notice`] queues one [`PHONE_LINKED_KIND`] owner email when a member other than the
-//! owner links a phone (BIZ-033); the Approve gate and the text are T148's (D-493).
+//! owner links a phone or changes its number, one per number set (BIZ-033, D-3081); the text is
+//! T148's (D-493).
 
 use askhava_core::api::{Claimed, HandlerError, NewTask, brand, enqueue};
 use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
@@ -493,9 +494,11 @@ pub async fn run_box_closed(pool: PgPool, task: Claimed) -> Result<(), HandlerEr
     }
 }
 
-/// BIZ-033, D-258, D-311: after `by` linked phone `line`, queues one [`PHONE_LINKED_KIND`] email
-/// to the owner, with its audit row, when `by` is not the owner; true when queued. Call it in the
-/// link's transaction (`api::link_phone` does). The Approve gate and the owner text are T148's.
+/// BIZ-033, D-258, D-311, D-3081: after `by` linked phone `line` or changed its number, queues one
+/// [`PHONE_LINKED_KIND`] email to the owner, with its audit row, when `by` is not the owner; true
+/// when queued. The task is keyed by the phone and its `number_set_at` (in the payload too), so
+/// each number the owner is asked to approve gets its own email and a repeat of the same one none.
+/// Call it in the link's or change's transaction (`api::link_phone`, `api::change_phone_at` do).
 ///
 /// # Errors
 /// [`ComplaintError::Unknown`] for a member not of the business, `Database` or `Audit`.
@@ -516,12 +519,27 @@ pub async fn phone_link_notice(
     if owner {
         return Ok(false);
     }
-    let payload = json!({"business": by.business, "line": line, "member": by.member});
+    let set_at = db(sqlx::query_scalar!(
+        "SELECT number_set_at AS \"set_at!\" \
+         FROM businesses.staff_phone WHERE id = $1 AND business_id = $2",
+        line,
+        by.business
+    )
+    .fetch_optional(&mut *tx)
+    .await)?
+    .ok_or(ComplaintError::Unknown)?
+    .to_jiff();
+    let payload = json!({"business": by.business, "line": line, "member": by.member,
+                         "number_set_at": set_at.to_string()});
     let mut task = NewTask::new(PHONE_LINKED_KIND, payload, now);
-    task.dedupe_key = Some(format!("{PHONE_LINKED_KIND}.{line}"));
-    db(enqueue(&mut *tx, &task)
+    let micros = set_at.as_microsecond();
+    task.dedupe_key = Some(format!("{PHONE_LINKED_KIND}.{line}.{micros}"));
+    let queued = db(enqueue(&mut *tx, &task)
         .await
         .map_err(|_| sqlx::Error::PoolClosed))?;
+    if queued.is_none() {
+        return Ok(false);
+    }
     log(
         tx,
         Actor::Business(by.business),
