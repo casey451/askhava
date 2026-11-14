@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:41:03Z by runner 24008eb1e197 (actions).
+Updated 2026-11-14T12:41:25Z by runner 24008eb1e197 (actions).
 
 **Idle since 12:40Z; 322 of 449 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-14T12:41:03Z by runner 24008eb1e197 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 12:40Z (no task in progress)
 - **Week:** 43% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:40Z, 0 min before this update
-- **Keeper:** last ran 12:38Z, next wake 15:34Z
+- **Last run:** 12:41Z, 0 min before this update
+- **Keeper:** last ran 12:41Z, next wake 13:01Z
 
 ## Needs attention
 - BLOCKED T300: plan gap reported: PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T196 own them; T300 owns no templates or static files, kit/prompts/T300.md:160) draw native checkboxes and a radio with no styling; Chromium reports a 0px border and transparent fill, so tests/a11y/targets_contrast.spec.ts:80 (A11Y-007) fails on the new /b and /b/notices page states (same cause as D-1820 for the feedback page). Reviewer confirmed by reading. Smallest fix: a portals task before T300 giving those inputs a visible edge (like feedback.css) or one shared rule in ap; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T300 --plan-fix D-### --reason "..."` (D-2859)
