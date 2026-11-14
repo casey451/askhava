@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:02:47Z by runner ac8be1a80dac (actions).
+Updated 2026-11-14T11:03:14Z by runner ac8be1a80dac (actions).
 
-**Building: T453 in progress since 10:35Z; 318 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T329 in progress since 10:44Z; 318 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 318 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 5: T453 claimed 10:35Z, lease until 13:35Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z
+- **Lane:** lane 6: T329 claimed 10:44Z, lease until 13:44Z
 - **Week:** 41% used, 106.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:01Z, 0 min before this update
+- **Last run:** 11:03Z, 0 min before this update
 - **Keeper:** last ran 11:01Z, next wake 13:37Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-14T11:02:47Z by runner ac8be1a80dac (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T453 | quotes: the job's quote rules are read from the stored job,  | MERGE_PENDING | 1 | 27 min | 11:02Z |  |
 | T452 | e2e and Ally (harness): a keyed web binary beside the suite' | MERGE_PENDING | 1 | 24 min | 10:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 3 | 31 min | 10:58Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T359 | payments: a successful charge writes its own charge ledger e | MERGE_PENDING | 2 | 75 min | 10:54Z | PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, an |
@@ -172,8 +173,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T453 (lease until 2026-11-14T13:35:08Z)
 - lane 6: T329 (lease until 2026-11-14T13:44:58Z)
 
 ## Last usage reading
-- {"task": "T452", "at": "2026-11-14T10:58:57Z", "output_tokens": 41091, "cache_read_input_tokens": 4607236, "cache_creation_input_tokens": 133537, "input_tokens": 137}
+- {"task": "T453", "at": "2026-11-14T11:02:46Z", "input_tokens": 75, "cache_creation_input_tokens": 84173, "output_tokens": 18771, "cache_read_input_tokens": 1645394}
