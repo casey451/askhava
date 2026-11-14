@@ -36,6 +36,7 @@ export const REVIEWED_INCOMPLETE: readonly string[] = [];
  */
 const NOT_PAGES: readonly (readonly [string, string])[] = [
   ["/static/portals/feedback.css", "the feedback page's stylesheet, checked through /f/{token} (T230)"],
+  ["/static/portals/forms.css", "the shared form stylesheet for native boxes, checked through each page that links it (T466)"],
   ["/b/billing/statement.csv", "T300's CSV statement, a download checked through /b/billing"],
   ["nest_service(&mount)", "server's built browser scripts at /static/<crate>/, files not pages, run by the pages that load them (T362)"],
 ];

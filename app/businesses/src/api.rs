@@ -111,6 +111,10 @@ pub use crate::links::{
     save_business_name, save_review_links, screen_names,
 };
 pub use crate::models::{Business, BusinessesError, Insurance};
+pub use crate::notice_emails::{
+    NOTICE_KINDS, NoticeParts, address_changed_words, after_hours_off_words, phone_linked_words,
+    returned_words, run_notice_email,
+};
 pub use crate::open_cards_times::{
     OpenCardsTime, OpenCardsTimes, open_cards_times, set_open_cards_times,
 };

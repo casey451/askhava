@@ -7,8 +7,10 @@
 //! of type `payment_intent.succeeded`, whose livemode matches the configured mode, whose account
 //! (when the event names one) is the configured one, for the pick's own PaymentIntent; the
 //! intent is then re-fetched from Stripe and must say succeeded, in the same mode, for exactly
-//! the fee the server fixed, with metadata naming this pick (SEC-049). The success is stored on
-//! the latest attempt (with its FEE-042 evidence record) before the proof is made, and a pick that
+//! the fee the server fixed, with metadata naming this pick (SEC-049), and name its `ch_`
+//! `latest_charge` (else `ReleaseError::Stripe`, so Stripe resends, D-2623). The success is stored
+//! on the latest attempt (with its FEE-042 evidence record, `charge` ledger entry and receipt,
+//! T359) before the proof is made, and a pick that
 //! has ended, before or while the intent was fetched, is never cleared (D-1478): its verified
 //! success and evidence are still stored, and its one late-success refund is queued in that
 //! transaction, so it answers `PickEnded` with the money on its way back (FEE-021, D-2290). A
@@ -25,7 +27,7 @@ use jiff::Timestamp;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
-use crate::charge::latest;
+use crate::charge::{is_charge_id, latest};
 use crate::handlers::record;
 use crate::late::late_success;
 use crate::models::PickNow;
@@ -218,8 +220,8 @@ pub async fn paid_release(
         .fetch_payment_intent(&stored)
         .await
         .map_err(|_| ReleaseError::Stripe)?;
-    check_intent(&fetched, account, cents, pick)?;
-    store_success(pool, pick, at).await?;
+    let charge = check_intent(&fetched, account, cents, pick)?;
+    store_success(pool, (pick, charge), at).await?;
     if pick_intent(pool, pick).await?.2 {
         ended_late(pool, pick, at).await?;
         return Err(ReleaseError::PickEnded);
@@ -337,16 +339,23 @@ fn check_event(event: &VerifiedStripeEvent, account: &StripeAccount) -> Result<(
 }
 
 /// The re-fetched intent's checks: succeeded, mode (a missing livemode never matches), the
-/// server's fee in dollars, and this pick (SEC-039, SEC-049).
-fn check_intent(
-    found: &PaymentIntent,
+/// server's fee in dollars, and this pick (SEC-039, SEC-049); answers its `ch_` `latest_charge`.
+/// A succeeded intent with no `ch_` ID is refused as an unreadable field is,
+/// [`ReleaseError::Stripe`], so Stripe sends the event again (FEE-042, D-2623, D-3134).
+fn check_intent<'a>(
+    found: &'a PaymentIntent,
     account: &StripeAccount,
     cents: i64,
     pick: Uuid,
-) -> Result<(), ReleaseError> {
+) -> Result<&'a str, ReleaseError> {
     if !AttemptStatus::from_intent(&found.status).paid() {
         return Err(ReleaseError::NotPaid);
     }
+    let charge = found
+        .latest_charge
+        .as_deref()
+        .filter(|id| is_charge_id(id))
+        .ok_or(ReleaseError::Stripe)?;
     if found.livemode != Some(account.live) {
         return Err(ReleaseError::WrongMode);
     }
@@ -356,7 +365,7 @@ fn check_intent(
     if found.metadata.pick_id != pick.to_string() {
         return Err(ReleaseError::WrongPick);
     }
-    Ok(())
+    Ok(charge)
 }
 
 /// The pick's stored PaymentIntent, the fee it was made for and whether the pick has ended
@@ -386,18 +395,29 @@ async fn ended_late(pool: &PgPool, pick: Uuid, at: Timestamp) -> Result<(), Rele
     tx.commit().await.map_err(|_| ReleaseError::Database)
 }
 
-/// Stores the verified success on the pick's latest attempt, with its evidence record, when the
-/// confirm answer never arrived (FEE-037, FEE-042); an attempt already succeeded stays.
-async fn store_success(pool: &PgPool, pick: Uuid, at: Timestamp) -> Result<(), ReleaseError> {
+/// Stores the verified success with charge `charge` on the pick's latest attempt, with its
+/// evidence record, ledger entry and receipt, when the confirm answer never arrived (FEE-037,
+/// FEE-042, D-2623); an attempt already succeeded stays and nothing more is written.
+async fn store_success(
+    pool: &PgPool,
+    (pick, charge): (Uuid, &str),
+    at: Timestamp,
+) -> Result<(), ReleaseError> {
     let mut conn = pool.acquire().await.map_err(|_| ReleaseError::Database)?;
     let last = latest(&mut conn, pick)
         .await
         .map_err(|_| ReleaseError::Database)?
         .ok_or(ReleaseError::WrongIntent)?;
     drop(conn);
-    record(pool, pick, last.try_no, AttemptStatus::Succeeded, at)
-        .await
-        .map_err(|_| ReleaseError::Database)?;
+    record(
+        pool,
+        pick,
+        last.try_no,
+        (AttemptStatus::Succeeded, Some(charge)),
+        at,
+    )
+    .await
+    .map_err(|_| ReleaseError::Database)?;
     Ok(())
 }
 
