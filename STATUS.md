@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:47:45Z by runner 2fffb961d201 (actions).
+Updated 2026-11-14T22:48:04Z by runner 2aad8a530a2f (actions).
 
 **Building: T485 in progress since 22:26Z; 335 of 469 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,13 +9,13 @@ Updated 2026-11-14T22:47:45Z by runner 2fffb961d201 (actions).
 - **Lane:** lane 4: T485 claimed 22:26Z, lease until 01:26Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z
 - **Week:** 53% used, 87.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:47Z, 0 min before this update
-- **Keeper:** last ran 22:39Z, next wake 00:50Z
+- **Keeper:** last ran 22:48Z, next wake 01:29Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T451 (since 2026-11-14T22:38:54Z, no attempt used; a plan change fixes it): T451: dependency T300 is DONE but its owned file app/server/src/business_portal.rs is not on main; T451: dependency T300 is DONE but its owned file app/server/tests/business_portal_route.rs is not on main
 - PLAN GAP T454 (since 2026-11-14T22:38:54Z, no attempt used; a plan change fixes it): T454: dependency T300 is DONE but its owned file app/server/src/business_portal.rs is not on main; T454: dependency T300 is DONE but its owned file app/server/tests/business_portal_route.rs is not on main
-- Strict plan check red: 31 problem(s) on tasks still to run (+108 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+109 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
