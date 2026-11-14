@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:25:27Z by runner f7c093395ac7 (actions).
+Updated 2026-11-14T11:30:33Z by runner f4b34241abcb (actions).
 
-**Building: T359 in progress since 11:24Z; 320 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T359 in progress since 11:24Z; 321 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 320 of 449 build tasks (owner gates not counted)
+- **Tasks done:** 321 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
 - **Week:** 41% used, 109.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:19Z, 6 min before this update
+- **Last run:** 11:25Z, 5 min before this update
 - **Keeper:** last ran 11:18Z, next wake 13:47Z
 
 ## Needs attention
 - PLAN GAP T301 (since 2026-11-14T11:24:40Z, no attempt used; a plan change fixes it): T301: dependency T453 is DONE but its owned file app/quotes/src/quote_rules.rs is not on main; T301: dependency T453 is DONE but its owned file tests/integration/tests/quote_rules.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 33 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+102 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T453 | quotes: the job's quote rules are read from the stored job,  | done | 1 | 27 min | 11:02Z |  |
-| T452 | e2e and Ally (harness): a keyed web binary beside the suite' | MERGE_PENDING | 1 | 24 min | 10:58Z |  |
+| T452 | e2e and Ally (harness): a keyed web binary beside the suite' | done | 1 | 24 min | 10:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 3 | 31 min | 10:58Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T359 | payments: a successful charge writes its own charge ledger e | check_failed | 2 | 75 min | 10:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T435 | calls and server: calls and texts act for the business only  | done | 1 | 30 min | 10:46Z |  |
@@ -128,7 +128,7 @@ Updated 2026-11-14T11:25:27Z by runner f7c093395ac7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 274 of 733 (37.4%) · partial 299 · unstarted 160
-**Tasks merged (throughput only):** 320 of 449
+**Tasks merged (throughput only):** 321 of 449
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -163,7 +163,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 200 of 224 done
+- stage 4: 201 of 224 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
