@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T14:15:20Z by runner f6b13e693c36 (actions).
+Updated 2026-11-14T14:15:35Z by runner f6b13e693c36 (actions).
 
 **Building: T302 in progress since 14:01Z; 325 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 325 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T302 claimed 14:01Z, lease until 17:01Z; lane 5: T353 claimed 13:44Z, lease until 16:44Z
+- **Lane:** lane 4: T302 claimed 14:01Z, lease until 17:01Z
 - **Week:** 44% used, 104.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:12Z, 2 min before this update
+- **Last run:** 14:12Z, 3 min before this update
 - **Keeper:** last ran 14:10Z, next wake 16:47Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-14T14:15:20Z by runner f6b13e693c36 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T353 | payments: a won dispute records the countering fee's return  | MERGE_PENDING | 1 | 30 min | 14:15Z |  |
 | T432 | intake and server: ask the name-and-address question in prod | done | 1 | 71 min | 13:54Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 4 | 38 min | 13:32Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T466 | portals: one shared form stylesheet for native checkboxes an | done | 1 | 27 min | 13:27Z |  |
@@ -178,7 +179,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 4: T302 (lease until 2026-11-14T17:01:27Z)
-- lane 5: T353 (lease until 2026-11-14T16:44:53Z)
 
 ## Last usage reading
-- {"task": "T432", "at": "2026-11-14T13:54:21Z", "output_tokens": 130396, "input_tokens": 338, "cache_read_input_tokens": 19573409, "cache_creation_input_tokens": 416481}
+- {"task": "T353", "at": "2026-11-14T14:15:19Z", "cache_creation_input_tokens": 179375, "cache_read_input_tokens": 5945056, "output_tokens": 45123, "input_tokens": 149}
