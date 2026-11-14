@@ -39,7 +39,10 @@ use crate::service::{Queued, TextIn};
 /// The stored question of a message the homeowner sent to the request (INT-010's clock).
 const HEARD: &str = "heard";
 /// The stored question holding the vault contact of the name-and-address answer (INT-027).
-const ADDRESS_CONTACT: &str = "address_contact";
+pub(crate) const ADDRESS_CONTACT: &str = "address_contact";
+/// The stored question marking each name-and-address ask, with no words: the question is open
+/// while its latest row is newer than the latest [`ADDRESS_CONTACT`] answer (INT-027, D-3701).
+pub(crate) const NAME_ADDRESS_ASKED: &str = "name_address_asked";
 
 /// What a message asks [`begin_job`] to open (INT-007 to INT-009).
 #[derive(Debug, Clone, Copy)]
@@ -346,7 +349,9 @@ async fn cancel_job(db: &mut PgConnection, job: Uuid, at: Timestamp) -> Result<(
 
 /// Asks the name-and-address question (INT-027, D-238): the last intake question, only once the
 /// ZIP and area check made a property row; `None` before that. It carries the who-sees-it line
-/// and asks nothing about renting or owning (D-437).
+/// and asks nothing about renting or owning (D-437). The transaction that queues it also stores
+/// one [`NAME_ADDRESS_ASKED`] row (no words, the ask's time), which opens the question for
+/// [`name_address_open`] (D-3701).
 ///
 /// # Errors
 ///
@@ -369,8 +374,9 @@ pub async fn ask_name_address(
         .ok_or(IntakeError::UnknownRequest)?;
     let language = crate::rules::language_from_code(&row.language);
     let subject = [conversation, msg.inbox_id];
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
     let ask = queue_text(
-        db,
+        &mut tx,
         secret,
         msg.contact,
         (NAME_ADDRESS_TEMPLATE, language),
@@ -378,7 +384,37 @@ pub async fn ask_name_address(
         spanish_on,
     )
     .await?;
+    let asked = (NAME_ADDRESS_ASKED, "asked");
+    models::insert_plain(&mut tx, conversation, asked, msg.received_at).await?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Some(ask))
+}
+
+/// Whether the open request of vault contact `contact` waits for her name-and-address answer
+/// (INT-027, INT-002, D-165, D-3701): its latest [`NAME_ADDRESS_ASKED`] row is newer than its
+/// latest `address_contact` answer. Reads only `intake` rows, no words; `false` with no open
+/// request or no ask.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn name_address_open(db: &mut PgConnection, contact: Uuid) -> Result<bool, IntakeError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM intake.conversation c
+             JOIN intake.homeowner h ON h.id = c.homeowner_id
+             WHERE h.contact_id = $1 AND c.closed_at IS NULL
+             AND (SELECT max(a.answered_at) FROM intake.intake_answer a
+                  WHERE a.conversation_id = c.id AND a.question_id = $2)
+               > COALESCE((SELECT max(a.answered_at) FROM intake.intake_answer a
+                  WHERE a.conversation_id = c.id AND a.question_id = $3),
+                  '-infinity'::timestamptz)) AS "open!""#,
+        contact,
+        NAME_ADDRESS_ASKED,
+        ADDRESS_CONTACT
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| IntakeError::Database)
 }
 
 /// What [`take_name_address`] did.

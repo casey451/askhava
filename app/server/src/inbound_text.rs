@@ -21,8 +21,10 @@
 //! read for this and the HELP step and then stops before `intake`, D-2088),
 //! `messaging::api::reply_to_help` (HELP, INFO, AYUDA: the reply is queued, also to a listed
 //! number, and nothing else runs; any other text from a listed number stops here, CON-016),
-//! then, for a number that is not a linked business phone, `intake::api::receive_reply`
-//! (TXT-031, INT-019, D-999). A business phone's text goes to no homeowner path: its opt-out also
+//! then, for a number that is not a linked business phone, `intake::api::receive_raw_reply`
+//! (TXT-031, INT-019, D-999) with the raw `Body` as a `SecretString` and the vault, so her answer
+//! to the open name-and-address question goes onto her own contact and is never 911-screened
+//! when it holds a street number (INT-027, INT-002, D-146, D-165, D-3704). A business phone's text goes to no homeowner path: its opt-out also
 //! calls `businesses::api::phone_stopped`, and any other text for which
 //! `businesses::api::auto_reply_due` holds queues `business_auto_reply` (BIZ-017, BIZ-032, D-1715),
 //! except a text that is exactly `LINK` and 4 digits (`calls::api::link_pin`), which goes only to
@@ -53,7 +55,7 @@
 //! audit rows only, `on_inbound_text` is retried only when it listed nothing (an `Open` or
 //! `Resubscribed` repeat writes nothing), the HELP reply, the business auto reply, the paused
 //! emergency claim and the safety call are keyed per inbox row, and SEC-014's count and
-//! `receive_reply` share one savepoint, so a failed `receive_reply` keeps no count. A 911-list
+//! `receive_raw_reply` share one savepoint, so a failed `receive_raw_reply` keeps no count. A 911-list
 //! first text that opened a new request is counted in SEC-015's all-numbers limit only after the
 //! delivery committed, best-effort and never refused ([`count_emergency`], D-3613); a retry's
 //! run ([`rerun`]) does not count it.
@@ -68,12 +70,13 @@ use askhava_businesses::api::{
 use askhava_calls::api::{CallsError, link_pin, link_reply};
 use askhava_core::api::{Clock, Environment, NewTask, enqueue as enqueue_task};
 use askhava_intake::api::rules::{
-    Check, Inbound, Settings as IntakeSettings, check, safety_call_trigger, wanted_language,
+    Check, Inbound, Settings as IntakeSettings, check, safety_call_trigger, split_name_address,
+    wanted_language,
 };
 use askhava_intake::api::{
-    Admission, Handled, IntakeError, LimitError, Reply, SafetyCallAsk, TextIn, admit_new_request,
-    count_emergency_request, enqueue_safety_call, list_ask, on_opt_out, open_request_jobs,
-    pause_on_repeat_cancel, receive_reply, restart_after_start,
+    Admission, Handled, IntakeError, LimitError, RawReply, Reply, SafetyCallAsk, TextIn,
+    admit_new_request, count_emergency_request, enqueue_safety_call, list_ask, name_address_open,
+    on_opt_out, open_request_jobs, pause_on_repeat_cancel, receive_raw_reply, restart_after_start,
 };
 use askhava_messaging::api::{
     APP_OPT_OUT_WORDS, Detected, EmergencyFacts, FollowUp, HelpSettings, InboundText, InboxError,
@@ -565,7 +568,8 @@ async fn handle(
     let (contact, relation) = sender(db, h.vault, from).await?;
     let (read, unread) = read(h, db, fields.body, (contact, relation)).await?;
     let words = read.text.as_str();
-    let emergency = matches!(check(words, false), Check::Match(_));
+    let answer = address_answer(db, (contact, relation), fields.body).await?;
+    let emergency = matches!(check(words, answer), Check::Match(_));
     let msg = InboundText {
         inbox_id,
         contact,
@@ -591,7 +595,16 @@ async fn handle(
     if let Some(error) = unread {
         return Err(Halt::Failed("vault", error));
     }
-    intake(h, db, (&msg, &read), (resubscribed, now)).await
+    intake(h, db, (&msg, &read, fields.body), (resubscribed, now)).await
+}
+
+/// INT-002, INT-027, D-165, D-3704: whether a homeowner's `raw` text answers her open
+/// name-and-address question with a street number, so the 911-list screen never reads it.
+async fn address_answer(db: &mut PgConnection, from: (Uuid, Relation), raw: &str) -> Step<bool> {
+    if from.1 != Relation::OpenRequest || split_name_address(raw).is_none() {
+        return Ok(false);
+    }
+    name_address_open(db, from.0).await.map_err(intake_halt)
 }
 
 /// TXT-021 to TXT-024, INT-004, WEB-007, CALL-019, D-1805, D-2187: a homeowner's emergency text
@@ -669,20 +682,21 @@ async fn owner_paused(db: &mut PgConnection) -> Step<bool> {
     Ok(false)
 }
 
-/// Hands a homeowner's scrubbed text to `intake::api::receive_reply` (TXT-031, INT-019, D-999).
+/// Hands a homeowner's scrubbed text, and her raw text for the name-and-address answer only, to
+/// `intake::api::receive_raw_reply` (TXT-031, INT-019, INT-027, D-999, D-3704).
 /// With an open request, a LIST text gets its quoted businesses' public names read now
 /// ([`list_names`]); with none, SEC-014's new-request limit is counted first ([`admitted`]),
 /// except for a START that just took her number off the opt-out list (`resubscribed`, CON-015)
 /// and a 911-list text, which is never refused or counted here, so the INT-002 safety text always
 /// runs; a 911-list text that opened her first request is counted toward the all-numbers limit
 /// only after the delivery commits ([`count_emergency`], SEC-015, D-3613) (INT-002, INT-003,
-/// D-2206, D-3083, D-3087). The count and `receive_reply` share one
+/// D-2206, D-3083, D-3087). The count and `receive_raw_reply` share one
 /// savepoint, rolled back on a module error, so a text that fails here and is retried is counted
 /// once (SEC-014, D-2307).
 async fn intake(
     h: &Ctx<'_>,
     db: &mut PgConnection,
-    text: (&InboundText<'_>, &Read),
+    text: (&InboundText<'_>, &Read, &str),
     at: (bool, Timestamp),
 ) -> Step<After> {
     let mut savepoint = db.begin().await.map_err(|_| Halt::Database)?;
@@ -697,7 +711,7 @@ async fn intake(
     done
 }
 
-/// The read of her open request, the count and `receive_reply`, inside [`intake`]'s savepoint.
+/// The read of her open request, the count and `receive_raw_reply`, inside [`intake`]'s savepoint.
 /// A provider START (`OptOutType=START`) with an open request restarts it with the consent text
 /// and ends (CON-001, CON-015): decided from the keyword, not only from `resubscribed`, so a
 /// retry of a START whose lift already committed is still never heard as an answer (D-3480).
@@ -706,7 +720,7 @@ async fn intake(
 async fn intake_steps(
     h: &Ctx<'_>,
     db: &mut PgConnection,
-    (msg, read): (&InboundText<'_>, &Read),
+    (msg, read, body): (&InboundText<'_>, &Read, &str),
     (resubscribed, now): (bool, Timestamp),
 ) -> Step<After> {
     let inbound = Inbound {
@@ -740,7 +754,12 @@ async fn intake_steps(
             Vec::new()
         }
     };
-    let replied = receive_reply(db, h.id_secret, &reply, (h.intake, names.as_slice()))
+    let raw = SecretString::from(body.to_owned());
+    let raw = RawReply {
+        raw: &raw,
+        vault: h.vault,
+    };
+    let replied = receive_raw_reply(db, h.id_secret, (&reply, raw), (h.intake, names.as_slice()))
         .await
         .map_err(intake_halt)?;
     let first = open.is_none() && msg.emergency && !resubscribed;
@@ -751,7 +770,7 @@ async fn intake_steps(
     })
 }
 
-/// Whether `receive_reply` handled the text in a request (D-3613).
+/// Whether `receive_raw_reply` handled the text in a request (D-3613).
 fn opened(replied: &Reply) -> bool {
     matches!(
         replied,
@@ -764,7 +783,7 @@ fn opened(replied: &Reply) -> bool {
 
 /// SEC-014, SEC-015, D-1951, D-2206, D-3083: the new-request limit for a homeowner with no open
 /// request, keyed by her vault contact (no IP: Twilio posts the text), counted on the delivery's
-/// transaction as its last step before `receive_reply`, so a rolled-back delivery counts nothing
+/// transaction as its last step before `receive_raw_reply`, so a rolled-back delivery counts nothing
 /// and nothing waits on the network while the shared hourly row is held. A refused text ends here
 /// (200, its inbox row kept, so Twilio's resend is a repeat): it opens nothing and is answered by
 /// nothing; its alert (one per window, no body or phone) is `intake`'s. A counter or alert error
@@ -779,7 +798,7 @@ async fn admitted(db: &mut PgConnection, contact: Uuid, now: Timestamp) -> Step<
 
 /// TXT-031, PICK-041, D-1310, D-2206, D-3083: the public names, read now through
 /// `businesses::api::public_names`, of every business that quoted one of `jobs`, for the LIST
-/// reply; a business with no usable name is left out, so `receive_reply` keeps D-1310's fallback.
+/// reply; a business with no usable name is left out, so `receive_raw_reply` keeps D-1310's fallback.
 async fn list_names(db: &mut PgConnection, jobs: &[Uuid]) -> Step<Vec<(Uuid, String)>> {
     let mut quoted: Vec<Uuid> = Vec::new();
     for &job in jobs {

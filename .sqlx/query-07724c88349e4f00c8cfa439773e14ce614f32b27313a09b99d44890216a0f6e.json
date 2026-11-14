@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM intake.property p WHERE p.homeowner_id = c.homeowner_id\n               AND p.created_at >= c.opened_at)\n             AND NOT EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = c.id\n               AND a.question_id IN ($2, $3)) AS \"due!\"\n           FROM intake.conversation c WHERE c.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "due!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "07724c88349e4f00c8cfa439773e14ce614f32b27313a09b99d44890216a0f6e"
+}
