@@ -5,6 +5,7 @@
     while business texting is off; only the owner sees the form. No homeowner detail. -#}
 {% block title %}Where we send your job notices{% endblock %}
 {% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
 <h1>Where we send your job notices</h1>
 {% for line in banners %}<p role="alert">{{ line }}</p>
 {% endfor %}<h2>Email addresses that get notices</h2>

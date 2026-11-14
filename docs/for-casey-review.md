@@ -2855,3 +2855,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - A nightly test run failed after the notes-file task (T437) merged, so the runner blamed it as the latest merge. The fix-main step found the real cause elsewhere (an earlier texting change, being fixed separately) and undid nothing. Even so, when main turned green again the runner counted a failed attempt against T437 and blocked it, which held up the rest of this stage.
 - T437 gets one more attempt that only re-checks its work, already on main, and records that check. A new runner task (T474) makes the runner count a failure only when the fix-main step actually undid that task's files. No fee, wording or check changed. Nothing needs you.
+
+## The business portal is served (T300, D-3664, November 14)
+
+- Signed-in businesses can now open their account home, billing with the statement download, notice settings and a released job's page. Anyone not signed in as a business gets a short page with a link to sign in; anything that isn't theirs gets the same "Page not found" page.
+- Two things are still missing because no part of the app reads them yet: the released job's page shows "Job 0" and no call list, and "Your numbers" shows only the fee total (as already planned for T451). A small follow-up is needed for the job number and call list. Nothing needs you.

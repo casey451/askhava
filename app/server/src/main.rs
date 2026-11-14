@@ -62,9 +62,11 @@ async fn main() -> io::Result<()> {
         pool.clone(),
         std::env::vars(),
     )?;
+    let vault = askhava_server::business_portal::vault_from_settings(&settings, std::env::vars())?;
     let parts = askhava_server::RouterParts::from((hooks, limit, statics))
         .with_sign_in(signin)
-        .with_sign_up(signup);
+        .with_sign_up(signup)
+        .with_vault(vault);
     let app = askhava_server::build_router(pool, control.router(), parts);
     axum::serve(
         listener,
