@@ -18821,7 +18821,8 @@
     "T082",
     "T030",
     "T241",
-    "T432"
+    "T432",
+    "T449"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19135,7 +19136,12 @@
     "T432",
     "T437",
     "T442",
-    "T443"
+    "T443",
+    "T444",
+    "T445",
+    "T447",
+    "T448",
+    "T449"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19661,7 +19667,8 @@
     "T430",
     "T432",
     "T438",
-    "T439"
+    "T439",
+    "T446"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32281,7 +32288,8 @@
     "T357",
     "T391",
     "T435",
-    "T432"
+    "T432",
+    "T449"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -44325,7 +44333,10 @@
     "T336",
     "T357",
     "T391",
-    "T432"
+    "T432",
+    "T328",
+    "T446",
+    "T449"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -44889,7 +44900,8 @@
     "T435",
     "T361",
     "T151",
-    "T432"
+    "T432",
+    "T449"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -45159,7 +45171,8 @@
    "deps": [
     "T404",
     "T086",
-    "T100"
+    "T100",
+    "T449"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -48574,7 +48587,8 @@
     "T277",
     "T357",
     "T391",
-    "T435"
+    "T435",
+    "T449"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -48587,7 +48601,8 @@
    "deps": [
     "T398",
     "T391",
-    "T326"
+    "T326",
+    "T449"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -49330,6 +49345,54 @@
    "slug": "pick-lapsed-email",
    "type": "build",
    "stage": "5"
+  },
+  {
+   "id": "T447",
+   "deps": [
+    "T356"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "outbox-vault-error-holds",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T448",
+   "deps": [
+    "T087",
+    "T346",
+    "T411",
+    "T315"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "mask-all-separators",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T449",
+   "deps": [
+    "T241",
+    "T256",
+    "T257",
+    "T279",
+    "T317",
+    "T325",
+    "T336",
+    "T357",
+    "T391",
+    "T089",
+    "T401",
+    "T404",
+    "T348"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "emergency-texts-counted",
+   "type": "build",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -52357,7 +52420,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T00:08:34Z",
+ "updated_at": "2026-11-14T00:11:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -52455,7 +52518,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "dd258e06710fb397062b6de2b6a442efa2f2e025",
+ "runner_sha": "917b57db84422dd506adb4bb251e2a19afad1468",
  "starter": "actions",
  "smoke_runs": [
   {
