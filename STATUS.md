@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:01:06Z by runner dd258e06710f (actions).
+Updated 2026-11-14T00:01:15Z by runner dd258e06710f (actions).
 
 **Building: T437 in progress since 23:57Z; 301 of 428 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-14T00:01:06Z by runner dd258e06710f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T437 claimed 23:57Z, lease until 02:57Z
 - **Week:** 31% used, 134.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:00Z, 0 min before this update
-- **Keeper:** last ran 23:45Z, next wake 00:05Z
+- **Last run:** 00:01Z, 0 min before this update
+- **Keeper:** last ran 00:00Z, next wake 02:59Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smalles; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
