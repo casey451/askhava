@@ -59068,7 +59068,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T18:29:23Z",
+ "updated_at": "2026-11-14T18:29:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -59167,7 +59167,7 @@
   ]
  },
  "runner_sha": "52bf28dbe1c0d92540ad779d91aa927c4ad7eae5",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
@@ -59459,7 +59459,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3752,
+ "next_decision": 3753,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -60070,6 +60070,12 @@
    "at": "2026-11-14T17:50:57Z",
    "reason": "Harness fix: re-point named mutant mutants.toml:215 to T357's rewritten optout.rs:168 line (D-3747), same meaning; fixes nightly named-mutants red",
    "session": "manual-ab32e23602aa"
+  },
+  {
+   "number": 3752,
+   "at": "2026-11-14T18:29:38Z",
+   "reason": "Plan fix: T437 falsely failed by clear_main_red after a FIX-MAIN that reverted nothing (D-3747); requeue as a verification hand-in; new harness task so clear_main_red blames a task only when FIX-MAIN reverted it",
+   "session": "manual-f88bd133143c"
   }
  ],
  "lanes_fallback_history": [
