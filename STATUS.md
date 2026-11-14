@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T14:54:06Z by runner eeddc510e237 (actions).
+Updated 2026-11-14T14:55:43Z by runner eeddc510e237 (actions).
 
-**Building: T300 in progress since 14:35Z; 326 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T300 in progress since 14:35Z; 327 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 326 of 451 build tasks (owner gates not counted)
+- **Tasks done:** 327 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 7: T300 claimed 14:35Z, lease until 17:35Z
 - **Week:** 44% used, 104.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:53Z, 0 min before this update
+- **Last run:** 14:54Z, 1 min before this update
 - **Keeper:** last ran 14:54Z, next wake 17:38Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-14T14:54:06Z by runner eeddc510e237 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T302 | server (harness): business sign-up's open doors and served p | MERGE_PENDING | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
+| T302 | server (harness): business sign-up's open doors and served p | done | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 1 | 3 min | 14:30Z | PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs: |
 | T353 | payments: a won dispute records the countering fee's return  | done | 1 | 30 min | 14:15Z |  |
 | T432 | intake and server: ask the name-and-address question in prod | done | 1 | 71 min | 13:54Z |  |
@@ -133,7 +133,7 @@ Updated 2026-11-14T14:54:06Z by runner eeddc510e237 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 272 of 733 (37.1%) · partial 303 · unstarted 158
-**Tasks merged (throughput only):** 326 of 451
+**Tasks merged (throughput only):** 327 of 451
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -168,7 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 206 of 226 done
+- stage 4: 207 of 226 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
