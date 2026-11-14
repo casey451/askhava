@@ -2797,3 +2797,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - When a team member's email bounces, only the owner is told (at the owner's own working addresses), since the email names the bouncing address.
 - The "Approve" link in the phone-linked email works for 7 days.
 - The catalog has no Spanish job-type names, so the Spanish license-change email names job types in English. Adding Spanish names to the catalog would fix it.
+
+## The business portal gets a small stylesheet too (D-3700, November 14)
+
+- The task that puts the business portal online (T300) stopped on the accessibility checks for the portal home and the notice settings page: the tick boxes and the round choice buttons had no edge strong enough to pass, because the site has no styling yet. That was a planning gap, not a mistake by the worker. T300 now also serves a tiny stylesheet for those pages, the same fix the feedback page and the sign-up form got: dark-edged boxes and buttons. No accessibility check was loosened. T300 gets another try; the site's full look later (T101) can absorb this stylesheet.
