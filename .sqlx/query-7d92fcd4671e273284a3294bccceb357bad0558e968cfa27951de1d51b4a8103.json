@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT tier_index FROM picks.pick WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "tier_index",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "tier_index"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "7d92fcd4671e273284a3294bccceb357bad0558e968cfa27951de1d51b4a8103"
+}

@@ -289,6 +289,11 @@
     "segments": 1,
     "text": "{brand_short}: There's no quote {quoted} to pick on request {job}. Reply LIST to see your quotes."
   },
+  "text_pick_package": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "{brand_short}: Quote {quoted} on request {job} has a few packages to choose from. Nothing's picked yet. Pick the one you want on your quote page: {link}"
+  },
   "text_pick_confirmed": {
     "audience": "homeowner",
     "segments": 1,

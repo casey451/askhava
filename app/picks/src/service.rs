@@ -17,12 +17,16 @@
 //! T340 (D-2331, D-3547): the fee's job facts come from the job's latest stored codes
 //! (`jobs::api::job_facts`) resolved by `payments::api::resolve_fee_facts`; unsettled facts refuse
 //! a non-emergency pick and price an emergency one on the default one-time facts with one High
-//! [`FEE_FACTS_ALERT`] naming the pick only.
+//! [`FEE_FACTS_ALERT`] naming the pick only. T341 (D-2332, D-2333, D-3580): a tiers quote is
+//! priced on the package the homeowner chose ([`page_pick_tier`], stored on `picks.pick`); a text
+//! pick of one stores nothing and replies with her quote-page link ([`PACKAGE_TEMPLATE`]); a
+//! per-visit price is priced on its stored visit schedule.
 
 use std::sync::OnceLock;
 
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
-use askhava_core::api::{Guarded, NewTask, brand, enqueue as enqueue_task};
+use askhava_core::api::{Guarded, IdSecret, NewTask, brand, enqueue as enqueue_task};
+use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{current, job_facts, job_number, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
@@ -31,7 +35,9 @@ use askhava_payments::api::{
     fee_at_pick, fee_terms_in_force, fix_fee_at_pick, resolve_fee_facts,
 };
 use askhava_privacy::api::{Vault, read_for_pick_code};
-use askhava_quotes::api::{Period, Price, page_quotes, quoted_prices};
+use askhava_quotes::api::{
+    Period, Price, VisitSchedule, page_quotes, quoted_prices, visit_schedule_of,
+};
 use jiff::Timestamp;
 use jiff::tz::{TimeZone, offset};
 use secrecy::{ExposeSecret, SecretString};
@@ -54,6 +60,9 @@ pub const WHICH_TEMPLATE: &str = "text_pick_which";
 pub const DONE_TEMPLATE: &str = "text_pick_done";
 /// No pickable quote has that number.
 pub const NO_QUOTE_TEMPLATE: &str = "text_pick_no_quote";
+/// A text pick of a tiers quote: nothing is picked; choose the package on her quote page, whose
+/// `{link}` this carries (PICK-053, PICK-015, D-2332, D-3580).
+pub const PACKAGE_TEMPLATE: &str = "text_pick_package";
 /// The business confirmed; how to close (PICK-032).
 pub const CONFIRMED_TEMPLATE: &str = "text_pick_confirmed";
 /// A request still waiting for quotes (PICK-036).
@@ -161,7 +170,7 @@ pub async fn text_pick(
             None
         }
         Plan::Pick(job) | Plan::Replace(job) | Plan::Same(job) => {
-            Some(pick_quote(tx, &mut out, view_of(&views, *job)?, read.quote).await?)
+            pick_quote(tx, &mut out, view_of(&views, *job)?, read.quote).await?
         }
         Plan::Status => status_reply(tx, &mut out, &views).await?,
     };
@@ -188,6 +197,19 @@ impl Out<'_, '_> {
         subject: &[Uuid],
         values: &[(&str, String)],
     ) -> Result<(Uuid, String), PicksError> {
+        let (id, version, _) = self.queue(tx, template, subject, values).await?;
+        Ok((id, version))
+    }
+
+    /// [`Self::say`], also answering whether this call created the outbox row (`false`: the same
+    /// text was already queued, a reprocessed inbound).
+    async fn queue(
+        &mut self,
+        tx: &mut PgConnection,
+        template: &'static str,
+        subject: &[Uuid],
+        values: &[(&str, String)],
+    ) -> Result<(Uuid, String, bool), PicksError> {
         let (language, spanish_on) = self.input.language;
         let pairs: Vec<(&str, &str)> = values.iter().map(|(k, v)| (*k, v.as_str())).collect();
         let text =
@@ -199,11 +221,11 @@ impl Out<'_, '_> {
             relation: Relation::OpenRequest,
             body: &text.body,
         };
-        let (id, _) = enqueue(tx, self.secret, &new)
+        let (id, created) = enqueue(tx, self.secret, &new)
             .await
             .map_err(|_| PicksError::Outbox)?;
         self.texts.push(id);
-        Ok((id, version(template, text.language, &text.body)))
+        Ok((id, version(template, text.language, &text.body), created))
     }
 }
 
@@ -311,22 +333,31 @@ async fn terms_first(
 }
 
 /// Picks quote `quote` of `job` by text (PICK-015, PICK-031, PICK-032): the same quote again only
-/// repeats the reply; another quote is [`place`]d. A waiting pick that is no longer waiting when
-/// it is ended (the business confirmed it meanwhile) is [`PicksError::MovedOn`]: the caller rolls
-/// back and no second pick is made.
+/// repeats the reply; another quote is [`place`]d, but a tiers quote, whose package a text cannot
+/// name, stores nothing and gets [`package_reply`] (PICK-053, D-2332). A waiting pick that is no
+/// longer waiting when it is ended (the business confirmed it meanwhile) is
+/// [`PicksError::MovedOn`]: the caller rolls back and no second pick is made.
 async fn pick_quote(
     tx: &mut PgConnection,
     out: &mut Out<'_, '_>,
     job: &JobView,
     quote: usize,
-) -> Result<Uuid, PicksError> {
+) -> Result<Option<Uuid>, PicksError> {
     let input = out.input;
     let waiting = models::waiting_pick(tx, job.job).await?;
     let pick = match waiting {
         Some((id, q, _)) if usize::try_from(q).ok() == Some(quote) => id,
+        _ if matches!(
+            quote_price(tx, job.job, quote).await?,
+            Some((_, Price::Tiers(_)))
+        ) =>
+        {
+            package_reply(tx, out, job, quote).await?;
+            return Ok(None);
+        }
         _ => {
             let by = (input.actor, input.at);
-            place(tx, (job, waiting), quote, by, Some(input.inbox)).await?
+            place(tx, (job, waiting), (quote, None), by, Some(input.inbox)).await?
         }
     };
     let values = [
@@ -334,19 +365,81 @@ async fn pick_quote(
         ("job", job.number.to_string()),
     ];
     out.say(tx, DONE_TEMPLATE, &[pick], &values).await?;
-    Ok(pick)
+    Ok(Some(pick))
+}
+
+/// PICK-053, PICK-010, SEC-037, D-2332, D-3580: queues [`PACKAGE_TEMPLATE`] with her quote-page
+/// link `https://<domain>/q/<token>`. The token is issued by `jobs` (revoking her earlier one)
+/// with `IdSecret` version 1 over the `ID_SECRET` the text pick has, as the composition keys every
+/// link token; it is never logged. Issued in a savepoint that is rolled back when the outbox row
+/// was already there (a reprocessed inbound), so the link already queued stays live.
+async fn package_reply(
+    tx: &mut PgConnection,
+    out: &mut Out<'_, '_>,
+    job: &JobView,
+    quote: usize,
+) -> Result<(), PicksError> {
+    let key = IdSecret::new(1, out.secret.clone()).map_err(|_| PicksError::Job)?;
+    let mut point = tx.begin().await.map_err(|_| PicksError::Database)?;
+    let token = issue(&mut point, &key, job.job, out.input.at)
+        .await
+        .map_err(|_| PicksError::Job)?;
+    let values = [
+        ("quoted", quote.to_string()),
+        ("job", job.number.to_string()),
+        (
+            "link",
+            format!("https://{}/q/{}", brand().domain(), token.as_str()),
+        ),
+    ];
+    let subject = [job.job, out.input.inbox];
+    let (_, _, created) = out
+        .queue(&mut point, PACKAGE_TEMPLATE, &subject, &values)
+        .await?;
+    let ended = if created {
+        point.commit().await
+    } else {
+        point.rollback().await
+    };
+    ended.map_err(|_| PicksError::Database)
+}
+
+/// The business and stored price of quote `quote` (1-based, in page order) on `job`; none when
+/// the page has no such quote or its unwithdrawn price does not read back.
+async fn quote_price(
+    tx: &mut PgConnection,
+    job: Uuid,
+    quote: usize,
+) -> Result<Option<(Uuid, Price)>, PicksError> {
+    let quotes = page_quotes(tx, job).await.map_err(|_| PicksError::Quotes)?;
+    let Some(business) = quote
+        .checked_sub(1)
+        .and_then(|i| quotes.get(i))
+        .map(|q| q.business)
+    else {
+        return Ok(None);
+    };
+    let prices = quoted_prices(tx, job)
+        .await
+        .map_err(|_| PicksError::Quotes)?;
+    Ok(prices
+        .into_iter()
+        .find(|q| q.business == business && !q.withdrawn)
+        .and_then(|q| q.price)
+        .map(|price| (business, price)))
 }
 
 /// The pick core both channels use (PICK-015, PICK-032, PICK-045, D-1516): ends the `waiting`
 /// pick of `job` as `replaced` with its business's withdrawal notice, moves the job from Quotes
 /// ready to Awaiting confirm (a job already there stays, so the Confirm window does not restart),
 /// and stores the new pick of `quote` with its audit row and pick notice; `inbox` is the text
-/// pick's inbound text, `None` on the page (channel `page`). The fee is fixed with the pick
-/// (`new_pick`, D-1871); no free win or release here.
+/// pick's inbound text, `None` on the page (channel `page`); `tier` is the package chosen on a
+/// tiers quote (D-2332). The fee is fixed with the pick (`new_pick`, D-1871); no free win or
+/// release here.
 async fn place(
     tx: &mut PgConnection,
     (job, waiting): (&JobView, Option<(Uuid, i32, Uuid)>),
-    quote: usize,
+    quote: (usize, Option<&ChosenTier>),
     (actor, at): (Actor, Timestamp),
     inbox: Option<Uuid>,
 ) -> Result<Uuid, PicksError> {
@@ -364,21 +457,26 @@ async fn place(
     new_pick(tx, (job.job, quote, inbox), (actor, at)).await
 }
 
-/// Stores the pick with the fee fixed from its chosen quote (FEE-005, D-1871), its audit row and
-/// the pick-notice event. A quote whose fee can't be fixed, or a non-emergency job whose facts are
-/// unsettled (D-2331), is [`PicksError::Quotes`] and nothing is stored; the caller rolls its
-/// transaction back. An emergency pick on default facts raises one [`FEE_FACTS_ALERT`].
+/// Stores the pick with the fee fixed from its chosen quote (FEE-005, D-1871) and, on a tiers
+/// quote, its chosen package (PICK-053, D-2332), its audit row and the pick-notice event. A quote
+/// whose fee can't be fixed (a tiers quote with no or a stale package, a per-visit price with no
+/// schedule), or a non-emergency job whose facts are unsettled (D-2331), is
+/// [`PicksError::Quotes`] and nothing is stored; the caller rolls its transaction back. An
+/// emergency pick on default facts raises one [`FEE_FACTS_ALERT`].
 async fn new_pick(
     tx: &mut PgConnection,
-    (job, quote, inbox): (Uuid, usize, Option<Uuid>),
+    (job, (quote, tier), inbox): (Uuid, (usize, Option<&ChosenTier>), Option<Uuid>),
     (actor, at): (Actor, Timestamp),
 ) -> Result<Uuid, PicksError> {
     let quotes = page_quotes(tx, job).await.map_err(|_| PicksError::Quotes)?;
     let business = quotes.get(quote - 1).ok_or(PicksError::Quotes)?.business;
     let number = i32::try_from(quote).map_err(|_| PicksError::Quotes)?;
-    let (fee, unsettled) = picked_fee(tx, job, business).await?;
+    let (fee, unsettled) = picked_fee(tx, (job, business), tier).await?;
     let row = (job, business, number, inbox);
     let pick = models::insert_pick(tx, row, at).await?;
+    if let Some(tier) = tier {
+        store_tier(tx, pick, tier).await?;
+    }
     fix_fee_at_pick(tx, pick, BusinessId(business), job, &fee, at)
         .await
         .map_err(|_| PicksError::Database)?;
@@ -391,14 +489,35 @@ async fn new_pick(
     Ok(pick)
 }
 
-/// FEE-005, FEE-007, FEE-045, D-1415, D-1871, D-2331: the introduction fee by job size of
-/// `business`'s chosen quote on `job`, from its amounts and period and the job's facts under the
-/// fee terms in force, through `quotes::api`, `jobs::api` and `payments::api` only; `true` with it
-/// when an emergency job's unsettled facts were replaced by the defaults.
+/// PICK-053, D-2332: writes the chosen package's index and name on `pick`, in the pick's
+/// transaction (migration 0179).
+async fn store_tier(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    tier: &ChosenTier,
+) -> Result<(), PicksError> {
+    let index = i16::try_from(tier.index).map_err(|_| PicksError::Quotes)?;
+    sqlx::query!(
+        "UPDATE picks.pick SET tier_index = $2, tier_name = $3 WHERE id = $1",
+        pick,
+        index,
+        tier.name,
+    )
+    .execute(tx)
+    .await
+    .map(|_| ())
+    .map_err(|_| PicksError::Database)
+}
+
+/// FEE-005, FEE-007, FEE-045, REC-010, D-1415, D-1871, D-2331, D-2332, D-2333: the introduction
+/// fee by job size of `business`'s chosen quote on `job` (its package `tier` on a tiers quote),
+/// from its amounts, period and visit schedule and the job's facts under the fee terms in force,
+/// through `quotes::api`, `jobs::api` and `payments::api` only; `true` with it when an emergency
+/// job's unsettled facts were replaced by the defaults.
 async fn picked_fee(
     tx: &mut PgConnection,
-    job: Uuid,
-    business: Uuid,
+    (job, business): (Uuid, Uuid),
+    tier: Option<&ChosenTier>,
 ) -> Result<(PickedFee, bool), PicksError> {
     let prices = quoted_prices(tx, job)
         .await
@@ -408,8 +527,12 @@ async fn picked_fee(
         .find(|q| q.business == business && !q.withdrawn)
         .and_then(|q| q.price)
         .ok_or(PicksError::Quotes)?;
+    let schedule = visit_schedule_of(tx, (job, business))
+        .await
+        .map_err(|_| PicksError::Quotes)?;
     let (facts, unsettled) = job_fee_facts(tx, job).await?;
-    let (chosen, period, facts) = fee_inputs(&price, facts).ok_or(PicksError::Quotes)?;
+    let (chosen, period, facts) =
+        fee_inputs(&price, (tier, schedule), facts).ok_or(PicksError::Quotes)?;
     let terms = fee_terms_in_force(tx)
         .await
         .map_err(|_| PicksError::Database)?;
@@ -465,10 +588,12 @@ async fn facts_alert(tx: &mut PgConnection, pick: Uuid) -> Result<(), PicksError
 /// FEE-004, FEE-005, D-1415, D-2210, D-2331: the fee inputs a stored price and the job's `facts`
 /// give: the quote, its period and the job as the fee sees it (`JobFeeFacts::period_job`: one-time
 /// when every candidate is, else a period quote is a recurring job type and any other one-time;
-/// the $75 recurring cap, no flat-mode edit). A tiered quote (no one price was chosen) or a
-/// per-visit period has no fee: none.
+/// the $75 recurring cap, no flat-mode edit). A tiers quote is priced on the chosen package `tier`
+/// (D-2332) and a per-visit price on its visit `schedule` (REC-010, D-2333); with no package, a
+/// stale one (another name in that place) or no schedule there is no fee: none.
 fn fee_inputs(
     price: &Price,
+    (tier, schedule): (Option<&ChosenTier>, Option<VisitSchedule>),
     facts: JobFeeFacts,
 ) -> Option<(FeeQuote, Option<FeePeriod>, PeriodJob)> {
     let (chosen, period) = match price {
@@ -488,10 +613,11 @@ fn fee_inputs(
             None,
         ),
         Price::VisitFee(fee) => (FeeQuote::DiagnosticVisit { visit_fee: *fee }, None),
-        Price::Monthly { cents, period, .. } => {
-            (FeeQuote::Fixed(*cents), Some(fee_period(*period)?))
-        }
-        Price::Tiers(_) => return None,
+        Price::Monthly { cents, period, .. } => (
+            FeeQuote::Fixed(*cents),
+            Some(fee_period(*period, schedule)?),
+        ),
+        Price::Tiers(tiers) => (FeeQuote::Fixed(tier?.price_in(tiers)?), None),
     };
     let diagnostic_visit = matches!(
         chosen,
@@ -504,14 +630,20 @@ fn fee_inputs(
     ))
 }
 
-/// REC-002: the fee period of a stored quote period; a per-visit price has none.
-const fn fee_period(period: Period) -> Option<FeePeriod> {
-    match period {
-        Period::Visit => None,
-        Period::Week => Some(FeePeriod::Weekly),
-        Period::Month => Some(FeePeriod::Monthly),
-        Period::Quarter => Some(FeePeriod::Quarterly),
-        Period::Year => Some(FeePeriod::Yearly),
+/// REC-002, REC-010, D-2333: the fee period of a stored quote period; a per-visit price takes its
+/// visit `schedule`'s (weekly visits are weekly, 52 / 12 a month), and has none without one.
+const fn fee_period(period: Period, schedule: Option<VisitSchedule>) -> Option<FeePeriod> {
+    match (period, schedule) {
+        (Period::Visit, Some(VisitSchedule::Weekly)) | (Period::Week, _) => Some(FeePeriod::Weekly),
+        (Period::Visit, Some(VisitSchedule::EveryTwoWeeks)) => Some(FeePeriod::EveryTwoWeeks),
+        (Period::Visit, Some(VisitSchedule::Monthly)) | (Period::Month, _) => {
+            Some(FeePeriod::Monthly)
+        }
+        (Period::Visit, Some(VisitSchedule::Quarterly)) | (Period::Quarter, _) => {
+            Some(FeePeriod::Quarterly)
+        }
+        (Period::Visit, Some(VisitSchedule::Yearly)) | (Period::Year, _) => Some(FeePeriod::Yearly),
+        (Period::Visit, None) => None,
     }
 }
 
@@ -558,6 +690,18 @@ pub async fn page_pick(
     actor: Actor,
     at: Timestamp,
 ) -> Result<PagePick, PicksError> {
+    pick_on_page(tx, (job, paused), (quote, None), (actor, at)).await
+}
+
+/// [`page_pick`] with the package `tier` chosen on a tiers quote (`None` for any other quote):
+/// a waiting pick of the same quote (and, when one is named, the same package) is
+/// [`PagePick::Same`]; the same quote with another package replaces it.
+async fn pick_on_page(
+    tx: &mut PgConnection,
+    (job, paused): (Uuid, bool),
+    (quote, tier): (usize, Option<&ChosenTier>),
+    (actor, at): (Actor, Timestamp),
+) -> Result<PagePick, PicksError> {
     let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
     let view = view(tx, job, paused).await?;
     let open = quote
@@ -571,12 +715,84 @@ pub async fn page_pick(
     let waiting = models::waiting_pick(tx, job).await?;
     if let Some((id, q, _)) = waiting
         && usize::try_from(q).ok() == Some(quote)
+        && (tier.is_none() || stored_tier(tx, id).await? == tier.map(|t| t.index))
     {
         return Ok(PagePick::Same(id));
     }
-    place(tx, (&view, waiting), quote, (actor, at), None)
+    place(tx, (&view, waiting), (quote, tier), (actor, at), None)
         .await
         .map(PagePick::Picked)
+}
+
+/// The package index stored on `pick`, if any (migration 0179).
+async fn stored_tier(tx: &mut PgConnection, pick: Uuid) -> Result<Option<usize>, PicksError> {
+    let index = sqlx::query_scalar!("SELECT tier_index FROM picks.pick WHERE id = $1", pick)
+        .fetch_one(tx)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    Ok(index.and_then(|i| usize::try_from(i).ok()))
+}
+
+/// The package the homeowner chose on a tiers quote's page (PICK-053, D-2332): its place on the
+/// quote (0 for the first) and its name as the page showed it, so an edit since is caught.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChosenTier {
+    /// The package's place on the quote, 0 for the first.
+    pub index: usize,
+    /// The package's name as the page showed it.
+    pub name: String,
+}
+
+impl ChosenTier {
+    /// The price of this package among `tiers`; none when that place holds another name or none
+    /// (the quote was edited since the page showed it).
+    fn price_in(&self, tiers: &[(String, u64)]) -> Option<u64> {
+        tiers
+            .get(self.index)
+            .filter(|(name, _)| *name == self.name)
+            .map(|(_, cents)| *cents)
+    }
+}
+
+/// What [`page_pick_tier`] did.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TierPick {
+    /// The pick was taken, the same or refused as for [`page_pick`].
+    Page(PagePick),
+    /// The quote is not a tiers quote with that package (none named, or edited since): nothing
+    /// was stored; show these package names, in order, to choose again (empty: no packages now).
+    Choose(Vec<String>),
+}
+
+/// The page pick of package `tier` of tiers quote `quote` on `job`, inside the caller's
+/// transaction (PICK-012, PICK-053, PICK-038, FEE-001, D-2332): the fee is fixed from that
+/// package's price and the package is stored on the pick in the same transaction. A package the
+/// quote no longer has in that place, or a quote that is not a tiers quote, stores nothing and
+/// answers [`TierPick::Choose`] with the quote's packages; otherwise as [`page_pick`]. T440's
+/// quote page calls it; a pick of any other quote stays [`page_pick`].
+///
+/// # Errors
+///
+/// As [`page_pick`].
+pub async fn page_pick_tier(
+    tx: &mut PgConnection,
+    (job, paused): (Uuid, bool),
+    (quote, tier): (usize, &ChosenTier),
+    actor: Actor,
+    at: Timestamp,
+) -> Result<TierPick, PicksError> {
+    let names = match quote_price(tx, job, quote).await? {
+        Some((_, Price::Tiers(tiers))) if tier.price_in(&tiers).is_some() => None,
+        Some((_, Price::Tiers(tiers))) => Some(tiers.into_iter().map(|(n, _)| n).collect()),
+        Some(_) => Some(Vec::new()),
+        None => None,
+    };
+    if let Some(names) = names {
+        return Ok(TierPick::Choose(names));
+    }
+    pick_on_page(tx, (job, paused), (quote, Some(tier)), (actor, at))
+        .await
+        .map(TierPick::Page)
 }
 
 /// Cancels a waiting pick with `reason` and enqueues the business's withdrawal notice; after this

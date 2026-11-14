@@ -79,9 +79,10 @@ impl Shape {
 /// TXT-040: every homeowner update template after intake about her quotes, and its shape, then
 /// the other texts after intake held to the 20-word limit only (D-1293, D-1842); the
 /// who's-calling texts are `Capped`: TXT-027 fixes their words (T318, TD-TXT-29).
-pub const UPDATE_TEXTS: [(&str, Shape); 24] = [
+pub const UPDATE_TEXTS: [(&str, Shape); 25] = [
     ("first_quote", Shape::Fixed),
     ("quote_update", Shape::Update),
+    ("text_pick_package", Shape::Update),
     ("all_quotes_in", Shape::Fixed),
     ("quote_list", Shape::List),
     ("quote_list_end", Shape::List),
