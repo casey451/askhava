@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T17:42:43Z by runner bc11f33703b4 (actions).
+Updated 2026-11-14T17:42:55Z by runner bc11f33703b4 (actions).
 
 **Stopped: main is red, only FIX-MAIN runs; 329 of 453 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 329 of 453 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane fix: FIX-MAIN claimed 16:24Z, lease until 19:24Z
+- **Lane:** idle since 17:42Z (no task in progress)
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:32Z, 10 min before this update
 - **Keeper:** last ran 17:32Z, next wake 19:27Z
@@ -19,6 +19,7 @@ Updated 2026-11-14T17:42:43Z by runner bc11f33703b4 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| FIX-MAIN |  | MERGE_PENDING | 1 | 78 min | 17:42Z |  |
 | T467 | picks: a pick whose fee terms changed before its Confirm end | MERGE_PENDING | 1 | 43 min | 16:28Z |  |
 | T439 | --after refuses a hand-in whose head no Opus reviewer approv | MERGE_PENDING | 1 | 44 min | 16:06Z |  |
 | T465 | docs: move the entry lines left under each crate guide's `## | done | 1 | 31 min | 15:55Z |  |
@@ -173,7 +174,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane fix: FIX-MAIN (lease until 2026-11-14T19:24:32Z)
 
 ## Last usage reading
-- {"task": "T467", "at": "2026-11-14T16:28:08Z", "input_tokens": 187, "output_tokens": 61250, "cache_read_input_tokens": 7760968, "cache_creation_input_tokens": 202749}
+- {"task": "FIX-MAIN", "at": "2026-11-14T17:42:42Z", "input_tokens": 136, "cache_read_input_tokens": 2071235, "output_tokens": 23445, "cache_creation_input_tokens": 108960}
