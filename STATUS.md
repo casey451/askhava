@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:52:03Z by runner e40ebe112f64 (actions).
+Updated 2026-11-14T00:54:21Z by runner e40ebe112f64 (actions).
 
 **Building: T341 in progress since 00:03Z; 303 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 303 of 434 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 4: T302 claimed 00:51Z, lease until 03:51Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z
+- **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z
 - **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:51Z, 0 min before this update
+- **Last run:** 00:52Z, 2 min before this update
 - **Keeper:** last ran 00:51Z, next wake 03:05Z
 
 ## Needs attention
+- BLOCKED T302: plan gap reported: PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emailed sign-up code; nothing in app/portals calls businesses::api::check_code (identity.rs:260), start_signup_check (email_verification.rs:134), verified_by_link (:178) or confirm (:363); templates/business_signup.html has no code input and no texts choice or text phone field (Entered.text_chosen at :344 and SignupConsent.text_phone at :373 can never come from a post). T302 (kit/prompts/T302.md:34-38, :158, :164) owns no templates or customer copy, yet TD-SEC-45 (T302.md:73) needs; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 52% of the context window, over its 50% limit
 - Strict plan check red: 31 problem(s) on tasks still to run (+200 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
@@ -19,6 +20,7 @@ Updated 2026-11-14T00:52:03Z by runner e40ebe112f64 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z | PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emaile |
 | T448 | portals: the data-download mask joins digit runs across any  | MERGE_PENDING | 1 | 38 min | 00:49Z |  |
 | T444 | intake (test): the job's ZIP is read only from a property in | MERGE_PENDING | 1 | 24 min | 00:31Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 25 min | 00:23Z |  |
@@ -157,8 +159,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T341 (lease until 2026-11-14T03:03:00Z)
 - lane 3: T280 (lease until 2026-11-14T03:35:47Z)
-- lane 4: T302 (lease until 2026-11-14T03:51:46Z)
 - lane 5: T328 (lease until 2026-11-14T03:02:31Z)
 
 ## Last usage reading
-- {"task": "T448", "at": "2026-11-14T00:49:59Z", "cache_read_input_tokens": 636029, "cache_creation_input_tokens": 57067, "output_tokens": 13527, "input_tokens": 41}
+- {"task": "T302", "at": "2026-11-14T00:54:20Z", "input_tokens": 54, "output_tokens": 10868, "cache_creation_input_tokens": 84159, "cache_read_input_tokens": 942305}

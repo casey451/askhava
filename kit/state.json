@@ -32355,8 +32355,8 @@
     "T412",
     "T415"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "business-signup-served",
    "type": "build",
    "stage": "4",
@@ -32368,6 +32368,33 @@
     3599,
     3600,
     3601
+   ],
+   "reason": "plan gap reported: PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emailed sign-up code; nothing in app/portals calls businesses::api::check_code (identity.rs:260), start_signup_check (email_verification.rs:134), verified_by_link (:178) or confirm (:363); templates/business_signup.html has no code input and no texts choice or text phone field (Entered.text_chosen at :344 and SignupConsent.text_phone at :373 can never come from a post). T302 (kit/prompts/T302.md:34-38, :158, :164) owns no templates or customer copy, yet TD-SEC-45 (T302.md:73) needs; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emailed sign-up code; nothing in app/portals calls businesses::api::check_code (identity.rs:260), start_signup_check (email_verification.rs:134), verified_by_link (:178) or confirm (:363); templates/business_signup.html has no code input and no texts choice or text phone field (Entered.text_chosen at :344 and SignupConsent.text_phone at :373 can never come from a post). T302 (kit/prompts/T302.md:34-38, :158, :164) owns no templates or customer copy, yet TD-SEC-45 (T302.md:73) needs the email code step and the e2e needs the identity-code step. No task in kit/tasks.json owns these screens (T202 depends on T302 and does not cover them). The form also posts to /b/signup/start, not SIGNUP_ROUTE. Proposed: a portals task before T302 adding the code-entry screens and the text choice/phone fields, T302 depending on it. Reviewer confirmed all claims.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 27,
+     "head_sha": "e40ebe112f6403887d5fdca5aa153b1ba10df9a6",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-14T00:51:46Z",
+     "ended_at": "2026-11-14T00:54:20Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 667548,
+       "turns": 14
+      },
+      "reviewer": {
+       "tokens": 369838,
+       "turns": 13
+      }
+     }
+    }
    ]
   },
   {
@@ -49775,12 +49802,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T448",
-   "at": "2026-11-14T00:49:59Z",
-   "cache_read_input_tokens": 636029,
-   "cache_creation_input_tokens": 57067,
-   "output_tokens": 13527,
-   "input_tokens": 41
+   "task": "T302",
+   "at": "2026-11-14T00:54:20Z",
+   "input_tokens": 54,
+   "output_tokens": 10868,
+   "cache_creation_input_tokens": 84159,
+   "cache_read_input_tokens": 942305
   },
   "source": "session_reading 2026-11-14T00:50:48Z (week)",
   "by_task": {
@@ -52792,17 +52819,27 @@
    },
    "T302": {
     "estimated_bytes": 692046,
-    "estimated_tokens": 2131758
+    "estimated_tokens": 2131758,
+    "usage_counting": "message_id",
+    "input_tokens": 54,
+    "output_tokens": 10868,
+    "cache_creation_input_tokens": 84159,
+    "cache_read_input_tokens": 942305,
+    "worker_tokens": 667548,
+    "worker_turns": 14,
+    "reviewer_tokens": 369838,
+    "reviewer_turns": 13,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-13T20:09:01Z",
-    "tokens": 29373979
+    "tokens": 29563290
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 87591002
+    "tokens": 87780313
    }
   },
   "session_reading": {
@@ -52813,7 +52850,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T00:52:03Z",
+ "updated_at": "2026-11-14T00:54:21Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
