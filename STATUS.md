@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:04:31Z by runner f4b34241abcb (actions).
+Updated 2026-11-14T12:08:27Z by runner f4b34241abcb (actions).
 
-**Building: T300 in progress since 12:03Z; 321 of 449 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T300 in progress since 12:03Z; 322 of 449 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 321 of 449 build tasks (owner gates not counted)
+- **Tasks done:** 322 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T300 claimed 12:03Z, lease until 15:03Z; lane 2: T359 claimed 11:24Z, lease until 14:24Z
 - **Week:** 42% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:04Z, 0 min before this update
+- **Last run:** 12:04Z, 3 min before this update
 - **Keeper:** last ran 12:04Z, next wake 14:27Z
 
 ## Needs attention
@@ -29,15 +29,16 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
     tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/signup (business sign-up form) at 1280px 
   233 passed (1.3m)
 ##[error]Process completed with exit code 1.
+- BLOCKED T437: merging main into the task branch conflicts in app/businesses/CLAUDE.md again after 2 resyncs in this attempt, so this attempt fails and the next one starts from the branch with main merged in, or fresh from main when that still conflicts (D-583, D-620, D-891)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 33 problem(s) on tasks still to run (+102 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 3 | 23 min | 11:56Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 3 | 23 min | 11:56Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T302 | server (harness): business sign-up's open doors and served p | check_failed | 5 | 45 min | 11:56Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
-| T329 | businesses: the eight business account events queued today ( | MERGE_PENDING | 2 | 65 min | 11:49Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
+| T329 | businesses: the eight business account events queued today ( | done | 2 | 65 min | 11:49Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
 | T453 | quotes: the job's quote rules are read from the stored job,  | done | 1 | 27 min | 11:02Z |  |
 | T452 | e2e and Ally (harness): a keyed web binary beside the suite' | done | 1 | 24 min | 10:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 31 min | 10:58Z |  |
@@ -145,8 +146,8 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 274 of 733 (37.4%) · partial 299 · unstarted 160
-**Tasks merged (throughput only):** 321 of 449
+**Requirements verified:** 274 of 733 (37.4%) · partial 301 · unstarted 158
+**Tasks merged (throughput only):** 322 of 449
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -169,7 +170,7 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 | security | 9 | 41 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 7 | 23 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -181,7 +182,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 201 of 224 done
+- stage 4: 202 of 224 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
