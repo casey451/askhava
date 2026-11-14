@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.pick_intent SET ended_at = $2 WHERE pick_id = $1 AND ended_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6b86bce5edd1163b270318122d7bb0bfbfc1f573fdc878fa21f59cf0228f1a7a"
+}
