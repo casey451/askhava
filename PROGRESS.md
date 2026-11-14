@@ -4141,3 +4141,4 @@
 - 2026-11-14T00:11:46Z runner 917b57db8442 (actions): {"T447": "None -> QUEUED", "T448": "None -> QUEUED", "T449": "None -> QUEUED"}
 - 2026-11-14T00:12:11Z runner 917b57db8442 (actions): {"T448": "QUEUED -> IN_PROGRESS"}; T448 estimated 239k tokens (calibrated); week has 126.8M left (no five-hour budget, D-3056) after 5.2M still running in another lane (session_reading 2026-11-14T00:08:17Z (week)); claimed
 - 2026-11-14T00:23:18Z runner 44fcf6e39fe8 (actions): {}
+- 2026-11-14T00:23:35Z runner 44fcf6e39fe8 (actions): {"T437": "IN_PROGRESS -> MERGE_PENDING"}

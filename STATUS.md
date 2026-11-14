@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:23:18Z by runner 44fcf6e39fe8 (actions).
+Updated 2026-11-14T00:23:35Z by runner 44fcf6e39fe8 (actions).
 
-**Building: T437 in progress since 23:57Z; 301 of 428 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T341 in progress since 00:03Z; 301 of 428 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 301 of 428 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T437 claimed 23:57Z, lease until 02:57Z; lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z; lane 6: T444 claimed 00:07Z, lease until 03:07Z; lane 7: T448 claimed 00:11Z, lease until 03:11Z
+- **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z; lane 6: T444 claimed 00:07Z, lease until 03:07Z; lane 7: T448 claimed 00:11Z, lease until 03:11Z
 - **Week:** 31% used, 126.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:12Z, 10 min before this update
+- **Last run:** 00:12Z, 11 min before this update
 - **Keeper:** last ran 00:08Z, next wake 03:00Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-14T00:23:18Z by runner 44fcf6e39fe8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 25 min | 00:23Z |  |
 | T391 | calls, businesses, messaging and server: the main phone's "L | MERGE_PENDING | 1 | 47 min | 23:23Z |  |
 | T415 | businesses, messaging and server: the production phone link  | MERGE_PENDING | 1 | 69 min | 23:15Z |  |
 | T355 | picks: the release claim re-checks the pick under its row lo | done | 1 | 59 min | 23:11Z |  |
@@ -151,11 +152,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T437 (lease until 2026-11-14T02:57:41Z)
+- nothing
 - lane 2: T341 (lease until 2026-11-14T03:03:00Z)
 - lane 5: T328 (lease until 2026-11-14T03:02:31Z)
 - lane 6: T444 (lease until 2026-11-14T03:07:03Z)
 - lane 7: T448 (lease until 2026-11-14T03:11:43Z)
 
 ## Last usage reading
-- {"task": "T391", "at": "2026-11-13T23:23:57Z", "input_tokens": 376, "output_tokens": 146899, "cache_read_input_tokens": 13160064, "cache_creation_input_tokens": 482702}
+- {"task": "T437", "at": "2026-11-14T00:23:15Z", "output_tokens": 23772, "input_tokens": 95, "cache_creation_input_tokens": 97479, "cache_read_input_tokens": 2189203}
