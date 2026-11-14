@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T03:43:27Z by runner f55f882ac049 (actions).
+Updated 2026-11-14T03:43:46Z by runner f55f882ac049 (actions).
 
-**Building: T440 in progress since 02:53Z; 310 of 435 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 03:43Z; 310 of 435 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 310 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 5: T440 claimed 02:53Z, lease until 05:53Z
+- **Lane:** idle since 03:43Z (no task in progress)
 - **Week:** 35% used, 120.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:38Z, 4 min before this update
+- **Last run:** 03:38Z, 5 min before this update
 - **Keeper:** last ran 03:35Z, next wake 05:55Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-14T03:43:27Z by runner f55f882ac049 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T440 | portals: the quote page's tier choice and the Confirm page's | MERGE_PENDING | 1 | 50 min | 03:43Z |  |
 | T344 | picks: the global daily Verify cap holds under concurrent co | MERGE_PENDING | 1 | 28 min | 03:23Z |  |
 | T433 | server and payments: every payments task runs in the product | done | 1 | 57 min | 03:21Z |  |
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 31 min | 03:17Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -158,7 +159,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T440 (lease until 2026-11-14T05:53:03Z)
 
 ## Last usage reading
-- {"task": "T344", "at": "2026-11-14T03:23:17Z", "cache_read_input_tokens": 1954809, "cache_creation_input_tokens": 102563, "input_tokens": 102, "output_tokens": 25415}
+- {"task": "T440", "at": "2026-11-14T03:43:25Z", "output_tokens": 80969, "cache_creation_input_tokens": 273680, "input_tokens": 201, "cache_read_input_tokens": 7588983}
