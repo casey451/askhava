@@ -272,3 +272,4 @@
 - [PICK-053 PICK-038 REC-010 REC-011] (task 341) a `Shape::Update` in `UPDATE_TEXTS`) with her quote-page link: the token comes from `jobs::api::quote_token::issue` keyed `IdSecret::new(1, ID_SECRET)` as the composition keys link tokens, inside a savepoint rolled back when the outbox row already existed, so a reprocessed inbound never revokes the link already queued. Tests: `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63);
 - [PICK-053 PICK-038 REC-010 REC-011] (task 341) TD-FEE-48's tiered case is now the pick with no tier.
 - [FEE-019 FEE-020 FEE-021 FEE-026] (task 433) cross-reference (D-3620): the build note of T433 is in `app/server/NOTES.md`: `grep -n '(task 433)' app/server/NOTES.md`.
+- [PICK-053 PICK-021 A11Y-030] (task 440) cross-reference (D-3620): the build note of T440 is in `app/portals/NOTES.md`: `grep -n '(task 440)' app/portals/NOTES.md`.

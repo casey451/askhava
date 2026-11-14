@@ -233,3 +233,4 @@
 - [CARD-024 CARD-001 CARD-002 BIZ-010] (task 249) Tests: `app/quotes/src/tests/radius_matching.rs`, `tests/integration/tests/radius_matching.rs` (TD-CARD-13, TD-BIZ-38).
 - [FEE-018 FEE-020 FEE-041 PICK-046] (task 328) cross-reference (D-3620): the build note of T328 is in `app/picks/NOTES.md`: `grep -n '(task 328)' app/picks/NOTES.md`.
 - [PICK-053 PICK-038 REC-010 REC-011] (task 341) cross-reference (D-3620): the build note of T341 is in `app/picks/NOTES.md`: `grep -n '(task 341)' app/picks/NOTES.md`.
+- [PICK-053 PICK-021 A11Y-030] (task 440) cross-reference (D-3620): the build note of T440 is in `app/portals/NOTES.md`: `grep -n '(task 440)' app/portals/NOTES.md`.
