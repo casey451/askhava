@@ -60,6 +60,7 @@ use serde_json::{Value, json};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
+use crate::charge::charge_key;
 use crate::late::LATE_TRIGGER;
 use crate::ledger::{EntryKind, LedgerEntry, NewEntry, REFUND_REVERSAL_CODE, ledger_append};
 use crate::models::{
@@ -71,7 +72,6 @@ use crate::refund_stripe::{Refund, RefundAmount, RefundState, RefundStripe};
 use crate::refunds::{
     REFUND_FAILED_ALERT, REFUND_MISMATCH_ALERT, REFUND_UNCONFIRMED_ALERT, request_refund,
 };
-use crate::service::CONFIRM_FEE_ACTION;
 
 /// The nightly task kind `server` registers with [`run_reconcile`].
 pub const RECONCILE_KIND: &str = "payments.reconcile";
@@ -441,7 +441,7 @@ async fn one_charge(
     let plan = plan_charge(charge, pick, ledger_facts(&mut tx, charge).await?);
     if let Some(facts) = pick {
         for (kind, cents) in &plan.lines {
-            append(&mut tx, id_secret, charge, facts, (*kind, *cents)).await?;
+            append(&mut tx, charge, facts, (*kind, *cents)).await?;
         }
         report.auto_matched += usize::from(plan.unknown);
     }
@@ -530,19 +530,12 @@ async fn ledger_facts(
 }
 
 /// The ledger key and Stripe ID of a planned line. A charge or refund on the pick's own intent
-/// uses the key `record_fee_at_confirm` or T066's refund uses, so neither can double it.
-fn key_and_id(
-    id_secret: &SecretString,
-    charge: &StripeCharge,
-    facts: PickFacts,
-    kind: EntryKind,
-) -> (String, String) {
-    let (job, business) = (facts.job.to_string(), facts.business.to_string());
+/// uses the per-pick key the success path ([`charge_key`]) or T066's refund uses, so neither can
+/// double it, and a second paid pick of the same business on the same job keeps its own
+/// (FEE-028, FEE-030, D-2623).
+fn key_and_id(charge: &StripeCharge, facts: PickFacts, kind: EntryKind) -> (String, String) {
     match (kind, facts.own_intent) {
-        (EntryKind::Charge, true) => {
-            let key = IdempotencyKey::derive(id_secret, CONFIRM_FEE_ACTION, &[&job, &business]);
-            (key.as_str().to_owned(), charge.id.clone())
-        }
+        (EntryKind::Charge, true) => (charge_key(facts.pick), charge.id.clone()),
         (EntryKind::Charge, false) => {
             (format!("reconcile.charge.{}", charge.id), charge.id.clone())
         }
@@ -563,12 +556,11 @@ fn key_and_id(
 
 async fn append(
     conn: &mut PgConnection,
-    id_secret: &SecretString,
     charge: &StripeCharge,
     facts: PickFacts,
     (kind, cents): (EntryKind, i64),
 ) -> Result<(), MoneyEventError> {
-    let (key, stripe_id) = key_and_id(id_secret, charge, facts, kind);
+    let (key, stripe_id) = key_and_id(charge, facts, kind);
     let entry = LedgerEntry::new(NewEntry {
         kind,
         business: Some(facts.business),
@@ -713,14 +705,7 @@ async fn own_refund(
     let (cents, flagged) = own_booked(&refund, charge.amount_cents);
     let mut tx = db(pool.begin().await)?;
     if let Some(facts) = pick {
-        append(
-            &mut tx,
-            id_secret,
-            charge,
-            facts,
-            (EntryKind::Refund, cents),
-        )
-        .await?;
+        append(&mut tx, charge, facts, (EntryKind::Refund, cents)).await?;
     }
     if let Some(kind) = flagged {
         flag_refund(&mut tx, kind, pick).await?;

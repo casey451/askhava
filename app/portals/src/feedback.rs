@@ -50,6 +50,20 @@ vertical-align:middle;border:2px solid #1f1d1b;border-radius:3px;background:#fff
 #feedback-share:checked{background:#1f1d1b;box-shadow:inset 0 0 0 4px #fff}\
 #feedback-body{display:block;width:100%;max-width:40rem;box-sizing:border-box}\n";
 
+/// The shared form stylesheet a page with native checkboxes or radios links before the site's own
+/// (T101): Chromium reports a native box's edge as 0px and its fill as transparent, so each box is
+/// drawn with a dark 2px edge on white and each hint and error sits on its own line (A11Y-007,
+/// A11Y-009, D-3700). Served by [`feedback_routes`] so the security matrix reaches it.
+pub const FORMS_CSS_ROUTE: &str = "/static/portals/forms.css";
+
+/// The stylesheet [`FORMS_CSS_ROUTE`] serves (same origin, so the CSP allows it, SEC-013). No
+/// `outline` rule, so the browser's focus outline stays visible.
+const FORMS_CSS: &str = "input[type=checkbox],input[type=radio]{appearance:none;width:24px;\
+height:24px;margin:0 8px 0 0;vertical-align:middle;border:2px solid #1f1d1b;background:#fff}\
+input[type=checkbox]{border-radius:3px}input[type=radio]{border-radius:50%}\
+input[type=checkbox]:checked,input[type=radio]:checked{background:#1f1d1b;\
+box-shadow:inset 0 0 0 4px #fff}span[id$=\"-hint\"],span[id$=\"-error\"]{display:block}\n";
+
 /// JOB-017, WORD-001: the share box's label, word for word, with the display name and the public
 /// domain from the brand file (D-1932, T294).
 #[must_use]
@@ -177,6 +191,7 @@ pub fn feedback_routes(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
     Router::new()
         .route(FEEDBACK_ROUTE, get(show).post(send))
         .route(FEEDBACK_CSS_ROUTE, get(stylesheet))
+        .route(FORMS_CSS_ROUTE, get(forms_stylesheet))
         .with_state(state)
         .layer(from_fn(noindex))
         .layer(from_fn(no_store))
@@ -200,6 +215,12 @@ const FAILED: StatusCode = StatusCode::INTERNAL_SERVER_ERROR;
 async fn stylesheet() -> Response {
     let css = HeaderValue::from_static("text/css; charset=utf-8");
     ([(axum::http::header::CONTENT_TYPE, css)], FEEDBACK_CSS).into_response()
+}
+
+/// `GET` [`FORMS_CSS_ROUTE`]: the shared form stylesheet, no session (A11Y-007, A11Y-009).
+async fn forms_stylesheet() -> Response {
+    let css = HeaderValue::from_static("text/css; charset=utf-8");
+    ([(axum::http::header::CONTENT_TYPE, css)], FORMS_CSS).into_response()
 }
 
 /// The job behind `raw` and its request number, when the page is open for it now: a live token

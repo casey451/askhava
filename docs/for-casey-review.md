@@ -2798,6 +2798,24 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The "Approve" link in the phone-linked email works for 7 days.
 - The catalog has no Spanish job-type names, so the Spanish license-change email names job types in English. Adding Spanish names to the catalog would fix it.
 
+## The notes-file switch split in two so it can land (D-3698, November 14)
+
+- The small tooling task that lets every task write the new crate notes files (T437) ran out of tries. Its work was fine, but its last step tidied every crate guide while every other task was still adding lines to those same guides, so it collided with nearly every merge: 7 merge-ups and a failed merge. Those guide collisions were about a quarter of all the AI time spent in the last day.
+- T437 now does only the tooling part and touches no guide; once it lands, tasks write their notes into the notes files, which merge without collisions. A new tiny task (T465) does the tidy-up right after. Nothing needs you.
+
+## Sign-up and business portal pages get a shared form stylesheet (D-3699, D-3700, November 14)
+
+- Two tasks stopped on the same accessibility check: the business sign-up form (T302) and the business portal home and notice settings (T300). The tick boxes and round choice buttons had no edge strong enough to pass, because the site has no styling yet, and on the sign-up form a hint sat on the same line as its label. These were planning gaps, not mistakes by the workers.
+- A new small task (T466) serves one tiny shared stylesheet for forms, beside the one the feedback page already has: dark-edged boxes and buttons, and each hint on its own line. The sign-up form, the portal pages, the capability step (T464), the Confirm page (T261), the job types page (T375) and the Spanish sign-up form (T202) link it. No accessibility check was loosened; the site's full look later (T101) can absorb it.
+- The email action-link pages (T301) have the same kind of boxes, but that task was running when this change was made (it has since stopped on a different planning gap), so it was not changed here. Its own fix can add the same one line.
+
+## The email action-link pages can be tested as the rules say (D-3706, November 14)
+
+- The task that turns on the links in business emails (T301) stopped a second time on a planning gap: the shared security test expected a business's Quote link to open its quote form even when no job card had gone out, and expected another business's link on that job to open too. The rules say a Quote link opens only from that business's own job card.
+- The test's sample job now has its card sent, as a real one would, and the other business's link must get the plain "not found" answer and change nothing. That is a stricter check, not a looser one.
+- The same task also links the shared form stylesheet on the action pages, as planned when the sign-up and portal pages got it. It now waits for that stylesheet task (T466) and the sign-up task (T302). Nothing needs you.
+- One risk worth a look: the sign-up task (T302) has already used 5 tries, and this task now waits for it. Both change the same shared security test file, so one has to go first; T302 going first changes the least. If T302 stops again, its own fix can put this task first instead.
+
 ## The name-and-address answer and the 911 check (D-3705, November 14)
 
 - The spec says the 911 word check never runs on a homeowner's answer to "What's your first name and street address?", so a street like "Smoke Tree" never sets it off. Taken literally, a text like "smoke coming out of the outlet in 2 rooms" sent while that question is open would be filed as her name and street and get no 911 text. The check is now skipped only when the text looks like an answer: a name, a house number and a street, with no 911 words around them. Anything else gets the normal check.
