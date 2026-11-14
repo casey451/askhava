@@ -142,6 +142,7 @@ pub use crate::models::{
 pub use crate::off_session::{
     OffSessionCharge, OffSessionOutcome, OffSessionStripe, charge_off_session, saved_card_of,
 };
+pub use crate::pick_fee::end_intent_unless_charging;
 pub use crate::pick_fee::{
     PickFeeError, StoredPickFee, fee_terms_in_force, fix_fee_at_pick, pick_fee,
 };

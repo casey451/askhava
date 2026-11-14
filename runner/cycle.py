@@ -1271,8 +1271,9 @@ def _nightly_red_on_head(env: Env) -> str:
 
 def clear_main_red(cfg: Config, state: State, env: Env, now: datetime) -> tuple[State, str]:
     """Clear main_red only on a recorded green smoke run on main's head and, when kit/nightly.json is
-    for that head, a successful nightly; then the reverted task returns with attempts+1 (5.3, 5.4).
-    A red smoke run after FIX-MAIN merged is revert_landed_red: FIX-MAIN stays DONE (D-1099)."""
+    for that head, a successful nightly; then the reverted task returns with attempts+1 (5.3, 5.4), but
+    only when FIX-MAIN's merged files revert its work (`fix_main_reverted`, D-3752); the history record
+    says `outcome` ("reverted" or "fixed_otherwise") and `fix_files`. A red smoke run after FIX-MAIN merged is revert_landed_red: FIX-MAIN stays DONE (D-1099)."""
     state, ok, head = _smoke(state, env, now, "verify FIX-MAIN")
     if not ok and _smoke_pending(env):
         return state, SMOKE_PENDING  # still running: the session collects it with its next call (D-2560)
@@ -1283,11 +1284,37 @@ def clear_main_red(cfg: Config, state: State, env: Env, now: datetime) -> tuple[
     nightly = env.read_nightly() or {}
     if nightly.get("sha") == head and nightly.get("conclusion") != "success":
         return state, "main_red"
-    red = dict(state["main_red"], cleared_at=st.iso(now), cleared_on=head)
+    fix = st.entry(state, st.FIX_MAIN)
+    reverted = fix_main_reverted(state["main_red"], fix, cfg.shared)
+    red = dict(state["main_red"], cleared_at=st.iso(now), cleared_on=head,
+               outcome="reverted" if reverted else "fixed_otherwise", fix_files=list(fix.get("files") or []))
     out = dict(state, main_red=None, main_red_history=[*state.get("main_red_history", []), red])
-    if red.get("task"):
+    if red.get("task") and reverted:
         out = record_failure(out, str(red["task"]), f"reverted by FIX-MAIN ({red['check']} red on {str(red['sha'])[:12]})")
     return out, "main_cleared"
+
+
+DECISIONS_LOG = "docs/decisions.md"  # append-only: every FIX-MAIN adds its entry, so it proves no revert (D-3752)
+
+
+def fix_main_reverted(red: dict[str, Any], fix: dict[str, Any], shared: list[str]) -> bool:
+    """Whether the merged FIX-MAIN changed the offending task's work back (D-3752, governance 5.3 and 5.4).
+
+    FIX-MAIN is squash-merged, so neither main's history nor the squash message proves a revert; the
+    merged files do. `red["files"]` are the offending merge's files, `fix["files"]` FIX-MAIN's merged
+    ones. The offending task's own paths are its files not under a shared path (matched as
+    runner/verify.py matches them); with none, any of its files but the decisions log counts. An empty
+    hand-in reverted nothing. Unknown stays on the safe side, a revert: FIX-MAIN's files not recorded,
+    or the offending merge's files not recorded."""
+    fix_files = set(fix.get("files") or [])
+    if fix.get("empty_handin") and not fix_files:
+        return False
+    red_files = list(red.get("files") or [])
+    if not fix_files or not red_files:
+        return True
+    own = [f for f in red_files if not verify._under(f, shared) and not verify._shared_notes(f, tuple(shared))]
+    candidates = own or [f for f in red_files if f != DECISIONS_LOG]
+    return bool(fix_files.intersection(candidates))
 
 
 def _red_main_step(cfg: Config, env: Env, state: State, now: datetime) -> tuple[State, str]:
