@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T15:50:38Z by runner 45c9090508ad (actions).
+Updated 2026-11-14T15:53:36Z by runner 45c9090508ad (manual).
 
 **Building: T439 in progress since 15:21Z; 328 of 452 done; week 46% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T15:50:38Z by runner 45c9090508ad (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T439 claimed 15:21Z, lease until 18:21Z; lane 2: T467 claimed 15:44Z, lease until 18:44Z; lane 3: T465 claimed 15:24Z, lease until 18:24Z; lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane 7: T300 claimed 14:35Z, lease until 17:35Z
 - **Week:** 46% used, 98.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:50Z, 0 min before this update
+- **Last run:** 15:50Z, 2 min before this update
 - **Keeper:** last ran 15:50Z, next wake 17:38Z
 
 ## Needs attention
@@ -102,7 +102,6 @@ Updated 2026-11-14T15:50:38Z by runner 45c9090508ad (actions).
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | done | 2 | 22 min | 16:46Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T319 | portals and server: security-event rows are capped per addre | done | 1 | 17 min | 16:40Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | resync | 2 | 35 min | 16:03Z |  |
-| T319 | portals and server: security-event rows are capped per addre | resync | 1 | 54 min | 15:51Z |  |
 
 ### Plan and harness merges on main
 - 15:37Z Plan: fee_terms_changed pick end reason (new T467) so T261's Confirm page can end a pick safely (D-3722) (#788)
@@ -129,31 +128,31 @@ Updated 2026-11-14T15:50:38Z by runner 45c9090508ad (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 270 of 733 (36.8%) · partial 305 · unstarted 158
+**Requirements verified:** 4 of 733 (0.5%) · partial 571 · unstarted 158
 **Tasks merged (throughput only):** 328 of 452
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 16 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 18 | 37 | 3 | 58 |
-| calls | 10 | 14 | 1 | 25 |
-| consent | 12 | 19 | 4 | 35 |
-| fees | 13 | 38 | 1 | 52 |
-| intake | 26 | 14 | 3 | 43 |
-| job-cards | 18 | 6 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 23 | 5 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
-| ops-recovery | 2 | 8 | 44 | 54 |
-| privacy | 9 | 20 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 34 | 21 | 1 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 9 | 41 | 5 | 55 |
+| accessibility | 0 | 29 | 6 | 35 |
+| ai | 0 | 24 | 5 | 29 |
+| businesses | 0 | 55 | 3 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 31 | 4 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 1 | 39 | 3 | 43 |
+| job-cards | 1 | 23 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 1 | 42 | 2 | 45 |
+| ops-recovery | 0 | 10 | 44 | 54 |
+| privacy | 0 | 29 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 55 | 1 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 1 | 49 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 0 | 11 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
