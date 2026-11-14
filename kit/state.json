@@ -45049,7 +45049,10 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-14T04:55:02Z",
-   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_lic_30_reads_write_nothing_and_log_no_value ... FAILED\ntest td_lic_30_setting_accepted_and_absent_reads_unreadable ... ok\ntest td_lic_30_signup_record_reads_the_bound_number ... ok\ntest td_lic_30_unreadable_alert_follows_the_arizona_day ... ok\ntest td_lic_30_unreadable_reads_raise_one_alert_a_day ... ok\nfailures:\n---- td_lic_30_reads_write_nothing_and_log_no_value stdout ----\nthread 'td_lic_30_reads_write_nothing_and_log_no_value' (29339) panicked at tests/integration/tests/signup_own_record.rs:634:9:\nthe unreadable read is logged\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_lic_30_reads_write_nothing_and_log_no_value\ntest result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.42s\nerror: test failed, to rerun pass `-p askhava-integration --test signup_own_record`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_lic_30_reads_write_nothing_and_log_no_value ... FAILED\ntest td_lic_30_setting_accepted_and_absent_reads_unreadable ... ok\ntest td_lic_30_signup_record_reads_the_bound_number ... ok\ntest td_lic_30_unreadable_alert_follows_the_arizona_day ... ok\ntest td_lic_30_unreadable_reads_raise_one_alert_a_day ... ok\nfailures:\n---- td_lic_30_reads_write_nothing_and_log_no_value stdout ----\nthread 'td_lic_30_reads_write_nothing_and_log_no_value' (29339) panicked at tests/integration/tests/signup_own_record.rs:634:9:\nthe unreadable read is logged\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_lic_30_reads_write_nothing_and_log_no_value\ntest result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.42s\nerror: test failed, to rerun pass `-p askhava-integration --test signup_own_record`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+   "runner_closed_prs": [
+    747
+   ]
   },
   {
    "id": "T398",
@@ -54932,7 +54935,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T05:11:46Z",
+ "updated_at": "2026-11-14T05:12:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
