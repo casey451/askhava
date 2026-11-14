@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:39:51Z by runner 9fcdbb33f44a (actions).
+Updated 2026-11-14T10:40:14Z by runner 9fcdbb33f44a (actions).
 
 **Building: T452 in progress since 10:34Z; 318 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-14T10:39:51Z by runner 9fcdbb33f44a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T452 claimed 10:34Z, lease until 13:34Z; lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 3: T437 claimed 10:27Z, lease until 13:27Z; lane 4: T359 claimed 09:38Z, lease until 13:24Z; lane 5: T453 claimed 10:35Z, lease until 13:35Z
 - **Week:** 41% used, 107.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:39Z, 0 min before this update
-- **Keeper:** last ran 10:30Z, next wake 13:17Z
+- **Last run:** 10:40Z, 0 min before this update
+- **Keeper:** last ran 10:40Z, next wake 13:18Z
 
 ## Needs attention
 - BLOCKED T329: plan gap reported: PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradict kit/prompts/T329.md:9 and D-2287 (docs/decisions.md:1487), which say each kind is sent with words businesses already has. Four kinds lack words: notice_address_changed (email_verification.rs:37, no words, SEC-024), after_hours_off (emergency_switch.rs:30, no email words, BIZ-007), notice_address_returned (email_verification.rs:39, returned_line :549 English only, no subject/Spanish, BIZ-040), phone_linked (complaints.rs:44, phone_linked_line :556 has no subject and no Appr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T329 --plan-fix D-### --reason "..."` (D-2859)
