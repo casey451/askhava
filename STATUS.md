@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T13:35:57Z by runner c37dc9c0f001 (actions).
+Updated 2026-11-14T13:36:06Z by runner c37dc9c0f001 (actions).
 
 **Building: T432 in progress since 12:42Z; 323 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -12,6 +12,7 @@ Updated 2026-11-14T13:35:57Z by runner c37dc9c0f001 (actions).
 - **Keeper:** last ran 13:34Z, next wake 15:45Z
 
 ## Needs attention
+- PLAN GAP T353 (since 2026-11-14T13:35:50Z, no attempt used; a plan change fixes it): T353: dependency T359 is DONE but its owned file migrations/0183_payments_charge_id.sql is not on main; T353: dependency T359 is DONE but its owned file tests/integration/tests/charge_ledger_entry.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 33 problem(s) on tasks still to run (+103 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 

@@ -40310,7 +40310,14 @@
    "attempts": 0,
    "slug": "dispute-won-recorded",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-14T13:35:50Z",
+    "problems": [
+     "T353: dependency T359 is DONE but its owned file migrations/0183_payments_charge_id.sql is not on main",
+     "T353: dependency T359 is DONE but its owned file tests/integration/tests/charge_ledger_entry.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T354",
@@ -57901,7 +57908,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T13:35:57Z",
+ "updated_at": "2026-11-14T13:36:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
