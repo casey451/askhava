@@ -697,6 +697,36 @@ async fn send_one<M: SignInMail>(
     to: SignInAddress,
     (now, next): (Timestamp, Option<i64>),
 ) -> Result<(), PortalsError> {
+    mail_link(state.mail.as_ref(), db, to, (now, next)).await
+}
+
+/// SEC-004, SEC-025, SEC-026, BIZ-040 (T468, D-3743): stores and emails `to`'s normal sign-in
+/// link with no next job, for a caller outside a sign-in request (the owner's link at sign-up's
+/// activation). The same rules as a `POST` [`SIGNIN_ROUTE`]: nothing is sent when `to.mailbox` is
+/// not a current member of `to.business`, and nothing past [`LINKS_PER_LIFE`] links in
+/// [`LINK_LIFE`], counted under the member's lock (D-1725, D-1837). `M` must deliver the link
+/// only to `to.mailbox`'s own address, never to another (SEC-004).
+///
+/// # Errors
+///
+/// [`PortalsError::Database`] or [`PortalsError::BadLifetime`], or `M`'s send error.
+pub async fn send_sign_in_link<M: SignInMail>(
+    db: &mut PgConnection,
+    mail: &M,
+    to: SignInAddress,
+    now: Timestamp,
+) -> Result<(), PortalsError> {
+    mail_link(mail, db, to, (now, None)).await
+}
+
+/// The body of [`send_one`] and [`send_sign_in_link`]: the member check, the capped insert under
+/// the member's lock, then the email through `mail` (SEC-004, SEC-014, D-1725, D-1837).
+async fn mail_link<M: SignInMail>(
+    mail: &M,
+    db: &mut PgConnection,
+    to: SignInAddress,
+    (now, next): (Timestamp, Option<i64>),
+) -> Result<(), PortalsError> {
     let team = members(db, to.business)
         .await
         .map_err(|_| PortalsError::Database)?;
@@ -716,7 +746,7 @@ async fn send_one<M: SignInMail>(
     }
     let path = with_next(&token, next);
     let link = SecretString::from(format!("{}/b/sign-in/{path}", site()));
-    state.mail.send_link(db, to, &link).await
+    mail.send_link(db, to, &link).await
 }
 
 /// A link token's shape: 64 lower-case hex characters.

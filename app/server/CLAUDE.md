@@ -20,6 +20,7 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 - Any future `src/status.rs` must start with `#![deny(clippy::wildcard_enum_match_arm, clippy::match_wildcard_for_single_variants)]` (SEC-031, D-488).
 - OPS-004, JOB-006, D-2285: a task kind the app queues is registered in `worker_registry` or listed with its owner in `tests/task_kinds_deferred.json`, and a `NO_HANDLER` dead letter raises one open High alert per kind in test and live (`tests/integration/tests/task_registry.rs`); More: `(never 14)` in NOTES.md.
 - The worker gives back its leases after the drain on every signal, so a deploy never strands a task for a lease length (rust brain R14).
+- SEC-019, SEC-042, SEC-048, D-3641: the sign-up form `POST` admits its limit first, refuses a cross-site or wrong-CSRF post (403, a security event, no sign-up), takes the consent wording only from the verified seal, stores no record name or contact, and binds the browser only by the `__Host-askhava-signup` MAC cookie that `bound_signup` verifies (`tests/business_signup_route.rs`).
 - `/healthz` belongs to T106 (`src/healthz.rs`); do not add it here.
 - TD-SEC-41, D-1868, D-2269: `tests/route_wiring.rs` checks only the rows listed in `docs/architecture.md` section 13: a `yes` row must be served by `build_router` and a row naming a task must not be, so a listed route never merged fails naming its row. An axum router cannot list its routes, so a route served with no row is not caught: the task that merges a new route adds its row (`yes`) in the same change.
 
