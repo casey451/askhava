@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:29:48Z by runner 917b57db8442 (actions).
+Updated 2026-11-14T00:31:16Z by runner 200cff5337a5 (actions).
 
 **Building: T341 in progress since 00:03Z; 302 of 434 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T00:29:48Z by runner 917b57db8442 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z; lane 6: T444 claimed 00:07Z, lease until 03:07Z; lane 7: T448 claimed 00:11Z, lease until 03:11Z
 - **Week:** 31% used, 126.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:29Z, 0 min before this update
+- **Last run:** 00:30Z, 1 min before this update
 - **Keeper:** last ran 00:29Z, next wake 03:04Z
 
 ## Needs attention
@@ -104,7 +104,6 @@ Updated 2026-11-14T00:29:48Z by runner 917b57db8442 (actions).
 - 01:57Z Harness: crate_cap back to 1, D-3303 resync guardrail tripped (D-3386) (#645)
 - 01:29Z Harness: fail CI, smoke and prehandin on leftover merge-conflict markers (D-3307) (#619)
 - 01:16Z Plan: T255 follow-ups (D-3384) and pre-flight 12, T426 owns the legal-docs test (D-3385) (#640)
-- 00:30Z Plan: rename Ask Hava to Laftly (Laftly LLC, laftly.com), D-3347 (#631)
 
 ## Progress (requirements verified)
 
