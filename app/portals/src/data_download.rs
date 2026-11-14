@@ -449,13 +449,13 @@ impl fmt::Debug for HeldItem {
 /// What stands in for a masked contact detail.
 const MASKED: &str = "[removed]";
 
-/// PRIV-031: `words` with every run of 7 or more digits (with spaces, line breaks, dots, dashes,
-/// brackets or a plus between them), every word holding `@`, every web address and every bare
-/// domain masked (T315, D-3265, D-3266).
+/// PRIV-031: `words` with every run of 7 or more digits (joined by [`RUN_SEPARATORS`], any
+/// whitespace or a Unicode dash), every word holding `@`, every web address and every bare
+/// domain masked (T315, T448, D-3265, D-3266, D-3592).
 pub(crate) fn mask_contact_details(words: &str) -> String {
     let (mut out, mut run) = (String::new(), String::new());
     for ch in words.chars() {
-        if ch.is_ascii_digit() || "()+-. \n\r".contains(ch) {
+        if is_run_digit(ch) || joins_run(ch) {
             run.push(ch);
         } else {
             flush_run(&mut out, &mut run);
@@ -508,8 +508,27 @@ fn is_host(piece: &str) -> bool {
         && last.chars().all(|c| c.is_ascii_alphabetic())
 }
 
+/// The punctuation that continues a digit run (D-3592); `,`, `:`, `$` and every other character
+/// not named here or in [`joins_run`] end one, so money and durations are never joined.
+const RUN_SEPARATORS: &[char] = &['(', ')', '+', '-', '.', '/', '_'];
+
+/// PRIV-031, D-3592: whether `ch` may sit inside a digit run: [`RUN_SEPARATORS`], any whitespace
+/// (tab, non-breaking space and line breaks included), the dashes U+2010 to U+2015 and U+2212.
+fn joins_run(ch: char) -> bool {
+    RUN_SEPARATORS.contains(&ch)
+        || ch.is_whitespace()
+        || ('\u{2010}'..='\u{2015}').contains(&ch)
+        || ch == '\u{2212}'
+}
+
+/// PRIV-031, D-3592: an ASCII digit or a fullwidth one (U+FF10 to U+FF19).
+fn is_run_digit(ch: char) -> bool {
+    ch.is_ascii_digit() || ('\u{ff10}'..='\u{ff19}').contains(&ch)
+}
+
+/// PRIV-031: writes `run` to `out`, masked when it holds 7 or more digits, its outer whitespace kept.
 fn flush_run(out: &mut String, run: &mut String) {
-    if run.chars().filter(char::is_ascii_digit).count() >= 7 {
+    if run.chars().filter(|&c| is_run_digit(c)).count() >= 7 {
         let lead = run.len() - run.trim_start().len();
         let tail = run.trim_end().len();
         out.push_str(&run[..lead]);

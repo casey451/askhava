@@ -2751,3 +2751,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
   - **T447:** if a database blip happens while a text is being sent, the text is now retried instead of dropped, so an "unsubscribed" confirmation can't be lost.
   - **T448:** the privacy mask in the homeowner's data download now hides phone numbers written with slashes, underscores, tabs or long dashes too.
   - **T449:** emergency texts now count toward the "too many requests" alarm (they are still never refused), and one security test now checks that a link made for one team member can never act as another.
+
+## Business sign-up gets its code screens (D-3602, November 14)
+
+- The task that puts business sign-up online (T302) found that two screens were never planned: the one where the business types the code we send to the number on its license record, and the one where it types the code we email. The form also had no way to choose job texts or give a phone number for them. A new small task (T450) adds those screens and the choice (email stays the default; texts are only offered once business texting is on, with a phone box and the full consent wording before any code is sent). T302 then runs after it.
