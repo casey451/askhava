@@ -6,7 +6,8 @@
 //! line, OPS-011; Twilio's inbound-text and status webhooks once `ASKHAVA_PUBLIC_BASE_URL` is
 //! set, SEC-016, T241; the page pick's code keys once the vault keys are set, D-1516; Stripe's
 //! webhook and the release once `ASKHAVA_STRIPE_WEBHOOK_SECRET` is set, T254; every request under
-//! the `ASKHAVA_REQUEST_TIMEOUT_SECS` limit, D-1870) and serves it, with
+//! the `ASKHAVA_REQUEST_TIMEOUT_SECS` limit, D-1870; the business sign-in pages, which refuse to
+//! start without the new-device code settings in test and live, T280) and serves it, with
 //! the socket peer as connect info (SEC-040), on `0.0.0.0:$PORT` (the host sets `PORT`) until SIGINT or SIGTERM, then
 //! finishes the requests in flight and exits 0. `server migrate` instead
 //! applies the pending migrations as the migration role and exits: the
@@ -52,7 +53,13 @@ async fn main() -> io::Result<()> {
     let limit = askhava_server::request_timeout::RequestTimeout::from_settings(&settings);
     let hooks = (webhooks, voice, pick_keys, stripe);
     let statics = askhava_server::static_files::StaticRoot::from_settings(&settings);
-    let app = askhava_server::build_router(pool, control.router(), (hooks, limit, statics));
+    let signin = askhava_server::business_signin::ServedSignIn::from_settings(
+        &settings,
+        pool.clone(),
+        std::env::vars(),
+    )?;
+    let parts = askhava_server::RouterParts::from((hooks, limit, statics)).with_sign_in(signin);
+    let app = askhava_server::build_router(pool, control.router(), parts);
     axum::serve(
         listener,
         app.into_make_service_with_connect_info::<std::net::SocketAddr>(),

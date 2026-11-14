@@ -528,5 +528,10 @@
     "audience": "homeowner",
     "segments": 1,
     "text": "{brand_short}: Did {business} email you and agree a time? Text back YES or NO."
+  },
+  "business_signin_link": {
+    "audience": "business",
+    "segments": 3,
+    "text": "{brand_short}: Here is your sign-in link. It works once, for the next 15 minutes: {link} If you did not ask to sign in, you can ignore this email."
   }
 }
