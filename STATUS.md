@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:39:43Z by runner 8b2105cd4bc7 (actions).
+Updated 2026-11-14T22:46:57Z by runner 2fffb961d201 (actions).
 
-**Building: T301 in progress since 21:48Z; 335 of 471 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T301 in progress since 21:48Z; 335 of 469 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 335 of 471 build tasks (owner gates not counted)
+- **Tasks done:** 335 of 469 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T301 claimed 21:48Z, lease until 00:48Z; lane 4: T485 claimed 22:26Z, lease until 01:26Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z
 - **Week:** 52% used, 87.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:39Z, 0 min before this update
+- **Last run:** 22:39Z, 7 min before this update
 - **Keeper:** last ran 22:39Z, next wake 00:50Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T451 (since 2026-11-14T22:38:54Z, no attempt used; a plan change fixes it): T451: dependency T300 is DONE but its owned file app/server/src/business_portal.rs is not on main; T451: dependency T300 is DONE but its owned file app/server/tests/business_portal_route.rs is not on main
 - PLAN GAP T454 (since 2026-11-14T22:38:54Z, no attempt used; a plan change fixes it): T454: dependency T300 is DONE but its owned file app/server/src/business_portal.rs is not on main; T454: dependency T300 is DONE but its owned file app/server/tests/business_portal_route.rs is not on main
-- Strict plan check red: 19 problem(s) on tasks still to run (+109 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 31 problem(s) on tasks still to run (+108 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -121,8 +121,8 @@ Updated 2026-11-14T22:39:43Z by runner 8b2105cd4bc7 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 335 of 471
+**Requirements verified:** 304 of 733 (41.5%) · partial 272 · unstarted 157
+**Tasks merged (throughput only):** 335 of 469
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -131,7 +131,7 @@ Updated 2026-11-14T22:39:43Z by runner 8b2105cd4bc7 (actions).
 | businesses | 18 | 37 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 19 | 32 | 1 | 52 |
+| fees | 20 | 31 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
 | job-cards | 19 | 5 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
