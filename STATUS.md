@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:00:23Z by runner 3156fa10a309 (actions).
+Updated 2026-11-14T22:00:42Z by runner 5c153897b3f5 (actions).
 
 **Building: T301 in progress since 21:48Z; 334 of 469 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,13 +9,13 @@ Updated 2026-11-14T22:00:23Z by runner 3156fa10a309 (actions).
 - **Lane:** lane 2: T301 claimed 21:48Z, lease until 00:48Z; lane 3: T443 claimed 21:43Z, lease until 00:43Z
 - **Week:** 52% used, 89.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:00Z, 0 min before this update
-- **Keeper:** last ran 21:58Z, next wake 00:44Z
+- **Keeper:** last ran 22:00Z, next wake 00:45Z
 
 ## Needs attention
 - BLOCKED T261: plan gap reported: PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No reader for businesses.signup.submitted_at (written app/businesses/src/models.rs:296, never read); catalog.category has no switch-on timestamp (migrations/0027_catalog_module.sql:15-26); no task in kit/tasks.json (T475-T484 included) builds them; T261 owns no businesses or catalog file. Reviewer confirmed. same_customer_jobs (intake::api::job_homeowner + jobs_of_contact) and the launch-date/Stripe-key settings (shared core settings.rs) are sourceable by T261. Needed: a task a; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T460: plan gap reported: PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-3641 needs the server to read the sign-up's stored state (identity Step, code_done, email verified) before each identity step, but no public businesses::api reader gives it: signup_email_waits is not exported (lib.rs:49 private mod), RecordFound::masked() cannot tell "no step yet" from step 1, check_code (identity.rs:267-271) takes a try before it finds no step, and the server crate has no SQL (R8). T460 owns only app/server/src/business_signup.rs and app/server/tests/business_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T460 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 23 problem(s) on tasks still to run (+109 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+109 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
