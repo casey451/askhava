@@ -1,21 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-14T02:46:24Z by runner 918581713bc4 (actions).
+Updated 2026-11-14T02:46:37Z by runner 918581713bc4 (actions).
 
-**Building: T433 in progress since 02:23Z; 308 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T449 in progress since 02:46Z; 308 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 308 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
-- **Week:** 34% used, 124.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 3: T449 claimed 02:46Z, lease until 05:46Z; lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 7: T450 claimed 01:40Z, lease until 04:40Z
+- **Week:** 34% used, 123.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:46Z, 0 min before this update
 - **Keeper:** last ran 02:42Z, next wake 04:43Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode|EmailCode in app/portals/src finds nothing, app/portals/src/tests/signup_code_screens.rs does not exist. T302 owns no portals file, so it cannot serve the email-code and identity-code steps (TD-SEC-45) without T450's Screen::IdentityCode, Screen::EmailCode, route constants and channel parser. kit/state.json on claude/kit-state has no T450 and T302's deps there stop at T415, so the runner started T302 before T450. Reviewer confirmed every claim.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
+- PLAN GAP T344 (since 2026-11-14T02:46:17Z, no attempt used; a plan change fixes it): T344: dependency T341 is DONE but its owned file migrations/0179_picks_chosen_tier.sql is not on main; T344: dependency T341 is DONE but its owned file tests/integration/tests/tier_and_visit_pick.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 53% of the context window, over its 50% limit
+- PLAN GAP T440 (since 2026-11-14T02:46:17Z, no attempt used; a plan change fixes it): T440: dependency T341 is DONE but its owned file migrations/0179_picks_chosen_tier.sql is not on main; T440: dependency T341 is DONE but its owned file tests/integration/tests/tier_and_visit_pick.rs is not on main
 - Strict plan check red: 33 problem(s) on tasks still to run (+203 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
@@ -142,7 +144,7 @@ Updated 2026-11-14T02:46:24Z by runner 918581713bc4 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T02:13:04Z (week)): week: 69.9M used, 124.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T06:48:59Z.
+- Pacing (session_reading 2026-11-14T02:42:27Z (week)): week: 70.7M used, 123.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T04:11:57Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -158,6 +160,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 3: T449 (lease until 2026-11-14T05:46:17Z)
 - lane 4: T433 (lease until 2026-11-14T05:23:41Z)
 - lane 7: T450 (lease until 2026-11-14T04:40:56Z)
 
