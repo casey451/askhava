@@ -12271,7 +12271,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 22
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -19054,7 +19054,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -25010,7 +25010,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 45
+    "context_pct": 52
    },
    "checks": [
     "Ci",
