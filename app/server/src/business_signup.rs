@@ -98,7 +98,9 @@ async fn form_page(State(form): State<Arc<Form>>, jar: CookieJar) -> Response {
     let Ok(jar) = ensure_pre_session(jar) else {
         return failure("pre-session cookie");
     };
-    let csrf = csrf_token(&jar).unwrap_or_default();
+    let Some(csrf) = csrf_token(&jar) else {
+        return failure("csrf token");
+    };
     let Some(categories) = categories(&form.pool).await else {
         return failure("category list");
     };

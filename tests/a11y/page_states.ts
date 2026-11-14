@@ -155,7 +155,7 @@ const SIGNUP_ROUTE = "/b/signup";
 
 /** The business sign-up form (T302, CON-019): no seed, the plain path; `main` stores the catalog. */
 const SIGNUP_STATES: readonly PageState[] = [
-  ["business sign-up form", "Sign up your business", "Where your code goes", ""],
+  ["business sign-up form", "What work do you do?", "Where your code goes", ""],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: SIGNUP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */

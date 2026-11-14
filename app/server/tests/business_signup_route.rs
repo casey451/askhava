@@ -6,12 +6,12 @@
 
 use askhava_catalog::api::{load, parse};
 use askhava_core::api::{IdSecret, MIGRATOR, Settings, TestControl};
-use askhava_portals::api::{ChannelPost, SIGNUP_ROUTE};
+use askhava_portals::api::{ChannelPost, CookieJar, SIGNUP_ROUTE, csrf_token};
 use askhava_server::business_signup::ServedSignUp;
 use askhava_server::{RouterParts, build_router};
 use axum::Router;
 use axum::body::{Body, to_bytes};
-use axum::http::{Request, StatusCode, header};
+use axum::http::{HeaderMap, Request, StatusCode, header};
 use secrecy::SecretString;
 use sqlx::PgPool;
 use tower::ServiceExt;
@@ -73,6 +73,35 @@ fn hidden(html: &str, name: &str) -> String {
     rest[..rest.find('"').expect("end")].to_owned()
 }
 
+/// The one pre-session `Set-Cookie` line, checked for every `__Host-` attribute; its `name=value`.
+fn pre_session_cookie(cookies: &[String]) -> String {
+    let line = cookies
+        .iter()
+        .find(|c| c.starts_with("__Host-askhava-pre="))
+        .expect("the pre-session cookie");
+    let attributes: Vec<&str> = line.split(';').map(str::trim).collect();
+    for wanted in ["Secure", "HttpOnly", "SameSite=Lax", "Path=/"] {
+        assert!(
+            attributes.iter().any(|a| a.eq_ignore_ascii_case(wanted)),
+            "SEC-042: {wanted} on {line}"
+        );
+    }
+    assert!(
+        !attributes
+            .iter()
+            .any(|a| a.to_ascii_lowercase().starts_with("domain=")),
+        "a __Host- cookie has no Domain: {line}"
+    );
+    attributes[0].to_owned()
+}
+
+/// A cookie jar holding only the `name=value` pair, as the browser would send it back.
+fn jar_with(pair: &str) -> CookieJar {
+    let mut headers = HeaderMap::new();
+    headers.insert(header::COOKIE, pair.parse().expect("cookie header"));
+    CookieJar::from_headers(&headers)
+}
+
 fn secret() -> IdSecret {
     IdSecret::new(1, SecretString::from(SECRET.to_owned())).expect("secret")
 }
@@ -93,10 +122,7 @@ async fn td_sec_45_the_form_is_served_without_a_session(pool: PgPool) {
     store_catalog(&pool).await;
     let (status, cookies, cache, html) = open(&app(&pool)).await;
     assert_eq!(status, StatusCode::OK);
-    assert!(
-        cookies.iter().any(|c| c.starts_with("__Host-askhava-pre=")),
-        "the pre-session cookie: {cookies:?}"
-    );
+    let pre = pre_session_cookie(&cookies);
     assert!(
         !cookies
             .iter()
@@ -106,9 +132,9 @@ async fn td_sec_45_the_form_is_served_without_a_session(pool: PgPool) {
     assert!(html.contains("Sign up your business"));
     let csrf = hidden(&html, "csrf");
     assert_eq!(
-        csrf.len(),
-        64,
-        "a CSRF token bound to the pre-session cookie"
+        Some(csrf.clone()),
+        csrf_token(&jar_with(&pre)),
+        "SEC-042: the CSRF token derived from the pre-session cookie"
     );
     let tag = "<input type=\"checkbox\" id=\"consent\" name=\"consent\" value=\"yes\"";
     let tag_at = html.find(tag).expect("the E-SIGN box");
