@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T03:35:50Z by runner 224fe4c7f956 (actions).
+Updated 2026-11-14T03:38:29Z by runner 224fe4c7f956 (actions).
 
-**Building: T440 in progress since 02:53Z; 309 of 435 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T440 in progress since 02:53Z; 310 of 435 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 309 of 435 build tasks (owner gates not counted)
+- **Tasks done:** 310 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T440 claimed 02:53Z, lease until 05:53Z
 - **Week:** 35% used, 120.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:35Z, 0 min before this update
+- **Last run:** 03:36Z, 2 min before this update
 - **Keeper:** last ran 03:35Z, next wake 05:55Z
 
 ## Needs attention
@@ -22,8 +22,8 @@ Updated 2026-11-14T03:35:50Z by runner 224fe4c7f956 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T344 | picks: the global daily Verify cap holds under concurrent co | MERGE_PENDING | 1 | 28 min | 03:23Z |  |
-| T433 | server and payments: every payments task runs in the product | MERGE_PENDING | 1 | 57 min | 03:21Z |  |
-| T449 | server and intake: emergency first texts count toward the re | MERGE_PENDING | 1 | 31 min | 03:17Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T433 | server and payments: every payments task runs in the product | done | 1 | 57 min | 03:21Z |  |
+| T449 | server and intake: emergency first texts count toward the re | resync | 1 | 31 min | 03:17Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T450 | portals: the sign-up code screens and the texts choice with  | done | 1 | 79 min | 03:00Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 23 min | 02:41Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/intake/CLAUDE.md, app/messaging/CLAUDE.md, app |
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z |  |
@@ -114,7 +114,7 @@ Updated 2026-11-14T03:35:50Z by runner 224fe4c7f956 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 309 of 435
+**Tasks merged (throughput only):** 310 of 435
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -149,7 +149,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 189 of 214 done
+- stage 4: 190 of 214 done
 - stage 5: 0 of 67 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
