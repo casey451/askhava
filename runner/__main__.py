@@ -15,6 +15,8 @@ line of JSON with what changed.
                                     the pre-hand-in gate (main's
                                     scripts/prehandin.sh --quick on the head; red: `prehandin_red`,
                                     lease kept, up to 2 fix rounds, then a failed attempt, D-1300),
+                                    on a fix round's head the runner's own full smoke (`smoke_pending`
+                                    while it runs, nothing pushed; red: `smoke_red`, held once, D-3530),
                                     review record (reviewed_sha and lease) pushed, branch pushed,
                                     MERGE_PENDING. `--outcome plan_gap --log "PLAN GAP: ..."` (also a
                                     tests_failed log opening with `PLAN GAP:`): the worker found only a
@@ -118,7 +120,8 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from runner import api_death, cycle, keeper as keeper_mod, lanes as lane_policy, model_window, outbox as outbox_mod, proof, review_proof, state as st
-from runner.github_env import PREHANDIN_RED, SMOKE_PRE_LOG, GitHubEnv, alias_for, find_transcripts, smoke_target_dir, state_diff
+from runner.github_env import (AFTER_SMOKE_PENDING, AFTER_SMOKE_RED, PREHANDIN_RED, SMOKE_PRE_LOG, GitHubEnv, agent_id_list, alias_for,
+                               find_transcripts, smoke_target_dir, state_diff)
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -427,6 +430,9 @@ PREHANDIN_HELD = "prehandin_red"  # --after's result when it held the hand-in fo
 
 
 REVIEW_HELD = review_proof.REVIEW_MISSING  # --after's result when it held the hand-in for a missing review proof (D-3728)
+AFTER_SMOKE_HOLDS = 1  # fix rounds a session gets for a red runner smoke of a fix round's head (D-3530)
+SMOKE_PENDING = cycle.SMOKE_PENDING  # --after's result while that smoke runs: nothing pushed, no state or log row written
+SMOKE_HELD = "smoke_red"  # --after's result when it held the hand-in for a red runner smoke; the lease stays held
 
 
 def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
@@ -435,7 +441,8 @@ def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
     reviews = list(args.reviewer_transcript) + reviewers
     outcome, log = api_outcome(args.outcome, args.log, read_handoff(), env)  # free only with nothing handed in or pushed (D-3443)
     outcome = cycle.session_outcome(outcome, log)  # a worker's plan-gap report blocks the task for a plan fix (D-2859)
-    held = str(read_handoff().get("prehandin_log") or "")
+    handoff = read_handoff()
+    held = "; ".join(str(handoff.get(k)) for k in ("prehandin_log", "after_smoke_log") if handoff.get(k))
     if held and outcome != "submitted":
         log = f"{log}; the last pre-hand-in gate before it: {held}"  # the retry still reads why the gate was red (D-1300)
     fallback = model_window.is_refusal(args.model_fallback)  # any other text is no fallback (D-2225)
@@ -445,10 +452,31 @@ def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
             print(f"runner: {line}")
             env.log.append(line)
     # The review proof (D-3728); only the real GitHubEnv takes it, the tests' stand-in envs keep their signature.
-    checked = {"proof": review_proof.Proof(workers, reviewers, read_handoff().get("branch_start"), dict(cfg.models))} \
+    smoke = dict(handoff.get("after_smoke") or {}) if fix_round(args.worker_agent, handoff) else None
+    checked = {"proof": review_proof.Proof(workers, reviewers, handoff.get("branch_start"), dict(cfg.models)), "smoke": smoke} \
         if isinstance(env, GitHubEnv) else {}
-    return cycle.after_handoff(cfg, env, lambda task: env.collect_result(task, outcome, transcripts, reviews, log, **checked),
-                               hold_hand_in, own_models=fallback)
+    result = cycle.after_handoff(cfg, env, lambda task: env.collect_result(task, outcome, transcripts, reviews, log, **checked),
+                                 hold_hand_in, own_models=fallback)
+    if smoke:
+        keep_after_smoke(smoke)
+    return result
+
+
+def fix_round(worker_agents: list[str], handoff: dict[str, Any]) -> bool:
+    """Whether this hand-in followed a fix round, so the runner smokes its head itself (D-3530): a hand-off file
+    and more than one worker agent id, or a hold already used (pre-hand-in gate or runner smoke). A first-round
+    hand-in (one worker, no hold) runs no runner smoke: its worker ran the one full smoke D-3530 keeps."""
+    holds = int(handoff.get("prehandin_holds", 0)) + int(handoff.get("after_smoke_holds", 0))
+    return bool(handoff) and (len(agent_id_list(worker_agents)) > 1 or holds > 0)
+
+
+def keep_after_smoke(smoke: dict[str, Any]) -> None:
+    """Keep the runner smoke's record (head, run, result) in the local hand-off file, so the next `--after` on
+    the same head takes its result and a new head starts a new run (D-3530); no kit/state.json key."""
+    found = read_handoff()
+    if found:
+        found["after_smoke"] = smoke
+        (ROOT / HANDOFF).write_text(json.dumps(found), encoding="utf-8")
 
 
 def api_outcome(outcome: str, log: str, handoff: dict[str, Any], env: Any) -> tuple[str, str]:
@@ -467,8 +495,31 @@ def api_outcome(outcome: str, log: str, handoff: dict[str, Any], env: Any) -> tu
 
 
 def hold_hand_in(res: cycle.WorkerResult) -> str:
-    """`after_handoff`'s hold: a missing review proof (hold_review), else a red pre-hand-in gate (hold_red_gate)."""
-    return hold_review(res) or hold_red_gate(res)
+    """`after_handoff`'s hold: a missing review proof (hold_review), else a red pre-hand-in gate (hold_red_gate),
+    else a running or red runner smoke of a fix round's head (hold_after_smoke)."""
+    return hold_review(res) or hold_red_gate(res) or hold_after_smoke(res)
+
+
+def hold_after_smoke(res: cycle.WorkerResult) -> str:
+    """SMOKE_PENDING while the runner's smoke of a fix round's head still runs (the session runs step 5 again the
+    same way); SMOKE_HELD for a red one while the hand-off counter `after_smoke_holds` is under AFTER_SMOKE_HOLDS,
+    its output kept as `after_smoke_log`, printed for a new fix-round worker; else '' so `finish` fails the
+    attempt as `tests_failed` with the output as `last_failure` (D-3530). Without a hand-off file nothing is held."""
+    found = read_handoff()
+    if not found:
+        return ""
+    if res.log.startswith(AFTER_SMOKE_PENDING):
+        print(f"runner: {res.log}; nothing pushed: run --after again the same way until a verdict (D-3530)")
+        return SMOKE_PENDING
+    rounds = int(found.get("after_smoke_holds", 0))
+    if not res.log.startswith(AFTER_SMOKE_RED) or rounds >= AFTER_SMOKE_HOLDS:
+        return ""
+    found.update(after_smoke_holds=rounds + 1, after_smoke_log=res.log)
+    (ROOT / HANDOFF).write_text(json.dumps(found), encoding="utf-8")
+    print(f"runner: {SMOKE_HELD}: hand-in held once; give this to a NEW fix-round worker on the hand-off's model with "
+          "step 4c's hand-off, commit the fix on the same branch, have a NEW reviewer read it, then run --after again "
+          "naming every worker and reviewer agent id (D-3530):\n" + res.log)
+    return SMOKE_HELD
 
 
 def hold_review(res: cycle.WorkerResult) -> str:
@@ -1018,10 +1069,11 @@ def main(argv: list[str] | None = None) -> int:
             report["handoff"] = write_handoff(cfg, env)
         if args.after and not args.dry_run:
             close_handoff(result)
-        if cfg.lanes >= 2:
+        quiet = args.after and result == SMOKE_PENDING  # --after's pending runner smoke pushes nothing (D-3530)
+        if cfg.lanes >= 2 and not quiet:
             lane_report(args, cfg, env, result, report)
         try:
-            if result not in SILENT:
+            if result not in SILENT and not quiet:
                 env.write_cycle_log({k: v for k, v in report.items() if k != "handoff"})
         except Exception as exc:  # noqa: BLE001  # reason: a lost log line must never change the cycle's result (D-499)
             print(f"runner: cycle log not written: {exc}")
@@ -1030,7 +1082,7 @@ def main(argv: list[str] | None = None) -> int:
     return 2 if result == "state_invalid" else 0
 
 
-AFTER_KEEPS_HANDOFF = ("not_lease_holder", "lost_race", "state_invalid", PREHANDIN_HELD, REVIEW_HELD)
+AFTER_KEEPS_HANDOFF = ("not_lease_holder", "lost_race", "state_invalid", PREHANDIN_HELD, REVIEW_HELD, SMOKE_PENDING, SMOKE_HELD)
 
 
 def close_handoff(result: str) -> None:
