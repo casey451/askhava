@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T23:00:44Z by runner 3b9687af32d2 (actions).
+Updated 2026-11-14T23:04:08Z by runner 3b9687af32d2 (actions).
 
 **Building: T301 in progress since 22:57Z; 336 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T23:00:44Z by runner 3b9687af32d2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T301 claimed 22:57Z, lease until 01:57Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z; lane 6: T451 claimed 22:48Z, lease until 01:48Z
 - **Week:** 53% used, 86.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:00Z, 0 min before this update
+- **Last run:** 23:03Z, 0 min before this update
 - **Keeper:** last ran 23:00Z, next wake 01:33Z
 
 ## Needs attention
@@ -95,7 +95,6 @@ Updated 2026-11-14T23:00:44Z by runner 3b9687af32d2 (actions).
 | T415 | businesses, messaging and server: the production phone link  | done | 1 | 69 min | 23:15Z |  |
 | T355 | picks: the release claim re-checks the pick under its row lo | done | 1 | 59 min | 23:11Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | BLOCKED | 1 | 3 min | 23:11Z |  |
-| T328 | picks and server: an ended pick offers the next quote (`paym | BLOCKED | 1 | 4 min | 23:00Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
