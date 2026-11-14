@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T09:02:48Z by runner d6d1d54ea21a (actions).
+Updated 2026-11-14T09:06:14Z by runner d8b6eaa7352f (actions).
 
 **Building: T398 in progress since 09:02Z; 317 of 436 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-14T09:02:48Z by runner d6d1d54ea21a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T398 claimed 09:02Z, lease until 12:02Z; lane 4: T359 claimed 08:06Z, lease until 11:06Z; lane 5: T437 claimed 08:49Z, lease until 11:49Z
 - **Week:** 39% used, 113.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:02Z, 0 min before this update
+- **Last run:** 09:03Z, 3 min before this update
 - **Keeper:** last ran 09:01Z, next wake 11:08Z
 
 ## Needs attention
 - BLOCKED T300: plan gap reported: PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID, ASKHAVA_TWILIO_AUTH_TOKEN, ASKHAVA_TWILIO_VERIFY_SERVICE_SID, VAULT_KEY or VAULT_INDEX_KEY, so business_signin.rs:129 uses NoVerify (every code send/check fails) and lib.rs:321 vault_from gives no vault; the browser half of TD-BIZ-42 cannot pass. Also tests/a11y/fixtures.ts:126-130 (owner-only since T267) opens page states with a bare page.goto and a seed returns only a path, so no signed-in /b page state can be axe-checked. Reviewer confirmed all three claims. Smallest fix; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T300 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 39 problem(s) on tasks still to run (+100 on DONE tasks); first: T398: stored context_pct 19% but it measures 13%; regenerate
+- Strict plan check red: 39 problem(s) on tasks still to run (+99 on DONE tasks); first: T398: stored context_pct 19% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -95,7 +95,6 @@ Updated 2026-11-14T09:02:48Z by runner d6d1d54ea21a (actions).
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | QUEUED | 2 | 22 min | 10:15Z |  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 3 | 26 min | 09:48Z |  |
 | T431 | Brand rename prep: the legal-docs version case and five paym | done | 1 | 30 min | 09:32Z |  |
-| T249 | quotes and portals: radius matching by ZIP centroid, the cov | done | 1 | 71 min | 09:03Z |  |
 
 ### Plan and harness merges on main
 - 07:59Z Plan: T359 adopts two charge-ledger test expectations (TD-FEE-64), records the checked intent amount (D-3658) (#759)
