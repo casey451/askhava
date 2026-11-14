@@ -50995,11 +50995,12 @@
      "resync": true
     }
    ],
-   "reviewed_sha": "5f81a37aa73fa111362a212865b8b10da7b08c09",
+   "reviewed_sha": "6a489229f2165287f312b3b6a16235a069c6cd49",
    "review_lease": {
     "task": "T437",
-    "session": "actions-43564164389",
-    "expires": "2026-11-14T09:17:58Z"
+    "session": "actions-43567824797",
+    "expires": "2026-11-14T09:55:44Z",
+    "lane": "2"
    },
    "branch": "claude/task/T437-crate-notes-shared-and-full-by-bytes-a2",
    "auto_merge": {
@@ -51061,18 +51062,6 @@
    ],
    "last_failure": "merging main into the reviewed head conflicts in app/adapters/CLAUDE.md; a resync merges it in on this attempt (D-891)",
    "lane": "2",
-   "update_merges": [
-    {
-     "from": "424ca0f62420d6b4bd1c4681c630660b23b5d6f9",
-     "to": "5f81a37aa73fa111362a212865b8b10da7b08c09",
-     "main": "f7cc24b1d07352dc03f920313df5f1b74fdba1af",
-     "how": "hand-in",
-     "at": "2026-11-14T06:48:51Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-14T06:55:44Z",
    "resync": {
     "attempt": 2,
     "from": "5f81a37aa73fa111362a212865b8b10da7b08c09",
@@ -51081,7 +51070,8 @@
      "app/adapters/CLAUDE.md"
     ],
     "at": "2026-11-14T06:55:44Z"
-   }
+   },
+   "head_check_since": null
   },
   {
    "id": "T440",
@@ -55571,7 +55561,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T07:36:11Z",
+ "updated_at": "2026-11-14T07:38:23Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -55669,7 +55659,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "61c94cc79081c7f4291f0f0bcdb71be8610ff4de",
+ "runner_sha": "6a489229f2165287f312b3b6a16235a069c6cd49",
  "starter": "actions",
  "smoke_runs": [
   {
