@@ -32466,8 +32466,8 @@
     "T415",
     "T450"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "business-signup-served",
    "type": "build",
    "stage": "4",
@@ -32480,8 +32480,8 @@
     3600,
     3601
    ],
-   "reason": null,
-   "last_failure": "PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode|EmailCode in app/portals/src finds nothing, app/portals/src/tests/signup_code_screens.rs does not exist. T302 owns no portals file, so it cannot serve the email-code and identity-code steps (TD-SEC-45) without T450's Screen::IdentityCode, Screen::EmailCode, route constants and channel parser. kit/state.json on claude/kit-state has no T450 and T302's deps there stop at T415, so the runner started T302 before T450. Reviewer confirmed every claim.\nre-queued after plan fix D-3619: attempt 2 claimed on a stale graph before #730 (dep T450); T450 is DONE",
+   "reason": "plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:10, nor tests/a11y/page_states.ts (PAGE_STATES entry required by TD-SEC-45). route_wiring.rs:253 and door_matrix.rs:647 build the router via build_router without sign-up. Smallest fix: a harness task opens every /b/signup... path except /b/signup/capability like a sign-in page in auth_matrix.rs, door_matrix.rs and door_cases.txt, has route_wiring.rs and door_matrix.rs build the router with sign-up merged in, and adds the PAGE_STATES entry. Reviewer confirmed each point. Work is uncommitted in the T302 tree.",
    "history": [
     {
      "attempt": 1,
@@ -32526,6 +32526,29 @@
       "reviewer": {
        "tokens": 59189,
        "turns": 3
+      }
+     }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 178,
+     "head_sha": "c4076414e148a666aed851c924aa8e6079f21781",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-14T03:56:22Z",
+     "ended_at": "2026-11-14T04:11:45Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 13635810,
+       "turns": 104
+      },
+      "reviewer": {
+       "tokens": 270967,
+       "turns": 10
       }
      }
     }
@@ -51390,12 +51413,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T440",
-   "at": "2026-11-14T03:43:25Z",
-   "output_tokens": 80969,
-   "cache_creation_input_tokens": 273680,
-   "input_tokens": 201,
-   "cache_read_input_tokens": 7588983
+   "task": "T302",
+   "at": "2026-11-14T04:11:45Z",
+   "output_tokens": 82720,
+   "cache_read_input_tokens": 13591485,
+   "input_tokens": 222,
+   "cache_creation_input_tokens": 232350
   },
   "source": "session_reading 2026-11-14T04:06:20Z (week)",
   "by_task": {
@@ -54409,14 +54432,14 @@
     "estimated_bytes": 697495,
     "estimated_tokens": 2139670,
     "usage_counting": "message_id",
-    "input_tokens": 76,
-    "output_tokens": 15465,
-    "cache_creation_input_tokens": 127019,
-    "cache_read_input_tokens": 1229498,
-    "worker_tokens": 943031,
-    "worker_turns": 22,
-    "reviewer_tokens": 429027,
-    "reviewer_turns": 16,
+    "input_tokens": 298,
+    "output_tokens": 98185,
+    "cache_creation_input_tokens": 359369,
+    "cache_read_input_tokens": 14820983,
+    "worker_tokens": 14578841,
+    "worker_turns": 126,
+    "reviewer_tokens": 699994,
+    "reviewer_turns": 26,
     "last_model": "claude-opus-5-5"
    },
    "T447": {
@@ -54511,11 +54534,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-14T01:10:02Z",
-    "tokens": 10153846
+    "tokens": 11828286
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 99856224
+    "tokens": 101530664
    }
   },
   "session_reading": {
@@ -54526,7 +54549,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T04:11:45Z",
+ "updated_at": "2026-11-14T04:11:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -54624,7 +54647,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "aff86ec723eb8749faf3b2de0e7272f97270ceeb",
+ "runner_sha": "c4076414e148a666aed851c924aa8e6079f21781",
  "starter": "actions",
  "smoke_runs": [
   {
