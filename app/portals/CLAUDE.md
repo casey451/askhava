@@ -22,5 +22,3 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/portals/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/portals/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
-- [A11Y-014 PICK-045 PICK-054] (rules) A11Y-014, PICK-045, PICK-054: `result_page`'s `h1#pick-result` has `tabindex="-1"` and `autofocus`; it carries the next steps, the acceptance end time when `accept_by` is given, the `data:` vCard "Add Ask Hava to your contacts" (askhava.com only, no texting-number claim) and the after-Done line, never a reward.
-- [BIZ-015] (rules) BIZ-015, D-491, D-1912: `billing_page` and `statement_csv` read only a `payments::api::Statement` (the ledger): the business's own entries (a dispute without the dispute fee), never Ask Hava's processing, countering or payout entries; CSV only, no PDF; cards as brand and last four;
