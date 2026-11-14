@@ -26714,7 +26714,7 @@
    "id": "T329",
    "slug": "business-event-emails",
    "title": "businesses: the eight business account events queued today (backup change, phone linked, sample card and pick, notice-address change and return, emergency test, after-hours off) are emailed",
-   "goal": "Fifth external audit AH-001 (D-2287; SEC-024, BIZ-033, BIZ-040, BIZ-042, BIZ-007; D-2011 (3)): `businesses` queues eight `core.task` kinds that no handler sends: `businesses.backup_changed` (`app/businesses/src/backup_address.rs:29`, words `backup_changed_words`; SEC-024), `businesses.phone_linked` (`app/businesses/src/complaints.rs:44`; BIZ-033's owner email with the Approve link), `businesses.sample_card` and `businesses.sample_pick` (`app/businesses/src/deliverability_check.rs:27`, :29, words `sample_card_words`, `sample_pick_words`; BIZ-042), `businesses.notice_address_changed` (`app/businesses/src/email_verification.rs:38`, the old address told, SEC-024) and `businesses.notice_address_returned` (:40, the owner's other verified addresses told, BIZ-040), `businesses.emergency_test` (`app/businesses/src/emergency_switch.rs:27`, words `emergency_test_words`; BIZ-042) and `businesses.after_hours_off` (:30, the owner told, with the re-test link when `reason` is suspended; BIZ-007). `app/businesses/src/notice_emails.rs` handles each: it renders that kind's words in the person's language and queues one email per recipient through `messaging::api`'s email outbox (the SEC-028 footer and sender, keyed per task so a retry stores nothing twice), using the action links `portals` already builds where the spec names one; registered in the shared `app/server/src/lib.rs`. A payload field a spec line does not explain is not invented: stop and report it. Tests in `tests/integration/tests/business_event_emails.rs` through the worker (TD-BIZ-45): each kind reaches the fake email provider once with its words, to the right people only, in English and Spanish; a repeat run sends nothing. Update the `businesses` `CLAUDE.md` and `docs/decisions.md`, and add this task's build-note line at the end of `app/businesses/NOTES.md` (the template's rule; D-3620). Nov 11 code review batch 3, F6 (b) (D-2706; BIZ-050, BIZ-018, D-2593, D-2596): it also handles `businesses.license_change` (`app/businesses/src/capability.rs`, `LICENSE_CHANGE_KIND`, words `license_change_words`): one email to the owner's account address in the owner's language, naming the removed and the newly offered job types and why; where the catalog has no Spanish job-type name the Spanish email gives the catalog name, and the gap is logged in `docs/for-casey-review.md` (D-2596 (2)); TD-BIZ-45 gains the kind. Plan change D-3112: `businesses.phone_linked`'s owner email carries BIZ-033's Approve action link, which only `portals` mints (`portals::api::mint_action_link`, `app/portals/src/action_links.rs:251`) and `businesses` may not call `portals` (`kit/layers.json`): `notice_emails.rs` takes the link from a trait it defines, implemented in the shared `app/server/src/lib.rs` with `mint_action_link` where `register_handlers` (`:380`) registers the handler, as T268's handlers are (as `team.rs`'s directory is implemented in the composition), and every other link the same way. Each handler reads only the payload fields it needs and ignores any other, so a field a later task adds (T398's `number_set_at`, if that plan lands) changes nothing.",
+   "goal": "Fifth external audit AH-001 (D-2287; SEC-024, BIZ-033, BIZ-040, BIZ-042, BIZ-007; D-2011 (3)): `businesses` queues eight `core.task` kinds that no handler sends: `businesses.backup_changed` (`app/businesses/src/backup_address.rs:29`, words `backup_changed_words`; SEC-024), `businesses.phone_linked` (`app/businesses/src/complaints.rs:44`; BIZ-033's owner email with the Approve link), `businesses.sample_card` and `businesses.sample_pick` (`app/businesses/src/deliverability_check.rs:27`, :29, words `sample_card_words`, `sample_pick_words`; BIZ-042), `businesses.notice_address_changed` (`app/businesses/src/email_verification.rs:38`, the old address told, SEC-024) and `businesses.notice_address_returned` (:40, the owner's other verified addresses told, BIZ-040), `businesses.emergency_test` (`app/businesses/src/emergency_switch.rs:27`, words `emergency_test_words`; BIZ-042) and `businesses.after_hours_off` (:30, the owner told, with the re-test link when `reason` is suspended; BIZ-007). `app/businesses/src/notice_emails.rs` handles each: it renders that kind's words in the person's language and queues one email per recipient through `messaging::api`'s email outbox (the SEC-028 footer and sender, keyed per task so a retry stores nothing twice), using the action links `portals` already builds where the spec names one; registered in the shared `app/server/src/lib.rs`. A payload field a spec line does not explain is not invented: stop and report it. Tests in `tests/integration/tests/business_event_emails.rs` through the worker (TD-BIZ-45): each kind reaches the fake email provider once with its words, to the right people only, in English and Spanish; a repeat run sends nothing. Update the `businesses` `CLAUDE.md` and `docs/decisions.md`, and add this task's build-note line at the end of `app/businesses/NOTES.md` (the template's rule; D-3620). Nov 11 code review batch 3, F6 (b) (D-2706; BIZ-050, BIZ-018, D-2593, D-2596): it also handles `businesses.license_change` (`app/businesses/src/capability.rs`, `LICENSE_CHANGE_KIND`, words `license_change_words`): one email to the owner's account address in the owner's language, naming the removed and the newly offered job types and why; where the catalog has no Spanish job-type name the Spanish email gives the catalog name, and the gap is logged in `docs/for-casey-review.md` (D-2596 (2)); TD-BIZ-45 gains the kind. Plan change D-3112: `businesses.phone_linked`'s owner email carries BIZ-033's Approve action link, which only `portals` mints (`portals::api::mint_action_link`, `app/portals/src/action_links.rs:251`) and `businesses` may not call `portals` (`kit/layers.json`): `notice_emails.rs` takes the link from a trait it defines, implemented in the shared `app/server/src/lib.rs` with `mint_action_link` where `register_handlers` (`:380`) registers the handler, as T268's handlers are (as `team.rs`'s directory is implemented in the composition), and every other link the same way. Each handler reads only the payload fields it needs and ignores any other, so a field a later task adds (T398's `number_set_at`, if that plan lands) changes nothing. Plan change D-3687 (plan gap reported on attempt 1; SEC-024, BIZ-007, BIZ-040, BIZ-033, WORD-028, WORD-029; D-1932, D-3185): D-2287 assumed every kind already has its words, but four do not: `businesses.notice_address_changed` (`app/businesses/src/email_verification.rs:38`) and `businesses.after_hours_off` (`app/businesses/src/emergency_switch.rs:30`) have none; `businesses.notice_address_returned` has only the portal banner `returned_line` (`email_verification.rs:549`, English, no subject); `businesses.phone_linked` has only `phone_linked_line` (`app/businesses/src/complaints.rs:556`, no subject and no Approve step). So this task owns that customer copy (the copy steps of its prompt apply, as T268's did, D-3185): `notice_emails.rs` holds, beside the handlers, one `*_words(spanish, ..) -> [String; 2]` (subject, body) per missing kind, shaped like `backup_changed_words` (`app/businesses/src/backup_address.rs:34`): the subject opens with `brand().short_name()` (Spanish `brand().es().short_name()`), never a literal brand word (D-1932); the Spanish uses usted as the existing business emails do. (a) The address-change email to the old address says the notice address was changed and to reply if it was not them (SEC-024, as `backup_changed_words` says it). (b) The after-hours email to the owner says after-hours emergency requests are off and why, one body for `removed` and one for `suspended`, the latter with the re-test link (BIZ-007). (c) The returned-address email to the owner's other verified addresses carries `returned_line`'s sentence (English) and its Spanish, under a subject of its own (BIZ-040). (d) The phone-linked email to the owner carries `phone_linked_line` and says the phone works only after the owner presses Approve, with the Approve action link (`ActionKind::Approve`, object the `line` of the payload, minted through the composition's trait as this goal already says; T399 makes that link approve, through T396's `approve_phone`) (BIZ-033, CALL-012); no other action is offered. `returned_line` and `phone_linked_line` are not changed (other tasks' tests pin them). The words follow `docs/voice.md` and the banned-word rules (no \"commission\", \"vetted\", \"best\" or rankings); `scripts/check_ai_smell.py` and `scripts/check_copy.py` report 0 problems, and the cold read and the copy panel find nothing open; TD-BIZ-45's cases check each of these subjects and bodies in English and Spanish.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26733,6 +26733,7 @@
    "review_areas": [
     "privacy"
    ],
+   "copy": true,
    "owns": [
     "app/businesses/src/notice_emails.rs",
     "tests/integration/tests/business_event_emails.rs"
@@ -26743,14 +26744,19 @@
     "docs/spec/businesses.md",
     "docs/spec/security.md",
     "docs/brains/email-deliverability.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/voice.md",
+    "docs/copy/copy-panel.md",
+    "docs/spec/wording.md"
    ],
    "requirements": [
     "SEC-024",
     "BIZ-033",
     "BIZ-040",
     "BIZ-042",
-    "BIZ-007"
+    "BIZ-007",
+    "WORD-028",
+    "WORD-029"
    ],
    "tests": [
     "TD-BIZ-45"
@@ -26759,13 +26765,14 @@
     "D-2287",
     "D-2011",
     "D-2706",
-    "D-3112"
+    "D-3112",
+    "D-3687"
    ],
    "cites": [],
    "budget": {
     "files": 2,
-    "lines": 500,
-    "context_pct": 11
+    "lines": 600,
+    "context_pct": 14
    },
    "checks": [
     "Ci",
