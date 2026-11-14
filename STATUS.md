@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T19:10:56Z by runner 313f8ce9f228 (manual).
+Updated 2026-11-14T19:26:42Z by runner 8a72c0065f44 (actions).
 
-**Idle since 18:24Z; 329 of 459 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 18:24Z; 329 of 459 done; week 50% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 329 of 459 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 18:24Z (no task in progress)
-- **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:59Z, 11 min before this update
+- **Week:** 50% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:26Z, 0 min before this update
 - **Keeper:** last ran 18:59Z, next wake 00:39Z
 
 ## Needs attention
@@ -100,6 +100,7 @@ Updated 2026-11-14T19:10:56Z by runner 313f8ce9f228 (manual).
 | T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z |  |
 
 ### Plan and harness merges on main
+- 19:20Z Harness: re-point the stale "second opt-out confirmation" mutant after T357 (D-3751) (#796)
 - 18:53Z Plan: T437 re-verification after a false FIX-MAIN failure; T474 so FIX-MAIN blames only what it reverted (D-3752) (#797)
 - 18:45Z Plan: email sending wired, pick-end texts complete, Can't-take route, T121 unblocked (T469–T473, D-3750) (#794)
 - 16:47Z Plan: pre-claim scout fixes for 27 stage-5 tasks (D-3744) (#793)
@@ -121,7 +122,6 @@ Updated 2026-11-14T19:10:56Z by runner 313f8ce9f228 (manual).
 - 21:01Z Plan: fewer smoke runs, scoped fix rounds, batched reads, decision excerpts (D-3530) (#698)
 - 20:53Z Plan: T438 plan gap, leave the ledger windows as today (D-3536) (#696)
 - 19:27Z Plan: pre-flight 15, split T341 and T361 (D-3497) (#691)
-- 19:23Z Plan: deterministic kills for proptest-only named mutants (D-3499) (#694)
 
 ## Progress (requirements verified)
 
