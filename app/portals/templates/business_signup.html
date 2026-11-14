@@ -20,6 +20,7 @@
     one-time-code input each, the refusal beside it. -#}
 {% block title %}{{ title }}{% endblock %}
 {% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
 <h1>{{ title }}</h1>
 <p id="notice-line"{% if notice_lang != "en" %} lang="{{ notice_lang }}"{% endif %}>{{ notice }}</p>
 <p id="someone-else">{{ someone_else }}</p>

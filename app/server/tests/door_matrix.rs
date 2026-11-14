@@ -53,9 +53,11 @@ use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::{Actor as AuditActor, AuditRow, export_audit};
 use askhava_picks::api::{PagePick, ViewAnswer, page_pick, released_view};
 use askhava_portals::api::{
-    ActionKind, ActionTarget, CookieJar, PortalsError, Realm, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE,
-    SignIn, SignInAddress, SignInMail, csrf_token, current_session, ensure_pre_session,
-    mint_action_link, open_action_link, signin_post, signin_request, start_session,
+    ActionKind, ActionTarget, CODE_SEND_ROUTE, CookieJar, EMAIL_CHECK_ROUTE, EMAIL_RESEND_ROUTE,
+    IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NUMBER_OLD_ROUTE, PortalsError, Realm, SERVICE_AREA_ROUTE,
+    SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SIGNUP_FORM_ROUTE, SIGNUP_ROUTE, SignIn, SignInAddress,
+    SignInMail, csrf_token, current_session, ensure_pre_session, mint_action_link,
+    open_action_link, signin_post, signin_request, start_session,
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use askhava_quotes::api::{
@@ -138,6 +140,20 @@ enum Door {
     Owner,
 }
 
+/// D-3641 (SEC-019, TD-SEC-61): the sign-up step paths open without a session, matched exactly,
+/// never as a prefix; `CAPABILITY_ROUTE` and every other `/b/...` path keep the Business door.
+const SIGNUP_STEPS: [&str; 9] = [
+    SIGNUP_ROUTE,
+    SIGNUP_FORM_ROUTE,
+    CODE_SEND_ROUTE,
+    NUMBER_OLD_ROUTE,
+    LETTER_ROUTE,
+    IDENTITY_CHECK_ROUTE,
+    EMAIL_CHECK_ROUTE,
+    EMAIL_RESEND_ROUTE,
+    SERVICE_AREA_ROUTE,
+];
+
 /// The public paths besides `/help` and below and the `site` module's routes.
 const PUBLIC_PATHS: [&str; 6] = [
     "/healthz",
@@ -158,7 +174,7 @@ fn door(path: &str, site: bool) -> Option<Door> {
         Door::Webhook
     } else if under("/static") {
         Door::Asset
-    } else if path.split('/').any(|seg| seg == "sign-in") || path == "/b/signup" {
+    } else if path.split('/').any(|seg| seg == "sign-in") || SIGNUP_STEPS.contains(&path) {
         Door::SignIn
     } else if link.iter().any(|root| path.starts_with(root)) {
         Door::Link
@@ -640,11 +656,15 @@ fn router(pool: PgPool) -> Router {
     let voice = askhava_server::voice_hooks(&settings, webhooks.as_ref(), pairs.clone())
         .expect("voice hooks");
     let pick_keys = askhava_server::pick_code_keys(&settings, pairs.clone()).expect("pick keys");
-    let stripe = askhava_server::release_sink::stripe_webhook(&settings, pool.clone(), pairs)
-        .expect("stripe hooks");
+    let stripe =
+        askhava_server::release_sink::stripe_webhook(&settings, pool.clone(), pairs.clone())
+            .expect("stripe hooks");
     let all = webhooks.is_some() && voice.is_some() && pick_keys.is_some() && stripe.is_some();
     assert!(all, "every optional part of build_router is configured");
-    askhava_server::build_router(pool, control.router(), (webhooks, voice, pick_keys, stripe))
+    let signup = askhava_server::business_signup::ServedSignUp::from_settings(pool.clone(), pairs)
+        .expect("sign-up part");
+    let parts = askhava_server::RouterParts::from((webhooks, voice, pick_keys, stripe));
+    askhava_server::build_router(pool, control.router(), parts.with_sign_up(signup))
 }
 
 /// An active, verified R-39 business serving Lake Havasu City that ticked the job type.
