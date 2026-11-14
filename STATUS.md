@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T09:56:01Z by runner d6d1d54ea21a (actions).
+Updated 2026-11-14T09:59:33Z by runner d0b8abeaf423 (actions).
 
-**Building: T437 in progress since 09:33Z; 317 of 436 done; week 40% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T437 in progress since 09:33Z; 318 of 436 done; week 40% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 317 of 436 build tasks (owner gates not counted)
+- **Tasks done:** 318 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T437 claimed 09:33Z, lease until 12:33Z; lane 4: T359 claimed 09:38Z, lease until 12:38Z
 - **Week:** 40% used, 114.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:55Z, 0 min before this update
+- **Last run:** 09:56Z, 3 min before this update
 - **Keeper:** last ran 09:56Z, next wake 12:36Z
 
 ## Needs attention
@@ -16,12 +16,12 @@ Updated 2026-11-14T09:56:01Z by runner d6d1d54ea21a (actions).
 - BLOCKED T301: plan gap reported: PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301 does not own (picks, businesses, quotes, T261's Confirm page) and cannot fit the 3-file, 600-line budget (prompt line 52). Reviewer confirmed: Away and Busy have no storage (picks::api::away_until/away_for only compute times, no migration column); Confirm needs a Verify code (UseBy::LinkAndCode, app/portals/src/action_links.rs:117) and its page is T261's (docs/architecture.md:539-540, not a T301 dependency); no non-test app code builds QuoteRules (app/quotes/src/intake.rs:245; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T302: plan gap reported: PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 an; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 39 problem(s) on tasks still to run (+100 on DONE tasks); first: T398: stored context_pct 19% but it measures 13%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T398 | businesses: notice texts go only to approved phones, and a m | MERGE_PENDING | 1 | 38 min | 09:41Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T398 | businesses: notice texts go only to approved phones, and a m | done | 1 | 38 min | 09:41Z |  |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 4 | 2 min | 09:18Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T301 | server and portals: the email action links are served (the q | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
 | T398 | businesses: notice texts go only to approved phones, and a m | resync | 1 | 32 min | 09:01Z |  |
@@ -126,7 +126,7 @@ Updated 2026-11-14T09:56:01Z by runner d6d1d54ea21a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 278 of 733 (37.9%) · partial 295 · unstarted 160
-**Tasks merged (throughput only):** 317 of 436
+**Tasks merged (throughput only):** 318 of 436
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -161,7 +161,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 197 of 215 done
+- stage 4: 198 of 215 done
 - stage 5: 0 of 67 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
