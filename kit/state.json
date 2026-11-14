@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T393",
+ "current": "T437",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -50207,12 +50207,12 @@
     "T426",
     "T438"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 1,
    "slug": "crate-notes-shared-and-full-by-bytes",
    "type": "harness",
    "stage": "4",
-   "attempt_started_at": "2026-11-14T04:25:12Z",
+   "attempt_started_at": "2026-11-14T05:10:50Z",
    "decision_ids": [
     3582,
     3583,
@@ -50467,7 +50467,7 @@
     }
    ],
    "last_failure": "merging main into the task branch conflicts in app/intake/CLAUDE.md again after 2 resyncs in this attempt, so this attempt fails and the next one starts from the branch with main merged in, or fresh from main when that still conflicts (D-583, D-620, D-891)",
-   "lane": "3",
+   "lane": "2",
    "merge_turn_since": "2026-11-14T05:10:50Z",
    "update_waiting_since": null,
    "update_push_failures": null
@@ -51789,7 +51789,7 @@
    "output_tokens": 5676,
    "cache_read_input_tokens": 516448
   },
-  "source": "session_reading 2026-11-14T04:17:36Z (week)",
+  "source": "session_reading 2026-11-14T05:08:18Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -54757,7 +54757,7 @@
    },
    "T437": {
     "estimated_bytes": 178026,
-    "estimated_tokens": 543505,
+    "estimated_tokens": 544147,
     "usage_counting": "message_id",
     "output_tokens": 40915,
     "input_tokens": 190,
@@ -54932,7 +54932,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T05:10:56Z",
+ "updated_at": "2026-11-14T05:11:16Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -55033,14 +55033,6 @@
  "runner_sha": "d53bdd2875b8da3ba2b10cbe47b4e9b66112f0a6",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "bc74ea9d3841a693b28f909b90b4d7a99708f9b5",
-   "ok": true,
-   "at": "2026-11-14T00:03:00Z",
-   "why": "start routine (ancestry reuse of dd258e06710f, 2026-11-13T23:57:41Z)",
-   "reused": "2026-11-13T23:57:41Z",
-   "base": "dd258e06710fb397062b6de2b6a442efa2f2e025"
-  },
   {
    "sha": "bc74ea9d3841a693b28f909b90b4d7a99708f9b5",
    "ok": true,
@@ -55189,24 +55181,32 @@
    "why": "start routine (ancestry reuse of c4076414e148, 2026-11-14T03:54:04Z)",
    "reused": "2026-11-14T03:54:04Z",
    "base": "c4076414e148a666aed851c924aa8e6079f21781"
+  },
+  {
+   "sha": "d53bdd2875b8da3ba2b10cbe47b4e9b66112f0a6",
+   "ok": true,
+   "at": "2026-11-14T05:10:50Z",
+   "why": "start routine (ancestry reuse of c4076414e148, 2026-11-14T03:54:04Z)",
+   "reused": "2026-11-14T03:54:04Z",
+   "base": "c4076414e148a666aed851c924aa8e6079f21781"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T393 estimated 2.2M tokens (calibrated); week has 118.7M left (no five-hour budget, D-3056) after 3.3M still running in another lane (session_reading 2026-11-14T04:17:36Z (week)); claimed",
-  "at": "2026-11-14T04:25:53Z",
+  "last": "T437 estimated 544k tokens (calibrated); week has 119.8M left (no five-hour budget, D-3056) after 2.2M still running in another lane (session_reading 2026-11-14T05:08:18Z (week)); claimed",
+  "at": "2026-11-14T05:10:50Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 75251845,
+    "used": 74212603,
     "budget": 194000000,
-    "left": 118748155,
+    "left": 119787397,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 357125551,
-  "projected_finish": "2026-11-27T01:41:41Z"
+  "remaining_estimate": 357402184,
+  "projected_finish": "2026-11-27T02:41:00Z"
  },
  "main_red_history": [
   {
