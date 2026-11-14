@@ -101,6 +101,7 @@ pub use crate::rules::{
     SPANISH_OPT_OUT_WORDS, classify, decide, detect_opt_out, may_send_to, plan_release, retry,
 };
 pub use crate::send_window::{SendWindow, send_window, window};
+pub use crate::sender_held::{sender_drop_held, sender_hold, sender_release};
 pub use crate::sender_pending::{sender_line, sender_put_pending};
 pub use crate::service::{
     ANY_HOUR_TEMPLATES, Exemption, NewText, Relation, SEND_ACTION, To, delivery_status, enqueue,

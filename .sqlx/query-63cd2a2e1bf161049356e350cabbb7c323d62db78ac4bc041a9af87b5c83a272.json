@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM messaging.sender_held WHERE line_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "63cd2a2e1bf161049356e350cabbb7c323d62db78ac4bc041a9af87b5c83a272"
+}

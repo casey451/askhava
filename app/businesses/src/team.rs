@@ -6,8 +6,11 @@
 //! [`MEMBER_REMOVED_KIND`] event that `portals` handles by ending the member's sessions. A phone
 //! added or changed reaches the directory through [`SenderLink`], which the composition implements
 //! with `messaging::api::sender_add` and the vault, since `businesses` may not name `privacy`
-//! (`kit/layers.json`, D-963); a removal calls `messaging::api::sender_remove` itself. No number or
-//! email is stored or logged here, only opaque IDs (PRIV-001, PRIV-028).
+//! (`kit/layers.json`, D-963); a removal calls `messaging::api::sender_remove` itself. A phone a
+//! member other than the owner links or changes is then held out of the directory
+//! (`messaging::api::sender_hold`) until the owner approves it in `phone_approval` (BIZ-033,
+//! D-3081). No number or email is stored or logged here, only opaque IDs and a number's last 4
+//! digits (PRIV-001, PRIV-028, D-078).
 //!
 //! Every change but [`add_owner`] names who acts, an [`Acting`] member of the business: only the
 //! owner adds, changes or removes members (BIZ-023), only the owner or a "Confirm and billing"
@@ -18,11 +21,11 @@
 use std::future::Future;
 
 use askhava_core::api::{NewTask, enqueue};
-use askhava_messaging::api::sender_remove;
+use askhava_messaging::api::{OutboxError, sender_drop_held, sender_hold, sender_remove};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
 use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
@@ -31,7 +34,7 @@ use sqlx::{Connection, PgConnection};
 /// (TD-BIZ-06). Payload: `{"business": <id>, "member": <id>}`.
 pub const MEMBER_REMOVED_KIND: &str = "businesses.member_removed";
 const MEMBER: &str = "businesses.team_member";
-const PHONE: &str = "businesses.staff_phone";
+pub(crate) const PHONE: &str = "businesses.staff_phone";
 
 /// Who makes a team or phone change: a current member of `business`, as the caller's signed-in
 /// session names them (BIZ-023, CALL-012). A member of another business is refused as
@@ -91,9 +94,16 @@ pub enum TeamError {
     /// The number is already linked to another phone record.
     #[error("that number is already linked")]
     PhoneTaken,
+    /// The phone's number was set again after the time the owner was shown, so the owner never
+    /// approves a number they did not see (BIZ-033, D-3081).
+    #[error("the phone's number changed since")]
+    NumberChanged,
+    /// The phone already works: it is not waiting for the owner's approval (BIZ-033, D-3081).
+    #[error("the phone is not waiting for approval")]
+    NotWaiting,
 }
 
-fn db<T>(r: Result<T, sqlx::Error>) -> Result<T, TeamError> {
+pub(crate) fn db<T>(r: Result<T, sqlx::Error>) -> Result<T, TeamError> {
     r.map_err(|_| TeamError::Database)
 }
 
@@ -129,6 +139,39 @@ async fn is_backup(
     )
     .fetch_one(tx)
     .await)
+}
+
+/// The last 4 digits of `number`, the only part of it stored (D-078, PRIV-002); `None` when it has
+/// fewer.
+fn number_end(number: &SecretString) -> Option<String> {
+    let digits: Vec<char> = number
+        .expose_secret()
+        .chars()
+        .filter(char::is_ascii_digit)
+        .collect();
+    let n = digits.len();
+    (n >= 4).then(|| digits[n - 4..].iter().collect())
+}
+
+/// A hold or release refused because another phone has the number is [`TeamError::PhoneTaken`]
+/// (BIZ-033, D-3081).
+pub(crate) fn held(e: OutboxError) -> TeamError {
+    match e {
+        OutboxError::SenderTaken => TeamError::PhoneTaken,
+        _ => TeamError::Database,
+    }
+}
+
+/// Holds phone `line` out of the sender directory until the owner approves it (BIZ-033, CALL-012,
+/// D-3081).
+async fn hold(tx: &mut PgConnection, line: Uuid) -> Result<(), TeamError> {
+    sender_hold(tx, line).await.map_err(held)
+}
+
+async fn drop_held(tx: &mut PgConnection, line: Uuid) -> Result<(), TeamError> {
+    sender_drop_held(tx, line)
+        .await
+        .map_err(|_| TeamError::Database)
 }
 
 fn insert_error(e: &sqlx::Error) -> TeamError {
@@ -230,7 +273,7 @@ pub trait SenderLink {
     ) -> impl Future<Output = Result<(), TeamError>> + Send;
 }
 
-async fn log(
+pub(crate) async fn log(
     tx: &mut PgConnection,
     business: Uuid,
     action: &'static str,
@@ -287,7 +330,10 @@ async fn acting(tx: &mut PgConnection, by: Acting) -> Result<TeamMember, TeamErr
 }
 
 /// The acting member when it is the owner, who alone manages members (BIZ-023).
-async fn acting_owner(tx: &mut PgConnection, by: Acting) -> Result<TeamMember, TeamError> {
+pub(crate) async fn acting_owner(
+    tx: &mut PgConnection,
+    by: Acting,
+) -> Result<TeamMember, TeamError> {
     let m = acting(tx, by).await?;
     if m.owner {
         Ok(m)
@@ -475,7 +521,10 @@ pub async fn remove_member(
 
 /// Links a phone for `by.business`, linked by `by.member`, the main phone when `main` (CALL-012,
 /// D-491): only the owner or a "Confirm and billing" member links a phone, only the owner the
-/// main one. The number is in the sender directory when this returns; the line ID is returned.
+/// main one. The owner's link (the main phone always) is approved and in the sender directory when
+/// this returns; any other member's waits, held out of the directory, until the owner approves it
+/// (BIZ-033, D-3081). The time, the member and the number's last 4 digits are stored; the line ID
+/// is returned.
 ///
 /// # Errors
 ///
@@ -492,19 +541,25 @@ pub async fn link_phone(
     if !may_handle_phone(&m, main) {
         return Err(TeamError::NotAllowed);
     }
-    let member = m.id;
+    let approved = m.owner.then(|| now.to_sqlx());
     let line = sqlx::query_scalar!(
-        "INSERT INTO businesses.staff_phone (business_id, linked_by, is_main, linked_at) \
-         VALUES ($1, $2, $3, $4) RETURNING id",
+        "INSERT INTO businesses.staff_phone (business_id, linked_by, is_main, linked_at, \
+         approved_at, number_set_at, number_set_by, number_end) \
+         VALUES ($1, $2, $3, $4, $5, $4, $2, $6) RETURNING id",
         m.business,
-        member,
+        m.id,
         main,
-        now.to_sqlx() as _
+        now.to_sqlx() as _,
+        approved as _,
+        number_end(number)
     )
     .fetch_one(&mut *tx)
     .await
     .map_err(|e| insert_error(&e))?;
     dir.link(&mut tx, (m.business, line), number).await?;
+    if !m.owner {
+        hold(&mut tx, line).await?;
+    }
     log(
         &mut tx,
         m.business,
@@ -518,8 +573,12 @@ pub async fn link_phone(
 }
 
 /// Locks phone `line` of the acting member's business and checks the member may handle it
-/// (CALL-012); a line of another business is not found.
-async fn handled_line(tx: &mut PgConnection, by: Acting, line: Uuid) -> Result<(), TeamError> {
+/// (CALL-012); a line of another business is not found. Returns the acting member.
+async fn handled_line(
+    tx: &mut PgConnection,
+    by: Acting,
+    line: Uuid,
+) -> Result<TeamMember, TeamError> {
     let m = acting(tx, by).await?;
     let main = db(sqlx::query_scalar!(
         "SELECT is_main FROM businesses.staff_phone WHERE id = $1 AND business_id = $2 \
@@ -531,29 +590,53 @@ async fn handled_line(tx: &mut PgConnection, by: Acting, line: Uuid) -> Result<(
     .await)?
     .ok_or(TeamError::UnknownPhone)?;
     if may_handle_phone(&m, main) {
-        Ok(())
+        Ok(m)
     } else {
         Err(TeamError::NotAllowed)
     }
 }
 
 /// Changes the number of phone `line` of `by.business`; only the owner or a "Confirm and billing"
-/// member may, only the owner for the main phone (CALL-012). The sender directory follows at once
-/// (D-491).
+/// member may, only the owner for the main phone (CALL-012). As [`change_phone_at`] at the current
+/// time.
+///
+/// # Errors
+///
+/// As [`change_phone_at`].
+pub async fn change_phone(
+    conn: &mut PgConnection,
+    dir: &impl SenderLink,
+    by_line: (Acting, Uuid),
+    number: &SecretString,
+) -> Result<(), TeamError> {
+    change_phone_at(conn, dir, by_line, number, Timestamp::now()).await
+}
+
+/// Changes the number of phone `line` of `by.business` at `now` (CALL-012, BIZ-033, D-3081): any
+/// held number of the phone is dropped first; the owner's change is approved and in the sender
+/// directory at once (D-491), any other member's waits, held out of it, until the owner approves
+/// it, whether the phone was waiting, approved or linked by the owner. The time, the member and
+/// the number's last 4 digits are stored.
 ///
 /// # Errors
 ///
 /// [`TeamError::NotAllowed`], `UnknownPhone`, `BadPhone`, `PhoneTaken`, `Database` or `Audit`.
-pub async fn change_phone(
+pub async fn change_phone_at(
     conn: &mut PgConnection,
     dir: &impl SenderLink,
     (by, line): (Acting, Uuid),
     number: &SecretString,
+    now: Timestamp,
 ) -> Result<(), TeamError> {
     let mut tx = db(conn.begin().await)?;
-    handled_line(&mut tx, by, line).await?;
+    let m = handled_line(&mut tx, by, line).await?;
     let business = by.business;
+    drop_held(&mut tx, line).await?;
     dir.link(&mut tx, (business, line), number).await?;
+    set_number(&mut tx, (business, line), &m, number, now).await?;
+    if !m.owner {
+        hold(&mut tx, line).await?;
+    }
     let change = Change::Field("number");
     log(
         &mut tx,
@@ -564,6 +647,31 @@ pub async fn change_phone(
     )
     .await?;
     db(tx.commit().await)
+}
+
+/// Records who set phone `line`'s number at `now`, its last 4 digits, and its approval: `now` when
+/// `m` is the owner, none otherwise (BIZ-033, D-3081).
+async fn set_number(
+    tx: &mut PgConnection,
+    (business, line): (Uuid, Uuid),
+    m: &TeamMember,
+    number: &SecretString,
+    now: Timestamp,
+) -> Result<(), TeamError> {
+    let approved = m.owner.then(|| now.to_sqlx());
+    db(sqlx::query!(
+        "UPDATE businesses.staff_phone SET approved_at = $3, number_set_at = $4, \
+         number_set_by = $5, number_end = $6 WHERE id = $1 AND business_id = $2",
+        line,
+        business,
+        approved as _,
+        now.to_sqlx() as _,
+        m.id,
+        number_end(number)
+    )
+    .execute(tx)
+    .await)
+    .map(|_| ())
 }
 
 /// Unlinks phone `line` of `by.business` and takes it out of the sender directory at once; only
@@ -595,6 +703,7 @@ async fn unlink_line(tx: &mut PgConnection, business: Uuid, line: Uuid) -> Resul
     sender_remove(tx, line)
         .await
         .map_err(|_| TeamError::Database)?;
+    drop_held(tx, line).await?;
     log(
         tx,
         business,

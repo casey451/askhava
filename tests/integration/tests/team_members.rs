@@ -8,8 +8,8 @@
 //! numbers and IDs are fake.
 
 use askhava_businesses::api::{
-    Acting, MEMBER_REMOVED_KIND, Roles, SenderLink, TeamError, add_member, add_owner, create,
-    link_phone, members, remove_member, set_roles,
+    Acting, MEMBER_REMOVED_KIND, Roles, SenderLink, TeamError, add_member, add_owner,
+    approve_phone, create, link_phone, members, remove_member, set_roles,
 };
 use askhava_messaging::api::{OutboxError, sender_add, sender_business};
 use askhava_privacy::api::Vault;
@@ -68,7 +68,8 @@ const REMOVED_EVENTS: &str = "SELECT count(*) FROM core.task \
 
 /// TD-BIZ-34 (BIZ-023, CALL-012, D-491): add, change and remove each write one audit row; the
 /// removal unlinks both staff phones the member linked, takes both out of the sender directory
-/// and queues one end-sessions event; the owner keeps both roles throughout.
+/// and queues one end-sessions event; the owner keeps both roles throughout. The member's phones
+/// work only once the owner approves them (BIZ-033, D-3081).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_34_removing_a_member_unlinks_both_phones_once(pool: PgPool) {
     let dir = directory();
@@ -93,9 +94,13 @@ async fn td_biz_34_removing_a_member_unlinks_both_phones_once(pool: PgPool) {
     for (minute, number) in [(3, "928-555-0190"), (4, "928-555-0191")] {
         let number = SecretString::from(number.to_owned());
         let linker = Acting { business, member };
-        link_phone(&mut db, &dir, (linker, false), &number, at(minute))
+        let line = link_phone(&mut db, &dir, (linker, false), &number, at(minute))
             .await
             .expect("link");
+        assert_eq!(found(&mut db, &dir, number.expose_secret()).await, None);
+        approve_phone(&mut db, by, (line, at(minute)), at(minute))
+            .await
+            .expect("approve");
     }
     assert_eq!(found(&mut db, &dir, "928-555-0190").await, Some(business));
     assert_eq!(found(&mut db, &dir, "928-555-0191").await, Some(business));

@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT approved_at IS NOT NULL AS \"approved!\", number_set_at IS NOT DISTINCT FROM $3 AS \"same!\" FROM businesses.staff_phone WHERE id = $1 AND business_id = $2 FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "approved!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "same!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "8eb9372d488d8238170c6727f15105fb1f7f2ffe19aa6f5585305f41d2f36743"
+}
