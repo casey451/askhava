@@ -19264,7 +19264,9 @@
     "T231",
     "T386",
     "T310",
-    "T457"
+    "T457",
+    "T469",
+    "T470"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19563,7 +19565,9 @@
   {
    "id": "T121",
    "deps": [
-    "T345"
+    "T345",
+    "T473",
+    "T100"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19696,7 +19700,12 @@
     "T456",
     "T463",
     "T457",
-    "T458"
+    "T458",
+    "T469",
+    "T470",
+    "T471",
+    "T472",
+    "T473"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -55071,7 +55080,8 @@
    "id": "T456",
    "deps": [
     "T399",
-    "T455"
+    "T455",
+    "T471"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -55649,6 +55659,67 @@
    "slug": "signup-mail-paths",
    "type": "build",
    "stage": "4"
+  },
+  {
+   "id": "T469",
+   "deps": [
+    "T100",
+    "T202"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "email-provider-wiring",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T470",
+   "deps": [
+    "T469",
+    "T100",
+    "T456"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "email-outbox-send",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T471",
+   "deps": [
+    "T100",
+    "T446"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pick-moved-text",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T472",
+   "deps": [
+    "T100",
+    "T471",
+    "T409"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "cant-take-served",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T473",
+   "deps": [
+    "T443"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "backup-runner-postgres-digest",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -59068,7 +59139,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T18:29:38Z",
+ "updated_at": "2026-11-14T18:50:31Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -59166,8 +59237,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "52bf28dbe1c0d92540ad779d91aa927c4ad7eae5",
- "starter": "manual",
+ "runner_sha": "e55235d3251424cb410552741a4821c711a4d219",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",

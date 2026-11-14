@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T18:29:38Z by runner 52bf28dbe1c0 (manual).
+Updated 2026-11-14T18:50:31Z by runner e55235d32514 (actions).
 
-**Idle since 18:24Z; 329 of 453 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 18:24Z; 329 of 458 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 329 of 453 build tasks (owner gates not counted)
+- **Tasks done:** 329 of 458 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 18:24Z (no task in progress)
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:29Z, 0 min before this update
+- **Last run:** 18:29Z, 20 min before this update
 - **Keeper:** last ran 18:29Z, next wake 00:09Z
 
 ## Needs attention
@@ -101,6 +101,7 @@ Updated 2026-11-14T18:29:38Z by runner 52bf28dbe1c0 (manual).
 | T438 | Token usage counts each reply once: dedupe transcript usage  | BLOCKED | 1 | 10 min | 19:35Z |  |
 
 ### Plan and harness merges on main
+- 18:45Z Plan: email sending wired, pick-end texts complete, Can't-take route, T121 unblocked (T469–T473, D-3750) (#794)
 - 16:47Z Plan: pre-claim scout fixes for 27 stage-5 tasks (D-3744) (#793)
 - 16:40Z Plan: sign-up email code and activation link get real send paths, rate-limited (new T468, D-3743) (#791)
 - 15:37Z Plan: fee_terms_changed pick end reason (new T467) so T261's Confirm page can end a pick safely (D-3722) (#788)
@@ -122,12 +123,11 @@ Updated 2026-11-14T18:29:38Z by runner 52bf28dbe1c0 (manual).
 - 19:27Z Plan: pre-flight 15, split T341 and T361 (D-3497) (#691)
 - 19:23Z Plan: deterministic kills for proptest-only named mutants (D-3499) (#694)
 - 19:02Z Plan: report-only symbol pre-flight in plan_health (D-3496) (#688)
-- 18:48Z Plan: crate guides to ≤8 KB, detail one entry per line in NOTES.md (D-3474) (#687)
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 575 · unstarted 158
-**Tasks merged (throughput only):** 329 of 453
+**Tasks merged (throughput only):** 329 of 458
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -163,7 +163,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 209 of 228 done
-- stage 5: 0 of 71 done
+- stage 5: 0 of 76 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
