@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T09:40:22Z by runner d6d1d54ea21a (actions).
+Updated 2026-11-14T09:41:03Z by runner 6e3bc3d8db0a (actions).
 
 **Building: T437 in progress since 09:33Z; 317 of 436 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -16,7 +16,7 @@ Updated 2026-11-14T09:40:22Z by runner d6d1d54ea21a (actions).
 - BLOCKED T301: plan gap reported: PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301 does not own (picks, businesses, quotes, T261's Confirm page) and cannot fit the 3-file, 600-line budget (prompt line 52). Reviewer confirmed: Away and Busy have no storage (picks::api::away_until/away_for only compute times, no migration column); Confirm needs a Verify code (UseBy::LinkAndCode, app/portals/src/action_links.rs:117) and its page is T261's (docs/architecture.md:539-540, not a T301 dependency); no non-test app code builds QuoteRules (app/quotes/src/intake.rs:245; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T302: plan gap reported: PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 an; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 39 problem(s) on tasks still to run (+100 on DONE tasks); first: T398: stored context_pct 19% but it measures 13%; regenerate
+- Strict plan check red: 39 problem(s) on tasks still to run (+100 on DONE tasks); first: T398: stored context_pct 19% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
