@@ -227,6 +227,26 @@ fn forged_shown_channels_store_nothing() {
     assert_eq!(parse(&fields).shown, None, "only the fixed order is read");
 }
 
+/// BIZ-036, CON-019: a phone typed with email chosen is dropped; the stored wording comes from the
+/// verified shown channels (email and texts), not from the chosen one (email).
+#[test]
+fn email_chosen_drops_the_phone_and_stores_the_shown_wording() {
+    let both = [ConsentChannel::Email, ConsentChannel::Text];
+    let seal = seal_for(&secret(), &both, CONSENT_VERSION, CSRF).expect("seal");
+    let fields = [
+        ("notice_channel", "email"),
+        ("text_phone", "928-555-0199"),
+        ("consent_channels", "email,text"),
+        ("consent_seal", seal.as_str()),
+    ];
+    let p = parse(&fields);
+    assert!(p.text_phone.is_none(), "no phone kept without texts chosen");
+    assert_eq!(p.shown, Some(both.to_vec()));
+    assert_eq!(p.consent_channels(), Some(vec![ConsentChannel::Email]));
+    assert_eq!(p.stored_wording(), Some(consent_wording(&both)));
+    assert_eq!(p.problem(), None);
+}
+
 /// D-3602: every form on every screen posts to a route constant.
 #[test]
 fn every_form_posts_to_a_route_constant() {

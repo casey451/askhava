@@ -545,7 +545,7 @@ fn verify_seal(
 pub struct ChannelPost {
     /// The notice choice; email whenever business texting is off (TXT-035).
     pub choice: NoticeChoice,
-    /// The typed text phone, while texting is on. Never log it.
+    /// The typed text phone, only while texts are chosen and texting is on. Never log it.
     pub text_phone: Option<SecretString>,
     /// The channels the shown wording named, only when their seal verified.
     pub shown: Option<Vec<ConsentChannel>>,
@@ -564,10 +564,11 @@ impl ChannelPost {
                 .map(|(_, v)| v.as_str())
         };
         let posted = field("notice_channel").and_then(NoticeChoice::from_value);
+        let choice = posted.filter(|_| texting_on).unwrap_or_default();
         let phone = field("text_phone").map(str::trim);
-        let phone = phone.filter(|p| texting_on && !p.is_empty());
+        let phone = phone.filter(|p| choice.texts() && !p.is_empty());
         Self {
-            choice: posted.filter(|_| texting_on).unwrap_or_default(),
+            choice,
             text_phone: phone.map(|p| SecretString::from(p.to_owned())),
             shown: verify_seal(seal, field("consent_channels"), field("consent_seal")),
             texting_on,
