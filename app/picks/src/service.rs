@@ -20,7 +20,8 @@
 //! [`FEE_FACTS_ALERT`] naming the pick only. T341 (D-2332, D-2333, D-3580): a tiers quote is
 //! priced on the package the homeowner chose ([`page_pick_tier`], stored on `picks.pick`); a text
 //! pick of one stores nothing and replies with her quote-page link ([`PACKAGE_TEMPLATE`]); a
-//! per-visit price is priced on its stored visit schedule.
+//! per-visit price is priced on its stored visit schedule; this supersedes the NOTES.md T287 line's
+//! "a tiered quote, a per-visit period" have no fee.
 
 use std::sync::OnceLock;
 
