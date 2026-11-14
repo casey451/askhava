@@ -32570,7 +32570,7 @@
     "T348",
     "T401"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "business-portal-served",
    "type": "build",
@@ -32584,8 +32584,8 @@
     3667,
     3668
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID, ASKHAVA_TWILIO_AUTH_TOKEN, ASKHAVA_TWILIO_VERIFY_SERVICE_SID, VAULT_KEY or VAULT_INDEX_KEY, so business_signin.rs:129 uses NoVerify (every code send/check fails) and lib.rs:321 vault_from gives no vault; the browser half of TD-BIZ-42 cannot pass. Also tests/a11y/fixtures.ts:126-130 (owner-only since T267) opens page states with a bare page.goto and a seed returns only a path, so no signed-in /b page state can be axe-checked. Reviewer confirmed all three claims. Smallest fix; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T300 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID, ASKHAVA_TWILIO_AUTH_TOKEN, ASKHAVA_TWILIO_VERIFY_SERVICE_SID, VAULT_KEY or VAULT_INDEX_KEY, so business_signin.rs:129 uses NoVerify (every code send/check fails) and lib.rs:321 vault_from gives no vault; the browser half of TD-BIZ-42 cannot pass. Also tests/a11y/fixtures.ts:126-130 (owner-only since T267) opens page states with a bare page.goto and a seed returns only a path, so no signed-in /b page state can be axe-checked. Reviewer confirmed all three claims. Smallest fix: a harness task before T300 adding the five fake settings to appEnv in webserver.ts, a way to seed a sealed fake vault contact, and a way for a page-state seed to sign the browser in. Router half (business_portal.rs, business_portal_route.rs) is doable meanwhile.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID, ASKHAVA_TWILIO_AUTH_TOKEN, ASKHAVA_TWILIO_VERIFY_SERVICE_SID, VAULT_KEY or VAULT_INDEX_KEY, so business_signin.rs:129 uses NoVerify (every code send/check fails) and lib.rs:321 vault_from gives no vault; the browser half of TD-BIZ-42 cannot pass. Also tests/a11y/fixtures.ts:126-130 (owner-only since T267) opens page states with a bare page.goto and a seed returns only a path, so no signed-in /b page state can be axe-checked. Reviewer confirmed all three claims. Smallest fix: a harness task before T300 adding the five fake settings to appEnv in webserver.ts, a way to seed a sealed fake vault contact, and a way for a page-state seed to sign the browser in. Router half (business_portal.rs, business_portal_route.rs) is doable meanwhile.\nre-queued after plan fix D-3674: e2e keyed server and signed-in seeds via new T452; TD-BIZ-42 to T454",
    "history": [
     {
      "attempt": 1,
@@ -32609,6 +32609,21 @@
        "turns": 12
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-14T10:21:48Z",
+     "reason": "e2e keyed server and signed-in seeds via new T452; TD-BIZ-42 to T454",
+     "by": "manual-5d10ba523430",
+     "was": "plan gap reported: PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID, ASKHAVA_TWILIO_AUTH_TOKEN, ASKHAVA_TWILIO_VERIFY_SERVICE_SID, VAULT_KEY or VAULT_INDEX_KEY, so business_signin.rs:129 uses NoVerify (every code send/check fails) and lib.rs:321 vault_from gives no vault; the browser half of TD-BIZ-42 cannot pass. Also tests/a11y/fixtures.ts:126-130 (owner-only since T267) opens page states with a bare page.goto and a seed returns only a path, so no signed-in /b page state can be axe-checked. Reviewer confirmed all three claims. Smallest fix; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T300 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3674",
+     "plan_since": "2026-11-14T08:54:21Z",
+     "plan_base": "d6d1d54ea21a18537cab068466554864dcda58a6",
+     "plan_head": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
+     "plan_then": "cde8311d04ac42d63a6d6621d815119b4d7b32c9e6e5659dce5c026d3be58c6f",
+     "plan_now": "3f871725ebd1d49c11cf5b4f3c910aae2ea9d4a67b0ad60b0c6621fcf6a35b9c"
     }
    ]
   },
@@ -56292,7 +56307,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T10:15:41Z",
+ "updated_at": "2026-11-14T10:21:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -56390,8 +56405,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d0b8abeaf423ddea381d59d7b7b6d017589a3776",
- "starter": "actions",
+ "runner_sha": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "d53bdd2875b8da3ba2b10cbe47b4e9b66112f0a6",

@@ -1,29 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:15:41Z by runner d0b8abeaf423 (actions).
+Updated 2026-11-14T10:21:48Z by runner 9fcdbb33f44a (manual).
 
-**Building: T437 in progress since 09:33Z; 318 of 436 done; week 40% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T437 in progress since 09:33Z; 318 of 449 done; week 40% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 318 of 436 build tasks (owner gates not counted)
+- **Tasks done:** 318 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T437 claimed 09:33Z, lease until 12:33Z; lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 4: T359 claimed 09:38Z, lease until 12:38Z
 - **Week:** 40% used, 111.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:02Z, 13 min before this update
+- **Last run:** 10:15Z, 5 min before this update
 - **Keeper:** last ran 10:02Z, next wake 12:36Z
 
 ## Needs attention
-- BLOCKED T300: plan gap reported: PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID, ASKHAVA_TWILIO_AUTH_TOKEN, ASKHAVA_TWILIO_VERIFY_SERVICE_SID, VAULT_KEY or VAULT_INDEX_KEY, so business_signin.rs:129 uses NoVerify (every code send/check fails) and lib.rs:321 vault_from gives no vault; the browser half of TD-BIZ-42 cannot pass. Also tests/a11y/fixtures.ts:126-130 (owner-only since T267) opens page states with a bare page.goto and a seed returns only a path, so no signed-in /b page state can be axe-checked. Reviewer confirmed all three claims. Smallest fix; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T300 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T301: plan gap reported: PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301 does not own (picks, businesses, quotes, T261's Confirm page) and cannot fit the 3-file, 600-line budget (prompt line 52). Reviewer confirmed: Away and Busy have no storage (picks::api::away_until/away_for only compute times, no migration column); Confirm needs a Verify code (UseBy::LinkAndCode, app/portals/src/action_links.rs:117) and its page is T261's (docs/architecture.md:539-540, not a T301 dependency); no non-test app code builds QuoteRules (app/quotes/src/intake.rs:245; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T302: plan gap reported: PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 an; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 38 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T398 | businesses: notice texts go only to approved phones, and a m | done | 1 | 38 min | 09:41Z |  |
-| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 4 | 2 min | 09:18Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
-| T301 | server and portals: the email action links are served (the q | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
+| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 4 | 2 min | 09:18Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
+| T301 | server and portals: the email action links are served (every | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
 | T398 | businesses: notice texts go only to approved phones, and a m | resync | 1 | 32 min | 09:01Z |  |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 1 | 5 min | 08:59Z | PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID |
 | T280 | server and messaging (harness): the business sign-in pages a | done | 4 | 91 min | 08:04Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
@@ -40,7 +39,7 @@ Updated 2026-11-14T10:15:41Z by runner d0b8abeaf423 (actions).
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z |  |
 | T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
-| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 3 | 15 min | 04:11Z |  |
+| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 3 | 15 min | 04:11Z |  |
 | T440 | portals: the quote page's tier choice and the Confirm page's | done | 1 | 50 min | 03:43Z |  |
 | T344 | picks: the global daily Verify cap holds under concurrent co | done | 1 | 28 min | 03:23Z |  |
 | T433 | server and payments: every payments task runs in the product | done | 1 | 57 min | 03:21Z |  |
@@ -50,11 +49,11 @@ Updated 2026-11-14T10:15:41Z by runner d0b8abeaf423 (actions).
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | done | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z |  |
-| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 2 | 1 min | 01:33Z |  |
+| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 2 | 1 min | 01:33Z |  |
 | T447 | messaging: a passing vault error holds an outbox row instead | done | 1 | 26 min | 01:30Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | resync | 2 | 67 min | 01:10Z |  |
 | T328 | picks and server: an ended pick offers the next quote (`paym | done | 2 | 61 min | 01:04Z | PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text canno |
-| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z |  |
+| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 1 | 2 min | 00:54Z |  |
 | T448 | portals: the data-download mask joins digit runs across any  | done | 1 | 38 min | 00:49Z |  |
 | T444 | intake (test): the job's ZIP is read only from a property in | done | 1 | 24 min | 00:31Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 25 min | 00:23Z |  |
@@ -96,9 +95,9 @@ Updated 2026-11-14T10:15:41Z by runner d0b8abeaf423 (actions).
 | T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 | T312 | intake: a street address written in lower case never trips t | done | 2 | 51 min | 12:32Z | session ended without handing in |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | done | 3 | 46 min | 11:14Z | session ended without handing in |
-| T312 | intake: a street address written in lower case never trips t | QUEUED | 1 | 24 min | 10:17Z |  |
 
 ### Plan and harness merges on main
+- 10:21Z Plan: restructure the business sign-in chain — T300/T301/T302 gaps, 13 ordered follow-up tasks (D-3674, D-3675, D-3676) (#765)
 - 07:59Z Plan: T359 adopts two charge-ledger test expectations (TD-FEE-64), records the checked intent amount (D-3658) (#759)
 - 06:29Z Plan: T280 build note out of architecture.md after D-3620; sweep T393's late paragraph (D-3652) (#753)
 - 05:23Z Plan: T302 door-matrix gap — exact open sign-up step paths, browser-bound sign-up steps (D-3641) (#745)
@@ -123,31 +122,31 @@ Updated 2026-11-14T10:15:41Z by runner d0b8abeaf423 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 278 of 733 (37.9%) · partial 295 · unstarted 160
-**Tasks merged (throughput only):** 318 of 436
+**Requirements verified:** 4 of 733 (0.5%) · partial 569 · unstarted 160
+**Tasks merged (throughput only):** 318 of 449
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 15 | 14 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 21 | 34 | 3 | 58 |
-| calls | 10 | 14 | 1 | 25 |
-| consent | 12 | 19 | 4 | 35 |
-| fees | 14 | 37 | 1 | 52 |
-| intake | 26 | 14 | 3 | 43 |
-| job-cards | 18 | 6 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 23 | 5 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
-| ops-recovery | 2 | 8 | 44 | 54 |
-| privacy | 9 | 20 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 36 | 19 | 1 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 9 | 41 | 5 | 55 |
+| accessibility | 0 | 29 | 6 | 35 |
+| ai | 0 | 24 | 5 | 29 |
+| businesses | 0 | 55 | 3 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 31 | 4 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 1 | 39 | 3 | 43 |
+| job-cards | 1 | 23 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 1 | 42 | 2 | 45 |
+| ops-recovery | 0 | 10 | 44 | 54 |
+| privacy | 0 | 29 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 55 | 1 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 1 | 49 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 7 | 23 | 32 |
+| wording | 0 | 9 | 23 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
