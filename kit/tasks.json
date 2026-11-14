@@ -10576,7 +10576,9 @@
     "T336",
     "T357",
     "T391",
-    "T432"
+    "T432",
+    "T328",
+    "T446"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -12067,7 +12069,7 @@
    "id": "T341",
    "slug": "tier-and-visit-schedule-at-pick",
    "title": "picks (harness): a pick of a tiers quote names its tier, and a per-visit price with its schedule gets its fee",
-   "goal": "Seventh audit N7-02 and N7-04's pick side (D-2332, D-2333; PICK-053, PICK-038, PICK-039, REC-010, REC-011; sets aside only D-2210's refusals of a tiered quote and a per-visit period). Plan change D-3497 split this task in two: this task stores and prices the chosen tier and the per-visit period in `picks`; T440 builds the quote page's tier choice and the Confirm page's tier (PICK-021). After T340 and T342: (1) Tiers: `migrations/0179_picks_chosen_tier.sql` adds the chosen tier's index and name to `picks.pick`, written in the pick's transaction; `fee_inputs` uses that tier's price and no default tier exists; a missing or stale tier (the quote edited since) is a validation error that names the choices and stores nothing. `page_pick` keeps its signature (its callers include done tests and `opted_out_yes` and `backup_choice`) and with no tier refuses a tiers quote as today; the tier comes through a new entry point beside it in `app/picks/src/service.rs`, reached through `picks::api`, which T440's code step calls. The text pick (`<n> YES`, PICK-015) names no tier and the spec gives no text syntax for one, so a text pick of a tiers quote stores nothing and replies with the quote-page link to choose the package; the syntax is listed for Casey (D-2332). (2) Per-visit: `fee_period` (`service.rs:452`) maps a per-visit price with its stored visit schedule (T342, T164) to the matching fee period (weekly 52/12, every two weeks 26/12, and so on, as `app/payments/src/rules.rs:198` already converts); a per-visit quote without a schedule cannot exist after T342, and one from before is refused. (3) `tests/integration/tests/fee_fixed_at_pick.rs`'s tiered-pick case changes only as D-2332 records: the refusal is for a pick with no tier. Tests in `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63) through `picks::api`. Money: the overseer runs an independent money review of the hand-in. Update the `picks` `CLAUDE.md` and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
+   "goal": "Seventh audit N7-02 and N7-04's pick side (D-2332, D-2333; PICK-053, PICK-038, PICK-039, REC-010, REC-011; sets aside only D-2210's refusals of a tiered quote and a per-visit period). Plan change D-3497 split this task in two: this task stores and prices the chosen tier and the per-visit period in `picks`; T440 builds the quote page's tier choice and the Confirm page's tier (PICK-021). After T340 and T342: (1) Tiers: `migrations/0179_picks_chosen_tier.sql` adds the chosen tier's index and name to `picks.pick`, written in the pick's transaction; `fee_inputs` uses that tier's price and no default tier exists; a missing or stale tier (the quote edited since) is a validation error that names the choices and stores nothing. `page_pick` keeps its signature (its callers include done tests and `opted_out_yes` and `backup_choice`) and with no tier refuses a tiers quote as today; the tier comes through a new entry point beside it in `app/picks/src/service.rs`, reached through `picks::api`, which T440's code step calls. The text pick (`<n> YES`, PICK-015) names no tier and the spec gives no text syntax for one, so a text pick of a tiers quote stores nothing and replies with the quote-page link to choose the package; the syntax is listed for Casey (D-2332). (2) Per-visit: `fee_period` (`service.rs:452`) maps a per-visit price with its stored visit schedule (T342, T164) to the matching fee period (weekly 52/12, every two weeks 26/12, and so on, as `app/payments/src/rules.rs:198` already converts); a per-visit quote without a schedule cannot exist after T342, and one from before is refused. (3) `tests/integration/tests/fee_fixed_at_pick.rs`'s tiered-pick case changes only as D-2332 records: the refusal is for a pick with no tier. Tests in `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63) through `picks::api`. Money: the overseer runs an independent money review of the hand-in. Update the `picks` `CLAUDE.md` and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134). (4) Plan change D-3580 (plan gap reported): the text-pick reply for a tiers quote is new customer copy, so this task is flagged `copy` and adds one homeowner template, `text_pick_package`, in the shared `app/messaging/templates/en.json` and `es.json` (both languages; `{brand_short}`, `{job}`, `{quoted}` the quote's number and `{link}`; at most 20 words a sentence, no amount or tier name), queued through `Out::say` as every other `text_pick_*` reply (`app/picks/src/service.rs:183`), so consent, opt-out and quiet hours apply as they do to those; `intake` does not change and `TextPickIn` keeps its fields. The link is her quote page `https://<brand domain>/q/<token>`, the token from `jobs::api::quote_token::issue` in the text pick's transaction, keyed with `IdSecret::new(1, secret)` from the `ID_SECRET` `text_pick` already receives, as the composition builds it (`app/server/src/lib.rs:238`; record that coupling to version 1 in the `picks` `CLAUDE.md` or `NOTES.md`); it replaces her earlier link and is never logged. As `app/intake/src/job_texts.rs` does, issue the token inside a savepoint and roll the savepoint back when `enqueue` answers that the outbox row already exists (`created` false), so a reprocessed inbound text never revokes the link already queued; `tier_and_visit_pick.rs` adds that rerun case (the same inbound twice: one row, and the queued link's token still opens the page). It also owns `app/quotes/src/update_texts.rs` for one line: `(\"text_pick_package\", Shape::Update)` in `UPDATE_TEXTS` (its length bumped), so TD-TXT-25's every-template check holds and TXT-040's link-required and no-quote-detail checks apply to it.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -12099,7 +12101,8 @@
     "migrations/0179_picks_chosen_tier.sql",
     "app/picks/src/service.rs",
     "tests/integration/tests/fee_fixed_at_pick.rs",
-    "tests/integration/tests/tier_and_visit_pick.rs"
+    "tests/integration/tests/tier_and_visit_pick.rs",
+    "app/quotes/src/update_texts.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12125,13 +12128,14 @@
     "D-2210",
     "D-3118",
     "D-3134",
-    "D-3497"
+    "D-3497",
+    "D-3580"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 360,
-    "context_pct": 25
+    "files": 5,
+    "lines": 420,
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -12139,7 +12143,8 @@
     "Ally"
    ],
    "branch": "claude/task/T341-tier-and-visit-schedule-at-pick",
-   "prompt": "kit/prompts/T341.md"
+   "prompt": "kit/prompts/T341.md",
+   "copy": true
   },
   {
    "id": "T440",
@@ -14460,7 +14465,9 @@
     "T432",
     "T437",
     "T442",
-    "T443"
+    "T443",
+    "T444",
+    "T445"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -17350,7 +17357,8 @@
     "T430",
     "T432",
     "T438",
-    "T439"
+    "T439",
+    "T446"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -24627,7 +24635,7 @@
    "id": "T280",
    "slug": "business-signin-served",
    "title": "server and messaging (harness): the business sign-in pages are served, and the served route always asks for the new-device code",
-   "goal": "No task serves the business sign-in pages (D-1728 left the two `.route` lines and their page states to \"the task that serves the pages\", and none was named), and `SignIn::new` signs in on the link alone unless `with_device_codes` is called, kept on purpose for T084's component tests (D-1777 (2); second external audit known gaps, D-1844). (1) `app/server/src/business_signin.rs` builds the served sign-in state only through a constructor that requires `DeviceCodes` (the Verify adapter, the code-address lookup and the key); with no code configuration the server refuses to start rather than serve link-only sign-in, and it merges `SIGNIN_ROUTE` and `SIGNIN_LINK_ROUTE` in the shared `app/server/src/lib.rs`. `SignInMail` is composed there from T412's `privacy::api::mailboxes_of` and `businesses::api::businesses_of_mailbox` (`addresses`), the link's address read with `read_business_mailbox` under `BusinessPurpose::SignInLink`, and `CodeAddress` from the member's own linked phone that gets texts (`read_staff_phone` under `SignInCode`), else the member's own address (`read_business_mailbox` under `SignInCode`), each on a bare connection (D-3262), and `send_link` queues the link email through `app/messaging/src/signin_mail.rs` (a `business_signin_link` template in the shared templates, the link never logged). (2) The pages' `PAGE_STATES` entries go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788). Tests in `app/server/tests/business_signin_route.rs` against the assembled router: a missing code configuration refuses to start; a valid link without the code never signs in; a right code does; T272's caps hold through the served route. Update `docs/architecture.md` section 10, the `server`, `portals` and `messaging` `CLAUDE.md` files and `docs/decisions.md`. (3) Fourth external audit F12 (D-2206, D-1951): the link `POST` calls `portals::api::admit_sign_in_link` and the code `POST` `admit_code_try` first (T089's per-IP and per-business limits, in front of T272's per-member and per-link caps, which they never re-count); a refusal answers as any refusal, sends nothing and calls no Verify. (4) Plan change D-3055: `build_router` (`app/server/src/lib.rs:129`) has no settings, so it cannot build `DeviceCodes` (`app/portals/src/business_auth.rs:207`) itself; the served sign-in state is a new optional router part built from settings in `main.rs` (shared) and passed in. `Hooks` stays the four-part tuple (`lib.rs:76`) and both `RouterParts` conversions stay, because done tests build them (`app/server/tests/request_timeout.rs:51`, `server_hardening.rs:24`); the new part comes by a third conversion or a builder method on `RouterParts`. The four sign-in rows of `docs/architecture.md` section 13 flip from `T280` to `yes`. This is a harness task only because T284's done `app/server/tests/route_wiring.rs` builds the router from a fixed set of parts (`:238` to `:254`), so the flipped rows would fail there: its `router()` may change only to build the sign-in part from the same fake settings (adding to `pairs()`, `:202`, any fake setting the part needs) with `.expect`, and to pass it to `build_router`; no assertion, probe, table rule or other line changes.",
+   "goal": "No task serves the business sign-in pages (D-1728 left the two `.route` lines and their page states to \"the task that serves the pages\", and none was named), and `SignIn::new` signs in on the link alone unless `with_device_codes` is called, kept on purpose for T084's component tests (D-1777 (2); second external audit known gaps, D-1844). (1) `app/server/src/business_signin.rs` builds the served sign-in state only through a constructor that requires `DeviceCodes` (the Verify adapter, the code-address lookup and the key); with no code configuration the server refuses to start rather than serve link-only sign-in, and it merges `SIGNIN_ROUTE` and `SIGNIN_LINK_ROUTE` in the shared `app/server/src/lib.rs`. `SignInMail` is composed there from T412's `privacy::api::mailboxes_of` and `businesses::api::businesses_of_mailbox` (`addresses`), the link's address read with `read_business_mailbox` under `BusinessPurpose::SignInLink`, and `CodeAddress` from the member's own linked phone that gets texts (`read_staff_phone` under `SignInCode`), else the member's own address (`read_business_mailbox` under `SignInCode`), each on a bare connection (D-3262), and `send_link` queues the link email through `app/messaging/src/signin_mail.rs` (a `business_signin_link` template in the shared templates, the link never logged). (2) The pages' `PAGE_STATES` entries go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788). Tests in `app/server/tests/business_signin_route.rs` against the assembled router: a missing code configuration refuses to start; a valid link without the code never signs in; a right code does; T272's caps hold through the served route. Update `docs/architecture.md` section 10, the `server`, `portals` and `messaging` `CLAUDE.md` files and `docs/decisions.md`. (3) Fourth external audit F12 (D-2206, D-1951): the link `POST` calls `portals::api::admit_sign_in_link` and the code `POST` `admit_code_try` first (T089's per-IP and per-business limits, in front of T272's per-member and per-link caps, which they never re-count); a refusal answers as any refusal, sends nothing and calls no Verify. (4) Plan change D-3055: `build_router` (`app/server/src/lib.rs:129`) has no settings, so it cannot build `DeviceCodes` (`app/portals/src/business_auth.rs:207`) itself; the served sign-in state is a new optional router part built from settings in `main.rs` (shared) and passed in. `Hooks` stays the four-part tuple (`lib.rs:76`) and both `RouterParts` conversions stay, because done tests build them (`app/server/tests/request_timeout.rs:51`, `server_hardening.rs:24`); the new part comes by a third conversion or a builder method on `RouterParts`. The four sign-in rows of `docs/architecture.md` section 13 flip from `T280` to `yes`. This is a harness task only because T284's done `app/server/tests/route_wiring.rs` builds the router from a fixed set of parts (`:238` to `:254`), so the flipped rows would fail there: its `router()` may change only to build the sign-in part from the same fake settings (adding to `pairs()`, `:202`, any fake setting the part needs) with `.expect`, and to pass it to `build_router`; no assertion, probe, table rule or other line changes. (5) Plan change D-3562: `CodeAddress::code_to(db, member)` (`app/portals/src/business_auth.rs:176`) gets only the member row ID and no public function maps it to a business, mailbox or line, so this task also owns the new `app/businesses/src/sign_in_lines.rs`, exported through the shared `businesses::api` (one `mod` line, one `pub use` line): `sign_in_lines(conn, member) -> Result<Option<SignInLines>, BusinessesError>`, `None` unless `member` is a current member (`removed_at` null), else `SignInLines { business, mailbox, texting_lines }`: that row's business and mailbox IDs and the IDs of the `businesses.staff_phone` lines that member linked (`linked_by`, same business), not the business's main phone (`is_main`, a shared line, never \"that person's own phone\", SEC-004), with a text box ticked (as `may_text`, `app/businesses/src/consent.rs:243`, reads it), in `linked_at`, `id` order. Opaque IDs only; `CodeAddress` opens the first texting line with `read_staff_phone` under `SignInCode`, else the mailbox with `read_business_mailbox` under `SignInCode`, and on `None` sends no code (an error, as a failed send). No other `businesses` file changes. `business_signin_route.rs` adds: the code goes to the member's own texting line; with none (or only a line with no text box) to the member's own address; never to another member's line or to the main phone; no code for a removed member. Update the `businesses` `CLAUDE.md` too.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -24648,6 +24656,7 @@
    ],
    "owns": [
     "app/server/src/business_signin.rs",
+    "app/businesses/src/sign_in_lines.rs",
     "app/messaging/src/signin_mail.rs",
     "app/server/tests/business_signin_route.rs",
     "app/server/tests/route_wiring.rs"
@@ -24656,8 +24665,7 @@
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/security.md",
-    "docs/spec/accessibility.md",
-    "docs/brains/rust-production.md"
+    "docs/spec/accessibility.md"
    ],
    "requirements": [
     "SEC-004",
@@ -24677,13 +24685,14 @@
     "D-2206",
     "D-1951",
     "D-3055",
-    "D-3262"
+    "D-3262",
+    "D-3562"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 450,
-    "context_pct": 45
+    "files": 5,
+    "lines": 530,
+    "context_pct": 50
    },
    "checks": [
     "Ci",
@@ -24692,7 +24701,7 @@
    ],
    "branch": "claude/task/T280-business-signin-served",
    "prompt": "kit/prompts/T280.md",
-   "acceptance": "TD-SEC-40 passes against PostgreSQL through the assembled router, and `Ally` passes with the new page states; every T084, T194, T269 and T272 case still passes. Every TD-SEC-41 case in `route_wiring.rs` passes with the sign-in rows `yes`."
+   "acceptance": "TD-SEC-40 passes against PostgreSQL through the assembled router, and `Ally` passes with the new page states; every T084, T194, T269 and T272 case still passes. Every TD-SEC-41 case in `route_wiring.rs` passes with the sign-in rows `yes`. The D-3562 `sign_in_lines` cases pass through the served route: own texting line, address fallback, never another member's line or the main phone, no code for a removed member."
   },
   {
    "id": "T281",
@@ -26516,7 +26525,7 @@
    "id": "T328",
    "slug": "payment-jobs-registered",
    "title": "picks and server: an ended pick offers the next quote (`payments.pick_ended` handled and registered)",
-   "goal": "Fifth external audit AH-001 (D-2286; FEE-018, FEE-041, QH-004): `payments` queues `payments.pick_ended` (`app/payments/src/handlers.rs:47`, queued at :381) when it ends a pick, but no handler exists, so the event is dead-lettered and the homeowner is never offered the next quote. Plan change D-3468 split T328 in two: this task builds the `picks` handler and registers it; T433 registers the seven `payments` kinds, seeds the reconcile and wires the late-success refund. (1) `app/picks/src/pick_ended.rs` handles `payments.pick_ended` (`{pick, business, job, reason}`) as FEE-018, FEE-020 and FEE-041 say: the pick is released and the homeowner is offered the next quote (the PICK-046 \"couldn't take it this time\" text and quote list, under quiet hours unless the job is an emergency, QH-004), once per pick. It is reached through `picks::api` (a `run_pick_ended` beside `run_card_fix_notice`), so nothing in it is dead code. (2) The shared `app/server/src/lib.rs` registers it in `register_handlers` under `askhava_payments::api::PICK_ENDED_KIND`, the way it registers `payments.card_needs_fix` to `askhava_picks::api::run_card_fix_notice`. (3) Tests in `tests/integration/tests/pick_ended.rs` (TD-PICK-54; log the D-2853 exception for this file in `docs/decisions.md`) run the production worker registry (`askhava_server::worker_registry` from dev stand-in settings, as `tests/integration/tests/emergency_notices.rs` does) against PostgreSQL: a `payments.pick_ended` event ends the pick's wait and offers the homeowner the next quote with the PICK-046 text, held to 8 a.m. at night for a regular job and at once for an emergency; a repeat of the event sends nothing twice. The `payments.pick_ended` entry of `tests/task_kinds_deferred.json` names T328 and is only printed as stale once this merges; that file is T327's test and is not edited here. Money code: the overseer runs an independent money review of the hand-in. Update the `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Fifth external audit AH-001 (D-2286; FEE-018, FEE-041, QH-004): `payments` queues `payments.pick_ended` (`app/payments/src/handlers.rs:47`, queued at :381) when it ends a pick, but no handler exists, so the event is dead-lettered and the homeowner is never offered the next quote. Plan change D-3468 split T328 in two: this task builds the `picks` handler and registers it; T433 registers the seven `payments` kinds, seeds the reconcile and wires the late-success refund. (1) `app/picks/src/pick_ended.rs` handles `payments.pick_ended` (`{pick, business, job, reason}`) as FEE-018, FEE-020 and FEE-041 say: the pick is released and the homeowner is offered the next quote (the PICK-046 \"couldn't take it this time\" text and quote list, under quiet hours unless the job is an emergency, QH-004), once per pick. It is reached through `picks::api` (a `run_pick_ended` beside `run_card_fix_notice`), so nothing in it is dead code. (2) The shared `app/server/src/lib.rs` registers it in `register_handlers` under `askhava_payments::api::PICK_ENDED_KIND`, the way it registers `payments.card_needs_fix` to `askhava_picks::api::run_card_fix_notice`. (3) Tests in `tests/integration/tests/pick_ended.rs` (TD-PICK-54; log the D-2853 exception for this file in `docs/decisions.md`) run the production worker registry (`askhava_server::worker_registry` from dev stand-in settings, as `tests/integration/tests/emergency_notices.rs` does) against PostgreSQL: a `payments.pick_ended` event ends the pick's wait and offers the homeowner the next quote with the PICK-046 text, held to 8 a.m. at night for a regular job and at once for an emergency; a repeat of the event sends nothing twice. The `payments.pick_ended` entry of `tests/task_kinds_deferred.json` names T328 and is only printed as stale once this merges; that file is T327's test and is not edited here. Money code: the overseer runs an independent money review of the hand-in. Update the `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`. (4) Plan change D-3579 (plan gap reported): `picks` holds no homeowner contact (`picks.pick`, `migrations/0079_picks_code.sql:18`) and may not call `intake` (`kit/layers.json`), so PICK-046's text goes the way `picks`' JOB-027 close text does (`app/picks/src/unreachable_refund.rs:414`): when the ended pick has no backup (`Backup::NoBackup`), `pick_ended.rs` queues one `jobs::api::TEXT_KIND` task with template `pick_lapsed`, the job's version and `values` `{job, pick, business}` (IDs only, never a contact), at `picks::api::lapse_plan`'s `send_at`, its dedupe key naming the pick. This task also owns `app/intake/src/job_texts.rs`: `pick_lapsed` joins `JOB_TEXT_TEMPLATES` with the `/q/` link; its body is `picks::api::lapse_text` (English and Spanish, with the Terms line) from the business's public name (`businesses::api::public_names`), the TXT-031 lines whose numbers `lapse_plan` keeps in `others` (the lapsed business's own never, PICK-035) and the issued quote-page link; its outbox subject is the job and the pick, so it goes once per pick; consent (CON-021), opt-out (CON-028) and the area-code check apply as to every job text; outside the window a regular job's text is queued again for the next open instant as today, and an emergency job's (the emergency choice read from the job at send time, never from the payload) goes at once through `messaging::api::enqueue_exempt` with `Exemption::EmergencyJob` (QH-004). It also owns `app/quotes/src/notify.rs` for one public `list_lines` beside `list_texts` (shared `quotes::api`, one `pub use`): the job's pickable quotes as `(number, line)` pairs, the number the one \"<n> YES\" picks and the line the TXT-031 line alone, no heading or footer; `list_texts` is unchanged. `pick_ended.rs` tests add: a Spanish request gets the Spanish text; two ended picks on one job each get theirs; an opted-out number gets no text. PICK-046's email when she cannot be texted is not built here (D-3579 logs the gap): T446 adds it. T402 runs after this task.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26538,7 +26547,9 @@
    ],
    "owns": [
     "app/picks/src/pick_ended.rs",
-    "tests/integration/tests/pick_ended.rs"
+    "tests/integration/tests/pick_ended.rs",
+    "app/intake/src/job_texts.rs",
+    "app/quotes/src/notify.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -26564,13 +26575,14 @@
     "D-2290",
     "D-2305",
     "D-3134",
-    "D-3468"
+    "D-3468",
+    "D-3579"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
-    "lines": 200,
-    "context_pct": 17
+    "files": 4,
+    "lines": 420,
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -30908,6 +30920,166 @@
    "branch": "claude/task/T443-after-smoke-fix-rounds",
    "prompt": "kit/prompts/T443.md",
    "acceptance": "`--after` on a fix-round hand-in (more than one `--worker-agent` or a prehand-in hold) runs main's `scripts/smoke.sh` on the head in the background outside the model (`runner: smoke_pending` until a verdict, nothing pushed meanwhile), holds a red once (`runner: smoke_red`) then fails `tests_failed`, lets a non-verdict through with a log line, and runs nothing for a first-round hand-in; the workflow's steps 4c and 5b carry D-3530's scoped fix-round checks and steps 5 and 5a handle both new results; the workflow holds the exact line `# T443: after-smoke live` (`grep -qxF` succeeds); `tests/test_runner_after_smoke.py` holds every listed case and every existing test passes unchanged."
+  },
+  {
+   "id": "T444",
+   "slug": "property-zip-town-test",
+   "title": "intake (test): the job's ZIP is read only from a property in the job's own town",
+   "goal": "Audit finding on T249 (D-3563 (b); CARD-024, INT-049, D-1521): `property_zip` (`app/intake/src/cards_out.rs:337`) reads the ZIP of the newest property of the request's homeowner `AND p.town = $2`, the town `models::property_town` read just before, so a property stored between the two reads in another town is never paired with the older town; no test fails if that condition is dropped. Both reads order the same way, so through the public API the condition matters only in that race, which no test can make happen on demand: the one change to `cards_out.rs` is `property_zip`'s visibility (`async fn` becomes `pub(crate) async fn`, its doc comment unchanged); nothing else in that file changes. New in-crate test `app/intake/src/tests/property_zip_town.rs` (one `mod` line in the shared `app/intake/src/tests/mod.rs`), `#[sqlx::test]` against PostgreSQL with fake data only (public market ZIPs, fake IDs, no names or phones), set up as `app/intake/src/tests/zip_step.rs` does: one homeowner request with an older property in one town with one ZIP and a newer property in another town with another ZIP; `crate::cards_out::property_zip(conn, conversation, <older town>)` returns the older property's ZIP, and with the newer town the newer one's; a town with no property gives `None`. Each case names CARD-024 and D-1521 in its doc comment (TD-INT-38 is the ZIP step's entry, cited only as related). Check by hand that deleting `AND p.town = $2` (and its bind) makes the first case fail, then restore it, and say so in the report. Update the `intake` `CLAUDE.md` tests note and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "intake",
+   "deps": [
+    "T249"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/cards_out.rs",
+    "app/intake/src/tests/property_zip_town.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/intake.md",
+    "app/intake/src/tests/zip_step.rs"
+   ],
+   "requirements": [
+    "CARD-024",
+    "INT-049"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1521",
+    "D-3563"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 120,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T444-property-zip-town-test",
+   "prompt": "kit/prompts/T444.md",
+   "acceptance": "`cargo test -p askhava-intake --lib tests::property_zip_town` passes against PostgreSQL; with `AND p.town = $2` removed from `property_zip` the older-town case fails (checked by hand, reported); the only change to `app/intake/src/cards_out.rs` is `property_zip`'s `pub(crate)`; every existing intake test passes unchanged."
+  },
+  {
+   "id": "T445",
+   "slug": "runner-stage-robustness",
+   "title": "runner (harness): a failed nightly on an older head keeps the stages the last green nightly proved, and a re-staged task's stage follows kit/tasks.json",
+   "goal": "Runner robustness (D-3563 (e); D-486, D-1126, D-3499, D-3531). (1) On November 13 a one-in-a-hundred property-test miss failed `named-mutants` on nightly-main; a failed `kit/nightly.json` makes `scripts/stage_exit.py` `_nightly_problems` fail every stage, so `passed_stages` (called by `runner/__main__.py` `build`'s `gate`) is empty and no task is claimed until a green nightly, about 2 hours, even after main had moved on and was green; `main_red` already ignores a failed nightly on an older head (`runner/cycle.py` `_nightly_red_on_head`, about line 1264). Make the gate do the same: `.github/workflows/nightly-main.yml`'s `record` step also writes `last_green` (`{\"sha\", \"ran_at\"}`): this run's when it is green, else the `last_green` of the `kit/nightly.json` it replaces (absent when there is none), and `failures_since_green`: 0 on a green run, else the replaced file's value plus 1 (1 when the replaced file has none or there is none); every other key and the commit line stay as they are. A new pure `stage_exit.gate_nightly(nightly, main_head, is_ancestor)` returns the record unchanged unless its `conclusion` is `failure`, its `sha` is not `main_head` and is an ancestor of it (`is_ancestor` answers `True`), it carries a `last_green` with a `sha`, and its `failures_since_green` is exactly 1 (the first failure since the last green run; the nightly runs about once a day while `main` moves all day, so almost every failure is on an older head, and a second failure in a row is no longer chance: the gate closes); then it returns `{\"conclusion\": \"success\", \"sha\": <last_green sha>}`, so a stage whose merges that green run contained stays passed and a stage that needs a newer merge waits for a newer green nightly. `gate` passes `gate_nightly(env.read_nightly(), env.main_head(), git_is_ancestor(ROOT))` to `passed_stages`; `evaluate`, `passed_stages`, the command line, `runner/proof.py`'s stage proofs and `main_red` read the raw record as today. A failed nightly on main's current head always closes every stage (and sets `main_red` as today), whatever the counter says, and so does any second or later failure in a row. (2) `runner/state.py` `sync_graph` (about line 99) copies a changed `stage` onto every entry not DONE or SKIPPED, as it does `deps` (D-1126), so a plan change that re-stages a queued task takes effect (the parked D-3498 re-stage of T111 and T121 needs it). (A worker stop opening `MAIN RED:` that the runner confirms is left out: it would add `runner/cycle.py`.) Tests first, in the new `tests/test_runner_stage_robustness.py`: `gate_nightly` returns the last green record for a failure on an older head, the raw failure on main's head, on a SHA that is not an ancestor or when `is_ancestor` answers `None`, and with no `last_green`, and when `failures_since_green` is missing or 2 or more; two consecutive failed nightlies on older heads close every stage (`passed_stages` over `gate_nightly`'s answer is empty for a stage the last green run had passed); a success passes unchanged; `passed_stages` over the substituted record keeps a stage whose merges the last green SHA contains and closes one whose merge it does not; the `record` step's Python (read from the workflow file and run on fake records) keeps `last_green` across a failure and moves it on a success, and counts `failures_since_green` up across failures and back to 0 on a success; `sync_graph` moves a QUEUED entry's stage and leaves a DONE entry's. Every existing test passes unchanged.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T443",
+    "T265"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "scripts/stage_exit.py",
+    "runner/__main__.py",
+    "runner/state.py",
+    ".github/workflows/nightly-main.yml",
+    "tests/test_runner_stage_robustness.py"
+   ],
+   "reads": [
+    "runner/cycle.py",
+    "runner/proof.py",
+    "tests/test_stage_exit.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-486",
+    "D-3499",
+    "D-3531",
+    "D-3563"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 300,
+    "context_pct": 40
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T445-runner-stage-robustness",
+   "prompt": "kit/prompts/T445.md",
+   "acceptance": "`tests/test_runner_stage_robustness.py` holds every listed case and passes; `python3 scripts/stage_exit.py --stage N` and every existing test (including `tests/test_stage_exit.py`, `tests/test_failure_drills.py`, `tests/test_runner_proof.py`) pass unchanged; the nightly `record` step writes `last_green` and `failures_since_green` and nothing else new; only the first failure since the last green run, on an older head, is replaced; a failed nightly on main's current head, or two failed nightlies in a row on older heads, leaves `passed_stages` empty."
+  },
+  {
+   "id": "T446",
+   "slug": "pick-lapsed-email",
+   "title": "intake and messaging: PICK-046's \"couldn't take it\" notice goes by email when she cannot be texted",
+   "goal": "Plan change D-3579 follow-up (PICK-046, CON-028, CON-021, PRIV-004; D-2288): PICK-046 (`docs/spec/quotes-pick.md:50`) says its text \"goes by email when the homeowner can't be texted\", but T328's `pick_lapsed` job text (in `app/intake/src/job_texts.rs`) sends nothing to a number that opted out, has no consent record or fails the area-code check. When that event's text cannot go for one of those reasons and she has an email on file (`messaging::api::homeowner_has_email`), queue one email instead, the way `app/intake/src/opted_out_live.rs` queues CON-028's \"still open\" email: a new `Notice::PickLapsed` in `app/messaging/src/email.rs` (English and Spanish: the business's public name, \"couldn't take it this time\", and her quote page link to see and pick her other quotes; no amount, no other business's contact), `queue_email` keyed on the pick, so a rerun stores nothing more; the email sender's keys (the footer postal line and the vault) reach the step from settings in the shared `app/server/src/lib.rs` as `opted_out_live`'s do, and with them missing the step sends nothing and logs why. The email read runs outside any transaction (the vault refuses one). A text that can go still goes as T328 built it; never both. Tests in `tests/integration/tests/pick_lapsed_email.rs` against PostgreSQL, fake data only: opted out with an email gets one email and no text; no email on file gets nothing; a rerun stores one email; a textable homeowner gets the text and no email. Update the `intake` and `messaging` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T328",
+    "T320"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "copy": true,
+   "owns": [
+    "app/intake/src/job_texts.rs",
+    "app/messaging/src/email.rs",
+    "tests/integration/tests/pick_lapsed_email.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/consent.md",
+    "app/intake/src/opted_out_live.rs"
+   ],
+   "requirements": [
+    "PICK-046"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-3579",
+    "D-2288"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T446-pick-lapsed-email",
+   "prompt": "kit/prompts/T446.md",
+   "acceptance": "`tests/integration/tests/pick_lapsed_email.rs` passes against PostgreSQL with every listed case; every T328 `pick_ended.rs` case and every existing intake and messaging test passes unchanged; `scripts/check_copy.py` and `scripts/check_ai_smell.py` report 0 problems for the new email words."
   }
  ]
 }
