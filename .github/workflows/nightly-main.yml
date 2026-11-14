@@ -182,6 +182,20 @@ jobs:
                    "started_at": os.environ["STARTED_AT"],
                    "ran_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                    "sha": os.environ["TESTED_SHA"]}
+          # D-3795: the last green run and the failures since it, for stage_exit.gate_nightly.
+          try:
+              before = json.load(open("kit/nightly.json"))
+          except (OSError, ValueError):
+              before = {}
+          before = before if isinstance(before, dict) else {}
+          if conclusion == "success":
+              stamp["last_green"] = {"sha": stamp["sha"], "ran_at": stamp["ran_at"]}
+              stamp["failures_since_green"] = 0
+          else:
+              if isinstance(before.get("last_green"), dict):
+                  stamp["last_green"] = before["last_green"]
+              count = before.get("failures_since_green")
+              stamp["failures_since_green"] = (count if isinstance(count, int) else 0) + 1
           os.makedirs("kit", exist_ok=True)
           json.dump(stamp, open("kit/nightly.json", "w"), indent=1)
           print(stamp)
