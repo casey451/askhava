@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T04:28:34Z by runner f4c4252669ec (actions).
+Updated 2026-11-14T04:28:50Z by runner d7f67fffc26d (actions).
 
 **Building: T393 in progress since 04:25Z; 312 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 312 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 3: T437 claimed 04:25Z, lease until 07:25Z; lane 6: T396 claimed 04:09Z, lease until 07:09Z; lane 7: T449 claimed 03:54Z, lease until 06:54Z
+- **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 3: T437 claimed 04:25Z, lease until 07:25Z; lane 6: T396 claimed 04:09Z, lease until 07:09Z
 - **Week:** 36% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:28Z, 0 min before this update
 - **Keeper:** last ran 04:28Z, next wake 06:56Z
@@ -16,16 +16,17 @@ Updated 2026-11-14T04:28:34Z by runner f4c4252669ec (actions).
 - PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
 - PLAN GAP T352 (since 2026-11-14T03:46:00Z, no attempt used; a plan change fixes it): T352: measures 53% of the context window, over its 50% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 32 problem(s) on tasks still to run (+207 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+205 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T449 | server and intake: emergency first texts count toward the re | MERGE_PENDING | 1 | 34 min | 04:28Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 3 | 15 min | 04:11Z | PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as |
 | T440 | portals: the quote page's tier choice and the Confirm page's | done | 1 | 50 min | 03:43Z |  |
 | T344 | picks: the global daily Verify cap holds under concurrent co | done | 1 | 28 min | 03:23Z |  |
 | T433 | server and payments: every payments task runs in the product | done | 1 | 57 min | 03:21Z |  |
-| T449 | server and intake: emergency first texts count toward the re | resync | 1 | 31 min | 03:17Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T449 | server and intake: emergency first texts count toward the re | resync | 1 | 31 min | 03:17Z |  |
 | T450 | portals: the sign-up code screens and the texts choice with  | done | 1 | 79 min | 03:00Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 23 min | 02:41Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md, app/portals/CLAUDE.md, app/server/CLAUDE.md; a  |
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z |  |
@@ -160,7 +161,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T393 (lease until 2026-11-14T07:25:53Z)
 - lane 3: T437 (lease until 2026-11-14T07:25:12Z)
 - lane 6: T396 (lease until 2026-11-14T07:09:13Z)
-- lane 7: T449 (lease until 2026-11-14T06:54:04Z)
 
 ## Last usage reading
-- {"task": "T302", "at": "2026-11-14T04:11:45Z", "output_tokens": 82720, "cache_read_input_tokens": 13591485, "input_tokens": 222, "cache_creation_input_tokens": 232350}
+- {"task": "T449", "at": "2026-11-14T04:28:19Z", "input_tokens": 84, "output_tokens": 14850, "cache_read_input_tokens": 1367390, "cache_creation_input_tokens": 79914}
