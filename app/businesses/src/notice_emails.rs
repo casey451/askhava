@@ -10,7 +10,11 @@
 //! `sample_pick` go to the payload's `to` mailboxes; `emergency_test` to the member's main address;
 //! `notice_address_changed` to the `old` address (SEC-024); `notice_address_returned` to the
 //! owner's main and backup addresses that may still get notices, never the returned one (BIZ-040,
-//! D-3682); `phone_linked`, `after_hours_off` and `license_change` to the owner's account address.
+//! D-3682); `phone_linked`, `after_hours_off` and `license_change` to the owner's account address
+//! (`phone_linked` only while its member is on the team and the phone still waits, JOB-006). The
+//! rows are stored in one transaction rolled back when none is new, so a repeat keeps no second
+//! Approve link. Known gap: `emergency_test`, `after_hours_off`, `phone_linked` and
+//! `license_change` do not yet check `may_get_notices` on the main address (BIZ-040).
 //! Addresses, the person's language, the linking member's name, the phone's last 4 digits and
 //! every link come through [`NoticeParts`], which the composition implements (`businesses` may not
 //! call `privacy` or `portals`; the Approve link is `portals::api::mint_action_link`'s, D-3112).
@@ -44,6 +48,7 @@ use crate::email_verification::{
 use crate::emergency_switch::{
     AFTER_HOURS_OFF_KIND, EMERGENCY_TEST_KIND, OFF_REMOVED, OFF_SUSPENDED, emergency_test_words,
 };
+use crate::phone_approval::phone_standing;
 use crate::rules::JobTypeChoice;
 use crate::team::{NoticePurpose, TeamMember, members};
 
@@ -259,20 +264,46 @@ pub async fn run_notice_email<E: EmailAdapter + Send + Sync, P: NoticeParts>(
 ) -> Result<(), HandlerError> {
     let business = id(&task, "business")?;
     let mailer = mailer.ok_or(HandlerError(NO_ACCOUNT_SENDER))?;
+    let rows = store(&pool, &mailer, &task, business).await?;
     let mut db = pool.acquire().await.map_err(|_| FAILED)?;
-    let team = members(&mut db, business).await.map_err(|_| FAILED)?;
+    for (row, to) in rows {
+        send(&mut db, &mailer, row, &to).await?;
+    }
+    Ok(())
+}
+
+/// SEC-018, BIZ-033: plans `task`'s email and stores one row per recipient in one transaction,
+/// returning each row with its address. When every row was already stored (a retry or repeat),
+/// the transaction is rolled back, so whatever the words needed (the Approve link) is not kept.
+async fn store<E, P: NoticeParts>(
+    pool: &PgPool,
+    mailer: &AccountMailer<E, P>,
+    task: &Claimed,
+    business: Uuid,
+) -> Result<Vec<(Uuid, SecretString)>, HandlerError> {
+    let mut tx = pool.begin().await.map_err(|_| FAILED)?;
+    let team = members(&mut tx, business).await.map_err(|_| FAILED)?;
     let Some(owner) = team.iter().find(|m| m.owner).copied() else {
         return Err(HandlerError("the business has no owner"));
     };
-    let Some(planned) = plan(&mut db, &mailer, (&task, &team, owner)).await? else {
-        return Ok(());
+    let Some(planned) = plan(&mut tx, mailer, (task, &team, owner)).await? else {
+        return Ok(Vec::new());
     };
     let task_id = Uuid::from_u128(u128::from(task.id.unsigned_abs()));
+    let (mut rows, mut new) = (Vec::new(), false);
     for mailbox in &planned.to {
         let email = (planned.template, [business, task_id], &planned.words);
-        send(&mut db, &mailer, *mailbox, email).await?;
+        let (row, to, made) = queue(&mut tx, mailer, *mailbox, email).await?;
+        new |= made;
+        rows.push((row, to));
     }
-    Ok(())
+    let end = if new {
+        tx.commit().await
+    } else {
+        tx.rollback().await
+    };
+    end.map_err(|_| FAILED)?;
+    Ok(rows)
 }
 
 /// The email `task` asks for, or `None` when its person has left and nobody is to be told.
@@ -303,7 +334,9 @@ async fn plan<E, P: NoticeParts>(
             ("business_after_hours_off", vec![owner.mailbox], words)
         }
         PHONE_LINKED_KIND => {
-            let words = linked(db, mailer, (task, owner), spanish).await?;
+            let Some(words) = linked(db, mailer, (task, team, owner), spanish).await? else {
+                return Ok(None);
+            };
             ("business_phone_linked", vec![owner.mailbox], words)
         }
         LICENSE_CHANGE_KIND => {
@@ -426,16 +459,21 @@ async fn owner_addresses(
         .collect())
 }
 
-/// BIZ-033: the phone-linked words with the member's name, the phone's last 4 digits and the
-/// owner's Approve link.
+/// BIZ-033, JOB-006: the phone-linked words with the member's name, the phone's last 4 digits and
+/// the owner's Approve link; `None` (nothing to send) when the linking member has left the team or
+/// the phone is no longer waiting (approved, declined, or dropped with its member, D-3640).
 async fn linked<E, P: NoticeParts>(
     db: &mut PgConnection,
     mailer: &AccountMailer<E, P>,
-    (task, owner): (&Claimed, TeamMember),
+    (task, team, owner): (&Claimed, &[TeamMember], TeamMember),
     spanish: bool,
-) -> Result<[String; 2], HandlerError> {
+) -> Result<Option<[String; 2]>, HandlerError> {
     let parts = &mailer.directory;
     let (member, line) = (id(task, "member")?, id(task, "line")?);
+    let standing = phone_standing(db, line).await.map_err(|_| FAILED)?;
+    if !team.iter().any(|m| m.id == member) || standing != Some(false) {
+        return Ok(None);
+    }
     let name = parts.member_name(db, member).await?;
     let name = name.ok_or(HandlerError("the linking member's name is not known"))?;
     let last4 = parts.line_last4(db, (owner.business, line)).await?;
@@ -448,11 +486,11 @@ async fn linked<E, P: NoticeParts>(
     let link = parts
         .approve_link(db, (owner.business, owner.id, line), now)
         .await?;
-    Ok(phone_linked_words(
+    Ok(Some(phone_linked_words(
         spanish,
         (&name, &last4),
         link.expose_secret(),
-    ))
+    )))
 }
 
 /// BIZ-050, D-2596: the license-change words from the payload's job type pairs, reason and pause.
@@ -478,29 +516,39 @@ fn license(task: &Claimed, spanish: bool) -> Result<[String; 2], HandlerError> {
     Ok(license_change_words(spanish, &change, &dropped))
 }
 
-/// Queues `words` to `mailbox` and sends it; `Ok` once the provider took it now or earlier
-/// (SEC-018: one row and one provider key per template, mailbox, business and task).
-async fn send<E: EmailAdapter + Send + Sync, P: NoticeParts>(
+/// Stores `words` to `mailbox` (SEC-018: one row and one provider key per template, mailbox,
+/// business and task): the row, the address, and whether the row is new.
+async fn queue<E, P: NoticeParts>(
     db: &mut PgConnection,
     mailer: &AccountMailer<E, P>,
     mailbox: Uuid,
     (template, subject_ids, [subject, body]): (&str, [Uuid; 2], &[String; 2]),
-) -> Result<(), HandlerError> {
+) -> Result<(Uuid, SecretString, bool), HandlerError> {
     let to = mailer.directory.address(db, mailbox).await?;
     let to = to.ok_or(HandlerError("a recipient's address is not on file"))?;
-    let now = mailer.clock.now();
     let (postal, kind) = (mailer.postal.0.as_str(), mailer.postal.1);
     let lines: Vec<String> = body.split("\n\n").map(str::to_owned).collect();
     let ids = (template, mailbox, subject_ids.as_slice());
-    let (row, _) = queue_account_email(
+    let (row, new) = queue_account_email(
         db,
         (&mailer.secret, (postal, kind)),
         ids,
         (subject, &lines),
-        now,
+        mailer.clock.now(),
     )
     .await
     .map_err(|_| FAILED)?;
+    Ok((row, to, new))
+}
+
+/// Sends stored email `row` to `to`; `Ok` once the provider took it now or earlier (SEC-018).
+async fn send<E: EmailAdapter + Send + Sync, P: NoticeParts>(
+    db: &mut PgConnection,
+    mailer: &AccountMailer<E, P>,
+    row: Uuid,
+    to: &SecretString,
+) -> Result<(), HandlerError> {
+    let now = mailer.clock.now();
     let keys = (&mailer.secret, &mailer.provider, mailer.limit);
     match send_email(db, keys, row, EmailTo::Business(to.expose_secret()), now).await {
         Ok(EmailSent::Sent(_) | EmailSent::AlreadySent) => Ok(()),
