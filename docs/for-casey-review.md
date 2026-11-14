@@ -2802,3 +2802,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - The small tooling task that lets every task write the new crate notes files (T437) ran out of tries. Its work was fine, but its last step tidied every crate guide while every other task was still adding lines to those same guides, so it collided with nearly every merge: 7 merge-ups and a failed merge. Those guide collisions were about a quarter of all the AI time spent in the last day.
 - T437 now does only the tooling part and touches no guide; once it lands, tasks write their notes into the notes files, which merge without collisions. A new tiny task (T465) does the tidy-up right after. Nothing needs you.
+
+## Sign-up and business portal pages get a shared form stylesheet (D-3699, D-3700, November 14)
+
+- Two tasks stopped on the same accessibility check: the business sign-up form (T302) and the business portal home and notice settings (T300). The tick boxes and round choice buttons had no edge strong enough to pass, because the site has no styling yet, and on the sign-up form a hint sat on the same line as its label. These were planning gaps, not mistakes by the workers.
+- A new small task (T466) serves one tiny shared stylesheet for forms, beside the one the feedback page already has: dark-edged boxes and buttons, and each hint on its own line. The sign-up form, the portal pages, the capability step (T464), the Confirm page (T261), the job types page (T375) and the Spanish sign-up form (T202) link it. No accessibility check was loosened; the site's full look later (T101) can absorb it.
+- The email action-link pages (T301) have the same kind of boxes, but that task was running when this change was made (it has since stopped on a different planning gap), so it was not changed here. Its own fix can add the same one line.
