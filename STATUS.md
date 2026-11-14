@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:14:34Z by runner 2aad8a530a2f (actions).
+Updated 2026-11-14T22:18:59Z by runner 2aad8a530a2f (actions).
 
 **Building: T301 in progress since 21:48Z; 334 of 469 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T22:14:34Z by runner 2aad8a530a2f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T301 claimed 21:48Z, lease until 00:48Z; lane 3: T443 claimed 21:43Z, lease until 00:43Z
 - **Week:** 52% used, 89.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:14Z, 0 min before this update
+- **Last run:** 22:14Z, 4 min before this update
 - **Keeper:** last ran 22:14Z, next wake 00:45Z
 
 ## Needs attention
@@ -97,6 +97,7 @@ Updated 2026-11-14T22:14:34Z by runner 2aad8a530a2f (actions).
 | T340 | picks and payments: the fee at the pick uses the job's lates | done | 1 | 40 min | 22:32Z |  |
 
 ### Plan and harness merges on main
+- 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
 - 19:52Z Plan: stage-5 readers and splits, CON-022 purge via definer functions, Spanish switch gates, replay functions (T475–T484, D-3753) (#798)
 - 19:20Z Harness: re-point the stale "second opt-out confirmation" mutant after T357 (D-3751) (#796)
 - 18:53Z Plan: T437 re-verification after a false FIX-MAIN failure; T474 so FIX-MAIN blames only what it reverted (D-3752) (#797)
