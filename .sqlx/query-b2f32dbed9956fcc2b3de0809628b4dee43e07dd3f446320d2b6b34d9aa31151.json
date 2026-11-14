@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT tier_index, tier_name, tier_cents FROM picks.pick WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "tier_index",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "tier_index"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "tier_name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "tier_name"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "tier_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "tier_cents"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "b2f32dbed9956fcc2b3de0809628b4dee43e07dd3f446320d2b6b34d9aa31151"
+}
