@@ -23883,7 +23883,7 @@
     "tests/test_runner_logic.py"
    ],
    "slug": "revert",
-   "branch": "claude/task/FIX-MAIN-revert",
+   "branch": "claude/task/FIX-MAIN-a3",
    "revert_sha": "c97c4d0feb12e99f49a885155edb1bdaeb71f188",
    "offending_task": "T437",
    "goal": "Fix main. First option: `git revert --no-edit c97c4d0feb12e99f49a885155edb1bdaeb71f188` (the merge of T437), then `git checkout origin/main -- docs/decisions.md` so the log keeps every entry (it is append-only; the reverted task's entries stand as history, D-1088) and append your own entry at the end; if the revert touches a protected or locked path, end the commit message with a `Plan-Change: D-<your entry>` trailer. Patch over only if the revert itself would break main, and say why in the report.",
@@ -58799,7 +58799,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T16:24:42Z",
+ "updated_at": "2026-11-14T16:24:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
