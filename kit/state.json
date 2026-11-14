@@ -55613,7 +55613,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T07:45:54Z",
+ "updated_at": "2026-11-14T07:46:18Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -55712,7 +55712,7 @@
   ]
  },
  "runner_sha": "61c94cc79081c7f4291f0f0bcdb71be8610ff4de",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "918581713bc4d82184921a94a50e48710fa2dd45",
@@ -55983,7 +55983,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3658,
+ "next_decision": 3659,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -56510,6 +56510,12 @@
    "at": "2026-11-14T06:11:34Z",
    "reason": "T280 plan fix after D-3620: its build note goes to app/server/NOTES.md (its resync conflicted in architecture.md section 10 and the session ended without hand-in); sweep T393's late section-10 paragraph",
    "session": "manual-2846e3da0641"
+  },
+  {
+   "number": 3658,
+   "at": "2026-11-14T07:46:18Z",
+   "reason": "T359 plan gap: payment_jobs.rs:585 (T433) and release_recovery.rs:414 (T254) assert no charge ledger row, contradicting TD-FEE-64; T359 adopts both, tightened to exactly one charge row",
+   "session": "manual-9622fc05c3c9"
   }
  ],
  "lanes_fallback_history": [
