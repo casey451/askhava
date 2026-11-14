@@ -1,22 +1,22 @@
 # Ask Hava build status
 
-Updated 2026-11-14T04:12:27Z by runner c4076414e148 (actions).
+Updated 2026-11-14T04:12:36Z by runner 224fe4c7f956 (actions).
 
-**Building: T396 in progress since 04:09Z; 311 of 436 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T396 in progress since 04:09Z; 311 of 435 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 311 of 436 build tasks (owner gates not counted)
+- **Tasks done:** 311 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 6: T396 claimed 04:09Z, lease until 07:09Z; lane 7: T449 claimed 03:54Z, lease until 06:54Z
 - **Week:** 35% used, 121.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:12Z, 0 min before this update
-- **Keeper:** last ran 04:11Z, next wake 06:56Z
+- **Keeper:** last ran 04:12Z, next wake 06:56Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
 - PLAN GAP T352 (since 2026-11-14T03:46:00Z, no attempt used; a plan change fixes it): T352: measures 53% of the context window, over its 50% limit; T352: dependency T433 is DONE but its owned file app/server/src/payment_jobs.rs is not on main; T352: dependency T433 is DONE but its owned file tests/integration/tests/payment_jobs.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 34 problem(s) on tasks still to run (+205 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+204 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -117,7 +117,7 @@ Updated 2026-11-14T04:12:27Z by runner c4076414e148 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 311 of 436
+**Tasks merged (throughput only):** 311 of 435
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
