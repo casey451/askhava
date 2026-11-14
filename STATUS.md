@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T15:06:28Z by runner 60169623421c (actions).
+Updated 2026-11-14T15:20:32Z by runner c97c4d0feb12 (actions).
 
-**Building: T459 in progress since 15:02Z; 327 of 451 done; week 45% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T459 in progress since 15:02Z; 328 of 451 done; week 45% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 327 of 451 build tasks (owner gates not counted)
+- **Tasks done:** 328 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane 7: T300 claimed 14:35Z, lease until 17:35Z
 - **Week:** 45% used, 104.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:06Z, 0 min before this update
+- **Last run:** 15:14Z, 6 min before this update
 - **Keeper:** last ran 15:06Z, next wake 17:38Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Updated 2026-11-14T15:06:28Z by runner 60169623421c (actions).
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 1 | 3 min | 14:30Z | PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs: |
 | T353 | payments: a won dispute records the countering fee's return  | done | 1 | 30 min | 14:15Z |  |
 | T432 | intake and server: ask the name-and-address question in prod | done | 1 | 71 min | 13:54Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 4 | 38 min | 13:32Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 4 | 38 min | 13:32Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T466 | portals: one shared form stylesheet for native checkboxes an | done | 1 | 27 min | 13:27Z |  |
 | T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
 | T359 | payments: a successful charge writes its own charge ledger e | done | 3 | 72 min | 12:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
@@ -131,7 +131,7 @@ Updated 2026-11-14T15:06:28Z by runner 60169623421c (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 272 of 733 (37.1%) · partial 303 · unstarted 158
-**Tasks merged (throughput only):** 327 of 451
+**Tasks merged (throughput only):** 328 of 451
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -166,7 +166,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 207 of 226 done
+- stage 4: 208 of 226 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
