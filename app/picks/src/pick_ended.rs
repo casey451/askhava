@@ -119,18 +119,21 @@ async fn end_unpaid(tx: &mut PgConnection, id: Uuid, at: Timestamp) -> Result<()
     .map(drop)
 }
 
-/// PICK-046, PICK-035, D-3571: the businesses whose pick on `job` ended without a Confirm
-/// (expired or ended by `payments`); PICK-046's text never offers their quotes again.
+/// PICK-046, PICK-035, D-3571, D-3722: the businesses whose pick on `job` ended without a Confirm
+/// (expired, ended by `payments`, or cancelled as `cant_take` or `fee_terms_changed`); PICK-046's
+/// text never offers their quotes again. A `replaced` or `paused` pick's business stays offered.
 ///
 /// # Errors
 ///
 /// [`PicksError::Database`].
 pub async fn ended_businesses(db: &mut PgConnection, job: Uuid) -> Result<Vec<Uuid>, PicksError> {
     sqlx::query_scalar!(
-        "SELECT DISTINCT business_id FROM picks.pick WHERE job_id = $1 AND status IN ($2, $3)",
+        "SELECT DISTINCT business_id FROM picks.pick WHERE job_id = $1 AND (status IN ($2, $3) \
+         OR (status = $4 AND end_reason IN ('cant_take', 'fee_terms_changed')))",
         job,
         PickStatus::Expired.code(),
         PickStatus::PaymentFailed.code(),
+        PickStatus::Cancelled.code(),
     )
     .fetch_all(db)
     .await
@@ -155,7 +158,7 @@ async fn guarded_move(
 /// job's version now, with the job, pick and business IDs only, due at `lapse_plan`'s `send_at`
 /// (the emergency choice is the job's); deduped by the pick, so a rerun queues nothing more. The
 /// quote lines are `intake`'s, read at send time.
-async fn queue_lapsed_text(
+pub(crate) async fn queue_lapsed_text(
     tx: &mut PgConnection,
     (job, pick, business): (Uuid, Uuid, Uuid),
     at: Timestamp,

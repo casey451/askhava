@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM payments.charge_attempt WHERE pick_id = $1\n             AND status IN ('sent', 'processing', 'succeeded', 'needs_action', 'unreachable'))\n             AS \"charging!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "charging!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "2488f9a6be863f7f489ee506e0a261985f84866b6384e6d9fc5899f7e1d9a508"
+}

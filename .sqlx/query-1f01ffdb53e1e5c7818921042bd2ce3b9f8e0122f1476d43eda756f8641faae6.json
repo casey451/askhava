@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT DISTINCT business_id FROM picks.pick WHERE job_id = $1 AND status IN ($2, $3)",
+  "query": "SELECT business_id FROM picks.pick WHERE id = $1",
   "describe": {
     "columns": [
       {
@@ -17,14 +17,12 @@
     ],
     "parameters": {
       "Left": [
-        "Uuid",
-        "Text",
-        "Text"
+        "Uuid"
       ]
     },
     "nullable": [
       false
     ]
   },
-  "hash": "8aa16c817fe21bfd6cb4baa66ca4b432cc9dfd171eaeff3ae9d236ff8773f0da"
+  "hash": "1f01ffdb53e1e5c7818921042bd2ce3b9f8e0122f1476d43eda756f8641faae6"
 }
