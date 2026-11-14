@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:09:46Z by runner 2aad8a530a2f (actions).
+Updated 2026-11-14T22:14:13Z by runner 2aad8a530a2f (actions).
 
 **Building: T301 in progress since 21:48Z; 334 of 469 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T22:09:46Z by runner 2aad8a530a2f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T301 claimed 21:48Z, lease until 00:48Z; lane 3: T443 claimed 21:43Z, lease until 00:43Z
 - **Week:** 52% used, 89.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:09Z, 0 min before this update
+- **Last run:** 22:14Z, 0 min before this update
 - **Keeper:** last ran 22:09Z, next wake 00:45Z
 
 ## Needs attention
@@ -95,8 +95,6 @@ Updated 2026-11-14T22:09:46Z by runner 2aad8a530a2f (actions).
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | BLOCKED | 1 | 3 min | 23:11Z |  |
 | T328 | picks and server: an ended pick offers the next quote (`paym | BLOCKED | 1 | 4 min | 23:00Z |  |
 | T340 | picks and payments: the fee at the pick uses the job's lates | done | 1 | 40 min | 22:32Z |  |
-| T357 | server, messaging and intake: START into an open request res | done | 2 | 21 min | 22:14Z | Ci: failure; Lint and slow tests: failure / Lint and slow tests failed at step: Rust format and lint (clippy once, befor |
-| T438 | Token usage counts each reply once: dedupe transcript usage  | done | 2 | 19 min | 22:10Z | PLAN GAP: tests/test_failure_drills.py:1046 (test_usage_feeds_the_pacing_windows; owned by no task, T438 may not change  |
 
 ### Plan and harness merges on main
 - 19:52Z Plan: stage-5 readers and splits, CON-022 purge via definer functions, Spanish switch gates, replay functions (T475–T484, D-3753) (#798)
