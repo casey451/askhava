@@ -28,6 +28,10 @@
 //! [`may_confirm`] scopes that route to the signed-in principal: only the owner or a "Confirm and
 //! billing" member of the picked business may see the page or press (PICK-033, SEC-019, D-492,
 //! T084); the route calls it before reading any fact, and anyone else gets the denial.
+//!
+//! T440 (PICK-021, PICK-053, D-2332, D-3627): [`confirm_page_with_tier`] adds, for a pick of a
+//! tiers quote, the package the homeowner chose and its price above the fee line, whose basis
+//! line then reads that price; [`confirm_page_with_code`] is it with no package.
 
 use std::net::IpAddr;
 
@@ -37,6 +41,7 @@ use askhava_businesses::api::members;
 use askhava_intake::api::Admission;
 use askhava_messaging::api::{NoticeKind, notice_log, record_first_open};
 use askhava_payments::api::{AUTHORIZATION_TEXT, ChargeOutcome, Fee, Tier};
+use askhava_picks::api::ChosenTier;
 use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
@@ -105,6 +110,7 @@ struct ConfirmView<'a> {
     csrf: &'a str,
     stripe_key: &'a str,
     code: Option<CodeStep>,
+    package: Option<String>,
 }
 
 /// The page's name for the tier (FEE-001).
@@ -155,6 +161,20 @@ pub fn confirm_page_with_code(
     facts: &ConfirmFacts,
     code: Option<CodeStep>,
 ) -> Result<String, askama::Error> {
+    confirm_page_with_tier(facts, code, None)
+}
+
+/// [`confirm_page_with_code`] for a pick of a tiers quote: `package` is the package the homeowner
+/// chose (`picks.pick`'s stored package), shown as "The homeowner chose: <name>, $<price>." beside the
+/// fee and its basis (PICK-021, PICK-053, D-2332); `None` shows no package line.
+///
+/// # Errors
+/// The template's render error.
+pub fn confirm_page_with_tier(
+    facts: &ConfirmFacts,
+    code: Option<CodeStep>,
+    package: Option<&ChosenTier>,
+) -> Result<String, askama::Error> {
     let (tier, no_fee_line) = match (facts.fee, facts.waived) {
         (Fee::FeeFree { .. }, _) => ("", FEE_FREE_LINE),
         (Fee::Charged { tier, .. }, None) => (tier_name(tier), ""),
@@ -183,6 +203,7 @@ pub fn confirm_page_with_code(
         csrf: &facts.csrf,
         stripe_key: &facts.stripe_key,
         code,
+        package: package.map(|p| format!("The homeowner chose: {}, {}.", p.name, money(p.cents))),
     }
     .render()
 }
