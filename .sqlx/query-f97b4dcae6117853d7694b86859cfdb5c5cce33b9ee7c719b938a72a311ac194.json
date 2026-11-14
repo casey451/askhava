@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, try_no,\n           idempotency_label, stripe_customer_id, stripe_intent_id, authorization_version,\n           amount_cents, pressed_at, charged_at, stripe_charge_id)\n         SELECT i.pick_id, i.business_id, i.job_id, a.press_id, a.try_no, $3, c.stripe_customer_id,\n           i.stripe_intent_id,\n           (SELECT z.version FROM payments.card_authorization z\n             WHERE z.business_id = i.business_id AND z.accepted_at <= a.started_at\n             ORDER BY z.accepted_at DESC, z.version DESC LIMIT 1),\n           i.amount_cents, a.started_at, $4, $5\n         FROM payments.pick_intent i\n         JOIN payments.charge_attempt a ON a.pick_id = i.pick_id AND a.try_no = $2\n         JOIN payments.customer c ON c.business_id = i.business_id\n         WHERE i.pick_id = $1\n         ON CONFLICT (pick_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Text",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f97b4dcae6117853d7694b86859cfdb5c5cce33b9ee7c719b938a72a311ac194"
+}
