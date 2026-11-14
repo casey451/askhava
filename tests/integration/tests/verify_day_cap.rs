@@ -2,7 +2,7 @@
 //! D-2335). Fake numbers and IDs only; Verify is a fake adapter.
 //!
 //! With the day's global count at the threshold less one, 40 sends to 40 different contacts at
-//! once accept at most one, the once-a-day High alert is raised once, and no advisory lock is
+//! once accept exactly one, the once-a-day High alert is raised once, and no advisory lock is
 //! held while Verify is called.
 
 use std::sync::Arc;
@@ -112,7 +112,7 @@ async fn high_alerts(pool: &PgPool) -> i64 {
 }
 
 /// TD-PICK-56 (PICK-055, D-2335): at the threshold less one, 40 concurrent sends to 40 different
-/// contacts accept at most one; the rest are refused by the global cap; one High alert is raised.
+/// contacts accept exactly one; the rest are refused by the global cap; one High alert is raised.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_56_concurrent_sends_at_threshold_less_one_accept_at_most_one(pool: PgPool) {
     let v = Arc::new(FakeVerify::new(&pool));
@@ -130,7 +130,7 @@ async fn td_pick_56_concurrent_sends_at_threshold_less_one_accept_at_most_one(po
             other => panic!("unexpected {other:?}"),
         }
     }
-    assert!(sent <= 1, "{sent} sends passed the global cap");
+    assert_eq!(sent, 1, "exactly one send fits under the global cap");
     assert_eq!(sent + capped, RACERS);
     let attempts: i64 = sqlx::query_scalar("SELECT count(*) FROM picks.code_attempt")
         .fetch_one(&pool)
