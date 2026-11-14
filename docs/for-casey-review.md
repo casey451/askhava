@@ -2798,6 +2798,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The "Approve" link in the phone-linked email works for 7 days.
 - The catalog has no Spanish job-type names, so the Spanish license-change email names job types in English. Adding Spanish names to the catalog would fix it.
 
-## The business portal gets a small stylesheet too (D-3700, November 14)
+## Sign-up and business portal pages get a shared form stylesheet (D-3699, D-3700, November 14)
 
-- The task that puts the business portal online (T300) stopped on the accessibility checks for the portal home and the notice settings page: the tick boxes and the round choice buttons had no edge strong enough to pass, because the site has no styling yet. That was a planning gap, not a mistake by the worker. T300 now also serves a tiny stylesheet for those pages, the same fix the feedback page and the sign-up form got: dark-edged boxes and buttons. No accessibility check was loosened. T300 gets another try; the site's full look later (T101) can absorb this stylesheet.
+- Two tasks stopped on the same accessibility check: the business sign-up form (T302) and the business portal home and notice settings (T300). The tick boxes and round choice buttons had no edge strong enough to pass, because the site has no styling yet, and on the sign-up form a hint sat on the same line as its label. These were planning gaps, not mistakes by the workers.
+- A new small task (T466) serves one tiny shared stylesheet for forms, beside the one the feedback page already has: dark-edged boxes and buttons, and each hint on its own line. The sign-up form, the portal pages, the capability step (T464), the Confirm page (T261) and the job types page (T375) link it. No accessibility check was loosened; the site's full look later (T101) can absorb it.
+- The email action-link pages (T301) have the same kind of boxes, but that task was already running, so it was not changed. If it stops on this check, it gets the same one-line fix.
