@@ -648,5 +648,11 @@
     "draft": true,
     "segments": 3,
     "text": "{brand_short}: Este es su enlace para iniciar sesión. Funciona una vez, durante los próximos 15 minutos: {link} Si no pidió iniciar sesión, puede ignorar este correo."
+  },
+  "business_mailbox_code": {
+    "audience": "business",
+    "draft": true,
+    "segments": 2,
+    "text": "{brand_short}: Su código para registrarse es {number}. Es válido por 30 minutos. Si usted no se registró, puede ignorar este correo."
   }
 }

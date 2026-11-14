@@ -203,3 +203,74 @@ pub async fn pick_fee(
         terms_version: row.terms_version,
     }))
 }
+
+/// FEE-016, FEE-017, PICK-050, D-1871 (3), D-3722: in the caller's transaction, ends pick `pick`'s
+/// PaymentIntent record at `at` unless a charge of it may still succeed. It first locks the
+/// `payments.pick_intent` row (`SELECT ... FOR UPDATE`, the lock a press's `begin_attempt` takes),
+/// and only then, in a separate statement that sees what a press committed while this call waited,
+/// reads whether an attempt is `sent`, `processing`, `succeeded`, `needs_action` or `unreachable`:
+/// then nothing changes and the answer is `false`. Otherwise (no attempt, or only `declined` ones)
+/// it sets the intent's `ended_at` (if not set) and ends its open `payments.pay_timer` rows at
+/// `at`, raises no event (`picks` ends its own pick) and answers `true`, so a later press finds
+/// the intent ended and starts no attempt. With no intent row nothing can be charged: `true`,
+/// nothing written.
+///
+/// # Errors
+///
+/// [`PickFeeError::Database`] (the caller rolls back).
+pub async fn end_intent_unless_charging(
+    conn: &mut PgConnection,
+    pick: Uuid,
+    at: Timestamp,
+) -> Result<bool, PickFeeError> {
+    let locked = sqlx::query_scalar!(
+        "SELECT pick_id FROM payments.pick_intent WHERE pick_id = $1 FOR UPDATE",
+        pick
+    )
+    .fetch_optional(&mut *conn)
+    .await
+    .map_err(|_| PickFeeError::Database)?;
+    if locked.is_none() {
+        return Ok(true);
+    }
+    let charging = sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM payments.charge_attempt WHERE pick_id = $1
+             AND status IN ('sent', 'processing', 'succeeded', 'needs_action', 'unreachable'))
+             AS "charging!""#,
+        pick
+    )
+    .fetch_one(&mut *conn)
+    .await
+    .map_err(|_| PickFeeError::Database)?;
+    if charging {
+        return Ok(false);
+    }
+    end_intent(conn, pick, at).await?;
+    Ok(true)
+}
+
+/// Sets pick `pick`'s intent `ended_at` to `at` if not set and ends its open pay timers of every
+/// kind at `at`, as `payments`' own pick end does (FEE-018, FEE-020, D-3722).
+async fn end_intent(
+    conn: &mut PgConnection,
+    pick: Uuid,
+    at: Timestamp,
+) -> Result<(), PickFeeError> {
+    sqlx::query!(
+        "UPDATE payments.pick_intent SET ended_at = $2 WHERE pick_id = $1 AND ended_at IS NULL",
+        pick,
+        at.to_sqlx() as _,
+    )
+    .execute(&mut *conn)
+    .await
+    .map_err(|_| PickFeeError::Database)?;
+    sqlx::query!(
+        "UPDATE payments.pay_timer SET ended_at = $2 WHERE pick_id = $1 AND ended_at IS NULL",
+        pick,
+        at.to_sqlx() as _,
+    )
+    .execute(conn)
+    .await
+    .map_err(|_| PickFeeError::Database)
+    .map(drop)
+}

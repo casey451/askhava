@@ -19,6 +19,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - `refuse_cross_site` is never layered over webhooks (their callers send no `Origin`).
 - Owner sign-in needs both factors; 29:59 idle live, 30:01 gone; 12 hours max; an owner session idle over 30 minutes gets no `current_session` (so no owner proof); 5:00 fresh, 5:01 refused; 14-character and breached passwords refused; logout and "Sign out everywhere" end sessions; recovery codes need two factors; the bootstrap runs once and the app role cannot insert an owner; Guarded by `tests/security/tests/owner_auth.rs`. More: `(never 14)` in NOTES.md.
 - An action link opens only its own action and object, works once, ends at its window and dies with its member: `tests/security/tests/action_links.rs`. No quote fact is optional, the earliest visit is never pre-filled, and every quote type shows its fee before submit: `tests/integration/tests/business_actions.rs`. More: `(never 15)` in NOTES.md.
+- `send_sign_in_link` sends only to a current member and never past `LINKS_PER_LIFE` in `LINK_LIFE`: `tests/integration/tests/signup_mail_paths.rs` (T468).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/portals/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/portals/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

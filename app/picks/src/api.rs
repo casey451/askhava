@@ -96,6 +96,7 @@ pub use crate::backup_choice::{
     choose_backup,
 };
 pub use crate::business_left::{end_for_leaving, waiting_picks_of};
+pub use crate::cant_take::end_for_fee_terms;
 pub use crate::cant_take::{cant_take, cant_take_job, cant_take_link};
 pub use crate::confirm::{
     BusinessWord, ConfirmReply, ConfirmSettings, EXPIRED_TEMPLATE, FEE_REPLY_TEMPLATE, FeeBasis,

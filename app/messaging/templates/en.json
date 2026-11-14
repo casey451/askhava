@@ -533,5 +533,10 @@
     "audience": "business",
     "segments": 3,
     "text": "{brand_short}: Here is your sign-in link. It works once, for the next 15 minutes: {link} If you did not ask to sign in, you can ignore this email."
+  },
+  "business_mailbox_code": {
+    "audience": "business",
+    "segments": 2,
+    "text": "{brand_short}: Your sign-up code is {number}. It's good for the next 30 minutes. If you didn't sign up, you can ignore this email."
   }
 }

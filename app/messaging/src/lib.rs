@@ -26,6 +26,7 @@ mod email;
 mod email_timing;
 mod handlers;
 mod keywords;
+mod mailbox_code_mail;
 mod missed_cards;
 mod mode;
 mod mode_state;
