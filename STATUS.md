@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T15:03:02Z by runner 60169623421c (actions).
+Updated 2026-11-14T15:06:07Z by runner 60169623421c (actions).
 
-**Building: T459 in progress since 15:02Z; 327 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T459 in progress since 15:02Z; 327 of 451 done; week 45% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 327 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane 7: T300 claimed 14:35Z, lease until 17:35Z
-- **Week:** 44% used, 104.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:00Z, 2 min before this update
+- **Week:** 45% used, 104.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:04Z, 1 min before this update
 - **Keeper:** last ran 15:00Z, next wake 17:38Z
 
 ## Needs attention
@@ -105,7 +105,6 @@ Updated 2026-11-14T15:03:02Z by runner 60169623421c (actions).
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | resync | 2 | 35 min | 16:03Z |  |
 | T319 | portals and server: security-event rows are capped per addre | resync | 1 | 54 min | 15:51Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | done | 2 | 66 min | 15:48Z | session ended without handing in |
-| T330 | picks, intake and server: a withdrawn pick tells its busines | done | 1 | 24 min | 15:05Z |  |
 
 ### Plan and harness merges on main
 - 13:12Z Plan: T301 door-matrix Quote-link cases follow BIZ-038/CARD-023; action pages link forms.css (D-3706) (#781)
