@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T00:32:25Z by runner bc74ea9d3841 (actions).
+Updated 2026-11-14T00:36:01Z by runner 0d5dc61a17e7 (actions).
 
-**Building: T341 in progress since 00:03Z; 302 of 431 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T341 in progress since 00:03Z; 302 of 434 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 302 of 431 build tasks (owner gates not counted)
+- **Tasks done:** 302 of 434 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z; lane 7: T448 claimed 00:11Z, lease until 03:11Z
-- **Week:** 31% used, 126.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:32Z, 0 min before this update
+- **Lane:** lane 2: T341 claimed 00:03Z, lease until 03:03Z; lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 5: T328 claimed 00:02Z, lease until 03:02Z; lane 7: T448 claimed 00:11Z, lease until 03:11Z
+- **Week:** 31% used, 127.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 00:32Z, 3 min before this update
 - **Keeper:** last ran 00:32Z, next wake 03:05Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 30 problem(s) on tasks still to run (+197 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 30 problem(s) on tasks still to run (+198 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -108,8 +108,8 @@ Updated 2026-11-14T00:32:25Z by runner bc74ea9d3841 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 279 of 733 (38.1%) · partial 294 · unstarted 160
-**Tasks merged (throughput only):** 302 of 431
+**Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
+**Tasks merged (throughput only):** 302 of 434
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -117,7 +117,7 @@ Updated 2026-11-14T00:32:25Z by runner bc74ea9d3841 (actions).
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 20 | 35 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
-| consent | 14 | 17 | 4 | 35 |
+| consent | 12 | 19 | 4 | 35 |
 | fees | 14 | 37 | 1 | 52 |
 | intake | 26 | 14 | 3 | 43 |
 | job-cards | 18 | 6 | 0 | 24 |
@@ -137,7 +137,7 @@ Updated 2026-11-14T00:32:25Z by runner bc74ea9d3841 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T00:08:17Z (week)): week: 67.2M used, 126.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T14:49:32Z.
+- Pacing (session_reading 2026-11-14T00:32:02Z (week)): week: 66.5M used, 127.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T10:17:58Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -154,6 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T341 (lease until 2026-11-14T03:03:00Z)
+- lane 3: T280 (lease until 2026-11-14T03:35:47Z)
 - lane 5: T328 (lease until 2026-11-14T03:02:31Z)
 - lane 7: T448 (lease until 2026-11-14T03:11:43Z)
 
