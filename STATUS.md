@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:24:54Z by runner f7c093395ac7 (actions).
+Updated 2026-11-14T11:25:15Z by runner f7c093395ac7 (actions).
 
-**Building: T329 in progress since 10:44Z; 320 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T359 in progress since 11:24Z; 320 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 320 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 6: T329 claimed 10:44Z, lease until 13:44Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
-- **Week:** 41% used, 110.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:19Z, 5 min before this update
+- **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
+- **Week:** 41% used, 109.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:19Z, 6 min before this update
 - **Keeper:** last ran 11:18Z, next wake 13:47Z
 
 ## Needs attention
+- PLAN GAP T301 (since 2026-11-14T11:24:40Z, no attempt used; a plan change fixes it): T301: dependency T453 is DONE but its owned file app/quotes/src/quote_rules.rs is not on main; T301: dependency T453 is DONE but its owned file tests/integration/tests/quote_rules.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 33 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
@@ -155,7 +156,7 @@ Updated 2026-11-14T11:24:54Z by runner f7c093395ac7 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T11:05:39Z (week)): week: 83.2M used, 110.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T17:42:29Z.
+- Pacing (session_reading 2026-11-14T11:18:26Z (week)): week: 84.7M used, 109.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T17:35:19Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -171,6 +172,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T359 (lease until 2026-11-14T14:24:40Z)
 - lane 6: T329 (lease until 2026-11-14T13:44:58Z)
 - lane 7: T302 (lease until 2026-11-14T14:10:31Z)
 
