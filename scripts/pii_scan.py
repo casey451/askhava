@@ -37,7 +37,7 @@ from pathlib import Path
 
 SKIP_PREFIXES = ("sources/", ".git/")
 SKIP_FILES = ("kit/sources.sha256", "uv.lock")
-MAX_BYTES = 4_000_000
+MAX_BYTES = 12_000_000  # a text file over this is not scanned and fails the run; raised from 4,000,000 (D-1064) by D-3563 (c)
 
 FAKE_STREETS = {"Test", "Example", "Sample", "Fake", "Canary", "Sentinel", "Placeholder"}
 FAKE_NAMES = {
