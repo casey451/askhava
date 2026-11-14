@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T19:52:13Z by runner 8a72c0065f44 (actions).
+Updated 2026-11-14T19:52:34Z by runner 8a72c0065f44 (actions).
 
 **Building: T467 in progress since 19:47Z; 329 of 459 done; week 50% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-14T19:52:13Z by runner 8a72c0065f44 (actions).
 - **Lane:** lane 1: T467 claimed 19:47Z, lease until 22:47Z; lane 2: T474 claimed 19:51Z, lease until 22:51Z; lane 3: T468 claimed 19:50Z, lease until 22:50Z; lane 4: T459 claimed 19:49Z, lease until 22:49Z; lane 6: T300 claimed 19:50Z, lease until 22:50Z; lane 7: T437 claimed 19:48Z, lease until 22:48Z
 - **Week:** 50% used, 88.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:52Z, 0 min before this update
-- **Keeper:** last ran 19:33Z, next wake 01:13Z
+- **Keeper:** last ran 19:52Z, next wake 22:50Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -99,6 +99,7 @@ Updated 2026-11-14T19:52:13Z by runner 8a72c0065f44 (actions).
 | T314 | payments and picks: a dispute's auto-submit mark and its tas | done | 1 | 29 min | 19:56Z |  |
 
 ### Plan and harness merges on main
+- 19:52Z Plan: stage-5 readers and splits, CON-022 purge via definer functions, Spanish switch gates, replay functions (T475–T484, D-3753) (#798)
 - 19:20Z Harness: re-point the stale "second opt-out confirmation" mutant after T357 (D-3751) (#796)
 - 18:53Z Plan: T437 re-verification after a false FIX-MAIN failure; T474 so FIX-MAIN blames only what it reverted (D-3752) (#797)
 - 18:45Z Plan: email sending wired, pick-end texts complete, Can't-take route, T121 unblocked (T469–T473, D-3750) (#794)
