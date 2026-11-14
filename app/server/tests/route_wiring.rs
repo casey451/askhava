@@ -254,11 +254,15 @@ fn router() -> Router {
     let signin = askhava_server::business_signin::ServedSignIn::from_settings(
         &settings,
         pool.clone(),
-        pairs,
+        pairs.clone(),
     )
     .expect("sign-in part");
-    let parts = askhava_server::RouterParts::from((webhooks, voice, pick_keys, stripe));
-    askhava_server::build_router(pool, control.router(), parts.with_sign_in(signin))
+    let signup = askhava_server::business_signup::ServedSignUp::from_settings(pool.clone(), pairs)
+        .expect("sign-up part");
+    let parts = askhava_server::RouterParts::from((webhooks, voice, pick_keys, stripe))
+        .with_sign_in(signin)
+        .with_sign_up(signup);
+    askhava_server::build_router(pool, control.router(), parts)
 }
 
 /// `path` with each `{name}` segment filled with a fake value.

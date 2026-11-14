@@ -43,9 +43,10 @@ use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{JobStatus, create, job_number, move_to};
 use askhava_ops::api::Actor as AuditActor;
 use askhava_portals::api::{
-    CookieJar, Need, Realm, business_principal, channel_choices, checkin_routes, csrf_token,
-    current_session, ensure_pre_session, feedback_routes, pick_flow_routes, quote_page_routes,
-    start_session,
+    CODE_SEND_ROUTE, CookieJar, EMAIL_CHECK_ROUTE, EMAIL_RESEND_ROUTE, IDENTITY_CHECK_ROUTE,
+    LETTER_ROUTE, NUMBER_OLD_ROUTE, Need, Realm, SERVICE_AREA_ROUTE, SIGNUP_FORM_ROUTE,
+    SIGNUP_ROUTE, business_principal, channel_choices, checkin_routes, csrf_token, current_session,
+    ensure_pre_session, feedback_routes, pick_flow_routes, quote_page_routes, start_session,
 };
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -124,6 +125,20 @@ enum Door {
     Owner,
 }
 
+/// D-3641 (SEC-019, TD-SEC-61): the sign-up step paths open without a session, matched exactly,
+/// never as a prefix; `CAPABILITY_ROUTE` and every other `/b/...` path keep the Business door.
+const SIGNUP_STEPS: [&str; 9] = [
+    SIGNUP_ROUTE,
+    SIGNUP_FORM_ROUTE,
+    CODE_SEND_ROUTE,
+    NUMBER_OLD_ROUTE,
+    LETTER_ROUTE,
+    IDENTITY_CHECK_ROUTE,
+    EMAIL_CHECK_ROUTE,
+    EMAIL_RESEND_ROUTE,
+    SERVICE_AREA_ROUTE,
+];
+
 /// The paths of the public door besides `/help` and below and the `site` module's routes.
 const PUBLIC_PATHS: [&str; 6] = [
     "/healthz",
@@ -143,7 +158,7 @@ fn door(path: &str, site: bool) -> Door {
         Door::Webhook
     } else if under("/static") {
         Door::Asset
-    } else if path.split('/').any(|seg| seg == "sign-in") || path == "/b/signup" {
+    } else if path.split('/').any(|seg| seg == "sign-in") || SIGNUP_STEPS.contains(&path) {
         Door::SignIn
     } else if ["/q/{token}", "/f/{token}", "/c/{token}"]
         .iter()
