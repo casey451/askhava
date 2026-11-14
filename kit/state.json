@@ -37734,7 +37734,7 @@
     "T421",
     "T431"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "tier-and-visit-schedule-at-pick",
    "type": "harness",
@@ -37749,7 +37749,7 @@
     3578
    ],
    "reason": null,
-   "last_failure": "PLAN GAP: test-design.md:203 (TD-FEE-63) and D-2332 require a text pick of a tiers quote to store nothing and reply with the quote-page link, but kit/prompts/T341.md:139 and :145 say T341 owns no customer copy. The reply needs a new en/es template with a link placeholder: existing text_pick_* templates have no {link}, and the first_quote, all_quotes_in and quote_update templates that do say something false here. Reviewer confirmed. Correction: no intake change is needed, because Out::say in app/picks/src/service.rs:183-205 renders the reply. TextPickIn carries no quote-page link, which is unsettled. Smallest fix: let T341 own the new template key (copy review WORD-028/029), or move this reply to T440 or a copy task and change TD-FEE-63 and D-2332 to match. Nothing was changed or committed.\nre-queued after plan fix D-3580: text_pick_package template with link",
+   "last_failure": "merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891)",
    "history": [
     {
      "attempt": 1,
@@ -37779,13 +37779,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 184,
      "head_sha": "a2cc1d94373373f2bfe46f2935c7cff3adc07dba",
-     "pr": null,
-     "checks": null,
+     "pr": 731,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-14T00:03:00Z",
      "ended_at": "2026-11-14T01:10:02Z",
-     "result": "MERGE_PENDING",
+     "result": "resync",
      "usage": {
       "worker": {
        "tokens": 9186330,
@@ -37825,7 +37870,33 @@
     "enabled": true,
     "why": "auto-merge on #731 (gh pr merge)",
     "head": "a2cc1d94373373f2bfe46f2935c7cff3adc07dba"
-   }
+   },
+   "merge_turn_since": "2026-11-14T02:03:36Z",
+   "runner_closed_prs": [
+    731
+   ],
+   "resync": {
+    "attempt": 2,
+    "from": "a2cc1d94373373f2bfe46f2935c7cff3adc07dba",
+    "main": "a9be821a38617b888e0bb786190135498dfbc952",
+    "paths": [
+     "docs/for-casey-review.md"
+    ],
+    "at": "2026-11-14T02:03:36Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 2,
+     "from": "a2cc1d94373373f2bfe46f2935c7cff3adc07dba",
+     "main": "a9be821a38617b888e0bb786190135498dfbc952",
+     "paths": [
+      "docs/for-casey-review.md"
+     ],
+     "at": "2026-11-14T02:03:36Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T344",
@@ -50017,7 +50088,7 @@
      }
     }
    ],
-   "reviewed_sha": "51ab2d44582fd6da66ce422897c6f2d98af6e235",
+   "reviewed_sha": "81d51a0bc6793aa72700a3296fc498092c0e94c6",
    "review_lease": {
     "task": "T447",
     "session": "actions-43537253170",
@@ -50037,10 +50108,23 @@
      "main": "d997705c35e7d8be5f02fe0bca82b436e6e73085",
      "how": "hand-in",
      "at": "2026-11-14T01:30:40Z"
+    },
+    {
+     "from": "51ab2d44582fd6da66ce422897c6f2d98af6e235",
+     "to": "81d51a0bc6793aa72700a3296fc498092c0e94c6",
+     "main": "a9be821a38617b888e0bb786190135498dfbc952",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-14T02:03:36Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-14T02:03:36Z"
   },
   {
    "id": "T448",
@@ -53334,7 +53418,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T02:03:11Z",
+ "updated_at": "2026-11-14T02:03:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -53433,7 +53517,7 @@
   ]
  },
  "runner_sha": "a9be821a38617b888e0bb786190135498dfbc952",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "4bc0aa878dc0c3a9408753088149406b63b51c17",
