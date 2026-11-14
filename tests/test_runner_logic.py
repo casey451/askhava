@@ -162,6 +162,22 @@ def test_exact_file_ownership_does_not_cover_siblings() -> None:
     assert verify.check_paths(["pyproject.toml.bak"], t, [], [])
 
 
+
+def test_a_crate_notes_file_is_shared_exactly_where_its_crate_guide_is() -> None:
+    """T437 (D-3474): app/<crate>/NOTES.md follows its crate CLAUDE.md into the shared paths, and nothing else does."""
+    t = task("T010")
+    shared = ["app/pay/CLAUDE.md"]
+    assert verify.check_paths(["app/pay/NOTES.md", "app/pay/CLAUDE.md"], t, [], shared) == []
+    assert verify.check_paths(["app/site/NOTES.md"], t, [], shared) == ["app/site/NOTES.md: not owned by T010"]
+    odd = ["app/pay/src/NOTES.md", "app/pay/NOTES.md.bak", "NOTES.md"]
+    assert len(verify.check_paths(odd, t, [], shared)) == 3
+
+
+def test_a_crate_notes_file_under_a_protected_path_is_still_refused_for_a_build_task() -> None:
+    shared = ["app/vault/CLAUDE.md"]
+    problems = verify.check_paths(["app/vault/NOTES.md"], task("T010"), ["app/vault/"], shared)
+    assert problems == ["app/vault/NOTES.md: protected path, harness tasks only"]
+
 # ---- model check
 
 

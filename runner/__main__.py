@@ -361,15 +361,24 @@ def crate_cap(settings: Path) -> int:
 
 def crate_doc_full(root: Path) -> Callable[[str, int], bool]:
     """Whether `app/<crate>/CLAUDE.md` on origin's `main` (`crate_doc_text`), with `held` tasks in flight in the
-    crate, would reach scripts/check_code_docs.py's line limit (`MAX_CRATE_DOC_LINES`, counted as that check
-    counts), read at each claim (D-3303): each task in flight adds at least a line, so its line count plus
-    `held` at the limit leaves no room for another, and the crate keeps one task in flight. A file that is
-    missing or unreadable counts as full, the safer reading."""
+    crate, would reach a limit of scripts/check_code_docs.py, read at each claim. The line rule (D-3303): its
+    line count (counted as that check counts) plus `held` at `MAX_CRATE_DOC_LINES` leaves no room for another
+    task. The byte rule (D-3474, T437): its UTF-8 bytes plus `(held + 1) * CRATE_DOC_TASK_BYTES` (one
+    `## Never break` bullet for each task in flight and for the next) over `MAX_CRATE_DOC_BYTES` would merge
+    into a guide the check refuses. Both byte constants are read with `getattr`; a check without them leaves
+    the line rule alone. Full keeps the crate at its tasks in flight. A missing or unreadable file counts as
+    full, the safer reading."""
     def full(crate: str, held: int) -> bool:
         text = crate_doc_text(root, crate)
         if text is None:
             return True
-        return len(text.splitlines()) + held >= check_code_docs.MAX_CRATE_DOC_LINES
+        if len(text.splitlines()) + held >= check_code_docs.MAX_CRATE_DOC_LINES:
+            return True
+        budget = getattr(check_code_docs, "MAX_CRATE_DOC_BYTES", None)
+        room = getattr(check_code_docs, "CRATE_DOC_TASK_BYTES", None)
+        if budget is None or room is None:
+            return False
+        return len(text.encode("utf-8")) + (held + 1) * room > budget
     return full
 
 

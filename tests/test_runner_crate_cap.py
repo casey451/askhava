@@ -214,3 +214,34 @@ def test_the_reservation_reads_the_limit_with_the_later_task_counted(tmp_path: P
     s = holding(tasks, "T020")
     assert lanes.exclusive_ids(["T010", "T002", "T004"], s, NOW, by_id(tasks), capped_limit) == ["T004"]
     assert lanes.exclusive_ids(["T002", "T004"], s, NOW, by_id(tasks), capped_limit) == ["T002", "T004"]  # no reservation: it may
+
+
+def write_doc(root: Path, crate: str, size: int) -> None:
+    """A crate guide of `size` UTF-8 bytes in a few lines, far under the line limit."""
+    doc = root / "app" / crate / "CLAUDE.md"
+    doc.parent.mkdir(parents=True, exist_ok=True)
+    doc.write_text("x" * (size - 1) + "\n", encoding="utf-8")
+
+
+def test_a_crate_is_full_when_its_bytes_and_a_task_bullet_pass_the_byte_budget(tmp_path: Path) -> None:
+    """T437 (D-3474): a guide's bytes plus 400 for the next task and 400 for each one in flight over 8,192 is full."""
+    budget, room = check_code_docs.MAX_CRATE_DOC_BYTES, check_code_docs.CRATE_DOC_TASK_BYTES
+    assert (budget, room) == (8_192, 400)
+    write_doc(tmp_path, "small", 2_000)
+    write_doc(tmp_path, "edge", budget - room)
+    write_doc(tmp_path, "near", budget - room + 1)
+    full = entry.crate_doc_full(tmp_path)
+    assert (full("small", 0), full("edge", 0), full("near", 0)) == (False, False, True)
+    assert (full("edge", 1), full("small", 14), full("small", 15)) == (True, False, True)  # 400 bytes per task held
+
+
+def test_a_check_without_the_byte_constants_falls_back_to_the_line_rule(tmp_path: Path, monkeypatch: Any) -> None:
+    """An older runner copy of scripts/check_code_docs.py without the byte constants leaves the line rule alone."""
+    write_doc(tmp_path, "big", 20_000)
+    (tmp_path / "app" / "long").mkdir(parents=True)
+    (tmp_path / "app" / "long" / "CLAUDE.md").write_text("line\n" * check_code_docs.MAX_CRATE_DOC_LINES, encoding="utf-8")
+    full = entry.crate_doc_full(tmp_path)
+    assert full("big", 0) is True
+    monkeypatch.delattr(check_code_docs, "MAX_CRATE_DOC_BYTES")
+    monkeypatch.delattr(check_code_docs, "CRATE_DOC_TASK_BYTES")
+    assert (full("big", 0), full("long", 0), full("missing", 0)) == (False, True, True)
