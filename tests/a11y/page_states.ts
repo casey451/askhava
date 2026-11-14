@@ -157,6 +157,13 @@ const SIGNIN_LINK_STATES: readonly PageState[] = [
   ["business sign-in link ended", "This sign-in link has stopped working", "Check your email", "SELECT 1"],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: SIGNIN_LINK_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const SIGNUP_ROUTE = "/b/signup";
+
+/** The business sign-up form (T302, CON-019): no seed, the plain path; `main` stores the catalog. */
+const SIGNUP_STATES: readonly PageState[] = [
+  ["business sign-up form", "What work do you do?", "Where your code goes", ""],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: SIGNUP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -164,6 +171,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: CHECK_IN_ROUTE, seed: checkInSeed, states: CHECK_IN_STATES },
   { route: SIGNIN_ROUTE, seed: (state) => state.route, states: SIGNIN_STATES },
   { route: SIGNIN_LINK_ROUTE, seed: tokenSeed, states: SIGNIN_LINK_STATES },
+  { route: SIGNUP_ROUTE, seed: (state) => state.route, states: SIGNUP_STATES },
 ];
 
 /** Every state of every page, in entry order. */
