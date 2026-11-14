@@ -77,3 +77,6 @@
 - [FEE-050 FEE-027] (task 405) cross-reference (D-3620): the build note of T405 is in `app/payments/NOTES.md`: `grep -n '(task 405)' app/payments/NOTES.md`.
 - [BIZ-002 BIZ-016 LIC-008 LIC-010] (task 385) cross-reference (D-3620): the build note of T385 is in `app/licensing/NOTES.md`: `grep -n '(task 385)' app/licensing/NOTES.md`.
 - [FEE-029 FEE-051 FEE-027 FEE-050] (task 335) cross-reference (D-3620): the build note of T335 is in `app/payments/NOTES.md`: `grep -n '(task 335)' app/payments/NOTES.md`.
+- [SEC-032 OPS-017 CON-030 AI-022] (kit 8) cross-reference (D-3620): the build note of K8 is in `docs/build-notes.md`: `grep -n '(kit 8)' docs/build-notes.md`.
+- [SEC-016 TXT-013 TXT-014 CARD-019] (task 377) cross-reference (D-3620): the build note of T377 is in `app/core/NOTES.md`: `grep -n '(task 377)' app/core/NOTES.md`.
+- [SEC-016] (task 378) cross-reference (D-3620): the build note of T378 is in `app/calls/NOTES.md`: `grep -n '(task 378)' app/calls/NOTES.md`.

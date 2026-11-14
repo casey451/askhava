@@ -372,3 +372,4 @@
 - [FEE-029 FEE-051 FEE-027 FEE-050] (task 335) `app/payments/src/dispute_http.rs`: `impl DisputeStripe for StripePayments`. The stand-in's stored charge (T405) gains `created`, `amount_refunded`, `disputed`, metadata and a balance transaction (fee 2.9% + 30 cents); it serves the charge page, the dispute list by charge and the dispute update (submit once per key, then `under_review`). Registering the two kinds is T433's.
 - [FEE-029 FEE-051 FEE-027 FEE-050] (task 335) Tests: `tests/contract/test_stripe_reconcile_dispute.py`, `reconcile_http.rs` and `dispute_http.rs` `tests` (TD-FEE-61).
 - [PICK-022 PRIV-005 FEE-052] (task 355) cross-reference (D-3620): the build note of T355 is in `app/picks/NOTES.md`: `grep -n '(task 355)' app/picks/NOTES.md`.
+- [FEE-019 FEE-020 FEE-021 FEE-026] (task 433) cross-reference (D-3620): the build note of T433 is in `app/server/NOTES.md`: `grep -n '(task 433)' app/server/NOTES.md`.

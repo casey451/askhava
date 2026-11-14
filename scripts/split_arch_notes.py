@@ -14,8 +14,10 @@ them, mechanically (no rewording), the way scripts/split_crate_doc.py moved crat
 - a paragraph naming no crate, or one an app/ file may not hold (held_back: a brand literal, or a word shaped
   like a requirement ID that docs/spec/ does not define), goes to docs/build-notes.md in the same form, with a
   cross-reference entry in the crate it is about;
+- a note already in the NOTES.md files is a second copy (second_copies): the move refuses to run and --check
+  fails, so a resync that kept an old section 10 cannot double every note;
 - every other crate the paragraph names strongly (an `app/<crate>/` path, `<crate>::` or an `askhava_<crate>`
-  or `NNNN_<crate>_` name) gets one cross-reference entry (XREF) pointing at where the note went;
+  or `NNNN_<crate>_` name) gets one cross-reference entry (XREF) pointing at where the note went, and `adapters` always gets one for a section-7 note;
 - each section keeps a short stub (STUB) in place of its notes, saying where they are and how to grep them.
 
 Usage:
@@ -24,7 +26,8 @@ Usage:
   python3 scripts/split_arch_notes.py --verify REF  # prove the move from docs/architecture.md at REF: the
       file holds, in order, every line of REF's with each section's notes replaced by its stub (lines may be added), every crate NOTES.md starts with REF's,
       and every note's entries appear, whole and in order, exactly once across the destinations
-  python3 scripts/split_arch_notes.py --check       # report each build note left in docs/architecture.md; exit 0
+  python3 scripts/split_arch_notes.py --check       # report each build note left in docs/architecture.md; exit 0,
+      but exit 1 on a second copy of a note already moved (a bad resync; the move refuses it too)
       (the transition: tasks claimed before D-3620 may still bring one in on their update merge, and the
       operator sweeps them with a plan pull request that runs this tool)
   python3 scripts/split_arch_notes.py --check --strict   # the same, exit 1 on any (a later plan change turns
@@ -49,6 +52,8 @@ ROOT = Path(__file__).resolve().parents[1]
 ARCHITECTURE = "docs/architecture.md"
 BUILD_NOTES = "docs/build-notes.md"
 SECTIONS = (7, 10)
+ADAPTERS_SECTION = 7
+ADAPTERS_NOTES = "app/adapters/NOTES.md"
 # A build-note paragraph: what one task built or changed, its review fixes or a stage cleanup (D-3620).
 NOTE = re.compile(r"^\*\*(?:What (?P<kind>[TK])(?P<num>\d+) (?:built|changed)\b|T(?P<rev>\d+)'s review fixes\b"
                   r"|Stage-\d+ cleanup \(T(?P<stage>\d+)\b)")
@@ -170,13 +175,15 @@ def held_back(known: set[str], brand: Callable[[str], bool]) -> Callable[[str], 
 def plan(text: str, crates: list[str], known: set[str], hold: Callable[[str], bool]) -> dict[str, list[str]]:
     """{destination path: entry lines to append} for every note of `text`, in file order."""
     out: dict[str, list[str]] = {}
-    for _, _, tag, para in notes_of(text):
+    for section, _, tag, para in notes_of(text):
         crate, others = route(para, crates)
         lines = note_entries(tag, para, known)
         held = any(hold(line) for line in lines)
         dest = BUILD_NOTES if crate is None or held else f"app/{crate}/NOTES.md"
         out.setdefault(dest, []).extend(lines)
         refs = ([crate] if held and crate else []) + others
+        if section == ADAPTERS_SECTION and dest != ADAPTERS_NOTES and "adapters" not in refs:
+            refs.append("adapters")  # a note of section 7 (adapters and stand-ins) is always findable from adapters
         for other in refs:
             out.setdefault(f"app/{other}/NOTES.md", []).append(xref_entry(tag, para, dest, known))
     return out
@@ -187,6 +194,10 @@ def split(root: Path) -> int:
     text = arch.read_text(encoding="utf-8")
     if not notes_of(text):
         print("split_arch_notes: no build notes left in docs/architecture.md; nothing to move")
+        return 1
+    copies = second_copies(root, text)
+    if copies:
+        print("\n".join(copies + ["split_arch_notes: refused, nothing written"]))
         return 1
     known = ccd.spec_ids(root)
     moves = plan(text, crate_names(root), known, held_back(known, scd.brand_guard()))
@@ -255,6 +266,22 @@ def verify(root: Path, ref: str) -> list[str]:
     return problems
 
 
+def moved_tags(root: Path) -> set[str]:
+    """The tags (`task 250`) that already have note entries, cross-references left out, in any destination."""
+    paths = sorted((root / "app").glob("*/NOTES.md")) + [root / BUILD_NOTES]
+    return {tag for p in paths if p.is_file() for tag, _ in tagged(p.read_text(encoding="utf-8"))}
+
+
+def second_copies(root: Path, text: str) -> list[str]:
+    """A build note in `text` whose task already has note entries: a second copy, such as a resync that kept an
+    old section 10 whole. Sweeping it would append every entry again, so it is deleted instead, never moved. A
+    task's late note never causes this: its entries do not exist until the sweep."""
+    done = moved_tags(root)
+    return [f"{ARCHITECTURE}:{n}: {task_name(tag_of(head))}'s build note is already in the NOTES.md files; this "
+            f"paragraph is a second copy (a resync that kept an old section?): delete it, never sweep it (D-3620)"
+            for n, line in enumerate(text.splitlines(), 1) if (head := NOTE.match(line)) and tag_of(head) in done]
+
+
 def check(root: Path) -> list[str]:
     """A build-note paragraph anywhere in docs/architecture.md (D-3620): it belongs in its crate's NOTES.md."""
     path = root / ARCHITECTURE
@@ -265,6 +292,18 @@ def check(root: Path) -> list[str]:
             for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1) if NOTE.match(line)]
 
 
+def check_exit(root: Path, strict: bool) -> int:
+    """`--check`: list each stray build note and each second copy; exit 1 on a second copy always (it never comes
+    from legitimate late work), and on a stray note only with `--strict` (the D-3620 transition)."""
+    path = root / ARCHITECTURE
+    stray = check(root)
+    copies = second_copies(root, path.read_text(encoding="utf-8")) if path.is_file() else []
+    for problem in stray + copies:
+        print(problem)
+    print(f"split_arch_notes: {len(stray)} problem(s), {len(copies)} second copies")
+    return 1 if copies or (strict and stray) else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--root", type=Path, default=ROOT)
@@ -273,13 +312,15 @@ def main(argv: list[str] | None = None) -> int:
     mode.add_argument("--check", action="store_true", help="report each build note left in docs/architecture.md")
     parser.add_argument("--strict", action="store_true", help="with --check: exit 1 on any build note")
     args = parser.parse_args(argv)
-    if not (args.verify or args.check):
+    if args.check:
+        return check_exit(args.root, args.strict)
+    if not args.verify:
         return split(args.root)
-    problems = verify(args.root, args.verify) if args.verify else check(args.root)
+    problems = verify(args.root, args.verify)
     for problem in problems:
         print(problem)
     print(f"split_arch_notes: {len(problems)} problem(s)")
-    return 1 if problems and (args.verify or args.strict) else 0
+    return 1 if problems else 0
 
 
 if __name__ == "__main__":

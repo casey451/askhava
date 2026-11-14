@@ -150,3 +150,41 @@ def test_a_note_merged_in_after_the_move_moves_too(tmp_path: Path) -> None:
     text = arch.read_text(encoding="utf-8")
     assert san.check(root) == [] and text.count(san.STUB) == 2 and "T449" not in text
     assert "[FEE-001] (task 449) **What T449 built (D-6).**" in (root / "app/payments/NOTES.md").read_text(encoding="utf-8")
+
+
+def test_a_second_copy_of_a_moved_note_is_refused_and_fails_the_check(tmp_path: Path, capsys) -> None:  # type: ignore[no-untyped-def]
+    """A resync that kept an old section 10 brings back notes already moved; sweeping would double them."""
+    root = fake_repo(tmp_path)
+    san.split(root)
+    arch = root / "docs/architecture.md"
+    copy = next(ln for ln in ARCH.splitlines() if ln.startswith("**What T250 built"))
+    arch.write_text(arch.read_text(encoding="utf-8").replace("## 11.", copy + "\n\n## 11."), encoding="utf-8")
+    before = {p: p.read_text(encoding="utf-8") for p in [arch, *sorted((root / "app").glob("*/NOTES.md"))]}
+    assert san.split(root) == 1
+    assert "T250's build note is already in the NOTES.md files" in capsys.readouterr().out
+    assert all(p.read_text(encoding="utf-8") == text for p, text in before.items())
+    assert san.main(["--root", str(root), "--check"]) == 1  # even without --strict
+    assert "1 second copies" in capsys.readouterr().out
+
+
+def test_a_late_note_is_not_a_second_copy(tmp_path: Path) -> None:
+    root = fake_repo(tmp_path)
+    san.split(root)
+    arch = root / "docs/architecture.md"
+    late = "**What T449 built (D-6).** `app/payments/src/late.rs` counts (FEE-001).\n\n"
+    arch.write_text(arch.read_text(encoding="utf-8").replace("## 11.", late + "## 11."), encoding="utf-8")
+    assert san.second_copies(root, arch.read_text(encoding="utf-8")) == []
+    assert san.main(["--root", str(root), "--check"]) == 0
+
+
+def test_every_section_7_note_is_cross_referenced_from_adapters(tmp_path: Path) -> None:
+    root = fake_repo(tmp_path)
+    arch = root / "docs/architecture.md"
+    late = "**What T377 changed (D-7).** `app/payments/src/sms.rs` and `payments::api::send`.\n\n"
+    arch.write_text(arch.read_text(encoding="utf-8").replace("**The runner's logic**", late + "**The runner's logic**"),
+                    encoding="utf-8")
+    san.split(root)
+    adapters = (root / "app/adapters/NOTES.md").read_text(encoding="utf-8")
+    assert "(task 377) cross-reference (D-3620): the build note of T377 is in `app/payments/NOTES.md`" in adapters
+    assert "(kit 8) cross-reference" not in adapters  # K8 sits in section 10 here
+    assert "(task 016) cross-reference" not in adapters  # T016's note is itself in adapters
