@@ -235,3 +235,6 @@
 - [PICK-053 PICK-038 REC-010 REC-011] (task 341) cross-reference (D-3620): the build note of T341 is in `app/picks/NOTES.md`: `grep -n '(task 341)' app/picks/NOTES.md`.
 - [PICK-053 PICK-021 A11Y-030] (task 440) cross-reference (D-3620): the build note of T440 is in `app/portals/NOTES.md`: `grep -n '(task 440)' app/portals/NOTES.md`.
 - [PICK-041 PICK-040 PICK-010 LIC-024] (task 393) cross-reference (D-3620): the build note of T393 is in `app/licensing/NOTES.md`: `grep -n '(task 393)' app/licensing/NOTES.md`.
+- [PICK-005 PICK-040 PICK-041 PICK-044 WORD-014 BIZ-007] (rules) PICK-005, PICK-040, PICK-041, PICK-044: `QuoteCard::lines`: name, license lines, the "check it yourself" line, WORD-014's "Independent business, not affiliated with Ask Hava." (the card words hold `{brand}`, filled by `Brand::fill` per language, D-2393), "Gets emergency requests at night" only for an after-hours business (BIZ-007), the six facts in fixed order,
+- [TXT-027 TXT-040] (rules) T318, D-3507: `whos_calling` and `whos_calling_email` are `Shape::Capped` in `UPDATE_TEXTS` (TXT-027 fixes their words; 20 words a sentence).
+- [TXT-031 PICK-046] (rules) T328, D-3570: `notify::list_lines` gives the pickable quotes as `(page number, TXT-031 line)` pairs with no heading or footer, for `intake`'s PICK-046 text; `list_texts` is unchanged.

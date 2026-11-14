@@ -24,9 +24,6 @@ import sys
 from pathlib import Path
 
 HEADINGS = ("## Purpose", "## Never break", "## Detail")  # D-3474: the rest lives in the crate's NOTES.md
-# The six headings before D-3474, still accepted under the byte budget only because the protected fixture in
-# tests/test_runner_crate_merge.py uses them; T437 moves that fixture to HEADINGS and deletes this constant.
-LEGACY_HEADINGS = ("## Purpose", "## What it owns", "## Rules it enforces", "## Never break", "## How to change", "## Tests that guard it")
 MAX_CRATE_DOC_LINES = 120
 # D-3474: Claude Code loads a crate's CLAUDE.md into every session that reads a file in the crate, so it
 # stays small; the detail goes in NOTES.md, which a session greps by requirement ID.
@@ -75,8 +72,8 @@ def check_crate_doc(root: Path, crate: Path, architecture: str) -> list[str]:
         problems.append(f"{rel}/CLAUDE.md: {len(lines)} lines, limit {MAX_CRATE_DOC_LINES}")
     if len(text.encode("utf-8")) > MAX_CRATE_DOC_BYTES:
         problems.append(f"{rel}/CLAUDE.md: {len(text.encode('utf-8'))} bytes, limit {MAX_CRATE_DOC_BYTES}; move detail to NOTES.md")
-    found = [h for h in (line.strip() for line in lines) if h in HEADINGS or h in LEGACY_HEADINGS]
-    if found not in (list(HEADINGS), list(LEGACY_HEADINGS)):
+    found = [h for h in (line.strip() for line in lines) if h in HEADINGS]
+    if found != list(HEADINGS):
         problems.append(f"{rel}/CLAUDE.md: headings must be, in order: {', '.join(HEADINGS)}")
     return problems + check_crate_notes(root, crate)
 
