@@ -72,6 +72,9 @@ struct Client {
     code_try: bool,
 }
 
+/// The composition's mail side, as the routes' state names it.
+type Mail<E> = SignInMailer<E>;
+
 /// The served sign-in routes, always with the new-device code (SEC-004, D-1777, D-1844).
 pub struct ServedSignIn(Router);
 
@@ -87,15 +90,9 @@ impl ServedSignIn {
         let state = SignIn::new(pool, clock, Arc::new(mail))
             .with_device_codes(codes)
             .with_notice_links(notice);
-        let routes = Router::new()
-            .route(
-                SIGNIN_ROUTE,
-                get(signin_page::<SignInMailer<E>>).post(signin_request::<SignInMailer<E>>),
-            )
-            .route(
-                SIGNIN_LINK_ROUTE,
-                get(signin_open::<SignInMailer<E>>).post(signin_post::<SignInMailer<E>>),
-            )
+        let routes: Router<SignIn<Mail<E>>> = Router::new()
+            .route(SIGNIN_ROUTE, get(signin_page).post(signin_request))
+            .route(SIGNIN_LINK_ROUTE, get(signin_open).post(signin_post))
             .layer(from_fn(note_client));
         Self(state.into_router(routes))
     }
