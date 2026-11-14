@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-14T05:44:47Z by runner 01ef89c7c816 (actions).
+Updated 2026-11-14T05:45:00Z by runner 01ef89c7c816 (actions).
 
 **Building: T437 in progress since 05:10Z; 313 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 313 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T437 claimed 05:10Z, lease until 08:10Z; lane 3: T396 claimed 05:11Z, lease until 08:11Z; lane 4: T352 claimed 05:22Z, lease until 08:22Z; lane 6: T280 claimed 05:22Z, lease until 08:22Z
+- **Lane:** lane 2: T437 claimed 05:10Z, lease until 08:10Z; lane 3: T396 claimed 05:11Z, lease until 08:11Z; lane 4: T352 claimed 05:22Z, lease until 08:22Z
 - **Week:** 37% used, 114.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:41Z, 3 min before this update
+- **Last run:** 05:44Z, 0 min before this update
 - **Keeper:** last ran 05:41Z, next wake 08:13Z
 
 ## Needs attention
+- BLOCKED T280: session ended without handing in
 - BLOCKED T302: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 44 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 24% but it measures 18%; regenerate
@@ -19,6 +20,7 @@ Updated 2026-11-14T05:44:47Z by runner 01ef89c7c816 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 3 | 22 min | 05:44Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T393 | portals and licensing: the served quote page's cards show ea | MERGE_PENDING | 1 | 74 min | 05:40Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z | merging main into the task branch conflicts in app/intake/CLAUDE.md again after 2 resyncs in this attempt, so this attem |
 | T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -32,7 +34,7 @@ Updated 2026-11-14T05:44:47Z by runner 01ef89c7c816 (actions).
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 23 min | 02:41Z |  |
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | done | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
-| T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
+| T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z |  |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 2 | 1 min | 01:33Z |  |
 | T447 | messaging: a passing vault error holds an outbox row instead | done | 1 | 26 min | 01:30Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | resync | 2 | 67 min | 01:10Z |  |
@@ -89,6 +91,7 @@ Updated 2026-11-14T05:44:47Z by runner 01ef89c7c816 (actions).
 | T420 | Brand rename prep: intake and ai unit tests take the brand f | done | 1 | 28 min | 06:38Z |  |
 
 ### Plan and harness merges on main
+- 05:23Z Plan: T302 door-matrix gap — exact open sign-up step paths, browser-bound sign-up steps (D-3641) (#745)
 - 05:15Z Plan: move build notes out of architecture.md into crate NOTES.md; prompts shrink (D-3620) (#744)
 - 03:45Z Plan: pre-claim scout fixes (T396, T300 + new T451) and stale-graph claim guard (D-3618, D-3619) (#733)
 - 01:13Z Plan: T302 plan gap — new T450 sign-up code screens and verified consent (D-3602) (#730)
@@ -161,7 +164,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T437 (lease until 2026-11-14T08:10:50Z)
 - lane 3: T396 (lease until 2026-11-14T08:11:35Z)
 - lane 4: T352 (lease until 2026-11-14T08:22:44Z)
-- lane 6: T280 (lease until 2026-11-14T08:22:22Z)
 
 ## Last usage reading
 - {"task": "T393", "at": "2026-11-14T05:40:24Z", "input_tokens": 340, "output_tokens": 103902, "cache_read_input_tokens": 15004532, "cache_creation_input_tokens": 345766}
