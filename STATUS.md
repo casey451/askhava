@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T04:27:39Z by runner f4c4252669ec (actions).
+Updated 2026-11-14T04:27:58Z by runner f4c4252669ec (actions).
 
 **Building: T393 in progress since 04:25Z; 312 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-14T04:27:39Z by runner f4c4252669ec (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 3: T437 claimed 04:25Z, lease until 07:25Z; lane 6: T396 claimed 04:09Z, lease until 07:09Z; lane 7: T449 claimed 03:54Z, lease until 06:54Z
 - **Week:** 36% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:26Z, 0 min before this update
-- **Keeper:** last ran 04:18Z, next wake 06:57Z
+- **Last run:** 04:27Z, 0 min before this update
+- **Keeper:** last ran 04:27Z, next wake 06:56Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as the open sign-in door (exact match); every other /b/signup/... path (T450's /b/signup/start, /send, /old, /letter, /identity-code, /email-code, /email-code/resend, /service-area at app/portals/src/business_signup.rs:92-104,303) falls to the Business door (signed-in business only, auth_matrix.rs:162,177; door_matrix.rs:173-174,186). T302 must serve them without a session (TD-SEC-45). T302 owns neither file (kit/prompts/T302.md:34-38,50,146), nor tests/security/door_cases.txt:; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
@@ -110,7 +110,6 @@ Updated 2026-11-14T04:27:39Z by runner f4c4252669ec (actions).
 - 08:55Z Plan: T428 plan gap, new prep task owns the six pinned tests (D-3430) (#659)
 - 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
 - 04:59Z Harness: release a dead worker's lease early (D-3417) (#651)
-- 04:27Z Harness: safety hand-in reports unreleased leases (D-3419) (#654)
 
 ## Progress (requirements verified)
 
