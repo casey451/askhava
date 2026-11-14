@@ -32697,7 +32697,7 @@
     "T411",
     "T453"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "action-links-served",
    "type": "build",
@@ -32711,8 +32711,8 @@
     3672,
     3673
    ],
-   "reason": "plan gap reported: PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires 200 for the fixture's own Quote link GET and for Y's Quote link on X's job. T301's goal (D-3189, CARD-023) requires the one not-found answer for a job with no sent card. Nothing in door_matrix.rs or door_matrix/released_pick.rs calls keep_card/mark_card_sent/sent_card (quoted_job only send_cards + submit_quote); job_page returns None without holds_card (app/quotes/src/job_page.rs:155). Y holds no card on X's job, so even a carded fixture does not fix case (b). Marking sectio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires 200 for the fixture's own Quote link GET and for Y's Quote link on X's job. T301's goal (D-3189, CARD-023) requires the one not-found answer for a job with no sent card. Nothing in door_matrix.rs or door_matrix/released_pick.rs calls keep_card/mark_card_sent/sent_card (quoted_job only send_cards + submit_quote); job_page returns None without holds_card (app/quotes/src/job_page.rs:155). Y holds no card on X's job, so even a carded fixture does not fix case (b). Marking section 13 rows yes fails TD-SEC-61; leaving them T301 fails route_wiring.rs TD-SEC-41. T301 owns only app/server/src/action_links.rs and app/server/tests/action_links_route.rs. Reviewer confirmed. Fix: a harness task before T301 giving door_matrix's quoted jobs a kept and sent card and settling what Y's Quote link on X's job answers (not-found, or probe a Hold link); log in docs/decisions.md.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires 200 for the fixture's own Quote link GET and for Y's Quote link on X's job. T301's goal (D-3189, CARD-023) requires the one not-found answer for a job with no sent card. Nothing in door_matrix.rs or door_matrix/released_pick.rs calls keep_card/mark_card_sent/sent_card (quoted_job only send_cards + submit_quote); job_page returns None without holds_card (app/quotes/src/job_page.rs:155). Y holds no card on X's job, so even a carded fixture does not fix case (b). Marking section 13 rows yes fails TD-SEC-61; leaving them T301 fails route_wiring.rs TD-SEC-41. T301 owns only app/server/src/action_links.rs and app/server/tests/action_links_route.rs. Reviewer confirmed. Fix: a harness task before T301 giving door_matrix's quoted jobs a kept and sent card and settling what Y's Quote link on X's job answers (not-found, or probe a Hold link); log in docs/decisions.md.\nre-queued after plan fix D-3706: D-3706 (#781): T301 owns door_matrix.rs for the carded fixture and Y-on-X not-found case, and business_actions.html with forms.css; waits on T466 and T302",
    "history": [
     {
      "attempt": 1,
@@ -32774,6 +32774,19 @@
      "plan_head": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
      "plan_then": "be3b4bbc9395853017c260bfb93f595b2d32a45c70634550435530c9393256db",
      "plan_now": "81626a70f5de85aced167a969c342086669436ba83f924a6053408064122faa0"
+    },
+    {
+     "at": "2026-11-14T13:13:04Z",
+     "reason": "D-3706 (#781): T301 owns door_matrix.rs for the carded fixture and Y-on-X not-found case, and business_actions.html with forms.css; waits on T466 and T302",
+     "by": "manual-a3a843bd708d",
+     "was": "plan gap reported: PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires 200 for the fixture's own Quote link GET and for Y's Quote link on X's job. T301's goal (D-3189, CARD-023) requires the one not-found answer for a job with no sent card. Nothing in door_matrix.rs or door_matrix/released_pick.rs calls keep_card/mark_card_sent/sent_card (quoted_job only send_cards + submit_quote); job_page returns None without holds_card (app/quotes/src/job_page.rs:155). Y holds no card on X's job, so even a carded fixture does not fix case (b). Marking sectio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T301 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-3706",
+     "plan_since": "2026-11-14T12:32:04Z",
+     "plan_base": "24008eb1e19737579c21e276ea4b2218f35cdea1",
+     "plan_head": "c37dc9c0f001c49bc2ae75c8cd30f2a2ffef5399",
+     "plan_then": "81626a70f5de85aced167a969c342086669436ba83f924a6053408064122faa0",
+     "plan_now": "573452fb27e5334a9cb71b4c0a80a9633c0371fb25bdccaea09766fa2366b400"
     }
    ]
   },
@@ -57691,7 +57704,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T13:11:43Z",
+ "updated_at": "2026-11-14T13:13:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -57789,8 +57802,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "091f183d8d0bf86ee4b3c1988b224bd212cf5acf",
- "starter": "actions",
+ "runner_sha": "c37dc9c0f001c49bc2ae75c8cd30f2a2ffef5399",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "d6d1d54ea21a18537cab068466554864dcda58a6",
