@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T16:03:33Z by runner 45c9090508ad (actions).
+Updated 2026-11-14T16:06:04Z by runner 4e01db789e4d (actions).
 
-**Building: T439 in progress since 15:21Z; 328 of 452 done; week 47% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T439 in progress since 15:21Z; 328 of 451 done; week 47% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 328 of 452 build tasks (owner gates not counted)
+- **Tasks done:** 328 of 451 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T439 claimed 15:21Z, lease until 18:21Z; lane 2: T467 claimed 15:44Z, lease until 18:44Z; lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane 7: T300 claimed 14:35Z, lease until 17:35Z
 - **Week:** 47% used, 98.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:03Z, 0 min before this update
+- **Last run:** 16:03Z, 2 min before this update
 - **Keeper:** last ran 16:03Z, next wake 17:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+106 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
+- Strict plan check red: 32 problem(s) on tasks still to run (+107 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -128,8 +128,8 @@ Updated 2026-11-14T16:03:33Z by runner 45c9090508ad (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 270 of 733 (36.8%) · partial 305 · unstarted 158
-**Tasks merged (throughput only):** 328 of 452
+**Requirements verified:** 272 of 733 (37.1%) · partial 303 · unstarted 158
+**Tasks merged (throughput only):** 328 of 451
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -138,7 +138,7 @@ Updated 2026-11-14T16:03:33Z by runner 45c9090508ad (actions).
 | businesses | 18 | 37 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
 | consent | 12 | 19 | 4 | 35 |
-| fees | 13 | 38 | 1 | 52 |
+| fees | 14 | 37 | 1 | 52 |
 | intake | 26 | 14 | 3 | 43 |
 | job-cards | 18 | 6 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
@@ -147,7 +147,7 @@ Updated 2026-11-14T16:03:33Z by runner 45c9090508ad (actions).
 | ops-recovery | 2 | 8 | 44 | 54 |
 | privacy | 9 | 20 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 34 | 21 | 1 | 56 |
+| quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 9 | 41 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
