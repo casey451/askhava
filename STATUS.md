@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T23:24:42Z by runner 56b10691778a (actions).
+Updated 2026-11-14T23:25:02Z by runner 56b10691778a (actions).
 
 **Building: T445 in progress since 23:05Z; 337 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 337 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T445 claimed 23:05Z, lease until 02:05Z; lane 2: T301 claimed 22:57Z, lease until 01:57Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z; lane 6: T451 claimed 22:48Z, lease until 01:48Z
+- **Lane:** lane 1: T445 claimed 23:05Z, lease until 02:05Z; lane 5: T486 claimed 22:31Z, lease until 01:31Z; lane 6: T451 claimed 22:48Z, lease until 01:48Z
 - **Week:** 53% used, 84.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:19Z, 5 min before this update
 - **Keeper:** last ran 23:19Z, next wake 01:34Z
@@ -18,8 +18,9 @@ Updated 2026-11-14T23:24:42Z by runner 56b10691778a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T301 | server and portals: the email action links are served (every | MERGE_PENDING | 3 | 27 min | 23:24Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
 | T485 | businesses: a public read-only reader of a sign-up's identit | done | 1 | 28 min | 22:54Z |  |
-| T301 | server and portals: the email action links are served (every | resync | 3 | 58 min | 22:46Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
+| T301 | server and portals: the email action links are served (every | resync | 3 | 58 min | 22:46Z |  |
 | T443 | --after runs the full smoke itself on a fix-round hand-in; t | done | 1 | 35 min | 22:19Z |  |
 | T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z | PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No |
@@ -161,9 +162,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T445 (lease until 2026-11-15T02:05:32Z)
-- lane 2: T301 (lease until 2026-11-15T01:57:28Z)
 - lane 5: T486 (lease until 2026-11-15T01:31:30Z)
 - lane 6: T451 (lease until 2026-11-15T01:48:26Z)
 
 ## Last usage reading
-- {"task": "T485", "at": "2026-11-14T22:54:33Z", "cache_read_input_tokens": 1799594, "output_tokens": 19464, "input_tokens": 76, "cache_creation_input_tokens": 92606}
+- {"task": "T301", "at": "2026-11-14T23:24:41Z", "cache_creation_input_tokens": 61603, "input_tokens": 69, "output_tokens": 11006, "cache_read_input_tokens": 1057921}
