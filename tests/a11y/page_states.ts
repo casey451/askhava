@@ -6,8 +6,9 @@
 // its states and the seed function that stores one state with fake data and returns the path that
 // opens it. The checks (the route table, `NOT_PAGES`, the axe tags, which states run) live in
 // `fixtures.ts`, owner-only, so nothing here can narrow what is checked. Fake data only.
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { keyedUrl, seal } from "../e2e/keyed";
 
 /** One seeded state of a page. */
 export interface PageState {
@@ -164,6 +165,90 @@ const SIGNUP_STATES: readonly PageState[] = [
   ["business sign-up form", "What work do you do?", "Where your code goes", ""],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: SIGNUP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const PORTAL_ROUTE = "/b";
+const RELEASE_ROUTE = "/b/picks/{pick}";
+const BILLING_ROUTE = "/b/billing";
+const NOTICES_ROUTE = "/b/notices";
+
+/** The fake notice address the notice page's seed seals into the vault. */
+const NOTICE_ADDRESS = "owner@example.test";
+
+/**
+ * A fake active business, its owner (sign-in mailbox `:mailbox`) and a business session for the
+ * token whose SHA256 is `:hash` (T300, D-3674), then `extra`, which may use the owner row `m`.
+ */
+function businessSql(extra: string): string {
+  return `WITH b AS (INSERT INTO businesses.business (status, created_at, status_changed_at)
+      VALUES ('active', now(), now()) RETURNING id),
+    m AS (INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes,
+      confirm_and_billing, added_at) SELECT id, ':mailbox', true, true, true, now() FROM b
+      RETURNING id, business_id),
+    s AS (INSERT INTO portals.session (token_sha256, realm, actor_id, created_at, expires_at)
+      SELECT decode(':hash', 'hex'), 'business', id, now(), now() + interval '30 days' FROM m RETURNING id),
+    bs AS (INSERT INTO portals.business_session (session_id, business_id) SELECT s.id, m.business_id FROM s, m)${extra}
+    SELECT 1`;
+}
+
+/**
+ * Seeds a business portal state through psql: `state.sql` with a random session token's SHA256,
+ * a mailbox ID, the address sealed for it in the keyed binary's vault format and a pick ID; returns
+ * the route (its `{pick}` filled) with the `__Host-askhava-session` cookie, on the keyed binary when
+ * `keyed` (the pages that read the vault, D-3674).
+ */
+function portalSeed(keyed: boolean): (state: PageState) => Seeded {
+  return (state) => {
+    const token = randomBytes(32).toString("hex");
+    const [mailbox, pick] = [randomUUID(), randomUUID()];
+    const sealed = keyed ? seal("privacy.business_mailbox", "address", mailbox, NOTICE_ADDRESS).toString("hex") : "";
+    const sql = state.sql
+      .replaceAll(":hash", createHash("sha256").update(token).digest("hex"))
+      .replaceAll(":mailbox", mailbox)
+      .replaceAll(":sealed", sealed)
+      .replaceAll(":pick", pick);
+    const done = spawnSync("psql", [process.env.DATABASE_URL ?? "", "-v", "ON_ERROR_STOP=1", "-q", "-c", sql], { encoding: "utf8" });
+    if (done.status !== 0) throw new Error(`seeding "${state.name}" failed: ${done.stderr}`);
+    const path = state.route.replace("{pick}", pick);
+    return { url: keyed ? `${keyedUrl()}${path}` : path, cookies: [{ name: "__Host-askhava-session", value: token }] };
+  };
+}
+
+/** The business portal home (T300; BIZ-025, CARD-022): the owner signed in. */
+const PORTAL_STATES: readonly PageState[] = [
+  ["business portal home", "Your numbers this month", "There is a problem", businessSql("")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: PORTAL_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** The released job's page (T300; PICK-024): a $0 release whose contact the vault no longer holds. */
+const RELEASE_STATES: readonly PageState[] = [
+  [
+    "released job, details removed",
+    "We removed the homeowner's details",
+    "Tip: on your first call",
+    businessSql(`,
+    p AS (INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, picked_at)
+      SELECT ':pick', gen_random_uuid(), business_id, 1, 'page', 'free', now() FROM m RETURNING id, job_id, business_id),
+    r AS (INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at, contact_id, mail_chosen)
+      SELECT id, job_id, business_id, 'no_fee', now(), gen_random_uuid(), false FROM p)`),
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: RELEASE_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** The billing page (T300; BIZ-015): the owner, nothing on the ledger yet. */
+const BILLING_STATES: readonly PageState[] = [
+  ["billing, empty statement", "Nothing on this statement yet.", "card ending in", businessSql("")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: BILLING_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** The notice settings (T300; BIZ-036, SEC-024): the owner's verified address, opened from the vault. */
+const NOTICES_STATES: readonly PageState[] = [
+  [
+    "notice settings, owner",
+    NOTICE_ADDRESS,
+    "Not confirmed yet",
+    businessSql(`,
+    v AS (INSERT INTO privacy.business_mailbox (id, address) VALUES (':mailbox', decode(':sealed', 'hex'))),
+    c AS (INSERT INTO businesses.mailbox_check (business_id, member_id, mailbox_id, open, sent_at, window_at, verified_at)
+      SELECT business_id, id, ':mailbox', false, now(), now(), now() FROM m)`),
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: NOTICES_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -172,6 +257,10 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: SIGNIN_ROUTE, seed: (state) => state.route, states: SIGNIN_STATES },
   { route: SIGNIN_LINK_ROUTE, seed: tokenSeed, states: SIGNIN_LINK_STATES },
   { route: SIGNUP_ROUTE, seed: (state) => state.route, states: SIGNUP_STATES },
+  { route: PORTAL_ROUTE, seed: portalSeed(false), states: PORTAL_STATES },
+  { route: RELEASE_ROUTE, seed: portalSeed(true), states: RELEASE_STATES },
+  { route: BILLING_ROUTE, seed: portalSeed(false), states: BILLING_STATES },
+  { route: NOTICES_ROUTE, seed: portalSeed(true), states: NOTICES_STATES },
 ];
 
 /** Every state of every page, in entry order. */

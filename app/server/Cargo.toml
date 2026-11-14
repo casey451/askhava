@@ -29,6 +29,7 @@ askhava-quotes = { workspace = true }
 axum = { workspace = true }
 rustls = { workspace = true }
 secrecy = { workspace = true }
+serde = { workspace = true }
 serde_json = { workspace = true }
 sha2 = { workspace = true }
 sqlx = { workspace = true }
