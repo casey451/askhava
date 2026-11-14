@@ -20,7 +20,7 @@ use askhava_core::api::{
 };
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{JobStart, JobTextKeys, Opened, TextIn, begin_job, receive_text};
-use askhava_jobs::api::{JobStatus, move_to, record_job_facts};
+use askhava_jobs::api::{JobStatus, TEXT_KIND, move_to, record_job_facts};
 use askhava_messaging::api::{RevokeChannel, suppress};
 use askhava_ops::api::Actor;
 use askhava_payments::api::PICK_ENDED_KIND;
@@ -369,8 +369,8 @@ async fn td_pick_54_a_spanish_request_gets_the_spanish_text(pool: PgPool) {
     );
 }
 
-/// TD-PICK-54 (PICK-046, PICK-035): two ended picks on one job each get their own text, each
-/// leaving out its own business's quote.
+/// TD-PICK-54 (PICK-046, PICK-035, D-3571): two ended picks on one job each get their own text;
+/// the second leaves out both ended businesses' quotes, so only the third is offered.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_54_two_ended_picks_on_one_job_each_get_theirs(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
@@ -389,15 +389,41 @@ async fn td_pick_54_two_ended_picks_on_one_job_each_get_theirs(pool: PgPool) {
     let opening = format!("{} couldn't take it this time.", NAMES[1]);
     assert!(sent[1].contains(&opening), "{}", sent[1]);
     assert!(
-        sent[1].contains(&format!("\n1. {}: $190.\n", NAMES[0])),
+        sent[1].contains(&format!("\n3. {}: $190.\n", NAMES[2])),
         "{}",
         sent[1]
     );
-    assert!(
-        !sent[1].contains(&format!("2. {}:", NAMES[1])),
-        "{}",
-        sent[1]
-    );
+    for (n, name) in NAMES.iter().take(2).enumerate() {
+        let line = format!("{}. {name}:", n + 1);
+        assert!(!sent[1].contains(&line), "PICK-035: {}", sent[1]);
+    }
+}
+
+/// TD-PICK-54 (PICK-046, QH-006, D-3572): two PICK-046 texts of one job held at night to the same
+/// 8 a.m. stay two held events, one per pick, and both go at 8 a.m.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_54_two_held_texts_of_one_job_both_go(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let job = quotes_ready(&mut db, false, ts(DAY)).await;
+    let version: i32 = sqlx::query_scalar("SELECT version FROM jobs.job WHERE id = $1")
+        .bind(job)
+        .fetch_one(&mut *db)
+        .await
+        .expect("job");
+    for quote in [1, 2] {
+        let values = json!({"job": job, "pick": Uuid::new_v4(), "business": business(quote)});
+        let payload = json!({"job": job, "version": version, "template": "pick_lapsed",
+            "values": values});
+        let task = NewTask::new(TEXT_KIND, payload, ts(NIGHT));
+        enqueue(&mut db, &task).await.expect("text event");
+    }
+    let clock = Arc::new(ManualClock::new(ts(NIGHT)));
+    let registry = registry(clock.clone());
+    run_due(&pool, &registry, &clock).await;
+    assert!(lapsed(&mut db).await.is_empty(), "held at night");
+    clock.set(ts(EIGHT));
+    run_due(&pool, &registry, &clock).await;
+    assert_eq!(lapsed(&mut db).await.len(), 2, "one text per pick");
 }
 
 /// TD-PICK-54 (CON-028): an opted-out number gets no PICK-046 text, while the pick still ends.

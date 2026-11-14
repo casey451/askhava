@@ -119,6 +119,24 @@ async fn end_unpaid(tx: &mut PgConnection, id: Uuid, at: Timestamp) -> Result<()
     .map(drop)
 }
 
+/// PICK-046, PICK-035, D-3571: the businesses whose pick on `job` ended without a Confirm
+/// (expired or ended by `payments`); PICK-046's text never offers their quotes again.
+///
+/// # Errors
+///
+/// [`PicksError::Database`].
+pub async fn ended_businesses(db: &mut PgConnection, job: Uuid) -> Result<Vec<Uuid>, PicksError> {
+    sqlx::query_scalar!(
+        "SELECT DISTINCT business_id FROM picks.pick WHERE job_id = $1 AND status IN ($2, $3)",
+        job,
+        PickStatus::Expired.code(),
+        PickStatus::PaymentFailed.code(),
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| PicksError::Database)
+}
+
 /// Moves `job` along `arrow` (JOB-001, JOB-004); a job that moved on rolls the whole step back.
 async fn guarded_move(
     tx: &mut PgConnection,

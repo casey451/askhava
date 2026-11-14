@@ -35,9 +35,7 @@
 use std::sync::Arc;
 
 use askhava_businesses::api::public_names;
-use askhava_core::api::{
-    Claimed, Clock, HandlerError, IdSecret, NewTask, SystemClock, brand, enqueue,
-};
+use askhava_core::api::{Claimed, HandlerError, IdSecret, NewTask, brand, enqueue};
 use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{
     CHECK_IN_DAY3, CHECK_IN_DAY14, FEEDBACK_REQUEST, PROBLEM_REPLY, TEXT_KIND, current, text_due,
@@ -45,7 +43,7 @@ use askhava_jobs::api::{
 use askhava_messaging::api::{
     Exemption, Language, NewText, Relation, SendWindow, enqueue_exempt, render, send_window,
 };
-use askhava_picks::api::{PICK_LAPSED_TEMPLATE, lapse_plan, lapse_text};
+use askhava_picks::api::{PICK_LAPSED_TEMPLATE, ended_businesses, lapse_plan, lapse_text};
 use askhava_privacy::api::Vault;
 use askhava_quotes::api::{list_lines, page_quotes};
 use jiff::Timestamp;
@@ -183,21 +181,8 @@ pub enum JobTextStep {
 }
 
 /// The `jobs.homeowner_text` handler `server` registers (D-1030 (A)): [`job_text_step`] on the
-/// task's payload at the system clock's now.
-///
-/// # Errors
-///
-/// A fixed [`HandlerError`] sentence on a bad payload or a failed step.
-pub async fn run_job_text(
-    pool: PgPool,
-    keys: Arc<JobTextKeys>,
-    task: Claimed,
-) -> Result<(), HandlerError> {
-    run_job_text_at(pool, keys, task, SystemClock.now()).await
-}
-
-/// [`run_job_text`] at `now`, the worker clock's time: what `server` registers, so a manual clock
-/// drives quiet hours in the registry tests (T328, D-3579).
+/// task's payload at `now`, the worker clock's time, so a manual clock drives quiet hours in the
+/// registry tests (T328, D-3579, D-3573).
 ///
 /// # Errors
 ///
@@ -351,7 +336,8 @@ pub async fn paused_under_lock(
 }
 
 /// Queues the same event again for `until`, the next instant both zones are open (QH-006); the
-/// dedupe key names that instant, so a second run queues it once.
+/// dedupe key names that instant (and, for PICK-046's text, the pick, D-3572), so a second run
+/// queues it once and two ended picks held to one instant stay two.
 async fn hold(
     db: &mut PgConnection,
     text: &JobText,
@@ -361,7 +347,13 @@ async fn hold(
         "template": text.template, "values": text.values});
     let mut task = NewTask::new(TEXT_KIND, payload, until);
     let run = until.as_microsecond();
-    task.dedupe_key = Some(format!("{TEXT_KIND}.{}.{}.{run}", text.job, text.template));
+    let pick = id_value(&text.values, "pick")
+        .filter(|_| text.template == PICK_LAPSED_TEMPLATE)
+        .map_or_else(String::new, |p| format!(".{p}"));
+    task.dedupe_key = Some(format!(
+        "{TEXT_KIND}.{}.{}{pick}.{run}",
+        text.job, text.template
+    ));
     enqueue(db, &task)
         .await
         .map_err(|_| IntakeError::Database)?;
@@ -442,10 +434,11 @@ fn id_value(values: &Value, key: &str) -> Option<Uuid> {
     values[key].as_str().and_then(|v| Uuid::parse_str(v).ok())
 }
 
-/// PICK-046, PICK-035, PICK-016, D-3579: `picks::api::lapse_text` naming the ended business by
-/// its public name, with the TXT-031 lines (`quotes::api::list_lines`) of the quotes
-/// `picks::api::lapse_plan` leaves her, never the ended business's own, and `link` her quote
-/// page; with none left it is the "we'll text you" text.
+/// PICK-046, PICK-035, PICK-016, D-3579, D-3571: `picks::api::lapse_text` naming the ended
+/// business by its public name, with the TXT-031 lines (`quotes::api::list_lines`) of the quotes
+/// `picks::api::lapse_plan` leaves her, never the ended business's own nor any business whose
+/// pick on the job already ended (`picks::api::ended_businesses`), and `link` her quote page;
+/// with none left it is the "we'll text you" text.
 async fn lapsed_body(
     tx: &mut PgConnection,
     text: &JobText,
@@ -456,15 +449,22 @@ async fn lapsed_body(
     let page = page_quotes(&mut *tx, text.job)
         .await
         .map_err(|_| IntakeError::Quotes)?;
-    let quotes: Vec<(u32, Uuid)> = (1..)
+    let ended = ended_businesses(&mut *tx, text.job)
+        .await
+        .map_err(|_| IntakeError::Database)?;
+    let pickable: Vec<(u32, Uuid)> = (1..)
         .zip(page)
         .filter(|(_, q)| !q.unavailable)
         .map(|(n, q)| (n, q.business))
         .collect();
-    let others = lapse_plan((now, false), business, &quotes).others;
     let ids: Vec<Uuid> = std::iter::once(business)
-        .chain(quotes.iter().map(|(_, b)| *b))
+        .chain(pickable.iter().map(|(_, b)| *b))
         .collect();
+    let quotes: Vec<(u32, Uuid)> = pickable
+        .into_iter()
+        .filter(|(_, b)| !ended.contains(b))
+        .collect();
+    let others = lapse_plan((now, false), business, &quotes).others;
     let names = public_names(&mut *tx, &ids)
         .await
         .map_err(|_| IntakeError::Database)?;

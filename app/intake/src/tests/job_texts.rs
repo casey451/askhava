@@ -14,7 +14,7 @@ use sqlx::types::Uuid;
 
 use crate::api::{
     ALL_QUOTES_IN_TEMPLATE, JOB_TEXT_TEMPLATES, JobText, JobTextKeys, job_text_body,
-    parse_job_text, run_job_text,
+    parse_job_text, run_job_text_at,
 };
 use askhava_messaging::api::Language;
 
@@ -142,7 +142,8 @@ async fn td_job_03_run_job_text_refuses_a_bad_payload() {
             payload,
             attempts: 1,
         };
-        let refused = run_job_text(pool.clone(), fake_keys(), task).await;
+        let refused =
+            run_job_text_at(pool.clone(), fake_keys(), task, jiff::Timestamp::UNIX_EPOCH).await;
         assert_eq!(
             refused,
             Err(HandlerError("bad jobs homeowner-text payload"))

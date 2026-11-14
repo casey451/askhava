@@ -130,6 +130,7 @@ pub use crate::open_cards_email::{
     ComposedEmail, OpenCard, WaitingPick, chosen_minutes, missed_cards_line, open_cards_email,
 };
 pub use crate::pick_ended::PICK_LAPSED_TEMPLATE;
+pub use crate::pick_ended::ended_businesses;
 pub use crate::pick_ended::run_pick_ended;
 pub use crate::pick_withdrawn::{WITHDRAWN_TEMPLATE, run_pick_withdrawn};
 pub use crate::release::WHOS_CALLING_FAILED_ALERT;
