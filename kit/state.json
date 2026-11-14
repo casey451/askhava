@@ -40654,7 +40654,7 @@
     "T430",
     "T255"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "charge-success-ledger-receipt",
    "type": "build",
@@ -40668,8 +40668,8 @@
     3656,
     3657
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, and app/server/tests/release_recovery.rs:414 (T254, TD-PICK-49/50, no_fee_written) asserts money_view charges == 0. Both contradict TD-FEE-64 (a success by confirm, check round or webhook leaves one charge ledger entry). T359 owns neither file (kit/tasks.json: T433 owns payment_jobs.rs, T254 owns release_recovery.rs). Reviewer confirmed. Smallest fix: a harness change letting T359 adopt both tests, tightened to expect exactly one charge row keyed charge.<pick>. Staged attempt (; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T359 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, and app/server/tests/release_recovery.rs:414 (T254, TD-PICK-49/50, no_fee_written) asserts money_view charges == 0. Both contradict TD-FEE-64 (a success by confirm, check round or webhook leaves one charge ledger entry). T359 owns neither file (kit/tasks.json: T433 owns payment_jobs.rs, T254 owns release_recovery.rs). Reviewer confirmed. Smallest fix: a harness change letting T359 adopt both tests, tightened to expect exactly one charge row keyed charge.<pick>. Staged attempt (16 files) saved at /tmp/T359-attempt.patch; reviewer found no money bugs in it.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, and app/server/tests/release_recovery.rs:414 (T254, TD-PICK-49/50, no_fee_written) asserts money_view charges == 0. Both contradict TD-FEE-64 (a success by confirm, check round or webhook leaves one charge ledger entry). T359 owns neither file (kit/tasks.json: T433 owns payment_jobs.rs, T254 owns release_recovery.rs). Reviewer confirmed. Smallest fix: a harness change letting T359 adopt both tests, tightened to expect exactly one charge row keyed charge.<pick>. Staged attempt (16 files) saved at /tmp/T359-attempt.patch; reviewer found no money bugs in it.\nre-queued after plan fix D-3658: T359 adopts two charge-ledger expectations per TD-FEE-64 (exactly one charge row); entry records the checked intent amount",
    "history": [
     {
      "attempt": 1,
@@ -40693,6 +40693,21 @@
        "turns": 19
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-14T08:00:00Z",
+     "reason": "T359 adopts two charge-ledger expectations per TD-FEE-64 (exactly one charge row); entry records the checked intent amount",
+     "by": "manual-14b669646b6e",
+     "was": "plan gap reported: PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, and app/server/tests/release_recovery.rs:414 (T254, TD-PICK-49/50, no_fee_written) asserts money_view charges == 0. Both contradict TD-FEE-64 (a success by confirm, check round or webhook leaves one charge ledger entry). T359 owns neither file (kit/tasks.json: T433 owns payment_jobs.rs, T254 owns release_recovery.rs). Reviewer confirmed. Smallest fix: a harness change letting T359 adopt both tests, tightened to expect exactly one charge row keyed charge.<pick>. Staged attempt (; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T359 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3658",
+     "plan_since": "2026-11-14T07:04:22Z",
+     "plan_base": "61c94cc79081c7f4291f0f0bcdb71be8610ff4de",
+     "plan_head": "3975566c5e6766e266a3cfac54f06fd16192ab22",
+     "plan_then": "b789c8e76130e330e514b270695f8c2d60b51de088cc122f01a33e01b4822c9c",
+     "plan_now": "25bd7a4398979a87908e594a60b9892b30e85cf92a341d67c0e4e1fa1e669bd1"
     }
    ]
   },
@@ -55625,7 +55640,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T07:59:23Z",
+ "updated_at": "2026-11-14T08:00:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -55723,8 +55738,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "61c94cc79081c7f4291f0f0bcdb71be8610ff4de",
- "starter": "actions",
+ "runner_sha": "3975566c5e6766e266a3cfac54f06fd16192ab22",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "918581713bc4d82184921a94a50e48710fa2dd45",
