@@ -178,8 +178,8 @@ fn business_pages(
 /// routes in the release build (SEC-035, D-739). The outermost layer sets the SEC-012 security
 /// headers on every response, a 404 included (T051). The parts' served business sign-in
 /// ([`business_signin::ServedSignIn`], T280) adds the two sign-in routes, always with the
-/// new-device code; its served sign-up ([`business_signup::ServedSignUp`], T302) the form page
-/// at `/b/signup`. The homeowner's quote page is `portals`'
+/// new-device code; its served sign-up ([`business_signup::ServedSignUp`], T302, T459) the form
+/// page at `/b/signup` and its `POST` at `/b/signup/start`. The homeowner's quote page is `portals`'
 /// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055); the
 /// private feedback page after Done is `/f/{token}` (`feedback`, T230); the check-in answer page
 /// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231). The built
