@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:33:18Z by runner 1d88b90f747c (actions).
+Updated 2026-11-14T11:33:39Z by runner 1d88b90f747c (actions).
 
 **Building: T359 in progress since 11:24Z; 321 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 321 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
-- **Week:** 41% used, 109.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T359 claimed 11:24Z, lease until 14:24Z; lane 4: T437 claimed 11:33Z, lease until 14:33Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z; lane 7: T302 claimed 11:10Z, lease until 14:10Z
+- **Week:** 41% used, 107.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:30Z, 2 min before this update
 - **Keeper:** last ran 11:18Z, next wake 13:47Z
 
@@ -155,7 +155,7 @@ Updated 2026-11-14T11:33:18Z by runner 1d88b90f747c (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T11:18:26Z (week)): week: 84.7M used, 109.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T17:35:19Z.
+- Pacing (session_reading 2026-11-14T11:18:26Z (week)): week: 86.5M used, 107.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-24T16:34:32Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -172,6 +172,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T359 (lease until 2026-11-14T14:24:40Z)
+- lane 4: T437 (lease until 2026-11-14T14:33:09Z)
 - lane 6: T329 (lease until 2026-11-14T13:44:58Z)
 - lane 7: T302 (lease until 2026-11-14T14:10:31Z)
 
