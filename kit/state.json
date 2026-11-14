@@ -40891,7 +40891,7 @@
     "T430",
     "T255"
    ],
-   "status": "IN_PROGRESS",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "charge-success-ledger-receipt",
    "type": "build",
@@ -40945,6 +40945,14 @@
      "plan_head": "3975566c5e6766e266a3cfac54f06fd16192ab22",
      "plan_then": "b789c8e76130e330e514b270695f8c2d60b51de088cc122f01a33e01b4822c9c",
      "plan_now": "25bd7a4398979a87908e594a60b9892b30e85cf92a341d67c0e4e1fa1e669bd1"
+    }
+   ],
+   "stale_leases": [
+    {
+     "task": "T359",
+     "session": "actions-43573367681",
+     "expires": "2026-11-14T11:06:27Z",
+     "lane": "4"
     }
    ]
   },
@@ -51164,7 +51172,7 @@
     "T426",
     "T438"
    ],
-   "status": "IN_PROGRESS",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "crate-notes-shared-and-full-by-bytes",
    "type": "harness",
@@ -51637,7 +51645,15 @@
    "lane": "5",
    "merge_turn_since": "2026-11-14T07:41:38Z",
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "stale_leases": [
+    {
+     "task": "T437",
+     "session": "actions-43576649819",
+     "expires": "2026-11-14T11:49:58Z",
+     "lane": "5"
+    }
+   ]
   },
   {
    "id": "T440",
@@ -56179,7 +56195,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T09:28:59Z",
+ "updated_at": "2026-11-14T09:33:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

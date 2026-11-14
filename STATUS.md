@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T09:28:59Z by runner d6d1d54ea21a (actions).
+Updated 2026-11-14T09:33:14Z by runner d6d1d54ea21a (actions).
 
 **Building: T398 in progress since 09:02Z; 317 of 436 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 317 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T398 claimed 09:02Z, lease until 12:02Z; lane 4: T359 claimed 08:06Z, lease until 11:06Z; lane 5: T437 claimed 08:49Z, lease until 11:49Z
+- **Lane:** lane 2: T398 claimed 09:02Z, lease until 12:02Z
 - **Week:** 39% used, 112.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:28Z, 0 min before this update
+- **Last run:** 09:30Z, 3 min before this update
 - **Keeper:** last ran 09:28Z, next wake 11:08Z
 
 ## Needs attention
@@ -98,7 +98,6 @@ Updated 2026-11-14T09:28:59Z by runner d6d1d54ea21a (actions).
 | T312 | intake: a street address written in lower case never trips t | QUEUED | 1 | 24 min | 10:17Z |  |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | QUEUED | 2 | 22 min | 10:15Z |  |
 | T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 3 | 26 min | 09:48Z |  |
-| T431 | Brand rename prep: the legal-docs version case and five paym | done | 1 | 30 min | 09:32Z |  |
 
 ### Plan and harness merges on main
 - 07:59Z Plan: T359 adopts two charge-ledger test expectations (TD-FEE-64), records the checked intent amount (D-3658) (#759)
@@ -172,8 +171,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T398 (lease until 2026-11-14T12:02:18Z)
-- lane 4: T359 (lease until 2026-11-14T11:06:27Z)
-- lane 5: T437 (lease until 2026-11-14T11:49:58Z)
 
 ## Last usage reading
 - {"task": "T302", "at": "2026-11-14T09:18:21Z", "cache_creation_input_tokens": 69542, "cache_read_input_tokens": 637134, "output_tokens": 10223, "input_tokens": 38}
