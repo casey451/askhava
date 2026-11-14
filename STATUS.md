@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:37:46Z by runner 4628302b543e (actions).
+Updated 2026-11-14T12:38:03Z by runner 24008eb1e197 (actions).
 
 **Building: T301 in progress since 12:32Z; 322 of 449 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -32,7 +32,7 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 ##[error]Process completed with exit code 1.
 - BLOCKED T437: merging main into the task branch conflicts in app/businesses/CLAUDE.md again after 2 resyncs in this attempt, so this attempt fails and the next one starts from the branch with main merged in, or fresh from main when that still conflicts (D-583, D-620, D-891)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 34 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+103 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
