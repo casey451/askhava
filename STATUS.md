@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T04:54:21Z by runner cc677b54edd4 (actions).
+Updated 2026-11-14T04:54:38Z by runner cc677b54edd4 (actions).
 
 **Building: T393 in progress since 04:25Z; 313 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 313 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 3: T437 claimed 04:25Z, lease until 07:25Z; lane 6: T396 claimed 04:09Z, lease until 07:09Z
+- **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 3: T437 claimed 04:25Z, lease until 07:25Z
 - **Week:** 36% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:53Z, 0 min before this update
+- **Last run:** 04:53Z, 1 min before this update
 - **Keeper:** last ran 04:47Z, next wake 07:11Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-14T04:54:21Z by runner cc677b54edd4 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T396 | businesses and messaging (harness): a phone a member links o | MERGE_PENDING | 1 | 45 min | 04:54Z |  |
 | T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 3 | 15 min | 04:11Z | PLAN GAP: tests/security/tests/auth_matrix.rs:146 and app/server/tests/door_matrix.rs:161 treat only /b/signup itself as |
 | T440 | portals: the quote page's tier choice and the Confirm page's | done | 1 | 50 min | 03:43Z |  |
@@ -160,7 +161,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T393 (lease until 2026-11-14T07:25:53Z)
 - lane 3: T437 (lease until 2026-11-14T07:25:12Z)
-- lane 6: T396 (lease until 2026-11-14T07:09:13Z)
 
 ## Last usage reading
-- {"task": "T449", "at": "2026-11-14T04:28:19Z", "input_tokens": 84, "output_tokens": 14850, "cache_read_input_tokens": 1367390, "cache_creation_input_tokens": 79914}
+- {"task": "T396", "at": "2026-11-14T04:54:20Z", "cache_read_input_tokens": 6618237, "input_tokens": 171, "output_tokens": 53852, "cache_creation_input_tokens": 196244}
