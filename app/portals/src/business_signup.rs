@@ -41,6 +41,18 @@
 //! ([`SignupRefusal::NoTextPhone`], [`TEXT_PHONE_MISSING`]), then signs up and, in one
 //! transaction, records the owner, links a chosen text phone and stores one consent row per
 //! channel.
+//!
+//! T450 added the code screens and the notice-channel choice (BIZ-002, BIZ-036, BIZ-040, BIZ-042,
+//! CON-019, TXT-035, A11Y-030; D-3602): one route constant per sign-up `POST` step, every form's
+//! `action` taken from them; [`Screen::IdentityCode`] and [`Screen::EmailCode`] with one
+//! one-time-code input and the refusal beside it ([`CodeProblem`]); while texting is on, the email,
+//! text or both choice and the text phone field, always rendered, never shown or hidden by script.
+//! The consent wording is rendered on the server but the channel is chosen in the browser, so the
+//! form carries the channels its wording named and their seal (`link_token` over the SHA256 of
+//! the length-prefixed label, channels, [`CONSENT_VERSION`] and CSRF token, [`sealed_signup_page`]);
+//! [`ChannelPost::parse`] keeps the shown channels only when the seal verifies (constant time), and
+//! [`ChannelPost::consent_channels`] is `None` unless they cover the choice, so `FormAgain` comes
+//! back with the wording naming texts and nothing is stored. The `POST` routes are T302's.
 
 use std::collections::BTreeSet;
 
@@ -53,25 +65,43 @@ use askhava_businesses::api::{
 use askhava_businesses::api::{
     BusinessesError, ServiceArea, ServiceAreaProblem, service_area, towns as stored_towns,
 };
+use askhava_businesses::api::{CONSENT_VERSION, consent_wording};
 use askhava_businesses::api::{
     Capability, CapabilityAnswers, JobTypeChoice, LargestJob, TradeOffer, kept_ticks, pre_ticked,
 };
 use askhava_businesses::api::{
-    FeeNumbers, MaskedContact, NUMBER_OLD_BUTTON, SOMEONE_ELSE_LINE, STOP_FIX_BUTTON, fee_summary,
-    fix_record_lines, trade_count,
+    ContactKind, FeeNumbers, MaskedContact, NUMBER_OLD_BUTTON, SOMEONE_ELSE_LINE, STOP_FIX_BUTTON,
+    fee_summary, fix_record_lines, trade_count,
 };
+use askhava_core::api::{IdSecret, LinkKind, LinkSalt, LinkToken, link_token};
 use askhava_licensing::api::ClassMap;
 use askhava_payments::api::Tier;
 use askhava_picks::api::{ConfirmSettings, WindowRules};
 use jiff::Timestamp;
 use secrecy::SecretString;
+use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
+use subtle::ConstantTimeEq;
 
 use crate::pick_flow::PageLanguage;
 
 /// The sign-up's path on askhava.com; each step posts to a path under it.
 pub const SIGNUP_ROUTE: &str = "/b/signup";
+/// BIZ-024, CON-019, D-3602: the form posts here.
+pub const SIGNUP_FORM_ROUTE: &str = "/b/signup/start";
+/// BIZ-026, D-3602: "Send the code" on the contact screen and "Send a new code" by the identity code.
+pub const CODE_SEND_ROUTE: &str = "/b/signup/send";
+/// BIZ-026, D-288: "That number is old" and "Stop, I'll fix my record first".
+pub const NUMBER_OLD_ROUTE: &str = "/b/signup/old";
+/// BIZ-026: "Mail the letter".
+pub const LETTER_ROUTE: &str = "/b/signup/letter";
+/// BIZ-002, BIZ-026, D-3602: the identity code sent to the record contact.
+pub const IDENTITY_CHECK_ROUTE: &str = "/b/signup/identity-code";
+/// BIZ-040, BIZ-042, D-3602: the code emailed to the sign-up address.
+pub const EMAIL_CHECK_ROUTE: &str = "/b/signup/email-code";
+/// BIZ-042, D-3602: the email code's resend button.
+pub const EMAIL_RESEND_ROUTE: &str = "/b/signup/email-code/resend";
 
 /// WEB-024, D-307, D-344: the notice line while business texting is off, English and Spanish.
 /// Both Spanish lines here are drafts until a native speaker reviews them, as the Spanish text
@@ -239,7 +269,35 @@ pub enum Screen<'a> {
     FormAgain(&'a [(String, &'static str)], &'a Entered<'a>),
     /// The base ZIP and service radius, after the towns question (BIZ-058, BIZ-049).
     ServiceArea(&'a AreaEntered<'a>),
+    /// After `Contact`: the code sent to the masked record contact, and a refused or expired one
+    /// (BIZ-002, BIZ-026, A11Y-030).
+    IdentityCode(&'a MaskedContact, Option<CodeProblem>),
+    /// The code emailed to the sign-up address, with the resend button (BIZ-040, BIZ-042).
+    EmailCode(Option<CodeProblem>),
 }
+
+/// A11Y-030, BIZ-002, BIZ-040: why a typed sign-up code was refused, shown beside the code field.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CodeProblem {
+    /// The code does not match.
+    Refused,
+    /// The code has expired.
+    Expired,
+}
+
+impl CodeProblem {
+    /// A11Y-030: the message in the summary and beside the field.
+    #[must_use]
+    pub const fn message(self) -> &'static str {
+        match self {
+            Self::Refused => "That code doesn't match. Check it and type it again.",
+            Self::Expired => "That code has expired. Use the button below to get a new one.",
+        }
+    }
+}
+
+/// BIZ-042: the email code's hint, word for word.
+pub const NO_EMAIL_HINT: &str = "No email? Check your Spam or Junk folder.";
 
 /// BIZ-058: the service-area screen posts here; the route waits with the rest of sign-up (D-1709).
 pub const SERVICE_AREA_ROUTE: &str = "/b/signup/service-area";
@@ -342,6 +400,67 @@ pub struct Entered<'a> {
     pub problem: Option<(&'static str, &'a str)>,
     /// The business chose texts (BIZ-036), so the consent box names texts too.
     pub text_chosen: bool,
+    /// The notice choice as posted, kept on the form again (BIZ-036, A11Y-012).
+    pub notice: NoticeChoice,
+}
+
+impl Entered<'_> {
+    /// BIZ-036: the choice to check again; texts chosen with no choice posted reads as both.
+    fn shown_choice(&self) -> NoticeChoice {
+        if self.text_chosen && !self.notice.texts() {
+            NoticeChoice::Both
+        } else {
+            self.notice
+        }
+    }
+}
+
+/// BIZ-036, TXT-035: how the business gets job requests and picks; email is the default and the
+/// only choice while business texting is off.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum NoticeChoice {
+    /// Email only.
+    #[default]
+    Email,
+    /// Texts (account notices still come by email, CON-019).
+    Text,
+    /// Email and texts.
+    Both,
+}
+
+impl NoticeChoice {
+    /// Every choice, in page order.
+    pub const ALL: [Self; 3] = [Self::Email, Self::Text, Self::Both];
+
+    /// The posted `notice_channel` value.
+    #[must_use]
+    pub const fn value(self) -> &'static str {
+        match self {
+            Self::Email => "email",
+            Self::Text => "text",
+            Self::Both => "both",
+        }
+    }
+
+    const fn label(self) -> &'static str {
+        match self {
+            Self::Email => "Email",
+            Self::Text => "Text messages",
+            Self::Both => "Both",
+        }
+    }
+
+    /// The choice a posted value names; anything else is `None`.
+    #[must_use]
+    pub fn from_value(value: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|c| c.value() == value)
+    }
+
+    /// BIZ-036: the choice includes texts.
+    #[must_use]
+    pub const fn texts(self) -> bool {
+        matches!(self, Self::Text | Self::Both)
+    }
 }
 
 /// CON-019, A11Y-030: the error beside the consent box when the form came without its tick.
@@ -360,6 +479,144 @@ pub fn signup_channels(text_chosen: bool, texting_on: bool) -> Vec<ConsentChanne
         channels.push(ConsentChannel::Text);
     }
     channels
+}
+
+/// CON-019, A11Y-030, D-3602: the error by the box when the posted choice is not covered by the
+/// wording she saw (or its seal failed); the box comes back unticked with the right wording.
+pub const CONSENT_AGAIN: &str = "You changed how you get job requests, so the agreement below changed too. Read it, then tick \
+the box to agree.";
+
+/// The channels as the form's `consent_channels` field carries them, in a fixed order.
+fn channels_value(channels: &[ConsentChannel]) -> String {
+    let named = [
+        (ConsentChannel::Email, "email"),
+        (ConsentChannel::Text, "text"),
+    ];
+    let kept = named.iter().filter(|(c, _)| channels.contains(c));
+    kept.map(|(_, n)| *n).collect::<Vec<_>>().join(",")
+}
+
+/// The channels a posted `consent_channels` value names; anything else is `None`.
+fn channels_from(value: &str) -> Option<Vec<ConsentChannel>> {
+    let (e, t) = (ConsentChannel::Email, ConsentChannel::Text);
+    [vec![e], vec![t], vec![e, t]]
+        .into_iter()
+        .find(|c| channels_value(c) == value)
+}
+
+/// CON-019, SEC-037, D-3602: the seal over the shown channels, the wording `version` and the
+/// page's CSRF token: `link_token` keyed by `ID_SECRET`, its record and salt the two halves of the
+/// SHA256 of the length-prefixed fields.
+pub(crate) fn seal_for(
+    secret: &IdSecret,
+    channels: &[ConsentChannel],
+    version: &str,
+    csrf: &str,
+) -> Option<LinkToken> {
+    let named = channels_value(channels);
+    let mut hash = Sha256::new();
+    for field in ["signup-consent", named.as_str(), version, csrf] {
+        hash.update((field.len() as u64).to_be_bytes());
+        hash.update(field.as_bytes());
+    }
+    let digest: [u8; 32] = hash.finalize().into();
+    let (record, salt) = digest.split_at(16);
+    let record = Uuid::from_bytes(record.try_into().ok()?);
+    let salt = LinkSalt::from_bytes(salt).ok()?;
+    Some(link_token(secret, LinkKind::Action, record, &salt))
+}
+
+/// CON-019, D-3602: the posted channels, only when the posted seal is theirs for this CSRF token
+/// and [`CONSENT_VERSION`], compared in constant time.
+fn verify_seal(
+    (secret, csrf): (&IdSecret, &str),
+    channels: Option<&str>,
+    seal: Option<&str>,
+) -> Option<Vec<ConsentChannel>> {
+    let channels = channels_from(channels?)?;
+    let want = seal_for(secret, &channels, CONSENT_VERSION, csrf)?;
+    let same: bool = want.as_str().as_bytes().ct_eq(seal?.as_bytes()).into();
+    same.then_some(channels)
+}
+
+/// BIZ-036, CON-019, TXT-035, D-3602: the form's channel, shown-wording and phone fields as
+/// posted. Its `Debug` never shows the phone.
+#[derive(Debug)]
+pub struct ChannelPost {
+    /// The notice choice; email whenever business texting is off (TXT-035).
+    pub choice: NoticeChoice,
+    /// The typed text phone, while texting is on. Never log it.
+    pub text_phone: Option<SecretString>,
+    /// The channels the shown wording named, only when their seal verified.
+    pub shown: Option<Vec<ConsentChannel>>,
+    texting_on: bool,
+}
+
+impl ChannelPost {
+    /// BIZ-036, CON-019, TXT-035: reads `notice_channel`, `text_phone`, `consent_channels` and
+    /// `consent_seal`; the caller passes `ID_SECRET` and the page's CSRF token.
+    #[must_use]
+    pub fn parse(pairs: &[(String, String)], texting_on: bool, seal: (&IdSecret, &str)) -> Self {
+        let field = |name: &str| {
+            pairs
+                .iter()
+                .find(|(n, _)| n == name)
+                .map(|(_, v)| v.as_str())
+        };
+        let posted = field("notice_channel").and_then(NoticeChoice::from_value);
+        let phone = field("text_phone").map(str::trim);
+        let phone = phone.filter(|p| texting_on && !p.is_empty());
+        Self {
+            choice: posted.filter(|_| texting_on).unwrap_or_default(),
+            text_phone: phone.map(|p| SecretString::from(p.to_owned())),
+            shown: verify_seal(seal, field("consent_channels"), field("consent_seal")),
+            texting_on,
+        }
+    }
+
+    /// BIZ-036, TXT-035: texts were chosen while business texting is on.
+    #[must_use]
+    pub const fn text_chosen(&self) -> bool {
+        self.texting_on && self.choice.texts()
+    }
+
+    /// CON-019: the channels to store, only when the verified shown channels cover the choice;
+    /// `None` stores nothing and shows `FormAgain` with [`Self::entered`].
+    #[must_use]
+    pub fn consent_channels(&self) -> Option<Vec<ConsentChannel>> {
+        let chosen = signup_channels(self.text_chosen(), self.texting_on);
+        let shown = self.shown.as_ref()?;
+        chosen.iter().all(|c| shown.contains(c)).then_some(chosen)
+    }
+
+    /// CON-019: the wording to store, built on the server from the verified shown channels.
+    #[must_use]
+    pub fn stored_wording(&self) -> Option<String> {
+        self.consent_channels()?;
+        self.shown.as_deref().map(consent_wording)
+    }
+
+    /// CON-019, A11Y-030: the problem `FormAgain` shows: an uncovered or forged choice first
+    /// ([`CONSENT_AGAIN`]), then texts with no phone ([`TEXT_PHONE_MISSING`]).
+    #[must_use]
+    pub fn problem(&self) -> Option<(&'static str, &'static str)> {
+        if self.consent_channels().is_none() {
+            return Some(("consent", CONSENT_AGAIN));
+        }
+        let no_phone = self.text_chosen() && self.text_phone.is_none();
+        no_phone.then_some(("consent", TEXT_PHONE_MISSING))
+    }
+
+    /// BIZ-036, CON-019: what `FormAgain` shows: the choice kept, texts named when chosen.
+    #[must_use]
+    pub fn entered<'a>(&self) -> Entered<'a> {
+        Entered {
+            problem: self.problem(),
+            text_chosen: self.text_chosen(),
+            notice: self.choice,
+            ..Entered::default()
+        }
+    }
 }
 
 /// The consent box as posted: its tick and, when texts were chosen, the phone to link as the
@@ -464,6 +721,14 @@ pub struct Parts<'a> {
     pub fees: FeeNumbers,
 }
 
+/// A code screen's form: where it posts, the hint under the label, and the refusal (A11Y-030).
+#[derive(Debug, Clone, Copy)]
+struct CodeForm {
+    action: &'static str,
+    hint: &'static str,
+    error: Option<&'static str>,
+}
+
 #[derive(Template, Default)]
 #[template(path = "business_signup.html")]
 struct SignupView<'a> {
@@ -477,26 +742,54 @@ struct SignupView<'a> {
     pest_attestation: &'static str,
     fee_lines: Vec<String>,
     links: Vec<(String, String)>,
-    buttons: Vec<(&'static str, &'static str)>,
+    buttons: Vec<(&'static str, &'static str, &'static str)>,
     csrf: &'a str,
     entered: Entered<'a>,
     area: Option<AreaEntered<'a>>,
     consent: String,
+    texting_on: bool,
+    choices: Vec<(&'static str, &'static str, bool)>,
+    consent_channels: String,
+    consent_seal: String,
+    code_form: Option<CodeForm>,
 }
 
 impl SignupView<'_> {
-    /// The reason shown by `field`, if it was the refused one (A11Y-030).
+    /// The reason shown by `field`, if it was the refused one (A11Y-030); a missing text phone
+    /// shows by the phone field instead of the box.
     fn error_for(&self, field: &str) -> Option<&str> {
+        let by_phone = self.phone_error().is_some();
         self.entered
             .problem
-            .filter(|(f, _)| *f == field)
+            .filter(|(f, _)| *f == field && !(by_phone && field == "consent"))
             .map(|(_, r)| r)
+    }
+
+    /// CON-019, A11Y-030: [`TEXT_PHONE_MISSING`] beside the text phone field, while it is shown.
+    fn phone_error(&self) -> Option<&str> {
+        let shown = |r: &&str| self.texting_on && *r == TEXT_PHONE_MISSING;
+        self.entered.problem.map(|(_, r)| r).filter(shown)
+    }
+
+    /// A11Y-030: the summary link's target, the field the message sits beside.
+    fn problem_anchor(&self) -> String {
+        match self.entered.problem {
+            Some(_) if self.phone_error().is_some() => "text-phone".to_owned(),
+            Some((field, _)) => field.replace('_', "-"),
+            None => String::new(),
+        }
     }
 }
 
-/// BIZ-022, BIZ-030, LIC-047: the form's title, categories, pest fields and fee box; the title
-/// opens with "Error: " when a typed field was refused (A11Y-030).
-fn fill_form<'a>(v: &mut SignupView<'a>, categories: &[(String, &'static str)], parts: &Parts<'a>) {
+/// BIZ-022, BIZ-030, BIZ-036, LIC-047, CON-019, TXT-035: the form's title, categories, pest
+/// fields, fee box, the notice choice while texting is on, and the box with its channels and their
+/// seal; the title opens with "Error: " when a typed field was refused (A11Y-030).
+fn fill_form<'a>(
+    v: &mut SignupView<'a>,
+    categories: &[(String, &'static str)],
+    parts: &Parts<'a>,
+    secret: Option<&IdSecret>,
+) {
     v.title = if v.entered.problem.is_some() {
         "Error: Sign up your business"
     } else {
@@ -508,8 +801,63 @@ fn fill_form<'a>(v: &mut SignupView<'a>, categories: &[(String, &'static str)], 
         .collect();
     v.pest = categories.iter().any(|(c, _)| c == "pest_control");
     v.fee_lines = fee_summary(&parts.fees);
+    v.texting_on = parts.texting_on;
+    let chosen = v.entered.shown_choice();
+    let choices = NoticeChoice::ALL.into_iter();
+    v.choices = choices
+        .map(|c| (c.value(), c.label(), c == chosen))
+        .collect();
     let channels = signup_channels(v.entered.text_chosen, parts.texting_on);
     v.consent = consent_box(&channels).wording;
+    v.consent_channels = channels_value(&channels);
+    let seal = secret.and_then(|s| seal_for(s, &channels, CONSENT_VERSION, parts.csrf));
+    v.consent_seal = seal.map(|t| t.as_str().to_owned()).unwrap_or_default();
+}
+
+/// BIZ-026: the identity code's hint; only a texted code may be filled in by the phone.
+fn code_hint(to: &MaskedContact) -> &'static str {
+    match to.kind() {
+        ContactKind::Mobile => "Type or paste the code. Your phone may fill it in.",
+        _ => "Type or paste the code.",
+    }
+}
+
+/// BIZ-002, BIZ-026, BIZ-040, BIZ-042, A11Y-030: a code screen's title, lines, form and button.
+fn fill_code(v: &mut SignupView<'_>, to: Option<&MaskedContact>, problem: Option<CodeProblem>) {
+    let error = problem.map(CodeProblem::message);
+    let (title, line, form, button) = match to {
+        Some(to) => (
+            [
+                "Show this business is yours",
+                "Error: Show this business is yours",
+            ],
+            format!(
+                "We sent a 6-digit code to the {} on your ROC or city license record: {}.",
+                to.kind().word(),
+                to.shown()
+            ),
+            (IDENTITY_CHECK_ROUTE, code_hint(to)),
+            (CODE_SEND_ROUTE, "new-code", "Send a new code"),
+        ),
+        None => (
+            [
+                "Check your email for a code",
+                "Error: Check your email for a code",
+            ],
+            "We emailed a 6-digit code to the address you gave for job requests. Type it below."
+                .to_owned(),
+            (EMAIL_CHECK_ROUTE, NO_EMAIL_HINT),
+            (EMAIL_RESEND_ROUTE, "resend", "Send the email again"),
+        ),
+    };
+    v.title = title[usize::from(error.is_some())];
+    v.lines = vec![line];
+    v.code_form = Some(CodeForm {
+        action: form.0,
+        hint: form.1,
+        error,
+    });
+    v.buttons = vec![button];
 }
 
 /// BIZ-058, A11Y-030: the service-area screen's title, opening with "Error: " after a refusal.
@@ -523,11 +871,33 @@ fn fill_area<'a>(v: &mut SignupView<'a>, area: &AreaEntered<'a>) {
 }
 
 /// BIZ-024, BIZ-026, BIZ-030, BIZ-031, LIC-047, WEB-024: the page for `screen`; see the module
-/// docs. The fee box (form only) sits above the Terms link.
+/// docs. The fee box (form only) sits above the Terms link. Its form carries no consent seal, so
+/// a post of it stores no consent: serve a form through [`sealed_signup_page`] (D-3602).
 ///
 /// # Errors
 /// The template's render error.
 pub fn signup_page(screen: Screen<'_>, parts: &Parts<'_>) -> Result<String, askama::Error> {
+    render_signup(screen, parts, None)
+}
+
+/// CON-019, D-3602: [`signup_page`] with the form's shown channels sealed with `secret`
+/// (`ID_SECRET`) for `parts.csrf`, so [`ChannelPost::parse`] can verify them.
+///
+/// # Errors
+/// The template's render error.
+pub fn sealed_signup_page(
+    screen: Screen<'_>,
+    parts: &Parts<'_>,
+    secret: &IdSecret,
+) -> Result<String, askama::Error> {
+    render_signup(screen, parts, Some(secret))
+}
+
+fn render_signup(
+    screen: Screen<'_>,
+    parts: &Parts<'_>,
+    secret: Option<&IdSecret>,
+) -> Result<String, askama::Error> {
     let (notice, notice_lang) = notice_line(parts.texting_on, parts.language);
     let mut v = SignupView {
         notice,
@@ -538,19 +908,30 @@ pub fn signup_page(screen: Screen<'_>, parts: &Parts<'_>) -> Result<String, aska
         ..SignupView::default()
     };
     match screen {
-        Screen::Form(categories) => fill_form(&mut v, categories, parts),
+        Screen::Form(categories) => fill_form(&mut v, categories, parts, secret),
         Screen::FormAgain(categories, entered) => {
             v.entered = *entered;
-            fill_form(&mut v, categories, parts);
+            fill_form(&mut v, categories, parts, secret);
         }
+        Screen::IdentityCode(to, problem) => fill_code(&mut v, Some(to), problem),
+        Screen::EmailCode(problem) => fill_code(&mut v, None, problem),
+        Screen::ServiceArea(area) => fill_area(&mut v, area),
+        other => fill_record(&mut v, other),
+    }
+    v.render()
+}
+
+/// BIZ-026, BIZ-031: the record-contact, saved, letter and done screens.
+fn fill_record(v: &mut SignupView<'_>, screen: Screen<'_>) {
+    match screen {
         Screen::Contact(to, landline) => {
             v.title = "Where your code goes";
-            v.lines = landline
-                .into_iter()
-                .chain([to])
-                .map(MaskedContact::line)
-                .collect();
-            v.buttons = vec![("send", "Send the code"), ("old", NUMBER_OLD_BUTTON)];
+            let shown = landline.into_iter().chain([to]);
+            v.lines = shown.map(MaskedContact::line).collect();
+            v.buttons = vec![
+                (CODE_SEND_ROUTE, "send", "Send the code"),
+                (NUMBER_OLD_ROUTE, "old", NUMBER_OLD_BUTTON),
+            ];
         }
         Screen::NumberOld(delay) => {
             v.title = "Your sign-up is saved";
@@ -566,15 +947,17 @@ pub fn signup_page(screen: Screen<'_>, parts: &Parts<'_>) -> Result<String, aska
                 "https://roc.az.gov".to_owned(),
                 "How to update your ROC record".to_owned(),
             )];
-            v.buttons = vec![("letter", "Mail the letter"), ("old", STOP_FIX_BUTTON)];
+            v.buttons = vec![
+                (LETTER_ROUTE, "letter", "Mail the letter"),
+                (NUMBER_OLD_ROUTE, "old", STOP_FIX_BUTTON),
+            ];
         }
         Screen::Done(facts) => {
             v.title = "You're signed up";
             (v.lines, v.links) = done_lines(facts);
         }
-        Screen::ServiceArea(area) => fill_area(&mut v, area),
+        _ => {}
     }
-    v.render()
 }
 
 /// BIZ-049: the capability step's path; `?step=<slug>` picks one guided screen.
