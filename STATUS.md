@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T03:10:00Z by runner f5b7fd7dcd10 (actions).
+Updated 2026-11-14T03:14:36Z by runner f5b7fd7dcd10 (actions).
 
 **Building: T449 in progress since 02:46Z; 308 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T03:10:00Z by runner f5b7fd7dcd10 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T449 claimed 02:46Z, lease until 05:46Z; lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 5: T440 claimed 02:53Z, lease until 05:53Z; lane 6: T344 claimed 02:54Z, lease until 05:54Z
 - **Week:** 34% used, 120.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:09Z, 0 min before this update
+- **Last run:** 03:14Z, 0 min before this update
 - **Keeper:** last ran 03:09Z, next wake 05:25Z
 
 ## Needs attention
@@ -84,8 +84,6 @@ Updated 2026-11-14T03:10:00Z by runner f5b7fd7dcd10 (actions).
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 20 min | 04:22Z |  |
 | T371 | licensing and server: the worker fetches and records the dai | done | 1 | 70 min | 04:18Z |  |
 | T427 | WORD-022 phrases catch both brand names in the spec trace, t | done | 1 | 29 min | 03:17Z |  |
-| T429 | Copy, voice and AI-smell docs name Laftly | done | 1 | 22 min | 03:13Z |  |
-| T430 | payments: a Confirm needs the current card-authorization wor | done | 1 | 39 min | 03:13Z |  |
 
 ### Plan and harness merges on main
 - 01:13Z Plan: T302 plan gap — new T450 sign-up code screens and verified consent (D-3602) (#730)
