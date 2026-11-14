@@ -15,8 +15,9 @@
 //! D-1758), confirms it with its own key. A confirm Stripe
 //! refuses with a 4xx (other than 402 and 429) charged nothing, so the intent is read again. No
 //! transaction or pooled connection is held across a Stripe call (R11). The timers and events
-//! each answer starts are `handlers.rs`'s; a success writes the pick's one FEE-042 evidence
-//! record, [`write_evidence`], in the transaction that stores it (D-1474). T287 (D-1871): both
+//! each answer starts are `handlers.rs`'s; a success is booked by [`book_success`] in the
+//! transaction that stores it (D-1474): the pick's one FEE-042 evidence record with its `ch_` ID,
+//! its one `charge` ledger entry under [`charge_key`] and its receipt task (T359, D-2623). T287 (D-1871): both
 //! entry points first hold the press to the fee `payments` stored at the pick (`fee_matches`):
 //! any other amount, business or job, or a $0 fee, is `ChargeError::FeeMismatch` before Stripe.
 
@@ -24,7 +25,7 @@ use std::future::Future;
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_core::api::arizona;
-use askhava_ops::api::{Actor, AuditEntry, audit};
+use askhava_ops::api::{Actor, AuditEntry, NewAlert, Severity, audit, raise_alert};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
@@ -32,15 +33,22 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::handlers::{
-    CHECK_AFTER, EndReason, announce_end, charges_paused, end_pick, queue_check, record,
+    CHECK_AFTER, EndReason, announce_end, answered, charges_paused, end_pick, queue_check, record,
 };
+use crate::ledger::{EntryKind, LedgerEntry, NewEntry, ledger_append};
 use crate::models::{
     BusinessId, ChargeError, ChargeOutcome, PickNow, Press, attempt_label, intent_label,
 };
 use crate::pick_fee::pick_fee;
+use crate::receipts::queue_receipt;
 use crate::service::customer_of;
 use crate::status::AttemptStatus;
 
+/// The High alert of a success whose charged intent amount differs from the pick's stored fee; the
+/// `charge` entry still records the intent amount, the money Stripe took (FEE-042, D-3658).
+pub const CHARGE_FEE_MISMATCH_ALERT: &str = "payments.charge_fee_mismatch";
+/// The alert subject of a pick's charge: its `payments.pick_intent` row (FEE-042).
+const INTENT_SUBJECT: &str = "payments.pick_intent";
 /// The idempotency action of a pick's PaymentIntent create (FEE-047, SEC-018).
 pub const INTENT_ACTION: &str = "payments.pick_intent";
 /// The idempotency action of one charge attempt's confirm (FEE-016, SEC-018).
@@ -222,15 +230,24 @@ pub async fn confirm_and_pay(
     let answer = stripe
         .confirm_intent(&key, &intent, press.payment_method)
         .await;
-    let status = match answer_status(&answer) {
-        Some(status) => status,
-        None => {
-            let found = stripe.fetch_payment_intent(&intent).await;
-            AttemptStatus::after_refusal(found.as_ref().ok().map(|f| f.status.as_str()))
-        }
-    };
-    let status = record(pool, press.pick, try_no, status, at).await?;
+    let (status, charge) = confirm_answer(stripe, &intent, answer).await;
+    let status = record(pool, press.pick, try_no, (status, charge.as_deref()), at).await?;
     report(pool, press.pick, status, &intent).await
+}
+
+/// The status a confirm's answer means and the intent's `latest_charge`, which a success needs to
+/// be recorded (FEE-016, FEE-037, FEE-042, D-3134): a 4xx refusal reads the intent again.
+async fn confirm_answer(
+    stripe: &impl PaymentsAdapter,
+    intent: &str,
+    answer: Result<PaymentIntent, AdapterError>,
+) -> (AttemptStatus, Option<String>) {
+    if let Some(status) = answer_status(&answer) {
+        return (status, answer.ok().and_then(|found| found.latest_charge));
+    }
+    let found = stripe.fetch_payment_intent(intent).await.ok();
+    let status = AttemptStatus::after_refusal(found.as_ref().map(|f| f.status.as_str()));
+    (status, found.and_then(|f| f.latest_charge))
 }
 
 /// A repeated press, reload or duplicate callback answers from its own attempt, asking Stripe
@@ -635,40 +652,111 @@ pub(crate) async fn ask_stripe(
             .started
             .saturating_add(IN_FLIGHT)
             .unwrap_or(last.started);
-    let status = AttemptStatus::asked(last.status, &found.status, in_flight);
+    let asked = AttemptStatus::asked(last.status, &found.status, in_flight);
+    let status = answered(asked, found.latest_charge.as_deref());
     if status.settles(last.status) {
-        return record(pool, pick, last.try_no, status, at).await.map(Some);
+        let answer = (status, found.latest_charge.as_deref());
+        return record(pool, pick, last.try_no, answer, at).await.map(Some);
     }
     Ok(Some(last.status))
+}
+
+/// The ledger key of pick `pick`'s `charge` entry, one per pick, never per (job, business), so a
+/// second paid pick of the same business on the same job after a refund keeps its own entry; the
+/// success path and the reconcile both use it, so they converge (FEE-028, FEE-030, D-2623).
+pub(crate) fn charge_key(pick: Uuid) -> String {
+    format!("charge.{pick}")
+}
+
+/// True for a Stripe charge ID, `ch_` and 1 to 200 letters or digits (FEE-042, D-3134).
+pub(crate) fn is_charge_id(id: &str) -> bool {
+    id.strip_prefix("ch_").is_some_and(|rest| {
+        (1..=200).contains(&rest.len()) && rest.bytes().all(|b| b.is_ascii_alphanumeric())
+    })
+}
+
+/// Books pick `pick`'s success with Stripe charge `charge` on attempt `try_no`, on the caller's
+/// transaction (FEE-013, FEE-028, FEE-030, FEE-031, FEE-042, D-2623, D-3658): the evidence record
+/// with the charge ID; then, only when that record is new, one `charge` ledger entry under
+/// [`charge_key`] at the checked intent amount (`pick_intent.amount_cents`, the money Stripe took),
+/// one High [`CHARGE_FEE_MISMATCH_ALERT`] naming the pick when a stored `pick_fee` differs from it
+/// (a success with no stored fee writes no alert), and the receipt task. A replay writes nothing.
+///
+/// # Errors
+/// [`ChargeError::Database`], also when the ledger refuses the entry.
+pub(crate) async fn book_success(
+    tx: &mut PgConnection,
+    (pick, try_no): (Uuid, i32),
+    charge: &str,
+    at: Timestamp,
+) -> Result<(), ChargeError> {
+    if !write_evidence(tx, (pick, try_no), charge, at).await? {
+        return Ok(());
+    }
+    let row = db(sqlx::query!(
+        r#"SELECT i.business_id, i.job_id, i.amount_cents, f.amount_cents AS "fee?"
+             FROM payments.pick_intent i LEFT JOIN payments.pick_fee f ON f.pick_id = i.pick_id
+            WHERE i.pick_id = $1"#,
+        pick
+    )
+    .fetch_one(&mut *tx)
+    .await)?;
+    let key = charge_key(pick);
+    let entry = LedgerEntry::new(NewEntry {
+        kind: EntryKind::Charge,
+        business: Some(row.business_id),
+        job: Some(row.job_id),
+        amount_cents: row.amount_cents,
+        stripe_id: Some(charge),
+        idempotency_key: &key,
+    })
+    .map_err(|_| ChargeError::Database)?;
+    ledger_append(tx, &entry)
+        .await
+        .map_err(|_| ChargeError::Database)?;
+    if row.fee.is_some_and(|fee| fee != row.amount_cents) {
+        let alert = NewAlert {
+            kind: CHARGE_FEE_MISMATCH_ALERT,
+            severity: Severity::High,
+            subject: Some((INTENT_SUBJECT, pick)),
+        };
+        raise_alert(tx, &alert)
+            .await
+            .map_err(|_| ChargeError::Database)?;
+    }
+    queue_receipt(tx, pick, at)
+        .await
+        .map_err(|_| ChargeError::Database)?;
+    Ok(())
 }
 
 /// Writes the pick's one FEE-042 evidence record for its succeeded attempt `try_no`, on the
 /// caller's transaction, so it commits with the success (FEE-042, FEE-015, D-365, D-1474,
 /// D-1478): IDs and timestamps only (the press, the attempt's key label `pick-<id>-try<n>`, the
-/// Stripe customer and PaymentIntent, the version of the business's latest FEE-015 acceptance at
+/// Stripe customer, PaymentIntent and charge (`charge`, D-2623), the version of the business's latest FEE-015 acceptance at
 /// or before the press, or none when none is recorded, the press and success times), never card
 /// data (FEE-014) or a homeowner field (PRIV-027). A second success for the same pick writes
-/// nothing; the table is append-only for the app role.
+/// nothing; the table is append-only for the app role. Answers whether the record is new.
 ///
 /// # Errors
 /// [`ChargeError::Database`], also when the pick, the attempt or the customer is missing and no
 /// record exists, so a success never goes unrecorded silently.
-pub(crate) async fn write_evidence(
+async fn write_evidence(
     tx: &mut PgConnection,
-    pick: Uuid,
-    try_no: i32,
+    (pick, try_no): (Uuid, i32),
+    charge: &str,
     at: Timestamp,
-) -> Result<(), ChargeError> {
+) -> Result<bool, ChargeError> {
     let written = db(sqlx::query!(
         "INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, try_no,
            idempotency_label, stripe_customer_id, stripe_intent_id, authorization_version,
-           amount_cents, pressed_at, charged_at)
+           amount_cents, pressed_at, charged_at, stripe_charge_id)
          SELECT i.pick_id, i.business_id, i.job_id, a.press_id, a.try_no, $3, c.stripe_customer_id,
            i.stripe_intent_id,
            (SELECT z.version FROM payments.card_authorization z
              WHERE z.business_id = i.business_id AND z.accepted_at <= a.started_at
              ORDER BY z.accepted_at DESC, z.version DESC LIMIT 1),
-           i.amount_cents, a.started_at, $4
+           i.amount_cents, a.started_at, $4, $5
          FROM payments.pick_intent i
          JOIN payments.charge_attempt a ON a.pick_id = i.pick_id AND a.try_no = $2
          JOIN payments.customer c ON c.business_id = i.business_id
@@ -678,11 +766,12 @@ pub(crate) async fn write_evidence(
         try_no,
         attempt_label(pick, try_no),
         at.to_sqlx() as _,
+        charge,
     )
     .execute(&mut *tx)
     .await)?;
     if written.rows_affected() == 1 {
-        return Ok(());
+        return Ok(true);
     }
     let kept = db(sqlx::query_scalar!(
         r#"SELECT EXISTS (SELECT 1 FROM payments.charge_evidence WHERE pick_id = $1) AS "kept!""#,
@@ -691,7 +780,7 @@ pub(crate) async fn write_evidence(
     .fetch_one(&mut *tx)
     .await)?;
     if kept {
-        Ok(())
+        Ok(false)
     } else {
         Err(ChargeError::Database)
     }
