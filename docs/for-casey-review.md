@@ -2815,3 +2815,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The test's sample job now has its card sent, as a real one would, and the other business's link must get the plain "not found" answer and change nothing. That is a stricter check, not a looser one.
 - The same task also links the shared form stylesheet on the action pages, as planned when the sign-up and portal pages got it. It now waits for that stylesheet task (T466) and the sign-up task (T302). Nothing needs you.
 - One risk worth a look: the sign-up task (T302) has already used 5 tries, and this task now waits for it. Both change the same shared security test file, so one has to go first; T302 going first changes the least. If T302 stops again, its own fix can put this task first instead.
+
+## The name-and-address answer and the 911 check (D-3705, November 14)
+
+- The spec says the 911 word check never runs on a homeowner's answer to "What's your first name and street address?", so a street like "Smoke Tree" never sets it off. Taken literally, a text like "smoke coming out of the outlet in 2 rooms" sent while that question is open would be filed as her name and street and get no 911 text. The check is now skipped only when the text looks like an answer: a name, a house number and a street, with no 911 words around them. Anything else gets the normal check.
+- What this costs: an answer with a street name like "Smoke Tree Ave" and no house number gets the 911 text it did not need; when she replies SAFE she is asked for her name and address again. A very short text like "garage 2 fires" sent while the question is open would still skip the check. If you'd rather lean either way, say so.

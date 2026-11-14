@@ -36,6 +36,7 @@ pub use crate::closing::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
     JOBS_CLOSED_TEMPLATE, answer_close, close_from_page,
 };
+pub use crate::conversation::name_address_open;
 pub use crate::conversation::{AfterQuestions, after_questions};
 pub use crate::conversation::{
     Answer, JobStart, Opened, Recorded, Taken, ask_name_address, begin_job, hear, joining_job,
@@ -80,6 +81,7 @@ pub use crate::models::{
     IntakeAnswerRow, IntakeError, PropertyRow, RecruitingDemandRow, TermsAcceptanceRow,
 };
 pub use crate::opted_out_live::{STILL_OPEN_EMAIL, StillOpenSender, run_opted_out_live};
+pub use crate::order::ask_last_question;
 pub use crate::order::{
     CardIn, Path, SPANISH_NOT_YET_TEMPLATE, Step, answer_narrowing, choose_with_card, keep_words,
     order, show_built_card, spanish_line,
@@ -97,6 +99,7 @@ pub use crate::question_bank::{
     AiTurn, BankRun, BankSettings, Given, Heard, MAX_ASKED, NOT_SURE, Next, Prompt, SMELL_EN,
     SMELL_ES, asks_smell_kind, keyword_answer, starts_now,
 };
+pub use crate::replies::{RawReply, reads_as_address, receive_raw_reply};
 pub use crate::replies::{Reply, receive_reply};
 pub use crate::resubscribe::{pause_on_repeat_cancel, restart_after_start};
 pub use crate::routing::{
