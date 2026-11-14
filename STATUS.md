@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T03:46:07Z by runner 224fe4c7f956 (actions).
+Updated 2026-11-14T03:46:21Z by runner 224fe4c7f956 (actions).
 
 **Idle since 03:43Z; 310 of 435 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -13,6 +13,7 @@ Updated 2026-11-14T03:46:07Z by runner 224fe4c7f956 (actions).
 
 ## Needs attention
 - PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
+- PLAN GAP T352 (since 2026-11-14T03:46:00Z, no attempt used; a plan change fixes it): T352: measures 53% of the context window, over its 50% limit; T352: dependency T433 is DONE but its owned file app/server/src/payment_jobs.rs is not on main; T352: dependency T433 is DONE but its owned file tests/integration/tests/payment_jobs.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 53% of the context window, over its 50% limit
 - Strict plan check red: 33 problem(s) on tasks still to run (+204 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
