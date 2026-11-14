@@ -14,8 +14,8 @@
 //!    (D-1422);
 //! 3. repeat work: the business already had a confirmed introduction on one of those jobs, so a
 //!    $0 `repeat-customer` entry, and the free first win is not touched (FEE-013); a charge whose
-//!    pick was refunded with nothing released (a `late-success` or `fraud-warning` refund) was no
-//!    introduction and does not count;
+//!    pick was refunded with nothing released (a `late-success`, `fraud-warning` or
+//!    `charged-after-cancel` refund) was no introduction and does not count;
 //! 4. a free first win: the business joined inside the 90-day window ([`in_free_win_window`]) and
 //!    neither it nor any business sharing one of its entity keys has used one, checked now, at
 //!    use (FEE-011); a $0 `free-first-win` entry plus a `payments.free_win` row holding the
@@ -214,8 +214,9 @@ async fn fee_free_entry(
 
 /// FEE-013, D-069: the business already had a confirmed introduction (charged, free first win,
 /// repeat or fee-free) on another of the customer's jobs. A charge whose pick was refunded with
-/// nothing released, a `late-success` or `fraud-warning` refund, was no introduction and is not
-/// counted; one refunded after a release (unreachable, cancelled) still is (D-2623).
+/// nothing released, a `late-success`, `fraud-warning` or `charged-after-cancel` refund, was no
+/// introduction and is not counted; one refunded after a release (unreachable, cancelled before
+/// talking) still is (D-2623, D-3656).
 async fn is_repeat(conn: &mut PgConnection, check: &WinCheck<'_>) -> Result<bool, FreeWinError> {
     if check.same_customer_jobs.is_empty() {
         return Ok(false);
@@ -227,7 +228,7 @@ async fn is_repeat(conn: &mut PgConnection, check: &WinCheck<'_>) -> Result<bool
              AND NOT EXISTS (SELECT 1 FROM payments.charge_evidence v
                    JOIN payments.refund r ON r.pick_id = v.pick_id
                   WHERE e.kind = 'charge' AND v.stripe_charge_id = e.stripe_id
-                    AND r.trigger IN ('late-success', 'fraud-warning')))",
+                    AND r.trigger IN ('late-success', 'fraud-warning', 'charged-after-cancel')))",
         check.business.0,
         check.same_customer_jobs,
         check.job,

@@ -421,13 +421,13 @@ async fn refunded(pool: &PgPool, pick: Uuid, trigger: &str) {
 
 /// TD-FEE-64 (FEE-013): after a released, paid pick the same business's pick on another job of
 /// the same customer is a repeat; a charge refunded with nothing released (a late success or an
-/// unreleased fraud warning) is no introduction, so the next job is not waived; a refund after a
-/// release (unreachable) still counts.
+/// unreleased fraud warning or a charge taken after the homeowner cancelled) is no introduction,
+/// so the next job is not waived; a refund after a release (unreachable) still counts.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_64_only_an_actual_introduction_makes_a_repeat(pool: PgPool) {
     with_customer(&pool).await;
     let paid = fake("succeeded", "succeeded");
-    for n in 1..=3 {
+    for n in 1..=4 {
         press(&pool, &paid, (pick(n), job(n))).await;
         assert_eq!(booked(&pool, pick(n)).await, one_charge(pick(n)));
     }
@@ -442,6 +442,11 @@ async fn td_fee_64_only_an_actual_introduction_makes_a_repeat(pool: PgPool) {
     refunded(&pool, pick(3), "fraud-warning").await;
     assert_eq!(
         waive(&pool, job(13), &[job(3)], &picked).await,
+        Waiver::NotWaived
+    );
+    refunded(&pool, pick(4), "charged-after-cancel").await;
+    assert_eq!(
+        waive(&pool, job(15), &[job(4)], &picked).await,
         Waiver::NotWaived
     );
     refunded(&pool, pick(1), "unreachable").await;
