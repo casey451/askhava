@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T09:01:57Z by runner d8b6eaa7352f (actions).
+Updated 2026-11-14T09:02:05Z by runner d8b6eaa7352f (actions).
 
-**Building: T398 in progress since 08:29Z; 317 of 436 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T359 in progress since 08:06Z; 317 of 436 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 317 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T398 claimed 08:29Z, lease until 11:29Z; lane 4: T359 claimed 08:06Z, lease until 11:06Z; lane 5: T437 claimed 08:49Z, lease until 11:49Z
+- **Lane:** lane 4: T359 claimed 08:06Z, lease until 11:06Z; lane 5: T437 claimed 08:49Z, lease until 11:49Z
 - **Week:** 39% used, 112.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:01Z, 0 min before this update
 - **Keeper:** last ran 09:01Z, next wake 11:08Z
@@ -19,6 +19,7 @@ Updated 2026-11-14T09:01:57Z by runner d8b6eaa7352f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T398 | businesses: notice texts go only to approved phones, and a m | MERGE_PENDING | 1 | 32 min | 09:01Z |  |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 1 | 5 min | 08:59Z | PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID |
 | T280 | server and messaging (harness): the business sign-in pages a | done | 4 | 91 min | 08:04Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T396 | businesses and messaging (harness): a phone a member links o | done | 2 | 56 min | 07:52Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
@@ -167,9 +168,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T398 (lease until 2026-11-14T11:29:38Z)
+- nothing
 - lane 4: T359 (lease until 2026-11-14T11:06:27Z)
 - lane 5: T437 (lease until 2026-11-14T11:49:58Z)
 
 ## Last usage reading
-- {"task": "T300", "at": "2026-11-14T08:59:42Z", "cache_read_input_tokens": 4932761, "input_tokens": 118, "output_tokens": 25719, "cache_creation_input_tokens": 153951}
+- {"task": "T398", "at": "2026-11-14T09:01:42Z", "cache_read_input_tokens": 3169887, "cache_creation_input_tokens": 122182, "input_tokens": 115, "output_tokens": 30897}
