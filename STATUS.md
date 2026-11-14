@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T11:57:12Z by runner 46fd94463262 (actions).
+Updated 2026-11-14T11:57:20Z by runner 638d0ea93902 (actions).
 
 **Building: T359 in progress since 11:24Z; 321 of 449 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -14,7 +14,7 @@ Updated 2026-11-14T11:57:12Z by runner 46fd94463262 (actions).
 ## Needs attention
 - PLAN GAP T301 (since 2026-11-14T11:24:40Z, no attempt used; a plan change fixes it): T301: dependency T453 is DONE but its owned file app/quotes/src/quote_rules.rs is not on main; T301: dependency T453 is DONE but its owned file tests/integration/tests/quote_rules.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 33 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+102 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
