@@ -33,6 +33,7 @@ use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetReques
 use tower_http::trace::TraceLayer;
 
 pub mod business_contacts;
+pub mod business_signin;
 pub mod call_status;
 pub mod catalog_start;
 pub mod checkin;
@@ -99,6 +100,16 @@ pub struct RouterParts {
     hooks: Hooks,
     limit: RequestTimeout,
     statics: StaticRoot,
+    signin: Option<business_signin::ServedSignIn>,
+}
+
+impl RouterParts {
+    /// Adds the served business sign-in pages (T280, D-3055); without it none are served.
+    #[must_use]
+    pub fn with_sign_in(mut self, signin: business_signin::ServedSignIn) -> Self {
+        self.signin = Some(signin);
+        self
+    }
 }
 
 impl From<Hooks> for RouterParts {
@@ -107,6 +118,7 @@ impl From<Hooks> for RouterParts {
             hooks,
             limit: RequestTimeout::DEFAULT,
             statics: StaticRoot::default(),
+            signin: None,
         }
     }
 }
@@ -118,6 +130,7 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
             hooks,
             limit,
             statics,
+            signin: None,
         }
     }
 }
@@ -128,6 +141,7 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
             hooks,
             limit,
             statics,
+            signin: None,
         }
     }
 }
@@ -140,7 +154,9 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
 /// D-737). Call it inside the runtime (it spawns that writer). Merge routes before the layers so
 /// they apply to them. `test_control` is `askhava_core::api::TestControl::router()`, which has no
 /// routes in the release build (SEC-035, D-739). The outermost layer sets the SEC-012 security
-/// headers on every response, a 404 included (T051). The homeowner's quote page is `portals`'
+/// headers on every response, a 404 included (T051). The parts' served business sign-in
+/// ([`business_signin::ServedSignIn`], T280) adds the two sign-in routes, always with the
+/// new-device code. The homeowner's quote page is `portals`'
 /// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055); the
 /// private feedback page after Done is `/f/{token}` (`feedback`, T230); the check-in answer page
 /// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231). The built
@@ -164,6 +180,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         hooks,
         limit,
         statics,
+        signin,
     } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
@@ -195,6 +212,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(dialed)
         .merge(calls)
         .merge(stripe)
+        .merge(signin.map_or_else(Router::new, business_signin::ServedSignIn::into_router))
         .merge(static_files::router(&statics))
         .layer(request_timeout::catch_panic())
         .layer(axum::middleware::from_fn_with_state(

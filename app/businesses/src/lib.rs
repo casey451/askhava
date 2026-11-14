@@ -62,6 +62,7 @@ mod reply_link;
 mod rules;
 mod service;
 mod service_area;
+mod sign_in_lines;
 mod signup;
 mod signup_record;
 mod status;
