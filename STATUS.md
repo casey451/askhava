@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T12:47:31Z by runner 24008eb1e197 (actions).
+Updated 2026-11-14T12:53:31Z by runner d74867495730 (actions).
 
-**Building: T432 in progress since 12:42Z; 322 of 449 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T432 in progress since 12:42Z; 322 of 450 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 322 of 449 build tasks (owner gates not counted)
+- **Tasks done:** 322 of 450 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T432 claimed 12:42Z, lease until 15:42Z
 - **Week:** 43% used, 108.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:47Z, 0 min before this update
+- **Last run:** 12:47Z, 5 min before this update
 - **Keeper:** last ran 12:47Z, next wake 15:45Z
 
 ## Needs attention
@@ -122,7 +122,6 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 | T330 | picks, intake and server: a withdrawn pick tells its busines | resync | 1 | 39 min | 14:30Z |  |
 | T367 | jobs, messaging, privacy, intake and payments: the daily swe | done | 1 | 60 min | 14:23Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | BLOCKED | 1 | 16 min | 13:41Z |  |
-| T255 | intake, privacy, payments and server: ask again for an emerg | done | 4 | 71 min | 12:52Z | PLAN GAP: app/picks/src/release.rs:337 (owned by T069, T077, T253, T254, T278, T281, T318, T355) - an emergency address  |
 
 ### Plan and harness merges on main
 - 12:46Z Plan: split T437 so the NOTES.md rule lands before the crate-doc sweep (D-3698) (#777)
@@ -150,7 +149,7 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 ## Progress (requirements verified)
 
 **Requirements verified:** 274 of 733 (37.4%) · partial 301 · unstarted 158
-**Tasks merged (throughput only):** 322 of 449
+**Tasks merged (throughput only):** 322 of 450
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -185,7 +184,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 202 of 224 done
+- stage 4: 202 of 225 done
 - stage 5: 0 of 71 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
