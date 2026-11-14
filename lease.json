@@ -4,18 +4,13 @@
   "1": null,
   "2": null,
   "3": null,
-  "4": {
-   "task": "T261",
-   "session": "actions-43641828175",
-   "expires": "2026-11-15T00:34:37Z",
-   "lane": "4"
-  },
+  "4": null,
   "5": null,
   "6": null,
   "7": null,
   "fix": null
  },
- "seq": 4971,
- "runner_sha": "1a0927467bbf02920e0145caddfbf0f307c092ce",
+ "seq": 4972,
+ "runner_sha": "5c153897b3f566976c5c9eeb10c4b635b9c8d8e8",
  "starter": "actions"
 }
