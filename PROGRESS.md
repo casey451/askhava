@@ -4311,3 +4311,4 @@
 - 2026-11-14T03:45:22Z runner c4076414e148 (manual): {"T302": "BLOCKED -> QUEUED"}
 - 2026-11-14T03:46:07Z runner 224fe4c7f956 (actions): {}
 - 2026-11-14T03:46:21Z runner 224fe4c7f956 (actions): {}
+- 2026-11-14T03:56:00Z runner 224fe4c7f956 (actions): {"T449": "QUEUED -> IN_PROGRESS"}; T449 estimated 616k tokens (calibrated); week has 124.0M left (no five-hour budget, D-3056) (session_reading 2026-11-14T03:44:11Z (week)); claimed
