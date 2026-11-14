@@ -51404,7 +51404,7 @@
     "expires": "2026-11-14T09:55:44Z",
     "lane": "2"
    },
-   "branch": "claude/task/T437-crate-notes-shared-and-full-by-bytes-a2",
+   "branch": "claude/task/T437-crate-notes-shared-and-full-by-bytes-a3",
    "auto_merge": {
     "enabled": true,
     "why": "auto-merge on #756 (gh pr merge)",
@@ -55971,7 +55971,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T08:50:32Z",
+ "updated_at": "2026-11-14T08:50:44Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
