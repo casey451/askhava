@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T20:28:43Z by runner 5311995c344a (actions).
+Updated 2026-11-14T20:29:09Z by runner 5311995c344a (actions).
 
 **Building: T459 in progress since 19:49Z; 329 of 459 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 329 of 459 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T459 claimed 19:49Z, lease until 22:49Z; lane 6: T300 claimed 19:50Z, lease until 22:50Z; lane 7: T437 claimed 19:48Z, lease until 22:48Z
+- **Lane:** lane 4: T459 claimed 19:49Z, lease until 22:49Z; lane 6: T300 claimed 19:50Z, lease until 22:50Z
 - **Week:** 51% used, 88.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:26Z, 2 min before this update
 - **Keeper:** last ran 20:26Z, next wake 22:51Z
@@ -18,6 +18,7 @@ Updated 2026-11-14T20:28:43Z by runner 5311995c344a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 | T468 | portals, businesses and messaging: public paths for sign-up' | MERGE_PENDING | 1 | 29 min | 20:19Z |  |
 | T474 | harness: clearing a red main counts a failed attempt against | MERGE_PENDING | 1 | 26 min | 20:18Z |  |
 | T467 | picks: a pick whose fee terms changed before its Confirm end | MERGE_PENDING | 1 | 27 min | 20:15Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -29,7 +30,7 @@ Updated 2026-11-14T20:28:43Z by runner 5311995c344a (actions).
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 1 | 3 min | 14:30Z | PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs: |
 | T353 | payments: a won dispute records the countering fee's return  | done | 1 | 30 min | 14:15Z |  |
 | T432 | intake and server: ask the name-and-address question in prod | done | 1 | 71 min | 13:54Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 4 | 38 min | 13:32Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 4 | 38 min | 13:32Z |  |
 | T466 | portals: one shared form stylesheet for native checkboxes an | done | 1 | 27 min | 13:27Z |  |
 | T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
 | T359 | payments: a successful charge writes its own charge ledger e | done | 3 | 72 min | 12:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
@@ -169,7 +170,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 4: T459 (lease until 2026-11-14T22:49:23Z)
 - lane 6: T300 (lease until 2026-11-14T22:50:38Z)
-- lane 7: T437 (lease until 2026-11-14T22:48:36Z)
 
 ## Last usage reading
-- {"task": "T468", "at": "2026-11-14T20:19:37Z", "cache_creation_input_tokens": 184973, "output_tokens": 32560, "cache_read_input_tokens": 3009367, "input_tokens": 117}
+- {"task": "T437", "at": "2026-11-14T20:28:42Z", "cache_creation_input_tokens": 43477, "input_tokens": 41, "output_tokens": 8141, "cache_read_input_tokens": 560198}
