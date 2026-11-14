@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T09:47:38Z by runner d6d1d54ea21a (actions).
+Updated 2026-11-14T09:50:06Z by runner d6d1d54ea21a (actions).
 
 **Building: T437 in progress since 09:33Z; 317 of 436 done; week 40% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T09:47:38Z by runner d6d1d54ea21a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T437 claimed 09:33Z, lease until 12:33Z; lane 4: T359 claimed 09:38Z, lease until 12:38Z
 - **Week:** 40% used, 114.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:47Z, 0 min before this update
+- **Last run:** 09:50Z, 0 min before this update
 - **Keeper:** last ran 09:47Z, next wake 12:35Z
 
 ## Needs attention
@@ -98,7 +98,6 @@ Updated 2026-11-14T09:47:38Z by runner d6d1d54ea21a (actions).
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | done | 3 | 46 min | 11:14Z | session ended without handing in |
 | T312 | intake: a street address written in lower case never trips t | QUEUED | 1 | 24 min | 10:17Z |  |
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | QUEUED | 2 | 22 min | 10:15Z |  |
-| T255 | intake, privacy, payments and server: ask again for an emerg | BLOCKED | 3 | 26 min | 09:48Z |  |
 
 ### Plan and harness merges on main
 - 07:59Z Plan: T359 adopts two charge-ledger test expectations (TD-FEE-64), records the checked intent amount (D-3658) (#759)
