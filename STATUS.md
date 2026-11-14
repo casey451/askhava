@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:22:05Z by runner 9fcdbb33f44a (manual).
+Updated 2026-11-14T10:22:22Z by runner 9fcdbb33f44a (manual).
 
 **Building: T437 in progress since 09:33Z; 318 of 449 done; week 40% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-14T10:22:05Z by runner 9fcdbb33f44a (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T437 claimed 09:33Z, lease until 12:33Z; lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 4: T359 claimed 09:38Z, lease until 12:38Z
 - **Week:** 40% used, 111.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:21Z, 0 min before this update
+- **Last run:** 10:22Z, 0 min before this update
 - **Keeper:** last ran 10:02Z, next wake 12:36Z
 
 ## Needs attention
-- BLOCKED T302: plan gap reported: PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 an; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 33 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 

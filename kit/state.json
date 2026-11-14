@@ -32720,7 +32720,7 @@
     "T280",
     "T449"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 4,
    "slug": "business-signup-served",
    "type": "build",
@@ -32734,8 +32734,8 @@
     3600,
     3601
    ],
-   "reason": "plan gap reported: PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 an; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 and 3; claim 1 is unrealistic but not enforced.",
+   "reason": null,
+   "last_failure": "PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 and 3; claim 1 is unrealistic but not enforced.\nre-queued after plan fix D-3676: split: T302 matrices+form page; T459-T462, T464",
    "history": [
     {
      "attempt": 1,
@@ -32869,6 +32869,19 @@
      "plan_head": "d6d1d54ea21a18537cab068466554864dcda58a6",
      "plan_then": "2dc3be4922334778cbd49b661b0e56a63bcaf70102573ae51ad49fc7d55c83fd",
      "plan_now": "710bb23dcc7da95b7196e0269eed33f4a27094661bef6c820096bf265ea7148a"
+    },
+    {
+     "at": "2026-11-14T10:22:22Z",
+     "reason": "split: T302 matrices+form page; T459-T462, T464",
+     "by": "manual-a59807266abc",
+     "was": "plan gap reported: PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/portals/src/email_check.rs has none); T302 owns no portals file, and D-3641 limits the open sign-up door to the nine existing constants. (2) The goal serves the sample pick in sign-up, but BIZ-042 (docs/spec/businesses.md:46) and D-462 offer it at the first real job card. (3) Budget {files 7, lines 780} is far too small (T280's smaller scope took 1266 lines in 4 attempts); split the task: harness matrices, form and identity chain, then the rest. Reviewer confirmed claims 2 an; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 4,
+     "plan_fix": "D-3676",
+     "plan_since": "2026-11-14T09:15:41Z",
+     "plan_base": "d6d1d54ea21a18537cab068466554864dcda58a6",
+     "plan_head": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
+     "plan_then": "710bb23dcc7da95b7196e0269eed33f4a27094661bef6c820096bf265ea7148a",
+     "plan_now": "10aa9553a90d400a4d074bf0130b28d5e76dfa85793bc466485c0bf314312d71"
     }
    ]
   },
@@ -56322,7 +56335,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T10:22:05Z",
+ "updated_at": "2026-11-14T10:22:22Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
