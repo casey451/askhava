@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T16:31:29Z by runner 858f0854e89f (actions).
+Updated 2026-11-14T16:43:32Z by runner 858f0854e89f (actions).
 
 **Stopped: main is red, only FIX-MAIN runs; 329 of 452 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T16:31:29Z by runner 858f0854e89f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane fix: FIX-MAIN claimed 16:24Z, lease until 19:24Z
 - **Week:** 48% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:31Z, 0 min before this update
+- **Last run:** 16:43Z, 0 min before this update
 - **Keeper:** last ran 16:31Z, next wake 18:05Z
 
 ## Needs attention
@@ -104,9 +104,9 @@ Updated 2026-11-14T16:31:29Z by runner 858f0854e89f (actions).
 | T273 | privacy: a photo's plaintext is returned only after its open | done | 1 | 41 min | 17:10Z |  |
 | T436 | portals, core and server: expired sessions are swept and old | resync | 1 | 28 min | 16:53Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | done | 2 | 22 min | 16:46Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
-| T319 | portals and server: security-event rows are capped per addre | done | 1 | 17 min | 16:40Z |  |
 
 ### Plan and harness merges on main
+- 16:40Z Plan: sign-up email code and activation link get real send paths, rate-limited (new T468, D-3743) (#791)
 - 15:37Z Plan: fee_terms_changed pick end reason (new T467) so T261's Confirm page can end a pick safely (D-3722) (#788)
 - 13:12Z Plan: T301 door-matrix Quote-link cases follow BIZ-038/CARD-023; action pages link forms.css (D-3706) (#781)
 - 12:55Z Plan: shared portal forms stylesheet (T466) so business pages pass A11Y-007/009 (D-3699, D-3700) (#780)
