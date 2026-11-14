@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-14T01:32:32Z by runner 2df926e292cb (actions).
+Updated 2026-11-14T01:33:42Z by runner d997705c35e7 (actions).
 
-**Building: T280 in progress since 00:35Z; 304 of 434 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T280 in progress since 00:35Z; 304 of 435 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 304 of 434 build tasks (owner gates not counted)
+- **Tasks done:** 304 of 435 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z; lane 7: T302 claimed 01:32Z, lease until 04:32Z
+- **Lane:** lane 3: T280 claimed 00:35Z, lease until 03:35Z
 - **Week:** 32% used, 128.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:31Z, 0 min before this update
+- **Last run:** 01:32Z, 1 min before this update
 - **Keeper:** last ran 01:31Z, next wake 03:38Z
 
 ## Needs attention
+- BLOCKED T302: plan gap reported: PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode|EmailCode in app/portals/src finds nothing, app/portals/src/tests/signup_code_screens.rs does not exist. T302 owns no portals file, so it cannot serve the email-code and identity-code steps (TD-SEC-45) without T450's Screen::IdentityCode, Screen::EmailCode, route constants and channel parser. kit/state.json on claude/kit-state has no T450 and T302's deps there stop at T415, so the runner started T302 before T450. Reviewer confirmed every claim.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T396 (since 2026-11-14T00:51:46Z, no attempt used; a plan change fixes it): T396: measures 52% of the context window, over its 50% limit
 - Strict plan check red: 32 problem(s) on tasks still to run (+200 on DONE tasks); first: T396: measures 52% of the window, over its 50% limit; trim its reads or split it
@@ -19,10 +20,11 @@ Updated 2026-11-14T01:32:32Z by runner 2df926e292cb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 2 | 1 min | 01:33Z | PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode\|EmailCode in app/portals/src finds |
 | T447 | messaging: a passing vault error holds an outbox row instead | MERGE_PENDING | 1 | 26 min | 01:30Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | MERGE_PENDING | 2 | 67 min | 01:10Z | PLAN GAP: test-design.md:203 (TD-FEE-63) and D-2332 require a text pick of a tiers quote to store nothing and reply with |
 | T328 | picks and server: an ended pick offers the next quote (`paym | MERGE_PENDING | 2 | 61 min | 01:04Z | PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text canno |
-| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z | PLAN GAP: app/portals/src/business_signup.rs:226-242 (Screen enum) has no screen to type the identity code or the emaile |
+| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z |  |
 | T448 | portals: the data-download mask joins digit runs across any  | done | 1 | 38 min | 00:49Z |  |
 | T444 | intake (test): the job's ZIP is read only from a property in | MERGE_PENDING | 1 | 24 min | 00:31Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 1 | 25 min | 00:23Z |  |
@@ -109,16 +111,16 @@ Updated 2026-11-14T01:32:32Z by runner 2df926e292cb (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 304 of 434
+**Requirements verified:** 273 of 733 (37.2%) · partial 300 · unstarted 160
+**Tasks merged (throughput only):** 304 of 435
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 14 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 20 | 35 | 3 | 58 |
+| businesses | 17 | 38 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
-| consent | 12 | 19 | 4 | 35 |
+| consent | 11 | 20 | 4 | 35 |
 | fees | 14 | 37 | 1 | 52 |
 | intake | 26 | 14 | 3 | 43 |
 | job-cards | 18 | 6 | 0 | 24 |
@@ -155,7 +157,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T280 (lease until 2026-11-14T03:35:47Z)
-- lane 7: T302 (lease until 2026-11-14T04:32:25Z)
 
 ## Last usage reading
-- {"task": "T447", "at": "2026-11-14T01:30:38Z", "cache_creation_input_tokens": 105846, "cache_read_input_tokens": 2184689, "input_tokens": 92, "output_tokens": 28482}
+- {"task": "T302", "at": "2026-11-14T01:33:42Z", "output_tokens": 4597, "cache_creation_input_tokens": 42860, "input_tokens": 22, "cache_read_input_tokens": 287193}
