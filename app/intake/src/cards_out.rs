@@ -334,7 +334,7 @@ async fn property_place(
 /// homeowner in `town` (the town `models::property_town` read), in the same order; none for a row
 /// stored before the ZIP. Keyed by the town, the pair is always one row's: a property stored
 /// between the two reads in another town is skipped here, never paired with the older town.
-async fn property_zip(
+pub(crate) async fn property_zip(
     db: &mut PgConnection,
     conversation: Uuid,
     town: &str,
