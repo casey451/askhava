@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT business_id FROM picks.pick WHERE job_id = $1 AND (status IN ($2, $3) OR (status = $4 AND end_reason IN ('cant_take', 'fee_terms_changed')))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "business_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "7ace69ab8a5fe6d4afcb042d9a0179f09a8259d39eab7c15effb31c495496251"
+}
