@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T04:12:36Z by runner 224fe4c7f956 (actions).
+Updated 2026-11-14T04:14:44Z by runner c4076414e148 (manual).
 
-**Building: T396 in progress since 04:09Z; 311 of 435 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T396 in progress since 04:09Z; 311 of 436 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 311 of 435 build tasks (owner gates not counted)
+- **Tasks done:** 311 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 6: T396 claimed 04:09Z, lease until 07:09Z; lane 7: T449 claimed 03:54Z, lease until 06:54Z
 - **Week:** 35% used, 121.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:12Z, 0 min before this update
+- **Last run:** 04:12Z, 1 min before this update
 - **Keeper:** last ran 04:12Z, next wake 06:56Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-14T04:12:36Z by runner 224fe4c7f956 (actions).
 - PLAN GAP T280 (since 2026-11-14T02:23:41Z, no attempt used; a plan change fixes it): T280: measures 51% of the context window, over its 50% limit
 - PLAN GAP T352 (since 2026-11-14T03:46:00Z, no attempt used; a plan change fixes it): T352: measures 53% of the context window, over its 50% limit; T352: dependency T433 is DONE but its owned file app/server/src/payment_jobs.rs is not on main; T352: dependency T433 is DONE but its owned file tests/integration/tests/payment_jobs.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 33 problem(s) on tasks still to run (+204 on DONE tasks); first: T396: measures 53% of the window, over its 50% limit; trim its reads or split it
+- Strict plan check red: 32 problem(s) on tasks still to run (+205 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -116,31 +116,31 @@ Updated 2026-11-14T04:12:36Z by runner 224fe4c7f956 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 277 of 733 (37.8%) · partial 296 · unstarted 160
-**Tasks merged (throughput only):** 311 of 435
+**Requirements verified:** 5 of 733 (0.7%) · partial 568 · unstarted 160
+**Tasks merged (throughput only):** 311 of 436
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 15 | 14 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 20 | 35 | 3 | 58 |
-| calls | 10 | 14 | 1 | 25 |
-| consent | 12 | 19 | 4 | 35 |
-| fees | 14 | 37 | 1 | 52 |
-| intake | 26 | 14 | 3 | 43 |
-| job-cards | 18 | 6 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 23 | 5 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
-| ops-recovery | 2 | 8 | 44 | 54 |
-| privacy | 9 | 20 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 36 | 19 | 1 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 9 | 41 | 5 | 55 |
+| accessibility | 0 | 29 | 6 | 35 |
+| ai | 0 | 24 | 5 | 29 |
+| businesses | 1 | 54 | 3 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 31 | 4 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 1 | 39 | 3 | 43 |
+| job-cards | 1 | 23 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 1 | 42 | 2 | 45 |
+| ops-recovery | 0 | 10 | 44 | 54 |
+| privacy | 0 | 29 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 55 | 1 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 1 | 49 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 7 | 23 | 32 |
+| wording | 0 | 9 | 23 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
