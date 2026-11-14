@@ -235,6 +235,17 @@ def test_a_crate_is_full_when_its_bytes_and_a_task_bullet_pass_the_byte_budget(t
     assert (full("edge", 1), full("small", 14), full("small", 15)) == (True, False, True)  # 400 bytes per task held
 
 
+def test_the_byte_rule_counts_utf8_bytes_not_characters(tmp_path: Path) -> None:
+    """3,000 `é` are 6,001 bytes with the newline: full at 5 held (6,001 + 2,400 > 8,192), though 3,001 characters
+    plus 2,400 would not be; not full at 4 held (6,001 + 2,000)."""
+    doc = tmp_path / "app" / "accented" / "CLAUDE.md"
+    doc.parent.mkdir(parents=True)
+    doc.write_text("\u00e9" * 3_000 + "\n", encoding="utf-8")
+    assert len(doc.read_bytes()) == 6_001
+    full = entry.crate_doc_full(tmp_path)
+    assert (full("accented", 4), full("accented", 5)) == (False, True)
+
+
 def test_a_check_without_the_byte_constants_falls_back_to_the_line_rule(tmp_path: Path, monkeypatch: Any) -> None:
     """An older runner copy of scripts/check_code_docs.py without the byte constants leaves the line rule alone."""
     write_doc(tmp_path, "big", 20_000)

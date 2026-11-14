@@ -177,6 +177,7 @@ def test_a_crate_notes_file_under_a_protected_path_is_still_refused_for_a_build_
     problems = verify.check_paths(["app/vault/NOTES.md"], task("T010"), ["app/vault/"], shared)
     assert problems == ["app/vault/NOTES.md: protected path, harness tasks only"]
 
+
 # ---- model check
 
 
