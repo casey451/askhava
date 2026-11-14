@@ -4749,3 +4749,4 @@
 - 2026-11-14T12:56:19Z runner 091f183d8d0b (manual): {}
 - 2026-11-14T12:59:50Z runner 091f183d8d0b (actions): {"T466": "None -> QUEUED"}
 - 2026-11-14T13:00:10Z runner 091f183d8d0b (actions): {}
+- 2026-11-14T13:00:25Z runner 091f183d8d0b (actions): {"T466": "QUEUED -> IN_PROGRESS"}; T466 estimated 819k tokens (calibrated); week has 106.1M left (no five-hour budget, D-3056) after 1.9M still running in another lane (session_reading 2026-11-14T12:54:58Z (week)); claimed
