@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T16:46:38Z by runner 858f0854e89f (actions).
+Updated 2026-11-14T16:46:53Z by runner 858f0854e89f (actions).
 
 **Stopped: main is red, only FIX-MAIN runs; 329 of 452 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-14T16:46:38Z by runner 858f0854e89f (actions).
 - **Lane:** lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane fix: FIX-MAIN claimed 16:24Z, lease until 19:24Z
 - **Week:** 48% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:46Z, 0 min before this update
-- **Keeper:** last ran 16:43Z, next wake 18:05Z
+- **Keeper:** last ran 16:46Z, next wake 18:05Z
 
 ## Needs attention
 - MAIN IS RED: nightly; only FIX-MAIN runs
@@ -103,7 +103,6 @@ Updated 2026-11-14T16:46:38Z by runner 858f0854e89f (actions).
 | T436 | portals, core and server: expired sessions are swept and old | done | 1 | 34 min | 17:52Z |  |
 | T273 | privacy: a photo's plaintext is returned only after its open | done | 1 | 41 min | 17:10Z |  |
 | T436 | portals, core and server: expired sessions are swept and old | resync | 1 | 28 min | 16:53Z |  |
-| T386 | messaging (harness): the pick notice's "Can't take it" line  | done | 2 | 22 min | 16:46Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - 16:40Z Plan: sign-up email code and activation link get real send paths, rate-limited (new T468, D-3743) (#791)
