@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T15:45:04Z by runner 45c9090508ad (actions).
+Updated 2026-11-14T15:50:16Z by runner 45c9090508ad (actions).
 
 **Building: T439 in progress since 15:21Z; 328 of 452 done; week 46% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-14T15:45:04Z by runner 45c9090508ad (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T439 claimed 15:21Z, lease until 18:21Z; lane 2: T467 claimed 15:44Z, lease until 18:44Z; lane 3: T465 claimed 15:24Z, lease until 18:24Z; lane 4: T459 claimed 15:02Z, lease until 18:02Z; lane 7: T300 claimed 14:35Z, lease until 17:35Z
 - **Week:** 46% used, 98.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:40Z, 4 min before this update
+- **Last run:** 15:50Z, 0 min before this update
 - **Keeper:** last ran 15:40Z, next wake 17:38Z
 
 ## Needs attention
@@ -103,7 +103,6 @@ Updated 2026-11-14T15:45:04Z by runner 45c9090508ad (actions).
 | T319 | portals and server: security-event rows are capped per addre | done | 1 | 17 min | 16:40Z |  |
 | T386 | messaging (harness): the pick notice's "Can't take it" line  | resync | 2 | 35 min | 16:03Z |  |
 | T319 | portals and server: security-event rows are capped per addre | resync | 1 | 54 min | 15:51Z |  |
-| T266 | portals, picks and privacy: the homeowner's contact choice a | done | 2 | 66 min | 15:48Z | session ended without handing in |
 
 ### Plan and harness merges on main
 - 15:37Z Plan: fee_terms_changed pick end reason (new T467) so T261's Confirm page can end a pick safely (D-3722) (#788)
