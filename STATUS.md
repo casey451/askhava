@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:25:48Z by runner a3da95268ff7 (actions).
+Updated 2026-11-14T10:26:08Z by runner a3da95268ff7 (actions).
 
-**Building: T437 in progress since 09:33Z; 318 of 436 done; week 40% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T435 in progress since 10:15Z; 318 of 436 done; week 40% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 318 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T437 claimed 09:33Z, lease until 12:33Z; lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 4: T359 claimed 09:38Z, lease until 13:24Z; lane 5: T329 claimed 10:25Z, lease until 13:25Z
+- **Lane:** lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 4: T359 claimed 09:38Z, lease until 13:24Z; lane 5: T329 claimed 10:25Z, lease until 13:25Z
 - **Week:** 40% used, 110.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:25Z, 0 min before this update
 - **Keeper:** last ran 10:02Z, next wake 12:36Z
@@ -18,6 +18,7 @@ Updated 2026-11-14T10:25:48Z by runner a3da95268ff7 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | MERGE_PENDING | 3 | 52 min | 10:25Z | merging main into the task branch conflicts in app/businesses/CLAUDE.md, app/messaging/CLAUDE.md, app/portals/CLAUDE.md, |
 | T398 | businesses: notice texts go only to approved phones, and a m | done | 1 | 38 min | 09:41Z |  |
 | T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 4 | 2 min | 09:18Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T301 | server and portals: the email action links are served (the q | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
@@ -26,7 +27,7 @@ Updated 2026-11-14T10:25:48Z by runner a3da95268ff7 (actions).
 | T280 | server and messaging (harness): the business sign-in pages a | done | 4 | 91 min | 08:04Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T396 | businesses and messaging (harness): a phone a member links o | done | 2 | 56 min | 07:52Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T359 | payments: a successful charge writes its own charge ledger e | BLOCKED | 1 | 39 min | 07:43Z | PLAN GAP: tests/integration/tests/payment_jobs.rs:585 (T433, TD-FEE-52) asserts the check round writes no ledger row, an |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 2 | 42 min | 07:38Z | merging main into the task branch conflicts in app/businesses/CLAUDE.md, app/messaging/CLAUDE.md, app/portals/CLAUDE.md, |
+| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 2 | 42 min | 07:38Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 30 min | 06:48Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 21 min | 06:40Z |  |
 | T352 | adapters and stand-in (harness): the PaymentIntent carries S | done | 1 | 51 min | 06:14Z |  |
@@ -164,10 +165,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T437 (lease until 2026-11-14T12:33:11Z)
+- nothing
 - lane 2: T435 (lease until 2026-11-14T13:15:37Z)
 - lane 4: T359 (lease until 2026-11-14T13:24:04Z)
 - lane 5: T329 (lease until 2026-11-14T13:25:08Z)
 
 ## Last usage reading
-- {"task": "T398", "at": "2026-11-14T09:41:02Z", "input_tokens": 65, "output_tokens": 10688, "cache_read_input_tokens": 734170, "cache_creation_input_tokens": 61607}
+- {"task": "T437", "at": "2026-11-14T10:25:46Z", "input_tokens": 73, "output_tokens": 18915, "cache_creation_input_tokens": 77580, "cache_read_input_tokens": 1573723}
