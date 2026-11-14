@@ -23,14 +23,16 @@
 //! operator can enter the digits; a relay call is routed like any other. The prompt and the
 //! read-back answer the calling side's own webhook, never the dialed leg (D-385).
 
+use askhava_businesses::api::phone_standing;
 use askhava_core::api::SettingsError;
-use askhava_messaging::api::{OutboxError, sender_business};
+use askhava_messaging::api::{OutboxError, sender_line};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use askhava_privacy::api::{Readback, Vault, find_by_phone, read_for_readback};
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
+use crate::lifecycle::{PhoneStanding, gate};
 use crate::models::CallsError;
 
 /// PIN tries one call may make (CALL-025).
@@ -404,14 +406,17 @@ pub(crate) async fn answer_for(
 }
 
 /// The caller's party: a linked business phone first, then a vault homeowner, else unlinked.
+/// A directory hit whose staff phone row waits for the owner's approval is [`Party::Unlinked`]
+/// through [`gate`], so it hears the PIN prompt and never connects as the business; a directory
+/// line with no staff phone row keeps the business (CALL-012, BIZ-033, D-1695, D-3081, D-3263).
 pub(crate) async fn party_of(
     db: &mut PgConnection,
     vault: &Vault,
     caller: &SecretString,
 ) -> Result<Party, CallsError> {
     let phone = caller.expose_secret();
-    match sender_business(db, vault, phone).await {
-        Ok(Some(business)) => return Ok(Party::Business(business)),
+    match sender_line(db, vault, phone).await {
+        Ok(Some((business, line))) => return business_party(db, business, line).await,
         Ok(None) | Err(OutboxError::BadPhone) => {}
         Err(_) => return Err(CallsError::Messaging),
     }
@@ -419,6 +424,29 @@ pub(crate) async fn party_of(
         Ok(Some(contact)) => Party::Homeowner(contact),
         Ok(None) | Err(askhava_privacy::api::VaultError::BadPhone) => Party::Unlinked,
         Err(_) => return Err(CallsError::Database),
+    })
+}
+
+/// `business`'s party for its directory phone `line`, gated by the phone's standing: one fact,
+/// `approved_at`, decides, since the owner's links are stored approved (CALL-012, BIZ-033, D-3081).
+async fn business_party(
+    db: &mut PgConnection,
+    business: Uuid,
+    line: Uuid,
+) -> Result<Party, CallsError> {
+    let standing = phone_standing(db, line)
+        .await
+        .map_err(|_| CallsError::Database)?;
+    let party = Party::Business(business);
+    Ok(match standing {
+        Some(owner_approved) => gate(
+            party,
+            PhoneStanding {
+                linked_by_owner: false,
+                owner_approved,
+            },
+        ),
+        None => party,
     })
 }
 
