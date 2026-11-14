@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-14T05:13:34Z by runner d53bdd2875b8 (actions).
+Updated 2026-11-14T05:17:19Z by runner d53bdd2875b8 (actions).
 
-**Building: T393 in progress since 04:25Z; 313 of 436 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T393 in progress since 04:25Z; 313 of 436 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 313 of 436 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T393 claimed 04:25Z, lease until 07:25Z; lane 2: T437 claimed 05:10Z, lease until 08:10Z; lane 3: T396 claimed 05:11Z, lease until 08:11Z
-- **Week:** 36% used, 119.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:13Z, 0 min before this update
+- **Week:** 37% used, 119.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 05:17Z, 0 min before this update
 - **Keeper:** last ran 05:13Z, next wake 07:28Z
 
 ## Needs attention
@@ -90,6 +90,7 @@ Updated 2026-11-14T05:13:34Z by runner d53bdd2875b8 (actions).
 | T420 | Brand rename prep: intake and ai unit tests take the brand f | done | 1 | 28 min | 06:38Z |  |
 
 ### Plan and harness merges on main
+- 05:15Z Plan: move build notes out of architecture.md into crate NOTES.md; prompts shrink (D-3620) (#744)
 - 03:45Z Plan: pre-claim scout fixes (T396, T300 + new T451) and stale-graph claim guard (D-3618, D-3619) (#733)
 - 01:13Z Plan: T302 plan gap — new T450 sign-up code screens and verified consent (D-3602) (#730)
 - 00:07Z Plan: follow-up tasks T447–T449 from spot-review of pre-D-3444 fix rounds (D-3581) (#724)
@@ -110,7 +111,6 @@ Updated 2026-11-14T05:13:34Z by runner d53bdd2875b8 (actions).
 - 10:13Z Plan: give T255 back the attempt an API 403 outage took (D-3442) (#663)
 - 09:02Z Plan: T255 plan gap 2, the address is written onto the homeowner's own contact (D-3431) (#660)
 - 08:55Z Plan: T428 plan gap, new prep task owns the six pinned tests (D-3430) (#659)
-- 05:17Z Harness: merge line updates only the oldest pending branch (D-3418) (#653)
 
 ## Progress (requirements verified)
 
