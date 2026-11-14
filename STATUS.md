@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:40:14Z by runner 9fcdbb33f44a (actions).
+Updated 2026-11-14T10:42:45Z by runner 59bf29c0d24e (manual).
 
 **Building: T452 in progress since 10:34Z; 318 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-14T10:40:14Z by runner 9fcdbb33f44a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T452 claimed 10:34Z, lease until 13:34Z; lane 2: T435 claimed 10:15Z, lease until 13:15Z; lane 3: T437 claimed 10:27Z, lease until 13:27Z; lane 4: T359 claimed 09:38Z, lease until 13:24Z; lane 5: T453 claimed 10:35Z, lease until 13:35Z
 - **Week:** 41% used, 107.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:40Z, 0 min before this update
+- **Last run:** 10:42Z, 0 min before this update
 - **Keeper:** last ran 10:40Z, next wake 13:18Z
 
 ## Needs attention
-- BLOCKED T329: plan gap reported: PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradict kit/prompts/T329.md:9 and D-2287 (docs/decisions.md:1487), which say each kind is sent with words businesses already has. Four kinds lack words: notice_address_changed (email_verification.rs:37, no words, SEC-024), after_hours_off (emergency_switch.rs:30, no email words, BIZ-007), notice_address_returned (email_verification.rs:39, returned_line :549 English only, no subject/Spanish, BIZ-040), phone_linked (complaints.rs:44, phone_linked_line :556 has no subject and no Appr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T329 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 33 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
@@ -98,6 +97,7 @@ Updated 2026-11-14T10:40:14Z by runner 9fcdbb33f44a (actions).
 | T428 | Switch the brand file to Laftly and re-issue the legal recor | done | 3 | 46 min | 11:14Z | session ended without handing in |
 
 ### Plan and harness merges on main
+- 10:42Z Plan: T329 notice-email copy gap (D-3687) (#768)
 - 10:21Z Plan: restructure the business sign-in chain — T300/T301/T302 gaps, 13 ordered follow-up tasks (D-3674, D-3675, D-3676) (#765)
 - 07:59Z Plan: T359 adopts two charge-ledger test expectations (TD-FEE-64), records the checked intent amount (D-3658) (#759)
 - 06:29Z Plan: T280 build note out of architecture.md after D-3620; sweep T393's late paragraph (D-3652) (#753)
@@ -123,31 +123,31 @@ Updated 2026-11-14T10:40:14Z by runner 9fcdbb33f44a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 274 of 733 (37.4%) · partial 299 · unstarted 160
+**Requirements verified:** 4 of 733 (0.5%) · partial 569 · unstarted 160
 **Tasks merged (throughput only):** 318 of 449
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 15 | 14 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 18 | 37 | 3 | 58 |
-| calls | 10 | 14 | 1 | 25 |
-| consent | 12 | 19 | 4 | 35 |
-| fees | 14 | 37 | 1 | 52 |
-| intake | 26 | 14 | 3 | 43 |
-| job-cards | 18 | 6 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 23 | 5 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
-| ops-recovery | 2 | 8 | 44 | 54 |
-| privacy | 9 | 20 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 9 | 41 | 5 | 55 |
+| accessibility | 0 | 29 | 6 | 35 |
+| ai | 0 | 24 | 5 | 29 |
+| businesses | 0 | 55 | 3 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 31 | 4 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 1 | 39 | 3 | 43 |
+| job-cards | 1 | 23 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 1 | 42 | 2 | 45 |
+| ops-recovery | 0 | 10 | 44 | 54 |
+| privacy | 0 | 29 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 55 | 1 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 1 | 49 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 7 | 23 | 32 |
+| wording | 0 | 9 | 23 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 

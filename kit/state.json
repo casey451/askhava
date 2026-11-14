@@ -35911,7 +35911,7 @@
     "T327",
     "T398"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "business-event-emails",
    "type": "build",
@@ -35925,8 +35925,8 @@
     3685,
     3686
    ],
-   "reason": "plan gap reported: PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradict kit/prompts/T329.md:9 and D-2287 (docs/decisions.md:1487), which say each kind is sent with words businesses already has. Four kinds lack words: notice_address_changed (email_verification.rs:37, no words, SEC-024), after_hours_off (emergency_switch.rs:30, no email words, BIZ-007), notice_address_returned (email_verification.rs:39, returned_line :549 English only, no subject/Spanish, BIZ-040), phone_linked (complaints.rs:44, phone_linked_line :556 has no subject and no Appr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T329 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradict kit/prompts/T329.md:9 and D-2287 (docs/decisions.md:1487), which say each kind is sent with words businesses already has. Four kinds lack words: notice_address_changed (email_verification.rs:37, no words, SEC-024), after_hours_off (emergency_switch.rs:30, no email words, BIZ-007), notice_address_returned (email_verification.rs:39, returned_line :549 English only, no subject/Spanish, BIZ-040), phone_linked (complaints.rs:44, phone_linked_line :556 has no subject and no Approve wording, BIZ-033). Reviewer confirmed: no other source supplies them; T268 precedent (D-3185, kit/prompts/T268.md:144,:150) gave copy ownership. Fix: give T329 copy ownership with copy checks, or add a copy task first. Worker committed nothing.",
+   "reason": null,
+   "last_failure": "PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradict kit/prompts/T329.md:9 and D-2287 (docs/decisions.md:1487), which say each kind is sent with words businesses already has. Four kinds lack words: notice_address_changed (email_verification.rs:37, no words, SEC-024), after_hours_off (emergency_switch.rs:30, no email words, BIZ-007), notice_address_returned (email_verification.rs:39, returned_line :549 English only, no subject/Spanish, BIZ-040), phone_linked (complaints.rs:44, phone_linked_line :556 has no subject and no Approve wording, BIZ-033). Reviewer confirmed: no other source supplies them; T268 precedent (D-3185, kit/prompts/T268.md:144,:150) gave copy ownership. Fix: give T329 copy ownership with copy checks, or add a copy task first. Worker committed nothing.\nre-queued after plan fix D-3687: D-3687 (#768) adds T329 copy scope: en/es notice-email wording and the owner Approve link step",
    "history": [
     {
      "attempt": 1,
@@ -35950,6 +35950,21 @@
        "turns": 16
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-14T10:42:45Z",
+     "reason": "D-3687 (#768) adds T329 copy scope: en/es notice-email wording and the owner Approve link step",
+     "by": "manual-4bfe845b41d1",
+     "was": "plan gap reported: PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradict kit/prompts/T329.md:9 and D-2287 (docs/decisions.md:1487), which say each kind is sent with words businesses already has. Four kinds lack words: notice_address_changed (email_verification.rs:37, no words, SEC-024), after_hours_off (emergency_switch.rs:30, no email words, BIZ-007), notice_address_returned (email_verification.rs:39, returned_line :549 English only, no subject/Spanish, BIZ-040), phone_linked (complaints.rs:44, phone_linked_line :556 has no subject and no Appr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T329 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3687",
+     "plan_since": "2026-11-14T10:25:08Z",
+     "plan_base": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
+     "plan_head": "59bf29c0d24ebb8b95093e6951a9f71819bb5a7a",
+     "plan_then": "f181bd8b9e8297385f7e7768c242d10fecfa6a4e3a3e3871a571d05f9a4fd0af",
+     "plan_now": "31ef4e689c6818326b6db9d8fdbf58ed48444f9e2e1bd6350a62a2372b700bd0"
     }
    ]
   },
@@ -56666,7 +56681,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T10:40:14Z",
+ "updated_at": "2026-11-14T10:42:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -56764,8 +56779,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9fcdbb33f44a2810be3fa747e48137c4b0e57212",
- "starter": "actions",
+ "runner_sha": "59bf29c0d24ebb8b95093e6951a9f71819bb5a7a",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "6aa7f43d7bd8c04503956e5e0efc899a614cb538",
