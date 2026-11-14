@@ -30233,7 +30233,7 @@
     "T284",
     "T412"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "business-signin-served",
    "type": "build",
@@ -30246,8 +30246,8 @@
     3219,
     3220
    ],
-   "reason": "plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smalles; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smallest fix: a businesses task before T280 adding businesses::api::member_contact(conn, member) -> Option<(business, mailbox, Vec<own staff_phone line IDs>)>, current members only. Other problems for the re-plan: (1) tests/e2e/webserver.ts:51-70 starts the app with no vault keys or Twilio/Verify settings, so refusing to start breaks Ally/e2e; (2) admit_code_try needs the link's business and models::open_link is pub(crate); (3) queue_account_email stores the rendered link body in the outbox in plain text against SEC-026; (4) goal asks for a business_signin_link template in en.json/es.json but the prompt says the task owns no customer copy.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smallest fix: a businesses task before T280 adding businesses::api::member_contact(conn, member) -> Option<(business, mailbox, Vec<own staff_phone line IDs>)>, current members only. Other problems for the re-plan: (1) tests/e2e/webserver.ts:51-70 starts the app with no vault keys or Twilio/Verify settings, so refusing to start breaks Ally/e2e; (2) admit_code_try needs the link's business and models::open_link is pub(crate); (3) queue_account_email stores the rendered link body in the outbox in plain text against SEC-026; (4) goal asks for a business_signin_link template in en.json/es.json but the prompt says the task owns no customer copy.\nre-queued after plan fix D-3562: business sign-in member lookup (sign_in_lines)",
    "history": [
     {
      "attempt": 1,
@@ -30299,6 +30299,19 @@
      "plan_head": "7ad0dc77b70a20fa8cf52d0f12c76950bdfe3285",
      "plan_then": "4007d2a48edf6d42c5bf12cfc9543c801ad36a7c69ee7915ff37f98c53ddac31",
      "plan_now": "3e29f4f804657c4a074a2100464c0d2becfc538d1a6290b2e8b4f71bf839495f"
+    },
+    {
+     "at": "2026-11-14T00:01:32Z",
+     "reason": "business sign-in member lookup (sign_in_lines)",
+     "by": "manual-7ecaa293cee3",
+     "was": "plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:176-178 CodeAddress::code_to(db, member) gets only a team-member row ID; no public API in any crate maps a member ID to business, mailbox or own staff-phone lines (businesses::api and team.rs lookups need the business or mailbox first: team.rs:613 members, api.rs:178 businesses_of_mailbox, channel_preference.rs:132 notice_recipients; locked_member team.rs:253 is private). server runs no SQL (0 files with sqlx::query) and T280 owns no businesses file (kit/prompts/T280.md:34-39, :49), T415 adds only contact_ids_in_use (bulk). Reviewer confirmed. Smalles; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-3562",
+     "plan_since": "2026-11-13T21:54:03Z",
+     "plan_base": "343fd3e7c6962037318b07625f19173dee929797",
+     "plan_head": "bc74ea9d3841a693b28f909b90b4d7a99708f9b5",
+     "plan_then": "d8558c44f8b2ad9c57fdf429549ac51356d5988f7690994f52825c4b0e6dc40d",
+     "plan_now": "98f64a819b361d30945e8249f14dae7ba799f43dbb1e2dd1706f431c8b8a84be"
     }
    ]
   },
@@ -52249,7 +52262,7 @@
    }
   }
  },
- "updated_at": "2026-11-14T00:01:20Z",
+ "updated_at": "2026-11-14T00:01:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -52347,8 +52360,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "dd258e06710fb397062b6de2b6a442efa2f2e025",
- "starter": "actions",
+ "runner_sha": "bc74ea9d3841a693b28f909b90b4d7a99708f9b5",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "7dd6ca1e8125ad2ed9b6610464e258fc1e202619",
