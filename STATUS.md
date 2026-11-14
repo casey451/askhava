@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T14:38:09Z by runner 49857763a082 (actions).
+Updated 2026-11-14T14:39:08Z by runner 49857763a082 (actions).
 
 **Building: T300 in progress since 14:35Z; 326 of 451 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -106,7 +106,6 @@ Updated 2026-11-14T14:38:09Z by runner 49857763a082 (actions).
 | T319 | portals and server: security-event rows are capped per addre | resync | 1 | 54 min | 15:51Z |  |
 | T266 | portals, picks and privacy: the homeowner's contact choice a | done | 2 | 66 min | 15:48Z | session ended without handing in |
 | T330 | picks, intake and server: a withdrawn pick tells its busines | done | 1 | 24 min | 15:05Z |  |
-| T266 | portals, picks and privacy: the homeowner's contact choice a | QUEUED | 1 | 63 min | 14:38Z |  |
 
 ### Plan and harness merges on main
 - 13:12Z Plan: T301 door-matrix Quote-link cases follow BIZ-038/CARD-023; action pages link forms.css (D-3706) (#781)
