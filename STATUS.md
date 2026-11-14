@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-14T10:55:13Z by runner d6d1d54ea21a (actions).
+Updated 2026-11-14T10:56:00Z by runner 59bf29c0d24e (actions).
 
-**Building: T452 in progress since 10:34Z; 318 of 436 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T452 in progress since 10:34Z; 318 of 449 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 318 of 436 build tasks (owner gates not counted)
+- **Tasks done:** 318 of 449 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T452 claimed 10:34Z, lease until 13:34Z; lane 3: T437 claimed 10:27Z, lease until 13:27Z; lane 5: T453 claimed 10:35Z, lease until 13:35Z; lane 6: T329 claimed 10:44Z, lease until 13:44Z
 - **Week:** 41% used, 106.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -13,7 +13,7 @@ Updated 2026-11-14T10:55:13Z by runner d6d1d54ea21a (actions).
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 38 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+101 on DONE tasks); first: T397: stored context_pct 20% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -23,8 +23,8 @@ Updated 2026-11-14T10:55:13Z by runner d6d1d54ea21a (actions).
 | T329 | businesses: the eight business account events queued today ( | BLOCKED | 1 | 2 min | 10:28Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 52 min | 10:25Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T398 | businesses: notice texts go only to approved phones, and a m | done | 1 | 38 min | 09:41Z |  |
-| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 4 | 2 min | 09:18Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
-| T301 | server and portals: the email action links are served (the q | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
+| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 4 | 2 min | 09:18Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
+| T301 | server and portals: the email action links are served (every | BLOCKED | 1 | 4 min | 09:13Z | PLAN GAP: kit/tasks.json:18887 (T301 goal). Serving every ActionKind's POST so it "acts once" needs code in crates T301  |
 | T398 | businesses: notice texts go only to approved phones, and a m | resync | 1 | 32 min | 09:01Z |  |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 1 | 5 min | 08:59Z | PLAN GAP: tests/e2e/webserver.ts:52-70 (owned by T227 and T385) starts the e2e server with no ASKHAVA_TWILIO_ACCOUNT_SID |
 | T280 | server and messaging (harness): the business sign-in pages a | done | 4 | 91 min | 08:04Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
@@ -41,7 +41,7 @@ Updated 2026-11-14T10:55:13Z by runner d6d1d54ea21a (actions).
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z |  |
 | T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
-| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 3 | 15 min | 04:11Z |  |
+| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 3 | 15 min | 04:11Z |  |
 | T440 | portals: the quote page's tier choice and the Confirm page's | done | 1 | 50 min | 03:43Z |  |
 | T344 | picks: the global daily Verify cap holds under concurrent co | done | 1 | 28 min | 03:23Z |  |
 | T433 | server and payments: every payments task runs in the product | done | 1 | 57 min | 03:21Z |  |
@@ -51,11 +51,11 @@ Updated 2026-11-14T10:55:13Z by runner d6d1d54ea21a (actions).
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | done | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z |  |
-| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 2 | 1 min | 01:33Z |  |
+| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 2 | 1 min | 01:33Z |  |
 | T447 | messaging: a passing vault error holds an outbox row instead | done | 1 | 26 min | 01:30Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | resync | 2 | 67 min | 01:10Z |  |
 | T328 | picks and server: an ended pick offers the next quote (`paym | done | 2 | 61 min | 01:04Z | PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text canno |
-| T302 | server and portals: business sign-up is served (every sign-u | BLOCKED | 1 | 2 min | 00:54Z |  |
+| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 1 | 2 min | 00:54Z |  |
 | T448 | portals: the data-download mask joins digit runs across any  | done | 1 | 38 min | 00:49Z |  |
 | T444 | intake (test): the job's ZIP is read only from a property in | done | 1 | 24 min | 00:31Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 25 min | 00:23Z |  |
@@ -125,14 +125,14 @@ Updated 2026-11-14T10:55:13Z by runner d6d1d54ea21a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 278 of 733 (37.9%) · partial 295 · unstarted 160
-**Tasks merged (throughput only):** 318 of 436
+**Requirements verified:** 274 of 733 (37.4%) · partial 299 · unstarted 160
+**Tasks merged (throughput only):** 318 of 449
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 14 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 21 | 34 | 3 | 58 |
+| businesses | 18 | 37 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
 | consent | 12 | 19 | 4 | 35 |
 | fees | 14 | 37 | 1 | 52 |
@@ -144,7 +144,7 @@ Updated 2026-11-14T10:55:13Z by runner d6d1d54ea21a (actions).
 | ops-recovery | 2 | 8 | 44 | 54 |
 | privacy | 9 | 20 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 36 | 19 | 1 | 56 |
+| quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 9 | 41 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
