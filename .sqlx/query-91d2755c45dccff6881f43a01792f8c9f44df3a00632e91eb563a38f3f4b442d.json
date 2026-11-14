@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT handyman FROM quotes.job_card WHERE job_id = $1 AND business_id = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "handyman",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "quotes.job_card",
+            "name": "handyman"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "91d2755c45dccff6881f43a01792f8c9f44df3a00632e91eb563a38f3f4b442d"
+}
