@@ -128,7 +128,8 @@ pub use crate::late::{
     LATE_KIND, LATE_SUCCESS_ALERT, LATE_TRIGGER, LateSuccess, late_success, run_late_refund,
 };
 pub use crate::ledger::{
-    Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, REFUND_REVERSAL_CODE, ledger_append,
+    Appended, DISPUTE_REVERSAL_CODE, EntryKind, LedgerEntry, LedgerError, NewEntry,
+    REFUND_REVERSAL_CODE, ledger_append,
 };
 pub use crate::models::{
     AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, ChargeError, ChargeOutcome,

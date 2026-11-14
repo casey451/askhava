@@ -1,0 +1,59 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT d.amount_cents, e.business_id, e.job_id,\n                (SELECT l.amount_cents FROM payments.ledger_entry l\n                  WHERE l.kind = 'countering-fee' AND l.stripe_id = d.stripe_dispute_id\n                  ORDER BY l.seq LIMIT 1) AS countering\n           FROM payments.dispute d JOIN payments.charge_evidence e ON e.pick_id = d.pick_id\n          WHERE d.stripe_dispute_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "amount_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.dispute",
+            "name": "amount_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "countering",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "bbc7daae2ce9d50a0c90e583fea24a9139efe54780b2dee6cc8528b0fb60625f"
+}

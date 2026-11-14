@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT kind, amount_cents FROM payments.ledger_entry\n          WHERE (kind = 'charge' AND stripe_id = ANY($1))\n             OR (kind IN ('refund', 'refund-reversal') AND stripe_id = ANY($2))\n             OR (kind = 'dispute' AND stripe_id = ANY($3))",
+  "query": "SELECT kind, amount_cents, stripe_id FROM payments.ledger_entry\n          WHERE (kind = 'charge' AND stripe_id = ANY($1))\n             OR (kind IN ('refund', 'refund-reversal') AND stripe_id = ANY($2))\n             OR (kind IN ('dispute', 'dispute-reversal') AND stripe_id = ANY($3))",
   "describe": {
     "columns": [
       {
@@ -24,6 +24,17 @@
             "name": "amount_cents"
           }
         }
+      },
+      {
+        "ordinal": 2,
+        "name": "stripe_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.ledger_entry",
+            "name": "stripe_id"
+          }
+        }
       }
     ],
     "parameters": {
@@ -35,8 +46,9 @@
     },
     "nullable": [
       false,
-      false
+      false,
+      true
     ]
   },
-  "hash": "df399adc05fa4d8b00f34fb95b2957b628e4f4aeb2a59a9bfd910767ae239860"
+  "hash": "64cc5fb8eb736eb5cfa96fc055c164ad1485d4eacadc3949a7170e55a7a100ad"
 }

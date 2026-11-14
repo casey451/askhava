@@ -42,6 +42,12 @@ pub enum EntryKind {
 /// [`LedgerEntry::reversal`] makes one, and the ledger readers fold it as a negative refund.
 pub const REFUND_REVERSAL_CODE: &str = "refund-reversal";
 
+/// FEE-028 as changed by D-2625: the stored kind of a won dispute's returned amount. Like
+/// [`REFUND_REVERSAL_CODE`] it is not an [`EntryKind`] variant; only
+/// [`LedgerEntry::dispute_reversal`] makes one, and the ledger readers fold it as a negative
+/// dispute.
+pub const DISPUTE_REVERSAL_CODE: &str = "dispute-reversal";
+
 impl EntryKind {
     /// Every entry type, in FEE-028's order.
     pub const ALL: [Self; 11] = [
@@ -206,13 +212,42 @@ impl LedgerEntry {
         })
     }
 
-    /// The stored kind code: the kind's, or [`REFUND_REVERSAL_CODE`] for a reversal.
+    /// FEE-028, FEE-050, D-2625: the `dispute-reversal` of a won dispute: `amount_cents`, the
+    /// disputed amount without Stripe's dispute fee, back to the business's job, naming the
+    /// dispute `dp_…` (or `du_…`) under `key` ([`DISPUTE_REVERSAL_CODE`]; [`Self::kind`] is
+    /// `Dispute`).
+    ///
+    /// # Errors
+    /// As [`Self::new`] for a `Dispute` entry of these fields.
+    pub fn dispute_reversal(
+        business: Uuid,
+        job: Uuid,
+        amount_cents: i64,
+        dispute: &str,
+        key: &str,
+    ) -> Result<Self, LedgerError> {
+        let entry = Self::new(NewEntry {
+            kind: EntryKind::Dispute,
+            business: Some(business),
+            job: Some(job),
+            amount_cents,
+            stripe_id: Some(dispute),
+            idempotency_key: key,
+        })?;
+        Ok(Self {
+            reversal: true,
+            ..entry
+        })
+    }
+
+    /// The stored kind code: the kind's, or for a reversal [`REFUND_REVERSAL_CODE`] (a refund)
+    /// or [`DISPUTE_REVERSAL_CODE`] (a dispute).
     #[must_use]
     pub const fn code(&self) -> &'static str {
-        if self.reversal {
-            REFUND_REVERSAL_CODE
-        } else {
-            self.kind.code()
+        match (self.reversal, self.kind) {
+            (true, EntryKind::Dispute) => DISPUTE_REVERSAL_CODE,
+            (true, _) => REFUND_REVERSAL_CODE,
+            (false, kind) => kind.code(),
         }
     }
 
