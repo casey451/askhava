@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T03:09:43Z by runner f5b7fd7dcd10 (actions).
+Updated 2026-11-14T03:10:00Z by runner f5b7fd7dcd10 (actions).
 
 **Building: T449 in progress since 02:46Z; 308 of 435 done; week 34% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-14T03:09:43Z by runner f5b7fd7dcd10 (actions).
 - **Lane:** lane 3: T449 claimed 02:46Z, lease until 05:46Z; lane 4: T433 claimed 02:23Z, lease until 05:23Z; lane 5: T440 claimed 02:53Z, lease until 05:53Z; lane 6: T344 claimed 02:54Z, lease until 05:54Z
 - **Week:** 34% used, 120.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:09Z, 0 min before this update
-- **Keeper:** last ran 03:06Z, next wake 05:25Z
+- **Keeper:** last ran 03:09Z, next wake 05:25Z
 
 ## Needs attention
 - BLOCKED T302: plan gap reported: PLAN GAP: T302 depends on T450 (D-3602), whose work is not on main: grep IdentityCode|EmailCode in app/portals/src finds nothing, app/portals/src/tests/signup_code_screens.rs does not exist. T302 owns no portals file, so it cannot serve the email-code and identity-code steps (TD-SEC-45) without T450's Screen::IdentityCode, Screen::EmailCode, route constants and channel parser. kit/state.json on claude/kit-state has no T450 and T302's deps there stop at T415, so the runner started T302 before T450. Reviewer confirmed every claim.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T302 --plan-fix D-### --reason "..."` (D-2859)
