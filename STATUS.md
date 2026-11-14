@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-14T17:43:10Z by runner bc11f33703b4 (actions).
+Updated 2026-11-14T17:43:21Z by runner 45c9090508ad (actions).
 
-**Stopped: main is red, only FIX-MAIN runs; 329 of 453 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Stopped: main is red, only FIX-MAIN runs; 329 of 452 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 329 of 453 build tasks (owner gates not counted)
+- **Tasks done:** 329 of 452 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 17:42Z (no task in progress)
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:42Z, 0 min before this update
-- **Keeper:** last ran 17:32Z, next wake 19:27Z
+- **Last run:** 17:43Z, 0 min before this update
+- **Keeper:** last ran 17:43Z, next wake 18:03Z
 
 ## Needs attention
 - MAIN IS RED: nightly; only FIX-MAIN runs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 17 problem(s) on tasks still to run (+106 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+106 on DONE tasks); first: T397: stored context_pct 20% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -130,7 +130,7 @@ Updated 2026-11-14T17:43:10Z by runner bc11f33703b4 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 575 · unstarted 158
-**Tasks merged (throughput only):** 329 of 453
+**Tasks merged (throughput only):** 329 of 452
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
