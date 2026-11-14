@@ -21,8 +21,10 @@
 //! status is the one Stripe can still leave, P13, so it is first re-read through the adapter and
 //! the state Stripe reports now is applied, a `succeeded` re-read handed on whole so its amount
 //! and currency are checked, D-2303, D-3018); `charge.dispute.created` goes to `record_dispute`;
-//! `charge.dispute.closed` writes one audit row and one High alert per dispute, no money moves
-//! (D-1545); `radar.early_fraud_warning.created` enqueues one [`FRAUD_WARNING_KIND`] task for the
+//! `charge.dispute.closed` writes one audit row and one High alert per dispute (D-1545) and, only
+//! when its `status` is `won`, appends once per dispute a `countering-fee-return` of the recorded
+//! countering fee (if one was recorded) and a `dispute-reversal` of the disputed amount, in the
+//! event's transaction (FEE-050, D-2625); `radar.early_fraud_warning.created` enqueues one [`FRAUD_WARNING_KIND`] task for the
 //! charge's pick, which `picks` (T281) runs through `picks::api::fraud_warning` (D-1845). The two
 //! last write the event row in the transaction of their effect; the release and the refund and
 //! dispute handlers commit their own transaction (each is idempotent by its own row or key) and
@@ -68,6 +70,7 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::disputes::record_dispute;
+use crate::ledger::{EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
 use crate::models::{DisputeOpened, MoneyEventError};
 use crate::refund_stripe::{RefundState, RefundStripe};
 use crate::refunds::{FRAUD_WARNING_ALERT, refund_canceled, refund_failed, refund_succeeded};
@@ -207,7 +210,7 @@ enum Dispatch {
     Release(Uuid),
     Refund(String, RefundState),
     Dispute(String, String, i64, Timestamp),
-    DisputeClosed(String),
+    DisputeClosed(String, bool),
     FraudWarning(String),
     Unreadable,
 }
@@ -292,7 +295,10 @@ fn read_object(kind: &str, object: &Value) -> Option<Dispatch> {
             let intent = text(object, "/payment_intent")?;
             Some(Dispatch::Dispute(id?, intent, amount, due))
         }
-        "charge.dispute.closed" => Some(Dispatch::DisputeClosed(id?)),
+        "charge.dispute.closed" => {
+            let won = text(object, "/status").as_deref() == Some("won");
+            Some(Dispatch::DisputeClosed(id?, won))
+        }
         "radar.early_fraud_warning.created" => {
             text(object, "/payment_intent").map(Dispatch::FraudWarning)
         }
@@ -329,7 +335,7 @@ where
             };
             money(record_dispute(&h.pool, &opened, now).await)
         }
-        Dispatch::DisputeClosed(_) | Dispatch::FraudWarning(_) | Dispatch::Unreadable => {
+        Dispatch::DisputeClosed(..) | Dispatch::FraudWarning(_) | Dispatch::Unreadable => {
             return in_event_tx(&h.pool, event, now)
                 .await
                 .unwrap_or(Acted::Retry);
@@ -452,7 +458,7 @@ async fn in_event_tx(pool: &PgPool, event: &Event, now: Timestamp) -> Result<Act
         return Ok(Acted::Recorded);
     }
     let found = match &event.dispatch {
-        Dispatch::DisputeClosed(dispute) => dispute_closed(&mut tx, dispute).await?,
+        Dispatch::DisputeClosed(dispute, won) => dispute_closed(&mut tx, dispute, *won).await?,
         Dispatch::FraudWarning(intent) => fraud_warning(&mut tx, intent, now).await?,
         Dispatch::Unreadable => unreadable(&mut tx, &event.kind).await?,
         Dispatch::Release(_) | Dispatch::Refund(..) | Dispatch::Dispute(..) => Found::Unknown,
@@ -497,6 +503,12 @@ impl From<askhava_ops::api::OpsError> for OpsOrDb {
     }
 }
 
+impl From<LedgerError> for OpsOrDb {
+    fn from(_: LedgerError) -> Self {
+        Self
+    }
+}
+
 impl From<askhava_core::api::TaskError> for OpsOrDb {
     fn from(_: askhava_core::api::TaskError) -> Self {
         Self
@@ -532,9 +544,13 @@ async fn seen(pool: &PgPool, id: &str) -> Result<bool, sqlx::Error> {
 }
 
 /// FEE-027, D-1545: one audit row and one High alert per closed dispute `dp_…`, whatever its
-/// outcome and however many events report it; no money moves. An unknown dispute is not yet
-/// recorded (D-2073).
-async fn dispute_closed(conn: &mut PgConnection, dispute: &str) -> Result<Found, OpsOrDb> {
+/// outcome and however many events report it; a `won` one also gets [`dispute_won`]'s entries,
+/// any other status moves no money (D-2625). An unknown dispute is not yet recorded (D-2073).
+async fn dispute_closed(
+    conn: &mut PgConnection,
+    dispute: &str,
+    won: bool,
+) -> Result<Found, OpsOrDb> {
     let id = sqlx::query_scalar!(
         "SELECT id FROM payments.dispute WHERE stripe_dispute_id = $1",
         dispute,
@@ -559,7 +575,46 @@ async fn dispute_closed(conn: &mut PgConnection, dispute: &str) -> Result<Found,
         };
         raise_alert(conn, &alert).await?;
     }
+    if won {
+        dispute_won(conn, dispute).await?;
+    }
     Ok(Found::Yes)
+}
+
+/// FEE-027, FEE-028, FEE-030, FEE-050, D-2625: a won dispute's money back, on the event's
+/// connection: a `countering-fee-return` equal to the recorded countering fee, only when one was
+/// recorded, and a `dispute-reversal` of the disputed amount naming the `dp_…` (Stripe keeps its
+/// $15 dispute fee, so that stays a cost). Each has a key derived from the dispute, so a resend or
+/// a second `won` event appends nothing.
+async fn dispute_won(conn: &mut PgConnection, dispute: &str) -> Result<(), OpsOrDb> {
+    let row = sqlx::query!(
+        "SELECT d.amount_cents, e.business_id, e.job_id,
+                (SELECT l.amount_cents FROM payments.ledger_entry l
+                  WHERE l.kind = 'countering-fee' AND l.stripe_id = d.stripe_dispute_id
+                  ORDER BY l.seq LIMIT 1) AS countering
+           FROM payments.dispute d JOIN payments.charge_evidence e ON e.pick_id = d.pick_id
+          WHERE d.stripe_dispute_id = $1",
+        dispute,
+    )
+    .fetch_one(&mut *conn)
+    .await?;
+    if let Some(cents) = row.countering {
+        let key = format!("countering-return.{dispute}");
+        let entry = LedgerEntry::new(NewEntry {
+            kind: EntryKind::CounteringFeeReturn,
+            business: Some(row.business_id),
+            job: Some(row.job_id),
+            amount_cents: cents,
+            stripe_id: Some(dispute),
+            idempotency_key: &key,
+        })?;
+        ledger_append(conn, &entry).await?;
+    }
+    let key = format!("dispute-reversal.{dispute}");
+    let (business, job) = (row.business_id, row.job_id);
+    let entry = LedgerEntry::dispute_reversal(business, job, row.amount_cents, dispute, &key)?;
+    ledger_append(conn, &entry).await?;
+    Ok(())
 }
 
 /// FEE-027, D-2073: a handled event the route cannot read is logged and raises one High
