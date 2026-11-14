@@ -14,7 +14,9 @@
 //! are [`admit_new_request`]'s: 5 new requests per phone per hour (SEC-014, a Normal alert), per
 //! IP, and all numbers together per hour, so a burst of 100 fake requests is blocked and alerted
 //! High (SEC-015). It counts on a connection the caller hands it, so the inbound text route counts
-//! inside the delivery's transaction (D-2206, D-3083). `portals` keeps the sign-in, code,
+//! inside the delivery's transaction (D-2206, D-3083). [`count_emergency_request`] counts a
+//! 911-list first text's new request in [`REQUESTS_ALL`] only, after the delivery committed, and
+//! never refuses (SEC-015, INT-002, D-3613). `portals` keeps the sign-in, code,
 //! sign-up and quote limits and runs them through [`admit`] (D-491).
 
 use std::net::IpAddr;
@@ -287,4 +289,25 @@ async fn admit_on(
         }
     }
     Ok(Admission::Admitted)
+}
+
+/// SEC-015, INT-002, INT-004, D-3613: counts the new request a 911-list first text opened in
+/// [`REQUESTS_ALL`]'s bucket and hourly window, the one [`admit_new_request`] counts last, and
+/// raises the same one High alert per window when the count passes the limit; it never refuses.
+/// The phone's own [`REQUESTS_PER_PHONE`] bucket is left alone (an emergency from a phone at its
+/// limit still counts nothing there, D-3087), and a text has no IP. Each count and the alert run
+/// on their own pool connections, never in the caller's transaction, so the caller runs it after
+/// its delivery committed and holds no lock on the shared row while the emergency is handled.
+///
+/// # Errors
+///
+/// [`LimitError::Counter`] or [`LimitError::Alert`]; the caller logs it and goes on, since the
+/// emergency was already handled.
+pub async fn count_emergency_request(pool: &PgPool, now: Timestamp) -> Result<(), LimitError> {
+    let limit = REQUESTS_ALL;
+    let bucket = bucket(limit, Key::All);
+    if count(pool, &bucket, (now, limit.window), limit.max).await? == RateDecision::Limited {
+        alert_once(pool, limit, now).await?;
+    }
+    Ok(())
 }
