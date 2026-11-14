@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:39:01Z by runner 8b2105cd4bc7 (actions).
+Updated 2026-11-14T22:39:13Z by runner 8b2105cd4bc7 (actions).
 
 **Building: T301 in progress since 21:48Z; 335 of 471 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -13,6 +13,8 @@ Updated 2026-11-14T22:39:01Z by runner 8b2105cd4bc7 (actions).
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T451 (since 2026-11-14T22:38:54Z, no attempt used; a plan change fixes it): T451: dependency T300 is DONE but its owned file app/server/src/business_portal.rs is not on main; T451: dependency T300 is DONE but its owned file app/server/tests/business_portal_route.rs is not on main
+- PLAN GAP T454 (since 2026-11-14T22:38:54Z, no attempt used; a plan change fixes it): T454: dependency T300 is DONE but its owned file app/server/src/business_portal.rs is not on main; T454: dependency T300 is DONE but its owned file app/server/tests/business_portal_route.rs is not on main
 - Strict plan check red: 19 problem(s) on tasks still to run (+109 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
