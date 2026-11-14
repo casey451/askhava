@@ -1,24 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-14T21:36:01Z by runner 1a0927467bbf (actions).
+Updated 2026-11-14T21:38:59Z by runner 5c153897b3f5 (actions).
 
-**Building: T261 in progress since 21:34Z; 333 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 21:38Z; 333 of 469 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 333 of 469 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T261 claimed 21:34Z, lease until 00:34Z
+- **Lane:** idle since 21:38Z (no task in progress)
 - **Week:** 51% used, 92.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:35Z, 0 min before this update
+- **Last run:** 21:36Z, 2 min before this update
 - **Keeper:** last ran 21:36Z, next wake 00:37Z
 
 ## Needs attention
+- BLOCKED T261: plan gap reported: PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No reader for businesses.signup.submitted_at (written app/businesses/src/models.rs:296, never read); catalog.category has no switch-on timestamp (migrations/0027_catalog_module.sql:15-26); no task in kit/tasks.json (T475-T484 included) builds them; T261 owns no businesses or catalog file. Reviewer confirmed. same_customer_jobs (intake::api::job_homeowner + jobs_of_contact) and the launch-date/Stripe-key settings (shared core settings.rs) are sourceable by T261. Needed: a task a; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T460: plan gap reported: PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-3641 needs the server to read the sign-up's stored state (identity Step, code_done, email verified) before each identity step, but no public businesses::api reader gives it: signup_email_waits is not exported (lib.rs:49 private mod), RecordFound::masked() cannot tell "no step yet" from step 1, check_code (identity.rs:267-271) takes a try before it finds no step, and the server crate has no SQL (R8). T460 owns only app/server/src/business_signup.rs and app/server/tests/business_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T460 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 16 problem(s) on tasks still to run (+108 on DONE tasks); first: T408: stored context_pct 19% but it measures 15%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+109 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z | PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No |
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T300 | server and portals: the business portal is served behind the | MERGE_PENDING | 3 | 94 min | 21:25Z | PLAN GAP: app/portals/templates/business_home.html:27 and app/portals/templates/notice_settings.html:20 (T085/T199 and T |
 | T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
@@ -31,7 +33,7 @@ Updated 2026-11-14T21:36:01Z by runner 1a0927467bbf (actions).
 | T439 | --after refuses a hand-in whose head no Opus reviewer approv | done | 1 | 44 min | 16:06Z |  |
 | T465 | docs: move the entry lines left under each crate guide's `## | done | 1 | 31 min | 15:55Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | done | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
-| T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 1 | 3 min | 14:30Z | PLAN GAP: app/picks/src/cant_take.rs:64-71 hard-codes end reason "cant_take" (models::end_pick is pub(crate), models.rs: |
+| T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 1 | 3 min | 14:30Z |  |
 | T353 | payments: a won dispute records the countering fee's return  | done | 1 | 30 min | 14:15Z |  |
 | T432 | intake and server: ask the name-and-address question in prod | done | 1 | 71 min | 13:54Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 4 | 38 min | 13:32Z |  |
@@ -166,7 +168,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T261 (lease until 2026-11-15T00:34:37Z)
 
 ## Last usage reading
-- {"task": "T460", "at": "2026-11-14T21:31:55Z", "output_tokens": 21402, "input_tokens": 107, "cache_creation_input_tokens": 135581, "cache_read_input_tokens": 3273109}
+- {"task": "T261", "at": "2026-11-14T21:38:58Z", "cache_read_input_tokens": 2536330, "output_tokens": 19879, "input_tokens": 98, "cache_creation_input_tokens": 129385}
