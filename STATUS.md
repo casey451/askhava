@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-14T22:55:42Z by runner 8b2105cd4bc7 (actions).
+Updated 2026-11-14T22:57:12Z by runner 3b9687af32d2 (actions).
 
-**Building: T486 in progress since 22:31Z; 335 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T486 in progress since 22:31Z; 336 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 335 of 471 build tasks (owner gates not counted)
+- **Tasks done:** 336 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T486 claimed 22:31Z, lease until 01:31Z; lane 6: T451 claimed 22:48Z, lease until 01:48Z
 - **Week:** 53% used, 85.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:55Z, 0 min before this update
+- **Last run:** 22:55Z, 1 min before this update
 - **Keeper:** last ran 22:55Z, next wake 01:33Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 19 problem(s) on tasks still to run (+109 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+110 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T485 | businesses: a public read-only reader of a sign-up's identit | MERGE_PENDING | 1 | 28 min | 22:54Z |  |
 | T301 | server and portals: the email action links are served (every | MERGE_PENDING | 3 | 58 min | 22:46Z | PLAN GAP: app/server/tests/door_matrix.rs:1078 and :1127 (T348's harness file, not owned by T301). judge_opened requires |
-| T443 | --after runs the full smoke itself on a fix-round hand-in; t | MERGE_PENDING | 1 | 35 min | 22:19Z |  |
+| T443 | --after runs the full smoke itself on a fix-round hand-in; t | done | 1 | 35 min | 22:19Z |  |
 | T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z | PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No |
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
@@ -122,7 +122,7 @@ Updated 2026-11-14T22:55:42Z by runner 8b2105cd4bc7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 335 of 471
+**Tasks merged (throughput only):** 336 of 471
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -157,7 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 215 of 231 done
+- stage 4: 216 of 231 done
 - stage 5: 0 of 86 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
