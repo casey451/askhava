@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T03:21:00Z by runner 41e50f5df2cd (actions).
+Updated 2026-11-15T03:21:51Z by runner feafd8f43d86 (manual).
 
 **Building: T461 in progress since 03:00Z; 342 of 476 done; week 56% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T03:21:00Z by runner 41e50f5df2cd (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T461 claimed 03:00Z, lease until 06:00Z
 - **Week:** 56% used, 84.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:20Z, 0 min before this update
+- **Last run:** 03:21Z, 0 min before this update
 - **Keeper:** last ran 03:20Z, next wake 06:02Z
 
 ## Needs attention
@@ -84,7 +84,6 @@ Updated 2026-11-15T03:21:00Z by runner 41e50f5df2cd (actions).
 | T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 3 | 15 min | 04:11Z |  |
 | T440 | portals: the quote page's tier choice and the Confirm page's | done | 1 | 50 min | 03:43Z |  |
 | T344 | picks: the global daily Verify cap holds under concurrent co | done | 1 | 28 min | 03:23Z |  |
-| T433 | server and payments: every payments task runs in the product | done | 1 | 57 min | 03:21Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -100,39 +99,34 @@ Updated 2026-11-15T03:21:00Z by runner 41e50f5df2cd (actions).
 - 12:46Z Plan: split T437 so the NOTES.md rule lands before the crate-doc sweep (D-3698) (#777)
 - 10:42Z Plan: T329 notice-email copy gap (D-3687) (#768)
 - 10:21Z Plan: restructure the business sign-in chain — T300/T301/T302 gaps, 13 ordered follow-up tasks (D-3674, D-3675, D-3676) (#765)
-- 07:59Z Plan: T359 adopts two charge-ledger test expectations (TD-FEE-64), records the checked intent amount (D-3658) (#759)
-- 06:29Z Plan: T280 build note out of architecture.md after D-3620; sweep T393's late paragraph (D-3652) (#753)
-- 05:23Z Plan: T302 door-matrix gap — exact open sign-up step paths, browser-bound sign-up steps (D-3641) (#745)
-- 05:15Z Plan: move build notes out of architecture.md into crate NOTES.md; prompts shrink (D-3620) (#744)
-- 03:45Z Plan: pre-claim scout fixes (T396, T300 + new T451) and stale-graph claim guard (D-3618, D-3619) (#733)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
+**Requirements verified:** 213 of 733 (29.1%) · partial 363 · unstarted 157
 **Tasks merged (throughput only):** 342 of 476
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 14 | 15 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 18 | 37 | 3 | 58 |
-| calls | 14 | 10 | 1 | 25 |
-| consent | 15 | 16 | 4 | 35 |
-| fees | 19 | 32 | 1 | 52 |
-| intake | 29 | 11 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
-| licensing | 38 | 10 | 0 | 48 |
-| lifecycle | 24 | 4 | 0 | 28 |
-| messaging | 26 | 17 | 2 | 45 |
+| accessibility | 12 | 17 | 6 | 35 |
+| ai | 8 | 16 | 5 | 29 |
+| businesses | 11 | 44 | 3 | 58 |
+| calls | 8 | 16 | 1 | 25 |
+| consent | 10 | 21 | 4 | 35 |
+| fees | 10 | 41 | 1 | 52 |
+| intake | 25 | 15 | 3 | 43 |
+| job-cards | 13 | 11 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 18 | 25 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 13 | 16 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
-| recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| privacy | 4 | 25 | 2 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 22 | 33 | 1 | 56 |
+| recurring | 6 | 2 | 3 | 11 |
+| security | 7 | 43 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 1 | 10 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
