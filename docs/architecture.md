@@ -566,8 +566,8 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /b/signup/service-area | portals | yes |
 | GET | /b/signup/inbox | portals | yes |
 | POST | /b/signup/inbox | portals | yes |
-| GET | /b/signup/capability | portals | T464 |
-| POST | /b/signup/capability | portals | T464 |
+| GET | /b/signup/capability | portals | yes |
+| POST | /b/signup/capability | portals | yes |
 | GET | /b/complaints | portals | T306 |
 | POST | /b/complaints/{complaint}/reply | portals | T306 |
 | GET | /b/charges/{pick} | portals | T306 |

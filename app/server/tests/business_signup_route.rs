@@ -13,6 +13,9 @@
 //! email code refused out of order and after activation, the code emailed once to the sign-up
 //! address through a recording fake provider, the per-business and per-IP send caps, the
 //! activating code's cleared cookie and sign-in link, and the flagged sign-up's review screen.
+//! T464's capability step (BIZ-049, BIZ-004, BIZ-007, D-3676): the first sign-in's link to it, the
+//! T368 checklist behind the owner's session, the check screen, a tick outside the offer, the
+//! CSRF refusals and the save through `save_capability` with after-hours held back.
 //! Fake records are read from a temporary `file://` directory. No setting is a real key;
 //! all data is fake.
 
@@ -24,7 +27,7 @@ use askhava_adapters::api::{
 };
 use askhava_businesses::api::{
     Acting, EmailCheck, InboxAnswer, Step, business, business_names, businesses_of_mailbox,
-    email_check, leave, members, review_due, signup_progress,
+    capabilities, email_check, leave, members, review_due, signup_progress,
 };
 
 use askhava_catalog::api::{load, parse};
@@ -37,10 +40,10 @@ use askhava_messaging::api::{
     DailyLimit, MailboxCodeSender, MailboxKind, SignInLinkSender, unsent_business_mailboxes,
 };
 use askhava_portals::api::{
-    CODE_SEND_ROUTE, CONSENT_AGAIN, ChannelPost, CodeProblem, CookieJar, EMAIL_CHECK_ROUTE,
-    EMAIL_RESEND_ROUTE, IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NUMBER_OLD_ROUTE, PortalsError,
-    SERVICE_AREA_ROUTE, SESSION_COOKIE, SIGNIN_LINK_ROUTE, SIGNUP_FORM_ROUTE, SIGNUP_ROUTE, SignIn,
-    SignInAddress, SignInMail, csrf_token, ensure_pre_session, signin_post,
+    CAPABILITY_ROUTE, CODE_SEND_ROUTE, CONSENT_AGAIN, ChannelPost, CodeProblem, CookieJar,
+    EMAIL_CHECK_ROUTE, EMAIL_RESEND_ROUTE, IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NUMBER_OLD_ROUTE,
+    PortalsError, SERVICE_AREA_ROUTE, SESSION_COOKIE, SIGNIN_LINK_ROUTE, SIGNUP_FORM_ROUTE,
+    SIGNUP_ROUTE, SignIn, SignInAddress, SignInMail, csrf_token, ensure_pre_session, signin_post,
 };
 use askhava_privacy::api::{Vault, mailboxes_of};
 use askhava_server::business_signin::SignInMailer;
@@ -339,13 +342,13 @@ async fn post(
     post_to(app, (SIGNUP_FORM_ROUTE, &b.pre), fields, site).await
 }
 
-/// `POST route` with the `Cookie` header `cookie` and `fields`, as [`post`].
-async fn post_to(
+/// `POST route` with the `Cookie` header `cookie` and `fields`, from `site`: the whole answer.
+async fn post_answer(
     app: &Router,
     (route, cookie): (&str, &str),
     fields: &[(String, String)],
     site: &str,
-) -> (StatusCode, Vec<String>, String, String) {
+) -> axum::response::Response {
     let enc = |s: &str| {
         let keep = |c: &u8| c.is_ascii_alphanumeric() || b"-._".contains(c);
         s.bytes()
@@ -369,7 +372,17 @@ async fn post_to(
         .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
         .body(Body::from(body.join("&")))
         .expect("request");
-    let response = app.clone().oneshot(request).await.expect("answer");
+    app.clone().oneshot(request).await.expect("answer")
+}
+
+/// `POST route` as [`post_answer`] does it, read as [`open`] reads an answer.
+async fn post_to(
+    app: &Router,
+    at: (&str, &str),
+    fields: &[(String, String)],
+    site: &str,
+) -> (StatusCode, Vec<String>, String, String) {
+    let response = post_answer(app, at, fields, site).await;
     let status = response.status();
     let cookies = response.headers().get_all(header::SET_COOKIE).iter();
     let cookies = cookies
@@ -1189,6 +1202,11 @@ impl SignInMail for NoLinks {
 
 /// The session cookie's `name=value` after pressing the sign-in link in `text` (SEC-004).
 async fn signed_in(pool: &PgPool, text: &str) -> String {
+    signed_in_page(pool, text).await.0
+}
+
+/// The session cookie's `name=value` and the done screen after pressing the sign-in link in `text`.
+async fn signed_in_page(pool: &PgPool, text: &str) -> (String, String) {
     let token = text.split("/b/sign-in/").nth(1).expect("a link");
     let link = format!("/b/sign-in/{}", &token[..64]);
     let routes = Router::new().route(
@@ -1203,17 +1221,21 @@ async fn signed_in(pool: &PgPool, text: &str) -> String {
         .map(|c| format!("{}={}", c.name(), c.value()))
         .collect();
     let csrf = vec![("csrf".to_owned(), csrf_token(&jar).expect("token"))];
-    let (_, cookies, ..) = post_to(&app, (&link, &pre.join("; ")), &csrf, "same-origin").await;
+    let (_, cookies, _, html) = post_to(&app, (&link, &pre.join("; ")), &csrf, "same-origin").await;
     let line = cookies.iter().find(|c| c.starts_with(SESSION_COOKIE));
-    line.and_then(|l| l.split(';').next())
-        .expect("signed in")
-        .to_owned()
+    let session = line.and_then(|l| l.split(';').next()).expect("signed in");
+    (session.to_owned(), html)
 }
 
 /// `GET` [`INBOX_CHECK_ROUTE`] with `query` and the `Cookie` header `cookie`: status,
 /// `Cache-Control` and page.
 async fn inbox(app: &Router, cookie: &str, query: &str) -> (StatusCode, String, String) {
-    let request = Request::get(format!("{INBOX_CHECK_ROUTE}{query}"))
+    page_at(app, &format!("{INBOX_CHECK_ROUTE}{query}"), cookie).await
+}
+
+/// `GET path` with the `Cookie` header `cookie`: status, `Cache-Control` and page.
+async fn page_at(app: &Router, path: &str, cookie: &str) -> (StatusCode, String, String) {
+    let request = Request::get(path)
         .header(header::HOST, "askhava.test")
         .header(header::COOKIE, cookie)
         .body(Body::empty())
@@ -1335,4 +1357,131 @@ fn owned(fields: &[(&str, &str)]) -> Vec<(String, String)> {
         .iter()
         .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
         .collect()
+}
+
+/// The business's saved after-hours tick, when it has a saved capability row (BIZ-049, BIZ-007).
+async fn saved_step(pool: &PgPool, id: Uuid) -> Option<bool> {
+    let mut conn = pool.acquire().await.expect("connection");
+    let found = capabilities(&mut conn, &[id]).await.expect("capabilities");
+    if !found.contains_key(&id) {
+        return None;
+    }
+    Some(business(&mut conn, id).await.expect("business").after_hours)
+}
+
+/// An activated R-37 sign-up, its pre-session cookie and the email with its sign-in link.
+async fn activated(pool: &PgPool, app: &Router, mail: &FakeMail) -> (Uuid, String, String) {
+    let (b, binding, id) = signed(app, &[], &[]).await;
+    let at = (&b, binding.as_str());
+    coded(app, at).await;
+    press(app, at, SERVICE_AREA_ROUTE, &AREA).await;
+    let (status, ..) = email_post(app, at, &code_in(&mail.sent()[0].1)).await;
+    assert!(status == StatusCode::OK && status_of(pool, id).await == "active");
+    (id, b.pre, mail.sent()[1].1.clone())
+}
+
+/// The capability answers posted with `session`'s own token, plus `extra`.
+fn answered(session: &str, extra: &[(&str, &str)]) -> Vec<(String, String)> {
+    let csrf = csrf_token(&jar_with(session)).expect("token");
+    let base = [
+        ("csrf", csrf.as_str()),
+        ("job_type", "plumbing_repair:leak repair"),
+        ("town", "lake_havasu_city"),
+        ("largest", "none"),
+        ("recurring", "no"),
+        ("after_hours", "yes"),
+    ];
+    owned(&[&base[..], extra].concat())
+}
+
+/// TD-BIZ-49 (BIZ-049, BIZ-004, SEC-004, SEC-034, D-2709, D-3676): after activation the capability
+/// step is refused without a business session; the first sign-in's done screen keeps its words and
+/// links the owner with no saved step to it; it shows the T368 checklist for the R-37 license, every
+/// plumbing job type ticked, `no-store`; a post to the check screen reads the answers back and
+/// saves nothing.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_biz_49_the_first_sign_in_links_to_the_capability_step(pool: PgPool) {
+    store_lists(&pool).await;
+    let (records, verify, mail) = (Records::new(), FakeVerify::default(), FakeMail::default());
+    let app = app_mailing(&pool, &records, &verify, &mail);
+    let (id, pre, link) = activated(&pool, &app, &mail).await;
+    let (status, cache, html) = page_at(&app, CAPABILITY_ROUTE, &pre).await;
+    assert_eq!(
+        (status, cache.as_str()),
+        (StatusCode::UNAUTHORIZED, "no-store")
+    );
+    assert!(html.contains("/b/sign-in") && !html.contains("leak repair"));
+    let (session, done) = signed_in_page(&pool, &link).await;
+    let linked = format!("href=\"{CAPABILITY_ROUTE}\"");
+    assert!(
+        done.contains("You're signed in") && done.contains(&linked),
+        "D-3676"
+    );
+    let (status, cache, html) = page_at(&app, CAPABILITY_ROUTE, &session).await;
+    assert!(status == StatusCode::OK && cache == "no-store");
+    for job in [
+        "leak repair",
+        "toilet repair",
+        "drain clearing",
+        "faucet replacement",
+    ] {
+        let ticked = format!("value=\"plumbing_repair:{job}\" checked");
+        assert!(html.contains(&ticked), "BIZ-049: {job} ticked");
+    }
+    assert!(html.contains("forms.css") && html.contains("Lake Havasu City"));
+    let check = format!("{CAPABILITY_ROUTE}?step=check");
+    let at = (check.as_str(), session.as_str());
+    let (status, _, cache, html) = post_to(&app, at, &answered(&session, &[]), "same-origin").await;
+    assert!(status == StatusCode::OK && cache == "no-store");
+    assert!(
+        html.contains("Save and continue") && html.contains("?step=save\""),
+        "BIZ-030"
+    );
+    assert!(html.contains("After-hours emergency jobs: Yes"));
+    assert_eq!(saved_step(&pool, id).await, None, "showing saves nothing");
+}
+
+/// TD-BIZ-49 (BIZ-049, BIZ-004, BIZ-007, SEC-042, SEC-048, D-3676): a saved tick outside the offer
+/// changes nothing and shows the form again; a cross-site or wrong-token save is a 403 and a
+/// `csrf_rejected` event that saves nothing; the save stores the step through `save_capability`
+/// with after-hours held back while nobody covers, and answers 303 to the inbox check.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_biz_49_the_capability_step_saves_through_save_capability(pool: PgPool) {
+    store_lists(&pool).await;
+    let (records, verify, mail) = (Records::new(), FakeVerify::default(), FakeMail::default());
+    let app = app_mailing(&pool, &records, &verify, &mail);
+    let (id, _, link) = activated(&pool, &app, &mail).await;
+    let session = signed_in(&pool, &link).await;
+    let save = format!("{CAPABILITY_ROUTE}?step=save");
+    let at = (save.as_str(), session.as_str());
+    let outside = answered(&session, &[("job_type", "electrical:panel upgrade")]);
+    let (status, _, cache, html) = post_to(&app, at, &outside, "same-origin").await;
+    assert!(status == StatusCode::OK && cache == "no-store");
+    assert!(html.contains("Pick the jobs we send you") && !html.contains("panel upgrade"));
+    assert_eq!(saved_step(&pool, id).await, None, "BIZ-049: nothing stored");
+    let events = Events::default();
+    let guard = tracing::subscriber::set_default(events.clone());
+    let (status, ..) = post_to(&app, at, &answered(&session, &[]), "cross-site").await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "cross-site");
+    let mut wrong = answered(&session, &[]);
+    wrong[0].1 = "0".repeat(64);
+    let (status, ..) = post_to(&app, at, &wrong, "same-origin").await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "wrong CSRF token");
+    drop(guard);
+    let logged = events.0.lock().expect("events").clone();
+    let rejected = logged.iter().filter(|l| l.contains("\"csrf_rejected\""));
+    assert_eq!(rejected.count(), 2, "SEC-048");
+    assert_eq!(saved_step(&pool, id).await, None);
+    let answer = post_answer(&app, at, &answered(&session, &[]), "same-origin").await;
+    let to = answer.headers().get(header::LOCATION).cloned();
+    assert_eq!(answer.status(), StatusCode::SEE_OTHER);
+    assert_eq!(
+        to.as_ref().and_then(|v| v.to_str().ok()),
+        Some(INBOX_CHECK_ROUTE)
+    );
+    assert_eq!(
+        saved_step(&pool, id).await,
+        Some(false),
+        "BIZ-007: after-hours held back with nobody covering"
+    );
 }

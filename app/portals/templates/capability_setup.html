@@ -12,6 +12,7 @@
 {% macro radio(name, value, label, current) %}<p><input type="radio" id="{{ name }}-{{ value }}" name="{{ name }}" value="{{ value }}"{% if current == value %} checked{% endif %}> <label for="{{ name }}-{{ value }}">{{ label }}</label></p>{% endmacro %}
 {% block title %}{% if !problems.is_empty() %}Error: {% endif %}{{ title }}{% endblock %}
 {% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
 <h1>{{ title }}</h1>
 {% if !problems.is_empty() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
 <h2>Fix these to continue</h2>

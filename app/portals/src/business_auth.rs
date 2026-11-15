@@ -42,6 +42,11 @@
 //! goes straight to the job page, which checks the session itself. The link alone starts no
 //! session and this file reads no job.
 //!
+//! T464 (BIZ-049, D-3676, D-3852): a finished sign-in's done screen keeps its words and, when the
+//! signed-in member is the owner of a business with no saved capability row
+//! (`businesses::api::capabilities`, read in the sign-in's own transaction), adds one line linking
+//! to [`CAPABILITY_ROUTE`], the sign-up's capability step; every other sign-in is unchanged.
+//!
 //! [`business_principal`] is the only way a business route learns who is signed in: a business
 //! session whose member is still a current member of its business; owner and homeowner sessions
 //! are never one, so the owner realm (its own 12-hour sign-in, SEC-005, T086) and the homeowner
@@ -58,7 +63,7 @@ use std::sync::Arc;
 use askama::Template;
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_businesses::api::businesses_of_mailbox;
-use askhava_businesses::api::members;
+use askhava_businesses::api::{capabilities, members};
 use askhava_core::api::{
     Claimed, Clock, HandlerError, IdSecret, LinkKind, LinkSalt, LinkToken, link_token,
 };
@@ -77,6 +82,7 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 use subtle::ConstantTimeEq;
 
+use crate::business_signup::CAPABILITY_ROUTE;
 use crate::models;
 use crate::security::{
     CsrfField, CsrfForm, SecurityEvent, SecurityEventKind, WebSecurity, no_store,
@@ -270,6 +276,13 @@ impl BusinessPrincipal {
         self.business == business && (self.owner || role)
     }
 
+    /// Whether the person is the business's owner (BIZ-023): the capability step is the owner's
+    /// (BIZ-049, D-3676).
+    #[must_use]
+    pub fn is_owner(&self) -> bool {
+        self.owner
+    }
+
     /// The `privacy` proof of this verified business session, naming the member and the business
     /// (SEC-046, D-1739); `picks` still checks the pick's business and the member's role at each
     /// use.
@@ -408,7 +421,8 @@ impl<M: SignInMail> SignIn<M> {
     }
 }
 
-/// `templates/business_signin.html`: one of the five screens.
+/// `templates/business_signin.html`: one of the five screens. `capability` is the done screen's
+/// link to the capability step, for an owner with no saved capability row (BIZ-049, D-3676).
 #[derive(Template)]
 #[template(path = "business_signin.html")]
 struct View<'a> {
@@ -417,9 +431,29 @@ struct View<'a> {
     email: &'a str,
     token: &'a str,
     csrf: String,
+    capability: Option<&'static str>,
 }
 
 fn page(jar: CookieJar, screen: &str, (email, token): (&str, &str), failed: bool) -> Response {
+    shown(jar, screen, (email, token), (failed, None))
+}
+
+/// The done screen; `unset` adds the line linking to [`CAPABILITY_ROUTE`] (BIZ-049, D-3676).
+fn done_page(jar: CookieJar, unset: bool) -> Response {
+    shown(
+        jar,
+        "done",
+        ("", ""),
+        (false, unset.then_some(CAPABILITY_ROUTE)),
+    )
+}
+
+fn shown(
+    jar: CookieJar,
+    screen: &str,
+    (email, token): (&str, &str),
+    (failed, capability): (bool, Option<&'static str>),
+) -> Response {
     let Ok(jar) = ensure_pre_session(jar) else {
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
@@ -430,6 +464,7 @@ fn page(jar: CookieJar, screen: &str, (email, token): (&str, &str), failed: bool
         email,
         token,
         csrf,
+        capability,
     };
     match view.render() {
         Ok(html) => (jar, Html(html)).into_response(),
@@ -808,7 +843,8 @@ enum Step {
 /// new-device code on a browser that is not a known device of that member when [`DeviceCodes`] is
 /// set; a bad link or a wrong code is an `auth_failed` event (SEC-004, SEC-048, TXT-038). With a
 /// `?job=` a finished sign-in is a 303 to that job page; [`NOTICE_SEGMENT`] is a notice link's
-/// button, which only emails a link (D-1761).
+/// button, which only emails a link (D-1761). Otherwise the done screen, with the link to the
+/// capability step for an owner whose business has no saved capability row (BIZ-049, D-3676).
 pub async fn signin_post<M: SignInMail>(
     State(state): State<SignIn<M>>,
     Path(token): Path<String>,
@@ -837,9 +873,9 @@ pub async fn signin_post<M: SignInMail>(
         Err(what) => return failure(what),
     };
     match signed {
-        Ok(Some(jar)) => match next {
+        Ok(Some((jar, unset))) => match next {
             Some(job) => (jar, job_page(job)).into_response(),
-            None => page(jar, "done", ("", ""), false),
+            None => done_page(jar, unset),
         },
         Ok(None) if auth_failed(pool, None, now).await => page(jar, "ended", ("", ""), false),
         Ok(None) => failure("security event"),
@@ -1117,14 +1153,15 @@ fn code_page(jar: CookieJar, token: &str, phone: bool, failed: bool) -> Response
 
 /// In one transaction: uses `token`, checks its member is still on the team, starts the 30-day
 /// session, names its business and, when `remember`, stores the known device. `None` (nothing
-/// changed) when any check fails.
+/// changed) when any check fails; else the cookies and whether the member is the owner of a
+/// business with no saved capability row (BIZ-049, D-3676).
 async fn start(
     pool: &PgPool,
     jar: CookieJar,
     token: &str,
     now: Timestamp,
     remember: bool,
-) -> Result<Option<CookieJar>, PortalsError> {
+) -> Result<Option<(CookieJar, bool)>, PortalsError> {
     let mut tx = pool.begin().await.map_err(|_| PortalsError::Database)?;
     let Some((member, business)) = models::use_link(&mut tx, token, now).await? else {
         return Ok(None);
@@ -1132,9 +1169,14 @@ async fn start(
     let team = members(&mut tx, business)
         .await
         .map_err(|_| PortalsError::Database)?;
-    if !team.iter().any(|m| m.id == member) {
+    let Some(signed) = team.iter().find(|m| m.id == member) else {
         return Ok(None);
-    }
+    };
+    let unset = signed.owner
+        && !capabilities(&mut tx, &[business])
+            .await
+            .map_err(|_| PortalsError::Database)?
+            .contains_key(&business);
     let login = (Realm::Business, member);
     let jar = start_session(&mut tx, jar, login, BUSINESS_SESSION_LIFE, now).await?;
     let session = current_session(&mut tx, &jar, now)
@@ -1147,5 +1189,5 @@ async fn start(
         jar
     };
     tx.commit().await.map_err(|_| PortalsError::Database)?;
-    Ok(Some(jar))
+    Ok(Some((jar, unset)))
 }
