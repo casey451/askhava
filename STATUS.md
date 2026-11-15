@@ -1,19 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-15T21:53:18Z by runner 69880af764d2 (manual).
+Updated 2026-11-15T21:53:59Z by runner 69880af764d2 (actions).
 
-**Idle since 21:21Z; 352 of 500 done; week 65% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T515 in progress since 21:53Z; 352 of 500 done; week 65% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 352 of 500 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 21:21Z (no task in progress)
-- **Week:** 65% used, 66.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:49Z, 4 min before this update
+- **Lane:** lane 1: T515 claimed 21:53Z, lease until 00:53Z
+- **Week:** 65% used, 64.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 21:53Z, 0 min before this update
 - **Keeper:** last ran 21:49Z, next wake 03:29Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T515 (since 2026-11-15T21:48:19Z, no attempt used; a plan change fixes it): T515: prompt kit/prompts/T515.md is missing; run scripts/gen_prompts.py; T515: branch claude/task/T515-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
@@ -55,36 +54,36 @@ Updated 2026-11-15T21:53:18Z by runner 69880af764d2 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 288 of 733 (39.3%) · partial 288 · unstarted 157
+**Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
 **Tasks merged (throughput only):** 352 of 500
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 12 | 17 | 6 | 35 |
+| accessibility | 13 | 16 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 21 | 34 | 3 | 58 |
-| calls | 12 | 12 | 1 | 25 |
+| calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 17 | 34 | 1 | 52 |
-| intake | 27 | 13 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
+| fees | 22 | 29 | 1 | 52 |
+| intake | 29 | 11 | 3 | 43 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 22 | 21 | 2 | 45 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 10 | 19 | 2 | 31 |
+| privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 10 | 40 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-15T19:57:20Z (week)): week: 128.0M used, 66.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T05:44:08Z.
+- Pacing (session_reading 2026-11-15T21:48:40Z (week)): week: 130.0M used, 64.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T07:45:04Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -99,7 +98,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T515 (lease until 2026-11-16T00:53:48Z)
 
 ## Last usage reading
 - {"task": "T099", "at": "2026-11-15T21:21:50Z", "input_tokens": 377, "output_tokens": 114147, "cache_read_input_tokens": 16057184, "cache_creation_input_tokens": 375422}
