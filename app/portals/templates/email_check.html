@@ -7,6 +7,7 @@
 {% endfor %}</ol>{% endmacro %}
 {% block title %}{% if pick %}{{ self.line("pick_title") }}{% else %}Check that our emails reach you{% endif %}{% endblock %}
 {% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
 <form method="get" novalidate>
 <label for="app">Your mail app</label>
 <select id="app" name="app">{% for a in apps %}<option value="{{ a.code() }}"{% if *a == app %} selected{% endif %}>{{ a.label() }}</option>{% endfor %}</select>
