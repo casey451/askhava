@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-15T01:08:51Z by runner be10fad977fd (actions).
+Updated 2026-11-15T01:08:59Z by runner be10fad977fd (actions).
 
 **Building: T261 in progress since 01:07Z; 341 of 471 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 341 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T261 claimed 01:07Z, lease until 04:07Z; lane 3: T460 claimed 00:00Z, lease until 03:00Z
+- **Lane:** lane 1: T261 claimed 01:07Z, lease until 04:07Z
 - **Week:** 54% used, 84.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:08Z, 0 min before this update
 - **Keeper:** last ran 01:04Z, next wake 03:02Z
@@ -18,6 +18,7 @@ Updated 2026-11-15T01:08:51Z by runner be10fad977fd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T460 | server: business sign-up's identity steps are served (code s | MERGE_PENDING | 2 | 68 min | 01:08Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | check_failed | 1 | 12 min | 00:56Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T486 | businesses and catalog: the free-first-win join dates: a pub | done | 1 | 65 min | 23:37Z |  |
 | T451 | quotes, picks, jobs, payments and server: the "Your numbers" | done | 1 | 41 min | 23:30Z |  |
@@ -28,7 +29,7 @@ Updated 2026-11-15T01:08:51Z by runner be10fad977fd (actions).
 | T443 | --after runs the full smoke itself on a fix-round hand-in; t | done | 1 | 35 min | 22:19Z |  |
 | T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z | PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No |
-| T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
+| T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z |  |
 | T300 | server and portals: the business portal is served behind the | resync | 3 | 94 min | 21:25Z |  |
 | T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
@@ -159,7 +160,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T261 (lease until 2026-11-15T04:07:00Z)
-- lane 3: T460 (lease until 2026-11-15T03:00:07Z)
 
 ## Last usage reading
-- {"task": "T454", "at": "2026-11-15T00:56:33Z", "cache_creation_input_tokens": 160003, "input_tokens": 146, "output_tokens": 35565, "cache_read_input_tokens": 5802725}
+- {"task": "T460", "at": "2026-11-15T01:08:36Z", "input_tokens": 220, "output_tokens": 85137, "cache_creation_input_tokens": 282990, "cache_read_input_tokens": 9959691}

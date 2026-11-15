@@ -5170,3 +5170,4 @@
 - 2026-11-15T01:07:22Z runner 30d12d87a2fd (actions): {"T261": "QUEUED -> IN_PROGRESS"}; T261 estimated 1.9M tokens (calibrated); week has 84.7M left (no five-hour budget, D-3056) after 1.3M still running in another lane (session_reading 2026-11-15T01:04:10Z (week)); claimed
 - 2026-11-15T01:08:35Z runner 30d12d87a2fd (manual): {}
 - 2026-11-15T01:08:51Z runner be10fad977fd (actions): {}
+- 2026-11-15T01:08:59Z runner be10fad977fd (actions): {"T460": "IN_PROGRESS -> MERGE_PENDING"}
