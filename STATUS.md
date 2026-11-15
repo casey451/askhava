@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-15T18:24:35Z by runner 35177f91e0b2 (actions).
+Updated 2026-11-15T18:33:08Z by runner 6cc6fdcbb269 (actions).
 
-**Idle since 18:21Z; 350 of 482 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 18:27Z; 351 of 482 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 350 of 482 build tasks (owner gates not counted)
+- **Tasks done:** 351 of 482 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 18:21Z (no task in progress)
+- **Lane:** idle since 18:27Z (no task in progress)
 - **Week:** 63% used, 68.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:24Z, 0 min before this update
+- **Last run:** 18:24Z, 8 min before this update
 - **Keeper:** last ran 18:24Z, next wake 18:44Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+119 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+119 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T495 | e2e: the served Confirm and pay journey in the browser again | MERGE_PENDING | 1 | 44 min | 18:21Z |  |
+| T495 | e2e: the served Confirm and pay journey in the browser again | done | 1 | 44 min | 18:21Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | done | 3 | 35 min | 18:05Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
 | T261 | portals and server (harness): the served Confirm route under | done | 6 | 85 min | 16:50Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T455 | server: the Pause, Resume and Ask about a charge email links | done | 1 | 38 min | 14:58Z |  |
@@ -64,8 +64,8 @@ Updated 2026-11-15T18:24:35Z by runner 35177f91e0b2 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 309 of 733 (42.2%) · partial 267 · unstarted 157
-**Tasks merged (throughput only):** 350 of 481
+**Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
+**Tasks merged (throughput only):** 351 of 482
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -86,7 +86,7 @@ Updated 2026-11-15T18:24:35Z by runner 35177f91e0b2 (actions).
 | quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 10 | 40 | 5 | 55 |
-| terms | 0 | 3 | 32 | 35 |
+| terms | 1 | 2 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
 | wording | 2 | 9 | 21 | 32 |
 
@@ -100,7 +100,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 230 of 235 done
+- stage 4: 231 of 235 done
 - stage 5: 0 of 93 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
