@@ -2904,3 +2904,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## A flagged business sign-up now says it is waiting for review (D-3830, November 15)
 
 - A business whose sign-up is flagged for your review used to be shown "We'll tell you once, by email, when requests in your trade start.", which is wrong for them. The sign-up task (T461) now also owns that screen and shows one plain line instead: the sign-up is waiting for review and its status will come by email. It promises no decision time. Nothing needs you.
+
+## The Confirm and pay page's accessibility check moves into its own task (D-3836, November 15)
+
+- The Confirm and pay page task (T261) was built but failed the accessibility check, because the check needs every page listed with a test state and that listing had been planned for a later task. T261 now adds it itself; the later task keeps only the browser journey test. Nothing needs you.
