@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T06:37:55Z by runner 7303a9cd88d8 (actions).
+Updated 2026-11-15T06:49:33Z by runner 7303a9cd88d8 (actions).
 
 **Building: T454 in progress since 06:21Z; 345 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T06:37:55Z by runner 7303a9cd88d8 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T454 claimed 06:21Z, lease until 09:21Z
 - **Week:** 58% used, 80.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:31Z, 6 min before this update
+- **Last run:** 06:47Z, 2 min before this update
 - **Keeper:** last ran 06:31Z, next wake 09:24Z
 
 ## Needs attention
@@ -77,8 +77,6 @@ Updated 2026-11-15T06:37:55Z by runner 7303a9cd88d8 (actions).
 | T396 | businesses and messaging (harness): a phone a member links o | done | 2 | 56 min | 07:52Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T359 | payments: a successful charge writes its own charge ledger e | BLOCKED | 1 | 39 min | 07:43Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 2 | 42 min | 07:38Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 30 min | 06:48Z |  |
-| T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 21 min | 06:40Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
