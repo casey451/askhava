@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T18:22:11Z by runner cef98a953645 (actions).
+Updated 2026-11-15T18:23:13Z by runner 6cc6fdcbb269 (actions).
 
-**Idle since 18:21Z; 349 of 482 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 18:21Z; 350 of 482 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 349 of 482 build tasks (owner gates not counted)
+- **Tasks done:** 350 of 482 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 18:21Z (no task in progress)
 - **Week:** 63% used, 68.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:08Z, 13 min before this update
+- **Last run:** 18:22Z, 0 min before this update
 - **Keeper:** last ran 18:08Z, next wake 20:39Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-15T18:22:11Z by runner cef98a953645 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T495 | e2e: the served Confirm and pay journey in the browser again | MERGE_PENDING | 1 | 44 min | 18:21Z |  |
-| T462 | server: the sign-up inbox check is served behind the busines | MERGE_PENDING | 3 | 35 min | 18:05Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
+| T462 | server: the sign-up inbox check is served behind the busines | done | 3 | 35 min | 18:05Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
 | T261 | portals and server (harness): the served Confirm route under | done | 6 | 85 min | 16:50Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T455 | server: the Pause, Resume and Ask about a charge email links | done | 1 | 38 min | 14:58Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | BLOCKED | 2 | 2 min | 14:14Z |  |
@@ -64,14 +64,14 @@ Updated 2026-11-15T18:22:11Z by runner cef98a953645 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 308 of 733 (42.0%) · partial 268 · unstarted 157
-**Tasks merged (throughput only):** 349 of 482
+**Requirements verified:** 309 of 733 (42.2%) · partial 267 · unstarted 157
+**Tasks merged (throughput only):** 350 of 482
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 20 | 35 | 3 | 58 |
+| businesses | 21 | 34 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
 | fees | 22 | 29 | 1 | 52 |
@@ -100,7 +100,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 229 of 235 done
+- stage 4: 230 of 235 done
 - stage 5: 0 of 93 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
