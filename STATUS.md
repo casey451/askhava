@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T00:52:23Z by runner b70d8180dbc5 (actions).
+Updated 2026-11-15T00:52:51Z by runner 30d12d87a2fd (actions).
 
-**Building: T460 in progress since 00:00Z; 340 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T460 in progress since 00:00Z; 341 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 340 of 471 build tasks (owner gates not counted)
+- **Tasks done:** 341 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T460 claimed 00:00Z, lease until 03:00Z; lane 6: T454 claimed 00:44Z, lease until 03:44Z
 - **Week:** 53% used, 86.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:50Z, 1 min before this update
+- **Last run:** 00:52Z, 0 min before this update
 - **Keeper:** last ran 00:47Z, next wake 03:02Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-15T00:52:23Z by runner b70d8180dbc5 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T486 | businesses and catalog: the free-first-win join dates: a pub | MERGE_PENDING | 1 | 65 min | 23:37Z |  |
+| T486 | businesses and catalog: the free-first-win join dates: a pub | done | 1 | 65 min | 23:37Z |  |
 | T451 | quotes, picks, jobs, payments and server: the "Your numbers" | done | 1 | 41 min | 23:30Z |  |
 | T445 | runner (harness): a failed nightly on an older head keeps th | done | 1 | 24 min | 23:29Z |  |
 | T301 | server and portals: the email action links are served (every | done | 3 | 27 min | 23:24Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
@@ -116,7 +116,7 @@ Updated 2026-11-15T00:52:23Z by runner b70d8180dbc5 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 340 of 471
+**Tasks merged (throughput only):** 341 of 471
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -151,7 +151,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 220 of 231 done
+- stage 4: 221 of 231 done
 - stage 5: 0 of 86 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
