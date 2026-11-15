@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE catalog.category SET enabled = $2, switched_on_at = CASE WHEN $2 THEN now() ELSE switched_on_at END WHERE id = $1 AND enabled = NOT $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "35411f3050e288e4f5b7cd8f8965044a1750008a975e31a0f8cf345cf6c8673f"
+}

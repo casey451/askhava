@@ -50,6 +50,7 @@ mod email_verification;
 mod emergency_switch;
 mod holding;
 mod identity;
+mod join_date;
 mod leaving;
 mod license_reapply;
 mod links;

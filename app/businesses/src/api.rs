@@ -23,7 +23,8 @@
 //! (BIZ-022, BIZ-052, PICK-041, SEC-041; T165); the public business name read for the LIST reply
 //! and the who's-calling text, [`public_names`] (PICK-041, BIZ-022, TXT-031, D-2943; T316);
 //! leaving and the optional BIZ-054 reason (BIZ-051, BIZ-054; T228); the sign-up read of the
-//! business's own record, [`signup_record`] (BIZ-002, BIZ-016, LIC-008, LIC-011; T385, D-2954).
+//! business's own record, [`signup_record`] (BIZ-002, BIZ-016, LIC-008, LIC-011; T385, D-2954); the free first
+//! win's join facts, [`join_facts`] (FEE-010, D-152, D-3779; T486).
 
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -96,6 +97,7 @@ pub use crate::identity::{
     Flag, IDENTITY_CODE_TRIES, RecordContacts, Step, approve, check_code, episode_letter_code,
     letter_code, next_step, record_match, send_code, send_code_seen, settle,
 };
+pub use crate::join_date::{JoinFacts, join_facts};
 pub use crate::leaving::{
     AskedBy, LeaveReason, OTHER_MAX, PAUSE_ASK_AFTER_DAYS, ReasonAnswer, leave, pause_ask_due,
     reason_asked, record_reason,

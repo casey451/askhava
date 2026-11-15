@@ -42,3 +42,6 @@
 - [LIC-001 LIC-003 SEC-002 LIC-002] (task 400) recovery is a restart.
 - [INT-049 CARD-025 INT-029 TXT-032] (task 251) cross-reference (D-3620): the build note of T251 is in `app/intake/NOTES.md`: `grep -n '(task 251)' app/intake/NOTES.md`.
 - [FEE-045 FEE-005 FEE-004 FEE-007] (task 340) cross-reference (D-3620): the build note of T340 is in `app/picks/NOTES.md`: `grep -n '(task 340)' app/picks/NOTES.md`.
+- [FEE-010 LIC-002] (owns) `catalog.category.switched_on_at` (migration 0190, D-3779): the latest off-to-on time. Set to now() only by `store_category`'s insert of a new category the file has on and by `set_enabled`'s off-to-on UPDATE; the ON CONFLICT update, reloads, on-to-on calls and switch-offs never touch it. CHECK `category_switched_on_check`: NOT enabled OR switched_on_at IS NOT NULL.
+- [FEE-010 LIC-002] (rules) `trades_opened(conn, codes)` (`service.rs`, re-exported in `api.rs`) answers the stored switch-on time of each listed category that has one, on or off now, in code order; unknown and never-switched-on codes give nothing. Read as epoch microseconds (no jiff-sqlx in this crate). Backfill: categories on at migration read 1970-01-01, "on before launch" (D-019).
+- [FEE-010 LIC-002] (task 486) join dates: `switched_on_at`, its CHECK and backfill, `trades_opened`; tests `tests/integration/tests/join_dates.rs` (D-3779, D-3785).
