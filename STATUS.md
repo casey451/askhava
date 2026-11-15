@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T14:35:27Z by runner ddc4e393d44e (manual).
+Updated 2026-11-15T14:35:41Z by runner ddc4e393d44e (manual).
 
 **Building: T455 in progress since 14:19Z; 347 of 481 done; week 60% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,22 +8,10 @@ Updated 2026-11-15T14:35:27Z by runner ddc4e393d44e (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T455 claimed 14:19Z, lease until 17:19Z
 - **Week:** 60% used, 74.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:20Z, 15 min before this update
+- **Last run:** 14:35Z, 0 min before this update
 - **Keeper:** last ran 14:15Z, next wake 14:35Z
 
 ## Needs attention
-- BLOCKED T261: Ally: failure
-Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
-    tests/a11y/axe_all_pages.spec.ts:20:5 › A11Y-001 A11Y-002 A11Y-025 TD-A11Y-01: axe on /b/picks/{pick}/confirm (confirm page, fee-free job) at 768px 
-    tests/a11y/axe_all_pages.spec.ts:20:5 › A11Y-001 A11Y-002 A11Y-025 TD-A11Y-01: axe on /b/picks/{pick}/confirm (confirm page, fee-free job) at 1280px 
-    tests/a11y/reflow_spacing.spec.ts:101:7 › text spacing › A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 320px 
-    tests/a11y/reflow_spacing.spec.ts:101:7 › text spacing › A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 768px 
-    tests/a11y/reflow_spacing.spec.ts:101:7 › text spacing › A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 1280px 
-    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 320px 
-    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 768px 
-    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 1280px 
-  341 passed (2.2m)
-##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 27 problem(s) on tasks still to run (+114 on DONE tasks); first: T399: stored context_pct 15% but it measures 20%; regenerate
 

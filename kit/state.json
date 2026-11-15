@@ -28408,7 +28408,7 @@
     "T493",
     "T494"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 5,
    "slug": "served-confirm-route",
    "type": "build",
@@ -28422,8 +28422,8 @@
     3720,
     3721
    ],
-   "reason": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    tests/a11y/axe_all_pages.spec.ts:20:5 \u203a A11Y-001 A11Y-002 A11Y-025 TD-A11Y-01: axe on /b/picks/{pick}/confirm (confirm page, fee-free job) at 768px \n    tests/a11y/axe_all_pages.spec.ts:20:5 \u203a A11Y-001 A11Y-002 A11Y-025 TD-A11Y-01: axe on /b/picks/{pick}/confirm (confirm page, fee-free job) at 1280px \n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 320px \n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 768px \n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 1280px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 320px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 768px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 1280px \n  341 passed (2.2m)\n##[error]Process completed with exit code 1.",
-   "last_failure": "PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership contradiction and budget overrun. Needed: a harness task adding the Stripe stand-in settings, publishable key and launch date to the keyed e2e binary plus a PAGE_STATES entry, with T261's served spec after it. Other reviewer findings (paused-pick test, FEE-041 over-limit and lost-answer tests, \"Nothing was charged\" race in press paused branch) are fixable inside T261 once re-queued. Work committed at 705f96a54 on claude/task/T261-served-confirm-route (not pushed).\nre-queued after plan fix D-3813: D-3813 (#821): T492 adds the keyed e2e Stripe stand-in settings; T261 split into T493, T494, T261, T495 within budget; reviewer fixes folded into T261's goal\nre-queued after plan fix D-3836: D-3836 (#832): T261 adds the Confirm page's fee-free PAGE_STATES entry in tests/a11y/page_states.ts with its route flip; attempt 4's reviewed work on the branch is kept",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership contradiction and budget overrun. Needed: a harness task adding the Stripe stand-in settings, publishable key and launch date to the keyed e2e binary plus a PAGE_STATES entry, with T261's served spec after it. Other reviewer findings (paused-pick test, FEE-041 over-limit and lost-answer tests, \"Nothing was charged\" race in press paused branch) are fixable inside T261 once re-queued. Work committed at 705f96a54 on claude/task/T261-served-confirm-route (not pushed).\nre-queued after plan fix D-3813: D-3813 (#821): T492 adds the keyed e2e Stripe stand-in settings; T261 split into T493, T494, T261, T495 within budget; reviewer fixes folded into T261's goal\nre-queued after plan fix D-3836: D-3836 (#832): T261 adds the Confirm page's fee-free PAGE_STATES entry in tests/a11y/page_states.ts with its route flip; attempt 4's reviewed work on the branch is kept\nre-queued after plan fix D-3838: D-3838 (#837): Fable-triaged plan fix (T261)",
    "history": [
     {
      "attempt": 1,
@@ -28683,6 +28683,19 @@
      "plan_head": "2c7436fa53abfd8bf500077425691ef147b93f42",
      "plan_then": "b78bafbef91d9e6e39e00a30f91e4ad0bbb9b8a69465d1bad7761f99d7d079de",
      "plan_now": "1612a43af03a78bae0e66b1fb1ae9127a09593ef167d2ee867759c89bb46e91c"
+    },
+    {
+     "at": "2026-11-15T14:35:41Z",
+     "reason": "D-3838 (#837): Fable-triaged plan fix (T261)",
+     "by": "manual-9a4994238dbe",
+     "was": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    tests/a11y/axe_all_pages.spec.ts:20:5 \u203a A11Y-001 A11Y-002 A11Y-025 TD-A11Y-01: axe on /b/picks/{pick}/confirm (confirm page, fee-free job) at 768px \n    tests/a11y/axe_all_pages.spec.ts:20:5 \u203a A11Y-001 A11Y-002 A11Y-025 TD-A11Y-01: axe on /b/picks/{pick}/confirm (confirm page, fee-free job) at 1280px \n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 320px \n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 768px \n    tests/a11y/reflow_spacing.spec.ts:101:7 \u203a text spacing \u203a A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 1280px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 320px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 768px \n    tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 1280px \n  341 passed (2.2m)\n##[error]Process completed with exit code 1.",
+     "attempts": 5,
+     "plan_fix": "D-3838",
+     "plan_since": "2026-11-15T12:48:00Z",
+     "plan_base": "2c7436fa53abfd8bf500077425691ef147b93f42",
+     "plan_head": "ddc4e393d44e8adf1694475b6fe8a47837923a56",
+     "plan_then": "1612a43af03a78bae0e66b1fb1ae9127a09593ef167d2ee867759c89bb46e91c",
+     "plan_now": "3308ba463291c951c936b8fb40b505aa8722d3027e6c095e749cef07695a6002"
     }
    ],
    "reviewed_sha": "26562e72279f40c0d084cb2126f569846c750b3d",
@@ -62815,7 +62828,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T14:35:27Z",
+ "updated_at": "2026-11-15T14:35:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
