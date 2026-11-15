@@ -41,6 +41,7 @@ mod business_signup;
 mod checkin;
 mod code_challenge;
 mod confirm_pay;
+mod confirm_waiver;
 mod data_download;
 mod email_check;
 mod emergency_switch_page;

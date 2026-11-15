@@ -99,6 +99,9 @@ pub use crate::confirm_pay::{
     PressReply, REFUND_LINE, check_confirm_code, confirm_code_needed, confirm_page,
     confirm_page_with_code, may_confirm, open_confirm_page, press_reply, send_confirm_code,
 };
+pub use crate::confirm_waiver::{
+    ConfirmFee, ConfirmWaiverError, ConfirmedPick, decide_at_confirm, join_dates, release_no_fee,
+};
 pub use crate::data_download::{
     ANSWER_WITHIN, Acted, DATA_CODE_ROUTE, DATA_REQUEST_ROUTE, DOWNLOAD_ROUTE, DataRequest,
     DataRequestKind, DeleteError, HeldItem, RequestError, Section, confirm_request,

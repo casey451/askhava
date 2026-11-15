@@ -21,6 +21,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - An action link opens only its own action and object, works once, ends at its window and dies with its member: `tests/security/tests/action_links.rs`. No quote fact is optional, the earliest visit is never pre-filled, and every quote type shows its fee before submit: `tests/integration/tests/business_actions.rs`. More: `(never 15)` in NOTES.md.
 - The action links are served by `server::action_links` (T301): `action_page` and `quote_form_page_priced` keep their signatures for it, and `business_actions.html` links `/static/portals/forms.css`: `app/server/tests/action_links_route.rs`.
 - `send_sign_in_link` sends only to a current member and never past `LINKS_PER_LIFE` in `LINK_LIFE`: `tests/integration/tests/signup_mail_paths.rs` (T468).
+- `decide_at_confirm` gives no free first win to a business with no sign-up row or with no launch setting, and `release_no_fee` hands the sink only `no_fee_release`'s pick for its own business and job, after the waiver committed: `tests/integration/tests/confirm_waiver.rs` (T494).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/portals/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/portals/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
