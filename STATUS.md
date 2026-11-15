@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T06:50:14Z by runner 7303a9cd88d8 (actions).
+Updated 2026-11-15T06:50:29Z by runner 7303a9cd88d8 (actions).
 
 **Building: T454 in progress since 06:21Z; 345 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-15T06:50:14Z by runner 7303a9cd88d8 (actions).
 - **Lane:** lane 2: T454 claimed 06:21Z, lease until 09:21Z
 - **Week:** 58% used, 80.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:50Z, 0 min before this update
-- **Keeper:** last ran 06:49Z, next wake 09:24Z
+- **Keeper:** last ran 06:50Z, next wake 09:24Z
 
 ## Needs attention
 - BLOCKED T461: plan gap reported: PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording lives in app/portals/src/business_signup.rs (DoneFacts / done_lines, lines 234-243, owned by T450's line), which T461 does not own (it owns only app/server/src/business_signup.rs and app/server/tests/business_signup_route.rs). Evidence: app/server/src/business_signup.rs:1149 Form::finished gives a NeedsReview sign-up the same Screen::Done with done_facts(..., (false,false)), showing "We'll tell you once, by email, when requests in your trade start." Worker logged it in D-380; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T461 --plan-fix D-### --reason "..."` (D-2859)
