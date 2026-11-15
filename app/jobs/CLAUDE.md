@@ -23,6 +23,7 @@ The layer-4 crate that owns every job's one status and the only code that change
 - `JobsError` never carries a value or the database's message (PRIV-016).
 - A dead or missing timer of a non-final job is revived, a final job's never, and the third death alerts and stays dead: `tests/integration/tests/timer_backstop.rs` (TD-OPS-38).
 - A check-in or feedback text never goes after the job left Connected or for an earlier connection, a PROBLEM is listed once, and OTHER never records a no-show: `tests/integration/tests/followups.rs`.
+- BIZ-025, D-250, D-3791: `finished_counts` counts each connection once, by the first move out of Connected after the move in it belongs to, in that move's month; a reconnect under another pick is never credited to the first: `tests/integration/tests/business_numbers.rs`.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/jobs/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/jobs/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

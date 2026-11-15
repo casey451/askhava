@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"picks!\",\n                  count(*) FILTER (WHERE status = ANY($4::text[])) AS \"confirms!\",\n                  count(*) FILTER (WHERE status = $5) AS \"lapsed!\"\n             FROM picks.pick\n            WHERE business_id = $1 AND picked_at >= $2 AND picked_at < $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "picks!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "confirms!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "lapsed!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz",
+        "TextArray",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "b3b6af01e45716ddd3341c41f9aa7bd1e0258828a58428e4e12d8d7ce69a5397"
+}

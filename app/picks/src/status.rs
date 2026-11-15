@@ -293,3 +293,18 @@ pub const fn confirm_backstop_minutes() -> u32 {
         Some((Wait::Hours(_) | Wait::Days(_) | Wait::NextDayAt(_), _)) | None => 0,
     }
 }
+
+/// BIZ-025 (T451): true for a status only a Confirm reaches: paid, free, and the later no-show and
+/// fraud-refund ends of a paid pick; the "Your numbers" panel counts these as confirms.
+#[must_use]
+pub const fn confirmed(status: PickStatus) -> bool {
+    match status {
+        PickStatus::Paid | PickStatus::Free | PickStatus::NoShow | PickStatus::FraudRefunded => {
+            true
+        }
+        PickStatus::AwaitingConfirm
+        | PickStatus::Expired
+        | PickStatus::Cancelled
+        | PickStatus::PaymentFailed => false,
+    }
+}

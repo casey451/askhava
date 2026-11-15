@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT submitted_at, trades FROM businesses.signup WHERE business_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "submitted_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "businesses.signup",
+            "name": "submitted_at"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "trades",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "businesses.signup",
+            "name": "trades"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "00fab3a749ff6a5b1c8840646cf6479f0eb7a4ba240ebbb2a56603ddbf205c97"
+}

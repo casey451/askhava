@@ -25,6 +25,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - Known gaps (D-1715, D-3186): the card sender checks `may_get_cards` (T251's `quotes::card_pool`), business text sends do not yet check `may_text`, and the composition registers the welcome and STOP handlers with no mailer (no Resend client, no readable business address or phone digits), so those tasks retry and no activated business gets cards until a task passes one. Guarded by `tests/integration/tests/business_consent_wiring.rs`. More: `(never 18)` in NOTES.md.
 - `signup_mailbox` answers the mailbox `sign_up` stored and refuses an unknown sign-up: `tests/integration/tests/signup_mail_paths.rs` (T468).
 - `signup_progress` writes nothing, takes no lock or code try, and its `SignupProgress` carries only step, `code_done` and `email_verified` (PRIV-016): `tests/integration/tests/signup_progress.rs` (T485).
+- `join_facts` joins a business on its sign-up submit time and its sign-up trades only, never activation or a later checklist tick (FEE-010, D-152, D-3779): `tests/integration/tests/join_dates.rs`.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/businesses/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/businesses/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

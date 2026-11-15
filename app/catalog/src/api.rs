@@ -3,7 +3,8 @@
 //! Load the reviewed catalog file, read a category with its job types, license rule and fee rule,
 //! list the categories that are on, test the not-offered kinds, and switch a category as the owner
 //! (LIC-001 to LIC-005, AI-017), and read the carrier-restricted word list `quotes` and `ai` screen
-//! with (CARD-010, AI-021). No function takes a license class: classes come from the file only.
+//! with (CARD-010, AI-021), and when each listed category was last switched on, [`trades_opened`]
+//! (FEE-010, D-195, D-3779). No function takes a license class: classes come from the file only.
 
 use askhava_ops::api::Actor;
 use sqlx::PgConnection;
@@ -18,6 +19,7 @@ pub use crate::markets::{
 pub use crate::models::{Catalog, CatalogError, Category, JobType};
 pub use crate::question_bank::{AskIf, Question, QuestionBank, QuestionSet};
 pub use crate::restricted_words::{RESTRICTED_WORDS, restricted_match};
+pub use crate::service::trades_opened;
 
 /// Parses the catalog file compiled into the build and stores it (LIC-001). Run it at start-up and
 /// after the file changes; it is safe to run again and never changes an existing category's switch,
