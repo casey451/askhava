@@ -9,29 +9,39 @@
 //! name or contact stored in any table. T460's identity steps (BIZ-002, BIZ-026, SEC-019,
 //! D-3641, D-3779): refused without a verified binding cookie, out of order or after the code,
 //! each code to the bound record's own contact through a fake Verify, never a posted license
-//! number. Fake records are read from a temporary `file://` directory. No setting is a real key;
+//! number. T461's later steps (BIZ-016, BIZ-040, BIZ-058, SEC-014, D-3830): the service area and
+//! email code refused out of order and after activation, the code emailed once to the sign-up
+//! address through a recording fake provider, the per-business and per-IP send caps, the
+//! activating code's cleared cookie and sign-in link, and the flagged sign-up's review screen.
+//! Fake records are read from a temporary `file://` directory. No setting is a real key;
 //! all data is fake.
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
+use askhava_adapters::api::{
+    AdapterError, CodeChannel, Email, EmailAdapter, IdempotencyKey, VerifyAdapter,
+};
 use askhava_businesses::api::{
-    Step, business_names, businesses_of_mailbox, leave, review_due, signup_progress,
+    AccountStatus, Step, business, business_names, businesses_of_mailbox, leave, review_due,
+    signup_progress,
 };
 
 use askhava_catalog::api::{load, parse};
-use askhava_core::api::{IdSecret, MIGRATOR, Settings, TestControl};
+use askhava_core::api::{Clock, IdSecret, MIGRATOR, Settings, SystemClock, TestControl};
 use askhava_licensing::api::{
     Agency, HolderInputs, PestRecordCategory, RECORD_HEADER, bound_roc_number, holder_for,
     import_city_list, import_roc_list,
 };
+use askhava_messaging::api::{DailyLimit, MailboxCodeSender, MailboxKind, SignInLinkSender};
 use askhava_portals::api::{
-    CODE_SEND_ROUTE, CONSENT_AGAIN, ChannelPost, CodeProblem, CookieJar, IDENTITY_CHECK_ROUTE,
-    LETTER_ROUTE, NUMBER_OLD_ROUTE, SESSION_COOKIE, SIGNUP_FORM_ROUTE, SIGNUP_ROUTE, csrf_token,
+    CODE_SEND_ROUTE, CONSENT_AGAIN, ChannelPost, CodeProblem, CookieJar, EMAIL_CHECK_ROUTE,
+    EMAIL_RESEND_ROUTE, IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NUMBER_OLD_ROUTE, SERVICE_AREA_ROUTE,
+    SESSION_COOKIE, SIGNUP_FORM_ROUTE, SIGNUP_ROUTE, csrf_token,
 };
 use askhava_privacy::api::{Vault, mailboxes_of};
-use askhava_server::business_signup::{SIGNUP_COOKIE, ServedSignUp, bound_signup};
+use askhava_server::business_signin::SignInMailer;
+use askhava_server::business_signup::{SIGNUP_COOKIE, ServedSignUp, SignupMail, bound_signup};
 use askhava_server::{RouterParts, build_router};
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -898,4 +908,251 @@ async fn td_sec_45_a_code_send_reaches_only_its_own_record(pool: PgPool) {
         (2, 0),
         "D-1712: never the old number"
     );
+}
+
+/// The email provider: keeps each email's recipient and plain text (BIZ-040).
+#[derive(Clone, Default)]
+struct FakeMail(Arc<Mutex<Vec<(String, String)>>>);
+
+impl FakeMail {
+    fn sent(&self) -> Vec<(String, String)> {
+        self.0.lock().expect("fake").clone()
+    }
+}
+
+impl EmailAdapter for FakeMail {
+    async fn send_email(&self, _: &IdempotencyKey, e: &Email<'_>) -> Result<String, AdapterError> {
+        let mut sent = self.0.lock().expect("fake");
+        sent.push((e.to.to_owned(), e.text.to_owned()));
+        Ok(format!("re_fake_{}", sent.len()))
+    }
+
+    async fn remove_suppression(&self, _: &IdempotencyKey, _: &str) -> Result<(), AdapterError> {
+        Ok(())
+    }
+}
+
+/// As [`app_coding`], the email code and the sign-in link emailed through `mail` (T461).
+fn app_mailing(pool: &PgPool, records: &Records, verify: &FakeVerify, mail: &FakeMail) -> Router {
+    let pairs = pairs(Some(&records.0.display().to_string()));
+    let settings = Settings::from_pairs(pairs.clone()).expect("fake settings");
+    let control = TestControl::from_settings(&settings, pairs.clone()).expect("test control");
+    let secret = || SecretString::from(SECRET.to_owned());
+    let vault = Some(Arc::new(vault()));
+    let postal = ("PO Box 1234, Faketown, AZ 00000", MailboxKind::PoBox);
+    let limit = || DailyLimit::new(100, 90).expect("limit");
+    let code = MailboxCodeSender::new(secret(), mail.clone(), postal, limit()).expect("code mail");
+    let link = SignInLinkSender::new(secret(), mail.clone(), postal, limit()).expect("link mail");
+    let clock: Arc<dyn Clock> = Arc::new(SystemClock);
+    let link = SignInMailer::new((pool.clone(), clock), vault.clone(), Some(link));
+    let mail = SignupMail::new(vault, Some(code), link);
+    let signup = ServedSignUp::with_mail(pool.clone(), pairs, verify.clone(), mail);
+    let parts = RouterParts::from((None, None, None, None)).with_sign_up(signup.expect("part"));
+    build_router(pool.clone(), control.router(), parts)
+}
+
+/// A base ZIP and radius that parse (BIZ-058).
+const AREA: [(&str, &str); 2] = [("base_zip", "86403"), ("radius", "25")];
+
+/// The email code screen's title (BIZ-040).
+const EMAIL_SCREEN: &str = "Check your email for a code";
+
+/// Takes the identity code of the sign-up `binding` names from browser `b` (T460's steps).
+async fn coded(app: &Router, at: (&Browser, &str)) {
+    for (route, code) in [(CODE_SEND_ROUTE, ""), (IDENTITY_CHECK_ROUTE, RIGHT)] {
+        let (status, ..) = press(app, at, route, &[("code", code)]).await;
+        assert_eq!(status, StatusCode::OK, "{route}");
+    }
+}
+
+/// The 6-digit code in an email's text.
+fn code_in(text: &str) -> String {
+    let mut words = text.split(|c: char| !c.is_ascii_digit());
+    words.find(|w| w.len() == 6).expect("a code").to_owned()
+}
+
+/// The `messaging.email_outbox` rows queued so far.
+async fn outbox(pool: &PgPool) -> i64 {
+    let q = sqlx::query_scalar("SELECT count(*) FROM messaging.email_outbox");
+    q.fetch_one(pool).await.expect("outbox")
+}
+
+/// The email code `POST` with `code` from browser `b` holding `binding`: status, `Set-Cookie`
+/// lines and page.
+async fn email_post(
+    app: &Router,
+    (b, binding): (&Browser, &str),
+    code: &str,
+) -> (StatusCode, Vec<String>, String) {
+    let csrf = b.fields.iter().find(|(n, _)| n == "csrf").cloned();
+    let fields: Vec<(String, String)> = csrf
+        .into_iter()
+        .chain([("code".to_owned(), code.to_owned())])
+        .collect();
+    let cookie = format!("{}; {binding}", b.pre);
+    let (status, cookies, _, html) =
+        post_to(app, (EMAIL_CHECK_ROUTE, &cookie), &fields, "same-origin").await;
+    (status, cookies, html)
+}
+
+/// The business's stored status.
+async fn status_of(pool: &PgPool, id: Uuid) -> AccountStatus {
+    let mut conn = pool.acquire().await.expect("connection");
+    business(&mut conn, id).await.expect("business").status
+}
+
+/// TD-SEC-45 (BIZ-016, BIZ-040, BIZ-058, SEC-004, SEC-019, D-3641): the service area and email
+/// code steps are refused before identity and the email steps before the service area; the code
+/// goes once, only to the sign-up address; a resend's new code stops the earlier one; the right
+/// code activates, clears the binding cookie and emails one sign-in link to the owner; then every
+/// step is refused and nothing more is sent.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_sec_45_email_code_activates_and_sends_the_sign_in_link(pool: PgPool) {
+    store_lists(&pool).await;
+    let (records, verify, mail) = (Records::new(), FakeVerify::default(), FakeMail::default());
+    let app = app_mailing(&pool, &records, &verify, &mail);
+    let (b, binding, id) = signed(&app, &[], &[]).await;
+    let at = (&b, binding.as_str());
+    let all = [SERVICE_AREA_ROUTE, EMAIL_CHECK_ROUTE, EMAIL_RESEND_ROUTE];
+    let typed = [AREA[0], AREA[1], ("code", "000000")];
+    for route in all {
+        let (status, cache, _) = press(&app, at, route, &typed).await;
+        assert_eq!(
+            (status, cache.as_str()),
+            (StatusCode::FORBIDDEN, "no-store"),
+            "{route}"
+        );
+    }
+    coded(&app, at).await;
+    for route in [EMAIL_CHECK_ROUTE, EMAIL_RESEND_ROUTE] {
+        let (status, ..) = press(&app, at, route, &typed).await;
+        assert_eq!(
+            status,
+            StatusCode::FORBIDDEN,
+            "BIZ-058: {route} before the area"
+        );
+    }
+    assert!(mail.sent().is_empty());
+    let (status, cache, html) = press(&app, at, SERVICE_AREA_ROUTE, &AREA).await;
+    assert!(status == StatusCode::OK && cache == "no-store" && html.contains(EMAIL_SCREEN));
+    tokio::time::sleep(std::time::Duration::from_millis(1100)).await;
+    let (status, ..) = press(&app, at, EMAIL_RESEND_ROUTE, &[]).await;
+    assert_eq!(status, StatusCode::OK);
+    let sent = mail.sent();
+    assert_eq!(sent.len(), 2);
+    assert!(
+        sent.iter().all(|(to, _)| to == "owner@example.test"),
+        "BIZ-040: only there"
+    );
+    let (first, second) = (code_in(&sent[0].1), code_in(&sent[1].1));
+    assert_ne!(first, second, "a resend sends a new code");
+    let (status, cookies, html) = email_post(&app, at, &first).await;
+    let refused = CodeProblem::Refused
+        .message()
+        .split('\'')
+        .next()
+        .expect("text");
+    assert!(status == StatusCode::OK && html.contains(refused) && cookies.is_empty());
+    assert_eq!(status_of(&pool, id).await, AccountStatus::Pending);
+    let (status, cookies, html) = email_post(&app, at, &second).await;
+    assert!(
+        status == StatusCode::OK && html.contains("signed up</h1>"),
+        "BIZ-031"
+    );
+    let cleared = format!("{SIGNUP_COOKIE}=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0");
+    assert_eq!(
+        cookies,
+        vec![cleared],
+        "BIZ-016: the binding cookie cleared"
+    );
+    assert_eq!(status_of(&pool, id).await, AccountStatus::Active);
+    let sent = mail.sent();
+    assert_eq!(sent.len(), 3, "one sign-in link");
+    assert!(
+        sent[2].0 == "owner@example.test" && sent[2].1.contains("/b/sign-in/"),
+        "SEC-004"
+    );
+    for route in all {
+        let (status, ..) = press(&app, at, route, &typed).await;
+        assert_eq!(status, StatusCode::FORBIDDEN, "after activation: {route}");
+    }
+    assert_eq!(mail.sent().len(), 3);
+}
+
+/// TD-SEC-45 (BIZ-016, BIZ-020, D-3830): a flagged sign-up's right email code shows the review
+/// screen (it waits for review, its status by email, no trade start line), keeps the cookie and
+/// sends no sign-in link; the business waits in needs review.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_sec_45_a_flagged_sign_up_waits_for_review(pool: PgPool) {
+    store_lists(&pool).await;
+    let (records, verify, mail) = (Records::new(), FakeVerify::default(), FakeMail::default());
+    let app = app_mailing(&pool, &records, &verify, &mail);
+    let named = [("business_name", "Fake Fixers")];
+    let (b, binding, id) = signed(&app, &named, &["business_name"]).await;
+    let at = (&b, binding.as_str());
+    coded(&app, at).await;
+    let (status, ..) = press(&app, at, SERVICE_AREA_ROUTE, &AREA).await;
+    assert_eq!(status, StatusCode::OK);
+    let code = code_in(&mail.sent()[0].1);
+    let (status, cookies, html) = email_post(&app, at, &code).await;
+    assert!(
+        status == StatusCode::OK && cookies.is_empty(),
+        "the cookie stays"
+    );
+    assert!(
+        html.contains("wait for a review by hand")
+            && html.contains("email you to say where yours stands")
+    );
+    assert!(
+        !html.contains("when requests in your trade start"),
+        "D-3830"
+    );
+    assert_eq!(mail.sent().len(), 1, "no sign-in link");
+    assert_eq!(status_of(&pool, id).await, AccountStatus::NeedsReview);
+}
+
+/// TD-SEC-45 (SEC-014, SEC-025, PICK-055): a sixth send in a day for one sign-up, and an
+/// eleventh in an hour from one IP, queue no outbox row, call the provider no more, show the
+/// same screen and leave the earlier code working.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_sec_45_email_code_sends_are_capped(pool: PgPool) {
+    store_lists(&pool).await;
+    let (records, verify, mail) = (Records::new(), FakeVerify::default(), FakeMail::default());
+    let app = app_mailing(&pool, &records, &verify, &mail);
+    let mut last = Vec::new();
+    for resends in [5, 4] {
+        let (b, binding, _) = signed(&app, &[], &[]).await;
+        let at = (&b, binding.as_str());
+        coded(&app, at).await;
+        let (status, ..) = press(&app, at, SERVICE_AREA_ROUTE, &AREA).await;
+        assert_eq!(status, StatusCode::OK);
+        for _ in 0..resends {
+            let before = (mail.sent().len(), outbox(&pool).await);
+            let (status, _, html) = press(&app, at, EMAIL_RESEND_ROUTE, &[]).await;
+            assert!(status == StatusCode::OK && html.contains(EMAIL_SCREEN));
+            let after = (mail.sent().len(), outbox(&pool).await);
+            let sent_before = before.0;
+            if sent_before == 5 || sent_before == 9 {
+                assert_eq!(
+                    after, before,
+                    "capped after {sent_before}: nothing queued or sent"
+                );
+            } else {
+                assert_eq!(after.0, before.0 + 1);
+            }
+        }
+        last.push((b, binding));
+    }
+    let sent = mail.sent();
+    assert_eq!(
+        sent.len(),
+        9,
+        "5 for the first sign-up, 4 before the IP cap"
+    );
+    let codes = [code_in(&sent[4].1), code_in(&sent[8].1)];
+    for ((b, binding), code) in last.iter().zip(codes) {
+        let (status, _, html) = email_post(&app, (b, binding), &code).await;
+        let done = status == StatusCode::OK && html.contains("signed up</h1>");
+        assert!(done, "earlier code works: {status}");
+    }
 }
