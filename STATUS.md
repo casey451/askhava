@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T03:43:17Z by runner feafd8f43d86 (actions).
+Updated 2026-11-15T03:48:43Z by runner feafd8f43d86 (actions).
 
 **Building: T461 in progress since 03:00Z; 342 of 476 done; week 56% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T03:43:17Z by runner feafd8f43d86 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T461 claimed 03:00Z, lease until 06:00Z
 - **Week:** 56% used, 84.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:43Z, 0 min before this update
+- **Last run:** 03:48Z, 0 min before this update
 - **Keeper:** last ran 03:43Z, next wake 06:03Z
 
 ## Needs attention
@@ -82,7 +82,6 @@ Updated 2026-11-15T03:43:17Z by runner feafd8f43d86 (actions).
 | T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z |  |
 | T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 3 | 15 min | 04:11Z |  |
-| T440 | portals: the quote page's tier choice and the Confirm page's | done | 1 | 50 min | 03:43Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -102,7 +101,6 @@ Updated 2026-11-15T03:43:17Z by runner feafd8f43d86 (actions).
 - 06:29Z Plan: T280 build note out of architecture.md after D-3620; sweep T393's late paragraph (D-3652) (#753)
 - 05:23Z Plan: T302 door-matrix gap — exact open sign-up step paths, browser-bound sign-up steps (D-3641) (#745)
 - 05:15Z Plan: move build notes out of architecture.md into crate NOTES.md; prompts shrink (D-3620) (#744)
-- 03:45Z Plan: pre-claim scout fixes (T396, T300 + new T451) and stale-graph claim guard (D-3618, D-3619) (#733)
 
 ## Progress (requirements verified)
 
