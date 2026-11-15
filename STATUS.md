@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T03:15:50Z by runner 41e50f5df2cd (actions).
+Updated 2026-11-15T03:20:37Z by runner 41e50f5df2cd (actions).
 
 **Building: T461 in progress since 03:00Z; 342 of 476 done; week 56% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T03:15:50Z by runner 41e50f5df2cd (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T461 claimed 03:00Z, lease until 06:00Z
 - **Week:** 56% used, 84.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:15Z, 0 min before this update
+- **Last run:** 03:20Z, 0 min before this update
 - **Keeper:** last ran 03:15Z, next wake 06:03Z
 
 ## Needs attention
@@ -85,7 +85,6 @@ Updated 2026-11-15T03:15:50Z by runner 41e50f5df2cd (actions).
 | T440 | portals: the quote page's tier choice and the Confirm page's | done | 1 | 50 min | 03:43Z |  |
 | T344 | picks: the global daily Verify cap holds under concurrent co | done | 1 | 28 min | 03:23Z |  |
 | T433 | server and payments: every payments task runs in the product | done | 1 | 57 min | 03:21Z |  |
-| T449 | server and intake: emergency first texts count toward the re | resync | 1 | 31 min | 03:17Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
