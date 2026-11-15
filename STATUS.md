@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T04:28:18Z by runner 5d135dbe531e (actions).
+Updated 2026-11-15T04:28:27Z by runner 5d135dbe531e (actions).
 
 **Building: T461 in progress since 03:00Z; 342 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-15T04:28:18Z by runner 5d135dbe531e (actions).
 - **Lane:** lane 2: T461 claimed 03:00Z, lease until 06:00Z; lane 3: T494 claimed 04:01Z, lease until 07:01Z; lane 5: T493 claimed 04:00Z, lease until 07:00Z
 - **Week:** 57% used, 78.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:28Z, 0 min before this update
-- **Keeper:** last ran 04:27Z, next wake 06:03Z
+- **Keeper:** last ran 04:28Z, next wake 06:03Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -80,7 +80,6 @@ Updated 2026-11-15T04:28:18Z by runner 5d135dbe531e (actions).
 | T393 | portals and licensing: the served quote page's cards show ea | done | 1 | 74 min | 05:40Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z |  |
-| T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
