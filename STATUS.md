@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T14:13:11Z by runner 2c7436fa53ab (actions).
+Updated 2026-11-15T14:14:48Z by runner e1e0b57f22b9 (actions).
 
-**Building: T462 in progress since 14:12Z; 347 of 480 done; week 60% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 14:14Z; 347 of 480 done; week 60% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 347 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T462 claimed 14:12Z, lease until 17:12Z
+- **Lane:** idle since 14:14Z (no task in progress)
 - **Week:** 60% used, 74.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:05Z, 7 min before this update
+- **Last run:** 14:13Z, 1 min before this update
 - **Keeper:** last ran 13:33Z, next wake 13:53Z
 
 ## Needs attention
@@ -24,14 +24,16 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
     tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 1280px 
   341 passed (2.2m)
 ##[error]Process completed with exit code 1.
+- BLOCKED T462: plan gap reported: PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T466 (done, #782). Axe target-size fails at 320px on /b/signup/inbox (sample in spam): the answer buttons inbox/spam/tab are unstyled, email_check.html does not load forms.css, FORMS_CSS styles only checkboxes/radios, CSP style-src 'self' blocks inline styles; T462 Scope is only app/server/src/business_signup.rs and its test. Smallest plan change: let T462 (or a small portals follow-up) own both files; add button{min-height:24px} to FORMS_CSS and link /static/portals/forms.css ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T462 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 29 problem(s) on tasks still to run (+118 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T462 | server: the sign-up inbox check is served behind the busines | BLOCKED | 2 | 2 min | 14:14Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
 | T261 | portals and server (harness): the served Confirm route under | check_failed | 5 | 44 min | 13:32Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
-| T462 | server: the sign-up inbox check is served behind the busines | check_failed | 1 | 30 min | 12:13Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T462 | server: the sign-up inbox check is served behind the busines | check_failed | 1 | 30 min | 12:13Z |  |
 | T261 | portals and server (harness): the served Confirm route under | check_failed | 4 | 2 h 6 min | 11:16Z |  |
 | T461 | server: business sign-up's service area, email code and acti | done | 4 | 54 min | 08:38Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | done | 2 | 53 min | 07:15Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
@@ -126,7 +128,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T462 (lease until 2026-11-15T17:12:33Z)
 
 ## Last usage reading
-- {"task": "T261", "at": "2026-11-15T13:32:38Z", "input_tokens": 126, "output_tokens": 21102, "cache_read_input_tokens": 4129264, "cache_creation_input_tokens": 169296}
+- {"task": "T462", "at": "2026-11-15T14:14:47Z", "input_tokens": 35, "output_tokens": 6895, "cache_creation_input_tokens": 49429, "cache_read_input_tokens": 477002}
