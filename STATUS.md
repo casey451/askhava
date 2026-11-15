@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T06:17:25Z by runner 81fcd8677b94 (actions).
+Updated 2026-11-15T06:17:48Z by runner 5d135dbe531e (actions).
 
 **Idle since 06:16Z; 344 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,12 +9,12 @@ Updated 2026-11-15T06:17:25Z by runner 81fcd8677b94 (actions).
 - **Lane:** idle since 06:16Z (no task in progress)
 - **Week:** 57% used, 78.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:17Z, 0 min before this update
-- **Keeper:** last ran 06:11Z, next wake 08:28Z
+- **Keeper:** last ran 06:17Z, next wake 06:37Z
 
 ## Needs attention
 - BLOCKED T461: plan gap reported: PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording lives in app/portals/src/business_signup.rs (DoneFacts / done_lines, lines 234-243, owned by T450's line), which T461 does not own (it owns only app/server/src/business_signup.rs and app/server/tests/business_signup_route.rs). Evidence: app/server/src/business_signup.rs:1149 Form::finished gives a NeedsReview sign-up the same Screen::Done with done_facts(..., (false,false)), showing "We'll tell you once, by email, when requests in your trade start." Worker logged it in D-380; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T461 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 28 problem(s) on tasks still to run (+116 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
