@@ -2971,3 +2971,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The first check, of the copied-code tool and the first copied-code clean-up, made two small fixes: one group is marked as the other clean-up's, and both clean-ups now refresh the plan's fingerprint when they change the tool's keep-list.
 - A third fix, making the tool's tests use their own sample files so the later clean-ups can change its keep-list freely, came too late: the tool's task had already started. If its tests turn out to depend on the real keep-list, a small follow-up task fixes them before the clean-ups run. Lesson: plan fixes must land before a task can start.
 - Nothing needs you.
+
+## Fable's first group of pre-start checks for stage 5 (D-3877, November 15)
+
+- Fable checked the first stage-5 tasks before they start, and the plan now fixes what would have made them fail. Among them: the site's restyle may adjust the one old test that expects the plain header, and the quote page's close button may adjust the one security-test line that sends it an extra field. Both now run on Opus with a security review.
+- One gap left: nothing in the app yet raises the alerts for "Stripe errors over 30 minutes" or "the health check failed twice". Their automatic clearing is planned and tested, but raising them needs a follow-up task.
+- Nothing needs you.
