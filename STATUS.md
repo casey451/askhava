@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T20:15:38Z by runner ef9418c0e6b9 (actions).
+Updated 2026-11-15T20:23:19Z by runner ef9418c0e6b9 (actions).
 
-**Idle since 20:14Z; 352 of 499 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T099 in progress since 20:23Z; 352 of 499 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 352 of 499 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 20:14Z (no task in progress)
-- **Week:** 64% used, 68.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:58Z, 17 min before this update
+- **Lane:** lane 3: T099 claimed 20:23Z, lease until 23:23Z
+- **Week:** 64% used, 66.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 20:15Z, 7 min before this update
 - **Keeper:** last ran 19:57Z, next wake 20:17Z
 
 ## Needs attention
@@ -52,8 +52,6 @@ Updated 2026-11-15T20:15:38Z by runner ef9418c0e6b9 (actions).
 | T300 | server and portals: the business portal is served behind the | resync | 3 | 94 min | 21:25Z |  |
 | T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
-| T468 | portals, businesses and messaging: public paths for sign-up' | done | 1 | 29 min | 20:19Z |  |
-| T474 | harness: clearing a red main counts a failed attempt against | done | 1 | 26 min | 20:18Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -89,7 +87,7 @@ Updated 2026-11-15T20:15:38Z by runner ef9418c0e6b9 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-15T18:24:09Z (week)): week: 126.0M used, 68.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-26T20:24:11Z.
+- Pacing (session_reading 2026-11-15T19:57:20Z (week)): week: 128.0M used, 66.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T05:44:08Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -105,6 +103,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 3: T099 (lease until 2026-11-15T23:23:03Z)
 
 ## Last usage reading
 - {"task": "T464", "at": "2026-11-15T19:56:35Z", "output_tokens": 92265, "input_tokens": 341, "cache_read_input_tokens": 20985211, "cache_creation_input_tokens": 352690}
