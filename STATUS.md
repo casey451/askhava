@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-15T18:05:51Z by runner ce253ddc3225 (actions).
+Updated 2026-11-15T18:06:14Z by runner ce253ddc3225 (actions).
 
 **Building: T495 in progress since 17:37Z; 349 of 482 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 349 of 482 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T495 claimed 17:37Z, lease until 20:37Z; lane 2: T462 claimed 17:30Z, lease until 20:30Z
+- **Lane:** lane 1: T495 claimed 17:37Z, lease until 20:37Z
 - **Week:** 63% used, 68.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:04Z, 1 min before this update
 - **Keeper:** last ran 18:04Z, next wake 20:33Z
@@ -18,9 +18,10 @@ Updated 2026-11-15T18:05:51Z by runner ce253ddc3225 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T462 | server: the sign-up inbox check is served behind the busines | MERGE_PENDING | 3 | 35 min | 18:05Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
 | T261 | portals and server (harness): the served Confirm route under | done | 6 | 85 min | 16:50Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T455 | server: the Pause, Resume and Ask about a charge email links | done | 1 | 38 min | 14:58Z |  |
-| T462 | server: the sign-up inbox check is served behind the busines | BLOCKED | 2 | 2 min | 14:14Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
+| T462 | server: the sign-up inbox check is served behind the busines | BLOCKED | 2 | 2 min | 14:14Z |  |
 | T261 | portals and server (harness): the served Confirm route under | check_failed | 5 | 44 min | 13:32Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | check_failed | 1 | 30 min | 12:13Z |  |
 | T261 | portals and server (harness): the served Confirm route under | check_failed | 4 | 2 h 6 min | 11:16Z |  |
@@ -107,7 +108,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T495 (lease until 2026-11-15T20:37:13Z)
-- lane 2: T462 (lease until 2026-11-15T20:30:29Z)
 
 ## Last usage reading
-- {"task": "T261", "at": "2026-11-15T16:50:29Z", "input_tokens": 222, "cache_read_input_tokens": 5060890, "output_tokens": 40736, "cache_creation_input_tokens": 240221}
+- {"task": "T462", "at": "2026-11-15T18:05:50Z", "cache_creation_input_tokens": 99665, "cache_read_input_tokens": 1212817, "output_tokens": 12732, "input_tokens": 61}
