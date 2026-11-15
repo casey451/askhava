@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T06:11:12Z by runner 5d135dbe531e (actions).
+Updated 2026-11-15T06:16:35Z by runner 81fcd8677b94 (actions).
 
 **Building: T493 in progress since 05:25Z; 344 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-15T06:11:12Z by runner 5d135dbe531e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T493 claimed 05:25Z, lease until 08:25Z
 - **Week:** 57% used, 78.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:11Z, 0 min before this update
+- **Last run:** 06:11Z, 5 min before this update
 - **Keeper:** last ran 06:11Z, next wake 08:28Z
 
 ## Needs attention
 - BLOCKED T461: plan gap reported: PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording lives in app/portals/src/business_signup.rs (DoneFacts / done_lines, lines 234-243, owned by T450's line), which T461 does not own (it owns only app/server/src/business_signup.rs and app/server/tests/business_signup_route.rs). Evidence: app/server/src/business_signup.rs:1149 Form::finished gives a NeedsReview sign-up the same Screen::Done with done_facts(..., (false,false)), showing "We'll tell you once, by email, when requests in your trade start." Worker logged it in D-380; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T461 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 28 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+116 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -78,7 +78,6 @@ Updated 2026-11-15T06:11:12Z by runner 5d135dbe531e (actions).
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 2 | 42 min | 07:38Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 30 min | 06:48Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 21 min | 06:40Z |  |
-| T352 | adapters and stand-in (harness): the PaymentIntent carries S | done | 1 | 51 min | 06:14Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
