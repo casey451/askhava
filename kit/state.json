@@ -60073,7 +60073,14 @@
    "attempts": 0,
    "slug": "keyed-stripe-webhook-signing",
    "type": "harness",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-15T21:48:19Z",
+    "problems": [
+     "T515: prompt kit/prompts/T515.md is missing; run scripts/gen_prompts.py",
+     "T515: branch claude/task/T515-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
+    ]
+   }
   }
  ],
  "owner_waits": [],
@@ -63755,7 +63762,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T21:48:21Z",
+ "updated_at": "2026-11-15T21:48:33Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

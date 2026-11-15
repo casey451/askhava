@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T21:48:21Z by runner ef9418c0e6b9 (actions).
+Updated 2026-11-15T21:48:33Z by runner ef9418c0e6b9 (actions).
 
 **Idle since 21:21Z; 352 of 500 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,12 @@ Updated 2026-11-15T21:48:21Z by runner ef9418c0e6b9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 21:21Z (no task in progress)
 - **Week:** 64% used, 66.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:45Z, 2 min before this update
+- **Last run:** 21:45Z, 3 min before this update
 - **Keeper:** last ran 21:22Z, next wake 21:42Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T515 (since 2026-11-15T21:48:19Z, no attempt used; a plan change fixes it): T515: prompt kit/prompts/T515.md is missing; run scripts/gen_prompts.py; T515: branch claude/task/T515-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
