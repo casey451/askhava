@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T20:25:28Z by runner ef9418c0e6b9 (actions).
+Updated 2026-11-15T20:30:05Z by runner ef9418c0e6b9 (actions).
 
 **Building: T099 in progress since 20:23Z; 352 of 499 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T20:25:28Z by runner ef9418c0e6b9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T099 claimed 20:23Z, lease until 23:23Z
 - **Week:** 64% used, 66.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:25Z, 0 min before this update
+- **Last run:** 20:29Z, 0 min before this update
 - **Keeper:** last ran 20:25Z, next wake 23:25Z
 
 ## Needs attention
@@ -51,7 +51,6 @@ Updated 2026-11-15T20:25:28Z by runner ef9418c0e6b9 (actions).
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z |  |
 | T300 | server and portals: the business portal is served behind the | resync | 3 | 94 min | 21:25Z |  |
 | T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 5 | 40 min | 20:28Z | merging main into the reviewed head conflicts in app/calls/CLAUDE.md, app/quotes/CLAUDE.md; a resync merges it in on thi |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
