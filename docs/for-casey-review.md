@@ -2912,3 +2912,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## Pages are checked for accessibility before a task hands in (D-3837, November 15)
 
 - The required accessibility check used to run only after a task handed in, so one missing page listing cost the Confirm and pay task a whole attempt. Each task that changes a page now runs that check on its own branch first and fixes what it finds; one that changes no page skips it. The plan check also now warns when a task will add a page without its accessibility listing: it names 4 queued tasks (the legal pages, help pages, accessibility statement and health check) for a later plan fix. Nothing needs you.
+
+## Accessibility checks: three plan fixes (D-3838, November 15)
+
+- The Confirm and pay page's accessibility state now uses a page that shows no card form, because the card form loads Stripe's own code, which the checker can't scan cleanly; a new small task (T496) will fake Stripe's code in the checker and add the card-form check later. Stripe's own card box itself showed two accessibility problems (a hidden field that can take focus, and low contrast inside it); those are inside Stripe's part, which we don't control, so they are covered by the hands-on VoiceOver check rather than the automatic one, and T496 passing does not mean Stripe's box is clean.
+- The sign-up inbox-check task (T462) may now give the answer buttons a minimum size, so they pass the small-screen tap-target check.
+- Five other page tasks now add their pages to the accessibility checker in the same change, so the check does not fail when they land. Nothing needs you.
