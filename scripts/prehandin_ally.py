@@ -24,7 +24,8 @@ Not a trigger: `docs/architecture.md` section 13. The suite never reads it; the 
 reaches `Ally` through the `.route(` call that serves it, which is a trigger.
 
 `summary` reads the suite's JSON report (`test-results/a11y-report/results.json`) and prints one line per
-failed test, its location and the first line of its error, then the counts, so the worker reads failures only.
+failed test, its location, the first line of its error and the first items a list comparison received (the axe
+rule and its targets), then the counts, so the worker reads failures only.
 
 Usage:
   git diff --name-only BASE HEAD | python3 scripts/prehandin_ally.py select --base BASE [--root REPO]
@@ -52,7 +53,9 @@ RUST_SOURCE = re.compile(r"^app/([^/]+)/src/(.+\.rs)$")
 COMPOSITION = ("app/server/src/lib.rs", "app/server/src/main.rs")
 ROUTE_CALL = ".route("
 MAX_FAILURES = 20
+MAX_ITEMS = 3
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
+RECEIVED_ITEM = re.compile(r"^\+\s{2,}\S")
 
 
 def in_tests(rel: str) -> bool:
@@ -122,8 +125,15 @@ def failures(report: dict[str, Any]) -> Iterator[str]:
                 if not results or results[-1].get("status") in ("passed", "skipped"):
                     continue
                 error = (results[-1].get("error") or {}).get("message", results[-1].get("status", ""))
-                first = next((ln.strip() for ln in ANSI.sub("", str(error)).splitlines() if ln.strip()), "")
-                yield f"{spec.get('file', '')}:{spec.get('line', '')} {spec.get('title', '')}: {first[:200]}"
+                yield f"{spec.get('file', '')}:{spec.get('line', '')} {spec.get('title', '')}: {gist(str(error))}"
+
+
+def gist(message: str) -> str:
+    """An error's first line and, for a list compared with `toEqual`, the first received items (the axe rules)."""
+    lines = [ln.rstrip() for ln in ANSI.sub("", message).splitlines() if ln.strip()]
+    first = lines[0].strip() if lines else ""
+    received = [ln[1:].strip().rstrip(",") for ln in lines if RECEIVED_ITEM.match(ln)][:MAX_ITEMS]
+    return (first[:200] + (" received " + " | ".join(received) if received else ""))[:400]
 
 
 def summary(path: Path) -> str:

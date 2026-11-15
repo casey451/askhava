@@ -68,7 +68,7 @@
   "scripts/plan_pins.py": "582c52c071b58cdba5dc0933ff8e714855aa87ce4e6e623885f85d9c85cd61fb",
   "scripts/plan_symbols.py": "77dfb2676cd1b08ba5fec84c089d0307146d032370464c5e2f8d959842626b7e",
   "scripts/prehandin.sh": "bce6d4e86e151370478d07ab329ebe01ae5ffabdc4b841106668e45551b5d8f3",
-  "scripts/prehandin_ally.py": "2e914e57d08c9014d68ce9b4e7d27edd4a8097e413b8b0da3ac20da7366c5c5e",
+  "scripts/prehandin_ally.py": "dcf0ef4ee9050d0e8eb3ec7f9429e68518740395fc53554f17c482026a8eafea",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
   "scripts/quota_probe.py": "63f21117d06c02632e2e79698ef828a33668cefc1403cfc261cc2d813d3cf951",
   "scripts/run_named_mutants.py": "325ff572d79be0e8e1a23026cbfd81cd50b7671f743f1f550390bd4569ac4f59",

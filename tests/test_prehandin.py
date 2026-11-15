@@ -775,7 +775,10 @@ def test_the_ally_summary_prints_failed_tests_and_counts_only(tmp_path: Path) ->
 
     report = {"suites": [{"specs": [spec("A11Y-002: every GET route", "failed",
                                          "\x1b[31mError: routes with no entry in PAGE_STATES\x1b[39m\n\nExpected: []"),
-                                    spec("planted", "passed")],
+                                    spec("planted", "passed"),
+                                    spec("axe on /f (form) at 768px", "failed",
+                                         'Error: expect(received).toEqual(expected) // deep equality\n\n- Expected  - 1\n'
+                                         '+ Received  + 3\n\n- Array []\n+ Array [\n+   "image-alt: [\\"img\\"]",\n+ ]')],
                           "suites": [{"specs": [spec("axe on /b (x) at 320px", "timedOut")]}]}],
               "stats": {"expected": 1, "unexpected": 2, "skipped": 0}}
     path = tmp_path / "results.json"
@@ -783,8 +786,10 @@ def test_the_ally_summary_prints_failed_tests_and_counts_only(tmp_path: Path) ->
     done = subprocess.run(["python3", str(ALLY), "summary", str(path)], capture_output=True, text=True, check=True)
     assert done.stdout.splitlines() == [
         "FAIL axe_all_pages.spec.ts:12 A11Y-002: every GET route: Error: routes with no entry in PAGE_STATES",
+        'FAIL axe_all_pages.spec.ts:12 axe on /f (form) at 768px: Error: expect(received).toEqual(expected) // deep equality'
+        ' received "image-alt: [\\"img\\"]"',
         "FAIL axe_all_pages.spec.ts:12 axe on /b (x) at 320px: timedOut",
-        "Ally: 2 failed, 1 passed, 0 skipped",
+        "Ally: 3 failed, 1 passed, 0 skipped",
     ]
     missing = subprocess.run(["python3", str(ALLY), "summary", str(tmp_path / "none.json")], capture_output=True, text=True,
                              check=False)
