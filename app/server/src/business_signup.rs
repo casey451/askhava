@@ -1419,6 +1419,7 @@ impl FromRef<Inbox> for WebSecurity {
 
 /// The mail app the page's own `GET` form sends back (BIZ-042).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct AppQuery {
     app: Option<String>,
 }
@@ -1426,6 +1427,7 @@ struct AppQuery {
 /// The inbox check's posted form: the CSRF token, the mail app and either the send step or an
 /// answer (`email_check.html`'s two forms, which post to their own path).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct InboxForm {
     csrf: String,
     app: Option<String>,
