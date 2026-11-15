@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T04:49:01Z by runner 5d135dbe531e (actions).
+Updated 2026-11-15T04:57:23Z by runner 5d135dbe531e (actions).
 
 **Idle since 04:47Z; 343 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T04:49:01Z by runner 5d135dbe531e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 04:47Z (no task in progress)
 - **Week:** 57% used, 78.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:48Z, 0 min before this update
+- **Last run:** 04:55Z, 1 min before this update
 - **Keeper:** last ran 04:48Z, next wake 05:08Z
 
 ## Needs attention
@@ -82,7 +82,6 @@ Updated 2026-11-15T04:49:01Z by runner 5d135dbe531e (actions).
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 3 | 22 min | 05:44Z |  |
 | T393 | portals and licensing: the served quote page's cards show ea | done | 1 | 74 min | 05:40Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z |  |
-| T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
