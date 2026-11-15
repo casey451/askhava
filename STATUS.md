@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T11:17:09Z by runner cb399268cebe (actions).
+Updated 2026-11-15T11:43:27Z by runner cb399268cebe (actions).
 
 **Idle since 11:16Z; 347 of 480 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,17 +8,34 @@ Updated 2026-11-15T11:17:09Z by runner cb399268cebe (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 11:16Z (no task in progress)
 - **Week:** 59% used, 78.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:17Z, 0 min before this update
+- **Last run:** 11:17Z, 26 min before this update
 - **Keeper:** last ran 11:17Z, next wake 11:37Z
 
 ## Needs attention
+- BLOCKED T261: Ally: failure
+Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
+    +   "/b/picks/{pick}/confirm",
+    + ]
+      13 |   expect(ROUTES.length).toBeGreaterThan(0);
+      14 |   const missing = ROUTES.filter((route) => !PAGE_STATES.some((state) => state.route === route));
+    > 15 |   expect(missing, "routes with no entry in PAGE_STATES").toEqual([]);
+         |                                                          ^
+      16 | });
+      17 |
+      18 | for (const state of STATES_TO_CHECK) {
+        at /home/runner/work/askhava/askhava/tests/a11y/axe_all_pages.spec.ts:15:58
+    Error Context: test-results/a11y/axe_all_pages-A11Y-002-eve-0bf54-route-table-has-page-states/error-context.md
+  1 failed
+    tests/a11y/axe_all_pages.spec.ts:12:1 › A11Y-002: every GET route in the route table has page states 
+  333 passed (1.7m)
+##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 29 problem(s) on tasks still to run (+118 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T261 | portals and server (harness): the served Confirm route under | MERGE_PENDING | 4 | 2 h 6 min | 11:16Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
+| T261 | portals and server (harness): the served Confirm route under | check_failed | 4 | 2 h 6 min | 11:16Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T461 | server: business sign-up's service area, email code and acti | done | 4 | 54 min | 08:38Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | done | 2 | 53 min | 07:15Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | done | 2 | 50 min | 06:16Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
