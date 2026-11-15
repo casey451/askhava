@@ -31,6 +31,8 @@ const STATIC_DIR: &str = "ASKHAVA_STATIC_DIR";
 const LICENSE_BASE_URL: &str = "ASKHAVA_LICENSE_BASE_URL";
 const SECURITY_EVENTS_PER_MINUTE: &str = "ASKHAVA_SECURITY_EVENTS_PER_MINUTE";
 const MAIN_NUMBER: &str = "ASKHAVA_MAIN_NUMBER";
+const STRIPE_PUBLISHABLE_KEY: &str = "ASKHAVA_STRIPE_PUBLISHABLE_KEY";
+const LAUNCH_DATE: &str = "ASKHAVA_LAUNCH_DATE";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -41,6 +43,8 @@ const KEYS: &[&str] = &[
     LOG_LEVEL,
     SENTRY_DSN,
     STRIPE_SECRET_KEY,
+    STRIPE_PUBLISHABLE_KEY,
+    LAUNCH_DATE,
     ALLOW_LIST_TEST,
     ALLOW_LIST_LIVE,
     // The app's own public origin, the base of every signed webhook URL (T241, SEC-016, D-1216).
@@ -269,6 +273,8 @@ pub struct Settings {
     license_base_url: Option<String>,
     security_events_per_minute: Option<u32>,
     main_number: Option<String>,
+    stripe_publishable_key: Option<String>,
+    launch_date: Option<jiff::Timestamp>,
 }
 
 impl Settings {
@@ -315,6 +321,8 @@ impl Settings {
             license_base_url,
             security_events_per_minute: per_minute(raw.remove(SECURITY_EVENTS_PER_MINUTE))?,
             main_number: main_number(raw.remove(MAIN_NUMBER))?,
+            stripe_publishable_key: publishable_key(raw.remove(STRIPE_PUBLISHABLE_KEY))?,
+            launch_date: launch_date(raw.remove(LAUNCH_DATE))?,
         })
     }
 
@@ -433,6 +441,24 @@ impl Settings {
     #[must_use]
     pub fn main_number(&self) -> Option<&str> {
         self.main_number.as_deref()
+    }
+
+    /// Stripe's publishable key (`ASKHAVA_STRIPE_PUBLISHABLE_KEY`, trimmed, `pk_test_` or
+    /// `pk_live_`), public by design: the Confirm page hands it to the browser's card form. The
+    /// marker check refuses a `pk_test_` key in live and a `pk_live_` key outside it (SEC-002).
+    /// Optional here; the composition that builds the Confirm page's card form requires it in
+    /// test and live (FEE-014, D-3813).
+    #[must_use]
+    pub fn stripe_publishable_key(&self) -> Option<&str> {
+        self.stripe_publishable_key.as_deref()
+    }
+
+    /// The Gate C launch instant (`ASKHAVA_LAUNCH_DATE`, RFC 3339) the free first win's 90-day
+    /// join window counts from (FEE-012, D-019). Optional here; the composition that builds the
+    /// Confirm page requires it in test and live (D-3813).
+    #[must_use]
+    pub fn launch_date(&self) -> Option<jiff::Timestamp> {
+        self.launch_date
     }
 }
 
@@ -672,4 +698,31 @@ fn log_level(raw: Option<String>) -> Result<tracing::Level, SettingsError> {
 /// Reads a secret for the one place that needs its value (SEC-001).
 pub(crate) fn expose(secret: &SecretString) -> &str {
     secret.expose_secret()
+}
+
+/// SEC-002: a publishable key is a `pk_test_` or `pk_live_` value; which one fits the environment
+/// is [`check_key_markers`]' rule.
+fn publishable_key(raw: Option<String>) -> Result<Option<String>, SettingsError> {
+    let Some(raw) = raw else {
+        return Ok(None);
+    };
+    let key = raw.trim();
+    let body = key
+        .strip_prefix("pk_test_")
+        .or_else(|| key.strip_prefix("pk_live_"))
+        .unwrap_or_default();
+    if body.is_empty() || !body.bytes().all(|b| b.is_ascii_alphanumeric()) {
+        return Err(SettingsError::Invalid(STRIPE_PUBLISHABLE_KEY));
+    }
+    Ok(Some(key.to_owned()))
+}
+
+/// D-019: the launch is one RFC 3339 instant with its offset; a bad value names only the key.
+fn launch_date(raw: Option<String>) -> Result<Option<jiff::Timestamp>, SettingsError> {
+    raw.map(|raw| {
+        raw.trim()
+            .parse::<jiff::Timestamp>()
+            .map_err(|_| SettingsError::Invalid(LAUNCH_DATE))
+    })
+    .transpose()
 }

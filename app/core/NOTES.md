@@ -99,3 +99,5 @@
 - [CARD-020 CARD-021 QH-004 QH-005] (task 313) cross-reference (D-3620): the build note of T313 is in `docs/build-notes.md`: `grep -n '(task 313)' docs/build-notes.md`.
 - [QH-001 QH-004 QH-006 QH-008] (task 356) cross-reference (D-3620): the build note of T356 is in `app/messaging/NOTES.md`: `grep -n '(task 356)' app/messaging/NOTES.md`.
 - [LIC-006 LIC-007 LIC-008 LIC-010] (task 371) cross-reference (D-3620): the build note of T371 is in `app/licensing/NOTES.md`: `grep -n '(task 371)' app/licensing/NOTES.md`.
+- [SEC-001 SEC-002 FEE-014 FEE-012] (task 492) `Settings::stripe_publishable_key` (`ASKHAVA_STRIPE_PUBLISHABLE_KEY`, `pk_test_`/`pk_live_` plus letters and digits, else `Invalid`; the marker check refuses `pk_test_` in live and `pk_live_` outside) and `Settings::launch_date` (`ASKHAVA_LAUNCH_DATE`, an RFC 3339 instant, `jiff::Timestamp`, the Gate C launch, D-019) are optional in every environment; the Confirm composition requires them in test and live (D-3813, D-3814).
+- [SEC-002] (tests) `src/tests/stripe_page_settings.rs`: both Confirm page keys optional everywhere, each marker refused in the wrong environment, a bad value named by key only (T492).
