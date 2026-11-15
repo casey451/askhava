@@ -58360,7 +58360,10 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest an_enabled_row_with_no_time_is_refused ... ok\ntest a_new_category_reads_a_switch_on_time_only_when_on ... ok\ntest td_fee_08_switch_on_cases_hold_on_the_read_dates ... ok\ntest the_backfill_marks_on_categories_on_before_launch ... FAILED\ntest the_owner_switch_records_the_latest_switch_on ... ok\nfailures:\n---- the_backfill_marks_on_categories_on_before_launch stdout ----\nthread 'the_backfill_marks_on_categories_on_before_launch' (27125) panicked at tests/integration/tests/join_dates.rs:188:14:\nas before the migration: Database(PgDatabaseError { severity: Error, code: \"42501\", message: \"must be owner of table category\", detail: None, hint: None, position: None, where: None, schema: None, tab\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    the_backfill_marks_on_categories_on_before_launch\ntest result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.94s\nerror: test failed, to rerun pass `-p askhava-integration --test join_dates`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest an_enabled_row_with_no_time_is_refused ... ok\ntest a_new_category_reads_a_switch_on_time_only_when_on ... ok\ntest td_fee_08_switch_on_cases_hold_on_the_read_dates ... ok\ntest the_backfill_marks_on_categories_on_before_launch ... FAILED\ntest the_owner_switch_records_the_latest_switch_on ... ok\nfailures:\n---- the_backfill_marks_on_categories_on_before_launch stdout ----\nthread 'the_backfill_marks_on_categories_on_before_launch' (27125) panicked at tests/integration/tests/join_dates.rs:188:14:\nas before the migration: Database(PgDatabaseError { severity: Error, code: \"42501\", message: \"must be owner of table category\", detail: None, hint: None, position: None, where: None, schema: None, tab\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    the_backfill_marks_on_categories_on_before_launch\ntest result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.94s\nerror: test failed, to rerun pass `-p askhava-integration --test join_dates`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+   "runner_closed_prs": [
+    824
+   ]
   },
   {
    "id": "T494",
@@ -62148,7 +62151,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T05:25:45Z",
+ "updated_at": "2026-11-15T05:26:02Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
