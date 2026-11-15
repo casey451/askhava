@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T11:55:10Z by runner cb399268cebe (actions).
+Updated 2026-11-15T12:01:23Z by runner cb399268cebe (manual).
 
 **Building: T462 in progress since 11:43Z; 347 of 480 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T11:55:10Z by runner cb399268cebe (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T462 claimed 11:43Z, lease until 14:43Z
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:55Z, 0 min before this update
+- **Last run:** 11:55Z, 6 min before this update
 - **Keeper:** last ran 11:55Z, next wake 14:46Z
 
 ## Needs attention
@@ -77,8 +77,6 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 | T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z |  |
 | T359 | payments: a successful charge writes its own charge ledger e | done | 3 | 72 min | 12:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 2 | 16 min | 12:20Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 3 | 23 min | 11:56Z |  |
-| T302 | server (harness): business sign-up's open doors and served p | check_failed | 5 | 45 min | 11:56Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -95,31 +93,31 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
+**Requirements verified:** 213 of 733 (29.1%) · partial 363 · unstarted 157
 **Tasks merged (throughput only):** 347 of 480
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 14 | 15 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 18 | 37 | 3 | 58 |
-| calls | 14 | 10 | 1 | 25 |
-| consent | 15 | 16 | 4 | 35 |
-| fees | 19 | 32 | 1 | 52 |
-| intake | 29 | 11 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
-| licensing | 38 | 10 | 0 | 48 |
-| lifecycle | 24 | 4 | 0 | 28 |
-| messaging | 26 | 17 | 2 | 45 |
+| accessibility | 12 | 17 | 6 | 35 |
+| ai | 8 | 16 | 5 | 29 |
+| businesses | 11 | 44 | 3 | 58 |
+| calls | 8 | 16 | 1 | 25 |
+| consent | 10 | 21 | 4 | 35 |
+| fees | 10 | 41 | 1 | 52 |
+| intake | 25 | 15 | 3 | 43 |
+| job-cards | 13 | 11 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 18 | 25 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 13 | 16 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
-| recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| privacy | 4 | 25 | 2 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 22 | 33 | 1 | 56 |
+| recurring | 6 | 2 | 3 | 11 |
+| security | 7 | 43 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 1 | 10 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
