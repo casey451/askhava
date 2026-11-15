@@ -2926,3 +2926,16 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The help auto-answer about cost keeps the fixed wording "$25, $75 or $199", as the requirement says, and a test now fails if the fee amounts in the code ever change without that text changing.
 - The 8.6% sales-tax set-aside is now a real setting (default 8.6%) that you can change later.
 - Nothing needs you.
+## A business that shares its email inbox cannot confirm a pick yet (D-3717, November 15)
+
+- When a business's sign-in email is a shared inbox, pressing "Confirm and pay" first needs a fresh code sent to the owner. The Confirm page (T261) refuses that press and charges nothing, but no task in the plan yet builds the route that sends the code, so such a business cannot confirm any pick. This needs a follow-up task in the plan before launch; nothing else needs you.
+
+## Repeat customers are free at Confirm, and bank approvals stay on one payment (D-3719, November 15)
+
+- Money: a homeowner's pick of a business she was already introduced to is now recorded as free at Confirm, as the fee rules say; the first build charged it the full introduction fee by job size. When a card's bank asks the business to approve a payment, the page now uses the same payment even after a weekend, so a business is never asked to approve a second one. Nothing needs you.
+- Money, one gap left: the app's list of a homeowner's earlier jobs holds only the first job of each request. A second job she opened in the same request (by answering "also" with another job) is left out, and its record is removed when the request closes. So if a business was picked and paid on such a second job, a later pick of the same business by the same homeowner is charged the full fee instead of $0, and may use up that business's free first win. This needs a follow-up task: the intake part must list those second jobs too and keep them after a request closes. Until then, the repeat-customer rule is tested only inside the payments code, not through the served Confirm page.
+
+## A homeowner's CANCEL can still miss a charge already under way (D-3717, November 15)
+
+- Money, one gap left: when a business presses "Confirm and pay", the app checks that the pick still waits and the homeowner has not paused it, then sends the charge to Stripe. If the homeowner texts CANCEL in the few seconds between that check and Stripe's answer, the charge can still go through on a pick she withdrew, and no contact is released.
+- Why not fixed here: the fix belongs in the picks code (CANCEL should end the pending payment the same way "can't take this job" already does), which this task does not own. A follow-up task for the picks code is needed; it is logged in D-3717 for the planner to add.
