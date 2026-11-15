@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T01:04:33Z by runner 30d12d87a2fd (actions).
+Updated 2026-11-15T01:07:05Z by runner 30d12d87a2fd (actions).
 
 **Building: T460 in progress since 00:00Z; 341 of 471 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T01:04:33Z by runner 30d12d87a2fd (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T460 claimed 00:00Z, lease until 03:00Z
 - **Week:** 54% used, 86.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:04Z, 0 min before this update
+- **Last run:** 01:04Z, 2 min before this update
 - **Keeper:** last ran 01:04Z, next wake 03:02Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-15T01:04:33Z by runner 30d12d87a2fd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T454 | server: the served business portal end to end (TD-BIZ-42's r | MERGE_PENDING | 1 | 12 min | 00:56Z |  |
+| T454 | server: the served business portal end to end (TD-BIZ-42's r | check_failed | 1 | 12 min | 00:56Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T486 | businesses and catalog: the free-first-win join dates: a pub | done | 1 | 65 min | 23:37Z |  |
 | T451 | quotes, picks, jobs, payments and server: the "Your numbers" | done | 1 | 41 min | 23:30Z |  |
 | T445 | runner (harness): a failed nightly on an older head keeps th | done | 1 | 24 min | 23:29Z |  |
