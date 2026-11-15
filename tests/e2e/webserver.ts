@@ -16,7 +16,10 @@
 // The keyed binary (T452, D-3674): a second web binary from the same build on `keyedPort()`, no
 // worker of its own, with the suite's environment plus the Twilio Verify stand-in, a one-number
 // masked pool, its own ID secret and both vault keys, all fake and made per run, and no public base
-// URL (so it serves no webhook). The suite's own web binary and worker never see those values: their
+// URL (so it serves no Twilio webhook). Since T492 (D-3813) it also gets the Stripe stand-in
+// settings: stand-in mode and base URL, an `sk_test_` key the stand-in accepts, a webhook secret, an
+// account, a `pk_test_` publishable key and a fixed launch date, all fake, so it builds the Stripe
+// webhook and serves the Confirm route (SEC-032, D-019). The suite's own web binary and worker never see those values: their
 // environment is made before them, and the keyed values go into this process's environment under
 // `E2E_KEYED_*` names (which `appEnv` passes on but the app never reads) for `keyed.ts` in the test
 // workers, as `controlSecret()` does.
@@ -105,7 +108,10 @@ function appEnv(scratch: string): NodeJS.ProcessEnv {
   };
 }
 
-/** The keyed binary's environment: the suite's `env` plus fake Verify, pool, ID secret and vault keys. */
+/**
+ * The keyed binary's environment: the suite's `env` plus fake Verify, pool, ID secret, vault keys
+ * and Stripe stand-in settings (D-3813). The Stripe values are made per run and never printed.
+ */
 function keyedEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const secrets = keyedSecrets();
   return {
@@ -120,6 +126,13 @@ function keyedEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     ASKHAVA_ID_SECRET: secrets.idSecret,
     VAULT_KEY: secrets.vaultKey,
     VAULT_INDEX_KEY: secrets.vaultIndexKey,
+    ASKHAVA_ADAPTER_MODE_STRIPE: "stand_in",
+    ASKHAVA_STRIPE_BASE_URL: `http://127.0.0.1:${String(STAND_IN_PORT)}/stripe`,
+    ASKHAVA_STRIPE_SECRET_KEY: `sk_test_${randomBytes(12).toString("hex")}`,
+    ASKHAVA_STRIPE_WEBHOOK_SECRET: `whsec_${randomBytes(24).toString("hex")}`,
+    ASKHAVA_STRIPE_ACCOUNT_ID: "acct_e2efake",
+    ASKHAVA_STRIPE_PUBLISHABLE_KEY: `pk_test_${randomBytes(12).toString("hex")}`,
+    ASKHAVA_LAUNCH_DATE: "2026-01-15T07:00:00Z",
   };
 }
 
