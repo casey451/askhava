@@ -13,9 +13,10 @@
 //!
 //! The facts come through each module's `api`: the home's open-cards times and inbox switch from
 //! `businesses` and `portals`, its "Your numbers" fee total from `payments::api::business_statement`
-//! for this Arizona month with every other count `YourNumbers::default()`'s (D-3618); billing from
-//! the same statement with no saved cards and no fee limit shown (no `api` reads them yet,
-//! D-3618, D-3664); the released job's page through `picks::api::released_view` with the session
+//! for this Arizona month and every other count from `quotes::api::quote_numbers`,
+//! `picks::api::pick_numbers` and `jobs::api::finished_counts` (T451); billing from the same
+//! statement and `payments::api::saved_cards` (brand and last four only, FEE-014), with no fee
+//! limit shown (no `api` reads it yet, D-3618, D-3664); the released job's page through `picks::api::released_view` with the session
 //! proof from [`crate::session_minter`] on every load (D-1739); the notice addresses opened from the
 //! vault here (D-1848, D-3664). Business texting is off (TXT-035), so the channel is email.
 
@@ -29,18 +30,21 @@ use askhava_businesses::api::{
     open_cards_times, returned_mailboxes, sign_in_lines,
 };
 use askhava_core::api::{Clock, Settings, SystemClock, arizona_time};
-use askhava_payments::api::{Statement, business_statement};
+use askhava_jobs::api::finished_counts;
+use askhava_payments::api::{Statement, business_statement, saved_cards};
+use askhava_picks::api::pick_numbers;
 use askhava_portals::api::{
     BILLING_ROUTE, BUSINESS_HOME_ROUTE, BusinessPrincipal, ChannelChangeError, ChannelFacts,
     CookieJar, CsrfField, CsrfForm, InboxSwitch, JOB_RELEASE_ROUTE, JobFacts,
-    NOTICE_SETTINGS_ROUTE, Need, NoticeAddress, OPEN_CARDS_ROUTE, SESSION_COOKIE, SIGNIN_ROUTE,
-    STATEMENT_ROUTE, SecurityEvent, SecurityEventKind, WebSecurity, YourNumbers,
+    NOTICE_SETTINGS_ROUTE, Need, NoticeAddress, OPEN_CARDS_ROUTE, PaymentMethod, SESSION_COOKIE,
+    SIGNIN_ROUTE, STATEMENT_ROUTE, SecurityEvent, SecurityEventKind, WebSecurity, YourNumbers,
     admit_security_event, billing_page, business_home_page, business_principal, change_channel,
     csrf_token, inbox_shared, job_release_page, no_store, notice_settings_page,
     record_security_event, refuse_cross_site, save_open_cards_times, security_event_client,
     statement_csv,
 };
 use askhava_privacy::api::{BusinessContactError, BusinessPurpose, Vault, read_business_mailbox};
+use askhava_quotes::api::quote_numbers;
 use axum::Router;
 use axum::extract::{Extension, FromRef, MatchedPath, Path, Request, State};
 use axum::http::StatusCode;
@@ -50,8 +54,8 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use jiff::Timestamp;
 use secrecy::ExposeSecret;
-use sqlx::PgPool;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
 use crate::inbound_text::Webhooks;
 use crate::inbound_voice::VoiceHooks;
@@ -295,6 +299,30 @@ async fn month_statement(portal: &Portal, business: Uuid) -> Option<Statement> {
     business_statement(&portal.pool, business, month).await.ok()
 }
 
+/// BIZ-025 (D-193, D-250, D-284, D-331): the panel's numbers for `business` this month, from
+/// `quotes`', `picks`' and `jobs`' readers and the month's statement (T451).
+async fn your_numbers(
+    db: &mut PgConnection,
+    business: Uuid,
+    month: (Timestamp, Timestamp),
+    statement: &Statement,
+) -> Option<YourNumbers> {
+    let quotes = quote_numbers(db, business, month).await.ok()?;
+    let picks = pick_numbers(db, business, month).await.ok()?;
+    let finished = finished_counts(db, &picks.connected, month).await.ok()?;
+    Some(YourNumbers {
+        cards: quotes.cards,
+        cards_without_quote: quotes.cards_without_quote,
+        quotes: quotes.quotes,
+        picks: picks.picks,
+        confirms: picks.confirms,
+        fees_cents: u64::try_from(statement.totals.charges).unwrap_or(0),
+        lapsed_picks: picks.lapsed,
+        finished: (finished.done, finished.no, finished.other),
+        typical_quotes: quotes.typical_quotes,
+    })
+}
+
 /// BIZ-025, CARD-022, BIZ-046, SEC-027: the home page for `who`; `too_many` shows the times error.
 async fn home_html(
     portal: &Portal,
@@ -310,10 +338,8 @@ async fn home_html(
         shared: inbox_shared(&mut db, who.member()).await.ok()?,
         text_phone: lines.is_some_and(|l| !l.texting_lines.is_empty()),
     };
-    let numbers = YourNumbers {
-        fees_cents: u64::try_from(statement.totals.charges).unwrap_or(0),
-        ..YourNumbers::default()
-    };
+    let month = this_month(portal.clock.now());
+    let numbers = your_numbers(&mut db, who.business(), month, &statement).await?;
     business_home_page(&numbers, (times, too_many), (&portal.numbers, &inbox), csrf).ok()
 }
 
@@ -441,28 +467,44 @@ async fn billing_facts(
     portal: &Portal,
     site: &Site,
     jar: &CookieJar,
-) -> Result<Statement, Box<Response>> {
+) -> Result<(Statement, Uuid), Box<Response>> {
     let who = signed_in(portal, site, jar).await?;
     if !who.may(who.business(), Need::ConfirmAndBilling) {
         return Err(Box::new(denied(portal, site, &who).await));
     }
     month_statement(portal, who.business())
         .await
+        .map(|statement| (statement, who.business()))
         .ok_or_else(|| Box::new(failed("statement")))
 }
 
-/// `GET` [`BILLING_ROUTE`] (BIZ-015): this month's charges, refunds and credits from the ledger,
-/// with no saved cards and no fee limit until an `api` reads them (D-3618).
+/// FEE-014, BIZ-015: `business`'s saved cards not removed, brand and last four only (T451).
+async fn card_methods(portal: &Portal, business: Uuid) -> Option<Vec<PaymentMethod>> {
+    let mut db = portal.pool.acquire().await.ok()?;
+    let cards = saved_cards(&mut db, business).await.ok()?;
+    let methods = cards.into_iter().map(|c| PaymentMethod {
+        brand: c.brand,
+        last4: c.last4,
+    });
+    Some(methods.collect())
+}
+
+/// `GET` [`BILLING_ROUTE`] (BIZ-015, FEE-014): this month's charges, refunds and credits from the
+/// ledger and the saved cards' brand and last four (T451), with no fee limit until an `api` reads
+/// it (D-3618).
 async fn billing(
     State(portal): State<Portal>,
     Extension(site): Extension<Site>,
     jar: CookieJar,
 ) -> Response {
-    let statement = match billing_facts(&portal, &site, &jar).await {
-        Ok(statement) => statement,
+    let (statement, business) = match billing_facts(&portal, &site, &jar).await {
+        Ok(facts) => facts,
         Err(answer) => return *answer,
     };
-    match billing_page(&statement, &[], None) {
+    let Some(cards) = card_methods(&portal, business).await else {
+        return failed("saved cards");
+    };
+    match billing_page(&statement, &cards, None) {
         Ok(html) => Html(html).into_response(),
         Err(_) => failed("billing page"),
     }
@@ -475,7 +517,7 @@ async fn statement(
     jar: CookieJar,
 ) -> Response {
     let statement = match billing_facts(&portal, &site, &jar).await {
-        Ok(statement) => statement,
+        Ok((statement, _)) => statement,
         Err(answer) => return *answer,
     };
     let headers = [

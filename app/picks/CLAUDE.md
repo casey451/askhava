@@ -26,6 +26,7 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - FEE-050, D-2204: `picks.dispute_opened` marks a dispute only with a release and a business call attempt or a stored authenticated 3-D Secure result, waits for Casey otherwise, and marks nothing twice: `tests/integration/tests/dispute_submit.rs` (TD-FEE-51).
 - FEE-045, D-2331: the fee's facts come from the job's latest `jobs::api::job_facts` row through `payments::api::resolve_fee_facts`, never the defaults; unsettled facts refuse a non-emergency pick and store nothing; an emergency pick proceeds on `JobFeeFacts::EMERGENCY_DEFAULT` with one High `FEE_FACTS_ALERT` naming the pick ID only: `tests/integration/tests/fee_facts_at_pick.rs` (TD-FEE-62).
 - PICK-053: `tier_and_visit_pick`
+- BIZ-025, D-284, D-3790: `pick_numbers` counts one business's own picks, confirms (`status::confirmed`) and lapsed picks by pick month, and lists only its own releases as `(job, connected_at)`: `tests/integration/tests/business_numbers.rs`.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/picks/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/picks/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

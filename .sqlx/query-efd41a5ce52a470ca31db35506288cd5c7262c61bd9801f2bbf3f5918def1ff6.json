@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH trades AS (\n             SELECT DISTINCT s.category FROM quotes.job_card c\n               JOIN quotes.shown_card s ON s.job_id = c.job_id AND s.sent_at IS NOT NULL\n              WHERE c.business_id = $1 AND c.sent_at >= $2 AND c.sent_at < $3)\n           SELECT s.category AS \"trade!\",\n                  (SELECT count(*) FROM quotes.quote q WHERE q.job_id = s.job_id) AS \"quotes!\"\n             FROM quotes.shown_card s\n            WHERE s.sent_at >= $2 AND s.sent_at < $3\n              AND s.category IN (SELECT category FROM trades)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "trade!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "category"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "quotes!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "efd41a5ce52a470ca31db35506288cd5c7262c61bd9801f2bbf3f5918def1ff6"
+}

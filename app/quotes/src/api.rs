@@ -71,6 +71,7 @@ pub use crate::auto_confirm_box::{
     auto_confirm_of, stripe_answer_filed, tick_auto_confirm, untick_auto_confirm,
 };
 pub use crate::business_left::withdraw_for_leaving;
+pub use crate::business_numbers::{QuoteNumbers, median_tenths, quote_numbers};
 pub use crate::capability_match::{
     CapabilitySkip, JobFit, band_floor_cents, capability_skip, capable_pool,
 };
