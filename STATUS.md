@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T08:38:05Z by runner 6368d9a71ea6 (actions).
+Updated 2026-11-15T08:38:22Z by runner 6368d9a71ea6 (actions).
 
-**Building: T461 in progress since 07:43Z; 346 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 08:38Z; 346 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 346 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T461 claimed 07:43Z, lease until 10:43Z
+- **Lane:** idle since 08:38Z (no task in progress)
 - **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:22Z, 15 min before this update
+- **Last run:** 08:22Z, 16 min before this update
 - **Keeper:** last ran 07:46Z, next wake 10:45Z
 
 ## Needs attention
@@ -18,9 +18,10 @@ Updated 2026-11-15T08:38:05Z by runner 6368d9a71ea6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T461 | server: business sign-up's service area, email code and acti | MERGE_PENDING | 4 | 54 min | 08:38Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | done | 2 | 53 min | 07:15Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | done | 2 | 50 min | 06:16Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
-| T461 | server: business sign-up's service area, email code and acti | BLOCKED | 3 | 49 min | 06:10Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
+| T461 | server: business sign-up's service area, email code and acti | BLOCKED | 3 | 49 min | 06:10Z |  |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | check_failed | 1 | 46 min | 04:47Z |  |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z |  |
 | T494 | portals: the Confirm route's $0 free-first-win decision from | done | 1 | 29 min | 04:31Z |  |
@@ -135,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T461 (lease until 2026-11-15T10:43:34Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T454", "at": "2026-11-15T07:15:35Z", "output_tokens": 24023, "input_tokens": 138, "cache_read_input_tokens": 2852817, "cache_creation_input_tokens": 120936}
+- {"task": "T461", "at": "2026-11-15T08:38:04Z", "cache_read_input_tokens": 15328307, "input_tokens": 258, "cache_creation_input_tokens": 297097, "output_tokens": 82419}
