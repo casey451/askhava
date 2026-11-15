@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T04:57:46Z by runner 5d135dbe531e (actions).
+Updated 2026-11-15T05:04:56Z by runner 5d135dbe531e (actions).
 
 **Idle since 04:47Z; 343 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T04:57:46Z by runner 5d135dbe531e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 04:47Z (no task in progress)
 - **Week:** 57% used, 78.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:57Z, 0 min before this update
+- **Last run:** 05:04Z, 0 min before this update
 - **Keeper:** last ran 04:57Z, next wake 05:17Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-15T04:57:46Z by runner 5d135dbe531e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T493 | portals (harness): the Confirm page's own Stripe CSP marker  | MERGE_PENDING | 1 | 46 min | 04:47Z |  |
+| T493 | portals (harness): the Confirm page's own Stripe CSP marker  | check_failed | 1 | 46 min | 04:47Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z | session ended without handing in; the last pre-hand-in gate before it: runner smoke red on 3cfe0b2b62c7 (bash scripts/sm |
 | T494 | portals: the Confirm route's $0 free-first-win decision from | MERGE_PENDING | 1 | 29 min | 04:31Z |  |
 | T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | done | 1 | 31 min | 04:26Z |  |
@@ -81,7 +81,6 @@ Updated 2026-11-15T04:57:46Z by runner 5d135dbe531e (actions).
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 51 min | 06:02Z |  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 3 | 22 min | 05:44Z |  |
 | T393 | portals and licensing: the served quote page's cards show ea | done | 1 | 74 min | 05:40Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
