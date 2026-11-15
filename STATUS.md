@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-15T06:16:35Z by runner 81fcd8677b94 (actions).
+Updated 2026-11-15T06:16:58Z by runner 81fcd8677b94 (actions).
 
-**Building: T493 in progress since 05:25Z; 344 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 06:16Z; 344 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 344 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T493 claimed 05:25Z, lease until 08:25Z
+- **Lane:** idle since 06:16Z (no task in progress)
 - **Week:** 57% used, 78.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:11Z, 5 min before this update
 - **Keeper:** last ran 06:11Z, next wake 08:28Z
@@ -19,8 +19,9 @@ Updated 2026-11-15T06:16:35Z by runner 81fcd8677b94 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T493 | portals (harness): the Confirm page's own Stripe CSP marker  | MERGE_PENDING | 2 | 50 min | 06:16Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T461 | server: business sign-up's service area, email code and acti | BLOCKED | 3 | 49 min | 06:10Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
-| T493 | portals (harness): the Confirm page's own Stripe CSP marker  | check_failed | 1 | 46 min | 04:47Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
+| T493 | portals (harness): the Confirm page's own Stripe CSP marker  | check_failed | 1 | 46 min | 04:47Z |  |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z |  |
 | T494 | portals: the Confirm route's $0 free-first-win decision from | done | 1 | 29 min | 04:31Z |  |
 | T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | done | 1 | 31 min | 04:26Z |  |
@@ -143,7 +144,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T493 (lease until 2026-11-15T08:25:39Z)
 
 ## Last usage reading
-- {"task": "T461", "at": "2026-11-15T06:10:13Z", "cache_creation_input_tokens": 235714, "output_tokens": 66098, "input_tokens": 230, "cache_read_input_tokens": 13568811}
+- {"task": "T493", "at": "2026-11-15T06:16:34Z", "cache_creation_input_tokens": 128799, "input_tokens": 97, "cache_read_input_tokens": 1481731, "output_tokens": 21545}
