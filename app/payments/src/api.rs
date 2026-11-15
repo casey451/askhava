@@ -101,6 +101,7 @@
 //! pick's payment was 3-D Secure authenticated; [`three_ds_authenticated`] is `true` only for a
 //! stored `true` (FEE-050, FEE-027).
 
+pub use crate::card_list::{CardOnFile, saved_cards};
 pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, CHARGE_FEE_MISMATCH_ALERT, IN_FLIGHT, INTENT_ACTION,
     IntentStripe, confirm_and_pay, open_intent, set_fee_limit,
