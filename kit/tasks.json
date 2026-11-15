@@ -17948,7 +17948,7 @@
    "id": "T498",
    "slug": "doc-efficiency-audit",
    "title": "Documentation efficiency audit: inventory, measure and plan (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). After the stage-5 cleanup, inventory every document a future session or Casey reads for upkeep (root and crate `CLAUDE.md`, `app/*/NOTES.md`, `docs/` except `docs/design/` assets, `docs/spec/` and `docs/catalog/`, which hold product rules and change only by plan change, and `sources/`, which never changes). For each: bytes, estimated tokens, who reads it, when, and through which pointer (`CLAUDE.md`, `docs/ai-operating-manual.md`, `docs/code-docs.md`, the prompt template); then its duplication (the same fact in two places), superseded or stale content, wording that can be shorter with nothing lost, and anything missing that a cold session would need. Read big files by grep and line range, never whole. Write `docs/reviews/doc-efficiency-plan.md`: one row per file with its measurements and its planned change and owner task (T499 to T511), the digest's area list for T500 to T503, the baseline token cost of the cold-start reading path (the files `CLAUDE.md` and the manual send a fresh session to) for T171 to compare, and the size budgets T511 will set. No other file changes.",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). After the stage-5 cleanup, inventory every document a future session or Casey reads for upkeep: root and crate `CLAUDE.md`, `app/*/NOTES.md`, and `docs/`, except `docs/design/` assets, `docs/spec/` and `docs/catalog/` (product rules, changed only by plan change) and `sources/` (never changes). For each: bytes, estimated tokens, who reads it and when, and through which pointer (`CLAUDE.md`, `docs/ai-operating-manual.md`, `docs/code-docs.md`, the prompt template); its duplication, superseded or stale content, wording that can be shorter with nothing lost, anything a cold session would miss, and its lines cited elsewhere as `path:N` (those stay fixed). Read big files by grep and line range, never whole. Write `docs/reviews/doc-efficiency-plan.md`: one row per file with measurements, planned change and owner task (T499 to T514), the digest's area list for T500 to T506, the cold-start reading path's token cost as T171's baseline, and the size budgets T514 sets. No other file changes.",
    "type": "audit",
    "phase": 1,
    "stage": "5",
@@ -17990,13 +17990,13 @@
    ],
    "branch": "claude/task/T498-doc-efficiency-audit",
    "prompt": "kit/prompts/T498.md",
-   "acceptance": "`docs/reviews/doc-efficiency-plan.md` has a row for every upkeep document with bytes, tokens, readers, pointer and planned change naming its task; the digest areas; the cold-start baseline; proposed size budgets. No other file changed."
+   "acceptance": "`docs/reviews/doc-efficiency-plan.md` has a row for every upkeep document with bytes, tokens, readers, pointer, cited lines and planned change naming its task; the digest areas; the cold-start baseline; proposed size budgets. No other file changed."
   },
   {
    "id": "T499",
    "slug": "doc-compaction-tools",
    "title": "Docs tooling (harness): lossless compaction check, decision-digest check, writing standard",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Following the precedents of `scripts/split_crate_doc.py --verify` (D-3474) and `scripts/split_arch_notes.py --verify` (D-3620): (1) `scripts/check_doc_compaction.py --base REF --map FILE`: for every file named in the map, each line present at REF and gone or changed now must be listed in the map (by its SHA-256) with the files that now hold it, and every fact token of the old line (requirement, TD-, D- and task IDs, paths, backticked names, numbers and amounts, quoted text) must appear in those files; a byte-identical move (`moves`: old path to new path) passes when the bytes match; a map entry for a line that was not removed, or a target that does not exist, fails. (2) `scripts/check_decision_digest.py [--through D-####]`: every `- **D-####**` entry of `docs/decisions.md` up to the number (all when omitted) appears exactly once in `docs/decisions-current.md`, as a rule line `- D-#### (area) text` of at most 300 characters, as `D-#### -> D-####` under `## Superseded` (every pair in `kit/superseded_decisions.json` listed, and no successor itself superseded without saying so), or in a grouped line under `## Task-scoped` (`- T###: D-####, D-####`, for decisions about how one task was built, reachable through its `(task NNN)` NOTES lines); no unknown or doubled number; entries above `--through` are reported as pending, not failed. Both standard-library Python, under 50-line functions, with tests in `tests/test_check_doc_compaction.py` and `tests/test_check_decision_digest.py` (each failure case and a passing case). (3) `docs/code-docs.md` gains a short writing standard: say a fact once, in the shortest clear form, where its reader looks first; link, don't repeat; keep IDs and cited lines stable; and the size budgets T511 adds. Rewrite `kit/plan.lock`.",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Following `scripts/split_crate_doc.py --verify` (D-3474) and `scripts/split_arch_notes.py --verify` (D-3620). (1) `scripts/check_doc_compaction.py --map FILE [--base REF]`, standard-library Python. The map records `base` (the SHA it was made against, the default REF). For every file the map names, each line present at the base and gone or changed now must be listed (by SHA-256) with targets `path:start-end` that exist now. Each fact token of the old line must appear inside those ranges, not merely somewhere in the file. Fact tokens are requirement, TD-, D- and task IDs, paths, backticked names, numbers and amounts, quoted text, and the words never, not, no, only, must, may, unless, except, before and after. A line with no fact tokens needs a target range sharing at least 60% of its content words. A byte-identical move (`moves`: old path to new path) passes when the bytes match. A map entry for a line that was not removed fails. Across the whole tree, any backticked `path:N` or `path:N-M` cited outside `docs/decisions.md` (spec `Source:` lines, `kit/tasks.json`, crate `CLAUDE.md`, `docs/test-design.md` and the rest) whose text at those lines differs from the base fails. (2) `scripts/check_decision_digest.py [--through D-####]`: every `- **D-####**` entry of `docs/decisions.md` up to the number (all when omitted) is counted exactly once in `docs/decisions-current.md`. Only these count: a rule line's leading numbers (`- D-a[, D-b] (area) text`, the text at most 300 characters); the left side of a `D-a -> D-b` pair under `## Superseded` (every pair in `kit/superseded_decisions.json` listed); the numbers on a `- T###: D-a, D-b` line under `## Task-scoped` (each T### must exist in `kit/tasks.json`). An unknown or doubled number fails; entries above `--through` are reported as pending, not failed. (3) Tests in `tests/test_check_doc_compaction.py` and `tests/test_check_decision_digest.py`: each failure above, including a tokenless deletion, a token found only outside its range, a changed cited line and a missing task ID, plus a passing case. (4) A `Ci` step runs `check_doc_compaction.py` on every map under `docs/reviews/doc-maps/` that the pull request adds or changes, against the base recorded in that map, so a merged map never breaks later runs. (5) `docs/code-docs.md` gains a short writing standard: say a fact once, in the shortest clear form, where its reader looks first; link, don't repeat; keep IDs and cited lines stable; respect the size budgets T514 adds. Rewrite `kit/plan.lock`; the new scripts are covered by its `scripts/*.py` glob.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -18013,7 +18013,8 @@
     "scripts/check_decision_digest.py",
     "tests/test_check_doc_compaction.py",
     "tests/test_check_decision_digest.py",
-    "docs/code-docs.md"
+    "docs/code-docs.md",
+    ".github/workflows/ci.yml"
    ],
    "reads": [
     "docs/reviews/doc-efficiency-plan.md",
@@ -18031,9 +18032,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 6,
     "lines": 600,
-    "context_pct": 8
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -18042,13 +18043,13 @@
    ],
    "branch": "claude/task/T499-doc-compaction-tools",
    "prompt": "kit/prompts/T499.md",
-   "acceptance": "Both scripts pass their tests (`python3 -m pytest tests/test_check_doc_compaction.py tests/test_check_decision_digest.py`), including a lost-token case and a doubled-number case that fail; `docs/code-docs.md` has the writing standard; every other check passes unchanged."
+   "acceptance": "Both scripts pass their tests (`python3 -m pytest tests/test_check_doc_compaction.py tests/test_check_decision_digest.py`), every listed failure case failing; the `Ci` step runs on a pull request with a map; `docs/code-docs.md` has the writing standard; every other check passes unchanged."
   },
   {
    "id": "T500",
    "slug": "decision-digest-d-0001",
-   "title": "Decisions digest D-0001 to D-0999 (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). `docs/decisions.md` (about 3.5 MB, append-only, the audit trail) stays whole; this task writes the reader layer over it: `docs/decisions-current.md`, created here with a header naming the highest number covered (`Through D-####`), one `## <area>` section per area from `docs/reviews/doc-efficiency-plan.md`, then `## Superseded` and `## Task-scoped`, for the entries D-0001 to D-0999. Each entry still in force that sets a rule a later change must respect gets one rule line under its area, at most 300 characters, citing the number (a later decision that refines it goes on the same line); a reversed or replaced one goes under `## Superseded` with its successor, and its pair is added to `kit/superseded_decisions.json` when missing; one about how a single task was built goes under `## Task-scoped`. Read the log by grep and line range in chunks (`grep -n '^- \\*\\*D-1' docs/decisions.md | cut -c1-4000`), never whole. Lines from earlier pieces are kept; the header moves to the last number covered. ",
+   "title": "Decisions digest D-0001 to D-0619 (D-3856)",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). `docs/decisions.md` (about 3.5 MB, append-only, the audit trail) stays whole; this task writes part of the reader layer over it, `docs/decisions-current.md`, created here with a header naming the highest number covered (`Through D-####`), one `## <area>` section per area from `docs/reviews/doc-efficiency-plan.md`, then `## Superseded` and `## Task-scoped`. It covers the entries D-0001 to D-0619, a reading load of about 589 KB of `docs/decisions.md` (measured Nov 15, 2026). Each entry still in force that sets a rule a later change must respect gets one rule line under its area (`- D-a[, D-b] (area) text`, at most 300 characters; a later decision that refines it goes on the same line); a reversed or replaced one goes under `## Superseded` as `D-a -> D-b`, with the pair added to `kit/superseded_decisions.json` when missing; one about how a single task was built goes on that task's `- T###: D-a, D-b` line under `## Task-scoped`. Read the log by grep and line range in chunks (`grep -n '^- \\*\\*D-' docs/decisions.md | cut -c1-4000`), never whole. Lines from earlier pieces are kept; the header moves to the last number covered.",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -18089,13 +18090,13 @@
    ],
    "branch": "claude/task/T500-decision-digest-d-0001",
    "prompt": "kit/prompts/T500.md",
-   "acceptance": "`python3 scripts/check_decision_digest.py --through D-0999` passes; every superseded pair in `kit/superseded_decisions.json` is listed; `python3 scripts/gen_prompts.py --check` passes after regeneration; Opus review samples at least 30 rule lines against their entries and finds none that changes a choice."
+   "acceptance": "`python3 scripts/check_decision_digest.py --through D-0619` passes; `python3 scripts/gen_prompts.py --check` passes after regeneration; the Opus review samples at least 30 rule lines and 30 task-scoped entries against their entries, finds none that misstates a choice, and checks every pair this task added to `kit/superseded_decisions.json`."
   },
   {
    "id": "T501",
-   "slug": "decision-digest-d-1000",
-   "title": "Decisions digest D-1000 to D-1999 (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). `docs/decisions.md` (about 3.5 MB, append-only, the audit trail) stays whole; this task writes the reader layer over it: `docs/decisions-current.md`, for the entries D-1000 to D-1999. Each entry still in force that sets a rule a later change must respect gets one rule line under its area, at most 300 characters, citing the number (a later decision that refines it goes on the same line); a reversed or replaced one goes under `## Superseded` with its successor, and its pair is added to `kit/superseded_decisions.json` when missing; one about how a single task was built goes under `## Task-scoped`. Read the log by grep and line range in chunks (`grep -n '^- \\*\\*D-1' docs/decisions.md | cut -c1-4000`), never whole. Lines from earlier pieces are kept; the header moves to the last number covered. ",
+   "slug": "decision-digest-d-0620",
+   "title": "Decisions digest D-0620 to D-1316 (D-3856)",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). `docs/decisions.md` (about 3.5 MB, append-only, the audit trail) stays whole; this task writes part of the reader layer over it, `docs/decisions-current.md`. It covers the entries D-0620 to D-1316, a reading load of about 583 KB of `docs/decisions.md` (measured Nov 15, 2026). Each entry still in force that sets a rule a later change must respect gets one rule line under its area (`- D-a[, D-b] (area) text`, at most 300 characters; a later decision that refines it goes on the same line); a reversed or replaced one goes under `## Superseded` as `D-a -> D-b`, with the pair added to `kit/superseded_decisions.json` when missing; one about how a single task was built goes on that task's `- T###: D-a, D-b` line under `## Task-scoped`. Read the log by grep and line range in chunks (`grep -n '^- \\*\\*D-' docs/decisions.md | cut -c1-4000`), never whole. Lines from earlier pieces are kept; the header moves to the last number covered.",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -18134,15 +18135,15 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T501-decision-digest-d-1000",
+   "branch": "claude/task/T501-decision-digest-d-0620",
    "prompt": "kit/prompts/T501.md",
-   "acceptance": "`python3 scripts/check_decision_digest.py --through D-1999` passes; every superseded pair in `kit/superseded_decisions.json` is listed; `python3 scripts/gen_prompts.py --check` passes after regeneration; Opus review samples at least 30 rule lines against their entries and finds none that changes a choice."
+   "acceptance": "`python3 scripts/check_decision_digest.py --through D-1316` passes; `python3 scripts/gen_prompts.py --check` passes after regeneration; the Opus review samples at least 30 rule lines and 30 task-scoped entries against their entries, finds none that misstates a choice, and checks every pair this task added to `kit/superseded_decisions.json`."
   },
   {
    "id": "T502",
-   "slug": "decision-digest-d-2000",
-   "title": "Decisions digest D-2000 to D-3199 (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). `docs/decisions.md` (about 3.5 MB, append-only, the audit trail) stays whole; this task writes the reader layer over it: `docs/decisions-current.md`, for the entries D-2000 to D-3199. Each entry still in force that sets a rule a later change must respect gets one rule line under its area, at most 300 characters, citing the number (a later decision that refines it goes on the same line); a reversed or replaced one goes under `## Superseded` with its successor, and its pair is added to `kit/superseded_decisions.json` when missing; one about how a single task was built goes under `## Task-scoped`. Read the log by grep and line range in chunks (`grep -n '^- \\*\\*D-1' docs/decisions.md | cut -c1-4000`), never whole. Lines from earlier pieces are kept; the header moves to the last number covered. ",
+   "slug": "decision-digest-d-1317",
+   "title": "Decisions digest D-1317 to D-2012 (D-3856)",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). `docs/decisions.md` (about 3.5 MB, append-only, the audit trail) stays whole; this task writes part of the reader layer over it, `docs/decisions-current.md`. It covers the entries D-1317 to D-2012, a reading load of about 588 KB of `docs/decisions.md` (measured Nov 15, 2026). Each entry still in force that sets a rule a later change must respect gets one rule line under its area (`- D-a[, D-b] (area) text`, at most 300 characters; a later decision that refines it goes on the same line); a reversed or replaced one goes under `## Superseded` as `D-a -> D-b`, with the pair added to `kit/superseded_decisions.json` when missing; one about how a single task was built goes on that task's `- T###: D-a, D-b` line under `## Task-scoped`. Read the log by grep and line range in chunks (`grep -n '^- \\*\\*D-' docs/decisions.md | cut -c1-4000`), never whole. Lines from earlier pieces are kept; the header moves to the last number covered.",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -18181,15 +18182,15 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T502-decision-digest-d-2000",
+   "branch": "claude/task/T502-decision-digest-d-1317",
    "prompt": "kit/prompts/T502.md",
-   "acceptance": "`python3 scripts/check_decision_digest.py --through D-3199` passes; every superseded pair in `kit/superseded_decisions.json` is listed; `python3 scripts/gen_prompts.py --check` passes after regeneration; Opus review samples at least 30 rule lines against their entries and finds none that changes a choice."
+   "acceptance": "`python3 scripts/check_decision_digest.py --through D-2012` passes; `python3 scripts/gen_prompts.py --check` passes after regeneration; the Opus review samples at least 30 rule lines and 30 task-scoped entries against their entries, finds none that misstates a choice, and checks every pair this task added to `kit/superseded_decisions.json`."
   },
   {
    "id": "T503",
-   "slug": "decision-digest-d-3200",
-   "title": "Decisions digest D-3200 to the last entry on main (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). `docs/decisions.md` (about 3.5 MB, append-only, the audit trail) stays whole; this task writes the reader layer over it: `docs/decisions-current.md`, for the entries D-3200 to the last entry on `main` when the task starts. Each entry still in force that sets a rule a later change must respect gets one rule line under its area, at most 300 characters, citing the number (a later decision that refines it goes on the same line); a reversed or replaced one goes under `## Superseded` with its successor, and its pair is added to `kit/superseded_decisions.json` when missing; one about how a single task was built goes under `## Task-scoped`. Read the log by grep and line range in chunks (`grep -n '^- \\*\\*D-1' docs/decisions.md | cut -c1-4000`), never whole. Lines from earlier pieces are kept; the header moves to the last number covered. When done, `CLAUDE.md`'s pointer is T511's; this piece only completes the digest. ",
+   "slug": "decision-digest-d-2013",
+   "title": "Decisions digest D-2013 to D-3029 (D-3856)",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). `docs/decisions.md` (about 3.5 MB, append-only, the audit trail) stays whole; this task writes part of the reader layer over it, `docs/decisions-current.md`. It covers the entries D-2013 to D-3029, a reading load of about 589 KB of `docs/decisions.md` (measured Nov 15, 2026). Each entry still in force that sets a rule a later change must respect gets one rule line under its area (`- D-a[, D-b] (area) text`, at most 300 characters; a later decision that refines it goes on the same line); a reversed or replaced one goes under `## Superseded` as `D-a -> D-b`, with the pair added to `kit/superseded_decisions.json` when missing; one about how a single task was built goes on that task's `- T###: D-a, D-b` line under `## Task-scoped`. Read the log by grep and line range in chunks (`grep -n '^- \\*\\*D-' docs/decisions.md | cut -c1-4000`), never whole. Lines from earlier pieces are kept; the header moves to the last number covered.",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -18228,15 +18229,156 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T503-decision-digest-d-3200",
+   "branch": "claude/task/T503-decision-digest-d-2013",
    "prompt": "kit/prompts/T503.md",
-   "acceptance": "`python3 scripts/check_decision_digest.py` passes with no number pending; every superseded pair in `kit/superseded_decisions.json` is listed; `python3 scripts/gen_prompts.py --check` passes after regeneration; Opus review samples at least 30 rule lines against their entries and finds none that changes a choice."
+   "acceptance": "`python3 scripts/check_decision_digest.py --through D-3029` passes; `python3 scripts/gen_prompts.py --check` passes after regeneration; the Opus review samples at least 30 rule lines and 30 task-scoped entries against their entries, finds none that misstates a choice, and checks every pair this task added to `kit/superseded_decisions.json`."
   },
   {
    "id": "T504",
+   "slug": "decision-digest-d-3030",
+   "title": "Decisions digest D-3030 to D-3299 (D-3856)",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). `docs/decisions.md` (about 3.5 MB, append-only, the audit trail) stays whole; this task writes part of the reader layer over it, `docs/decisions-current.md`. It covers the entries D-3030 to D-3299, a reading load of about 482 KB of `docs/decisions.md` (measured Nov 15, 2026). Each entry still in force that sets a rule a later change must respect gets one rule line under its area (`- D-a[, D-b] (area) text`, at most 300 characters; a later decision that refines it goes on the same line); a reversed or replaced one goes under `## Superseded` as `D-a -> D-b`, with the pair added to `kit/superseded_decisions.json` when missing; one about how a single task was built goes on that task's `- T###: D-a, D-b` line under `## Task-scoped`. Read the log by grep and line range in chunks (`grep -n '^- \\*\\*D-' docs/decisions.md | cut -c1-4000`), never whole. Lines from earlier pieces are kept; the header moves to the last number covered.",
+   "type": "docs",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T503"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "docs/decisions-current.md",
+    "kit/superseded_decisions.json"
+   ],
+   "reads": [
+    "docs/reviews/doc-efficiency-plan.md",
+    "docs/code-docs.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-3856",
+    "D-3474",
+    "D-3620",
+    "D-3805"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 800,
+    "context_pct": 1
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T504-decision-digest-d-3030",
+   "prompt": "kit/prompts/T504.md",
+   "acceptance": "`python3 scripts/check_decision_digest.py --through D-3299` passes; `python3 scripts/gen_prompts.py --check` passes after regeneration; the Opus review samples at least 30 rule lines and 30 task-scoped entries against their entries, finds none that misstates a choice, and checks every pair this task added to `kit/superseded_decisions.json`."
+  },
+  {
+   "id": "T505",
+   "slug": "decision-digest-d-3300",
+   "title": "Decisions digest D-3300 to D-3599 (D-3856)",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). `docs/decisions.md` (about 3.5 MB, append-only, the audit trail) stays whole; this task writes part of the reader layer over it, `docs/decisions-current.md`. It covers the entries D-3300 to D-3599, a reading load of about 358 KB of `docs/decisions.md` (measured Nov 15, 2026). Each entry still in force that sets a rule a later change must respect gets one rule line under its area (`- D-a[, D-b] (area) text`, at most 300 characters; a later decision that refines it goes on the same line); a reversed or replaced one goes under `## Superseded` as `D-a -> D-b`, with the pair added to `kit/superseded_decisions.json` when missing; one about how a single task was built goes on that task's `- T###: D-a, D-b` line under `## Task-scoped`. Read the log by grep and line range in chunks (`grep -n '^- \\*\\*D-' docs/decisions.md | cut -c1-4000`), never whole. Lines from earlier pieces are kept; the header moves to the last number covered.",
+   "type": "docs",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T504"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "docs/decisions-current.md",
+    "kit/superseded_decisions.json"
+   ],
+   "reads": [
+    "docs/reviews/doc-efficiency-plan.md",
+    "docs/code-docs.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-3856",
+    "D-3474",
+    "D-3620",
+    "D-3805"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 800,
+    "context_pct": 1
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T505-decision-digest-d-3300",
+   "prompt": "kit/prompts/T505.md",
+   "acceptance": "`python3 scripts/check_decision_digest.py --through D-3599` passes; `python3 scripts/gen_prompts.py --check` passes after regeneration; the Opus review samples at least 30 rule lines and 30 task-scoped entries against their entries, finds none that misstates a choice, and checks every pair this task added to `kit/superseded_decisions.json`."
+  },
+  {
+   "id": "T506",
+   "slug": "decision-digest-d-3600",
+   "title": "Decisions digest D-3600 to the end (D-3856)",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). `docs/decisions.md` (about 3.5 MB, append-only, the audit trail) stays whole; this task writes part of the reader layer over it, `docs/decisions-current.md`. It covers the entries D-3600 to the last entry on `main` when the task starts, a reading load of about 305 KB of `docs/decisions.md` on Nov 15, 2026, plus the entries added before it starts; if that passes about 600 KB, it covers through the last number that fits and records the rest as pending for T142. Each entry still in force that sets a rule a later change must respect gets one rule line under its area (`- D-a[, D-b] (area) text`, at most 300 characters; a later decision that refines it goes on the same line); a reversed or replaced one goes under `## Superseded` as `D-a -> D-b`, with the pair added to `kit/superseded_decisions.json` when missing; one about how a single task was built goes on that task's `- T###: D-a, D-b` line under `## Task-scoped`. Read the log by grep and line range in chunks (`grep -n '^- \\*\\*D-' docs/decisions.md | cut -c1-4000`), never whole. Lines from earlier pieces are kept; the header moves to the last number covered.",
+   "type": "docs",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T505"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "docs/decisions-current.md",
+    "kit/superseded_decisions.json"
+   ],
+   "reads": [
+    "docs/reviews/doc-efficiency-plan.md",
+    "docs/code-docs.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-3856",
+    "D-3474",
+    "D-3620",
+    "D-3805"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 800,
+    "context_pct": 1
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T506-decision-digest-d-3600",
+   "prompt": "kit/prompts/T506.md",
+   "acceptance": "`python3 scripts/check_decision_digest.py` passes, with any number left pending listed for T142; `python3 scripts/gen_prompts.py --check` passes after regeneration; the Opus review samples at least 30 rule lines and 30 task-scoped entries against their entries, finds none that misstates a choice, and checks every pair this task added to `kit/superseded_decisions.json`."
+  },
+  {
+   "id": "T507",
    "slug": "notes-compact-payments-portals",
    "title": "Crate notes compacted: payments, portals (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Compact the crate notes of `payments`, `portals` (`app/<crate>/NOTES.md`, and each crate's shared `CLAUDE.md`, which stays within `docs/code-docs.md` section 2's limits): one entry per fact, a superseded fact folded into the line that replaced it, `(task NNN)` build notes that repeat a `rules` or `owns` line merged into it, wording cut to the shortest clear form, entry shape and the `(task NNN)` tags unchanged so `grep -n '(task 250)' app/*/NOTES.md` still finds every note. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --base <the branch's merge base> --map `docs/reviews/doc-maps/T504.json`` passes, so every removed or rewritten line maps to where its content now lives with every fact token kept (requirement, TD-, D- and task IDs, paths, backticked names, numbers and amounts, quoted text); lines not worth changing stay byte-identical. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Compact the crate notes of `payments`, `portals` (`app/<crate>/NOTES.md`, and each crate's shared `CLAUDE.md`, which stays within `docs/code-docs.md` section 2's limits): one entry per fact, a superseded fact folded into the line that replaced it, `(task NNN)` build notes that repeat a `rules` or `owns` line merged into it, wording cut to the shortest clear form; the entry shape and the `(task NNN)` tags stay, so `grep -n '(task 250)' app/*/NOTES.md` still finds every note. A crate `CLAUDE.md` line cited elsewhere as `path:N` keeps its number and text. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --map `docs/reviews/doc-maps/T507.json`` passes (the map records its base SHA), so every removed or rewritten line maps to a line range that now holds its content, every fact token kept inside that range; lines not worth changing stay byte-identical. No backticked `path:N` cited outside `docs/decisions.md` changes its text at line N. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -18254,7 +18396,7 @@
    "owns": [
     "app/payments/NOTES.md",
     "app/portals/NOTES.md",
-    "docs/reviews/doc-maps/T504.json"
+    "docs/reviews/doc-maps/T507.json"
    ],
    "reads": [
     "docs/reviews/doc-efficiency-plan.md"
@@ -18278,15 +18420,15 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T504-notes-compact-payments-portals",
-   "prompt": "kit/prompts/T504.md",
-   "acceptance": "`python3 scripts/check_doc_compaction.py --base origin/main --map docs/reviews/doc-maps/T504.json` passes; `python3 scripts/check_code_docs.py` passes; the crates' notes are smaller by the amount the plan expects or the map's `left` field says why not."
+   "branch": "claude/task/T507-notes-compact-payments-portals",
+   "prompt": "kit/prompts/T507.md",
+   "acceptance": "`python3 scripts/check_doc_compaction.py --map docs/reviews/doc-maps/T507.json` passes; `python3 scripts/check_code_docs.py` passes; the notes shrink by what the plan expects, or the map's `left` field says why not."
   },
   {
-   "id": "T505",
+   "id": "T508",
    "slug": "notes-compact-businesses-intake-picks",
    "title": "Crate notes compacted: businesses, intake, picks (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Compact the crate notes of `businesses`, `intake`, `picks` (`app/<crate>/NOTES.md`, and each crate's shared `CLAUDE.md`, which stays within `docs/code-docs.md` section 2's limits): one entry per fact, a superseded fact folded into the line that replaced it, `(task NNN)` build notes that repeat a `rules` or `owns` line merged into it, wording cut to the shortest clear form, entry shape and the `(task NNN)` tags unchanged so `grep -n '(task 250)' app/*/NOTES.md` still finds every note. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --base <the branch's merge base> --map `docs/reviews/doc-maps/T505.json`` passes, so every removed or rewritten line maps to where its content now lives with every fact token kept (requirement, TD-, D- and task IDs, paths, backticked names, numbers and amounts, quoted text); lines not worth changing stay byte-identical. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Compact the crate notes of `businesses`, `intake`, `picks` (`app/<crate>/NOTES.md`, and each crate's shared `CLAUDE.md`, which stays within `docs/code-docs.md` section 2's limits): one entry per fact, a superseded fact folded into the line that replaced it, `(task NNN)` build notes that repeat a `rules` or `owns` line merged into it, wording cut to the shortest clear form; the entry shape and the `(task NNN)` tags stay, so `grep -n '(task 250)' app/*/NOTES.md` still finds every note. A crate `CLAUDE.md` line cited elsewhere as `path:N` keeps its number and text. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --map `docs/reviews/doc-maps/T508.json`` passes (the map records its base SHA), so every removed or rewritten line maps to a line range that now holds its content, every fact token kept inside that range; lines not worth changing stay byte-identical. No backticked `path:N` cited outside `docs/decisions.md` changes its text at line N. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -18304,7 +18446,7 @@
     "app/businesses/NOTES.md",
     "app/intake/NOTES.md",
     "app/picks/NOTES.md",
-    "docs/reviews/doc-maps/T505.json"
+    "docs/reviews/doc-maps/T508.json"
    ],
    "reads": [
     "docs/reviews/doc-efficiency-plan.md"
@@ -18328,15 +18470,15 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T505-notes-compact-businesses-intake-picks",
-   "prompt": "kit/prompts/T505.md",
-   "acceptance": "`python3 scripts/check_doc_compaction.py --base origin/main --map docs/reviews/doc-maps/T505.json` passes; `python3 scripts/check_code_docs.py` passes; the crates' notes are smaller by the amount the plan expects or the map's `left` field says why not."
+   "branch": "claude/task/T508-notes-compact-businesses-intake-picks",
+   "prompt": "kit/prompts/T508.md",
+   "acceptance": "`python3 scripts/check_doc_compaction.py --map docs/reviews/doc-maps/T508.json` passes; `python3 scripts/check_code_docs.py` passes; the notes shrink by what the plan expects, or the map's `left` field says why not."
   },
   {
-   "id": "T506",
+   "id": "T509",
    "slug": "notes-compact-quotes-messaging-server",
    "title": "Crate notes compacted: quotes, messaging, server (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Compact the crate notes of `quotes`, `messaging`, `server` (`app/<crate>/NOTES.md`, and each crate's shared `CLAUDE.md`, which stays within `docs/code-docs.md` section 2's limits): one entry per fact, a superseded fact folded into the line that replaced it, `(task NNN)` build notes that repeat a `rules` or `owns` line merged into it, wording cut to the shortest clear form, entry shape and the `(task NNN)` tags unchanged so `grep -n '(task 250)' app/*/NOTES.md` still finds every note. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --base <the branch's merge base> --map `docs/reviews/doc-maps/T506.json`` passes, so every removed or rewritten line maps to where its content now lives with every fact token kept (requirement, TD-, D- and task IDs, paths, backticked names, numbers and amounts, quoted text); lines not worth changing stay byte-identical. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Compact the crate notes of `quotes`, `messaging`, `server` (`app/<crate>/NOTES.md`, and each crate's shared `CLAUDE.md`, which stays within `docs/code-docs.md` section 2's limits): one entry per fact, a superseded fact folded into the line that replaced it, `(task NNN)` build notes that repeat a `rules` or `owns` line merged into it, wording cut to the shortest clear form; the entry shape and the `(task NNN)` tags stay, so `grep -n '(task 250)' app/*/NOTES.md` still finds every note. A crate `CLAUDE.md` line cited elsewhere as `path:N` keeps its number and text. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --map `docs/reviews/doc-maps/T509.json`` passes (the map records its base SHA), so every removed or rewritten line maps to a line range that now holds its content, every fact token kept inside that range; lines not worth changing stay byte-identical. No backticked `path:N` cited outside `docs/decisions.md` changes its text at line N. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -18352,7 +18494,7 @@
     "app/quotes/NOTES.md",
     "app/messaging/NOTES.md",
     "app/server/NOTES.md",
-    "docs/reviews/doc-maps/T506.json"
+    "docs/reviews/doc-maps/T509.json"
    ],
    "reads": [
     "docs/reviews/doc-efficiency-plan.md"
@@ -18376,15 +18518,15 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T506-notes-compact-quotes-messaging-server",
-   "prompt": "kit/prompts/T506.md",
-   "acceptance": "`python3 scripts/check_doc_compaction.py --base origin/main --map docs/reviews/doc-maps/T506.json` passes; `python3 scripts/check_code_docs.py` passes; the crates' notes are smaller by the amount the plan expects or the map's `left` field says why not."
+   "branch": "claude/task/T509-notes-compact-quotes-messaging-server",
+   "prompt": "kit/prompts/T509.md",
+   "acceptance": "`python3 scripts/check_doc_compaction.py --map docs/reviews/doc-maps/T509.json` passes; `python3 scripts/check_code_docs.py` passes; the notes shrink by what the plan expects, or the map's `left` field says why not."
   },
   {
-   "id": "T507",
+   "id": "T510",
    "slug": "notes-compact-other-crates",
    "title": "Crate notes compacted: licensing, privacy, calls, jobs, core, adapters, ai, ops, catalog, site (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Compact the crate notes of `licensing`, `privacy`, `calls`, `jobs`, `core`, `adapters`, `ai`, `ops`, `catalog`, `site` (`app/<crate>/NOTES.md`, and each crate's shared `CLAUDE.md`, which stays within `docs/code-docs.md` section 2's limits): one entry per fact, a superseded fact folded into the line that replaced it, `(task NNN)` build notes that repeat a `rules` or `owns` line merged into it, wording cut to the shortest clear form, entry shape and the `(task NNN)` tags unchanged so `grep -n '(task 250)' app/*/NOTES.md` still finds every note. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --base <the branch's merge base> --map `docs/reviews/doc-maps/T507.json`` passes, so every removed or rewritten line maps to where its content now lives with every fact token kept (requirement, TD-, D- and task IDs, paths, backticked names, numbers and amounts, quoted text); lines not worth changing stay byte-identical. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Compact the crate notes of `licensing`, `privacy`, `calls`, `jobs`, `core`, `adapters`, `ai`, `ops`, `catalog`, `site` (`app/<crate>/NOTES.md`, and each crate's shared `CLAUDE.md`, which stays within `docs/code-docs.md` section 2's limits): one entry per fact, a superseded fact folded into the line that replaced it, `(task NNN)` build notes that repeat a `rules` or `owns` line merged into it, wording cut to the shortest clear form; the entry shape and the `(task NNN)` tags stay, so `grep -n '(task 250)' app/*/NOTES.md` still finds every note. A crate `CLAUDE.md` line cited elsewhere as `path:N` keeps its number and text. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --map `docs/reviews/doc-maps/T510.json`` passes (the map records its base SHA), so every removed or rewritten line maps to a line range that now holds its content, every fact token kept inside that range; lines not worth changing stay byte-identical. No backticked `path:N` cited outside `docs/decisions.md` changes its text at line N. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -18410,7 +18552,7 @@
     "app/ops/NOTES.md",
     "app/catalog/NOTES.md",
     "app/site/NOTES.md",
-    "docs/reviews/doc-maps/T507.json"
+    "docs/reviews/doc-maps/T510.json"
    ],
    "reads": [
     "docs/reviews/doc-efficiency-plan.md"
@@ -18434,15 +18576,15 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T507-notes-compact-other-crates",
-   "prompt": "kit/prompts/T507.md",
-   "acceptance": "`python3 scripts/check_doc_compaction.py --base origin/main --map docs/reviews/doc-maps/T507.json` passes; `python3 scripts/check_code_docs.py` passes; the crates' notes are smaller by the amount the plan expects or the map's `left` field says why not."
+   "branch": "claude/task/T510-notes-compact-other-crates",
+   "prompt": "kit/prompts/T510.md",
+   "acceptance": "`python3 scripts/check_doc_compaction.py --map docs/reviews/doc-maps/T510.json` passes; `python3 scripts/check_code_docs.py` passes; the notes shrink by what the plan expects, or the map's `left` field says why not."
   },
   {
-   "id": "T508",
-   "slug": "test-design-compact",
-   "title": "docs/test-design.md compacted, every ID and meaning unchanged (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Tighten `docs/test-design.md` (about 383 KB, pasted into prompts entry by entry): repeated preambles and restated rules become one statement and a link, each entry worded in the shortest form that keeps every step, value and expected result. Entry IDs, journey step numbers and the order of entries are unchanged, so `scripts/validate_tasks.py`, `scripts/trace_spec.py` and every prompt's pasted entries still resolve; regenerate prompts. A cleanup task because it owns a file over the docs context limit. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --base <the branch's merge base> --map `docs/reviews/doc-maps/T508.json`` passes, so every removed or rewritten line maps to where its content now lives with every fact token kept (requirement, TD-, D- and task IDs, paths, backticked names, numbers and amounts, quoted text); lines not worth changing stay byte-identical. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
+   "id": "T511",
+   "slug": "test-design-preambles",
+   "title": "docs/test-design.md: shared preambles compacted, entries and cited lines unchanged (D-3856)",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Only the shared preambles and section introductions of `docs/test-design.md` are tightened: a rule stated in several preambles is said once and linked. The test entries and journey steps are not reworded: prompts paste one entry at a time, so rewording them risks meaning for little gain. Its lines cited elsewhere (`kit/tasks.json` cites 17, `:28` to `:75`, `:418`, `:540`) keep their number and text, so no line is added or removed before the last cited line; shorten in place there and cut freely after it. Entry IDs and order are unchanged; regenerate prompts and rewrite `kit/plan.lock` (the file is locked). A cleanup task because the file alone is over the docs context limit. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --map `docs/reviews/doc-maps/T511.json`` passes (the map records its base SHA), so every removed or rewritten line maps to a line range that now holds its content, every fact token kept inside that range; lines not worth changing stay byte-identical. No backticked `path:N` cited outside `docs/decisions.md` changes its text at line N. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
    "type": "cleanup",
    "phase": 1,
    "stage": "5",
@@ -18456,7 +18598,7 @@
    "review_areas": [],
    "owns": [
     "docs/test-design.md",
-    "docs/reviews/doc-maps/T508.json"
+    "docs/reviews/doc-maps/T511.json"
    ],
    "reads": [
     "docs/reviews/doc-efficiency-plan.md"
@@ -18480,25 +18622,25 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T508-test-design-compact",
-   "prompt": "kit/prompts/T508.md",
-   "acceptance": "`python3 scripts/check_doc_compaction.py --base origin/main --map docs/reviews/doc-maps/T508.json` passes; `validate_tasks.py`, `trace_spec.py` and `gen_prompts.py --check` pass; the TD- and journey IDs before and after are the same set; Opus review confirms no test expectation changed."
+   "branch": "claude/task/T511-test-design-preambles",
+   "prompt": "kit/prompts/T511.md",
+   "acceptance": "`python3 scripts/check_doc_compaction.py --map docs/reviews/doc-maps/T511.json` passes; `validate_tasks.py`, `trace_spec.py`, `check_plan_lock.py` and `gen_prompts.py --check` pass; the TD- and journey entries are byte-identical; the Opus review confirms no test expectation changed."
   },
   {
-   "id": "T509",
+   "id": "T512",
    "slug": "guides-compact",
    "title": "Architecture notes, build notes, operating manual and owner guide compacted (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). After the crate notes: `docs/architecture.md` sections 7 to 12 (the shared file; sections 3 to 6 are locked and unchanged), `docs/build-notes.md`, `docs/ai-operating-manual.md` and `docs/owner-guide.md` (Casey's; plain words kept) lose what a crate `NOTES.md` or another of these already says (link to it instead), superseded statements, and wordiness; the manual's start routine points at `docs/decisions-current.md` for decisions in force. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --base <the branch's merge base> --map `docs/reviews/doc-maps/T509.json`` passes, so every removed or rewritten line maps to where its content now lives with every fact token kept (requirement, TD-, D- and task IDs, paths, backticked names, numbers and amounts, quoted text); lines not worth changing stay byte-identical. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). After the crate notes, these lose what a crate `NOTES.md` or another of them already says (link to it instead), superseded statements and wordiness: `docs/architecture.md` sections 7 to 12 (shared; locked sections 3 to 6 unchanged), `docs/build-notes.md`, `docs/ai-operating-manual.md` and `docs/owner-guide.md` (Casey's; plain words kept). The manual's start routine points at `docs/decisions-current.md` for the decisions in force. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --map `docs/reviews/doc-maps/T512.json`` passes (the map records its base SHA), so every removed or rewritten line maps to a line range that now holds its content, every fact token kept inside that range; lines not worth changing stay byte-identical. No backticked `path:N` cited outside `docs/decisions.md` changes its text at line N. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
    "type": "docs",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
     "T499",
-    "T504",
-    "T505",
-    "T506",
-    "T507"
+    "T507",
+    "T508",
+    "T509",
+    "T510"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18508,7 +18650,7 @@
     "docs/build-notes.md",
     "docs/ai-operating-manual.md",
     "docs/owner-guide.md",
-    "docs/reviews/doc-maps/T509.json"
+    "docs/reviews/doc-maps/T512.json"
    ],
    "reads": [
     "docs/reviews/doc-efficiency-plan.md",
@@ -18533,15 +18675,15 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T509-guides-compact",
-   "prompt": "kit/prompts/T509.md",
-   "acceptance": "`python3 scripts/check_doc_compaction.py --base origin/main --map docs/reviews/doc-maps/T509.json` passes (architecture sections 7 to 12 included in the map); `check_plan_lock.py` shows sections 3 to 6 unchanged; the owner guide keeps every section T123's acceptance names."
+   "branch": "claude/task/T512-guides-compact",
+   "prompt": "kit/prompts/T512.md",
+   "acceptance": "`python3 scripts/check_doc_compaction.py --map docs/reviews/doc-maps/T512.json` passes, with architecture sections 7 to 12 in the map; `check_plan_lock.py` shows sections 3 to 6 unchanged; the owner guide keeps every section T123's acceptance names."
   },
   {
-   "id": "T510",
+   "id": "T513",
    "slug": "brains-compact",
-   "title": "docs/brains reference guides compacted (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Tighten the reference guides in `docs/brains/` that tasks list as reads: repeated advice said once and linked, advice the spec or a crate guide now states replaced by the pointer, wording cut; file names unchanged so every task's `reads` still resolves. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --base <the branch's merge base> --map `docs/reviews/doc-maps/T510.json`` passes, so every removed or rewritten line maps to where its content now lives with every fact token kept (requirement, TD-, D- and task IDs, paths, backticked names, numbers and amounts, quoted text); lines not worth changing stay byte-identical. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
+   "title": "docs/brains reference guides compacted around their cited lines (D-3856)",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Tighten the reference guides in `docs/brains/`: repeated advice said once and linked, advice the spec or a crate guide now states replaced by a pointer, wording cut. File names stay, so every task's `reads` resolves. Spec `Source:` lines make 93 citations of 80 distinct `docs/brains/*.md:N` lines (`scripts/trace_spec.py` checks them) in nine of the twelve files. In those nine, no line is added or removed before the last cited line and cited lines stay byte-identical: shorten other lines in place there and cut freely after it. `README.md`, `operator.md` and `rust-production.md` are not cited and may be reorganized. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --map `docs/reviews/doc-maps/T513.json`` passes (the map records its base SHA), so every removed or rewritten line maps to a line range that now holds its content, every fact token kept inside that range; lines not worth changing stay byte-identical. No backticked `path:N` cited outside `docs/decisions.md` changes its text at line N. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is untouched. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. ",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -18566,7 +18708,7 @@
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md",
     "docs/brains/sms-compliance.md",
-    "docs/reviews/doc-maps/T510.json"
+    "docs/reviews/doc-maps/T513.json"
    ],
    "reads": [
     "docs/reviews/doc-efficiency-plan.md"
@@ -18590,24 +18732,24 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T510-brains-compact",
-   "prompt": "kit/prompts/T510.md",
-   "acceptance": "`python3 scripts/check_doc_compaction.py --base origin/main --map docs/reviews/doc-maps/T510.json` passes; `validate_tasks.py` and `gen_prompts.py --check` pass."
+   "branch": "claude/task/T513-brains-compact",
+   "prompt": "kit/prompts/T513.md",
+   "acceptance": "`python3 scripts/check_doc_compaction.py --map docs/reviews/doc-maps/T513.json` passes; `trace_spec.py`, `validate_tasks.py` and `gen_prompts.py --check` pass."
   },
   {
-   "id": "T511",
+   "id": "T514",
    "slug": "docs-stick",
    "title": "Docs (harness): pointers, size budgets and archives so the docs stay efficient (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Make the standard stick. (1) `scripts/check_doc_budgets.py` reads `kit/doc_budgets.json` (path or glob to a byte limit, each about 10% over its size after T500 to T510, from the plan's table) and fails when a curated reader document passes its limit (`CLAUDE.md`, crate `CLAUDE.md`, `docs/code-docs.md`, `docs/ai-operating-manual.md`, `docs/decisions-current.md`, `docs/owner-guide.md`, `docs/README.md` once T141 writes it) and only reports growth of append-grown ones (`app/*/NOTES.md`, `docs/architecture.md`, `docs/test-design.md`, `docs/build-notes.md`, `docs/for-casey-review.md`), which stage-end cleanups trim; tested in `tests/test_check_doc_budgets.py`. (2) `scripts/smoke.sh` and `Ci` run it and `check_decision_digest.py` (numbers after the digest's `Through` line report as pending; T142 brings them current). (3) Root `CLAUDE.md` (still under 200 lines) and the manual's start routine send a fresh session to `docs/decisions-current.md` before the full log; `kit/prompts/TEMPLATE.md` tells a task that writes a decision to leave the digest to stage-end cleanup, and to grep the digest before the log for a decision its prompt does not paste. Prompts keep pasting each listed decision's full choice text: a builder implements that text, and a one-line summary would drop detail it needs. (4) Archives, byte-identical (`moves` in `docs/reviews/doc-maps/T511.json`, checked by `check_doc_compaction.py`): hand-offs older than the latest two move from `docs/handoff/` to `docs/archive/handoff/`, with `docs/handoff/INDEX.md` listing each old path, new path and one line on what it covered (decisions citing an old path resolve through it); items in `docs/for-casey-review.md` that need nothing from Casey or that he has answered move to `docs/archive/for-casey-review-phase1.md`, open items stay. Byte-identical moves do not count toward the line budget. Rewrite `kit/plan.lock`.",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Make the standard stick. (1) `scripts/check_doc_budgets.py` reads `kit/doc_budgets.json`, which maps a path or glob to a byte limit about 10% over its size after T500 to T513, from the plan's table. It fails when a curated reader document passes its limit: root `CLAUDE.md`, `docs/code-docs.md`, `docs/ai-operating-manual.md`, `docs/owner-guide.md`, and `docs/README.md` once T141 writes it. It only reports growth of the others, which stage-end cleanups trim: crate `CLAUDE.md` (already capped by `check_code_docs.py`), `docs/decisions-current.md`, `app/*/NOTES.md`, `docs/architecture.md`, `docs/test-design.md`, `docs/build-notes.md` and `docs/for-casey-review.md`. Tested in `tests/test_check_doc_budgets.py`. (2) `scripts/smoke.sh` and `Ci` run it and `check_decision_digest.py`; numbers after the digest's `Through` line report as pending, and T142 brings them current. (3) Root `CLAUDE.md` (still under 200 lines) and the manual's start routine send a fresh session to `docs/decisions-current.md` before the full log. `kit/prompts/TEMPLATE.md` tells a task that writes a decision to leave the digest to stage-end cleanup, and to grep the digest before the log for a decision its prompt does not paste. Prompts keep pasting each listed decision's full choice text, because a builder implements that text. (4) Byte-identical archives (`moves` in `docs/reviews/doc-maps/T514.json`, checked by `check_doc_compaction.py`). Hand-offs move from `docs/handoff/` to `docs/archive/handoff/` only if they are dated `20*.md`, are not among the newest four (a takeover reads those), and are not cited anywhere outside `docs/decisions.md` (T242 cites `docs/handoff/2026-11-02-evening.md:32-33`, so it stays). `HANDOFF.md` and the undated files (for example `rework-plan.md`, cited at `docs/PREBUILD.md:68`) stay. `docs/handoff/INDEX.md` lists each moved file's old path, new path and one line on what it covered; old paths cited in `docs/decisions.md` resolve through it. Items in `docs/for-casey-review.md` that need nothing from Casey, or that he has answered, move to `docs/archive/for-casey-review-phase1.md`; open items stay. Byte-identical moves do not count toward the line budget. Rewrite `kit/plan.lock`.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
-    "T503",
-    "T508",
-    "T509",
-    "T510"
+    "T506",
+    "T511",
+    "T512",
+    "T513"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18622,7 +18764,7 @@
     "CLAUDE.md",
     "docs/ai-operating-manual.md",
     "kit/prompts/TEMPLATE.md",
-    "docs/reviews/doc-maps/T511.json",
+    "docs/reviews/doc-maps/T514.json",
     "docs/handoff/",
     "docs/archive/"
    ],
@@ -18649,9 +18791,9 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T511-docs-stick",
-   "prompt": "kit/prompts/T511.md",
-   "acceptance": "`tests/test_check_doc_budgets.py` passes; `check_doc_budgets.py` and `check_decision_digest.py` run in smoke and `Ci` and pass on the branch; `check_doc_compaction.py` passes the archive moves; root `CLAUDE.md` is under 200 lines and names the digest; `gen_prompts.py --check` passes after regeneration."
+   "branch": "claude/task/T514-docs-stick",
+   "prompt": "kit/prompts/T514.md",
+   "acceptance": "`tests/test_check_doc_budgets.py` passes; `check_doc_budgets.py` and `check_decision_digest.py` run in smoke and `Ci` and pass on the branch; `check_doc_compaction.py` passes the archive moves; no archived hand-off is cited outside `docs/decisions.md`; root `CLAUDE.md` is under 200 lines and names the digest; `gen_prompts.py --check` passes after regeneration."
   },
   {
    "id": "T127",
@@ -18678,7 +18820,10 @@
     "T508",
     "T509",
     "T510",
-    "T511"
+    "T511",
+    "T512",
+    "T513",
+    "T514"
    ],
    "model": null,
    "effort": null,
@@ -21464,7 +21609,7 @@
    "id": "T141",
    "slug": "handover-pack",
    "title": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist",
-   "goal": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist `docs/README.md` is the start-here map for a session that has never seen the code: one line per folder and document, and the common changes (fees, categories and job types, text templates, settings and switches, legal pages) with the files, spec lines and tests each one touches (docs/code-docs.md, D-473). The Gate C key checklist (`docs/account-checklist.md` Part 2) gets one item before the live AI key is entered: the live Claude API key is created in the Console under the same Anthropic account as Casey's Claude subscription, so production AI usage draws on the subscription's included API credit ($200 a month, Casey, October 31) instead of a separately billed account, and Casey confirms on the Console's billing page that usage is drawn from that credit (D-1154). The item names where the key goes: the live project's secret variable `ASKHAVA_AI_API_KEY`, with `ASKHAVA_ADAPTER_MODE_AI` left at its live default `api` (T298), and says that without it the live app starts with the AI off and raises a high alert naming the missing setting (D-2065). Amendment A-02 (D-3080; `docs/compliance/reconciliation.md` TECH-14 and TECH-16; OPS-043): `docs/release-record.md` is the one-page release record template OPS-043 names, one field per line: the source SHA; the `Ci`, `Twin` and `Ally` run IDs on that SHA; the migrations it applies; the rollback or no-rollback decision with its reason; open vulnerabilities (the cargo-audit, cargo-deny and npm audit results on that SHA, each open one with its exception owner); the secret scope (the secrets the release needs, by setting name only, never a value or fingerprint); the health check after deploy; the link to the independent Opus security review of the release diff; and Casey's sign-off line (his name, the date and \"go for this SHA\"). A filled copy is `docs/releases/<date>-<sha12>.md`, written only by Casey or from his owner answer, never by a task; the handover pack links the template. `docs/account-checklist.md` Part 2 also lists, one line each, the Gate C preconditions that `scripts/gate_c_ready.py` (T395) checks, with the command that prints what is still missing (D-3080). Plan change D-3856: every document of the pack follows `docs/code-docs.md`'s writing standard (say a fact once, link, don't repeat), `docs/README.md` sends a reader to `docs/decisions-current.md` before `docs/decisions.md`, and `python3 scripts/check_doc_budgets.py` passes with `docs/README.md` within the limit T511 set for it.",
+   "goal": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist `docs/README.md` is the start-here map for a session that has never seen the code: one line per folder and document, and the common changes (fees, categories and job types, text templates, settings and switches, legal pages) with the files, spec lines and tests each one touches (docs/code-docs.md, D-473). The Gate C key checklist (`docs/account-checklist.md` Part 2) gets one item before the live AI key is entered: the live Claude API key is created in the Console under the same Anthropic account as Casey's Claude subscription, so production AI usage draws on the subscription's included API credit ($200 a month, Casey, October 31) instead of a separately billed account, and Casey confirms on the Console's billing page that usage is drawn from that credit (D-1154). The item names where the key goes: the live project's secret variable `ASKHAVA_AI_API_KEY`, with `ASKHAVA_ADAPTER_MODE_AI` left at its live default `api` (T298), and says that without it the live app starts with the AI off and raises a high alert naming the missing setting (D-2065). Amendment A-02 (D-3080; `docs/compliance/reconciliation.md` TECH-14 and TECH-16; OPS-043): `docs/release-record.md` is the one-page release record template OPS-043 names, one field per line: the source SHA; the `Ci`, `Twin` and `Ally` run IDs on that SHA; the migrations it applies; the rollback or no-rollback decision with its reason; open vulnerabilities (the cargo-audit, cargo-deny and npm audit results on that SHA, each open one with its exception owner); the secret scope (the secrets the release needs, by setting name only, never a value or fingerprint); the health check after deploy; the link to the independent Opus security review of the release diff; and Casey's sign-off line (his name, the date and \"go for this SHA\"). A filled copy is `docs/releases/<date>-<sha12>.md`, written only by Casey or from his owner answer, never by a task; the handover pack links the template. `docs/account-checklist.md` Part 2 also lists, one line each, the Gate C preconditions that `scripts/gate_c_ready.py` (T395) checks, with the command that prints what is still missing (D-3080). Plan change D-3856: every document of the pack follows `docs/code-docs.md`'s writing standard (say a fact once, link, don't repeat), `docs/README.md` sends a reader to `docs/decisions-current.md` before `docs/decisions.md`, and `python3 scripts/check_doc_budgets.py` passes with `docs/README.md` within the limit T514 set for it.",
    "type": "docs",
    "phase": 2,
    "stage": "6",
@@ -21579,7 +21724,7 @@
    "id": "T142",
    "slug": "cleanup-stage6",
    "title": "Stage 6 cleanup: dead code, duplicates, docs up to date (end of Phase 2)",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479). Plan change D-3856: the end-of-phase documentation pass of T498 to T511 repeats for phase 2: `docs/decisions-current.md` is brought current (`python3 scripts/check_decision_digest.py` passes with no number pending), the documents phase 2 grew (crate `NOTES.md`, `docs/architecture.md` sections 7 to 12, `docs/build-notes.md`, the entries T508 to T510 left in their maps' `left` fields) are compacted under `python3 scripts/check_doc_compaction.py --map docs/reviews/doc-maps/T142.json` with nothing lost, and `python3 scripts/check_doc_budgets.py` reports nothing over its limit.",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479). Plan change D-3856: the end-of-phase documentation pass of T498 to T514 repeats for phase 2: `docs/decisions-current.md` is brought current (`python3 scripts/check_decision_digest.py` passes with no number pending), the documents phase 2 grew (crate `NOTES.md`, `docs/architecture.md` sections 7 to 12, `docs/build-notes.md`, and what T507 to T513 left in their maps' `left` fields) are compacted under `python3 scripts/check_doc_compaction.py --map docs/reviews/doc-maps/T142.json` with nothing lost and no cited line changed, and `python3 scripts/check_doc_budgets.py` reports nothing over a failing limit; a limit is raised in `kit/doc_budgets.json` only with the reason in the task report.",
    "type": "cleanup",
    "phase": 2,
    "stage": "6",
@@ -21630,7 +21775,9 @@
     "app/",
     "migrations/",
     "docs/decisions-current.md",
-    "docs/reviews/doc-maps/T142.json"
+    "docs/reviews/doc-maps/T142.json",
+    "kit/doc_budgets.json",
+    "docs/build-notes.md"
    ],
    "reads": [
     "docs/architecture.md",
@@ -21647,9 +21794,9 @@
     "BUILD_BRIEF.md:488"
    ],
    "budget": {
-    "files": 4,
+    "files": 6,
     "lines": 400,
-    "context_pct": 27
+    "context_pct": 33
    },
    "checks": [
     "Ci",
