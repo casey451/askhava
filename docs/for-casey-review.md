@@ -2890,3 +2890,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - As you asked, five queued stage-5 tasks that looked likely to run well past 80 builder turns are now two smaller tasks each, with the same requirements and tests and nothing dropped: the ops alerts and safe mode (T105, T487), the Spanish site pages and the Spanish business sign-up (T202, T488), the web chat's conversation and its pages (T103, T489), the email provider and the mailers it feeds (T469, T490), and the "backup has your pick" text and the Confirm window's end (T471, T491).
 - Shorter sessions cost far fewer tokens per turn, so this should cut cost without changing what gets built. Several other big tasks were left whole where a split would not have a clean seam; the decision entry says why for each. Nothing needs you.
+
+## The runner no longer starts empty backup runs for a task the plan dropped (D-3812, November 15)
+
+- A task removed from the plan (T365) was still waiting in the runner's state, so each backup run gave it a lane, refused it at claim time, sat idle and started another: about 33 empty runs in under 5 hours. The runner now applies the same plan check when deciding how many runs to start, so this loop stops. Nothing needs you.
