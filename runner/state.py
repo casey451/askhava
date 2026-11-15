@@ -101,7 +101,9 @@ def sync_graph(state: State, graph: list[Task]) -> State:
     changed `deps` list onto every entry not yet DONE or SKIPPED (D-1126).
 
     A task's `stage` is copied too (also onto entries that lack it), because eligibility gates
-    each stage on the previous stage's exit test (docs/governance.md section 6, D-486). A plan
+    each stage on the previous stage's exit test (docs/governance.md section 6, D-486); a changed
+    stage is copied onto every entry not DONE or SKIPPED, as `deps` is, so a plan change that
+    re-stages a queued task takes effect (D-3796); a finished entry keeps its stage. A plan
     change may add or move a dependency after the entry exists (D-1030 gave T156 one); `eligible`
     reads the entry's `deps` and `lanes.refusal` the graph's, so a stale entry looked claimable
     while every lane refused it.
@@ -113,7 +115,8 @@ def sync_graph(state: State, graph: list[Task]) -> State:
             extra = {"stage": task["stage"]} if "stage" in task else {}
             out = with_task(out, task["id"], slug=task.get("slug"), type=task.get("type"), deps=list(task["deps"]), **extra)
             continue
-        if "stage" in task and "stage" not in found:
+        restaged = found.get("status") not in SATISFIED and found.get("stage") != task.get("stage")
+        if "stage" in task and ("stage" not in found or restaged):
             out = with_task(out, task["id"], stage=task["stage"])
         if found.get("status") not in SATISFIED and list(found.get("deps", [])) != list(task["deps"]):
             out = with_task(out, task["id"], deps=list(task["deps"]))

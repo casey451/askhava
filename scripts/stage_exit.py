@@ -235,6 +235,23 @@ def evaluate(
     return problems + _flag_problems(results, state) + closure
 
 
+def gate_nightly(nightly: dict[str, Any] | None, main_head: str, is_ancestor: Ancestor) -> dict[str, Any] | None:
+    """The nightly record the runner's claim gate judges (D-3563 (e), D-3795): the first failed nightly since
+    the last green run, on a commit older than main's head (an ancestor of it), stands in for that green run
+    (`{"conclusion": "success", "sha": <last_green sha>}`), so a one-off miss on an old head does not hold
+    every stage until the next nightly, as `runner/cycle.py` `_nightly_red_on_head` already ignores it for
+    `main_red`. Anything else is returned unchanged: a failure on main's head, a second failure in a row
+    (`failures_since_green` not exactly 1), a commit git cannot place under main's head, no `last_green`."""
+    if not nightly or nightly.get("conclusion") != "failure":
+        return nightly
+    sha, green = str(nightly.get("sha") or ""), nightly.get("last_green")
+    if not sha or not main_head or sha == main_head or nightly.get("failures_since_green") != 1:
+        return nightly
+    if not isinstance(green, dict) or not green.get("sha") or is_ancestor(sha, main_head) is not True:
+        return nightly
+    return {"conclusion": "success", "sha": str(green["sha"])}
+
+
 def passed_stages(
     graph: list[dict[str, Any]],
     state: dict[str, Any],
