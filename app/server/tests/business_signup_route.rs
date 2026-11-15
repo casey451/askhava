@@ -15,7 +15,8 @@
 //! activating code's cleared cookie and sign-in link, and the flagged sign-up's review screen.
 //! T464's capability step (BIZ-049, BIZ-004, BIZ-007, D-3676): the first sign-in's link to it, the
 //! T368 checklist behind the owner's session, the check screen, a tick outside the offer, the
-//! CSRF refusals and the save through `save_capability` with after-hours held back.
+//! CSRF refusals and the save through `save_capability` with after-hours held back, a member who
+//! is not the owner refused with the 404 and `authz_denied`, and no link on any other sign-in.
 //! Fake records are read from a temporary `file://` directory. No setting is a real key;
 //! all data is fake.
 
@@ -26,8 +27,8 @@ use askhava_adapters::api::{
     AdapterError, CodeChannel, Email, EmailAdapter, IdempotencyKey, VerifyAdapter,
 };
 use askhava_businesses::api::{
-    Acting, EmailCheck, InboxAnswer, Step, business, business_names, businesses_of_mailbox,
-    capabilities, email_check, leave, members, review_due, signup_progress,
+    Acting, EmailCheck, InboxAnswer, Roles, Step, add_member, business, business_names,
+    businesses_of_mailbox, capabilities, email_check, leave, members, review_due, signup_progress,
 };
 
 use askhava_catalog::api::{load, parse};
@@ -43,9 +44,10 @@ use askhava_portals::api::{
     CAPABILITY_ROUTE, CODE_SEND_ROUTE, CONSENT_AGAIN, ChannelPost, CodeProblem, CookieJar,
     EMAIL_CHECK_ROUTE, EMAIL_RESEND_ROUTE, IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NUMBER_OLD_ROUTE,
     PortalsError, SERVICE_AREA_ROUTE, SESSION_COOKIE, SIGNIN_LINK_ROUTE, SIGNUP_FORM_ROUTE,
-    SIGNUP_ROUTE, SignIn, SignInAddress, SignInMail, csrf_token, ensure_pre_session, signin_post,
+    SIGNUP_ROUTE, SignIn, SignInAddress, SignInMail, csrf_token, ensure_pre_session,
+    send_sign_in_link, signin_post,
 };
-use askhava_privacy::api::{Vault, mailboxes_of};
+use askhava_privacy::api::{Vault, mailbox_for, mailboxes_of};
 use askhava_server::business_signin::SignInMailer;
 use askhava_server::business_signup::{
     INBOX_CHECK_ROUTE, SIGNUP_COOKIE, ServedSignUp, SignupMail, bound_signup,
@@ -1484,4 +1486,92 @@ async fn td_biz_49_the_capability_step_saves_through_save_capability(pool: PgPoo
         Some(false),
         "BIZ-007: after-hours held back with nobody covering"
     );
+    let (_, done) = link_signed_in(&pool, &mail, owner_address(&pool, id).await).await;
+    assert!(done.contains("You're signed in") && !done.contains("capability-link"));
+}
+
+/// Emails `to` a fresh sign-in link through the server's [`SignInMailer`] and `mail`, then
+/// presses it: the session cookie and the done screen.
+async fn link_signed_in(pool: &PgPool, mail: &FakeMail, to: SignInAddress) -> (String, String) {
+    let secret = SecretString::from(SECRET.to_owned());
+    let postal = ("PO Box 1234, Faketown, AZ 00000", MailboxKind::PoBox);
+    let limit = DailyLimit::new(100, 90).expect("limit");
+    let sender = SignInLinkSender::new(secret, mail.clone(), postal, limit).expect("link mail");
+    let clock: Arc<dyn Clock> = Arc::new(SystemClock);
+    let vault = Some(Arc::new(vault()));
+    let mailer = SignInMailer::new((pool.clone(), clock), vault, Some(sender));
+    let mut db = pool.acquire().await.expect("connection");
+    let sent = send_sign_in_link(&mut db, &mailer, to, Timestamp::now()).await;
+    sent.expect("link sent");
+    drop(db);
+    let text = mail.sent().last().expect("a link").1.clone();
+    signed_in_page(pool, &text).await
+}
+
+/// The owner of business `id`, as acting and as a sign-in address.
+async fn owner_of(pool: &PgPool, id: Uuid) -> (Acting, SignInAddress) {
+    let mut conn = pool.acquire().await.expect("connection");
+    let team = members(&mut conn, id).await.expect("team");
+    let owner = team.iter().find(|m| m.owner).expect("owner");
+    let by = Acting {
+        business: id,
+        member: owner.id,
+    };
+    let to = SignInAddress {
+        business: id,
+        mailbox: owner.mailbox,
+    };
+    (by, to)
+}
+
+/// The owner of business `id`'s sign-in address.
+async fn owner_address(pool: &PgPool, id: Uuid) -> SignInAddress {
+    owner_of(pool, id).await.1
+}
+
+/// A member of business `id` who is not its owner, added by the owner at a fake address.
+async fn teammate(pool: &PgPool, id: Uuid) -> SignInAddress {
+    let (by, _) = owner_of(pool, id).await;
+    let mut conn = pool.acquire().await.expect("connection");
+    let mailbox = mailbox_for(&mut conn, &vault(), "crew@x.example").await;
+    let mailbox = mailbox.expect("mailbox");
+    let added = add_member(&mut conn, by, mailbox, Roles::BOTH, Timestamp::now()).await;
+    added.expect("member");
+    SignInAddress {
+        business: id,
+        mailbox,
+    }
+}
+
+/// TD-BIZ-49 (BIZ-049, SEC-004, SEC-034, SEC-048, D-3676): a signed-in member who is not the owner
+/// gets no capability link on the done screen, and the step's `GET` and `POST` answer the one 404
+/// with `no-store` and an `authz_denied` event each, saving nothing.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_biz_49_a_member_who_is_not_the_owner_gets_the_404(pool: PgPool) {
+    store_lists(&pool).await;
+    let (records, verify, mail) = (Records::new(), FakeVerify::default(), FakeMail::default());
+    let app = app_mailing(&pool, &records, &verify, &mail);
+    let (id, ..) = activated(&pool, &app, &mail).await;
+    let (session, done) = link_signed_in(&pool, &mail, teammate(&pool, id).await).await;
+    assert!(done.contains("You're signed in") && !done.contains("capability-link"));
+    let events = Events::default();
+    let guard = tracing::subscriber::set_default(events.clone());
+    let (status, cache, html) = page_at(&app, CAPABILITY_ROUTE, &session).await;
+    assert_eq!(
+        (status, cache.as_str()),
+        (StatusCode::NOT_FOUND, "no-store")
+    );
+    assert!(!html.contains("leak repair"));
+    let save = format!("{CAPABILITY_ROUTE}?step=save");
+    let at = (save.as_str(), session.as_str());
+    let (status, _, cache, _) = post_to(&app, at, &answered(&session, &[]), "same-origin").await;
+    assert_eq!(
+        (status, cache.as_str()),
+        (StatusCode::NOT_FOUND, "no-store")
+    );
+    drop(guard);
+    let logged = events.0.lock().expect("events").clone();
+    let denied = logged.iter().filter(|l| l.contains("\"authz_denied\""));
+    assert_eq!(denied.count(), 2, "SEC-048");
+    assert_eq!(saved_step(&pool, id).await, None, "nothing saved");
 }
