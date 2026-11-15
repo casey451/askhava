@@ -61345,7 +61345,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T01:07:22Z",
+ "updated_at": "2026-11-15T01:08:35Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -61444,7 +61444,7 @@
   ]
  },
  "runner_sha": "30d12d87a2fd2fc957b69878a6af63142bf9d7f9",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "14099277d223faf0b2f412c251439608eac4f3ce",
@@ -61736,7 +61736,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3805,
+ "next_decision": 3806,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -62365,6 +62365,12 @@
    "at": "2026-11-14T21:57:10Z",
    "reason": "Plan fix: T460 public sign-up state reader (businesses) and T261 JoinDates readers (signup submitted_at, category switch-on time) for free-wins waiver",
    "session": "manual-797f7ee4eed7"
+  },
+  {
+   "number": 3805,
+   "at": "2026-11-15T01:08:35Z",
+   "reason": "split-oversized-stage5 (Casey's change 2: split stage-5 tasks likely over ~80 builder turns)",
+   "session": "manual-72f2b805a51b"
   }
  ],
  "lanes_fallback_history": [
