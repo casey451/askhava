@@ -13164,10 +13164,63 @@
    "prompt": "kit/prompts/T098.md"
   },
   {
+   "id": "T515",
+   "slug": "keyed-stripe-webhook-signing",
+   "title": "End-to-end harness: specs can deliver a validly signed Stripe webhook to the keyed binary (D-3862)",
+   "goal": "Plan change D-3862: `tests/e2e/webserver.ts:132` gives the keyed binary a random `ASKHAVA_STRIPE_WEBHOOK_SECRET` that no spec can read. The stand-in signs its deliveries with its own default `whsec_fake` (`stand_ins/stripe.py:82`; `/_stand_in/stripe/webhook`, `stand_in_authenticate`), so no spec can post a webhook the keyed binary accepts, and T099's post-payment closing checks (D-1739) cannot run. `confirm_served.spec.ts` stops at \"waiting\" for this reason. (1) `tests/e2e/webserver.ts`: `keyedSecrets()` also makes the webhook secret, `whsec_` plus 24 random bytes in hex. It is made once per run in the Playwright main process and passed to the workers as `E2E_KEYED_STRIPE_WEBHOOK_SECRET`, like the ID secret and vault keys. `keyedEnv` gives the keyed binary that same value. Nothing prints or logs it, and the suite's own binaries never see it. (2) `tests/e2e/keyed.ts`: `stripeDelivery(payload: string, timestamp: number)` returns the headers of Stripe's scheme, `Stripe-Signature: t=<timestamp>,v1=<hex HMAC-SHA256(secret, \"<t>.<payload>\")>`, the scheme `stand_ins/stripe.py:67` uses, built with Node's `crypto` only. The payload is the raw JSON of an event the stand-in emitted (`GET /stripe/v1/events`), sent byte for byte. The timestamp is the keyed binary's clock: real time, or the test clock once a spec moves it. The app's checks are unchanged: signature, 5-minute tolerance and stand-in source host (`app/payments/src/routes.rs`). (3) `tests/e2e/keyed_stripe.spec.ts` gains these cases: an event the stand-in emitted, signed with `stripeDelivery`, is accepted (2xx); the same payload with the stand-in's own default signature, with one changed byte, or with a timestamp outside the tolerance is refused (403). The existing bad-signature case is unchanged. No stand-in file changes, the secret stays random per run, and signature checking is not weakened. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T492",
+    "T452"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "money"
+   ],
+   "owns": [
+    "tests/e2e/webserver.ts",
+    "tests/e2e/keyed.ts",
+    "tests/e2e/keyed_stripe.spec.ts"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "stand_ins/stripe.py",
+    "app/payments/src/routes.rs"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-3862",
+    "D-3813",
+    "D-3674",
+    "D-1739"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 250,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T515-keyed-stripe-webhook-signing",
+   "prompt": "kit/prompts/T515.md",
+   "acceptance": "`tests/e2e/keyed_stripe.spec.ts` passes in the end-to-end run: a stand-in event signed with `stripeDelivery` is accepted, and the default-secret, altered-byte and stale-timestamp deliveries are refused; every other end-to-end spec passes unchanged; the secret appears in no log or report."
+  },
+  {
    "id": "T099",
    "slug": "e2e-j2-business",
    "title": "Journey J2 (business) and its variants, keyboard-only, with closing checks",
-   "goal": "Journey J2 (business sign-up through Confirm, charge and statement) and its variants run end to end in Playwright against the stand-ins, again keyboard-only with axe at three widths, ending with the closing checks (A11Y-005, A11Y-021). Across J2 the fake voice provider records no call to a business phone except masked calls a person placed (the J2 half of TD-BIZ-22's and TD-BIZ-25's sweeps; the J1 half is T222's, D-491, D-492). This is the stage-4 slice of J2; the steps that need BIZ-052's links, PICK-053's formats, PICK-052's job note and PICK-050's 'Can't take it' are T222's (D-491, D-493). Its closing checks cover payment, release and the portal view: after the stand-in Stripe success the business's portal shows the released details (T253's read, T085's page), again after a reload, with one release row, one notice, one masked line and no second fee (D-1739); reaching Confirm uses the served Confirm route, `GET` and `POST /b/picks/{pick}/confirm`, which T261 (a dependency) serves (D-3144; the gap D-1740 recorded is closed).",
+   "goal": "Journey J2 (business sign-up through Confirm, charge and statement) and its variants run end to end in Playwright against the stand-ins, again keyboard-only with axe at three widths, ending with the closing checks (A11Y-005, A11Y-021). Across J2 the fake voice provider records no call to a business phone except masked calls a person placed (the J2 half of TD-BIZ-22's and TD-BIZ-25's sweeps; the J1 half is T222's, D-491, D-492). This is the stage-4 slice of J2; the steps that need BIZ-052's links, PICK-053's formats, PICK-052's job note and PICK-050's 'Can't take it' are T222's (D-491, D-493). Its closing checks cover payment, release and the portal view: after the stand-in Stripe success the business's portal shows the released details (T253's read, T085's page), again after a reload, with one release row, one notice, one masked line and no second fee (D-1739); reaching Confirm uses the served Confirm route, `GET` and `POST /b/picks/{pick}/confirm`, which T261 (a dependency) serves (D-3144; the gap D-1740 recorded is closed). Plan change D-3862 (after attempt 1's plan gap): the stand-in Stripe success reaches the keyed binary as an event from `GET /stripe/v1/events`, posted to `/webhooks/stripe` with `stripeDelivery` from `tests/e2e/keyed.ts` (T515). The spec never uses the stand-in's own signature, which the keyed binary refuses. A free first win's $0 Confirm releases with no charge and no webhook, so its release checks (portal view, again after a reload, one release row, no fee) run straight after Confirm. The top-of-file comment of `j2_business.spec.ts` cites FEE-001 (the tier rule) for the $75 test, not FEE-010 (the free first win).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -13190,7 +13243,8 @@
     "T464",
     "T493",
     "T494",
-    "T495"
+    "T495",
+    "T515"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -13223,7 +13277,8 @@
     "D-1739",
     "D-1754",
     "D-3144",
-    "D-3676"
+    "D-3676",
+    "D-3862"
    ],
    "cites": [],
    "budget": {
@@ -34741,7 +34796,7 @@
    "id": "T490",
    "slug": "email-provider-mailers",
    "title": "server (harness): the email provider passed to the sign-up mailers and every worker mailer, and the end-to-end server's fake Resend settings",
-   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T469 is split into T469 (the provider built from settings as `server::email_provider` and the business sign-in mailer) and this task, T490, which also builds the `VaultAccountDirectory` (D-3844), which runs after it and passes T469's provider to every other mailer the composition builds. Plan change D-3750 (D-3186, D-3263, D-3743, D-3262; SEC-025, OPS-038, SEC-001, SEC-002, SEC-032, SEC-036): no Resend client is built anywhere in the app, so every mailer the composition builds has no sender: `ServedSignIn::from_settings` builds `SignInMailer::<ResendEmail>` with `None` (`app/server/src/business_signin.rs:133`), T461 builds the sign-up code sender and the activation mailer empty in `app/server/src/business_signup.rs`'s `from_settings` (D-3743), `register_business_handlers` (`app/server/src/lib.rs:1287`) registers the OPS-041 coverage notice, the welcome, the phone-stopped and the business event emails with `None`, `register_accepted_quote` (`:1400`) does too, and the welcome's directory finds no address (`NoAccountDirectory`, `:1381`). (0) The new `app/server/src/account_directory.rs` holds `VaultAccountDirectory`, the `businesses::api::AccountDirectory` that reads a sign-in mailbox's address with `privacy::api::read_business_mailbox` under `BusinessPurpose::AccountEmail` (D-3262) on the handler's connection and answers `None` for `last4` (no phone digits are readable, D-3186); it replaces `NoAccountDirectory` (`app/server/src/lib.rs:1381`) for the welcome and phone-stopped registrations, and `PortalNoticeParts::address` makes the same read. (1) Every other mailer gets the provider and the vault: T461's `MailboxCodeSender` and sign-in mailer in `business_signup.rs`, and the five worker registrations above, registered with the provider where the settings are (`worker_registry`, `lib.rs:664`; the shared `lib.rs` and `bin/worker.rs`) and with `None` as today where none exists, each kind still registered once (`tests/integration/tests/task_registry.rs`). They share the one `DailyLimit`, so the code, sign-in and account emails all count against the one daily quota (`send_email` reads the day's sent count, `app/messaging/src/email.rs:454`); SEC-014's per-IP and per-business caps (D-3743) are unchanged. (2) `tests/e2e/webserver.ts`: the keyed binary gets `ASKHAVA_ADAPTER_MODE_RESEND=stand_in`, the stand-in's base URL on `STAND_IN_PORT`, a fake key with the stand-in's `re_stand_in_` prefix (`stand_ins/server.py:50`), the stand-in's sending domain on the vendor list and a fake postal line, so the end-to-end app sends to the fake Resend, whose sent emails T414's control route (done) reads. (3) Tests, fake data only, in the new `app/server/tests/email_provider_workers.rs`, over a local recording server shaped as the stand-in (nothing beyond 127.0.0.1): a welcome task sends one email to the owner's address, read through `VaultAccountDirectory` (and a member with no mailbox row gets none, with `last4` always `None`); a sign-up code request sends one code email through the provider and none past the cap; with no key in CI no provider is built and no welcome is marked sent. Update `app/server/CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T469 is split into T469 (the provider built from settings as `server::email_provider` and the business sign-in mailer) and this task, T490, which also builds the `VaultAccountDirectory` (D-3844), which runs after it and passes T469's provider to every other mailer the composition builds. Plan change D-3750 (D-3186, D-3263, D-3743, D-3262; SEC-025, OPS-038, SEC-001, SEC-002, SEC-032, SEC-036): no Resend client is built anywhere in the app, so every mailer the composition builds has no sender: `ServedSignIn::from_settings` builds `SignInMailer::<ResendEmail>` with `None` (`app/server/src/business_signin.rs:133`), T461 builds the sign-up code sender and the activation mailer empty in `app/server/src/business_signup.rs`'s `from_settings` (D-3743), `register_business_handlers` (`app/server/src/lib.rs:1287`) registers the OPS-041 coverage notice, the welcome, the phone-stopped and the business event emails with `None`, `register_accepted_quote` (`:1400`) does too, and the welcome's directory finds no address (`NoAccountDirectory`, `:1381`). (0) The new `app/server/src/account_directory.rs` holds `VaultAccountDirectory`, the `businesses::api::AccountDirectory` that reads a sign-in mailbox's address with `privacy::api::read_business_mailbox` under `BusinessPurpose::AccountEmail` (D-3262) on the handler's connection and answers `None` for `last4` (no phone digits are readable, D-3186); it replaces `NoAccountDirectory` (`app/server/src/lib.rs:1381`) for the welcome and phone-stopped registrations, and `PortalNoticeParts::address` makes the same read. (1) Every other mailer gets the provider and the vault: T461's `MailboxCodeSender` and sign-in mailer in `business_signup.rs`, and the five worker registrations above, registered with the provider where the settings are (`worker_registry`, `lib.rs:664`; the shared `lib.rs` and `bin/worker.rs`) and with `None` as today where none exists, each kind still registered once (`tests/integration/tests/task_registry.rs`). They share the one `DailyLimit`, so the code, sign-in and account emails all count against the one daily quota (`send_email` reads the day's sent count, `app/messaging/src/email.rs:454`); SEC-014's per-IP and per-business caps (D-3743) are unchanged. (2) `tests/e2e/webserver.ts`: the keyed binary gets `ASKHAVA_ADAPTER_MODE_RESEND=stand_in`, the stand-in's base URL on `STAND_IN_PORT`, a fake key with the stand-in's `re_stand_in_` prefix (`stand_ins/server.py:50`), the stand-in's sending domain on the vendor list and a fake postal line, so the end-to-end app sends to the fake Resend, whose sent emails T414's control route (done) reads. (3) Tests, fake data only, in the new `app/server/tests/email_provider_workers.rs`, over a local recording server shaped as the stand-in (nothing beyond 127.0.0.1): a welcome task sends one email to the owner's address, read through `VaultAccountDirectory` (and a member with no mailbox row gets none, with `last4` always `None`); a sign-up code request sends one code email through the provider and none past the cap; with no key in CI no provider is built and no welcome is marked sent. Update `app/server/CLAUDE.md` and `docs/decisions.md`. Plan change D-3862: T515 edits `tests/e2e/webserver.ts` first; this task keeps its per-run `E2E_KEYED_STRIPE_WEBHOOK_SECRET` as it is.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -34749,7 +34804,8 @@
    "deps": [
     "T469",
     "T488",
-    "T492"
+    "T492",
+    "T515"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -34788,7 +34844,8 @@
     "D-3743",
     "D-3750",
     "D-3805",
-    "D-3844"
+    "D-3844",
+    "D-3862"
    ],
    "cites": [],
    "budget": {

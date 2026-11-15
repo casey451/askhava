@@ -2948,3 +2948,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - Old hand-off notes and answered review items move, unchanged, to an archive with an index.
 - Size limits and checks keep the documents from growing wordy again; the same pass repeats at the end of phase 2.
 - Nothing needs you.
+
+## The business journey test can now check what happens after payment (D-3862, November 15)
+
+- The full business-journey test (T099) stopped because the test's fake Stripe and the app used different signing keys, so the test could not send the app a valid "payment succeeded" message. A small new task (T515) gives the tests the app's per-run test key, so they can sign that message as Stripe would. The app's own checks stay as strict as before.
+- Nothing needs you.
