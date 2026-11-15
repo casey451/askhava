@@ -2900,3 +2900,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - A task removed from the plan (T365) was still waiting in the runner's state, so each backup run gave it a lane, refused it at claim time, sat idle and started another: about 33 empty runs in under 5 hours. The runner now skips, when deciding how many runs to start, any task the plan check has already turned away and still turns away, so this loop stops; tasks the check has not yet judged still get their runs. Nothing needs you.
 - A test-only fix (D-3829): one database test sometimes ran its "as the owner" step on a connection still set to the app's restricted role, so it failed at random (T493 lost an attempt). It now resets the role first. Nothing needs you.
+
+## A flagged business sign-up now says it is waiting for review (D-3830, November 15)
+
+- A business whose sign-up is flagged for your review used to be shown "We'll tell you once, by email, when requests in your trade start.", which is wrong for them. The sign-up task (T461) now also owns that screen and shows one plain line instead: the sign-up is waiting for review and its status will come by email. It promises no decision time. Nothing needs you.
