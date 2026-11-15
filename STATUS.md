@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-15T16:53:06Z by runner 77c4da167023 (actions).
+Updated 2026-11-15T17:04:41Z by runner 35177f91e0b2 (actions).
 
-**Idle since 16:50Z; 348 of 481 done; week 62% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 17:03Z; 349 of 481 done; week 62% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 348 of 481 build tasks (owner gates not counted)
+- **Tasks done:** 349 of 481 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 16:50Z (no task in progress)
+- **Lane:** idle since 17:03Z (no task in progress)
 - **Week:** 62% used, 72.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:52Z, 0 min before this update
+- **Last run:** 16:53Z, 11 min before this update
 - **Keeper:** last ran 16:53Z, next wake 17:13Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+115 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+119 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T261 | portals and server (harness): the served Confirm route under | MERGE_PENDING | 6 | 85 min | 16:50Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
+| T261 | portals and server (harness): the served Confirm route under | done | 6 | 85 min | 16:50Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T455 | server: the Pause, Resume and Ask about a charge email links | done | 1 | 38 min | 14:58Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | BLOCKED | 2 | 2 min | 14:14Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
 | T261 | portals and server (harness): the served Confirm route under | check_failed | 5 | 44 min | 13:32Z |  |
@@ -63,8 +63,8 @@ Updated 2026-11-15T16:53:06Z by runner 77c4da167023 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 307 of 733 (41.9%) · partial 269 · unstarted 157
-**Tasks merged (throughput only):** 348 of 481
+**Requirements verified:** 308 of 733 (42.0%) · partial 268 · unstarted 157
+**Tasks merged (throughput only):** 349 of 481
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -73,7 +73,7 @@ Updated 2026-11-15T16:53:06Z by runner 77c4da167023 (actions).
 | businesses | 20 | 35 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 21 | 30 | 1 | 52 |
+| fees | 22 | 29 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
@@ -99,7 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 228 of 235 done
+- stage 4: 229 of 235 done
 - stage 5: 0 of 92 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
