@@ -56594,7 +56594,7 @@
     "T460",
     "T468"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "signup-email-activation",
    "type": "build",
@@ -56608,7 +56608,7 @@
     3809,
     3810
    ],
-   "last_failure": "PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording lives in app/portals/src/business_signup.rs (DoneFacts / done_lines, lines 234-243, owned by T450's line), which T461 does not own (it owns only app/server/src/business_signup.rs and app/server/tests/business_signup_route.rs). Evidence: app/server/src/business_signup.rs:1149 Form::finished gives a NeedsReview sign-up the same Screen::Done with done_facts(..., (false,false)), showing \"We'll tell you once, by email, when requests in your trade start.\" Worker logged it in D-3806 and docs/for-casey-review.md; reviewer (head 181df2bf12944491b3ad8df7392291b88cbefd71) confirmed the ownership contradiction. Everything else in T461 was built and committed; smoke and prehandin green. Fix needs a portals copy task adding a review field/line to Screen::Done, or a narrower T461 acceptance.",
+   "last_failure": "PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording lives in app/portals/src/business_signup.rs (DoneFacts / done_lines, lines 234-243, owned by T450's line), which T461 does not own (it owns only app/server/src/business_signup.rs and app/server/tests/business_signup_route.rs). Evidence: app/server/src/business_signup.rs:1149 Form::finished gives a NeedsReview sign-up the same Screen::Done with done_facts(..., (false,false)), showing \"We'll tell you once, by email, when requests in your trade start.\" Worker logged it in D-3806 and docs/for-casey-review.md; reviewer (head 181df2bf12944491b3ad8df7392291b88cbefd71) confirmed the ownership contradiction. Everything else in T461 was built and committed; smoke and prehandin green. Fix needs a portals copy task adding a review field/line to Screen::Done, or a narrower T461 acceptance.\nre-queued after plan fix D-3830: D-3830 (#828): T461 owns app/portals/src/business_signup.rs and adds Screen::Review for NeedsReview; attempts 1-2 were lost to the D-3811 RUNNER_LANE leak",
    "history": [
     {
      "attempt": 1,
@@ -56680,7 +56680,22 @@
      }
     }
    ],
-   "reason": "plan gap reported: PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording lives in app/portals/src/business_signup.rs (DoneFacts / done_lines, lines 234-243, owned by T450's line), which T461 does not own (it owns only app/server/src/business_signup.rs and app/server/tests/business_signup_route.rs). Evidence: app/server/src/business_signup.rs:1149 Form::finished gives a NeedsReview sign-up the same Screen::Done with done_facts(..., (false,false)), showing \"We'll tell you once, by email, when requests in your trade start.\" Worker logged it in D-380; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T461 --plan-fix D-### --reason \"...\"` (D-2859)"
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-15T07:03:32Z",
+     "reason": "D-3830 (#828): T461 owns app/portals/src/business_signup.rs and adds Screen::Review for NeedsReview; attempts 1-2 were lost to the D-3811 RUNNER_LANE leak",
+     "by": "manual-d2ea484ccdfa",
+     "was": "plan gap reported: PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording lives in app/portals/src/business_signup.rs (DoneFacts / done_lines, lines 234-243, owned by T450's line), which T461 does not own (it owns only app/server/src/business_signup.rs and app/server/tests/business_signup_route.rs). Evidence: app/server/src/business_signup.rs:1149 Form::finished gives a NeedsReview sign-up the same Screen::Done with done_facts(..., (false,false)), showing \"We'll tell you once, by email, when requests in your trade start.\" Worker logged it in D-380; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T461 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 3,
+     "plan_fix": "D-3830",
+     "plan_since": "2026-11-15T05:20:15Z",
+     "plan_base": "140e446d7d8721fdb6894610fe2db91e9a370dc8",
+     "plan_head": "7dba11fe447df1cc452c95a1deebd803398c9c15",
+     "plan_then": "29859b004f4421f4b30ae69389ccb573dacbfa7038ddddc2ba52bed385df8ff2",
+     "plan_now": "a05b5a116105e2e54df5dbb7fa8cff2e6c710020916c246dc61c413ca45c7fe5"
+    }
+   ]
   },
   {
    "id": "T462",
@@ -62272,7 +62287,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T06:50:29Z",
+ "updated_at": "2026-11-15T07:03:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -62370,8 +62385,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7303a9cd88d890ea9418680ea940bf968dc17798",
- "starter": "actions",
+ "runner_sha": "7dba11fe447df1cc452c95a1deebd803398c9c15",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "5c153897b3f566976c5c9eeb10c4b635b9c8d8e8",
