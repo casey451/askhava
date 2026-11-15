@@ -48,15 +48,15 @@ use askhava_adapters::api::{
     twilio_clients,
 };
 use askhava_businesses::api::{
-    AccountStatus, ServiceArea, confirm_mailbox, join_facts, save_service_area, service_area,
-    signup_mailbox, start_signup_check,
-};
-use askhava_businesses::api::{
     ConsentChannel, ContactKind, Flag, MaskedContact, NameRefusal, RecordFound, SignUpForm,
     SignupError, SignupRecord, SignupSettings, Step, business as stored_business, check_code,
     next_step, number_is_old, record_match, save_business_name, screen_names, send_code_seen,
     signup_progress, signup_record, stored_category_list, stored_enabled, waiting_on_record,
     waitlisted,
+};
+use askhava_businesses::api::{
+    ServiceArea, confirm_mailbox, join_facts, save_service_area, service_area, signup_mailbox,
+    start_signup_check,
 };
 use askhava_catalog::api::category as catalog_category;
 use askhava_core::api::{
@@ -1116,8 +1116,8 @@ impl Form {
 
     /// BIZ-040, BIZ-016, A11Y-030: the typed code through `confirm_mailbox`; a wrong or expired
     /// code (`confirm` answers only taken or not) shows `CodeProblem::Refused` and changes
-    /// nothing else; a taken one leaves the business `Active` ([`Form::activated`]) or
-    /// `NeedsReview` (`Screen::Review`, the cookie kept).
+    /// nothing else; a taken one leaves the business `Active` (`receives_cards`,
+    /// [`Form::activated`]) or waiting in `NeedsReview` (`Screen::Review`, the cookie kept).
     async fn email_checked(
         &self,
         db: &mut PgConnection,
@@ -1137,11 +1137,15 @@ impl Form {
             }
             Err(_) => return failure("email code check"),
         }
-        match stored_business(db, business).await.map(|b| b.status) {
-            Ok(AccountStatus::Active) => self.activated(db, (business, mailbox), csrf, now).await,
-            Ok(AccountStatus::NeedsReview) => shown(self.page(Screen::Review, csrf)),
-            Ok(_) => failure("status after email"),
-            Err(_) => failure("business"),
+        let Ok(status) = stored_business(db, business).await.map(|b| b.status) else {
+            return failure("business");
+        };
+        if status.receives_cards() {
+            self.activated(db, (business, mailbox), csrf, now).await
+        } else if status.takes_identity_code() {
+            shown(self.page(Screen::Review, csrf))
+        } else {
+            failure("status after email")
         }
     }
 

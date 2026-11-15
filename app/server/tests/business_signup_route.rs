@@ -23,8 +23,7 @@ use askhava_adapters::api::{
     AdapterError, CodeChannel, Email, EmailAdapter, IdempotencyKey, VerifyAdapter,
 };
 use askhava_businesses::api::{
-    AccountStatus, Step, business, business_names, businesses_of_mailbox, leave, review_due,
-    signup_progress,
+    Step, business, business_names, businesses_of_mailbox, leave, review_due, signup_progress,
 };
 
 use askhava_catalog::api::{load, parse};
@@ -995,10 +994,11 @@ async fn email_post(
     (status, cookies, html)
 }
 
-/// The business's stored status.
-async fn status_of(pool: &PgPool, id: Uuid) -> AccountStatus {
+/// The business's stored status code.
+async fn status_of(pool: &PgPool, id: Uuid) -> &'static str {
     let mut conn = pool.acquire().await.expect("connection");
-    business(&mut conn, id).await.expect("business").status
+    let found = business(&mut conn, id).await.expect("business");
+    found.status.code()
 }
 
 /// TD-SEC-45 (BIZ-016, BIZ-040, BIZ-058, SEC-004, SEC-019, D-3641): the service area and email
@@ -1053,7 +1053,7 @@ async fn td_sec_45_email_code_activates_and_sends_the_sign_in_link(pool: PgPool)
         .next()
         .expect("text");
     assert!(status == StatusCode::OK && html.contains(refused) && cookies.is_empty());
-    assert_eq!(status_of(&pool, id).await, AccountStatus::Pending);
+    assert_eq!(status_of(&pool, id).await, "pending");
     let (status, cookies, html) = email_post(&app, at, &second).await;
     assert!(
         status == StatusCode::OK && html.contains("signed up</h1>"),
@@ -1065,7 +1065,7 @@ async fn td_sec_45_email_code_activates_and_sends_the_sign_in_link(pool: PgPool)
         vec![cleared],
         "BIZ-016: the binding cookie cleared"
     );
-    assert_eq!(status_of(&pool, id).await, AccountStatus::Active);
+    assert_eq!(status_of(&pool, id).await, "active");
     let sent = mail.sent();
     assert_eq!(sent.len(), 3, "one sign-in link");
     assert!(
@@ -1108,7 +1108,7 @@ async fn td_sec_45_a_flagged_sign_up_waits_for_review(pool: PgPool) {
         "D-3830"
     );
     assert_eq!(mail.sent().len(), 1, "no sign-in link");
-    assert_eq!(status_of(&pool, id).await, AccountStatus::NeedsReview);
+    assert_eq!(status_of(&pool, id).await, "needs_review");
 }
 
 /// TD-SEC-45 (SEC-014, SEC-025, PICK-055): a sixth send in a day for one sign-up, and an
