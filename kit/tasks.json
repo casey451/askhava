@@ -14639,7 +14639,7 @@
    "id": "T221",
    "slug": "site-legal-pages",
    "title": "site: the terms, privacy policy, SMS terms, homeowner data and business data pages",
-   "goal": "laftly.com serves /terms, /privacy, /sms-terms, /your-data and /business-data in English from the drafted legal documents in `docs/legal/`, rendered at build time by `app/site/build.rs` with `pulldown-cmark` (allowed by D-491) into Askama pages, the build failing if a document is missing; the two data pages also exist in Spanish (TERMS-021, TERMS-023; the terms, privacy policy and SMS terms have no Spanish source yet); each page carries the WORD-002 footer statement, the data pages and the help-page link hold the AI-018 switched-off sentence while the AI switch is off, and the consent text's links resolve (WEB-014, TERMS-021, TERMS-023, AI-018). The Stage 0.5 static set is T116's (D-491). Each published version of the four documents is kept once in `docs/legal/published/versions.json` with its full text and SHA-256, and a docs test fails if a published version's text no longer matches its hash (TERMS-034, D-492). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: (1) `/terms` (one section 13 row) serves both terms documents on one page, the homeowner terms first and then the business terms, each its own section with its own heading, anchor (`#homeowner-terms`, `#business-terms`) and version line. (2) A version counts as published only after Casey's publishing go (WEB-013, WEB-017; `docs/legal/README.md`: none is published yet), so `versions.json` starts as an empty list and the docs test checks its shape and every entry's hash; the publishing change adds each document's entry. (3) `site` may not call `ai` (`kit/layers.json`), so the AI-018 switch is read through a new `intake::api::ai_on(db, env)`, true when `ai::api::ai_mode` (`app/ai/src/switch.rs:129`) is `AiMode::Ai`, a one-line wrapper this task adds to the shared `app/intake/src/api.rs`; T201 and T103 read it too. (4) The pages extend T101's `site_layout.html` and fill `banner_shown`. Plan change D-3155: `build.rs` also renders `docs/legal/accessibility-statement.md` for T115's `/accessibility` page (no route here).",
+   "goal": "laftly.com serves /terms, /privacy, /sms-terms, /your-data and /business-data in English from the drafted legal documents in `docs/legal/`, rendered at build time by `app/site/build.rs` with `pulldown-cmark` (allowed by D-491) into Askama pages, the build failing if a document is missing; the two data pages also exist in Spanish (TERMS-021, TERMS-023; the terms, privacy policy and SMS terms have no Spanish source yet); each page carries the WORD-002 footer statement, the data pages and the help-page link hold the AI-018 switched-off sentence while the AI switch is off, and the consent text's links resolve (WEB-014, TERMS-021, TERMS-023, AI-018). The Stage 0.5 static set is T116's (D-491). Each published version of the four documents is kept once in `docs/legal/published/versions.json` with its full text and SHA-256, and a docs test fails if a published version's text no longer matches its hash (TERMS-034, D-492). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: (1) `/terms` (one section 13 row) serves both terms documents on one page, the homeowner terms first and then the business terms, each its own section with its own heading, anchor (`#homeowner-terms`, `#business-terms`) and version line. (2) A version counts as published only after Casey's publishing go (WEB-013, WEB-017; `docs/legal/README.md`: none is published yet), so `versions.json` starts as an empty list and the docs test checks its shape and every entry's hash; the publishing change adds each document's entry. (3) `site` may not call `ai` (`kit/layers.json`), so the AI-018 switch is read through a new `intake::api::ai_on(db, env)`, true when `ai::api::ai_mode` (`app/ai/src/switch.rs:129`) is `AiMode::Ai`, a one-line wrapper this task adds to the shared `app/intake/src/api.rs`; T201 and T103 read it too. (4) The pages extend T101's `site_layout.html` and fill `banner_shown`. Plan change D-3155: `build.rs` also renders `docs/legal/accessibility-statement.md` for T115's `/accessibility` page (no route here). Plan change D-3838 (A11Y-002, D-3836's lesson): in the same change that serves `/terms`, `/privacy`, `/sms-terms`, `/your-data` and `/business-data`, this task adds each route's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts` (fake data only, `shows` and `hides` lines that tell each state apart) and runs `bash scripts/prehandin.sh --ally`, so `tests/a11y/axe_all_pages.spec.ts` stays green.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14652,7 +14652,8 @@
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
-    "compliance"
+    "compliance",
+    "accessibility"
    ],
    "owns": [
     "app/site/templates/legal.html",
@@ -14696,7 +14697,8 @@
     "D-1143",
     "D-2440",
     "D-3144",
-    "D-3155"
+    "D-3155",
+    "D-3838"
    ],
    "cites": [],
    "budget": {
@@ -14804,7 +14806,7 @@
    "id": "T201",
    "slug": "site-services-help-pages",
    "title": "site: services and help pages, the ROC complaint page",
-   "goal": "The services page opens each licensed trade with \"Get quotes from licensed <trade>.\" and the long statement; the help page answers \"Is Laftly a person?\" with the automated-texts line; laftly.com/help/roc-complaint links to the ROC; and the \"What we cover now\" page (`coverage.html`, with `roc_complaint.html` for the ROC page) lists the open and not-yet categories (WEB-008, WEB-011, WEB-015, WEB-023, WORD-009); the help page also holds the AI-018 switched-off sentence while the AI switch is off (AI-018), and its \"Send the Laftly owner a message\" form is wired to the help-request endpoint by T200 (D-491). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: the help page reads the AI-018 switch through `intake::api::ai_on` (T221 adds it; `site` may not call `ai`), and the pages extend T101's `site_layout.html` and fill `banner_shown`.",
+   "goal": "The services page opens each licensed trade with \"Get quotes from licensed <trade>.\" and the long statement; the help page answers \"Is Laftly a person?\" with the automated-texts line; laftly.com/help/roc-complaint links to the ROC; and the \"What we cover now\" page (`coverage.html`, with `roc_complaint.html` for the ROC page) lists the open and not-yet categories (WEB-008, WEB-011, WEB-015, WEB-023, WORD-009); the help page also holds the AI-018 switched-off sentence while the AI switch is off (AI-018), and its \"Send the Laftly owner a message\" form is wired to the help-request endpoint by T200 (D-491). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: the help page reads the AI-018 switch through `intake::api::ai_on` (T221 adds it; `site` may not call `ai`), and the pages extend T101's `site_layout.html` and fill `banner_shown`. Plan change D-3838 (A11Y-002, D-3836's lesson): in the same change that serves `/help` and `/help/roc-complaint`, this task adds each route's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts` (fake data only, `shows` and `hides` lines that tell each state apart) and runs `bash scripts/prehandin.sh --ally`, so `tests/a11y/axe_all_pages.spec.ts` stays green.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14819,7 +14821,8 @@
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
-    "compliance"
+    "compliance",
+    "accessibility"
    ],
    "owns": [
     "app/site/src/pages.rs",
@@ -14871,7 +14874,8 @@
     "D-492",
     "D-1143",
     "D-2440",
-    "D-3144"
+    "D-3144",
+    "D-3838"
    ],
    "cites": [],
    "budget": {
@@ -15892,7 +15896,7 @@
    "id": "T106",
    "slug": "ops-health",
    "title": "ops: /healthz and the web and worker liveness exits",
-   "goal": "The app answers `/healthz` for the uptime monitor (OPS-007) and `web` and `worker` exit non-zero when their own liveness check has failed for 3 minutes (a setting) so the host's On Failure policy restarts them (OPS-049). The `/healthz` probe is `app/server/src/healthz.rs` (the server binary checks the process, the database and the worker check, read from `core.task`, so no new table is needed (plan change D-3144: the worker counts as down only when a task has been due, its `run_at` passed with no `done_at`, no `dead_at` and no live lease, for longer than a setting, 10 minutes by default; an idle worker and a database no worker has served yet answer 200, because `app/server/tests/door_matrix.rs` probes `/healthz` as a public `GET` that must answer 200, `:390`, with no worker running; the body names the database and worker state and the age of the newest lease or finish, TD-OPS-02's `/healthz` half); `ops` holds no route, D-491); the liveness exits are `app/server/src/liveness.rs` (TD-OPS-24). Expose, for T476's health page through the serving route, the web process's start time and the worker state the probe reports as one plain value the route passes in (no secret, no contact detail). Plan change D-3753: the health page, its OPS-008 figures (the secrets readout among them) and the OPS-009 spot-check are no longer this task's: T475 builds the figure readers and T476 the page, whose review checks the secrets readout; this task's review checks only that `/healthz` and the liveness exits show no secret, contact detail or setting value. Tests in `tests/integration/tests/health.rs`. Its route passes T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies it and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither.",
+   "goal": "The app answers `/healthz` for the uptime monitor (OPS-007) and `web` and `worker` exit non-zero when their own liveness check has failed for 3 minutes (a setting) so the host's On Failure policy restarts them (OPS-049). The `/healthz` probe is `app/server/src/healthz.rs` (the server binary checks the process, the database and the worker check, read from `core.task`, so no new table is needed (plan change D-3144: the worker counts as down only when a task has been due, its `run_at` passed with no `done_at`, no `dead_at` and no live lease, for longer than a setting, 10 minutes by default; an idle worker and a database no worker has served yet answer 200, because `app/server/tests/door_matrix.rs` probes `/healthz` as a public `GET` that must answer 200, `:390`, with no worker running; the body names the database and worker state and the age of the newest lease or finish, TD-OPS-02's `/healthz` half); `ops` holds no route, D-491); the liveness exits are `app/server/src/liveness.rs` (TD-OPS-24). Expose, for T476's health page through the serving route, the web process's start time and the worker state the probe reports as one plain value the route passes in (no secret, no contact detail). Plan change D-3753: the health page, its OPS-008 figures (the secrets readout among them) and the OPS-009 spot-check are no longer this task's: T475 builds the figure readers and T476 the page, whose review checks the secrets readout; this task's review checks only that `/healthz` and the liveness exits show no secret, contact detail or setting value. Tests in `tests/integration/tests/health.rs`. Its route passes T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies it and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither. Plan change D-3838 (A11Y-002, D-3836's lesson): `/healthz` is a JSON health check, not a page, so in the same change that serves it this task adds one line to `NOT_PAGES` in `tests/a11y/fixtures.ts`, `[\"/healthz\", \"T106's JSON health check, not a page\"]`, and no other change to that file (its check machinery, tags, widths and `REVIEWED_INCOMPLETE` stay as they are, D-1788), then runs `bash scripts/prehandin.sh --ally`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15906,12 +15910,14 @@
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
-    "security"
+    "security",
+    "accessibility"
    ],
    "owns": [
     "app/server/src/healthz.rs",
     "app/server/src/liveness.rs",
-    "tests/integration/tests/health.rs"
+    "tests/integration/tests/health.rs",
+    "tests/a11y/fixtures.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15937,11 +15943,12 @@
     "D-492",
     "D-2440",
     "D-3144",
-    "D-3753"
+    "D-3753",
+    "D-3838"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 350,
     "context_pct": 12
    },
@@ -17093,7 +17100,7 @@
    "id": "T115",
    "slug": "a11y-docs-statement",
    "title": "docs/a11y.md (plan, statement, VoiceOver script), statement page, email checks",
-   "goal": "`docs/a11y.md` holds the accessibility plan, the statement and the Gate B VoiceOver script; the statement page gives the conformance target, known limits and the text, email or form contact with the relay line and no phone line; and a docs test proves every email has real text, a plain-text part and meaningful link text (A11Y-019, A11Y-020, A11Y-022). Plan change D-3155: the statement page is `GET /accessibility` (module `site`), a route in `pages.rs`'s router that `build_router` already merges (T102), added to `docs/architecture.md` section 13 as `yes` by this task; its text is `docs/legal/accessibility-statement.md`, rendered at build time by T221's `app/site/build.rs`, not a third copy: `docs/a11y.md` holds the plan and the VoiceOver script and links the statement, and TD-WEB-08's checks run on that document and the rendered page.",
+   "goal": "`docs/a11y.md` holds the accessibility plan, the statement and the Gate B VoiceOver script; the statement page gives the conformance target, known limits and the text, email or form contact with the relay line and no phone line; and a docs test proves every email has real text, a plain-text part and meaningful link text (A11Y-019, A11Y-020, A11Y-022). Plan change D-3155: the statement page is `GET /accessibility` (module `site`), a route in `pages.rs`'s router that `build_router` already merges (T102), added to `docs/architecture.md` section 13 as `yes` by this task; its text is `docs/legal/accessibility-statement.md`, rendered at build time by T221's `app/site/build.rs`, not a third copy: `docs/a11y.md` holds the plan and the VoiceOver script and links the statement, and TD-WEB-08's checks run on that document and the rendered page. Plan change D-3838 (A11Y-002, D-3836's lesson): in the same change that serves `/accessibility`, this task adds each route's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts` (fake data only, `shows` and `hides` lines that tell each state apart) and runs `bash scripts/prehandin.sh --ally`, so `tests/a11y/axe_all_pages.spec.ts` stays green.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17135,13 +17142,14 @@
     "D-317",
     "D-379",
     "D-1143",
-    "D-3155"
+    "D-3155",
+    "D-3838"
    ],
    "cites": [],
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 8
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -17856,7 +17864,8 @@
     "T488",
     "T489",
     "T490",
-    "T491"
+    "T491",
+    "T496"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -24573,7 +24582,7 @@
    "id": "T261",
    "slug": "served-confirm-route",
    "title": "portals and server (harness): the served Confirm route under the real middleware, with its server tests",
-   "goal": "Plan change D-3813 (T261's plan gap after three attempts: neither end-to-end binary serves the Confirm route, because `tests/e2e/webserver.ts` sets no Stripe webhook secret, account, stand-in URL, publishable key or launch date, and the work measured about 1,936 changed lines against an 800-line budget): the old T261 is split, nothing dropped, into T492 (the keyed end-to-end binary's Stripe settings), T493 (the Confirm page's CSP marker, script and template line), T494 (the $0 free-first-win handoff), T261 (the served route and its server tests) and T495 (the served end-to-end journey). This task, T261, keeps its ID: the served route and its server tests, after T492, T493 and T494. The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `adapters::api::StripePayments` as the `IntentStripe` (`app/payments/src/intent_http.rs:15`; no `StripeHttp` exists, and the bank approval's client secret comes from `StripePayments`'s own intent answers, D-2076 (2); D-3100): only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load (only after the route has compared the pick's stored fee mode, `payments::api::pick_fee`, with `payments::api::fee_terms_in_force`: when they differ it opens no PaymentIntent and the page shows the fee-terms-changed line in place of the card form, keeping the press button, whose `POST` takes the `FeeModeChanged` path below; D-3722),for a $0 pick T494's `portals::confirm_waiver` (the free-first-win decision from T486's join dates and the launch instant from the `with_confirm_settings` part, always present in test and live, and the one release through the production `ReleaseSink`), `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and, in the press's transaction, the pick ends at once with no fee through `picks::api::end_for_fee_terms` (T467, D-3722: the \"Can't take it\" path with its own `end_reason` `fee_terms_changed`; the job from `picks::api::cant_take_job` and the pause from `intake::api::paused_by_homeowner`, as `portals`' `cant_take_pick` does), never counted against the business (PICK-050, OPS-034, D-1871); `end_for_fee_terms` itself queues her PICK-046 text when no backup takes the pick, so the route sends no homeowner text (PICK-047's moved text has no sender on any path yet, a known gap D-3722 leaves to a later plan change); a `Backup::Done` answer (a charge already under way, the mode switched back, the pick no longer waiting) ends nothing and the page shows the attempt's state as on any reload; this task owns no `picks` file and no migration. (2) CSP: the Confirm route alone sets T493's response marker, so the layer in `app/portals/src/security.rs` adds Stripe's hosts to this page and no other (SEC-012); the Confirm route is always merged from the Stripe hooks (D-3744's pattern, as T103 and T489 do for the Verify codes), and its publishable key and launch instant arrive through a new optional builder `RouterParts::with_confirm_settings(publishable_key, launch)` in the shared `app/server/src/lib.rs`, which `main` (the shared `app/server/src/main.rs`) builds from T492's `Settings::stripe_publishable_key` and `Settings::launch_date`, failing with an error naming the missing key in test and live, so the server does not start there without them (as `release_sink::stripe_webhook` treats its webhook secret). `build_router` never reads `Settings`, and `app/server/tests/route_wiring.rs` and `app/server/tests/door_matrix.rs` (not this task's) build it without the part: without it (dev and ci without the keys, and those door tests) the page's `GET` opens no PaymentIntent, makes no Stripe call and answers 200 (`door_matrix.rs` requires exactly 200 for an admitted `GET`; its fixtures' pick has a non-zero fee and an unreachable Stripe URL), and shows the plain line \"Card payments can't be taken right now.\" in place of the card form, charges nothing on a press, and gives no launch-window free first win; the keyed end-to-end binary runs `main`, so with T492's values it serves the full page. This task flips `docs/architecture.md` section 13's `GET` and `POST /b/picks/{pick}/confirm` rows to `yes`, after which `route_wiring.rs` requires the route and `door_matrix.rs` probes it, both unchanged. A missing key or launch date therefore occurs only where `main` built no part (dev and ci without the keys, and the door tests), never in test or live, so a fee is never wrongly charged or waived there. (2a) Plan change D-3700 (A11Y-007, A11Y-009; D-1820 (4), D-3699), with D-3813's one addition: `app/portals/templates/confirm_pay.html` draws native checkboxes (the save-card box, `:52`), which fail `tests/a11y/targets_contrast.spec.ts`'s `edgeProblems` (:46) while no stylesheet is loaded (the site stylesheet is T101's); it gains `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block as `app/portals/templates/feedback.html:10` has it, and the one conditional \"Card payments can't be taken right now.\" line shown in place of the card form without the settings part, and no other wording or structure change; the page has no Spanish version. This task owns customer copy: `scripts/check_ai_smell.py` and `scripts/check_copy.py` report 0 problems on the new line, and the cold read and copy panel find nothing open. (3) The script is T493's; a `GET` of the Confirm URL with `Accept: application/json` answers the attempt's state in the press reply's shape with no client secret, which T493's script asks after a bank approval, so the page trusts the server, never the browser. That `GET` with `Accept: application/json` opens no PaymentIntent, stamps no first opening, stores no terms row, applies the same owner and \"Confirm and billing\" member scoping (any other answers not found) and the same pause and pick-status check as the page, and answers with `Cache-Control: no-store` and `Vary: Accept`. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware): TD-FEE-45's server cases (carrying its marker; T495, which lists the entry and runs after this task because the row also names its browser file, completes it), TD-SEC-37's served CSP cases (the Confirm page adds only Stripe's hosts and every other page, an error page and a handler setting its own CSP keep the strict policy), TD-FEE-58's served $0 case, and the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32; the browser journey is T495's. The fixes the third attempt's review found are part of this task: a test that a homeowner-paused pick (CON-029) refuses on load and on press and charges nothing; FEE-041 tests that a press over the month's limit is not charged and gets the limit reply with the portal link, and that a lost answer after a press gives one charge; and the press's paused branch says \"Nothing was charged\" only after re-reading, in the press's transaction, that no charge attempt exists, so a press racing a pause never says nothing was charged while a charge is under way. The Confirm route is served only after T433 (D-3468's half of T328) registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff is T494's module and the route only calls it; TD-FEE-58's served case is in `app/server/tests/confirm_route.rs`. The Confirm route is served only after T340, T341 and T440 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3055 (T232's pieces, which it builds but cannot serve): on `GET` the route calls T232's Confirm-page first-opening stamp; on each `POST` it applies T232's shared-inbox fresh-code check before `may_confirm` and stores T232's business-terms record (`businesses::api::record_confirm_terms`, channel `confirm_page`, the pick ID) in the press's transaction. `confirm_route.rs` checks that with \"This inbox is shared\" on a Confirm inside a live session asks for a fresh code and charges nothing without it (the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32). The browser checks of the \"Can't take it\" link and the reload storing no terms row are T495's. Plan change D-3722: the new end reason, its migration and its `picks` call are T467's, so this task depends on T467 and changes no `picks` or migration file. Update the `portals` and `server` `CLAUDE.md` files, add this task's build-note line at the end of `app/portals/NOTES.md` and `docs/decisions.md`. Its budget is 800 lines (the harness limit) for the route and its server test file only; the shared `app/server/src/lib.rs`, `CLAUDE.md` and `NOTES.md` edits are not owned files. Plan change D-3836 (attempt 4's Ally failure: `tests/a11y/axe_all_pages.spec.ts:12` to `:15`, A11Y-002, requires a `PAGE_STATES` entry for every `GET` route in the route table, and this task flips the Confirm rows of `docs/architecture.md` section 13 to `yes`): this task adds the Confirm page's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts`, with its seed there too (T267 is DONE; `businessSql` and `portalSeed` live in that file), fake data only, and does not edit `tests/a11y/fixtures.ts` (D-1788, `docs/governance.md:30`), in the same change as the flip; T495 adds none. The a11y suite starts the app through `tests/e2e/webserver.ts` (`tests/a11y/playwright.config.ts:18`), whose plain binary has no Stripe webhook secret and so no Stripe hooks and no Confirm route, while the keyed binary has T492's Stripe stand-in settings and runs `main`, so it serves the full page with the `with_confirm_settings` part: the entry is seeded on the keyed binary with `portalSeed(true)` and `businessSql` (as the release page's states are, `tests/a11y/page_states.ts:259`), a business session of the owner and a waiting pick of that business, in one state only, a fee-free ($0) pick, whose `shows` line is `FEE_FREE_LINE` (\"No introduction fee for this job.\", `app/portals/src/confirm_pay.rs:61`) and which opens no PaymentIntent and shows no card form; no card state is added, because the stand-in does not serve Stripe.js from `js.stripe.com`, and the card form stays with T495's end-to-end run; the state passes axe at 320, 768 and 1280 px with no violation and no unreviewed incomplete result, and the keyboard, reflow, spacing and target checks, and no other entry or check changes. The branch `claude/task/T261-served-confirm-route` (PR #831, head 66a6896) already holds attempt 4's built and reviewed work; the next attempt keeps it, adds only this entry and fixes only what the Ally run then reports.",
+   "goal": "Plan change D-3813 (T261's plan gap after three attempts: neither end-to-end binary serves the Confirm route, because `tests/e2e/webserver.ts` sets no Stripe webhook secret, account, stand-in URL, publishable key or launch date, and the work measured about 1,936 changed lines against an 800-line budget): the old T261 is split, nothing dropped, into T492 (the keyed end-to-end binary's Stripe settings), T493 (the Confirm page's CSP marker, script and template line), T494 (the $0 free-first-win handoff), T261 (the served route and its server tests) and T495 (the served end-to-end journey). This task, T261, keeps its ID: the served route and its server tests, after T492, T493 and T494. The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `adapters::api::StripePayments` as the `IntentStripe` (`app/payments/src/intent_http.rs:15`; no `StripeHttp` exists, and the bank approval's client secret comes from `StripePayments`'s own intent answers, D-2076 (2); D-3100): only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load (only after the route has compared the pick's stored fee mode, `payments::api::pick_fee`, with `payments::api::fee_terms_in_force`: when they differ it opens no PaymentIntent and the page shows the fee-terms-changed line in place of the card form, keeping the press button, whose `POST` takes the `FeeModeChanged` path below; D-3722),for a $0 pick T494's `portals::confirm_waiver` (the free-first-win decision from T486's join dates and the launch instant from the `with_confirm_settings` part, always present in test and live, and the one release through the production `ReleaseSink`), `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and, in the press's transaction, the pick ends at once with no fee through `picks::api::end_for_fee_terms` (T467, D-3722: the \"Can't take it\" path with its own `end_reason` `fee_terms_changed`; the job from `picks::api::cant_take_job` and the pause from `intake::api::paused_by_homeowner`, as `portals`' `cant_take_pick` does), never counted against the business (PICK-050, OPS-034, D-1871); `end_for_fee_terms` itself queues her PICK-046 text when no backup takes the pick, so the route sends no homeowner text (PICK-047's moved text has no sender on any path yet, a known gap D-3722 leaves to a later plan change); a `Backup::Done` answer (a charge already under way, the mode switched back, the pick no longer waiting) ends nothing and the page shows the attempt's state as on any reload; this task owns no `picks` file and no migration. (2) CSP: the Confirm route alone sets T493's response marker, so the layer in `app/portals/src/security.rs` adds Stripe's hosts to this page and no other (SEC-012); the Confirm route is always merged from the Stripe hooks (D-3744's pattern, as T103 and T489 do for the Verify codes), and its publishable key and launch instant arrive through a new optional builder `RouterParts::with_confirm_settings(publishable_key, launch)` in the shared `app/server/src/lib.rs`, which `main` (the shared `app/server/src/main.rs`) builds from T492's `Settings::stripe_publishable_key` and `Settings::launch_date`, failing with an error naming the missing key in test and live, so the server does not start there without them (as `release_sink::stripe_webhook` treats its webhook secret). `build_router` never reads `Settings`, and `app/server/tests/route_wiring.rs` and `app/server/tests/door_matrix.rs` (not this task's) build it without the part: without it (dev and ci without the keys, and those door tests) the page's `GET` opens no PaymentIntent, makes no Stripe call and answers 200 (`door_matrix.rs` requires exactly 200 for an admitted `GET`; its fixtures' pick has a non-zero fee and an unreachable Stripe URL), and shows the plain line \"Card payments can't be taken right now.\" in place of the card form, charges nothing on a press, and gives no launch-window free first win; the keyed end-to-end binary runs `main`, so with T492's values it serves the full page. This task flips `docs/architecture.md` section 13's `GET` and `POST /b/picks/{pick}/confirm` rows to `yes`, after which `route_wiring.rs` requires the route and `door_matrix.rs` probes it, both unchanged. A missing key or launch date therefore occurs only where `main` built no part (dev and ci without the keys, and the door tests), never in test or live, so a fee is never wrongly charged or waived there. (2a) Plan change D-3700 (A11Y-007, A11Y-009; D-1820 (4), D-3699), with D-3813's one addition: `app/portals/templates/confirm_pay.html` draws native checkboxes (the save-card box, `:52`), which fail `tests/a11y/targets_contrast.spec.ts`'s `edgeProblems` (:46) while no stylesheet is loaded (the site stylesheet is T101's); it gains `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block as `app/portals/templates/feedback.html:10` has it, and the one conditional \"Card payments can't be taken right now.\" line shown in place of the card form without the settings part, and no other wording or structure change; the page has no Spanish version. This task owns customer copy: `scripts/check_ai_smell.py` and `scripts/check_copy.py` report 0 problems on the new line, and the cold read and copy panel find nothing open. (3) The script is T493's; a `GET` of the Confirm URL with `Accept: application/json` answers the attempt's state in the press reply's shape with no client secret, which T493's script asks after a bank approval, so the page trusts the server, never the browser. That `GET` with `Accept: application/json` opens no PaymentIntent, stamps no first opening, stores no terms row, applies the same owner and \"Confirm and billing\" member scoping (any other answers not found) and the same pause and pick-status check as the page, and answers with `Cache-Control: no-store` and `Vary: Accept`. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware): TD-FEE-45's server cases (carrying its marker; T495, which lists the entry and runs after this task because the row also names its browser file, completes it), TD-SEC-37's served CSP cases (the Confirm page adds only Stripe's hosts and every other page, an error page and a handler setting its own CSP keep the strict policy), TD-FEE-58's served $0 case, and the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32; the browser journey is T495's. The fixes the third attempt's review found are part of this task: a test that a homeowner-paused pick (CON-029) refuses on load and on press and charges nothing; FEE-041 tests that a press over the month's limit is not charged and gets the limit reply with the portal link, and that a lost answer after a press gives one charge; and the press's paused branch says \"Nothing was charged\" only after re-reading, in the press's transaction, that no charge attempt exists, so a press racing a pause never says nothing was charged while a charge is under way. The Confirm route is served only after T433 (D-3468's half of T328) registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff is T494's module and the route only calls it; TD-FEE-58's served case is in `app/server/tests/confirm_route.rs`. The Confirm route is served only after T340, T341 and T440 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3055 (T232's pieces, which it builds but cannot serve): on `GET` the route calls T232's Confirm-page first-opening stamp; on each `POST` it applies T232's shared-inbox fresh-code check before `may_confirm` and stores T232's business-terms record (`businesses::api::record_confirm_terms`, channel `confirm_page`, the pick ID) in the press's transaction. `confirm_route.rs` checks that with \"This inbox is shared\" on a Confirm inside a live session asks for a fresh code and charges nothing without it (the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32). The browser checks of the \"Can't take it\" link and the reload storing no terms row are T495's. Plan change D-3722: the new end reason, its migration and its `picks` call are T467's, so this task depends on T467 and changes no `picks` or migration file. Update the `portals` and `server` `CLAUDE.md` files, add this task's build-note line at the end of `app/portals/NOTES.md` and `docs/decisions.md`. Its budget is 800 lines (the harness limit) for the route and its server test file only; the shared `app/server/src/lib.rs`, `CLAUDE.md` and `NOTES.md` edits are not owned files. Plan change D-3836 (attempt 4's Ally failure: `tests/a11y/axe_all_pages.spec.ts:12` to `:15`, A11Y-002, requires a `PAGE_STATES` entry for every `GET` route in the route table, and this task flips the Confirm rows of `docs/architecture.md` section 13 to `yes`): this task adds the Confirm page's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts`, with its seed there too (T267 is DONE; `businessSql` and `portalSeed` live in that file), fake data only, and does not edit `tests/a11y/fixtures.ts` (D-1788, `docs/governance.md:30`), in the same change as the flip; T495 adds none. The a11y suite starts the app through `tests/e2e/webserver.ts` (`tests/a11y/playwright.config.ts:18`), whose plain binary has no Stripe webhook secret and so no Stripe hooks and no Confirm route, while the keyed binary has T492's Stripe stand-in settings and runs `main`, so it serves the full page with the `with_confirm_settings` part: the entry is seeded on the keyed binary with `portalSeed(true)` and `businessSql` (as the release page's states are, `tests/a11y/page_states.ts:259`), a business session of the owner and a waiting pick of that business, in one state only. Plan change D-3838 corrects D-3836's premise: an ordinary fee-free ($0) pick still draws the card section and loads `js.stripe.com` (the branch's `confirm_pay.rs` returns no `card_off` line when the settings part is present, and `confirm_pay.html` then draws the card section and its scripts), and the Ally suite does not stub Stripe, so attempt 5's fee-free state mounted a live Stripe Element and failed axe (aria-hidden-focus, color-contrast inside Stripe's frame), A11Y-009's text spacing on a hidden input and A11Y-006 and A11Y-007's edge checks. The one state is therefore a fee-free ($0) pick whose stored fee mode differs from the mode in force: the seed stores `payments.pick_fee.mode` as the other of `tiers` and `flat` than `payments.fee_terms.mode` (`CASE t.mode WHEN 'tiers' THEN 'flat' ELSE 'tiers' END`; the modes of `migrations/0155_payments_fee_terms_pick_fee.sql:13`, `:22`), so the page shows `FEE_TERMS_LINE` (\"The fee terms changed after the homeowner picked you ...\") in place of the card section, opens no PaymentIntent and loads neither Stripe.js nor the page script; its `shows` line is the start of `FEE_TERMS_LINE` and its `hides` line `CARD_OFF_LINE` (\"Card payments can't be taken right now.\"); no card state is added (the card-section state and the Stripe stub are T496's); the state passes axe at 320, 768 and 1280 px with no violation and no unreviewed incomplete result, and the keyboard, reflow, spacing and target checks, and no other entry or check changes. The branch `claude/task/T261-served-confirm-route` (PR #831) already holds attempt 5's built and reviewed work, its `PAGE_STATES` entry included; the next attempt keeps it, changes only that entry's seed and state as D-3838 says, runs `bash scripts/prehandin.sh --ally` and fixes only what that run then reports.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -24664,7 +24673,8 @@
     "D-3722",
     "D-3779",
     "D-3813",
-    "D-3836"
+    "D-3836",
+    "D-3838"
    ],
    "cites": [],
    "budget": {
@@ -24679,7 +24689,7 @@
    ],
    "branch": "claude/task/T261-served-confirm-route",
    "prompt": "kit/prompts/T261.md",
-   "acceptance": "TD-FEE-45 (with its D-1871 cases: a load after an owner's fee-mode switch opens no PaymentIntent, and a press then charges nothing, calls no Stripe, and leaves the pick `cancelled` with `end_reason` `fee_terms_changed` through `picks::api::end_for_fee_terms` with her PICK-046 event queued when no backup takes it, D-3722) and TD-SEC-37's served cases pass in `app/server/tests/confirm_route.rs` against PostgreSQL, with TD-FEE-58's served $0 case and the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32; a homeowner-paused pick refuses on load and on press; a press over the FEE-041 limit charges nothing and gets the limit reply, and a lost answer gives one charge; a press racing a pause never says \"Nothing was charged\" while a charge attempt exists; without the `with_confirm_settings` part the page's `GET` opens no PaymentIntent, makes no Stripe call and answers 200, shows \"Card payments can't be taken right now.\" in place of the card form, charges nothing and gives no launch-window free first win, and `main` refuses to start in test and live without either key, naming it; `app/server/tests/route_wiring.rs` and `app/server/tests/door_matrix.rs` pass unchanged with the section 13 rows at `yes`; `tests/a11y/targets_contrast.spec.ts` passes on the Confirm template; `scripts/check_ai_smell.py` and `scripts/check_copy.py` report 0 problems; `tests/integration/tests/confirm_waiver.rs`, `app/portals/src/tests/csp_marker.rs` and `tests/e2e/confirm_pay.spec.ts` pass unchanged; `tests/a11y/axe_all_pages.spec.ts` passes, with the Confirm route's one `PAGE_STATES` state (a fee-free pick showing \"No introduction fee for this job.\", seeded in `tests/a11y/page_states.ts` on the keyed binary) clean at every width, and the rest of the Ally suite passes.",
+   "acceptance": "TD-FEE-45 (with its D-1871 cases: a load after an owner's fee-mode switch opens no PaymentIntent, and a press then charges nothing, calls no Stripe, and leaves the pick `cancelled` with `end_reason` `fee_terms_changed` through `picks::api::end_for_fee_terms` with her PICK-046 event queued when no backup takes it, D-3722) and TD-SEC-37's served cases pass in `app/server/tests/confirm_route.rs` against PostgreSQL, with TD-FEE-58's served $0 case and the served halves of TD-PICK-43, TD-TERMS-11 and TD-SEC-32; a homeowner-paused pick refuses on load and on press; a press over the FEE-041 limit charges nothing and gets the limit reply, and a lost answer gives one charge; a press racing a pause never says \"Nothing was charged\" while a charge attempt exists; without the `with_confirm_settings` part the page's `GET` opens no PaymentIntent, makes no Stripe call and answers 200, shows \"Card payments can't be taken right now.\" in place of the card form, charges nothing and gives no launch-window free first win, and `main` refuses to start in test and live without either key, naming it; `app/server/tests/route_wiring.rs` and `app/server/tests/door_matrix.rs` pass unchanged with the section 13 rows at `yes`; `tests/a11y/targets_contrast.spec.ts` passes on the Confirm template; `scripts/check_ai_smell.py` and `scripts/check_copy.py` report 0 problems; `tests/integration/tests/confirm_waiver.rs`, `app/portals/src/tests/csp_marker.rs` and `tests/e2e/confirm_pay.spec.ts` pass unchanged; `tests/a11y/axe_all_pages.spec.ts` passes, with the Confirm route's one `PAGE_STATES` state (a fee-free pick whose stored fee mode differs from the mode in force, showing `FEE_TERMS_LINE` and not `CARD_OFF_LINE`, loading no Stripe.js, seeded in `tests/a11y/page_states.ts` on the keyed binary) clean at every width, `bash scripts/prehandin.sh --ally` green, and the rest of the Ally suite passes.",
    "copy": true
   },
   {
@@ -24741,6 +24751,61 @@
    ],
    "branch": "claude/task/T495-confirm-served-journey",
    "prompt": "kit/prompts/T495.md"
+  },
+  {
+   "id": "T496",
+   "slug": "ally-stripe-stub-card-state",
+   "title": "a11y (harness): stub Stripe.js in the Ally suite and scan the Confirm page's card section",
+   "goal": "Plan change D-3838: the Confirm page's card section (the Stripe Element, the save-card box and the press button) is never Ally-scanned, because T261's one Ally state is the fee-terms-changed page, and the Ally suite would make live requests to `https://js.stripe.com` for any card state, since `open` in `tests/a11y/fixtures.ts` stubs nothing. (1) `tests/a11y/fixtures.ts` (owner-only, D-1788): `open` routes `https://js.stripe.com/**` to a fake Stripe.js shaped as `tests/e2e/confirm_pay.spec.ts:64`'s `FAKE_STRIPE` (a `Stripe()` whose `elements().create('card').mount(...)` draws a plain labelled field inside the page, no network), on every page, so no Ally run reaches the internet; no check, tag, width, threshold or `REVIEWED_INCOMPLETE` entry changes. (2) `tests/a11y/page_states.ts` (shared): a second Confirm state, an ordinary charged pick of the seeded business on the keyed binary, whose card section shows with the fake Element mounted, told apart by `shows` (the \"Confirm and pay\" button's text) and `hides` (`FEE_TERMS_LINE`'s start); it passes axe at 320, 768 and 1280 px with no violation and no unreviewed incomplete result, and the keyboard, reflow, spacing and target checks; a real fault the scan finds in T261's page is reported as a plan gap, not worked around in the stub. (T106, which runs first, adds the `/healthz` `NOT_PAGES` line.) Run `bash scripts/prehandin.sh --ally`. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T261",
+    "T495",
+    "T106"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility",
+    "harness"
+   ],
+   "owns": [
+    "tests/a11y/fixtures.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/accessibility-forms.md",
+    "tests/e2e/confirm_pay.spec.ts"
+   ],
+   "requirements": [
+    "A11Y-002"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1788",
+    "D-3836",
+    "D-3838"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 200,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T496-ally-stripe-stub-card-state",
+   "prompt": "kit/prompts/T496.md",
+   "acceptance": "The Ally suite passes with `open` stubbing `https://js.stripe.com/**` (no live Stripe request in the run), the Confirm page's charged-pick card state clean at 320, 768 and 1280 px in axe, keyboard, reflow, spacing and target checks; every other state and check is unchanged; `bash scripts/prehandin.sh --ally` is green."
   },
   {
    "id": "T264",
@@ -33335,7 +33400,7 @@
    "id": "T462",
    "slug": "signup-inbox-check",
    "title": "server: the sign-up inbox check is served behind the business session after activation",
-   "goal": "Plan change D-3676 (split from T302; BIZ-042, BIZ-040, SEC-004, SEC-034, SEC-042; D-462, D-2128, D-3641): the inbox check (BIZ-042) comes after the email is verified, and a correct email code activates the business (T461), after which every sign-up step refuses (D-3641); so it is served behind the business session. `app/server/src/business_signup.rs` adds a route constant `INBOX_CHECK_ROUTE` = `/b/signup/inbox`, a path under `/b/signup` that is not one of D-3641's nine open step paths and so keeps the Business door (`tests/security/door_cases.txt` pins `Business /b/signup/other` the same way; no door file changes), served behind `portals::api::business_principal`: its `GET` shows `portals::api::email_check_page` for the signed-in person (`businesses::api::email_check` with that person's `Acting`), the mail-app choice coming back as `?app=` (the page's own `GET` form, `app/portals/templates/email_check.html:10`); its `POST`s (the forms have no `action`, so they post to the same path) send the sample card (`businesses::api::send_sample_card`) or record the answer (`record_inbox_answer`); its \"Skip for now\" links to `/b`. There is no sample pick step here (D-462: `portals::api::sample_pick_on_open` offers it at the first real job card). Every response is `no_store`; a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event; a signed-out visitor gets the Business door's refusal. Its rows in `docs/architecture.md` section 13 are marked `yes`, and its `GET`'s `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` with a seeded business session (T452's cookie-carrying seeds; no vault is read). Tests: cases in `app/server/tests/business_signup_route.rs` (TD-SEC-45: the inbox check after activation for the signed-in owner, a sample sent and an answer stored once, refused without a session). Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3676 (split from T302; BIZ-042, BIZ-040, SEC-004, SEC-034, SEC-042; D-462, D-2128, D-3641): the inbox check (BIZ-042) comes after the email is verified, and a correct email code activates the business (T461), after which every sign-up step refuses (D-3641); so it is served behind the business session. `app/server/src/business_signup.rs` adds a route constant `INBOX_CHECK_ROUTE` = `/b/signup/inbox`, a path under `/b/signup` that is not one of D-3641's nine open step paths and so keeps the Business door (`tests/security/door_cases.txt` pins `Business /b/signup/other` the same way; no door file changes), served behind `portals::api::business_principal`: its `GET` shows `portals::api::email_check_page` for the signed-in person (`businesses::api::email_check` with that person's `Acting`), the mail-app choice coming back as `?app=` (the page's own `GET` form, `app/portals/templates/email_check.html:10`); its `POST`s (the forms have no `action`, so they post to the same path) send the sample card (`businesses::api::send_sample_card`) or record the answer (`record_inbox_answer`); its \"Skip for now\" links to `/b`. There is no sample pick step here (D-462: `portals::api::sample_pick_on_open` offers it at the first real job card). Every response is `no_store`; a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event; a signed-out visitor gets the Business door's refusal. Its rows in `docs/architecture.md` section 13 are marked `yes`, and its `GET`'s `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` with a seeded business session (T452's cookie-carrying seeds; no vault is read). Tests: cases in `app/server/tests/business_signup_route.rs` (TD-SEC-45: the inbox check after activation for the signed-in owner, a sample sent and an answer stored once, refused without a session). Update the `server` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3838 (attempt 2's plan gap, reviewer-confirmed: axe's target-size check fails at 320 px on `/b/signup/inbox` because the inbox, spam and tab answer buttons are unstyled, `email_check.html` loads no stylesheet, `FORMS_CSS` styles only checkboxes and radios, and the CSP's `style-src 'self'` blocks inline styles): this task also owns `app/portals/src/feedback.rs` and `app/portals/templates/email_check.html`. `FORMS_CSS` in `feedback.rs` gains exactly one rule, `button{min-height:24px}` (A11Y-006; this amends D-3700's and T466's \"no other selector\"), and nothing else in `feedback.rs` changes; `email_check.html` gains `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` first in its `main` block, as `app/portals/templates/business_signup.html:23` has it, and no other change. Run `bash scripts/prehandin.sh --ally`. T462 and T261 both append to `tests/a11y/page_states.ts` and `docs/architecture.md` section 13 (shared paths); the runner already serializes them by crate, so no dependency is added.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -33348,12 +33413,15 @@
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
-    "security",
-    "privacy"
+    "accessibility",
+    "privacy",
+    "security"
    ],
    "owns": [
     "app/server/src/business_signup.rs",
-    "app/server/tests/business_signup_route.rs"
+    "app/server/tests/business_signup_route.rs",
+    "app/portals/src/feedback.rs",
+    "app/portals/templates/email_check.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -33361,7 +33429,8 @@
     "docs/spec/security.md",
     "docs/spec/businesses.md",
     "docs/brains/rust-production.md",
-    "docs/spec/accessibility.md"
+    "docs/spec/accessibility.md",
+    "docs/brains/accessibility-forms.md"
    ],
    "requirements": [
     "BIZ-042"
@@ -33373,13 +33442,14 @@
     "D-462",
     "D-2128",
     "D-3641",
-    "D-3676"
+    "D-3676",
+    "D-3838"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
+    "files": 4,
     "lines": 400,
-    "context_pct": 11
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -33387,7 +33457,8 @@
     "Ally"
    ],
    "branch": "claude/task/T462-signup-inbox-check",
-   "prompt": "kit/prompts/T462.md"
+   "prompt": "kit/prompts/T462.md",
+   "acceptance": "TD-SEC-45's inbox-check cases pass in `app/server/tests/business_signup_route.rs`; `/b/signup/inbox`'s states (the sample sent, and the answer stored) pass Ally at 320, 768 and 1280 px; `app/portals/src/tests/forms_css.rs` and every other page's Ally states pass unchanged; `bash scripts/prehandin.sh --ally` is green."
   },
   {
    "id": "T464",
