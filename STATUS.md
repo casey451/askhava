@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-15T02:58:28Z by runner 30d12d87a2fd (actions).
+Updated 2026-11-15T03:01:04Z by runner 41e50f5df2cd (actions).
 
-**Idle since 02:57Z; 342 of 476 done; week 55% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T461 in progress since 03:00Z; 342 of 476 done; week 55% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 342 of 476 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 02:57Z (no task in progress)
-- **Week:** 55% used, 84.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:58Z, 0 min before this update
+- **Lane:** lane 2: T461 claimed 03:00Z, lease until 06:00Z
+- **Week:** 55% used, 84.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 02:58Z, 2 min before this update
 - **Keeper:** last ran 02:58Z, next wake 03:18Z
 
 ## Needs attention
 - BLOCKED T261: plan gap reported: PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership c; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 29 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,7 +86,6 @@ Updated 2026-11-15T02:58:28Z by runner 30d12d87a2fd (actions).
 | T344 | picks: the global daily Verify cap holds under concurrent co | done | 1 | 28 min | 03:23Z |  |
 | T433 | server and payments: every payments task runs in the product | done | 1 | 57 min | 03:21Z |  |
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 31 min | 03:17Z |  |
-| T450 | portals: the sign-up code screens and the texts choice with  | done | 1 | 79 min | 03:00Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -111,7 +110,7 @@ Updated 2026-11-15T02:58:28Z by runner 30d12d87a2fd (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 342 of 471
+**Tasks merged (throughput only):** 342 of 476
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -139,7 +138,7 @@ Updated 2026-11-15T02:58:28Z by runner 30d12d87a2fd (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-15T01:24:22Z (week)): week: 109.9M used, 84.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-25T19:11:26Z.
+- Pacing (session_reading 2026-11-15T02:57:49Z (week)): week: 110.0M used, 84.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-26T02:31:37Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -155,6 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T461 (lease until 2026-11-15T06:00:54Z)
 
 ## Last usage reading
 - {"task": "T261", "at": "2026-11-15T02:57:21Z", "input_tokens": 413, "cache_read_input_tokens": 44276665, "cache_creation_input_tokens": 409210, "output_tokens": 145159}
