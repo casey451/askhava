@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T12:48:34Z by runner 2c7436fa53ab (actions).
+Updated 2026-11-15T13:25:01Z by runner 2c7436fa53ab (manual).
 
 **Building: T261 in progress since 12:48Z; 347 of 480 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T12:48:34Z by runner 2c7436fa53ab (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T261 claimed 12:48Z, lease until 15:48Z
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:14Z, 33 min before this update
+- **Last run:** 12:48Z, 36 min before this update
 - **Keeper:** last ran 12:14Z, next wake 17:54Z
 
 ## Needs attention
@@ -68,36 +68,34 @@ Updated 2026-11-15T12:48:34Z by runner 2c7436fa53ab (actions).
 - 16:47Z Plan: pre-claim scout fixes for 27 stage-5 tasks (D-3744) (#793)
 - 16:40Z Plan: sign-up email code and activation link get real send paths, rate-limited (new T468, D-3743) (#791)
 - 15:37Z Plan: fee_terms_changed pick end reason (new T467) so T261's Confirm page can end a pick safely (D-3722) (#788)
-- 13:12Z Plan: T301 door-matrix Quote-link cases follow BIZ-038/CARD-023; action pages link forms.css (D-3706) (#781)
-- 12:55Z Plan: shared portal forms stylesheet (T466) so business pages pass A11Y-007/009 (D-3699, D-3700) (#780)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
+**Requirements verified:** 213 of 733 (29.1%) · partial 363 · unstarted 157
 **Tasks merged (throughput only):** 347 of 480
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 14 | 15 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 18 | 37 | 3 | 58 |
-| calls | 14 | 10 | 1 | 25 |
-| consent | 15 | 16 | 4 | 35 |
-| fees | 19 | 32 | 1 | 52 |
-| intake | 29 | 11 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
-| licensing | 38 | 10 | 0 | 48 |
-| lifecycle | 24 | 4 | 0 | 28 |
-| messaging | 26 | 17 | 2 | 45 |
+| accessibility | 12 | 17 | 6 | 35 |
+| ai | 8 | 16 | 5 | 29 |
+| businesses | 11 | 44 | 3 | 58 |
+| calls | 8 | 16 | 1 | 25 |
+| consent | 10 | 21 | 4 | 35 |
+| fees | 10 | 41 | 1 | 52 |
+| intake | 25 | 15 | 3 | 43 |
+| job-cards | 13 | 11 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 18 | 25 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 13 | 16 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
-| recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| privacy | 4 | 25 | 2 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 22 | 33 | 1 | 56 |
+| recurring | 6 | 2 | 3 | 11 |
+| security | 7 | 43 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 1 | 10 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
