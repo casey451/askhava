@@ -2904,3 +2904,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## A flagged business sign-up now says it is waiting for review (D-3830, November 15)
 
 - A business whose sign-up is flagged for your review used to be shown "We'll tell you once, by email, when requests in your trade start.", which is wrong for them. The sign-up task (T461) now also owns that screen and shows one plain line instead: the sign-up is waiting for review and its status will come by email. It promises no decision time. Nothing needs you.
+
+## A business that shares its email inbox cannot confirm a pick yet (D-3717, November 15)
+
+- When a business's sign-in email is a shared inbox, pressing "Confirm and pay" first needs a fresh code sent to the owner. The Confirm page (T261) refuses that press and charges nothing, but no task in the plan yet builds the route that sends the code, so such a business cannot confirm any pick. This needs a follow-up task in the plan before launch; nothing else needs you.
+
+## Repeat customers are free at Confirm, and bank approvals stay on one payment (D-3719, November 15)
+
+- Money: a homeowner's pick of a business she was already introduced to is now recorded as free at Confirm, as the fee rules say; the first build charged it the full introduction fee by job size. When a card's bank asks the business to approve a payment, the page now uses the same payment even after a weekend, so a business is never asked to approve a second one. Nothing needs you.

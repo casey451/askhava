@@ -203,21 +203,22 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
     }
 }
 
-/// FEE-014, D-2076, D-3717: the Confirm route's bank-approval client secret, from Stripe's answer
-/// to the pick's PaymentIntent create under its original key (the same intent comes back).
+/// FEE-014, FEE-016, D-2076, D-3717, D-3719: each Confirm attempt's confirm, posted through the
+/// Stripe client, with the client secret of its own answer (never a replayed PaymentIntent
+/// create, whose key Stripe forgets after about 24 hours).
 struct StripeApproval(askhava_adapters::api::StripePayments);
 
 impl ApprovalSecret for StripeApproval {
-    fn approval_secret<'a>(
+    fn confirm_keeping_secret<'a>(
         &'a self,
         key: &'a askhava_adapters::api::IdempotencyKey,
-        customer: &'a str,
-        (cents, pick): (u32, &'a str),
+        intent: &'a str,
+        payment_method: &'a str,
     ) -> SecretAnswer<'a> {
         Box::pin(async move {
-            let made = self.0.create_unconfirmed_intent(key, customer, cents, pick);
-            let made = made.await.ok()?;
-            Some(secrecy::ExposeSecret::expose_secret(&made.client_secret).to_owned())
+            let answer = self.0.confirm_payment_intent(key, intent, payment_method);
+            let answer = answer.await?;
+            Ok((answer.intent, answer.client_secret))
         })
     }
 }

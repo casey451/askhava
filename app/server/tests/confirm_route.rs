@@ -18,8 +18,8 @@ use askhava_adapters::api::{
     PaymentsAdapter, StripePayments, TwilioConfig,
 };
 use askhava_businesses::api::{
-    AccountStatus, Acting, ConfirmTerms, SignUpForm, add_owner, confirm_assent_line,
-    record_confirm_terms, record_step_up, sign_up,
+    AccountStatus, Acting, ConfirmTerms, Roles, SignUpForm, add_member, add_owner,
+    confirm_assent_line, record_confirm_terms, record_step_up, sign_up,
 };
 use askhava_core::api::{
     Claimed, ClientIpPolicy, Guarded, MIGRATOR, ManualClock, Settings, SystemClock, WorkerId, claim,
@@ -177,17 +177,22 @@ impl IntentStripe for FakeStripe {
     }
 }
 
-/// The fake bank approval's client secret.
-struct FakeApproval;
+/// FEE-014, D-3719: the fake confirm through the counting Stripe, a bank approval's client secret
+/// taken from that confirm's own answer.
+struct FakeApproval(Arc<StripeWebhook<FakeStripe, PickReleaser>>);
 
 impl ApprovalSecret for FakeApproval {
-    fn approval_secret<'a>(
+    fn confirm_keeping_secret<'a>(
         &'a self,
-        _: &'a IdempotencyKey,
-        _: &'a str,
-        _: (u32, &'a str),
+        key: &'a IdempotencyKey,
+        intent: &'a str,
+        card: &'a str,
     ) -> SecretAnswer<'a> {
-        Box::pin(async { Some(CLIENT_SECRET.to_owned()) })
+        Box::pin(async move {
+            let made = self.0.stripe.confirm_intent(key, intent, card).await?;
+            let approve = made.status == "requires_action";
+            Ok((made, approve.then(|| SecretString::from(CLIENT_SECRET))))
+        })
     }
 }
 
@@ -226,7 +231,7 @@ fn counted(pool: &PgPool, launch: Option<Timestamp>) -> Counted {
     let route = ConfirmRoute {
         hooks: Arc::clone(&hooks),
         settings,
-        approval: Arc::new(FakeApproval),
+        approval: Arc::new(FakeApproval(Arc::clone(&hooks))),
     };
     let app = confirm_routes(route).layer(from_fn(security_headers));
     Counted { app, hooks }
@@ -765,6 +770,7 @@ async fn td_fee_45_a_press_charges_the_stored_fee_once(pool: PgPool) {
     assert_eq!((c.confirms(), has_terms(&pool, &p).await), (1, true));
     let q = picked(&pool, false).await;
     c.hooks.stripe.approve.store(true, Ordering::SeqCst);
+    let before = (c.creates(), c.confirms());
     let approve = send(
         &c.app,
         (&Method::POST, &q.path()),
@@ -777,8 +783,43 @@ async fn td_fee_45_a_press_charges_the_stored_fee_once(pool: PgPool) {
         "{}",
         approve.text
     );
+    let after = (c.creates(), c.confirms());
+    assert_eq!(
+        after,
+        (before.0 + 1, before.1 + 1),
+        "one intent, its secret from the confirm"
+    );
     let read = send(&c.app, (&Method::GET, &q.path()), &q.jar, "json").await;
     assert!(read.text.contains("\"waiting\"") && !read.text.contains(CLIENT_SECRET));
+}
+
+/// PICK-033, SEC-019, D-492 (served): a signed-in "Cards and quotes" member of the picked business
+/// gets the not-found page and a press charges nothing.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn a_cards_and_quotes_member_gets_the_not_found_page(pool: PgPool) {
+    let p = picked(&pool, false).await;
+    let (business, mailbox) = (p.business, Uuid::new_v4());
+    let by = Acting {
+        business,
+        member: p.owner,
+    };
+    let roles = Roles::new(true, false).expect("roles");
+    let mut db = pool.acquire().await.expect("db");
+    let added = add_member(&mut db, by, mailbox, roles, now()).await;
+    added.expect("member");
+    drop(db);
+    let jar = signed_in(&pool, SignInAddress { business, mailbox }).await;
+    let c = counted(&pool, Some(now()));
+    let page = send(&c.app, (&Method::GET, &p.path()), &jar, "").await;
+    let pressed = send(
+        &c.app,
+        (&Method::POST, &p.path()),
+        &jar,
+        &press("pm_card_visa"),
+    )
+    .await;
+    assert_eq!((page.status, pressed.status), (404, 404));
+    assert_eq!((c.creates(), c.confirms()), (0, 0), "no Stripe call");
 }
 
 /// TD-FEE-45 (D-1871, D-3722): after the owner's fee-mode switch a load opens no PaymentIntent

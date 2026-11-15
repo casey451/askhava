@@ -35,20 +35,23 @@
 
 use std::net::IpAddr;
 use std::pin::Pin;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, PoisonError};
 
 use askama::Template;
-use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
+use askhava_adapters::api::{
+    AdapterError, Charge, CodeChannel, IdempotencyKey, PaymentIntent, PaymentsAdapter,
+    VerifyAdapter,
+};
 use askhava_businesses::api::{ConfirmTerms, confirm_assent_line, members, record_confirm_terms};
-use askhava_intake::api::{Admission, paused_by_homeowner};
+use askhava_intake::api::{Admission, job_homeowner, jobs_of_contact, paused_by_homeowner};
 use askhava_jobs::api::job_number;
 use askhava_messaging::api::{NoticeKind, notice_log, record_first_open};
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
     AUTHORIZATION_TEXT, ChargeError, ChargeOutcome, ConfirmError, Fee, FeeJob, FeeMode, FeeQuote,
-    FreeWinError, INTENT_ACTION, IntentStripe, PeriodJob, PickNow, PickedFee, Press, RecurringCap,
-    ReleaseSink, Service, StoredPickFee, StripeWebhook, Tier, VisitTier, Waiver, confirm_and_pay,
-    end_intent_unless_charging, ensure_customer, fee_at_pick, fee_terms_in_force, intent_label,
+    FreeWinError, IntentStripe, PeriodJob, PickNow, PickedFee, Press, RecurringCap, ReleaseSink,
+    Service, StoredPickFee, StripeRefund, StripeWebhook, Tier, VisitTier, Waiver, confirm_and_pay,
+    end_intent_unless_charging, ensure_customer, fee_at_pick, fee_terms_in_force,
     may_confirm as fee_terms_accepted, open_intent, pick_fee,
 };
 use askhava_picks::api::{Backup, ChosenTier, cant_take_job, end_for_fee_terms};
@@ -613,21 +616,108 @@ pub struct ConfirmSettings {
     pub secret: SecretString,
 }
 
-/// What [`ApprovalSecret::approval_secret`] answers: the client secret, none on any failure.
-pub type SecretAnswer<'a> = Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>>;
+/// What [`ApprovalSecret::confirm_keeping_secret`] answers: the intent after the confirm and,
+/// only while the bank must approve, its client secret.
+pub type SecretAnswer<'a> = Pin<
+    Box<
+        dyn Future<Output = Result<(PaymentIntent, Option<SecretString>), AdapterError>>
+            + Send
+            + 'a,
+    >,
+>;
 
-/// FEE-014, D-2076, D-3717: the client secret of a bank approval, which `IntentStripe` does not
-/// give: `server` reads it from Stripe's answer to the pick's PaymentIntent create under its
-/// original key (Stripe replays the same answer); only `server` may name the Stripe client.
+/// FEE-014, FEE-016, D-2076, D-3717, D-3719: one attempt's confirm with the client secret Stripe
+/// answers it with, which `IntentStripe::confirm_intent` drops; `server` posts it (only `server`
+/// may name the Stripe client). The secret comes from that confirm's own answer, never from
+/// replaying the pick's PaymentIntent create, whose key Stripe forgets after about 24 hours (a
+/// weekend's Confirm window), so a bank approval never makes a second PaymentIntent.
 pub trait ApprovalSecret: Send + Sync {
-    /// The client secret for `intent.1`'s PaymentIntent of `intent.0` cents, created under
-    /// `key` for `customer`.
-    fn approval_secret<'a>(
+    /// Confirms `intent` on-session with `payment_method` under one attempt's `key`.
+    fn confirm_keeping_secret<'a>(
         &'a self,
         key: &'a IdempotencyKey,
-        customer: &'a str,
-        intent: (u32, &'a str),
+        intent: &'a str,
+        payment_method: &'a str,
     ) -> SecretAnswer<'a>;
+}
+
+/// FEE-014, D-3719: the Stripe client one press charges through: `stripe` for every call but the
+/// confirm, which goes through `approval`, keeping its client secret for the page.
+struct Catching<'a, S> {
+    stripe: &'a S,
+    approval: &'a dyn ApprovalSecret,
+    secret: Mutex<Option<SecretString>>,
+}
+
+impl<S: PaymentsAdapter + Sync> PaymentsAdapter for Catching<'_, S> {
+    async fn create_customer(
+        &self,
+        key: &IdempotencyKey,
+        business_id: &str,
+    ) -> Result<String, AdapterError> {
+        self.stripe.create_customer(key, business_id).await
+    }
+
+    async fn create_payment_intent(
+        &self,
+        key: &IdempotencyKey,
+        charge: Charge<'_>,
+    ) -> Result<PaymentIntent, AdapterError> {
+        self.stripe.create_payment_intent(key, charge).await
+    }
+
+    async fn fetch_payment_intent(&self, id: &str) -> Result<PaymentIntent, AdapterError> {
+        self.stripe.fetch_payment_intent(id).await
+    }
+
+    async fn create_refund(
+        &self,
+        key: &IdempotencyKey,
+        intent: &str,
+    ) -> Result<String, AdapterError> {
+        self.stripe.create_refund(key, intent).await
+    }
+
+    async fn send_refund(
+        &self,
+        key: &IdempotencyKey,
+        intent: &str,
+    ) -> Result<StripeRefund, AdapterError> {
+        self.stripe.send_refund(key, intent).await
+    }
+
+    async fn read_refund(&self, id: &str) -> Result<StripeRefund, AdapterError> {
+        self.stripe.read_refund(id).await
+    }
+}
+
+impl<S: IntentStripe + Sync> IntentStripe for Catching<'_, S> {
+    async fn create_intent(
+        &self,
+        key: &IdempotencyKey,
+        customer: &str,
+        amount_cents: u32,
+        pick_id: &str,
+    ) -> Result<String, AdapterError> {
+        let made = self
+            .stripe
+            .create_intent(key, customer, amount_cents, pick_id);
+        made.await
+    }
+
+    async fn confirm_intent(
+        &self,
+        key: &IdempotencyKey,
+        intent: &str,
+        payment_method: &str,
+    ) -> Result<PaymentIntent, AdapterError> {
+        let confirm = self
+            .approval
+            .confirm_keeping_secret(key, intent, payment_method);
+        let (intent, secret) = confirm.await?;
+        *self.secret.lock().unwrap_or_else(PoisonError::into_inner) = secret;
+        Ok(intent)
+    }
 }
 
 /// The served route's parts: the Stripe webhook's hooks (pool, Stripe client, release sink,
@@ -637,7 +727,7 @@ pub struct ConfirmRoute<S, R> {
     pub hooks: Arc<StripeWebhook<S, R>>,
     /// `main`'s settings part; none serves the page with [`CARD_OFF_LINE`] and charges nothing.
     pub settings: Option<ConfirmSettings>,
-    /// The bank approval's client secret.
+    /// Each attempt's confirm, keeping a bank approval's client secret from its own answer.
     pub approval: Arc<dyn ApprovalSecret>,
 }
 
@@ -983,10 +1073,11 @@ async fn waiver_now(
 ) -> Result<Option<NoFee>, ()> {
     let picked = picked_fee(&mine.fee).ok_or(())?;
     let mut tx = pool.begin().await.map_err(|_| ())?;
+    let jobs = her_jobs(&mut tx, mine.fee.job).await?;
     let decided = decide_at_confirm(
         &mut tx,
         &settings.secret,
-        confirmed(mine, &picked),
+        confirmed(mine, &picked, &jobs),
         Some(settings.launch),
     );
     let decided = decided.await;
@@ -999,15 +1090,25 @@ async fn waiver_now(
     })
 }
 
-/// The pick for `confirm_waiver`: its own business and job; the customer's other jobs are not
-/// read, so no repeat-customer waiver is found here (D-3717).
-const fn confirmed<'a>(mine: &Mine, picked: &'a PickedFee) -> ConfirmedPick<'a> {
+/// FEE-013, D-3719: the jobs of the homeowner who made the pick (her vault contact's, read
+/// through `intake::api::job_homeowner` and `jobs_of_contact`), so `confirm_waiver` finds a
+/// repeat customer; none when no open request opened the job.
+async fn her_jobs(conn: &mut PgConnection, job: Uuid) -> Result<Vec<Uuid>, ()> {
+    let Some(her) = job_homeowner(conn, job).await.map_err(|_| ())? else {
+        return Ok(Vec::new());
+    };
+    jobs_of_contact(conn, her.contact).await.map_err(|_| ())
+}
+
+/// FEE-013: the pick for `confirm_waiver`: its own business and job, and `jobs`, the homeowner's
+/// jobs from [`her_jobs`].
+const fn confirmed<'a>(mine: &Mine, picked: &'a PickedFee, jobs: &'a [Uuid]) -> ConfirmedPick<'a> {
     ConfirmedPick {
         pick: mine.pick,
         business: mine.fee.business,
         job: mine.fee.job,
         picked,
-        same_customer_jobs: &[],
+        same_customer_jobs: jobs,
     }
 }
 
@@ -1161,7 +1262,8 @@ where
     R: ReleaseSink,
 {
     let picked = picked_fee(&mine.fee).ok_or(())?;
-    let pick = confirmed(mine, &picked);
+    let jobs = her_jobs(&mut tx, mine.fee.job).await?;
+    let pick = confirmed(mine, &picked, &jobs);
     let decided = decide_at_confirm(&mut tx, &settings.secret, pick, Some(settings.launch)).await;
     match decided {
         Ok(ConfirmFee::NoFee(_)) => {
@@ -1185,7 +1287,8 @@ where
 }
 
 /// FEE-014, FEE-016, FEE-041, FEE-047: one charge attempt of the stored fee through
-/// `confirm_and_pay`; a bank approval carries the PaymentIntent's client secret, nothing else does.
+/// `confirm_and_pay`; a bank approval carries the client secret of that confirm's own answer
+/// (D-3719), nothing else does.
 async fn charge<S, R>(
     route: &ConfirmRoute<S, R>,
     settings: &ConfirmSettings,
@@ -1201,26 +1304,28 @@ where
     }
     let (pool, stripe, secret) = (&route.hooks.pool, &route.hooks.stripe, &settings.secret);
     let fresh = Uuid::new_v4();
-    let Ok(customer) = ensure_customer(pool, stripe, secret, mine.fee.business).await else {
+    if ensure_customer(pool, stripe, secret, mine.fee.business)
+        .await
+        .is_err()
+    {
         return Ok(press_reply(&ChargeOutcome::StripeDown, fresh, None));
-    };
+    }
     let press = press_of(mine, card, id).ok_or(())?;
-    let outcome = match confirm_and_pay(pool, stripe, secret, &press, now).await {
+    let catching = Catching {
+        stripe,
+        approval: route.approval.as_ref(),
+        secret: Mutex::new(None),
+    };
+    let outcome = match confirm_and_pay(pool, &catching, secret, &press, now).await {
         Ok(outcome) => outcome,
         Err(ChargeError::Stripe) => ChargeOutcome::StripeDown,
         Err(_) => return Err(()),
     };
-    let client = if matches!(outcome, ChargeOutcome::NeedsApproval(_)) {
-        let key = IdempotencyKey::derive(secret, INTENT_ACTION, &[&intent_label(mine.pick)]);
-        let pick = mine.pick.to_string();
-        let amount = (press.amount_cents, pick.as_str());
-        let approval = route
-            .approval
-            .approval_secret(&key, customer.as_str(), amount);
-        approval.await
-    } else {
-        None
-    };
+    let kept = catching
+        .secret
+        .into_inner()
+        .unwrap_or_else(PoisonError::into_inner);
+    let client = kept.map(|kept| kept.expose_secret().to_owned());
     Ok(press_reply(&outcome, fresh, client))
 }
 
