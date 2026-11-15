@@ -1,18 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-15T21:26:53Z by runner ef9418c0e6b9 (manual).
+Updated 2026-11-15T21:45:22Z by runner 69880af764d2 (manual).
 
-**Idle since 21:21Z; 352 of 499 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 21:21Z; 352 of 500 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 352 of 499 build tasks (owner gates not counted)
+- **Tasks done:** 352 of 500 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 21:21Z (no task in progress)
 - **Week:** 64% used, 66.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:23Z, 3 min before this update
+- **Last run:** 21:27Z, 18 min before this update
 - **Keeper:** last ran 21:22Z, next wake 21:42Z
 
 ## Needs attention
-- BLOCKED T099: plan gap reported: PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a random Stripe webhook secret never exposed to specs; the stand-in signs with a different secret (stand_ins/stripe.py:82), so no spec can post a valid signed webhook and the post-payment closing checks (portal view, reload, one release row, no second fee, D-1739) cannot run. Reviewer confirmed the gap. Smallest fix: a harness task passing the keyed webhook secret to specs as E2E_KEYED_* . Reviewer round 2 also noted: free-win $0 Confirm release checks possible without webhook (te; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T099 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
@@ -49,8 +48,6 @@ Updated 2026-11-15T21:26:53Z by runner ef9418c0e6b9 (manual).
 | T301 | server and portals: the email action links are served (every | resync | 3 | 58 min | 22:46Z |  |
 | T443 | --after runs the full smoke itself on a fix-round hand-in; t | done | 1 | 35 min | 22:19Z |  |
 | T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
-| T261 | portals and server (harness): the served Confirm route under | BLOCKED | 2 | 4 min | 21:38Z |  |
-| T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -58,7 +55,7 @@ Updated 2026-11-15T21:26:53Z by runner ef9418c0e6b9 (manual).
 ## Progress (requirements verified)
 
 **Requirements verified:** 288 of 733 (39.3%) · partial 288 · unstarted 157
-**Tasks merged (throughput only):** 352 of 499
+**Tasks merged (throughput only):** 352 of 500
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|

@@ -17662,7 +17662,7 @@
     "T494",
     "T495"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "e2e-j2-business",
    "type": "build",
@@ -17676,8 +17676,8 @@
     3860,
     3861
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a random Stripe webhook secret never exposed to specs; the stand-in signs with a different secret (stand_ins/stripe.py:82), so no spec can post a valid signed webhook and the post-payment closing checks (portal view, reload, one release row, no second fee, D-1739) cannot run. Reviewer confirmed the gap. Smallest fix: a harness task passing the keyed webhook secret to specs as E2E_KEYED_* . Reviewer round 2 also noted: free-win $0 Confirm release checks possible without webhook (te; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T099 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a random Stripe webhook secret never exposed to specs; the stand-in signs with a different secret (stand_ins/stripe.py:82), so no spec can post a valid signed webhook and the post-payment closing checks (portal view, reload, one release row, no second fee, D-1739) cannot run. Reviewer confirmed the gap. Smallest fix: a harness task passing the keyed webhook secret to specs as E2E_KEYED_* . Reviewer round 2 also noted: free-win $0 Confirm release checks possible without webhook (test 3), and top-of-file comment in j2_business.spec.ts lines 10-11 wrongly cites FEE-010 for the $75 test.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a random Stripe webhook secret never exposed to specs; the stand-in signs with a different secret (stand_ins/stripe.py:82), so no spec can post a valid signed webhook and the post-payment closing checks (portal view, reload, one release row, no second fee, D-1739) cannot run. Reviewer confirmed the gap. Smallest fix: a harness task passing the keyed webhook secret to specs as E2E_KEYED_* . Reviewer round 2 also noted: free-win $0 Confirm release checks possible without webhook (test 3), and top-of-file comment in j2_business.spec.ts lines 10-11 wrongly cites FEE-010 for the $75 test.\nre-queued after plan fix D-3862: D-3862: new T515 delivers signed stand-in webhooks to keyed specs; T099 depends on it",
    "history": [
     {
      "attempt": 1,
@@ -17701,6 +17701,21 @@
        "turns": 48
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-15T21:45:22Z",
+     "reason": "D-3862: new T515 delivers signed stand-in webhooks to keyed specs; T099 depends on it",
+     "by": "manual-3e876104a617",
+     "was": "plan gap reported: PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a random Stripe webhook secret never exposed to specs; the stand-in signs with a different secret (stand_ins/stripe.py:82), so no spec can post a valid signed webhook and the post-payment closing checks (portal view, reload, one release row, no second fee, D-1739) cannot run. Reviewer confirmed the gap. Smallest fix: a harness task passing the keyed webhook secret to specs as E2E_KEYED_* . Reviewer round 2 also noted: free-win $0 Confirm release checks possible without webhook (te; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T099 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3862",
+     "plan_since": "2026-11-15T20:23:03Z",
+     "plan_base": "ef9418c0e6b96abc973cf4c79821ee9ad5e34dc3",
+     "plan_head": "69880af764d2a69164294bd2bf84f574eb480957",
+     "plan_then": "b7558c79e889ac993e584e6c0b68d08152b6a3475d3a65e0732b4c6bb1e904da",
+     "plan_now": "f4eca43394a30c86fde5239fcd99262112e4efe613db9b6747b01fc53e447f3a"
     }
    ]
   },
@@ -63718,7 +63733,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T21:26:53Z",
+ "updated_at": "2026-11-15T21:45:22Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -63816,7 +63831,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ef9418c0e6b96abc973cf4c79821ee9ad5e34dc3",
+ "runner_sha": "69880af764d2a69164294bd2bf84f574eb480957",
  "starter": "manual",
  "smoke_runs": [
   {
