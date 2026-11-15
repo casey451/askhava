@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T11:49:38Z by runner cb399268cebe (actions).
+Updated 2026-11-15T11:54:45Z by runner cb399268cebe (actions).
 
 **Building: T462 in progress since 11:43Z; 347 of 480 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T11:49:38Z by runner cb399268cebe (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T462 claimed 11:43Z, lease until 14:43Z
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:49Z, 0 min before this update
+- **Last run:** 11:54Z, 0 min before this update
 - **Keeper:** last ran 11:49Z, next wake 14:45Z
 
 ## Needs attention
@@ -79,7 +79,6 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 2 | 16 min | 12:20Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 3 | 23 min | 11:56Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | check_failed | 5 | 45 min | 11:56Z |  |
-| T329 | businesses: the eight business account events queued today ( | done | 2 | 65 min | 11:49Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
