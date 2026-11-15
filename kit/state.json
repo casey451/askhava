@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T454",
+ "current": "T261",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -28382,13 +28382,13 @@
     "T467",
     "T486"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 2,
    "slug": "served-confirm-route",
    "type": "build",
    "stage": "4",
-   "attempt_started_at": "2026-11-14T21:34:37Z",
-   "lane": "4",
+   "attempt_started_at": "2026-11-15T01:07:00Z",
+   "lane": "1",
    "decision_ids": [
     3717,
     3718,
@@ -57824,7 +57824,7 @@
    "output_tokens": 35565,
    "cache_read_input_tokens": 5802725
   },
-  "source": "session_reading 2026-11-15T00:24:42Z (week)",
+  "source": "session_reading 2026-11-15T01:04:10Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -61131,8 +61131,8 @@
     "last_model": "claude-opus-5-5"
    },
    "T261": {
-    "estimated_bytes": 608123,
-    "estimated_tokens": 1842219,
+    "estimated_bytes": 612229,
+    "estimated_tokens": 1854658,
     "usage_counting": "message_id",
     "output_tokens": 31754,
     "cache_read_input_tokens": 3981537,
@@ -61345,7 +61345,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T01:07:05Z",
+ "updated_at": "2026-11-15T01:07:22Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -61446,14 +61446,6 @@
  "runner_sha": "30d12d87a2fd2fc957b69878a6af63142bf9d7f9",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "45c9090508ad57c4bf49d0dbd85bc2f04129222f",
-   "ok": true,
-   "at": "2026-11-14T15:44:37Z",
-   "why": "start routine (ancestry reuse of 49857763a082, 2026-11-14T14:27:19Z)",
-   "reused": "2026-11-14T14:27:19Z",
-   "base": "49857763a082bd7cc92c26c79feef4ee8dc51282"
-  },
   {
    "sha": "14099277d223faf0b2f412c251439608eac4f3ce",
    "ok": true,
@@ -61601,24 +61593,32 @@
    "at": "2026-11-15T00:44:29Z",
    "why": "start routine (pre-session)",
    "seconds": 587
+  },
+  {
+   "sha": "30d12d87a2fd2fc957b69878a6af63142bf9d7f9",
+   "ok": true,
+   "at": "2026-11-15T01:07:00Z",
+   "why": "start routine (ancestry reuse of b70d8180dbc5, 2026-11-15T00:44:29Z)",
+   "reused": "2026-11-15T00:44:29Z",
+   "base": "b70d8180dbc56ebbe7f397c0a58cef000a8db8e6"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T454 estimated 558k tokens (calibrated); week has 86.7M left (no five-hour budget, D-3056) after 1.3M still running in another lane (session_reading 2026-11-15T00:24:42Z (week)); claimed",
-  "at": "2026-11-15T00:44:29Z",
+  "last": "T261 estimated 1.9M tokens (calibrated); week has 84.7M left (no five-hour budget, D-3056) after 1.3M still running in another lane (session_reading 2026-11-15T01:04:10Z (week)); claimed",
+  "at": "2026-11-15T01:07:00Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 107343190,
+    "used": 109343190,
     "budget": 194000000,
-    "left": 86656810,
+    "left": 84656810,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 299739680,
-  "projected_finish": "2026-11-25T20:18:35Z"
+  "remaining_estimate": 297204836,
+  "projected_finish": "2026-11-25T18:29:24Z"
  },
  "main_red_history": [
   {
