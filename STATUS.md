@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-15T04:47:28Z by runner 814075bcd3d3 (actions).
+Updated 2026-11-15T04:47:49Z by runner 814075bcd3d3 (actions).
 
-**Building: T493 in progress since 04:00Z; 342 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 04:47Z; 342 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 342 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 5: T493 claimed 04:00Z, lease until 07:00Z
+- **Lane:** idle since 04:47Z (no task in progress)
 - **Week:** 57% used, 78.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:34Z, 12 min before this update
 - **Keeper:** last ran 04:34Z, next wake 07:03Z
@@ -18,6 +18,7 @@ Updated 2026-11-15T04:47:28Z by runner 814075bcd3d3 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T493 | portals (harness): the Confirm page's own Stripe CSP marker  | MERGE_PENDING | 1 | 46 min | 04:47Z |  |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z | session ended without handing in; the last pre-hand-in gate before it: runner smoke red on 3cfe0b2b62c7 (bash scripts/sm |
 | T494 | portals: the Confirm route's $0 free-first-win decision from | MERGE_PENDING | 1 | 29 min | 04:31Z |  |
 | T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | MERGE_PENDING | 1 | 31 min | 04:26Z |  |
@@ -149,7 +150,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T493 (lease until 2026-11-15T07:00:50Z)
 
 ## Last usage reading
-- {"task": "T494", "at": "2026-11-15T04:31:35Z", "cache_creation_input_tokens": 127713, "output_tokens": 26333, "input_tokens": 84, "cache_read_input_tokens": 2319023}
+- {"task": "T493", "at": "2026-11-15T04:47:27Z", "input_tokens": 84, "output_tokens": 26910, "cache_read_input_tokens": 2235957, "cache_creation_input_tokens": 106941}
