@@ -2893,4 +2893,4 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 ## The runner no longer starts empty backup runs for a task the plan dropped (D-3812, November 15)
 
-- A task removed from the plan (T365) was still waiting in the runner's state, so each backup run gave it a lane, refused it at claim time, sat idle and started another: about 33 empty runs in under 5 hours. The runner now applies the same plan check when deciding how many runs to start, so this loop stops. Nothing needs you.
+- A task removed from the plan (T365) was still waiting in the runner's state, so each backup run gave it a lane, refused it at claim time, sat idle and started another: about 33 empty runs in under 5 hours. The runner now skips, when deciding how many runs to start, any task the plan check has already turned away and still turns away, so this loop stops; tasks the check has not yet judged still get their runs. Nothing needs you.

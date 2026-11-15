@@ -1637,21 +1637,23 @@ def refill_lanes(cfg: Config, state: State, now: datetime, own: str | None = Non
     FIX-MAIN may be claimed then, and the gate's lane pick (`state.run_lane`, the "fix" lane) places it,
     so every run that ends can start these without ever adding a run beside a red main (D-3140). `own`, a
     lane this very run's session is about to claim on (`--resolve-merges`, D-3141), is left out and takes one
-    of the tasks. A task the claim's plan-health check refuses (`plan_health_pass`, D-1350) gets no lane
-    either: it is judged read-only here (`_plan_sound`; no `plan_gap` mark is written, only the claim
-    records one), after the crate rule as in the claim, so a QUEUED task the plan no longer holds (T365,
-    gone from kit/tasks.json by D-3106) cannot start one idle run after another (D-3812)."""
+    of the tasks. A task a claim has already refused on plan health (its `plan_gap` mark, `plan_health_pass`,
+    D-1350) gets no lane either while the check still refuses it: judged read-only (`_plan_keep`; no mark is
+    written, only the claim records one) and only on the ids left after the crate rule, as in the claim, so a
+    QUEUED task the plan no longer holds (T365, gone from kit/tasks.json by D-3106) cannot start one idle
+    run after another (D-3812). An unmarked task is never refused here: this run's checkout may be a task
+    branch cut before later merges, so its disk is no evidence against a task no claim has judged."""
     free = lanes.free_lanes(cfg.lanes, state, now)
     if not free or state.get("main_red") or _pacer_waiting(state, now):
         return []
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ready = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
-    sound = set(_plan_sound(cfg, state, ready))
+    keep = _plan_keep(cfg, state)
     if cfg.exclusive_crates:  # the claim's own rule, run claim after claim: no lane for a task over a crate's limit (D-3269, D-3303)
         ready = lanes.claimable_together(_claim_ordered(cfg, state, ready, now), state, now,
-                                         lambda tid: _task_def(cfg, state, tid), _crate_limit(cfg), sound.__contains__)
+                                         lambda tid: _task_def(cfg, state, tid), _crate_limit(cfg), keep)
     else:
-        ready = [tid for tid in ready if tid in sound]
+        ready = [tid for tid in ready if keep(tid)]
     if own in free:
         free, ready = [lane for lane in free if lane != own], ready[1:]
     return free[: len(ready)]
@@ -1860,13 +1862,23 @@ def plan_health_pass(cfg: Config, state: State, ids: list[str], now: datetime) -
     return sound, state
 
 
-def _plan_sound(cfg: Config, state: State, ids: list[str]) -> list[str]:
-    """The ids `plan_health_pass` would keep, judged without touching the state (refill's read-only view,
-    D-3812): every id when no check is set, FIX-MAIN unchecked, and a failing check (None) keeps its task,
-    failing open as the claim does (D-1350)."""
-    if cfg.plan_health is None:
-        return ids
-    return [tid for tid in ids if tid == st.FIX_MAIN or not _health(cfg.plan_health, state, tid)]
+def _plan_keep(cfg: Config, state: State) -> Callable[[str], bool]:
+    """Refill's read-only plan-health verdict (D-3812), asked only for the ids that reach it, each checked at
+    most once: False only for a task whose entry already carries a `plan_gap` mark (a claim refused it) and
+    which the check still refuses. True with no check set, for FIX-MAIN (never checked), for an unmarked task
+    (refill's checkout may predate main, so only a claim's own refusal counts), and when the check itself
+    fails (None: fail open, as the claim does, D-1350)."""
+    check, seen = cfg.plan_health, dict[str, bool]()
+    if check is None:
+        return lambda _tid: True
+
+    def keep(tid: str) -> bool:
+        if tid not in seen:
+            marked = tid != st.FIX_MAIN and "plan_gap" in st.entry(state, tid)
+            seen[tid] = not (marked and _health(check, state, tid))
+        return seen[tid]
+
+    return keep
 
 
 def _health(check: Callable[[State, str], list[str]], state: State, tid: str) -> list[str] | None:
