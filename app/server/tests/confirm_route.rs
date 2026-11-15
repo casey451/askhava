@@ -793,10 +793,68 @@ async fn td_fee_45_a_press_charges_the_stored_fee_once(pool: PgPool) {
     assert!(read.text.contains("\"waiting\"") && !read.text.contains(CLIENT_SECRET));
 }
 
-/// PICK-033, SEC-019, D-492 (served): a signed-in "Cards and quotes" member of the picked business
-/// gets the not-found page and a press charges nothing.
+/// The `kind` of each security event logged while it is the default subscriber: one line per
+/// stored event, written by the same `record_security_event` call (SEC-048).
+#[derive(Clone, Default)]
+struct Events(Arc<Mutex<Vec<String>>>);
+
+/// The `kind` field of a "security event" line, if it is one.
+#[derive(Default)]
+struct EventKind {
+    security: bool,
+    kind: Option<String>,
+}
+
+impl tracing::field::Visit for EventKind {
+    fn record_str(&mut self, field: &tracing::field::Field, value: &str) {
+        if field.name() == "kind" {
+            self.kind = Some(value.to_owned());
+        }
+    }
+
+    fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
+        if field.name() == "message" {
+            self.security = format!("{value:?}") == "security event";
+        }
+    }
+}
+
+impl tracing::Subscriber for Events {
+    fn enabled(&self, _: &tracing::Metadata<'_>) -> bool {
+        true
+    }
+
+    fn new_span(&self, _: &tracing::span::Attributes<'_>) -> tracing::span::Id {
+        tracing::span::Id::from_u64(1)
+    }
+
+    fn record(&self, _: &tracing::span::Id, _: &tracing::span::Record<'_>) {}
+
+    fn record_follows_from(&self, _: &tracing::span::Id, _: &tracing::span::Id) {}
+
+    fn event(&self, event: &tracing::Event<'_>) {
+        let mut line = EventKind::default();
+        event.record(&mut line);
+        if let (true, Some(kind)) = (line.security, line.kind) {
+            self.0
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .push(kind);
+        }
+    }
+
+    fn enter(&self, _: &tracing::span::Id) {}
+
+    fn exit(&self, _: &tracing::span::Id) {}
+}
+
+/// PICK-033, SEC-019, SEC-048, D-492 (served): a signed-in "Cards and quotes" member of the picked
+/// business gets the not-found page, each refusal is an `authz_denied` event, and a press charges
+/// nothing.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn a_cards_and_quotes_member_gets_the_not_found_page(pool: PgPool) {
+    let events = Events::default();
+    let _guard = tracing::subscriber::set_default(events.clone());
     let p = picked(&pool, false).await;
     let (business, mailbox) = (p.business, Uuid::new_v4());
     let by = Acting {
@@ -820,6 +878,8 @@ async fn a_cards_and_quotes_member_gets_the_not_found_page(pool: PgPool) {
     .await;
     assert_eq!((page.status, pressed.status), (404, 404));
     assert_eq!((c.creates(), c.confirms()), (0, 0), "no Stripe call");
+    let denied = events.0.lock().unwrap_or_else(PoisonError::into_inner);
+    assert_eq!(denied.as_slice(), ["authz_denied", "authz_denied"]);
 }
 
 /// TD-FEE-45 (D-1871, D-3722): after the owner's fee-mode switch a load opens no PaymentIntent

@@ -55,11 +55,12 @@ use askhava_payments::api::{
     may_confirm as fee_terms_accepted, open_intent, pick_fee,
 };
 use askhava_picks::api::{Backup, ChosenTier, cant_take_job, end_for_fee_terms};
+use axum::Extension;
 use axum::Router;
-use axum::extract::{FromRef, Path, State};
+use axum::extract::{FromRef, Path, Request, State};
 use axum::http::header::{ACCEPT, VARY};
 use axum::http::{HeaderMap, HeaderValue, StatusCode};
-use axum::middleware::{from_fn, from_fn_with_state};
+use axum::middleware::{Next, from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Json, Response};
 use axum::routing::get;
 use axum_extra::extract::CookieJar;
@@ -78,7 +79,9 @@ use crate::confirm_waiver::{
 };
 use crate::limits::{admit_code_send, admit_code_try};
 use crate::security::{
-    CsrfField, CsrfForm, StripeConfirmCsp, WebSecurity, no_store, refuse_cross_site,
+    CsrfField, CsrfForm, SecurityEvent, SecurityEventKind, StripeConfirmCsp, WebSecurity,
+    admit_security_event, no_store, record_security_event, refuse_cross_site,
+    security_event_client,
 };
 use crate::session::{PortalsError, csrf_token};
 
@@ -766,9 +769,57 @@ where
     };
     Router::new()
         .route(CONFIRM_ROUTE, get(load::<S, R>).post(press::<S, R>))
+        .route_layer(from_fn(note_site))
         .with_state(state)
         .layer(from_fn(no_store))
         .layer(from_fn_with_state(security, refuse_cross_site))
+}
+
+/// The request ID and client address of a request, for its security event (SEC-048); the client
+/// address only keys the per-client cap and is never stored or logged.
+#[derive(Clone, Copy)]
+struct Site {
+    request_id: Option<Uuid>,
+    client: IpAddr,
+}
+
+/// Notes the request ID and the client address for the handlers.
+async fn note_site(mut request: Request, next: Next) -> Response {
+    let request_id = request
+        .headers()
+        .get("x-request-id")
+        .and_then(|id| Uuid::try_parse_ascii(id.as_bytes()).ok());
+    let client = security_event_client(&request);
+    request.extensions_mut().insert(Site { request_id, client });
+    next.run(request).await
+}
+
+/// SEC-019, SEC-048: [`not_found`] for the signed-in `who`, recorded as an `authz_denied` event
+/// on [`CONFIRM_ROUTE`] under the per-client cap; a failure to record is logged once and never
+/// changes the answer.
+async fn denied(
+    db: &mut PgConnection,
+    site: Site,
+    who: &BusinessPrincipal,
+    now: Timestamp,
+) -> Response {
+    let kind = SecurityEventKind::AuthzDenied;
+    if admit_security_event(kind, site.client, CONFIRM_ROUTE, now) {
+        let event = SecurityEvent {
+            kind,
+            route: CONFIRM_ROUTE,
+            request_id: site.request_id,
+            actor_ref: Some(who.member()),
+        };
+        if record_security_event(db, &event, now).await.is_err() {
+            tracing::error!(
+                kind = kind.as_str(),
+                route = CONFIRM_ROUTE,
+                "security event not recorded"
+            );
+        }
+    }
+    not_found()
 }
 
 /// SEC-004: no business person: 401 with the sign-in link, no detail.
@@ -806,12 +857,13 @@ struct Mine {
     fee: StoredPickFee,
 }
 
-/// PICK-033, SEC-004, SEC-019: the signed-in owner or "Confirm and billing" member of `pick`'s
-/// business, else the answer to send.
+/// PICK-033, SEC-004, SEC-019, SEC-048: the signed-in owner or "Confirm and billing" member of
+/// `pick`'s business, else the answer to send; a signed-in person's refusal is an `authz_denied`
+/// event.
 async fn mine(
     pool: &PgPool,
     jar: &CookieJar,
-    pick: &str,
+    (pick, site): (&str, Site),
     now: Timestamp,
 ) -> Result<Mine, Box<Response>> {
     let mut db = pool.acquire().await.map_err(|_| Box::new(failed()))?;
@@ -821,14 +873,14 @@ async fn mine(
         Err(_) => return Err(Box::new(failed())),
     };
     let Ok(pick) = Uuid::try_parse(pick) else {
-        return Err(Box::new(not_found()));
+        return Err(Box::new(denied(&mut db, site, &who, now).await));
     };
     let fee = pick_fee(&mut db, pick)
         .await
         .map_err(|_| Box::new(failed()))?;
     match fee.filter(|f| may_confirm(Some(&who), f.business.0)) {
         Some(fee) => Ok(Mine { who, pick, fee }),
-        None => Err(Box::new(not_found())),
+        None => Err(Box::new(denied(&mut db, site, &who, now).await)),
     }
 }
 
@@ -893,6 +945,7 @@ async fn load<S, R>(
     State(served): State<Served<S, R>>,
     jar: CookieJar,
     headers: HeaderMap,
+    Extension(site): Extension<Site>,
     Path(pick): Path<String>,
 ) -> Response
 where
@@ -901,7 +954,7 @@ where
 {
     let route = &served.route;
     let now = route.hooks.clock.now();
-    let mine = match mine(&route.hooks.pool, &jar, &pick, now).await {
+    let mine = match mine(&route.hooks.pool, &jar, (&pick, site), now).await {
         Ok(mine) => mine,
         Err(answer) => return *answer,
     };
@@ -1155,6 +1208,7 @@ impl CsrfField for PressForm {
 async fn press<S, R>(
     State(served): State<Served<S, R>>,
     jar: CookieJar,
+    Extension(site): Extension<Site>,
     Path(pick): Path<String>,
     CsrfForm(form): CsrfForm<PressForm>,
 ) -> Response
@@ -1164,7 +1218,7 @@ where
 {
     let route = &served.route;
     let now = route.hooks.clock.now();
-    let mine = match mine(&route.hooks.pool, &jar, &pick, now).await {
+    let mine = match mine(&route.hooks.pool, &jar, (&pick, site), now).await {
         Ok(mine) => mine,
         Err(answer) => return *answer,
     };
