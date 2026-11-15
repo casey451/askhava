@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-15T01:28:06Z by runner 88f0d709d2c2 (actions).
+Updated 2026-11-15T01:31:13Z by runner 30d12d87a2fd (actions).
 
 **Building: T261 in progress since 01:07Z; 342 of 471 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 342 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T261 claimed 01:07Z, lease until 04:07Z
-- **Week:** 54% used, 84.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:24Z, 3 min before this update
+- **Lane:** lane 1: T261 claimed 01:07Z, lease until 04:07Z; lane 2: T461 claimed 01:31Z, lease until 04:31Z
+- **Week:** 54% used, 84.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:28Z, 2 min before this update
 - **Keeper:** last ran 01:24Z, next wake 04:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 30 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 29 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -89,7 +89,6 @@ Updated 2026-11-15T01:28:06Z by runner 88f0d709d2c2 (actions).
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | done | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 2 | 1 min | 01:33Z |  |
-| T447 | messaging: a passing vault error holds an outbox row instead | done | 1 | 26 min | 01:30Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -142,7 +141,7 @@ Updated 2026-11-15T01:28:06Z by runner 88f0d709d2c2 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-15T01:04:10Z (week)): week: 109.3M used, 84.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-25T18:29:24Z.
+- Pacing (session_reading 2026-11-15T01:24:22Z (week)): week: 109.9M used, 84.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-25T19:11:26Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -158,6 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T261 (lease until 2026-11-15T04:07:00Z)
+- lane 2: T461 (lease until 2026-11-15T04:31:04Z)
 
 ## Last usage reading
 - {"task": "T460", "at": "2026-11-15T01:08:36Z", "input_tokens": 220, "output_tokens": 85137, "cache_creation_input_tokens": 282990, "cache_read_input_tokens": 9959691}
