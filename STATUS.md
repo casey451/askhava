@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T22:49:23Z by runner a80dc4476bee (actions).
+Updated 2026-11-15T23:03:33Z by runner a80dc4476bee (actions).
 
-**Idle since 22:11Z; 352 of 502 done; week 66% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T515 in progress since 22:57Z; 352 of 502 done; week 66% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 352 of 502 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 22:11Z (no task in progress)
-- **Week:** 66% used, 64.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:27Z, 21 min before this update
+- **Lane:** lane 1: T515 claimed 22:57Z, lease until 01:57Z
+- **Week:** 66% used, 62.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:57Z, 6 min before this update
 - **Keeper:** last ran 22:18Z, next wake 03:58Z
 
 ## Needs attention
@@ -46,7 +46,6 @@ Updated 2026-11-15T22:49:23Z by runner a80dc4476bee (actions).
 | T451 | quotes, picks, jobs, payments and server: the "Your numbers" | done | 1 | 41 min | 23:30Z |  |
 | T445 | runner (harness): a failed nightly on an older head keeps th | done | 1 | 24 min | 23:29Z |  |
 | T301 | server and portals: the email action links are served (every | done | 3 | 27 min | 23:24Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
-| T485 | businesses: a public read-only reader of a sign-up's identit | done | 1 | 28 min | 22:54Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -82,7 +81,7 @@ Updated 2026-11-15T22:49:23Z by runner a80dc4476bee (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-15T21:48:40Z (week)): week: 130.0M used, 64.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T07:45:04Z.
+- Pacing (session_reading 2026-11-15T22:17:41Z (week)): week: 132.0M used, 62.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T03:55:36Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -97,7 +96,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T515 (lease until 2026-11-16T01:57:05Z)
 
 ## Last usage reading
 - {"task": "T515", "at": "2026-11-15T22:11:47Z", "input_tokens": 165, "cache_read_input_tokens": 7312942, "cache_creation_input_tokens": 156225, "output_tokens": 39078}
