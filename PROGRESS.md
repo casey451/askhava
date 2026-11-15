@@ -5257,3 +5257,4 @@
 - 2026-11-15T03:49:02Z runner feafd8f43d86 (actions): {}
 - 2026-11-15T03:49:51Z runner 862c5fffa7af (manual): {"T261": "BLOCKED -> QUEUED"}
 - 2026-11-15T03:55:33Z runner 862c5fffa7af (actions): {"T492": "None -> QUEUED", "T493": "None -> QUEUED", "T494": "None -> QUEUED", "T495": "None -> QUEUED"}
+- 2026-11-15T03:56:04Z runner 862c5fffa7af (actions): {"T492": "QUEUED -> IN_PROGRESS"}; T492 estimated 1.1M tokens (calibrated); week has 80.6M left (no five-hour budget, D-3056) after 1.4M still running in another lane (session_reading 2026-11-15T03:48:43Z (week)); claimed
