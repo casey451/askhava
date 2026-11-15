@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-15T11:16:14Z by runner 66a68963a70a (actions).
+Updated 2026-11-15T11:16:31Z by runner 66a68963a70a (actions).
 
-**Building: T261 in progress since 09:09Z; 347 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 11:16Z; 347 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 347 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T261 claimed 09:09Z, lease until 12:09Z
+- **Lane:** idle since 11:16Z (no task in progress)
 - **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:26Z, 109 min before this update
 - **Keeper:** last ran 09:26Z, next wake 12:12Z
@@ -19,6 +19,7 @@ Updated 2026-11-15T11:16:14Z by runner 66a68963a70a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T261 | portals and server (harness): the served Confirm route under | MERGE_PENDING | 4 | 2 h 6 min | 11:16Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T461 | server: business sign-up's service area, email code and acti | done | 4 | 54 min | 08:38Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | done | 2 | 53 min | 07:15Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | done | 2 | 50 min | 06:16Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -27,7 +28,7 @@ Updated 2026-11-15T11:16:14Z by runner 66a68963a70a (actions).
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z |  |
 | T494 | portals: the Confirm route's $0 free-first-win decision from | done | 1 | 29 min | 04:31Z |  |
 | T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | done | 1 | 31 min | 04:26Z |  |
-| T261 | portals and server (harness): the served Confirm route under | BLOCKED | 3 | 110 min | 02:57Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
+| T261 | portals and server (harness): the served Confirm route under | BLOCKED | 3 | 110 min | 02:57Z |  |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z |  |
 | T460 | server: business sign-up's identity steps are served (code s | done | 2 | 68 min | 01:08Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | check_failed | 1 | 12 min | 00:56Z |  |
@@ -124,7 +125,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T261 (lease until 2026-11-15T12:09:32Z)
 
 ## Last usage reading
-- {"task": "T461", "at": "2026-11-15T08:38:04Z", "cache_read_input_tokens": 15328307, "input_tokens": 258, "cache_creation_input_tokens": 297097, "output_tokens": 82419}
+- {"task": "T261", "at": "2026-11-15T11:16:14Z", "input_tokens": 650, "cache_creation_input_tokens": 649632, "cache_read_input_tokens": 51118400, "output_tokens": 225158}
