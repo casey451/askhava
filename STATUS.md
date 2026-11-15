@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T05:04:56Z by runner 5d135dbe531e (actions).
+Updated 2026-11-15T05:05:43Z by runner 5d135dbe531e (actions).
 
-**Idle since 04:47Z; 343 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 05:05Z; 344 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 343 of 480 build tasks (owner gates not counted)
+- **Tasks done:** 344 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 04:47Z (no task in progress)
+- **Lane:** idle since 05:05Z (no task in progress)
 - **Week:** 57% used, 78.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:04Z, 0 min before this update
+- **Last run:** 05:05Z, 0 min before this update
 - **Keeper:** last ran 04:57Z, next wake 05:17Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-15T05:04:56Z by runner 5d135dbe531e (actions).
 |---|---|---|---|---|---|---|
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | check_failed | 1 | 46 min | 04:47Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z | session ended without handing in; the last pre-hand-in gate before it: runner smoke red on 3cfe0b2b62c7 (bash scripts/sm |
-| T494 | portals: the Confirm route's $0 free-first-win decision from | MERGE_PENDING | 1 | 29 min | 04:31Z |  |
+| T494 | portals: the Confirm route's $0 free-first-win decision from | done | 1 | 29 min | 04:31Z |  |
 | T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | done | 1 | 31 min | 04:26Z |  |
 | T261 | portals and server (harness): the served Confirm route under | BLOCKED | 3 | 110 min | 02:57Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z |  |
@@ -104,7 +104,7 @@ Updated 2026-11-15T05:04:56Z by runner 5d135dbe531e (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 343 of 480
+**Tasks merged (throughput only):** 344 of 480
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -139,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 223 of 235 done
+- stage 4: 224 of 235 done
 - stage 5: 0 of 91 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
