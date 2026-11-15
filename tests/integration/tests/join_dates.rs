@@ -168,6 +168,12 @@ async fn an_enabled_row_with_no_time_is_refused(pool: sqlx::PgPool) {
 async fn the_backfill_marks_on_categories_on_before_launch(pool: sqlx::PgPool) {
     drop(app(&pool).await);
     let mut admin = pool.acquire().await.expect("connection");
+    // The pool may hand back the connection `app` set to `askhava_app`, which cannot alter the
+    // owner's table (D-3829); the replay runs as the owner, as the migration does.
+    sqlx::query("RESET ROLE")
+        .execute(&mut *admin)
+        .await
+        .expect("the owner's role");
     let sql = include_str!("../../../migrations/0190_catalog_switched_on.sql");
     let mut steps = split_statements(sql).into_iter();
     assert!(
