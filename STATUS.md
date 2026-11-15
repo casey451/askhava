@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T01:09:38Z by runner 85cb2030d1df (actions).
+Updated 2026-11-15T01:13:12Z by runner 30d12d87a2fd (actions).
 
 **Building: T261 in progress since 01:07Z; 341 of 471 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-15T01:09:38Z by runner 85cb2030d1df (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T261 claimed 01:07Z, lease until 04:07Z
 - **Week:** 54% used, 84.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:09Z, 0 min before this update
+- **Last run:** 01:09Z, 3 min before this update
 - **Keeper:** last ran 01:09Z, next wake 04:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 29 problem(s) on tasks still to run (+110 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 29 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,7 +90,6 @@ Updated 2026-11-15T01:09:38Z by runner 85cb2030d1df (actions).
 | T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 2 | 1 min | 01:33Z |  |
 | T447 | messaging: a passing vault error holds an outbox row instead | done | 1 | 26 min | 01:30Z |  |
-| T341 | picks (harness): a pick of a tiers quote names its tier, and | resync | 2 | 67 min | 01:10Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
