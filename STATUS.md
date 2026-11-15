@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T19:35:07Z by runner 95de4b28761c (actions).
+Updated 2026-11-15T19:56:36Z by runner 644749f508ef (actions).
 
 **Building: T464 in progress since 18:33Z; 351 of 499 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-15T19:35:07Z by runner 95de4b28761c (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T464 claimed 18:33Z, lease until 21:33Z
 - **Week:** 64% used, 68.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:35Z, 0 min before this update
+- **Last run:** 19:35Z, 21 min before this update
 - **Keeper:** last ran 19:35Z, next wake 21:35Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 22 problem(s) on tasks still to run (+119 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+120 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -57,12 +57,11 @@ Updated 2026-11-15T19:35:07Z by runner 95de4b28761c (actions).
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
-- 19:52Z Plan: stage-5 readers and splits, CON-022 purge via definer functions, Spanish switch gates, replay functions (T475–T484, D-3753) (#798)
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
-**Tasks merged (throughput only):** 351 of 499
+**Tasks merged (throughput only):** 351 of 482
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
