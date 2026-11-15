@@ -28408,7 +28408,7 @@
     "T493",
     "T494"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 4,
    "slug": "served-confirm-route",
    "type": "build",
@@ -28422,8 +28422,8 @@
     3720,
     3721
    ],
-   "reason": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    +   \"/b/picks/{pick}/confirm\",\n    + ]\n      13 |   expect(ROUTES.length).toBeGreaterThan(0);\n      14 |   const missing = ROUTES.filter((route) => !PAGE_STATES.some((state) => state.route === route));\n    > 15 |   expect(missing, \"routes with no entry in PAGE_STATES\").toEqual([]);\n         |                                                          ^\n      16 | });\n      17 |\n      18 | for (const state of STATES_TO_CHECK) {\n        at /home/runner/work/askhava/askhava/tests/a11y/axe_all_pages.spec.ts:15:58\n    Error Context: test-results/a11y/axe_all_pages-A11Y-002-eve-0bf54-route-table-has-page-states/error-context.md\n  1 failed\n    tests/a11y/axe_all_pages.spec.ts:12:1 \u203a A11Y-002: every GET route in the route table has page states \n  333 passed (1.7m)\n##[error]Process completed with exit code 1.",
-   "last_failure": "PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership contradiction and budget overrun. Needed: a harness task adding the Stripe stand-in settings, publishable key and launch date to the keyed e2e binary plus a PAGE_STATES entry, with T261's served spec after it. Other reviewer findings (paused-pick test, FEE-041 over-limit and lost-answer tests, \"Nothing was charged\" race in press paused branch) are fixable inside T261 once re-queued. Work committed at 705f96a54 on claude/task/T261-served-confirm-route (not pushed).\nre-queued after plan fix D-3813: D-3813 (#821): T492 adds the keyed e2e Stripe stand-in settings; T261 split into T493, T494, T261, T495 within budget; reviewer fixes folded into T261's goal",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership contradiction and budget overrun. Needed: a harness task adding the Stripe stand-in settings, publishable key and launch date to the keyed e2e binary plus a PAGE_STATES entry, with T261's served spec after it. Other reviewer findings (paused-pick test, FEE-041 over-limit and lost-answer tests, \"Nothing was charged\" race in press paused branch) are fixable inside T261 once re-queued. Work committed at 705f96a54 on claude/task/T261-served-confirm-route (not pushed).\nre-queued after plan fix D-3813: D-3813 (#821): T492 adds the keyed e2e Stripe stand-in settings; T261 split into T493, T494, T261, T495 within budget; reviewer fixes folded into T261's goal\nre-queued after plan fix D-3836: D-3836 (#832): T261 adds the Confirm page's fee-free PAGE_STATES entry in tests/a11y/page_states.ts with its route flip; attempt 4's reviewed work on the branch is kept",
    "history": [
     {
      "attempt": 1,
@@ -28602,6 +28602,19 @@
      "plan_head": "862c5fffa7afa8b50b2a7a716d06b3dcb9038fae",
      "plan_then": "2667e8ec71a6f76cfaf02ac87a0217beb8e3b8710dec46dfb7c3be1fdc023d80",
      "plan_now": "b78bafbef91d9e6e39e00a30f91e4ad0bbb9b8a69465d1bad7761f99d7d079de"
+    },
+    {
+     "at": "2026-11-15T12:09:37Z",
+     "reason": "D-3836 (#832): T261 adds the Confirm page's fee-free PAGE_STATES entry in tests/a11y/page_states.ts with its route flip; attempt 4's reviewed work on the branch is kept",
+     "by": "manual-4cf29b5a0ea0",
+     "was": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    +   \"/b/picks/{pick}/confirm\",\n    + ]\n      13 |   expect(ROUTES.length).toBeGreaterThan(0);\n      14 |   const missing = ROUTES.filter((route) => !PAGE_STATES.some((state) => state.route === route));\n    > 15 |   expect(missing, \"routes with no entry in PAGE_STATES\").toEqual([]);\n         |                                                          ^\n      16 | });\n      17 |\n      18 | for (const state of STATES_TO_CHECK) {\n        at /home/runner/work/askhava/askhava/tests/a11y/axe_all_pages.spec.ts:15:58\n    Error Context: test-results/a11y/axe_all_pages-A11Y-002-eve-0bf54-route-table-has-page-states/error-context.md\n  1 failed\n    tests/a11y/axe_all_pages.spec.ts:12:1 \u203a A11Y-002: every GET route in the route table has page states \n  333 passed (1.7m)\n##[error]Process completed with exit code 1.",
+     "attempts": 4,
+     "plan_fix": "D-3836",
+     "plan_since": "2026-11-15T09:09:32Z",
+     "plan_base": "cb399268cebecf328840a72b22c90696766172c3",
+     "plan_head": "2c7436fa53abfd8bf500077425691ef147b93f42",
+     "plan_then": "b78bafbef91d9e6e39e00a30f91e4ad0bbb9b8a69465d1bad7761f99d7d079de",
+     "plan_now": "1612a43af03a78bae0e66b1fb1ae9127a09593ef167d2ee867759c89bb46e91c"
     }
    ],
    "reviewed_sha": "66a68963a70a1f69882768c7f8519c3714d693bd",
@@ -62573,7 +62586,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T12:01:23Z",
+ "updated_at": "2026-11-15T12:09:37Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -62671,7 +62684,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "cb399268cebecf328840a72b22c90696766172c3",
+ "runner_sha": "2c7436fa53abfd8bf500077425691ef147b93f42",
  "starter": "manual",
  "smoke_runs": [
   {

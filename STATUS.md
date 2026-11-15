@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T12:01:23Z by runner cb399268cebe (manual).
+Updated 2026-11-15T12:09:37Z by runner 2c7436fa53ab (manual).
 
 **Building: T462 in progress since 11:43Z; 347 of 480 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,27 +8,10 @@ Updated 2026-11-15T12:01:23Z by runner cb399268cebe (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T462 claimed 11:43Z, lease until 14:43Z
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:55Z, 6 min before this update
+- **Last run:** 12:01Z, 8 min before this update
 - **Keeper:** last ran 11:55Z, next wake 14:46Z
 
 ## Needs attention
-- BLOCKED T261: Ally: failure
-Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
-    +   "/b/picks/{pick}/confirm",
-    + ]
-      13 |   expect(ROUTES.length).toBeGreaterThan(0);
-      14 |   const missing = ROUTES.filter((route) => !PAGE_STATES.some((state) => state.route === route));
-    > 15 |   expect(missing, "routes with no entry in PAGE_STATES").toEqual([]);
-         |                                                          ^
-      16 | });
-      17 |
-      18 | for (const state of STATES_TO_CHECK) {
-        at /home/runner/work/askhava/askhava/tests/a11y/axe_all_pages.spec.ts:15:58
-    Error Context: test-results/a11y/axe_all_pages-A11Y-002-eve-0bf54-route-table-has-page-states/error-context.md
-  1 failed
-    tests/a11y/axe_all_pages.spec.ts:12:1 › A11Y-002: every GET route in the route table has page states 
-  333 passed (1.7m)
-##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 29 problem(s) on tasks still to run (+118 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
