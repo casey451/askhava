@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T09:01:14Z by runner cb399268cebe (actions).
+Updated 2026-11-15T09:09:44Z by runner cb399268cebe (actions).
 
-**Idle since 08:59Z; 347 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T261 in progress since 09:09Z; 347 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 347 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 08:59Z (no task in progress)
+- **Lane:** lane 2: T261 claimed 09:09Z, lease until 12:09Z
 - **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:58Z, 2 min before this update
+- **Last run:** 09:01Z, 8 min before this update
 - **Keeper:** last ran 08:58Z, next wake 09:18Z
 
 ## Needs attention
@@ -72,7 +72,6 @@ Updated 2026-11-15T09:01:14Z by runner cb399268cebe (actions).
 | T398 | businesses: notice texts go only to approved phones, and a m | done | 1 | 38 min | 09:41Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 4 | 2 min | 09:18Z |  |
 | T301 | server and portals: the email action links are served (every | BLOCKED | 1 | 4 min | 09:13Z |  |
-| T398 | businesses: notice texts go only to approved phones, and a m | resync | 1 | 32 min | 09:01Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -120,7 +119,7 @@ Updated 2026-11-15T09:01:14Z by runner cb399268cebe (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-15T07:16:22Z (week)): week: 116.0M used, 78.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-26T06:07:24Z.
+- Pacing (session_reading 2026-11-15T08:57:46Z (week)): week: 116.0M used, 78.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-26T08:19:25Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -136,6 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T261 (lease until 2026-11-15T12:09:32Z)
 
 ## Last usage reading
 - {"task": "T461", "at": "2026-11-15T08:38:04Z", "cache_read_input_tokens": 15328307, "input_tokens": 258, "cache_creation_input_tokens": 297097, "output_tokens": 82419}
