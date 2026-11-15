@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T12:14:35Z by runner 2c7436fa53ab (actions).
+Updated 2026-11-15T12:48:03Z by runner 2c7436fa53ab (actions).
 
 **Idle since 12:13Z; 347 of 480 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T12:14:35Z by runner 2c7436fa53ab (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 12:13Z (no task in progress)
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:14Z, 0 min before this update
+- **Last run:** 12:14Z, 33 min before this update
 - **Keeper:** last ran 12:14Z, next wake 17:54Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-15T12:14:35Z by runner 2c7436fa53ab (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T462 | server: the sign-up inbox check is served behind the busines | MERGE_PENDING | 1 | 30 min | 12:13Z |  |
+| T462 | server: the sign-up inbox check is served behind the busines | check_failed | 1 | 30 min | 12:13Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T261 | portals and server (harness): the served Confirm route under | check_failed | 4 | 2 h 6 min | 11:16Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T461 | server: business sign-up's service area, email code and acti | done | 4 | 54 min | 08:38Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | done | 2 | 53 min | 07:15Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
@@ -58,9 +58,6 @@ Updated 2026-11-15T12:14:35Z by runner 2c7436fa53ab (actions).
 | T432 | intake and server: ask the name-and-address question in prod | done | 1 | 71 min | 13:54Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 4 | 38 min | 13:32Z |  |
 | T466 | portals: one shared form stylesheet for native checkboxes an | done | 1 | 27 min | 13:27Z |  |
-| T301 | server and portals: the email action links are served (every | BLOCKED | 2 | 8 min | 12:40Z |  |
-| T359 | payments: a successful charge writes its own charge ledger e | done | 3 | 72 min | 12:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
-| T300 | server and portals: the business portal is served behind the | BLOCKED | 2 | 16 min | 12:20Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -73,7 +70,6 @@ Updated 2026-11-15T12:14:35Z by runner 2c7436fa53ab (actions).
 - 15:37Z Plan: fee_terms_changed pick end reason (new T467) so T261's Confirm page can end a pick safely (D-3722) (#788)
 - 13:12Z Plan: T301 door-matrix Quote-link cases follow BIZ-038/CARD-023; action pages link forms.css (D-3706) (#781)
 - 12:55Z Plan: shared portal forms stylesheet (T466) so business pages pass A11Y-007/009 (D-3699, D-3700) (#780)
-- 12:46Z Plan: split T437 so the NOTES.md rule lands before the crate-doc sweep (D-3698) (#777)
 
 ## Progress (requirements verified)
 
