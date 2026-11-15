@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T15:27:24Z by runner 77c4da167023 (actions).
+Updated 2026-11-15T15:55:08Z by runner 2b05da2c07fb (actions).
 
 **Building: T261 in progress since 15:25Z; 348 of 481 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T15:27:24Z by runner 77c4da167023 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T261 claimed 15:25Z, lease until 18:25Z
 - **Week:** 61% used, 72.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:27Z, 0 min before this update
+- **Last run:** 15:54Z, 1 min before this update
 - **Keeper:** last ran 15:27Z, next wake 18:27Z
 
 ## Needs attention
@@ -64,7 +64,6 @@ Updated 2026-11-15T15:27:24Z by runner 77c4da167023 (actions).
 - 18:45Z Plan: email sending wired, pick-end texts complete, Can't-take route, T121 unblocked (T469–T473, D-3750) (#794)
 - 16:47Z Plan: pre-claim scout fixes for 27 stage-5 tasks (D-3744) (#793)
 - 16:40Z Plan: sign-up email code and activation link get real send paths, rate-limited (new T468, D-3743) (#791)
-- 15:37Z Plan: fee_terms_changed pick end reason (new T467) so T261's Confirm page can end a pick safely (D-3722) (#788)
 
 ## Progress (requirements verified)
 
