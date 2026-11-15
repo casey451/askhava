@@ -555,10 +555,10 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /b/a/{kind}/{object}/{token} | portals | yes |
 | GET | /b/signup | portals | yes |
 | POST | /b/signup/start | portals | yes |
-| POST | /b/signup/send | portals | T460 |
-| POST | /b/signup/old | portals | T460 |
-| POST | /b/signup/letter | portals | T460 |
-| POST | /b/signup/identity-code | portals | T460 |
+| POST | /b/signup/send | portals | yes |
+| POST | /b/signup/old | portals | yes |
+| POST | /b/signup/letter | portals | yes |
+| POST | /b/signup/identity-code | portals | yes |
 | POST | /b/signup/email-code | portals | T461 |
 | POST | /b/signup/email-code/resend | portals | T461 |
 | POST | /b/signup/service-area | portals | T461 |
