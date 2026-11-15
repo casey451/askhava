@@ -4,8 +4,11 @@
 //! the switch is the owner's setting, and the file only decides where a new category starts
 //! (LIC-003). It does switch off, with a system audit row, a category that is now not offered, has
 //! a ROC kind with no classes, or is gone from the file (LIC-003, LIC-004, AI-017). Switching writes the new state and an `ops` audit row in one transaction (LIC-002).
+//! Switching on stores `switched_on_at`, which [`trades_opened`] reads for the free first win's
+//! join dates (FEE-010, D-195, D-3779).
 
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
+use jiff::Timestamp;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
@@ -101,11 +104,14 @@ async fn switch_off_unsafe(tx: &mut PgConnection, catalog: &Catalog) -> Result<(
     Ok(())
 }
 
+/// Stores one category. A new category the file has on gets `switched_on_at = now()`; the
+/// `ON CONFLICT` update never touches `enabled` or `switched_on_at` (LIC-003, FEE-010, D-3779).
 async fn store_category(tx: &mut PgConnection, def: &CategoryDef) -> Result<(), CatalogError> {
     let id = db(sqlx::query_scalar!(
         "INSERT INTO catalog.category \
-         (code, name, trade_group, enabled, recurring, after_hours_emergency, quote_format, keywords) \
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) \
+         (code, name, trade_group, enabled, recurring, after_hours_emergency, quote_format, keywords, \
+         switched_on_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CASE WHEN $4 THEN now() END) \
          ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, trade_group = EXCLUDED.trade_group, \
          recurring = EXCLUDED.recurring, after_hours_emergency = EXCLUDED.after_hours_emergency, \
          quote_format = EXCLUDED.quote_format, keywords = EXCLUDED.keywords RETURNING id",
@@ -245,7 +251,8 @@ pub(crate) async fn is_not_offered(
     Ok(found.unwrap_or(false))
 }
 
-/// Switches a category on or off for the owner and logs it (LIC-002). Returns false, writing
+/// Switches a category on or off for the owner and logs it (LIC-002). An off-to-on switch sets
+/// `switched_on_at` to now; switching off keeps it (FEE-010, D-195, D-3779). Returns false, writing
 /// nothing, when it was already in that state. A not-offered kind (LIC-004) and a ROC category with
 /// no resolved class (LIC-003, AI-017) cannot be switched on.
 pub(crate) async fn set_enabled(
@@ -274,7 +281,9 @@ pub(crate) async fn set_enabled(
     }
     let mut tx = db(conn.begin().await)?;
     let changed = db(sqlx::query!(
-        "UPDATE catalog.category SET enabled = $2 WHERE id = $1 AND enabled = NOT $2",
+        "UPDATE catalog.category SET enabled = $2, \
+         switched_on_at = CASE WHEN $2 THEN now() ELSE switched_on_at END \
+         WHERE id = $1 AND enabled = NOT $2",
         cat.id,
         on
     )
@@ -297,4 +306,28 @@ pub(crate) async fn set_enabled(
         .map_err(|_| CatalogError::Database)?;
     db(tx.commit().await)?;
     Ok(true)
+}
+
+/// FEE-010, D-195, D-3779: the stored switch-on time (`switched_on_at`, the latest off-to-on) of
+/// every listed category that has one, whether it is on or off now, in code order. Unknown codes
+/// and categories never switched on give nothing. Read-only; the caller builds `JoinDates`.
+///
+/// # Errors
+/// [`CatalogError::Database`] when the read fails or a stored time is out of range.
+pub async fn trades_opened(
+    conn: &mut PgConnection,
+    codes: &[String],
+) -> Result<Vec<Timestamp>, CatalogError> {
+    let micros = db(sqlx::query_scalar!(
+        r#"SELECT (extract(epoch FROM switched_on_at) * 1000000)::bigint AS "micros!"
+           FROM catalog.category WHERE code = ANY($1) AND switched_on_at IS NOT NULL
+           ORDER BY code"#,
+        codes
+    )
+    .fetch_all(conn)
+    .await)?;
+    micros
+        .into_iter()
+        .map(|m| Timestamp::from_microsecond(m).map_err(|_| CatalogError::Database))
+        .collect()
 }
