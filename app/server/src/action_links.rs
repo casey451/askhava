@@ -10,7 +10,7 @@
 //! nothing however often it is opened (SEC-026, D-3669). A session kind opened by another signed-in
 //! person is the one not-found answer (SEC-025, D-3614).
 //!
-//! Only the Quote form's `POST` acts (D-3675): after `refuse_cross_site` (a layer) and the CSRF
+//! The Quote form's `POST` acts by the link alone (D-3675): after `refuse_cross_site` (a layer) and the CSRF
 //! check (`CsrfForm`, a refusal is a `csrf_rejected` security event), it uses the link in one
 //! transaction, calls `admit_quote` first (D-2206), reads the rules (`quote_rules`), the sent
 //! card (`sent_card`, D-3189) and the job page, parses the price, facts and note, warns once
@@ -18,7 +18,14 @@
 //! `parse_quote` and stores it with `submit_quote_with_facts`; any problem rolls back and shows
 //! the form again, so the link stays unused; the form shown again with a parsed price carries
 //! its introduction fee by job size lines (PICK-039, D-3672). A used link's repeat `POST` is the
-//! 404, an open gap (D-3673). Every other kind's `POST` gets the one not-found
+//! 404, an open gap (D-3673). Pause, Resume and Ask about a charge act once with a business
+//! session (T455, D-3839): signed out is a 401 linking to sign-in before any token read; then
+//! `use_action_link` in the action's transaction, the link's person must be the signed-in one and
+//! `session_may` must allow the kind; Pause and Resume (object: the business) call `pause_self`
+//! and `resume_self` (BIZ-028, BIZ-010), Ask about a charge (object: the charged pick) reads
+//! `receipt_for`, enqueues `ask_about_charge` and answers with `charge_answer` and the
+//! `/b/charges/{pick}` link (BIZ-032, D-225). A refused pause or resume rolls back, so the link
+//! stays unused, and says why (409). Every other kind's `POST` gets the one not-found
 //! answer before any token read (D-3675). A wrong kind, object, person, an ended, used or
 //! unknown token, a removed member's token and a job with no sent card or no rules all get the
 //! same bare 404. Every response is `no-store`.
@@ -26,17 +33,18 @@
 use std::net::IpAddr;
 use std::sync::Arc;
 
-use askhava_businesses::api::capabilities;
+use askhava_businesses::api::{BusinessesError, capabilities, pause_self, resume_self};
 use askhava_core::api::{Clock, SystemClock};
 use askhava_intake::api::Admission;
 use askhava_jobs::api::{job_facts, job_number};
-use askhava_payments::api::{JobCodes, JobFeeFacts, resolve_fee_facts};
+use askhava_payments::api::{JobCodes, JobFeeFacts, receipt_for, resolve_fee_facts};
 use askhava_portals::api::{
-    ACTION_ROUTE, ActionFacts, ActionKind, ActionLinkError, CookieJar, CsrfField, CsrfForm,
-    FactsForm, LargestWarning, PriceForm, QuoteFormFacts, UseBy, WebSecurity, action_page,
-    admit_quote, business_principal, csrf_token, ensure_pre_session, fee_lines, job_details_page,
+    ACTION_ROUTE, ActionFacts, ActionKind, ActionLinkError, ChargeAsked, CookieJar, CsrfField,
+    CsrfForm, FactsForm, LargestWarning, PriceForm, QuoteFormFacts, SIGNIN_ROUTE, UseBy,
+    WHY_CHARGED_ROUTE, WebSecurity, action_page, admit_quote, ask_about_charge, business_principal,
+    charge_answer, charge_reply_line, csrf_token, ensure_pre_session, fee_lines, job_details_page,
     largest_job_warning, open_action_link, parse_facts, prefill, quote_form_page_priced,
-    refuse_cross_site, security_event_client, use_action_link,
+    refuse_cross_site, security_event_client, session_may, use_action_link,
 };
 use askhava_portals::api::{JobPageLinks, no_store};
 use askhava_quotes::api::{
@@ -419,8 +427,9 @@ impl Posted {
     }
 }
 
-/// `POST /b/a/{kind}/{object}/{token}`: after the cross-site and CSRF checks, only a Quote link
-/// acts; every other kind is the one not-found answer before any token read (D-3675).
+/// `POST /b/a/{kind}/{object}/{token}`: after the cross-site and CSRF checks, a Quote link acts
+/// by the link alone, Pause, Resume and Ask about a charge with a business session (D-3839);
+/// every other kind is the one not-found answer before any token read (D-3675).
 async fn act(
     State(links): State<Links>,
     Extension(Client(ip)): Extension<Client>,
@@ -428,21 +437,178 @@ async fn act(
     jar: CookieJar,
     CsrfForm(posted): CsrfForm<Posted>,
 ) -> Response {
-    let csrf = csrf_token(&jar).unwrap_or_default();
-    let quote = target(raw).and_then(|(kind, object, token)| match kind {
-        ActionKind::Quote => Ok((object, token)),
-        _ => Err(Stop::NotFound),
-    });
-    let (job, token) = match quote {
+    let (kind, object, token) = match target(raw) {
         Ok(found) => found,
         Err(stop) => return stop.into_response(),
     };
-    let sent = send_quote(&links, (job, &token), ip, &posted, &csrf).await;
+    match kind {
+        ActionKind::Quote => quote_post(&links, (object, &token), ip, &posted, jar).await,
+        ActionKind::Pause | ActionKind::Resume | ActionKind::AskCharge => {
+            let acted = session_post(&links, (kind, object, &token), &jar).await;
+            acted.unwrap_or_else(IntoResponse::into_response)
+        }
+        _ => Stop::NotFound.into_response(),
+    }
+}
+
+/// The Quote form's `POST` (PICK-040, D-2206): the stored quote's page, the form again or the
+/// refused quote's page.
+async fn quote_post(
+    links: &Links,
+    (job, token): (Uuid, &str),
+    ip: IpAddr,
+    posted: &Posted,
+    jar: CookieJar,
+) -> Response {
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    let sent = send_quote(links, (job, token), ip, posted, &csrf).await;
     match sent {
         Ok(Sent::Page(html)) => page(jar, html),
         Ok(Sent::TryLater) => (StatusCode::TOO_MANY_REQUESTS, Html(TRY_LATER)).into_response(),
         Err(stop) => stop.into_response(),
     }
+}
+
+/// What a session action came to: done (committed) or refused (rolled back), each with its
+/// page's heading and body HTML.
+enum Outcome {
+    Done(&'static str, String),
+    Refused(&'static str, &'static str),
+}
+
+/// BIZ-028, BIZ-032, SEC-004, SEC-025, SEC-026, D-3839: a session kind's `POST`. Signed out is
+/// the 401 before any token read; the link is used in the action's transaction and must be the
+/// signed-in person's own, for a kind `session_may` allows, else the one not-found answer; a
+/// refusal rolls back, so the link stays unused and nothing changes.
+async fn session_post(
+    links: &Links,
+    (kind, object, token): (ActionKind, Uuid, &str),
+    jar: &CookieJar,
+) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let principal = business_principal(&mut tx, jar, now)
+        .await
+        .map_err(failed)?;
+    let Some(principal) = principal else {
+        return Ok(signed_out());
+    };
+    let grant = use_action_link(&mut tx, (kind, object), token, None, now).await;
+    let grant = grant.map_err(link_stop)?;
+    let business = grant.business();
+    if !grant.same_person(&principal) || !session_may(&principal, kind, business) {
+        return Err(Stop::NotFound);
+    }
+    let outcome = match kind {
+        ActionKind::AskCharge => ask_charge(&mut tx, business, object, now).await?,
+        _ if object != business => return Err(Stop::NotFound),
+        ActionKind::Pause => paused(pause_self(&mut tx, business, now).await)?,
+        _ => resumed(resume_self(&mut tx, business, now).await)?,
+    };
+    Ok(match outcome {
+        Outcome::Done(title, body) => {
+            tx.commit().await.map_err(failed)?;
+            done(StatusCode::OK, title, &body)
+        }
+        Outcome::Refused(title, why) => {
+            tx.rollback().await.map_err(failed)?;
+            done(
+                StatusCode::CONFLICT,
+                title,
+                &format!("<p id=\"why\">{why}</p>"),
+            )
+        }
+    })
+}
+
+/// BIZ-028, BIZ-010: a self pause: done, or refused because the business is not active.
+fn paused(moved: Result<impl Sized, BusinessesError>) -> Result<Outcome, Stop> {
+    Ok(match moved {
+        Ok(_) => Outcome::Done(
+            "Job cards paused",
+            "<p>We won't send you new job cards until you tap Resume.</p>".to_owned(),
+        ),
+        Err(BusinessesError::Refused | BusinessesError::MovedOn) => Outcome::Refused(
+            "Job cards not paused",
+            "Only an active account can pause its job cards. Nothing changed.",
+        ),
+        Err(_) => return Err(Stop::Failed),
+    })
+}
+
+/// BIZ-028, BIZ-009, BIZ-010: a resume: done, or refused because the pause is not the business's
+/// own.
+fn resumed(moved: Result<impl Sized, BusinessesError>) -> Result<Outcome, Stop> {
+    Ok(match moved {
+        Ok(_) => Outcome::Done(
+            "Job cards resumed",
+            "<p>We'll send you new job cards again.</p>".to_owned(),
+        ),
+        Err(BusinessesError::Refused | BusinessesError::MovedOn) => Outcome::Refused(
+            "Job cards not resumed",
+            "Only a pause you set yourself can be resumed here. Nothing changed.",
+        ),
+        Err(_) => return Err(Stop::Failed),
+    })
+}
+
+/// BIZ-032, FEE-031, OPS-036, D-225, D-348: the charge of `pick` for `business` (another
+/// business's or no charge is the one not-found answer), its help request queued, and the
+/// answer: its job number, amount and tier, the "Why was I charged?" link and the 2-day line.
+async fn ask_charge(
+    tx: &mut PgConnection,
+    business: Uuid,
+    pick: Uuid,
+    now: Timestamp,
+) -> Result<Outcome, Stop> {
+    let receipt = receipt_for(tx, pick, business).await.map_err(failed)?;
+    let receipt = receipt.ok_or(Stop::NotFound)?;
+    let asked = ChargeAsked {
+        business,
+        charge: pick,
+        job: receipt.job,
+    };
+    ask_about_charge(tx, asked, now).await.map_err(failed)?;
+    let number = job_number(tx, receipt.job)
+        .await
+        .map_err(failed)?
+        .to_string();
+    let why = WHY_CHARGED_ROUTE.replace("{pick}", &pick.to_string());
+    let answer = match receipt.tier {
+        Some(tier) => charge_answer(&number, tier, &why),
+        None => format!("Your charge for job {number}. {}", charge_reply_line()),
+    };
+    let body = format!(
+        "<p id=\"charge-answer\">{}</p><p><a href=\"{why}\">Why was I charged?</a></p>",
+        escaped(&answer)
+    );
+    Ok(Outcome::Done("We got your question", body))
+}
+
+/// `text` safe inside an HTML element.
+fn escaped(text: &str) -> String {
+    text.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+}
+
+/// A session action's page with `status`, heading `title` and `body` HTML.
+fn done(status: StatusCode, title: &str, body: &str) -> Response {
+    let page = format!(
+        "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>{title}</title>\
+         </head><body><main><h1>{title}</h1>{body}</main></body></html>"
+    );
+    (status, Html(page)).into_response()
+}
+
+/// SEC-004: a session kind's `POST` with no business person: 401, a link to sign in, no detail.
+fn signed_out() -> Response {
+    let body = format!("<p><a href=\"{SIGNIN_ROUTE}\">Sign in</a>, then open the link again.</p>");
+    done(
+        StatusCode::UNAUTHORIZED,
+        "Sign in to your business account",
+        &body,
+    )
 }
 
 /// SEC-014, D-2206: the page a refused quote gets; nothing was stored.

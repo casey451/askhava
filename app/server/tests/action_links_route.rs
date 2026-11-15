@@ -14,20 +14,23 @@
 //! name, phone and ID is fake.
 
 use std::collections::BTreeSet;
+use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_businesses::api::{
-    AccountStatus, Acting, Capability, CapabilityAnswers, LargestJob, Roles, add_member, add_owner,
-    create as create_business, remove_member, save_capability,
+    AccountStatus, Acting, Capability, CapabilityAnswers, Checks, Event, LargestJob, PauseReason,
+    Roles, add_member, add_owner, apply, business, create as create_business, remove_member,
+    save_capability,
 };
 use askhava_catalog::api::load_embedded;
-use askhava_core::api::Guarded;
+use askhava_core::api::{Guarded, SystemClock};
 use askhava_jobs::api::{JobStatus, create, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::Actor as AuditActor;
 use askhava_picks::api::HoldAsk;
 use askhava_portals::api::{
-    ActionKind, ActionTarget, CookieJar, csrf_token, ensure_pre_session, mint_action_link,
-    open_action_link,
+    ActionKind, ActionTarget, CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SignIn, SignInAddress,
+    SignInMail, csrf_token, ensure_pre_session, mint_action_link, open_action_link,
+    send_sign_in_link, signin_post,
 };
 use askhava_quotes::api::{
     CardBusiness, CardFacts, CardJob, CardParts, DEFAULT_MIN_WORDS, OfferTown, Place, build_card,
@@ -35,10 +38,11 @@ use askhava_quotes::api::{
 };
 use axum::Router;
 use axum::body::{Body, to_bytes};
-use axum::http::{Method, Request, header};
+use axum::http::{HeaderMap, Method, Request, header};
+use axum::routing::post;
 use jiff::tz::TimeZone;
 use jiff::{SignedDuration, Timestamp};
-use secrecy::ExposeSecret;
+use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 use tower::ServiceExt;
@@ -104,12 +108,21 @@ fn router(pool: PgPool) -> Router {
     askhava_server::build_router(pool, Router::new(), (None, None, None, None))
 }
 
-/// Sends `method path` with the CSRF token of `jar` (or a wrong one) and `extra` form fields.
-async fn send(w: &World, (method, path, extra): (&Method, &str, &str), site: Site) -> Reply {
+/// Sends `method path` signed out, with `extra` form fields.
+async fn send(w: &World, request: (&Method, &str, &str), site: Site) -> Reply {
     let jar = ensure_pre_session(CookieJar::new()).expect("pre-session");
+    send_as(w, request, site, &jar).await
+}
+
+/// `method path` with `jar`'s cookies, its CSRF token (or a wrong one) and `extra` fields.
+fn request(
+    (method, path, extra): (&Method, &str, &str),
+    site: Site,
+    jar: &CookieJar,
+) -> Request<Body> {
     let csrf = match site {
         Site::WrongToken => "0".repeat(64),
-        Site::Own | Site::Cross => csrf_token(&jar).unwrap_or_default(),
+        Site::Own | Site::Cross => csrf_token(jar).unwrap_or_default(),
     };
     let fetch = if site == Site::Cross {
         "cross-site"
@@ -120,7 +133,7 @@ async fn send(w: &World, (method, path, extra): (&Method, &str, &str), site: Sit
         .iter()
         .map(|c| format!("{}={}", c.name(), c.value()))
         .collect();
-    let request = Request::builder()
+    Request::builder()
         .method(method.clone())
         .uri(path)
         .header(header::HOST, HOST)
@@ -129,9 +142,13 @@ async fn send(w: &World, (method, path, extra): (&Method, &str, &str), site: Sit
         .header(header::COOKIE, cookies.join("; "))
         .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
         .body(Body::from(format!("csrf={csrf}{extra}")))
-        .expect("request");
-    let response = w.app.clone().oneshot(request).await.expect("response");
-    let (parts, body) = response.into_parts();
+        .expect("request")
+}
+
+/// Sends [`request`] through the router and reads its answer.
+async fn send_as(w: &World, asked: (&Method, &str, &str), site: Site, jar: &CookieJar) -> Reply {
+    let response = w.app.clone().oneshot(request(asked, site, jar)).await;
+    let (parts, body) = response.expect("response").into_parts();
     let cache = parts.headers.get(header::CACHE_CONTROL);
     let no_store = cache
         .and_then(|v| v.to_str().ok())
@@ -366,7 +383,7 @@ async fn td_sec_44_wrong_kind_object_person_expired_and_removed_are_not_found(po
     let expired = path_of(&mint(&w, (ActionKind::Quote, w.job), w.team.member, past).await);
     let removed = removed_member_link(&w, now).await;
     let cases = [
-        format!("/b/a/pause/{}/{token}", w.job),
+        format!("/b/a/hold/{}/{token}", w.job),
         format!("/b/a/quote/{other}/{token}"),
         format!("/b/a/quote/{stranger}/{token}"),
         format!("/b/a/nothing/{}/{token}", w.job),
@@ -466,13 +483,17 @@ async fn td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number(pool: PgP
     );
 }
 
+/// The kinds whose `POST` acts with a business session (T455, D-3675, D-3839).
+const SESSION_ACTS: [ActionKind; 3] =
+    [ActionKind::Pause, ActionKind::Resume, ActionKind::AskCharge];
+
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_sec_44_every_other_kind_post_is_not_found_and_uses_nothing(pool: PgPool) {
     let w = world(&pool).await;
     let answer = not_found(&w, &Method::POST).await;
     for kind in ActionKind::ALL
         .into_iter()
-        .filter(|k| *k != ActionKind::Quote)
+        .filter(|k| *k != ActionKind::Quote && !SESSION_ACTS.contains(k))
     {
         let path = path_of(&live(&w, kind, object_for(&w, kind)).await);
         let reply = send(&w, (&Method::POST, &path, "&days=3"), Site::Own).await;
@@ -569,4 +590,180 @@ async fn td_biz_50_a_business_with_no_capability_row_is_never_warned(pool: PgPoo
     let sent = send(&w, (&Method::POST, &path, &big), Site::Own).await;
     assert!(!sent.text.contains("largest-warning"), "{}", sent.text);
     assert!(sent.text.contains("Quotes so far: 1."), "{}", sent.text);
+}
+
+/// The one sign-in address of one person; the link it "emails" is kept.
+struct OneMail {
+    to: SignInAddress,
+    sent: Mutex<Option<String>>,
+}
+
+impl SignInMail for OneMail {
+    async fn addresses(
+        &self,
+        _: &mut PgConnection,
+        _: &str,
+    ) -> Result<Vec<SignInAddress>, PortalsError> {
+        Ok(vec![self.to])
+    }
+
+    async fn send_link(
+        &self,
+        _: &mut PgConnection,
+        _: SignInAddress,
+        link: &SecretString,
+    ) -> Result<(), PortalsError> {
+        let token = link.expose_secret().rsplit('/').next().map(str::to_owned);
+        *self.sent.lock().unwrap_or_else(PoisonError::into_inner) = token;
+        Ok(())
+    }
+}
+
+/// A new "Confirm and billing" member of `w`'s business, signed in through its emailed sign-in
+/// link on the router (D-1724): its ID and cookies.
+async fn signed_in(w: &World) -> (Uuid, CookieJar) {
+    let (now, mailbox) = (Timestamp::now(), Uuid::new_v4());
+    let mut db = w.pool.acquire().await.expect("db");
+    let by = Acting {
+        business: w.team.business,
+        member: w.team.member,
+    };
+    let roles = Roles::new(false, true).expect("roles");
+    let member = add_member(&mut db, by, mailbox, roles, now)
+        .await
+        .expect("member");
+    let to = SignInAddress {
+        business: w.team.business,
+        mailbox,
+    };
+    let mail = Arc::new(OneMail {
+        to,
+        sent: Mutex::default(),
+    });
+    send_sign_in_link(&mut db, &*mail, to, now)
+        .await
+        .expect("link");
+    let token = mail
+        .sent
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .clone();
+    let path = format!("/b/sign-in/{}", token.expect("a link emailed"));
+    let pre = ensure_pre_session(CookieJar::new()).expect("pre-session");
+    let press = Router::new().route(SIGNIN_LINK_ROUTE, post(signin_post::<OneMail>));
+    let app = SignIn::new(w.pool.clone(), Arc::new(SystemClock), mail).into_router(press);
+    let pressed = app.oneshot(request((&Method::POST, &path, ""), Site::Own, &pre));
+    let pressed = pressed.await.expect("pressed");
+    let cookies: Vec<&str> = pressed
+        .headers()
+        .get_all(header::SET_COOKIE)
+        .iter()
+        .filter_map(|v| v.to_str().ok()?.split(';').next())
+        .filter(|pair| !pair.ends_with('='))
+        .collect();
+    let mut headers = HeaderMap::new();
+    headers.insert(header::COOKIE, cookies.join("; ").parse().expect("cookies"));
+    (member, CookieJar::from_headers(&headers))
+}
+
+/// `w`'s business moved by `event` (a fake earlier state), as the owner or sign-up would.
+async fn moved(w: &World, event: Event) {
+    let mut db = w.pool.acquire().await.expect("db");
+    let now = Timestamp::now();
+    let actor = AuditActor::Owner(Uuid::new_v4());
+    apply(&mut db, w.team.business, event, actor, now)
+        .await
+        .expect("moved");
+}
+
+/// `w`'s business's status and pause reason, by their stored codes.
+async fn status(w: &World) -> (&'static str, Option<&'static str>) {
+    let mut db = w.pool.acquire().await.expect("db");
+    let read = business(&mut db, w.team.business).await.expect("business");
+    (read.status.code(), read.pause_reason.map(PauseReason::code))
+}
+
+/// A live `kind` link on `object` for `member`.
+async fn live_for(w: &World, (kind, object): (ActionKind, Uuid), member: Uuid) -> String {
+    let now = Timestamp::now();
+    let span = (now, now + SignedDuration::from_hours(2));
+    path_of(&mint(w, (kind, object), member, span).await)
+}
+
+/// A `POST` of `path` with no fields but the CSRF token.
+async fn act(w: &World, path: &str, site: Site, jar: &CookieJar) -> Reply {
+    send_as(w, (&Method::POST, path, ""), site, jar).await
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_pause_and_resume_act_once_with_the_persons_session(pool: PgPool) {
+    let w = world(&pool).await;
+    let (me, jar) = signed_in(&w).await;
+    let pause = live_for(&w, (ActionKind::Pause, w.team.business), me).await;
+    let out = send(&w, (&Method::POST, &pause, ""), Site::Own).await;
+    assert_eq!(out.status, 401, "signed out is asked to sign in (SEC-004)");
+    assert!(out.no_store && out.text.contains("/b/sign-in"));
+    for site in [Site::Cross, Site::WrongToken] {
+        assert_eq!(
+            act(&w, &pause, site, &jar).await.status,
+            403,
+            "refused (SEC-042)"
+        );
+    }
+    let pending = act(&w, &pause, Site::Own, &jar).await;
+    assert_eq!(pending.status, 409, "{}", pending.text);
+    assert!(
+        pending.text.contains("Only an active account"),
+        "it says why"
+    );
+    assert!(
+        unused(&w, &pause).await,
+        "a refused pause leaves the link unused"
+    );
+    assert_eq!(status(&w).await, ("pending", None));
+    let checks = Checks {
+        code_done: true,
+        match_passed: true,
+        flagged: false,
+    };
+    moved(&w, Event::Checked(checks)).await;
+    let done = act(&w, &pause, Site::Own, &jar).await;
+    assert_eq!(done.status, 200, "{}", done.text);
+    assert!(done.no_store && done.text.contains("Job cards paused"));
+    assert_eq!(status(&w).await, ("paused", Some("self")));
+    let again = act(&w, &pause, Site::Own, &jar).await;
+    assert_eq!(
+        again,
+        not_found(&w, &Method::POST).await,
+        "a used link acts no more"
+    );
+    let resume = live_for(&w, (ActionKind::Resume, w.team.business), me).await;
+    assert_eq!(act(&w, &resume, Site::Own, &jar).await.status, 200);
+    assert_eq!(status(&w).await, ("active", None));
+    moved(&w, Event::Pause(PauseReason::Owner)).await;
+    let resume = live_for(&w, (ActionKind::Resume, w.team.business), me).await;
+    let theirs = act(&w, &resume, Site::Own, &jar).await;
+    assert_eq!(theirs.status, 409, "a pause not its own is not resumed");
+    assert!(theirs.text.contains("Only a pause you set yourself"));
+    assert!(unused(&w, &resume).await);
+    assert_eq!(status(&w).await, ("paused", Some("owner")));
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_another_persons_link_or_no_charge_is_not_found(pool: PgPool) {
+    let w = world(&pool).await;
+    let (me, jar) = signed_in(&w).await;
+    let (_, other) = signed_in(&w).await;
+    let answer = not_found(&w, &Method::POST).await;
+    let pause = live_for(&w, (ActionKind::Pause, w.team.business), me).await;
+    let theirs = send_as(&w, (&Method::POST, &pause, ""), Site::Own, &other).await;
+    assert_eq!(theirs, answer, "another person's link (SEC-025, D-3614)");
+    assert!(unused(&w, &pause).await);
+    let uncharged = live_for(&w, (ActionKind::AskCharge, Uuid::new_v4()), me).await;
+    let none = send_as(&w, (&Method::POST, &uncharged, ""), Site::Own, &jar).await;
+    assert_eq!(
+        none, answer,
+        "no charge of this business (BIZ-032, FEE-031)"
+    );
+    assert!(unused(&w, &uncharged).await, "and the link stays unused");
 }
