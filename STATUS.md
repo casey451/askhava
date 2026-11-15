@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T12:13:27Z by runner 53482ffcce60 (actions).
+Updated 2026-11-15T12:13:51Z by runner 53482ffcce60 (actions).
 
-**Building: T462 in progress since 11:43Z; 347 of 480 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 12:13Z; 347 of 480 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 347 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 5: T462 claimed 11:43Z, lease until 14:43Z
+- **Lane:** idle since 12:13Z (no task in progress)
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:09Z, 3 min before this update
+- **Last run:** 12:13Z, 0 min before this update
 - **Keeper:** last ran 11:55Z, next wake 14:46Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-15T12:13:27Z by runner 53482ffcce60 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T462 | server: the sign-up inbox check is served behind the busines | MERGE_PENDING | 1 | 30 min | 12:13Z |  |
 | T261 | portals and server (harness): the served Confirm route under | check_failed | 4 | 2 h 6 min | 11:16Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T461 | server: business sign-up's service area, email code and acti | done | 4 | 54 min | 08:38Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | done | 2 | 53 min | 07:15Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
@@ -121,7 +122,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T462 (lease until 2026-11-15T14:43:25Z)
 
 ## Last usage reading
-- {"task": "T261", "at": "2026-11-15T11:16:14Z", "input_tokens": 650, "cache_creation_input_tokens": 649632, "cache_read_input_tokens": 51118400, "output_tokens": 225158}
+- {"task": "T462", "at": "2026-11-15T12:13:26Z", "cache_read_input_tokens": 6416885, "output_tokens": 40272, "cache_creation_input_tokens": 177669, "input_tokens": 151}
