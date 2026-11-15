@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T04:08:03Z by runner 862c5fffa7af (actions).
+Updated 2026-11-15T04:13:00Z by runner 862c5fffa7af (actions).
 
 **Building: T492 in progress since 03:55Z; 342 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T04:08:03Z by runner 862c5fffa7af (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T492 claimed 03:55Z, lease until 06:55Z; lane 2: T461 claimed 03:00Z, lease until 06:00Z; lane 3: T494 claimed 04:01Z, lease until 07:01Z; lane 5: T493 claimed 04:00Z, lease until 07:00Z
 - **Week:** 57% used, 78.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:07Z, 0 min before this update
+- **Last run:** 04:12Z, 0 min before this update
 - **Keeper:** last ran 04:08Z, next wake 06:03Z
 
 ## Needs attention
@@ -80,7 +80,6 @@ Updated 2026-11-15T04:08:03Z by runner 862c5fffa7af (actions).
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 1 | 39 min | 05:04Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | check_failed | 1 | 45 min | 04:54Z |  |
 | T449 | server and intake: emergency first texts count toward the re | done | 1 | 34 min | 04:28Z |  |
-| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 3 | 15 min | 04:11Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
