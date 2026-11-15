@@ -1,20 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-14T23:59:39Z by runner b3ae0baddcd3 (actions).
+Updated 2026-11-15T00:00:14Z by runner 85cb2030d1df (actions).
 
-**Idle since 23:42Z; 338 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T460 in progress since 00:00Z; 338 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 338 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 23:42Z (no task in progress)
-- **Week:** 53% used, 84.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:58Z, 1 min before this update
+- **Lane:** lane 3: T460 claimed 00:00Z, lease until 03:00Z
+- **Week:** 53% used, 88.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 23:59Z, 0 min before this update
 - **Keeper:** last ran 23:57Z, next wake 00:17Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T455 (since 2026-11-14T23:59:32Z, no attempt used; a plan change fixes it): T455: dependency T301 is DONE but its owned file app/server/src/action_links.rs is not on main; T455: dependency T301 is DONE but its owned file app/server/tests/action_links_route.rs is not on main
-- Strict plan check red: 20 problem(s) on tasks still to run (+110 on DONE tasks); first: T202: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 29 problem(s) on tasks still to run (+110 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -150,7 +149,7 @@ Updated 2026-11-14T23:59:39Z by runner b3ae0baddcd3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-14T23:04:08Z (week)): week: 109.1M used, 84.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-25T19:43:28Z.
+- Pacing (session_reading 2026-11-14T23:57:29Z (week)): week: 106.0M used, 88.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-25T20:05:32Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -166,6 +165,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 3: T460 (lease until 2026-11-15T03:00:07Z)
 
 ## Last usage reading
 - {"task": "T486", "at": "2026-11-14T23:37:07Z", "cache_read_input_tokens": 6464600, "cache_creation_input_tokens": 223125, "input_tokens": 253, "output_tokens": 57770}
