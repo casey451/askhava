@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T16:13:08Z by runner 2b05da2c07fb (manual).
+Updated 2026-11-15T16:50:29Z by runner 2311163dfede (actions).
 
 **Building: T261 in progress since 15:25Z; 348 of 481 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-15T16:13:08Z by runner 2b05da2c07fb (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T261 claimed 15:25Z, lease until 18:25Z
 - **Week:** 61% used, 72.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:13Z, 0 min before this update
+- **Last run:** 16:25Z, 24 min before this update
 - **Keeper:** last ran 15:55Z, next wake 18:27Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+115 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+118 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -52,7 +52,6 @@ Updated 2026-11-15T16:13:08Z by runner 2b05da2c07fb (manual).
 | T474 | harness: clearing a red main counts a failed attempt against | done | 1 | 26 min | 20:18Z |  |
 | T467 | picks: a pick whose fee terms changed before its Confirm end | done | 1 | 27 min | 20:15Z |  |
 | FIX-MAIN |  | done | 1 | 78 min | 17:42Z |  |
-| T467 | picks: a pick whose fee terms changed before its Confirm end | resync | 1 | 43 min | 16:28Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -60,36 +59,34 @@ Updated 2026-11-15T16:13:08Z by runner 2b05da2c07fb (manual).
 - 19:20Z Harness: re-point the stale "second opt-out confirmation" mutant after T357 (D-3751) (#796)
 - 18:53Z Plan: T437 re-verification after a false FIX-MAIN failure; T474 so FIX-MAIN blames only what it reverted (D-3752) (#797)
 - 18:45Z Plan: email sending wired, pick-end texts complete, Can't-take route, T121 unblocked (T469–T473, D-3750) (#794)
-- 16:47Z Plan: pre-claim scout fixes for 27 stage-5 tasks (D-3744) (#793)
-- 16:40Z Plan: sign-up email code and activation link get real send paths, rate-limited (new T468, D-3743) (#791)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 285 of 733 (38.9%) · partial 291 · unstarted 157
+**Requirements verified:** 307 of 733 (41.9%) · partial 269 · unstarted 157
 **Tasks merged (throughput only):** 348 of 481
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 18 | 37 | 3 | 58 |
-| calls | 12 | 12 | 1 | 25 |
+| businesses | 20 | 35 | 3 | 58 |
+| calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 15 | 36 | 1 | 52 |
+| fees | 21 | 30 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
-| job-cards | 18 | 6 | 0 | 24 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 22 | 21 | 2 | 45 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 11 | 18 | 2 | 31 |
+| privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 10 | 40 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
