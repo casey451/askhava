@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T07:37:03Z by runner 344ce02931ce (actions).
+Updated 2026-11-15T07:43:48Z by runner 344ce02931ce (actions).
 
-**Idle since 07:35Z; 346 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T461 in progress since 07:43Z; 346 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 346 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 07:35Z (no task in progress)
-- **Week:** 58% used, 80.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:16Z, 20 min before this update
+- **Lane:** lane 1: T461 claimed 07:43Z, lease until 10:43Z
+- **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 07:37Z, 6 min before this update
 - **Keeper:** last ran 07:16Z, next wake 07:36Z
 
 ## Needs attention
@@ -75,8 +75,6 @@ Updated 2026-11-15T07:37:03Z by runner 344ce02931ce (actions).
 | T300 | server and portals: the business portal is served behind the | BLOCKED | 1 | 5 min | 08:59Z |  |
 | T280 | server and messaging (harness): the business sign-in pages a | done | 4 | 91 min | 08:04Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md, docs/for-casey-review.md; a resync merges it in o |
 | T396 | businesses and messaging (harness): a phone a member links o | done | 2 | 56 min | 07:52Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
-| T359 | payments: a successful charge writes its own charge ledger e | BLOCKED | 1 | 39 min | 07:43Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 2 | 42 min | 07:38Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -125,7 +123,7 @@ Updated 2026-11-15T07:37:03Z by runner 344ce02931ce (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-15T06:17:24Z (week)): week: 114.0M used, 80.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-26T05:38:24Z.
+- Pacing (session_reading 2026-11-15T07:16:22Z (week)): week: 116.0M used, 78.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-26T06:07:24Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -140,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T461 (lease until 2026-11-15T10:43:34Z)
 
 ## Last usage reading
 - {"task": "T454", "at": "2026-11-15T07:15:35Z", "output_tokens": 24023, "input_tokens": 138, "cache_read_input_tokens": 2852817, "cache_creation_input_tokens": 120936}
