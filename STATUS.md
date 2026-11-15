@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T04:34:00Z by runner 3cfe0b2b62c7 (actions).
+Updated 2026-11-15T04:34:18Z by runner 3cfe0b2b62c7 (actions).
 
-**Building: T461 in progress since 03:00Z; 342 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T493 in progress since 04:00Z; 342 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 342 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T461 claimed 03:00Z, lease until 06:00Z; lane 5: T493 claimed 04:00Z, lease until 07:00Z
+- **Lane:** lane 5: T493 claimed 04:00Z, lease until 07:00Z
 - **Week:** 57% used, 78.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:33Z, 0 min before this update
+- **Last run:** 04:34Z, 0 min before this update
 - **Keeper:** last ran 04:32Z, next wake 06:03Z
 
 ## Needs attention
@@ -18,10 +18,11 @@ Updated 2026-11-15T04:34:00Z by runner 3cfe0b2b62c7 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z | session ended without handing in; the last pre-hand-in gate before it: runner smoke red on 3cfe0b2b62c7 (bash scripts/sm |
 | T494 | portals: the Confirm route's $0 free-first-win decision from | MERGE_PENDING | 1 | 29 min | 04:31Z |  |
 | T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | MERGE_PENDING | 1 | 31 min | 04:26Z |  |
 | T261 | portals and server (harness): the served Confirm route under | BLOCKED | 3 | 110 min | 02:57Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
-| T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z | runner smoke red on 4d7fe1a7723d (bash scripts/smoke.sh, D-3530): / + [] / - [ / -     'T002', / - ] / FAILED tests/test |
+| T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z |  |
 | T460 | server: business sign-up's identity steps are served (code s | done | 2 | 68 min | 01:08Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | check_failed | 1 | 12 min | 00:56Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T486 | businesses and catalog: the free-first-win join dates: a pub | done | 1 | 65 min | 23:37Z |  |
@@ -148,7 +149,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T461 (lease until 2026-11-15T06:00:54Z)
 - lane 5: T493 (lease until 2026-11-15T07:00:50Z)
 
 ## Last usage reading
