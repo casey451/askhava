@@ -2939,3 +2939,12 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - Money, one gap left: when a business presses "Confirm and pay", the app checks that the pick still waits and the homeowner has not paused it, then sends the charge to Stripe. If the homeowner texts CANCEL in the few seconds between that check and Stripe's answer, the charge can still go through on a pick she withdrew, and no contact is released.
 - Why not fixed here: the fix belongs in the picks code (CANCEL should end the pending payment the same way "can't take this job" already does), which this task does not own. A follow-up task for the picks code is needed; it is logged in D-3717 for the planner to add.
+
+## Making the documents short and well organized before phase 2 (D-3856, November 15)
+
+- As you asked, 14 new tasks run at the end of phase 1, before the account checkpoint. One measures every document a future AI session or you will need and plans the changes; the rest carry the plan out.
+- A new one-page-per-area summary of the decisions still in force (`docs/decisions-current.md`) lets a session find the rules without reading the full 3.5 MB decision log. The log itself stays whole as the record.
+- The crate notes, test design, architecture notes, operating manual, your owner guide and the reference guides get shorter and better organized. A checker proves nothing was lost: every removed line must point to where its content now lives.
+- Old hand-off notes and answered review items move, unchanged, to an archive with an index.
+- Size limits and checks keep the documents from growing wordy again; the same pass repeats at the end of phase 2.
+- Nothing needs you.
