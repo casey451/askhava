@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T22:17:42Z by runner 69880af764d2 (actions).
+Updated 2026-11-15T22:18:02Z by runner 69880af764d2 (actions).
 
 **Idle since 22:11Z; 352 of 500 done; week 66% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-15T22:17:42Z by runner 69880af764d2 (actions).
 - **Lane:** idle since 22:11Z (no task in progress)
 - **Week:** 66% used, 64.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:17Z, 0 min before this update
-- **Keeper:** last ran 22:12Z, next wake 22:32Z
+- **Keeper:** last ran 22:18Z, next wake 03:58Z
 
 ## Needs attention
 - BLOCKED T515: plan gap reported: PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemode (None). D-3862 says _event adds livemode False and nothing else, but release (app/payments/src/release_proof.rs:359 check_intent) refuses a re-fetched intent without livemode (WrongMode), so the acceptance (one paid release) cannot pass without giving the stand-in PaymentIntent livemode=False, which turns that test red. Smallest plan change: T515 also owns that test (None -> Some(false)), update the stale comment at app/adapters/src/payments.rs:54, and log both in docs/dec; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T515 --plan-fix D-### --reason "..."` (D-2859)
