@@ -17657,7 +17657,10 @@
     "T301",
     "T302",
     "T452",
-    "T464"
+    "T464",
+    "T493",
+    "T494",
+    "T495"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19160,7 +19163,10 @@
     "T467",
     "T474",
     "T485",
-    "T486"
+    "T486",
+    "T493",
+    "T494",
+    "T495"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19812,7 +19818,10 @@
     "T359",
     "T261",
     "T129",
-    "T421"
+    "T421",
+    "T493",
+    "T494",
+    "T495"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -28394,7 +28403,10 @@
     "T319",
     "T466",
     "T467",
-    "T486"
+    "T486",
+    "T492",
+    "T493",
+    "T494"
    ],
    "status": "QUEUED",
    "attempts": 3,
@@ -56225,7 +56237,10 @@
    "deps": [
     "T261",
     "T452",
-    "T463"
+    "T463",
+    "T493",
+    "T494",
+    "T495"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -58036,7 +58051,8 @@
    "id": "T490",
    "deps": [
     "T469",
-    "T488"
+    "T488",
+    "T492"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -58054,6 +58070,88 @@
    "slug": "confirm-window-lapse",
    "type": "build",
    "stage": "5"
+  },
+  {
+   "id": "T492",
+   "deps": [
+    "T227",
+    "T385",
+    "T452",
+    "T254"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "e2e-keyed-stripe-settings",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T493",
+   "deps": [
+    "T260",
+    "T084",
+    "T232",
+    "T388",
+    "T254",
+    "T287",
+    "T433",
+    "T337",
+    "T340",
+    "T440",
+    "T348",
+    "T359",
+    "T362",
+    "T421",
+    "T319",
+    "T466",
+    "T467",
+    "T486"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "confirm-page-csp-script",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T494",
+   "deps": [
+    "T260",
+    "T084",
+    "T232",
+    "T388",
+    "T254",
+    "T287",
+    "T433",
+    "T337",
+    "T340",
+    "T440",
+    "T348",
+    "T359",
+    "T362",
+    "T421",
+    "T319",
+    "T466",
+    "T467",
+    "T486"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "confirm-waiver-handoff",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T495",
+   "deps": [
+    "T261",
+    "T492"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "confirm-served-journey",
+   "type": "build",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -61623,7 +61721,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T03:49:51Z",
+ "updated_at": "2026-11-15T03:55:33Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -61722,7 +61820,7 @@
   ]
  },
  "runner_sha": "862c5fffa7afa8b50b2a7a716d06b3dcb9038fae",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "8a72c0065f442d8490a5124ceb10edffd07127fd",
