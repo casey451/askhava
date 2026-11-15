@@ -25,7 +25,13 @@
 //! T460 (BIZ-002, BIZ-026, TXT-038, D-3779): the identity steps ([`Ask`], `Form::step`, D-3769)
 //! act only for the cookie's sign-up while it is open and `signup_progress` allows the step; the
 //! record contact is read in that request, never stored or logged; codes go through
-//! [`IdentityCodes`]. T462 adds the inbox check (BIZ-042).
+//! [`IdentityCodes`].
+//!
+//! T462 (BIZ-042, SEC-004, SEC-034, SEC-042, D-462, D-3676): [`INBOX_CHECK_ROUTE`] is served after
+//! activation behind `business_principal`, not the binding cookie; it keeps the Business door, so
+//! no business person gets the 401 sign-in answer. Its `GET` shows `email_check_page` for the
+//! person's own `Acting` and `?app=`; its `POST` (CSRF-checked, cross-site refused, each a
+//! `csrf_rejected` event) sends the sample card or stores the answer. No sample pick step here.
 //!
 //! T461 (BIZ-016, BIZ-019, BIZ-040, BIZ-058, SEC-014, D-3676, D-3743, D-3830): after the identity
 //! code, [`SERVICE_AREA_ROUTE`] saves the base ZIP and radius and sends the first email code;
@@ -48,15 +54,16 @@ use askhava_adapters::api::{
     twilio_clients,
 };
 use askhava_businesses::api::{
+    Acting, InboxAnswer, ServiceArea, confirm_mailbox, email_check as inbox_facts, join_facts,
+    record_inbox_answer, save_service_area, send_sample_card, service_area, signup_mailbox,
+    start_signup_check,
+};
+use askhava_businesses::api::{
     ConsentChannel, ContactKind, Flag, MaskedContact, NameRefusal, RecordFound, SignUpForm,
     SignupError, SignupRecord, SignupSettings, Step, business as stored_business, check_code,
     next_step, number_is_old, record_match, save_business_name, screen_names, send_code_seen,
     signup_progress, signup_record, stored_category_list, stored_enabled, waiting_on_record,
     waitlisted,
-};
-use askhava_businesses::api::{
-    ServiceArea, confirm_mailbox, join_facts, save_service_area, service_area, signup_mailbox,
-    start_signup_check,
 };
 use askhava_catalog::api::category as catalog_category;
 use askhava_core::api::{
@@ -79,16 +86,18 @@ use askhava_portals::api::{
     security_event_client, submit_signup,
 };
 use askhava_portals::api::{
-    CODE_SENDS_PER_IP, DoneFacts, EMAIL_CHECK_ROUTE, EMAIL_RESEND_ROUTE, SERVICE_AREA_ROUTE,
-    SignInAddress, done_facts, send_sign_in_link,
+    CODE_SENDS_PER_IP, CsrfField, CsrfForm, DoneFacts, EMAIL_CHECK_ROUTE, EMAIL_RESEND_ROUTE,
+    MailApp, SERVICE_AREA_ROUTE, SIGNIN_ROUTE, SignInAddress, WebSecurity, business_principal,
+    done_facts, email_check_page, no_store as no_store_layer, refuse_cross_site, send_sign_in_link,
 };
 use askhava_privacy::api::{
     BusinessContactError, BusinessPurpose, Vault, mailbox_for, read_business_mailbox,
 };
 use axum::Router;
-use axum::extract::{FromRequest, Request, State};
-use axum::http::header::{CACHE_CONTROL, HOST, HeaderValue, RETRY_AFTER, SET_COOKIE};
+use axum::extract::{FromRef, FromRequest, Query, Request, State};
+use axum::http::header::{CACHE_CONTROL, HOST, HeaderValue, LOCATION, RETRY_AFTER, SET_COOKIE};
 use axum::http::{HeaderMap, StatusCode};
+use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use jiff::Timestamp;
@@ -205,7 +214,7 @@ struct Form {
 }
 
 /// The served sign-up routes (T302: the form page; T459: the form `POST`; T460: the identity
-/// steps).
+/// steps; T462: the inbox check behind the business session).
 pub struct ServedSignUp(Router);
 
 impl ServedSignUp {
@@ -219,6 +228,7 @@ impl ServedSignUp {
         confirm: ConfirmSettings,
         start: StartAdapters,
     ) -> Self {
+        let inbox_pool = pool.clone();
         let state = Arc::new(Form {
             pool,
             secret,
@@ -236,7 +246,7 @@ impl ServedSignUp {
             .route(EMAIL_CHECK_ROUTE, post(email_check))
             .route(EMAIL_RESEND_ROUTE, post(email_resend))
             .with_state(state);
-        Self(routes)
+        Self(routes.merge(inbox_routes(inbox_pool)))
     }
 
     /// The part `main` passes to `build_router`: `ASKHAVA_ID_SECRET`, the Confirm window, the
@@ -1388,6 +1398,145 @@ impl PaymentsAdapter for Customers<'_> {
     async fn create_refund(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
         Err(AdapterError::NotSent)
     }
+}
+
+/// BIZ-042, D-3676: the inbox check, served after activation behind the business session; a path
+/// under `/b/signup` outside D-3641's nine open step paths, so it keeps the Business door.
+pub const INBOX_CHECK_ROUTE: &str = "/b/signup/inbox";
+
+/// The inbox check's state: the pool and the shared web security its CSRF check records through.
+#[derive(Clone)]
+struct Inbox {
+    pool: PgPool,
+    security: WebSecurity,
+}
+
+impl FromRef<Inbox> for WebSecurity {
+    fn from_ref(inbox: &Inbox) -> Self {
+        inbox.security.clone()
+    }
+}
+
+/// The mail app the page's own `GET` form sends back (BIZ-042).
+#[derive(serde::Deserialize)]
+struct AppQuery {
+    app: Option<String>,
+}
+
+/// The inbox check's posted form: the CSRF token, the mail app and either the send step or an
+/// answer (`email_check.html`'s two forms, which post to their own path).
+#[derive(serde::Deserialize)]
+struct InboxForm {
+    csrf: String,
+    app: Option<String>,
+    step: Option<String>,
+    answer: Option<String>,
+}
+
+impl CsrfField for InboxForm {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
+/// SEC-034, SEC-042, D-3676: `GET` and `POST` [`INBOX_CHECK_ROUTE`] over `pool`, every answer
+/// `no-store` and every cross-site `POST` refused with its security event.
+fn inbox_routes(pool: PgPool) -> Router {
+    let clock: Arc<dyn Clock> = Arc::new(SystemClock);
+    let security = WebSecurity::new(pool.clone(), clock);
+    let state = Inbox {
+        pool,
+        security: security.clone(),
+    };
+    Router::new()
+        .route(INBOX_CHECK_ROUTE, get(inbox_page).post(inbox_post))
+        .with_state(state)
+        .layer(from_fn_with_state(security, refuse_cross_site))
+        .layer(from_fn(no_store_layer))
+}
+
+/// BIZ-042, SEC-004, D-3676: `GET` [`INBOX_CHECK_ROUTE`], the signed-in person's own inbox check
+/// with the steps for the mail app `?app=` names; it changes nothing. No business person gets
+/// [`signed_out`].
+async fn inbox_page(
+    State(inbox): State<Inbox>,
+    jar: CookieJar,
+    Query(query): Query<AppQuery>,
+) -> Response {
+    let by = match acting(&inbox.pool, &jar).await {
+        Ok(by) => by,
+        Err(answer) => return *answer,
+    };
+    let Ok(mut db) = inbox.pool.acquire().await else {
+        return failure("connection");
+    };
+    let Ok(check) = inbox_facts(&mut db, by).await else {
+        return failure("inbox check");
+    };
+    let app = MailApp::from_code(query.app.as_deref().unwrap_or_default());
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    shown(email_check_page(check, app, &csrf).ok())
+}
+
+/// BIZ-042, SEC-042, D-462, D-3676: `POST` [`INBOX_CHECK_ROUTE`] after the CSRF check: sends the
+/// sample card (`step=send_sample`) or stores the person's answer, in one transaction, then
+/// shows the page again (303); anything else is a 422 that changes nothing. There is no sample
+/// pick step here (D-462).
+async fn inbox_post(
+    State(inbox): State<Inbox>,
+    jar: CookieJar,
+    CsrfForm(form): CsrfForm<InboxForm>,
+) -> Response {
+    let by = match acting(&inbox.pool, &jar).await {
+        Ok(by) => by,
+        Err(answer) => return *answer,
+    };
+    let answer = form.answer.as_deref().map(InboxAnswer::from_code);
+    let (now, app) = (
+        Timestamp::now(),
+        MailApp::from_code(form.app.as_deref().unwrap_or_default()),
+    );
+    let Ok(mut tx) = inbox.pool.begin().await else {
+        return failure("connection");
+    };
+    let done = match (form.step.as_deref(), answer) {
+        (Some("send_sample"), None) => send_sample_card(&mut tx, by, now).await,
+        (None, Some(Some(answer))) => record_inbox_answer(&mut tx, by, answer, now).await,
+        _ => return (StatusCode::UNPROCESSABLE_ENTITY, no_store()).into_response(),
+    };
+    if done.is_err() || tx.commit().await.is_err() {
+        return failure("inbox check");
+    }
+    let back = format!("{INBOX_CHECK_ROUTE}?app={}", app.code());
+    match HeaderValue::from_str(&back) {
+        Ok(to) => (StatusCode::SEE_OTHER, no_store(), [(LOCATION, to)]).into_response(),
+        Err(_) => failure("inbox location"),
+    }
+}
+
+/// SEC-004, SEC-006, SEC-024: the signed-in business person as `Acting`, else the answer to send.
+async fn acting(pool: &PgPool, jar: &CookieJar) -> Result<Acting, Box<Response>> {
+    let Ok(mut db) = pool.acquire().await else {
+        return Err(Box::new(failure("connection")));
+    };
+    match business_principal(&mut db, jar, Timestamp::now()).await {
+        Ok(Some(who)) => Ok(Acting {
+            business: who.business(),
+            member: who.member(),
+        }),
+        Ok(None) => Err(Box::new(signed_out())),
+        Err(_) => Err(Box::new(failure("business principal"))),
+    }
+}
+
+/// SEC-004: the Business door's refusal for no business person: 401, a sign-in link, no detail.
+fn signed_out() -> Response {
+    let page = format!(
+        "<!doctype html><html lang=\"en\"><head><title>Sign in</title></head><body><main>\
+         <h1>Sign in to your business account</h1><p><a href=\"{SIGNIN_ROUTE}\">Sign in</a> to \
+         see this page.</p></main></body></html>"
+    );
+    (StatusCode::UNAUTHORIZED, no_store(), Html(page)).into_response()
 }
 
 /// SEC-034: every sign-up answer is `Cache-Control: no-store`.

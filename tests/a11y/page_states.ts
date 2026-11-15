@@ -310,6 +310,24 @@ const NOTICES_STATES: readonly PageState[] = [
   ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: NOTICES_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const INBOX_ROUTE = "/b/signup/inbox";
+
+/**
+ * The sign-up inbox check after activation (T462; BIZ-042, D-3676): the signed-in owner before the
+ * sample is sent, and after a Spam answer with the mail app's steps. No vault is read.
+ */
+const INBOX_STATES: readonly PageState[] = [
+  ["inbox check, nothing sent", "Send me a sample job card", "Send the sample again", businessSql("")],
+  [
+    "inbox check, sample in spam",
+    "Move our emails to your inbox",
+    "Send me a sample job card",
+    businessSql(`,
+    e AS (INSERT INTO businesses.email_check (member_id, business_id, sample_sent_at, answer, answered_at)
+      SELECT id, business_id, now(), 'spam', now() FROM m)`),
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: INBOX_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -323,6 +341,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: RELEASE_ROUTE, seed: portalSeed(true), states: RELEASE_STATES },
   { route: BILLING_ROUTE, seed: portalSeed(false), states: BILLING_STATES },
   { route: NOTICES_ROUTE, seed: portalSeed(true), states: NOTICES_STATES },
+  { route: INBOX_ROUTE, seed: portalSeed(false), states: INBOX_STATES },
 ];
 
 /** Every state of every page, in entry order. */
