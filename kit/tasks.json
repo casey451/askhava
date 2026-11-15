@@ -1242,7 +1242,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 16
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -1574,7 +1574,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -26012,7 +26012,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -28535,7 +28535,7 @@
    "budget": {
     "files": 7,
     "lines": 150,
-    "context_pct": 9
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -32130,7 +32130,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 42
+    "context_pct": 46
    },
    "checks": [
     "Ci",
@@ -32469,7 +32469,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 17
+    "context_pct": 21
    },
    "branch": "claude/task/T449-emergency-texts-counted",
    "prompt": "kit/prompts/T449.md",

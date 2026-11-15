@@ -36,6 +36,11 @@ attempt used and claim the next task instead. Three checks, each reusing the pla
     tag, a kebab-case code, a `{placeholder}`), or is a test its goal names. Printed as `WARN` lines after
     (d) under `--all` or `--symbols` (in --json, under `unowned users (report-only, D-3496)`); guarded and
     never held, exactly as (d).
+(f) **Pages without states (report-only, D-3837).** scripts/plan_pages.py: the task serves a GET route (its
+    `docs/architecture.md` section 13 row, or a `GET <path>` its goal quotes) that no `PAGE_STATES` entry or
+    `NOT_PAGES` line in tests/a11y covers, and neither it nor a task it depends on plans one, so A11Y-002
+    fails `Ally` (T261 attempt 4, D-3836). Printed as `WARN` lines after (e) under `--all` or `--pages` (in
+    --json, under `pages without states (report-only, D-3837)`); guarded and never held, exactly as (d).
 
 Each problem is one plain string. Exit 0 when clean, 1 when there are gaps, 2 when the inputs
 cannot be read.
@@ -47,6 +52,7 @@ Usage:
                                          dependency not yet DONE is no gap here), and every DONE task's owned files
   python3 scripts/plan_health.py T290 --pinned                            also check (d), report-only
   python3 scripts/plan_health.py T317 --symbols                           also check (e), report-only
+  python3 scripts/plan_health.py T261 --pages                             also check (f), report-only
 
 Without --state the state is read from `origin/claude/kit-state` (`git show`), read only.
 """
@@ -75,6 +81,7 @@ from runner import state as st
 ROOT = Path(__file__).resolve().parent.parent
 PINNED_KEY = "pinned lists (report-only, D-2550)"
 SYMBOLS_KEY = "unowned users (report-only, D-3496)"
+PAGES_KEY = "pages without states (report-only, D-3837)"
 STATE_REF = "origin/claude/kit-state"
 CITED_PATH = re.compile(
     r"`((?:app|tests|migrations|scripts|docs|kit|runner|twin|stand_ins|\.github)/[A-Za-z0-9_./-]+\.[A-Za-z0-9]+)`"
@@ -250,6 +257,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true", help="print {task: [problems]}")
     parser.add_argument("--pinned", action="store_true", help="also check (d), pinned lists; report-only (D-2550)")
     parser.add_argument("--symbols", action="store_true", help="also check (e), unowned users; report-only (D-3496)")
+    parser.add_argument("--pages", action="store_true", help="also check (f), pages without states; report-only (D-3837)")
     parser.add_argument("--state", type=Path, help="a kit/state.json file instead of claude/kit-state")
     parser.add_argument("--root", type=Path, default=ROOT)
     args = parser.parse_args(argv)
@@ -266,13 +274,15 @@ def main(argv: list[str] | None = None) -> int:
     ids = [t for t in found if t != "DONE tasks"]
     pinned = pinned_warnings(args.root, state, ids) if args.all or args.pinned else None
     symbols = symbol_warnings(args.root, state, ids) if args.all or args.symbols else None
+    pages = page_warnings(args.root, ids) if args.all or args.pages else None
     if args.json:
-        extra = {key: w for key, w in ((PINNED_KEY, pinned), (SYMBOLS_KEY, symbols)) if w}
+        extra = {key: w for key, w in ((PINNED_KEY, pinned), (SYMBOLS_KEY, symbols), (PAGES_KEY, pages)) if w}
         print(json.dumps({**found, **extra}, indent=1))
     else:
         report(found, False)
         report_only(pinned, "pinned-list", "D-2550")
         report_only(symbols, "unowned-user", "D-3496")
+        report_only(pages, "page-states", "D-3837")
     return 1 if any(found.values()) else 0
 
 
@@ -295,6 +305,17 @@ def symbol_warnings(root: Path, state: st.State, ids: list[str]) -> list[str]:
         return [f"check (e) unavailable: {type(error).__name__}: {str(error)[:200]}"]
 
 
+def page_warnings(root: Path, ids: list[str]) -> list[str]:
+    """Check (f), report-only (D-3837): scripts/plan_pages.py's warnings for the tasks, imported late and
+    guarded exactly as check (d) is."""
+    try:
+        import plan_pages  # sibling script; deliberately imported late
+
+        return plan_pages.warnings(root, ids)
+    except Exception as error:  # noqa: BLE001 - report-only: no fault in (f) may hide (a) to (c)
+        return [f"check (f) unavailable: {type(error).__name__}: {str(error)[:200]}"]
+
+
 def pinned_warnings(root: Path, state: st.State, ids: list[str]) -> list[str]:
     """Check (d), report-only (D-2550): scripts/plan_pins.py's warnings for the tasks. Imported here, not at
     the top, so a fault in it can never stop the runner, which imports this module (D-1350); any error
@@ -308,8 +329,8 @@ def pinned_warnings(root: Path, state: st.State, ids: list[str]) -> list[str]:
 
 
 def report(found: dict[str, list[str]], as_json: bool) -> None:
-    """Print the problems, one per line, or as JSON; a clean task prints `ok`. Check (d)'s and (e)'s
-    warnings are printed by `main`, never counted as gaps (D-2550, D-3496)."""
+    """Print the problems, one per line, or as JSON; a clean task prints `ok`. Check (d)'s, (e)'s and (f)'s
+    warnings are printed by `main`, never counted as gaps (D-2550, D-3496, D-3837)."""
     if as_json:
         print(json.dumps(found, indent=1))
         return
