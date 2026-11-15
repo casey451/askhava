@@ -20,6 +20,14 @@
 //! fresh cap. The rest are only counted, one log line per minute with the count and no address.
 //! N is [`configure_security_events`]'s setting, never below [`EVENTS_PER_HOUR_ALERT`], so the
 //! hourly burst alert still fires from the stored rows.
+//!
+//! The one exception to the own-origin CSP is the business Confirm page (FEE-014, D-1480 (c),
+//! D-3813): its route puts [`StripeConfirmCsp`] on its response, and [`security_headers`] then
+//! sends [`CONFIRM_CONTENT_SECURITY_POLICY`], the same policy plus Stripe.js from
+//! `https://js.stripe.com` in `script-src` and `frame-src` and `https://api.stripe.com` in
+//! `connect-src`. The layer reads the marker from the response's extensions, never a header a
+//! handler wrote, and the marker never reaches the wire; every other response, error pages
+//! included, gets [`CONTENT_SECURITY_POLICY`]. Guarded by `src/tests/csp_marker.rs`.
 
 use std::collections::HashMap;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -32,7 +40,7 @@ use axum::extract::{ConnectInfo, Form, FromRef, FromRequest, MatchedPath, Reques
 use axum::http::header::{self, HeaderName, HeaderValue};
 use axum::http::{HeaderMap, StatusCode};
 use axum::middleware::Next;
-use axum::response::{IntoResponse, Response};
+use axum::response::{IntoResponse, IntoResponseParts, Response, ResponseParts};
 use axum_extra::extract::cookie::CookieJar;
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -47,6 +55,14 @@ use crate::session::{PortalsError, csrf_matches, current_session};
 pub const CONTENT_SECURITY_POLICY: &str = "default-src 'self'; script-src 'self'; \
     style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; \
     base-uri 'none'; object-src 'none'; frame-ancestors 'none'";
+/// The Confirm page's policy: [`CONTENT_SECURITY_POLICY`] plus Stripe.js from
+/// `https://js.stripe.com` (`script-src`, `frame-src`) and Stripe's API host for Stripe.js's own
+/// calls (`connect-src`), with no inline or eval script (SEC-012, FEE-014, D-3813). Sent only on a
+/// response carrying [`StripeConfirmCsp`].
+pub const CONFIRM_CONTENT_SECURITY_POLICY: &str = "default-src 'self'; \
+    script-src 'self' https://js.stripe.com; style-src 'self'; img-src 'self'; font-src 'self'; \
+    connect-src 'self' https://api.stripe.com; frame-src 'self' https://js.stripe.com; \
+    form-action 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'";
 /// One year with subdomains and no `preload`: the app is the only HSTS source (SEC-012, SEC-054).
 pub const STRICT_TRANSPORT_SECURITY: &str = "max-age=31536000; includeSubDomains";
 /// Camera, microphone and geolocation off (SEC-012).
@@ -187,13 +203,37 @@ impl CapWindow {
     }
 }
 
-/// Middleware: the SEC-012 headers on every response, replacing any a handler set.
+/// The response marker of the business Confirm page, the one page that loads Stripe.js
+/// (FEE-014, SEC-012, D-3813). Only the Confirm route returns it, as a response part:
+/// `(StripeConfirmCsp, page).into_response()`. It lives in the response's extensions, so no
+/// handler header can stand in for it and it is never sent.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct StripeConfirmCsp;
+
+impl IntoResponseParts for StripeConfirmCsp {
+    type Error = std::convert::Infallible;
+
+    fn into_response_parts(self, mut parts: ResponseParts) -> Result<ResponseParts, Self::Error> {
+        parts.extensions_mut().insert(self);
+        Ok(parts)
+    }
+}
+
+/// Middleware: the SEC-012 headers on every response, replacing any a handler set. The CSP is
+/// [`CONTENT_SECURITY_POLICY`], or [`CONFIRM_CONTENT_SECURITY_POLICY`] when the response carries
+/// [`StripeConfirmCsp`] (SEC-012, SEC-013, D-3813).
 pub async fn security_headers(request: Request, next: Next) -> Response {
     let mut response = next.run(request).await;
     for (name, value) in SECURITY_HEADERS {
         response
             .headers_mut()
             .insert(name, HeaderValue::from_static(value));
+    }
+    if response.extensions().get::<StripeConfirmCsp>().is_some() {
+        response.headers_mut().insert(
+            header::CONTENT_SECURITY_POLICY,
+            HeaderValue::from_static(CONFIRM_CONTENT_SECURITY_POLICY),
+        );
     }
     response
 }

@@ -4,7 +4,10 @@
 // a `pm_…` ID, posts it with the form's one-time press ID, and writes the server's answer into the
 // page at once: a decline in the alert region, with the next press ID the server gave (the next
 // attempt key, FEE-016); a bank approval through Stripe's in-page 3-D Secure step; an over-limit
-// end with the portal link (FEE-041). A $0 Confirm (the form's `data-paid="no"`) posts no card
+// end with the portal link (FEE-041). After the bank step the page never shows a success of its
+// own: an error or a cancel shows the try-again line, and a finished step shows "Checking with
+// your bank" until the server, asked with a GET of the form's own address for JSON, gives the
+// attempt's state in the press reply's shape (D-3813). A $0 Confirm (the form's `data-paid="no"`) posts no card
 // unless the save box is ticked (FEE-045, D-465). A failed post shows a try-again line; pressing
 // again reuses the same press ID, so the server answers from the same attempt. Nothing here
 // decides a payment: the release waits on Stripe's signed webhook (PICK-022). The fee is the
@@ -53,24 +56,30 @@ function say(id: string, words: string): void {
 
 const TRY_AGAIN = "We couldn't get an answer. Check your connection and press the button again.";
 
-async function send(form: HTMLFormElement): Promise<PressReply | null> {
+/** The server's answer in the press reply's shape, or `null` when there is none to trust. */
+async function answer(reply: Promise<Response>): Promise<PressReply | null> {
+  try {
+    const got = await reply;
+    if (!got.ok) return null;
+    const read = (await got.json()) as Partial<PressReply> | null;
+    if (typeof read?.state !== "string" || typeof read.message !== "string") return null;
+    return { next_press: null, ...read } as PressReply;
+  } catch {
+    return null;
+  }
+}
+
+function send(form: HTMLFormElement): Promise<PressReply | null> {
   const body = new URLSearchParams();
   for (const [name, value] of new FormData(form)) {
     if (typeof value === "string") body.append(name, value);
   }
-  try {
-    const reply = await fetch(form.action, {
-      method: "POST",
-      body,
-      headers: { accept: "application/json" },
-    });
-    if (!reply.ok) return null;
-    const answer = (await reply.json()) as Partial<PressReply> | null;
-    if (typeof answer?.state !== "string" || typeof answer.message !== "string") return null;
-    return { next_press: null, ...answer } as PressReply;
-  } catch {
-    return null;
-  }
+  return answer(fetch(form.action, { method: "POST", body, headers: { accept: "application/json" } }));
+}
+
+/** The attempt's state from the server, after the bank step: no new attempt, no card (D-3813). */
+function askState(form: HTMLFormElement): Promise<PressReply | null> {
+  return answer(fetch(form.action, { method: "GET", headers: { accept: "application/json" } }));
 }
 
 function sayWithLink(words: string, href: string): void {
@@ -83,23 +92,47 @@ function sayWithLink(words: string, href: string): void {
   region.append(link);
 }
 
-async function show(stripe: StripeClient, form: HTMLFormElement, reply: PressReply | null): Promise<void> {
-  if (reply === null) {
-    say("confirm-error", TRY_AGAIN);
-    return;
-  }
+const CHECKING = "Checking with your bank. Stay on this page for the answer.";
+
+function write(form: HTMLFormElement, reply: PressReply): void {
   const press = field(form, "press");
   if (typeof reply.next_press === "string" && press !== null) press.value = reply.next_press;
-  if (reply.state === "approve" && typeof reply.client_secret === "string") {
-    say("confirm-status", reply.message);
-    await stripe.handleNextAction({ clientSecret: reply.client_secret });
-    return;
-  }
   if (typeof reply.link === "string") {
     sayWithLink(reply.message, reply.link);
     return;
   }
   say(reply.state === "declined" ? "confirm-error" : "confirm-status", reply.message);
+}
+
+/** Stripe's 3-D Secure step, then the server's word on the attempt, never the browser's (PICK-022). */
+async function checkWithBank(stripe: StripeClient, form: HTMLFormElement, secret: string): Promise<void> {
+  const checked = await stripe.handleNextAction({ clientSecret: secret }).catch((): StripeResult => ({ error: {} }));
+  if (checked.error !== undefined) {
+    say("confirm-status", "");
+    say("confirm-error", TRY_AGAIN);
+    return;
+  }
+  say("confirm-status", CHECKING);
+  const state = await askState(form);
+  if (state === null) {
+    say("confirm-status", "");
+    say("confirm-error", TRY_AGAIN);
+    return;
+  }
+  write(form, state);
+}
+
+async function show(stripe: StripeClient, form: HTMLFormElement, reply: PressReply | null): Promise<void> {
+  if (reply === null) {
+    say("confirm-error", TRY_AGAIN);
+    return;
+  }
+  if (reply.state === "approve" && typeof reply.client_secret === "string") {
+    write(form, reply);
+    await checkWithBank(stripe, form, reply.client_secret);
+    return;
+  }
+  write(form, reply);
 }
 
 /** A card is made only when a fee is due or the save box is ticked (FEE-014, FEE-045). */

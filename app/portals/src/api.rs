@@ -160,6 +160,8 @@ pub use crate::quote_page::{
     token_expired,
 };
 pub use crate::receipts_page::{Basis, WHY_CHARGED_ROUTE, WhyCharged, why_charged_page};
+pub use crate::security::CONFIRM_CONTENT_SECURITY_POLICY;
+pub use crate::security::StripeConfirmCsp;
 pub use crate::security::{
     ButtonForm, CONTENT_SECURITY_POLICY, CsrfField, CsrfForm, EVENTS_PER_HOUR_ALERT,
     PERMISSIONS_POLICY, SECURITY_EVENT_CAP_FLOOR, STRICT_TRANSPORT_SECURITY, SecurityEvent,
