@@ -65,7 +65,7 @@ use axum::extract::{FromRequest, Request, State};
 use axum::http::header::{CACHE_CONTROL, HOST, HeaderValue, RETRY_AFTER, SET_COOKIE};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{Html, IntoResponse, Response};
-use axum::routing::{MethodRouter, get, post};
+use axum::routing::{get, post};
 use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
 use sha2::{Digest, Sha256};
@@ -196,10 +196,10 @@ impl ServedSignUp {
         let routes = Router::new()
             .route(SIGNUP_ROUTE, get(form_page))
             .route(SIGNUP_FORM_ROUTE, post(start_post))
-            .route(CODE_SEND_ROUTE, step_route(Ask::Send))
-            .route(NUMBER_OLD_ROUTE, step_route(Ask::Old))
-            .route(LETTER_ROUTE, step_route(Ask::Letter))
-            .route(IDENTITY_CHECK_ROUTE, step_route(Ask::Check))
+            .route(CODE_SEND_ROUTE, post(code_send))
+            .route(NUMBER_OLD_ROUTE, post(number_old))
+            .route(LETTER_ROUTE, post(letter))
+            .route(IDENTITY_CHECK_ROUTE, post(identity_check))
             .with_state(state);
         Self(routes)
     }
@@ -625,7 +625,7 @@ enum Ask {
 
 impl Ask {
     /// The step's route, the security event's route (SEC-048).
-    const fn route(self) -> &'static str {
+    const fn path(self) -> &'static str {
         match self {
             Self::Send => CODE_SEND_ROUTE,
             Self::Old => NUMBER_OLD_ROUTE,
@@ -635,9 +635,24 @@ impl Ask {
     }
 }
 
-/// The `POST` handler for `ask`.
-fn step_route(ask: Ask) -> MethodRouter<Arc<Form>> {
-    post(move |State(form): State<Arc<Form>>, request: Request| step_post(form, request, ask))
+/// BIZ-026: `POST` [`CODE_SEND_ROUTE`], [`Ask::Send`].
+async fn code_send(State(form): State<Arc<Form>>, request: Request) -> Response {
+    step_post(form, request, Ask::Send).await
+}
+
+/// BIZ-026: `POST` [`NUMBER_OLD_ROUTE`], [`Ask::Old`].
+async fn number_old(State(form): State<Arc<Form>>, request: Request) -> Response {
+    step_post(form, request, Ask::Old).await
+}
+
+/// BIZ-026: `POST` [`LETTER_ROUTE`], [`Ask::Letter`].
+async fn letter(State(form): State<Arc<Form>>, request: Request) -> Response {
+    step_post(form, request, Ask::Letter).await
+}
+
+/// BIZ-002: `POST` [`IDENTITY_CHECK_ROUTE`], [`Ask::Check`].
+async fn identity_check(State(form): State<Arc<Form>>, request: Request) -> Response {
+    step_post(form, request, Ask::Check).await
 }
 
 /// SEC-019, SEC-042, SEC-048, D-3641: an identity step's `POST`. A cross-site or wrong-CSRF post
@@ -645,7 +660,7 @@ fn step_route(ask: Ask) -> MethodRouter<Arc<Form>> {
 /// [`Form::step`] for the sign-up the cookie names. No posted ID or license number is read.
 async fn step_post(form: Arc<Form>, request: Request, ask: Ask) -> Response {
     let now = Timestamp::now();
-    let (fields, jar) = match same_site(&form.pool, request, ask.route(), now).await {
+    let (fields, jar) = match same_site(&form.pool, request, ask.path(), now).await {
         Ok(posted) => posted,
         Err(refused) => return *refused,
     };
