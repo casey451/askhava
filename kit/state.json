@@ -19477,7 +19477,8 @@
    "deps": [
     "T113",
     "T115",
-    "T428"
+    "T428",
+    "T114"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19560,7 +19561,8 @@
     "T106",
     "T118",
     "T307",
-    "T489"
+    "T489",
+    "T497"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19586,7 +19588,8 @@
    "deps": [
     "T345",
     "T473",
-    "T100"
+    "T100",
+    "T458"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19739,7 +19742,8 @@
     "T489",
     "T490",
     "T491",
-    "T496"
+    "T496",
+    "T497"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -59439,6 +59443,18 @@
    "slug": "ally-stripe-stub-card-state",
    "type": "harness",
    "stage": "5"
+  },
+  {
+   "id": "T497",
+   "deps": [
+    "T414",
+    "T335"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "stand-in-sticky-faults",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -63078,7 +63094,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T17:04:41Z",
+ "updated_at": "2026-11-15T17:22:17Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
