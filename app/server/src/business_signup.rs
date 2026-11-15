@@ -20,21 +20,29 @@
 //! `NoContact` (needs review), or a bare 503 with `Retry-After` for `Unreadable` and `Unbound`.
 //! The record is never stored, logged or put in an error, and every answer is `no-store`
 //! (SEC-034). The sign-up is bound to the browser by the [`SIGNUP_COOKIE`] (SEC-019, D-3641),
-//! checked by [`bound_signup`]. T460 to T462 add the later steps (BIZ-002, BIZ-019, BIZ-040,
-//! BIZ-042, BIZ-058).
+//! checked by [`bound_signup`].
+//!
+//! T460 (BIZ-002, BIZ-026, TXT-038, D-3779): the identity steps ([`Ask`], `Form::step`, D-3769)
+//! act only for the cookie's sign-up while it is open and `signup_progress` allows the step; the
+//! record contact is read in that request, never stored or logged; codes go through
+//! [`IdentityCodes`]. T461 and T462 add the later steps (BIZ-019, BIZ-040, BIZ-042, BIZ-058).
 
+use std::future::Future;
 use std::io;
 use std::net::IpAddr;
+use std::pin::Pin;
 use std::sync::Arc;
 
 use askhava_adapters::api::{
-    AdapterError, Charge, IdempotencyKey, LicenseLists, LicenseRecords, PaymentIntent,
-    PaymentsAdapter, StripePayments,
+    AdapterError, Charge, CodeChannel, IdempotencyKey, LicenseLists, LicenseRecords, PaymentIntent,
+    PaymentsAdapter, StripePayments, TwilioConfig, VerifyAdapter, twilio_clients,
 };
 use askhava_businesses::api::{
-    ConsentChannel, Flag, NameRefusal, SignUpForm, SignupError, SignupRecord, SignupSettings,
-    record_match, save_business_name, screen_names, signup_record, stored_category_list,
-    stored_enabled, waitlisted,
+    ConsentChannel, ContactKind, Flag, MaskedContact, NameRefusal, RecordFound, SignUpForm,
+    SignupError, SignupRecord, SignupSettings, Step, business as stored_business, check_code,
+    next_step, number_is_old, record_match, save_business_name, screen_names, send_code_seen,
+    signup_progress, signup_record, stored_category_list, stored_enabled, waiting_on_record,
+    waitlisted,
 };
 use askhava_core::api::{Environment, IdSecret, LinkKind, LinkSalt, Settings, link_token};
 use askhava_intake::api::Admission;
@@ -45,11 +53,12 @@ use askhava_licensing::api::{
 use askhava_ops::api::Actor;
 use askhava_picks::api::{ConfirmSettings, WindowRules};
 use askhava_portals::api::{
-    ChannelPost, CookieJar, Entered, PageLanguage, Parts, SIGNUP_FORM_ROUTE, SIGNUP_ROUTE, Screen,
-    SecurityEvent, SecurityEventKind, SignupConsent, SignupRefusal, admit_security_event,
-    admit_sign_up, csrf_matches, csrf_token, ensure_pre_session, fee_numbers, is_cross_site,
-    record_security_event, refusal_problem, sealed_signup_page, security_event_client,
-    submit_signup,
+    AreaEntered, CODE_SEND_ROUTE, ChannelPost, CodeProblem, CookieJar, Entered,
+    IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NUMBER_OLD_ROUTE, PageLanguage, Parts, SIGNUP_FORM_ROUTE,
+    SIGNUP_ROUTE, Screen, SecurityEvent, SecurityEventKind, SignupConsent, SignupRefusal,
+    admit_security_event, admit_sign_up, csrf_matches, csrf_token, ensure_pre_session, fee_numbers,
+    is_cross_site, record_security_event, refusal_problem, sealed_signup_page,
+    security_event_client, submit_signup,
 };
 use askhava_privacy::api::{BusinessContactError, Vault, mailbox_for};
 use axum::Router;
@@ -59,12 +68,13 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use jiff::Timestamp;
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
 use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use super::business_contacts::ContactDirectory;
+use super::business_signin::NoVerify;
 
 /// TXT-035: business texting is off, so the form offers email notices alone and the E-SIGN box
 /// names email only (BIZ-036, CON-019).
@@ -95,6 +105,64 @@ pub struct StartAdapters {
     pub records: Option<LicenseLists>,
     /// The saved-sign-up screen's list delay (BIZ-026).
     pub settings: SignupSettings,
+    /// TXT-038: the Verify client the identity codes are sent and checked through (T460).
+    pub verify: IdentityCodes,
+}
+
+/// A boxed Verify answer, so [`IdentityCodes`] can hold any Verify client.
+type Pending<'a, T> = Pin<Box<dyn Future<Output = Result<T, AdapterError>> + Send + 'a>>;
+
+/// [`VerifyAdapter`] in a form that can sit behind `dyn`.
+trait Codes: Send + Sync {
+    fn send<'a>(
+        &'a self,
+        key: &'a IdempotencyKey,
+        to: &'a str,
+        by: CodeChannel,
+    ) -> Pending<'a, String>;
+    fn check<'a>(&'a self, to: &'a str, code: &'a str) -> Pending<'a, bool>;
+}
+
+impl<V: VerifyAdapter + Send + Sync> Codes for V {
+    fn send<'a>(
+        &'a self,
+        key: &'a IdempotencyKey,
+        to: &'a str,
+        by: CodeChannel,
+    ) -> Pending<'a, String> {
+        Box::pin(self.send_code(key, to, by))
+    }
+
+    fn check<'a>(&'a self, to: &'a str, code: &'a str) -> Pending<'a, bool> {
+        Box::pin(self.check_code(to, code))
+    }
+}
+
+/// BIZ-002, TXT-038: the identity steps' Verify client, whichever one it is: Twilio's, the dev
+/// and CI stand-in `NoVerify` (every send and check fails) or a test's fake.
+pub struct IdentityCodes(Box<dyn Codes>);
+
+impl IdentityCodes {
+    /// The identity steps' codes through `verify`.
+    #[must_use]
+    pub fn new<V: VerifyAdapter + Send + Sync + 'static>(verify: V) -> Self {
+        Self(Box::new(verify))
+    }
+}
+
+impl VerifyAdapter for IdentityCodes {
+    async fn send_code(
+        &self,
+        idempotency: &IdempotencyKey,
+        to: &str,
+        channel: CodeChannel,
+    ) -> Result<String, AdapterError> {
+        self.0.send(idempotency, to, channel).await
+    }
+
+    async fn check_code(&self, to: &str, code: &str) -> Result<bool, AdapterError> {
+        self.0.check(to, code).await
+    }
 }
 
 /// What the routes read: the pool, the sealing key, the fee box's settings and the adapters.
@@ -105,7 +173,8 @@ struct Form {
     start: StartAdapters,
 }
 
-/// The served sign-up routes (T302: the form page; T459: the form `POST`).
+/// The served sign-up routes (T302: the form page; T459: the form `POST`; T460: the identity
+/// steps).
 pub struct ServedSignUp(Router);
 
 impl ServedSignUp {
@@ -128,18 +197,44 @@ impl ServedSignUp {
         let routes = Router::new()
             .route(SIGNUP_ROUTE, get(form_page))
             .route(SIGNUP_FORM_ROUTE, post(start_post))
+            .route(CODE_SEND_ROUTE, post(code_send))
+            .route(NUMBER_OLD_ROUTE, post(number_old))
+            .route(LETTER_ROUTE, post(letter))
+            .route(IDENTITY_CHECK_ROUTE, post(identity_check))
             .with_state(state);
         Self(routes)
     }
 
     /// The part `main` passes to `build_router`: `ASKHAVA_ID_SECRET`, the Confirm window, the
-    /// vault, the Stripe client and the license records from `pairs` (D-2954, D-3055).
+    /// vault, the Stripe client, the license records and the Verify client from `pairs` (D-2954,
+    /// D-3055, TXT-038).
     ///
     /// # Errors
     ///
     /// A missing or weak `ASKHAVA_ID_SECRET`; a bad setting; in test or live a missing vault,
-    /// Stripe or `ASKHAVA_LICENSE_BASE_URL` setting. Never a value.
+    /// Stripe, Twilio or `ASKHAVA_LICENSE_BASE_URL` setting. Never a value.
     pub fn from_settings<I>(pool: PgPool, pairs: I) -> io::Result<Self>
+    where
+        I: IntoIterator<Item = (String, String)>,
+    {
+        Self::built(pool, pairs, None)
+    }
+
+    /// As [`ServedSignUp::from_settings`], the identity codes going through `verify` instead
+    /// (route tests' fake Verify, TXT-038).
+    ///
+    /// # Errors
+    ///
+    /// As [`ServedSignUp::from_settings`].
+    pub fn with_verify<I, V>(pool: PgPool, pairs: I, verify: V) -> io::Result<Self>
+    where
+        I: IntoIterator<Item = (String, String)>,
+        V: VerifyAdapter + Send + Sync + 'static,
+    {
+        Self::built(pool, pairs, Some(IdentityCodes::new(verify)))
+    }
+
+    fn built<I>(pool: PgPool, pairs: I, verify: Option<IdentityCodes>) -> io::Result<Self>
     where
         I: IntoIterator<Item = (String, String)>,
     {
@@ -151,7 +246,7 @@ impl ServedSignUp {
             .ok_or_else(|| io::Error::other("missing ASKHAVA_ID_SECRET"))?;
         let secret = IdSecret::new(1, raw.clone()).map_err(io::Error::other)?;
         let confirm = ConfirmSettings::from_pairs(pairs.clone()).map_err(io::Error::other)?;
-        let start = start_adapters(raw, &pairs)?;
+        let start = start_adapters(raw, &pairs, verify)?;
         Ok(Self::new(pool, secret, confirm, start))
     }
 
@@ -166,6 +261,7 @@ impl ServedSignUp {
 fn start_adapters(
     id_secret: SecretString,
     pairs: &[(String, String)],
+    verify: Option<IdentityCodes>,
 ) -> io::Result<StartAdapters> {
     let settings = Settings::from_pairs(pairs.to_vec()).map_err(io::Error::other)?;
     let vault = super::vault_from(&settings, pairs.to_vec())?;
@@ -187,7 +283,26 @@ fn start_adapters(
         stripe: super::stripe_client(&settings, pairs)?,
         records,
         settings: SignupSettings::from_pairs(pairs.to_vec()).map_err(io::Error::other)?,
+        verify: match verify {
+            Some(verify) => verify,
+            None => identity_codes(&settings, pairs)?,
+        },
     })
+}
+
+/// TXT-038, D-3216: the Twilio Verify client, or in dev and CI without Twilio settings the
+/// `NoVerify` stand-in, as `ServedSignIn::from_settings` builds its own.
+fn identity_codes(settings: &Settings, pairs: &[(String, String)]) -> io::Result<IdentityCodes> {
+    match TwilioConfig::from_settings(settings, pairs.to_vec()) {
+        Ok(config) => {
+            let (_, _, verify) = twilio_clients(&config).map_err(io::Error::other)?;
+            Ok(IdentityCodes::new(verify))
+        }
+        Err(error) => match settings.environment() {
+            Environment::Dev | Environment::Ci => Ok(IdentityCodes::new(NoVerify)),
+            Environment::Test | Environment::Live => Err(io::Error::other(error)),
+        },
+    }
 }
 
 /// BIZ-021, CON-019, SEC-042: `GET` [`SIGNUP_ROUTE`], the form with the box unticked, the
@@ -230,32 +345,54 @@ async fn start_post(State(form): State<Arc<Form>>, request: Request) -> Response
     if !matches!(admitted, Ok(Admission::Admitted)) {
         return failure("sign-up limit");
     }
+    match same_site(&form.pool, request, SIGNUP_FORM_ROUTE, now).await {
+        Ok((fields, _)) => {
+            let posted = Posted(&fields);
+            form.submit(&posted, posted.get("csrf"), now).await
+        }
+        Err(refused) => *refused,
+    }
+}
+
+/// SEC-042, SEC-048: the posted fields and the cookies of a same-site post to `route` whose `csrf`
+/// field is the request cookie's token; else the 403 with its `csrf_rejected` event ([`refuse`]),
+/// or a 400 for a body that is no form.
+async fn same_site(
+    pool: &PgPool,
+    request: Request,
+    route: &'static str,
+    now: Timestamp,
+) -> Result<(Vec<(String, String)>, CookieJar), Box<Response>> {
+    let ip = security_event_client(&request);
     let headers = request.headers().clone();
     let parsed = axum::Form::<Vec<(String, String)>>::from_request(request, &()).await;
     let Ok(axum::Form(fields)) = parsed else {
-        return StatusCode::BAD_REQUEST.into_response();
+        return Err(Box::new(StatusCode::BAD_REQUEST.into_response()));
     };
-    let posted = Posted(&fields);
     let jar = CookieJar::from_headers(&headers);
     let host = headers.get(HOST).and_then(|h| h.to_str().ok());
-    let csrf = posted.get("csrf");
-    if is_cross_site(&headers, host) || !csrf_matches(&jar, csrf) {
-        return refuse(&form.pool, ip, &headers, now).await;
+    if is_cross_site(&headers, host) || !csrf_matches(&jar, Posted(&fields).get("csrf")) {
+        return Err(Box::new(refuse(pool, (ip, route), &headers, now).await));
     }
-    form.submit(&posted, csrf, now).await
+    Ok((fields, jar))
 }
 
-/// SEC-048: the 403 for a cross-site or wrong-CSRF post, with its security event (request ID and
-/// route, no actor: there is no session) while the per-minute cap admits it.
-async fn refuse(pool: &PgPool, ip: IpAddr, headers: &HeaderMap, now: Timestamp) -> Response {
+/// SEC-048: the 403 for a cross-site or wrong-CSRF post to `route`, with its security event
+/// (request ID and route, no actor: there is no session) while the per-minute cap admits it.
+async fn refuse(
+    pool: &PgPool,
+    (ip, route): (IpAddr, &'static str),
+    headers: &HeaderMap,
+    now: Timestamp,
+) -> Response {
     let kind = SecurityEventKind::CsrfRejected;
-    if admit_security_event(kind, ip, SIGNUP_FORM_ROUTE, now) {
+    if admit_security_event(kind, ip, route, now) {
         let request_id = headers
             .get("x-request-id")
             .and_then(|id| Uuid::try_parse_ascii(id.as_bytes()).ok());
         let event = SecurityEvent {
             kind,
-            route: SIGNUP_FORM_ROUTE,
+            route,
             request_id,
             actor_ref: None,
         };
@@ -468,16 +605,230 @@ impl Form {
                 }
                 self.page(Screen::NumberOld(delay), csrf)
             }
-            SignupRecord::Unreadable | SignupRecord::Unbound => {
-                let wait = [(RETRY_AFTER, HeaderValue::from_static(TRY_AGAIN_SECS))];
-                return (StatusCode::SERVICE_UNAVAILABLE, no_store(), wait).into_response();
-            }
+            SignupRecord::Unreadable | SignupRecord::Unbound => return try_again(),
         };
-        html.map_or_else(
-            || failure("sign-up template"),
-            |h| (no_store(), Html(h)).into_response(),
-        )
+        shown(html)
     }
+}
+
+/// BIZ-002, BIZ-026: the identity step a `POST` asks for, one per route (D-3602, D-3676).
+#[derive(Debug, Clone, Copy)]
+enum Ask {
+    /// "Send the code" and "Send a new code": the chain's next code (TXT-038).
+    Send,
+    /// "That number is old" and "Stop, I'll fix my record first" (D-288).
+    Old,
+    /// "Mail the letter".
+    Letter,
+    /// The typed identity code.
+    Check,
+}
+
+impl Ask {
+    /// The step's route, the security event's route (SEC-048).
+    const fn path(self) -> &'static str {
+        match self {
+            Self::Send => CODE_SEND_ROUTE,
+            Self::Old => NUMBER_OLD_ROUTE,
+            Self::Letter => LETTER_ROUTE,
+            Self::Check => IDENTITY_CHECK_ROUTE,
+        }
+    }
+}
+
+/// BIZ-026: `POST` [`CODE_SEND_ROUTE`], [`Ask::Send`].
+async fn code_send(State(form): State<Arc<Form>>, request: Request) -> Response {
+    step_post(form, request, Ask::Send).await
+}
+
+/// BIZ-026: `POST` [`NUMBER_OLD_ROUTE`], [`Ask::Old`].
+async fn number_old(State(form): State<Arc<Form>>, request: Request) -> Response {
+    step_post(form, request, Ask::Old).await
+}
+
+/// BIZ-026: `POST` [`LETTER_ROUTE`], [`Ask::Letter`].
+async fn letter(State(form): State<Arc<Form>>, request: Request) -> Response {
+    step_post(form, request, Ask::Letter).await
+}
+
+/// BIZ-002: `POST` [`IDENTITY_CHECK_ROUTE`], [`Ask::Check`].
+async fn identity_check(State(form): State<Arc<Form>>, request: Request) -> Response {
+    step_post(form, request, Ask::Check).await
+}
+
+/// SEC-019, SEC-042, SEC-048, D-3641: an identity step's `POST`. A cross-site or wrong-CSRF post
+/// is the 403 with its security event; a missing or bad binding cookie is the bare 403; else
+/// [`Form::step`] for the sign-up the cookie names. No posted ID or license number is read.
+async fn step_post(form: Arc<Form>, request: Request, ask: Ask) -> Response {
+    let now = Timestamp::now();
+    let (fields, jar) = match same_site(&form.pool, request, ask.path(), now).await {
+        Ok(posted) => posted,
+        Err(refused) => return *refused,
+    };
+    let Some(business) = bound_signup(&jar, &form.secret) else {
+        return not_now("binding");
+    };
+    let Ok(mut db) = form.pool.acquire().await else {
+        return failure("database");
+    };
+    let posted = Posted(&fields);
+    let typed = (posted.get("code"), posted.get("csrf"));
+    form.step(&mut db, (business, ask), typed, now).await
+}
+
+impl Form {
+    /// BIZ-002, BIZ-016, BIZ-026, D-3641, D-3779: the business must be `Pending` or
+    /// `NeedsReview` (`takes_identity_code`) and its code not done (else the bare 403); its record is read in this request
+    /// (`signup_record`, the bound ROC number). `ask` acts only when `signup_progress`'s stored
+    /// step allows it: a code send when the chain's next step is a text or email, the letter when
+    /// it is the letter, the code check once any step was sent (so an early check takes no try);
+    /// "That number is old" (D-178) any time, then the saved screen. While the sign-up waits on
+    /// a new record (`waiting_on_record`, D-1712) every other press shows the saved screen and
+    /// sends or checks nothing, so no code reaches the number called old. Any other press shows
+    /// the stored state's screen and changes nothing.
+    async fn step(
+        &self,
+        db: &mut PgConnection,
+        (business, ask): (Uuid, Ask),
+        (code, csrf): (&str, &str),
+        now: Timestamp,
+    ) -> Response {
+        match stored_business(db, business).await {
+            Ok(b) if b.status.takes_identity_code() => {}
+            Ok(_) => return not_now("status"),
+            Err(_) => return failure("business"),
+        }
+        let at = match signup_progress(db, business).await {
+            Ok(progress) if !progress.code_done() => progress.step(),
+            Ok(_) => return not_now("code done"),
+            Err(_) => return failure("sign-up progress"),
+        };
+        match waiting_on_record(db, business).await {
+            Ok(true) if !matches!(ask, Ask::Old) => return shown(self.saved(csrf)),
+            Ok(_) => {}
+            Err(_) => return failure("waiting on record"),
+        }
+        let records = Records(self.start.records.as_ref());
+        let found = match signup_record(db, &records, business).await {
+            Ok(SignupRecord::Read(found)) => found,
+            Ok(SignupRecord::NoContact) => return shown(self.saved(csrf)),
+            Ok(SignupRecord::Unreadable | SignupRecord::Unbound) => return try_again(),
+            Err(_) => return failure("sign-up record"),
+        };
+        let here = (&found, csrf);
+        match (ask, at, next_step(found.contacts(), at)) {
+            (Ask::Send, _, Some(Step::Text | Step::Email))
+            | (Ask::Letter, _, Some(Step::Letter)) => {
+                self.send(db, (business, at), here, now).await
+            }
+            (Ask::Send, _, Some(Step::Letter)) => self.screen(here, Some(Step::Letter), None),
+            (Ask::Old, ..) => {
+                let seen = (business, found.seen());
+                let old = number_is_old(db, &self.start.id_secret, seen, now).await;
+                old.map_or_else(|_| failure("number is old"), |()| shown(self.saved(csrf)))
+            }
+            (Ask::Check, Some(at), _) => self.check(db, (business, at), here, (code, now)).await,
+            _ => self.screen(here, None, at.map(|s| (s, None))),
+        }
+    }
+
+    /// BIZ-002, TXT-038, D-1756: the chain's next code to the record contact (a letter step is
+    /// recorded for the mailing), then the code screen for the step sent.
+    async fn send(
+        &self,
+        db: &mut PgConnection,
+        (business, at): (Uuid, Option<Step>),
+        (found, csrf): (&RecordFound, &str),
+        now: Timestamp,
+    ) -> Response {
+        let keys = (&self.start.verify, &self.start.id_secret);
+        match send_code_seen(db, keys, business, found.seen(), now).await {
+            Ok(sent) => self.screen((found, csrf), None, sent.or(at).map(|s| (s, None))),
+            Err(_) => failure("identity code send"),
+        }
+    }
+
+    /// BIZ-002, BIZ-016, A11Y-030: the typed code checked by `check_code` for the stored step;
+    /// right goes on to the service area (BIZ-058, T461), wrong shows the code screen again with
+    /// `CodeProblem::Refused` (`check_code` answers only right or wrong, so an expired code is
+    /// shown as refused).
+    async fn check(
+        &self,
+        db: &mut PgConnection,
+        (business, at): (Uuid, Step),
+        (found, csrf): (&RecordFound, &str),
+        (code, now): (&str, Timestamp),
+    ) -> Response {
+        let keys = (&self.start.verify, &self.start.id_secret);
+        match check_code(db, keys, business, found.contacts(), (code, now)).await {
+            Ok(true) => shown(self.page(Screen::ServiceArea(&AreaEntered::default()), csrf)),
+            Ok(false) => self.screen((found, csrf), None, Some((at, Some(CodeProblem::Refused)))),
+            Err(_) => failure("identity code check"),
+        }
+    }
+
+    /// BIZ-026, SEC-034, D-3779: the screen for the stored state, the step from `signup_progress`
+    /// (`code`: a sent step and its problem), never from `RecordFound::masked`: the code screen
+    /// for a sent step; before any, the letter screen (`letter`, or a letter-only record) or the
+    /// contact screen with any landline on the record; the saved screen when the record has no
+    /// contact for the step. Always `no-store`.
+    fn screen(
+        &self,
+        (found, csrf): (&RecordFound, &str),
+        letter: Option<Step>,
+        code: Option<(Step, Option<CodeProblem>)>,
+    ) -> Response {
+        let delay = self.start.settings.list_delay_days;
+        let first = letter.or_else(|| next_step(found.contacts(), None));
+        let html = match (code, first) {
+            (Some((at, problem)), _) => masked_for(found, at)
+                .and_then(|to| self.page(Screen::IdentityCode(&to, problem), csrf)),
+            (None, Some(Step::Letter)) => masked_for(found, Step::Letter)
+                .and_then(|to| self.page(Screen::Letter(&to, delay), csrf)),
+            (None, Some(step)) => masked_for(found, step).and_then(|to| {
+                let landline = found.masked().filter(|m| m.kind() == ContactKind::Landline);
+                self.page(Screen::Contact(&to, landline), csrf)
+            }),
+            (None, None) => None,
+        };
+        shown(html.or_else(|| self.saved(csrf)))
+    }
+
+    /// BIZ-026: the saved screen with the typical list delay.
+    fn saved(&self, csrf: &str) -> Option<String> {
+        let delay = self.start.settings.list_delay_days;
+        self.page(Screen::NumberOld(delay), csrf)
+    }
+}
+
+/// BIZ-026, PRIV-016: the masked record contact `step` goes to; a letter's shows the record
+/// address's town and ZIP, the part after its last comma in licensing's `street, town zip`.
+fn masked_for(found: &RecordFound, step: Step) -> Option<MaskedContact> {
+    let address = found.seen().address.map(ExposeSecret::expose_secret);
+    let place = address.and_then(|a| a.rsplit_once(", "));
+    let place = place.and_then(|(_, p)| p.rsplit_once(' '));
+    MaskedContact::for_step(found.contacts(), step, place.unwrap_or_default())
+}
+
+/// SEC-034: a screen's page, `no-store`; a page that failed to render is the bare failure.
+fn shown(html: Option<String>) -> Response {
+    html.map_or_else(
+        || failure("sign-up template"),
+        |h| (no_store(), Html(h)).into_response(),
+    )
+}
+
+/// LIC-008: an unreadable or unbound record changes nothing: 503 with `Retry-After`.
+fn try_again() -> Response {
+    let wait = [(RETRY_AFTER, HeaderValue::from_static(TRY_AGAIN_SECS))];
+    (StatusCode::SERVICE_UNAVAILABLE, no_store(), wait).into_response()
+}
+
+/// SEC-019, D-3641: a step refused for its binding or the business's status: the bare 403,
+/// `no-store`, nothing changed or sent, logged once by reason without values.
+fn not_now(why: &'static str) -> Response {
+    tracing::info!(why, "sign-up step refused");
+    (StatusCode::FORBIDDEN, no_store()).into_response()
 }
 
 /// D-2943, D-2711, D-2712, LIC-015, LIC-016, LIC-047: the screened names, a pest business's

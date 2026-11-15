@@ -2885,3 +2885,18 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - The quote form a business opens from its email now shows the introduction fee by job size for its price whenever the form comes back to it (a missing fact, a note that was turned back, or the "bigger than your largest job" check). A quote with nothing wrong is still sent on the first press without the fee shown first, because the page has no price until it is sent; showing the fee as the price is typed needs a small browser extra that no task has built yet.
 - If a business presses "Send quote" twice quickly, the quote is sent once, but the second press shows a plain "not found" page instead of the quote they just sent, so they may think it failed. Fixing it needs a small change in the portal module that this task could not make; it is reported for the plan. No fee, wording or check changed. Nothing needs you.
+
+## Five big queued tasks split in two (D-3805, November 15)
+
+- As you asked, five queued stage-5 tasks that looked likely to run well past 80 builder turns are now two smaller tasks each, with the same requirements and tests and nothing dropped: the ops alerts and safe mode (T105, T487), the Spanish site pages and the Spanish business sign-up (T202, T488), the web chat's conversation and its pages (T103, T489), the email provider and the mailers it feeds (T469, T490), and the "backup has your pick" text and the Confirm window's end (T471, T491).
+- Shorter sessions cost far fewer tokens per turn, so this should cut cost without changing what gets built. Several other big tasks were left whole where a split would not have a clean seam; the decision entry says why for each. Nothing needs you.
+- A test-only fix (D-3811): three runner tests read the lane number of the GitHub job they ran in, so every task handed in on lanes 2 to 7 failed its final check through no fault of its own (T461 lost one attempt, about 18.5M tokens). The tests now ignore the job's lane and check exactly what they did before. Nothing needs you.
+
+## The Confirm and pay page: unblocked by a small test-setup task and a split (D-3813, November 15)
+
+- The task that serves the Confirm and pay page (T261) was stuck: the end-to-end test server had no fake Stripe settings, so the page could not be served in the browser tests, and the work was about twice its size limit. A new small task (T492) gives the test server fake Stripe settings, a test publishable key and a launch date, and T261 is now four smaller tasks (T493, T494, T261, T495) with the same requirements and tests, plus the fixes its reviewer asked for. The test and live servers refuse to start without the launch date and the Stripe page key, so nobody is charged or let off a fee by a missing date; on a developer's machine without them the page says "Card payments can't be taken right now." and charges nothing. Nothing needs you; the real launch date and keys are set only at Gate C.
+
+## The runner no longer starts empty backup runs for a task the plan dropped (D-3812, November 15)
+
+- A task removed from the plan (T365) was still waiting in the runner's state, so each backup run gave it a lane, refused it at claim time, sat idle and started another: about 33 empty runs in under 5 hours. The runner now skips, when deciding how many runs to start, any task the plan check has already turned away and still turns away, so this loop stops; tasks the check has not yet judged still get their runs. Nothing needs you.
+- A test-only fix (D-3829): one database test sometimes ran its "as the owner" step on a connection still set to the app's restricted role, so it failed at random (T493 lost an attempt). It now resets the role first. Nothing needs you.

@@ -6,3 +6,4 @@ mod ids;
 mod logging;
 mod prop_derived_ids;
 mod settings;
+mod stripe_page_settings;

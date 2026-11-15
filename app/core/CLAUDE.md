@@ -9,6 +9,7 @@ The layer-0 crate every module may call: settings, the database pool and guarded
 - Any future `src/status.rs` must start with `#![deny(clippy::wildcard_enum_match_arm, clippy::match_wildcard_for_single_variants)]` (SEC-031, D-488).
 - Settings come in as pairs (`Settings::from_pairs`), never through `std::env::set_var` (D-481, D-491).
 - No settings error echoes a value, only the key: `tests/settings.rs::invalid_values_are_refused_without_echoing_them`.
+- Stripe's publishable key and the launch date stay optional in `Settings` (the composition requires them where used), and a `pk_test_` key is refused in live, `pk_live_` outside it: `tests/stripe_page_settings.rs` (T492, D-3813).
 - No `sqlx::query` event reaches the JSON log and the metrics read no SQL, bind value or URL; the pool's maximum and acquire timeout stay as set: `tests/integration/tests/db_metrics.rs` (TD-OPS-41). Never put a global level filter back in `logging::init`: it would hide sqlx's DEBUG events from the metrics layer.
 - `Redacted` has no `Serialize` and prints only `[redacted]`: `tests/logging.rs::redacted_values_never_reach_a_log`.
 - Request spans never carry the URI: `tests/logging.rs::request_log_shows_route_template_only`.
