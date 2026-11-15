@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T03:20:37Z by runner 41e50f5df2cd (actions).
+Updated 2026-11-15T03:21:00Z by runner 41e50f5df2cd (actions).
 
 **Building: T461 in progress since 03:00Z; 342 of 476 done; week 56% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-15T03:20:37Z by runner 41e50f5df2cd (actions).
 - **Lane:** lane 2: T461 claimed 03:00Z, lease until 06:00Z
 - **Week:** 56% used, 84.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:20Z, 0 min before this update
-- **Keeper:** last ran 03:15Z, next wake 06:03Z
+- **Keeper:** last ran 03:20Z, next wake 06:02Z
 
 ## Needs attention
 - BLOCKED T261: plan gap reported: PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership c; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason "..."` (D-2859)
