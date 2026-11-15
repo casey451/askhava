@@ -355,6 +355,16 @@ const INBOX_STATES: readonly PageState[] = [
   ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: INBOX_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const CAPABILITY_ROUTE = "/b/signup/capability";
+
+/**
+ * The sign-up capability step after the first sign-in (T464; BIZ-049, D-3676): the signed-in owner
+ * of a fake active business with no saved step, the one-page form. No vault is read.
+ */
+const CAPABILITY_STATES: readonly PageState[] = [
+  ["capability step, one-page form", "Which towns do you work in?", "Save and continue", businessSql("")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CAPABILITY_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -370,6 +380,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: NOTICES_ROUTE, seed: portalSeed(true), states: NOTICES_STATES },
   { route: CONFIRM_ROUTE, seed: portalSeed(true), states: CONFIRM_STATES },
   { route: INBOX_ROUTE, seed: portalSeed(false), states: INBOX_STATES },
+  { route: CAPABILITY_ROUTE, seed: portalSeed(false), states: CAPABILITY_STATES },
 ];
 
 /** Every state of every page, in entry order. */

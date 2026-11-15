@@ -33,6 +33,16 @@
 //! person's own `Acting` and `?app=`; its `POST` (CSRF-checked, cross-site refused, each a
 //! `csrf_rejected` event) sends the sample card or stores the answer. No sample pick step here.
 //!
+//! T464 (BIZ-049, BIZ-004, BIZ-007, SEC-004, SEC-034, SEC-042, D-3676, D-3851): the capability
+//! step, [`CAPABILITY_ROUTE`], is served beside the inbox check behind `business_principal` for
+//! the owner only (another member is the one 404 with an `authz_denied` event). Its `GET` shows the
+//! T368 checklist (`offer_for`: the license classes, agency licenses, pest attestation, handyman
+//! standing and the stored category switch) with the market's towns, the one-page form unless
+//! `?step=` names a guided screen. A `POST` shows the screen its `?step=` names; the check screen's
+//! form is pointed at `?step=save`, whose post saves through `save_capability` (T369's after-hours
+//! rule) and answers 303 to [`INBOX_CHECK_ROUTE`]; a tick outside the offer saves nothing and shows
+//! the form again.
+//!
 //! T461 (BIZ-016, BIZ-019, BIZ-040, BIZ-058, SEC-014, D-3676, D-3743, D-3830): after the identity
 //! code, [`SERVICE_AREA_ROUTE`] saves the base ZIP and radius and sends the first email code;
 //! [`EMAIL_CHECK_ROUTE`] takes it (`confirm_mailbox`, which settles the sign-up) and
@@ -46,7 +56,7 @@ use std::future::Future;
 use std::io;
 use std::net::IpAddr;
 use std::pin::Pin;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use askhava_adapters::api::{
     AdapterError, Charge, CodeChannel, EmailAdapter, IdempotencyKey, LicenseLists, LicenseRecords,
@@ -59,6 +69,9 @@ use askhava_businesses::api::{
     start_signup_check,
 };
 use askhava_businesses::api::{
+    BusinessesError, Known, TradeOffer, business_names, offer_for, save_capability,
+};
+use askhava_businesses::api::{
     ConsentChannel, ContactKind, Flag, MaskedContact, NameRefusal, RecordFound, SignUpForm,
     SignupError, SignupRecord, SignupSettings, Step, business as stored_business, check_code,
     next_step, number_is_old, record_match, save_business_name, screen_names, send_code_seen,
@@ -66,12 +79,13 @@ use askhava_businesses::api::{
     waitlisted,
 };
 use askhava_catalog::api::category as catalog_category;
+use askhava_catalog::api::{Catalog, parse as parse_catalog, service_area_towns};
 use askhava_core::api::{
     Clock, Environment, IdSecret, LinkKind, LinkSalt, Settings, SystemClock, link_token,
 };
 use askhava_intake::api::{Admission, Key, Limit, admit};
 use askhava_licensing::api::{
-    Agency, ClassMap, DailyCheck, ImportError, PestAttestation, check_license,
+    Agency, CityRecord, ClassMap, DailyCheck, ImportError, PestAttestation, check_license,
     record_agency_license, record_pest_attestation,
 };
 use askhava_messaging::api::MailboxCodeSender;
@@ -86,12 +100,17 @@ use askhava_portals::api::{
     security_event_client, submit_signup,
 };
 use askhava_portals::api::{
+    CAPABILITY_ROUTE, CapabilityPage, CapabilityProblem, CapabilityStep, CapabilityValues,
+    capability_page,
+};
+use askhava_portals::api::{
     CODE_SENDS_PER_IP, CsrfField, CsrfForm, DoneFacts, EMAIL_CHECK_ROUTE, EMAIL_RESEND_ROUTE,
     MailApp, SERVICE_AREA_ROUTE, SIGNIN_ROUTE, SignInAddress, WebSecurity, business_principal,
     done_facts, email_check_page, no_store as no_store_layer, refuse_cross_site, send_sign_in_link,
 };
 use askhava_privacy::api::{
-    BusinessContactError, BusinessPurpose, Vault, mailbox_for, read_business_mailbox,
+    BusinessContactError, BusinessPurpose, Vault, mailbox_for, normalize_phone,
+    read_business_mailbox,
 };
 use axum::Router;
 use axum::extract::{FromRef, FromRequest, Query, Request, State};
@@ -179,7 +198,10 @@ impl<V: VerifyAdapter + Send + Sync> Codes for V {
 }
 
 /// BIZ-002, TXT-038: the identity steps' Verify client, whichever one it is: Twilio's, the dev
-/// and CI stand-in `NoVerify` (every send and check fails) or a test's fake.
+/// and CI stand-in `NoVerify` (every send and check fails) or a test's fake. D-3855: a record
+/// phone reaches it as the record wrote it (e.g. `928-555-0142`), so a US number is put in E.164
+/// (`+1` and ten digits, `privacy::api::normalize_phone`) before each send and check; an email
+/// address or anything else goes as it is.
 pub struct IdentityCodes(Box<dyn Codes>);
 
 impl IdentityCodes {
@@ -197,12 +219,17 @@ impl VerifyAdapter for IdentityCodes {
         to: &str,
         channel: CodeChannel,
     ) -> Result<String, AdapterError> {
-        self.0.send(idempotency, to, channel).await
+        self.0.send(idempotency, &e164(to), channel).await
     }
 
     async fn check_code(&self, to: &str, code: &str) -> Result<bool, AdapterError> {
-        self.0.check(to, code).await
+        self.0.check(&e164(to), code).await
     }
+}
+
+/// BIZ-002, D-3855: `to` as Verify takes it: a US phone in E.164, anything else unchanged.
+fn e164(to: &str) -> String {
+    normalize_phone(to).unwrap_or_else(|_| to.to_owned())
 }
 
 /// What the routes read: the pool, the sealing key, the fee box's settings and the adapters.
@@ -1441,8 +1468,8 @@ impl CsrfField for InboxForm {
     }
 }
 
-/// SEC-034, SEC-042, D-3676: `GET` and `POST` [`INBOX_CHECK_ROUTE`] over `pool`, every answer
-/// `no-store` and every cross-site `POST` refused with its security event.
+/// SEC-034, SEC-042, D-3676: `GET` and `POST` [`INBOX_CHECK_ROUTE`] and [`CAPABILITY_ROUTE`] over
+/// `pool`, every answer `no-store` and every cross-site `POST` refused with its security event.
 fn inbox_routes(pool: PgPool) -> Router {
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let security = WebSecurity::new(pool.clone(), clock);
@@ -1452,6 +1479,7 @@ fn inbox_routes(pool: PgPool) -> Router {
     };
     Router::new()
         .route(INBOX_CHECK_ROUTE, get(inbox_page).post(inbox_post))
+        .route(CAPABILITY_ROUTE, get(capability_get).post(capability_post))
         .with_state(state)
         .layer(from_fn_with_state(security, refuse_cross_site))
         .layer(from_fn(no_store_layer))
@@ -1514,6 +1542,194 @@ async fn inbox_post(
         Ok(to) => (StatusCode::SEE_OTHER, no_store(), [(LOCATION, to)]).into_response(),
         Err(_) => failure("inbox location"),
     }
+}
+
+/// The catalog file, compiled in and parsed once (LIC-001); `None` if it breaks a rule.
+static CATALOG: LazyLock<Option<Catalog>> =
+    LazyLock::new(|| parse_catalog(include_str!("../../../docs/catalog/categories.yaml")).ok());
+
+/// D-3851: the `step` the check screen's form posts to save; every other value names a screen.
+const SAVE_STEP: &str = "save";
+
+/// The capability step's `?step=`: a screen's slug, or [`SAVE_STEP`] (BIZ-049).
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct StepQuery {
+    step: Option<String>,
+}
+
+/// The capability step's posted `(name, value)` pairs; `job_type` and `town` repeat (BIZ-049).
+#[derive(serde::Deserialize)]
+#[serde(transparent)]
+struct CapabilityForm(Vec<(String, String)>);
+
+impl CsrfField for CapabilityForm {
+    fn csrf(&self) -> &str {
+        let token = self.0.iter().find(|(name, _)| name == "csrf");
+        token.map_or("", |(_, value)| value.as_str())
+    }
+}
+
+/// What the capability step offers one business: the checklist and the towns as (code, name).
+struct Checklist {
+    offer: Vec<TradeOffer>,
+    towns: Vec<(String, String)>,
+}
+
+/// BIZ-049, BIZ-004, BIZ-010, LIC-043, D-2701: T368's checklist for `business` (`offer_for` over
+/// its holder, with its own stored names for the city list, and the stored category switch) and
+/// the market's towns; `None` when a read fails. No name is logged or stored.
+async fn checklist(db: &mut PgConnection, business: Uuid) -> Option<Checklist> {
+    let names = business_names(db, business).await.ok()?;
+    let city = names.map(|n| CityRecord {
+        business_name: n.business_name,
+        trade_name: n.trade_name,
+        owner_name: None,
+        license_number: n.city_license_number,
+    });
+    let known = Known {
+        roc_license: None,
+        city_names: city.as_ref(),
+    };
+    let (map, catalog) = (ClassMap::shipped().ok()?, CATALOG.as_ref()?);
+    let offer = offer_for(db, business, known, (map, catalog)).await.ok()?;
+    let towns = service_area_towns().ok()?;
+    let towns = towns.into_iter().map(|t| (t.code, t.name)).collect();
+    Some(Checklist { offer, towns })
+}
+
+/// The screen a `?step=` names; none or an unknown one is the one-page form (BIZ-049).
+fn step_of(slug: Option<&str>) -> CapabilityStep {
+    slug.and_then(CapabilityStep::from_slug)
+        .unwrap_or(CapabilityStep::All)
+}
+
+/// BIZ-049, BIZ-030, D-3851: `capability_page` for `step`; a check screen with every answer has
+/// its form pointed at [`SAVE_STEP`], so only its "Save and continue" saves.
+fn capability_shown(
+    list: &Checklist,
+    (step, values, problems): (CapabilityStep, &CapabilityValues, &[CapabilityProblem]),
+    csrf: &str,
+) -> Response {
+    let page = CapabilityPage {
+        step,
+        offer: &list.offer,
+        towns: &list.towns,
+        values,
+        problems,
+        csrf,
+    };
+    let read_back = step == CapabilityStep::Check && values.answers().is_ok();
+    let check = format!("?step={}\"", CapabilityStep::Check.slug());
+    let html = match capability_page(&page) {
+        Ok(html) if read_back => html
+            .contains(&check)
+            .then(|| html.replacen(&check, &format!("?step={SAVE_STEP}\""), 1)),
+        Ok(html) => Some(html),
+        Err(_) => None,
+    };
+    shown(html)
+}
+
+/// BIZ-049, BIZ-004, SEC-004, D-3676: `GET` [`CAPABILITY_ROUTE`], the owner's checklist with every
+/// job type the license covers ticked; it changes nothing.
+async fn capability_get(
+    State(inbox): State<Inbox>,
+    jar: CookieJar,
+    Query(query): Query<StepQuery>,
+) -> Response {
+    let business = match owner(&inbox.pool, &jar).await {
+        Ok(business) => business,
+        Err(answer) => return *answer,
+    };
+    let Ok(mut db) = inbox.pool.acquire().await else {
+        return failure("connection");
+    };
+    let Some(list) = checklist(&mut db, business).await else {
+        return failure("capability checklist");
+    };
+    let values = CapabilityValues::fresh(&list.offer);
+    let step = step_of(query.step.as_deref());
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    capability_shown(&list, (step, &values, &[]), &csrf)
+}
+
+/// BIZ-049, BIZ-004, BIZ-007, SEC-042, D-3676, D-3851: `POST` [`CAPABILITY_ROUTE`] after the CSRF
+/// check. A `?step=` naming a screen shows it with the posted answers; [`SAVE_STEP`] saves them
+/// through `save_capability` (an after-hours "yes" held back while nobody covers, T369) and
+/// answers 303 to [`INBOX_CHECK_ROUTE`]. Missing answers, or a tick outside the offer
+/// (`NotCovered`, nothing stored), show the one-page form again.
+async fn capability_post(
+    State(inbox): State<Inbox>,
+    jar: CookieJar,
+    Query(query): Query<StepQuery>,
+    CsrfForm(form): CsrfForm<CapabilityForm>,
+) -> Response {
+    let business = match owner(&inbox.pool, &jar).await {
+        Ok(business) => business,
+        Err(answer) => return *answer,
+    };
+    let Ok(mut db) = inbox.pool.acquire().await else {
+        return failure("connection");
+    };
+    let Some(list) = checklist(&mut db, business).await else {
+        return failure("capability checklist");
+    };
+    let values = CapabilityValues::from_pairs(&form.0);
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    if query.step.as_deref() != Some(SAVE_STEP) {
+        let step = step_of(query.step.as_deref());
+        return capability_shown(&list, (step, &values, &[]), &csrf);
+    }
+    let answers = match values.answers() {
+        Ok(answers) => answers,
+        Err(found) => {
+            return capability_shown(&list, (CapabilityStep::All, &values, &found), &csrf);
+        }
+    };
+    let by = (Actor::Business(business), Timestamp::now());
+    match save_capability(&mut db, business, &list.offer, &answers, by).await {
+        Ok(_) => see_other(INBOX_CHECK_ROUTE),
+        Err(BusinessesError::NotCovered) => {
+            capability_shown(&list, (CapabilityStep::All, &values, &[]), &csrf)
+        }
+        Err(_) => failure("capability save"),
+    }
+}
+
+/// SEC-004, SEC-019, SEC-048, D-3676: the signed-in owner's business, else the answer to send: no
+/// business person gets [`signed_out`]; another member gets the one 404 with an `authz_denied`
+/// event naming only the member's record ID.
+async fn owner(pool: &PgPool, jar: &CookieJar) -> Result<Uuid, Box<Response>> {
+    let Ok(mut db) = pool.acquire().await else {
+        return Err(Box::new(failure("connection")));
+    };
+    let now = Timestamp::now();
+    match business_principal(&mut db, jar, now).await {
+        Ok(Some(who)) if who.is_owner() => Ok(who.business()),
+        Ok(Some(who)) => {
+            let event = SecurityEvent {
+                kind: SecurityEventKind::AuthzDenied,
+                route: CAPABILITY_ROUTE,
+                request_id: None,
+                actor_ref: Some(who.member()),
+            };
+            if record_security_event(&mut db, &event, now).await.is_err() {
+                tracing::warn!("capability security event not stored");
+            }
+            Err(Box::new(
+                (StatusCode::NOT_FOUND, no_store()).into_response(),
+            ))
+        }
+        Ok(None) => Err(Box::new(signed_out())),
+        Err(_) => Err(Box::new(failure("business principal"))),
+    }
+}
+
+/// A 303 to `to`, `no-store`.
+fn see_other(to: &'static str) -> Response {
+    let to = HeaderValue::from_static(to);
+    (StatusCode::SEE_OTHER, no_store(), [(LOCATION, to)]).into_response()
 }
 
 /// SEC-004, SEC-006, SEC-024: the signed-in business person as `Acting`, else the answer to send.
