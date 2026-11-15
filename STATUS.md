@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T14:35:41Z by runner ddc4e393d44e (manual).
+Updated 2026-11-15T14:40:53Z by runner ddc4e393d44e (actions).
 
 **Building: T455 in progress since 14:19Z; 347 of 481 done; week 60% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T14:35:41Z by runner ddc4e393d44e (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T455 claimed 14:19Z, lease until 17:19Z
 - **Week:** 60% used, 74.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:35Z, 0 min before this update
+- **Last run:** 14:35Z, 5 min before this update
 - **Keeper:** last ran 14:15Z, next wake 14:35Z
 
 ## Needs attention
@@ -54,7 +54,6 @@ Updated 2026-11-15T14:35:41Z by runner ddc4e393d44e (manual).
 | T467 | picks: a pick whose fee terms changed before its Confirm end | resync | 1 | 43 min | 16:28Z |  |
 | T439 | --after refuses a hand-in whose head no Opus reviewer approv | done | 1 | 44 min | 16:06Z |  |
 | T465 | docs: move the entry lines left under each crate guide's `## | done | 1 | 31 min | 15:55Z |  |
-| T302 | server (harness): business sign-up's open doors and served p | done | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -68,31 +67,31 @@ Updated 2026-11-15T14:35:41Z by runner ddc4e393d44e (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 213 of 733 (29.1%) · partial 363 · unstarted 157
+**Requirements verified:** 302 of 733 (41.2%) · partial 274 · unstarted 157
 **Tasks merged (throughput only):** 347 of 481
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 12 | 17 | 6 | 35 |
-| ai | 8 | 16 | 5 | 29 |
-| businesses | 11 | 44 | 3 | 58 |
-| calls | 8 | 16 | 1 | 25 |
-| consent | 10 | 21 | 4 | 35 |
-| fees | 10 | 41 | 1 | 52 |
-| intake | 25 | 15 | 3 | 43 |
-| job-cards | 13 | 11 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 18 | 25 | 2 | 45 |
+| accessibility | 13 | 16 | 6 | 35 |
+| ai | 11 | 13 | 5 | 29 |
+| businesses | 18 | 37 | 3 | 58 |
+| calls | 14 | 10 | 1 | 25 |
+| consent | 15 | 16 | 4 | 35 |
+| fees | 19 | 32 | 1 | 52 |
+| intake | 29 | 11 | 3 | 43 |
+| job-cards | 19 | 5 | 0 | 24 |
+| licensing | 38 | 10 | 0 | 48 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 4 | 25 | 2 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 22 | 33 | 1 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 7 | 43 | 5 | 55 |
+| privacy | 13 | 16 | 2 | 31 |
+| quiet-hours | 7 | 2 | 0 | 9 |
+| quotes-pick | 35 | 20 | 1 | 56 |
+| recurring | 8 | 0 | 3 | 11 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -105,7 +104,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 227 of 235 done
-- stage 5: 0 of 91 done
+- stage 5: 0 of 92 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

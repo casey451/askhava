@@ -19738,7 +19738,8 @@
     "T488",
     "T489",
     "T490",
-    "T491"
+    "T491",
+    "T496"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -59199,6 +59200,19 @@
    "slug": "confirm-served-journey",
    "type": "build",
    "stage": "4"
+  },
+  {
+   "id": "T496",
+   "deps": [
+    "T261",
+    "T495",
+    "T106"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ally-stripe-stub-card-state",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -62828,7 +62842,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T14:35:41Z",
+ "updated_at": "2026-11-15T14:40:53Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -62927,7 +62941,7 @@
   ]
  },
  "runner_sha": "ddc4e393d44e8adf1694475b6fe8a47837923a56",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "3b9687af32d2c05b2c3344eb019f8f05eed3d81f",
