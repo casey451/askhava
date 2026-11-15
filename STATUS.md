@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T14:14:48Z by runner e1e0b57f22b9 (actions).
+Updated 2026-11-15T14:15:26Z by runner e1e0b57f22b9 (actions).
 
 **Idle since 14:14Z; 347 of 480 done; week 60% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T14:14:48Z by runner e1e0b57f22b9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 14:14Z (no task in progress)
 - **Week:** 60% used, 74.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:13Z, 1 min before this update
+- **Last run:** 14:15Z, 0 min before this update
 - **Keeper:** last ran 13:33Z, next wake 13:53Z
 
 ## Needs attention
@@ -69,7 +69,6 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
 | T465 | docs: move the entry lines left under each crate guide's `## | done | 1 | 31 min | 15:55Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | done | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
 | T261 | portals and server (harness): the served Confirm route under | BLOCKED | 1 | 3 min | 14:30Z |  |
-| T353 | payments: a won dispute records the countering fee's return  | done | 1 | 30 min | 14:15Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
