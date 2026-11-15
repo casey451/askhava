@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-15T15:04:33Z by runner ddc4e393d44e (actions).
+Updated 2026-11-15T15:20:57Z by runner 77c4da167023 (actions).
 
-**Idle since 14:58Z; 347 of 481 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 15:19Z; 348 of 481 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 347 of 481 build tasks (owner gates not counted)
+- **Tasks done:** 348 of 481 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 14:58Z (no task in progress)
+- **Lane:** idle since 15:19Z (no task in progress)
 - **Week:** 61% used, 74.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:04Z, 0 min before this update
+- **Last run:** 15:04Z, 16 min before this update
 - **Keeper:** last ran 15:04Z, next wake 15:24Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+114 on DONE tasks); first: T399: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+115 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T455 | server: the Pause, Resume and Ask about a charge email links | MERGE_PENDING | 1 | 38 min | 14:58Z |  |
+| T455 | server: the Pause, Resume and Ask about a charge email links | done | 1 | 38 min | 14:58Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | BLOCKED | 2 | 2 min | 14:14Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
 | T261 | portals and server (harness): the served Confirm route under | check_failed | 5 | 44 min | 13:32Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T462 | server: the sign-up inbox check is served behind the busines | check_failed | 1 | 30 min | 12:13Z |  |
@@ -69,7 +69,7 @@ Updated 2026-11-15T15:04:33Z by runner ddc4e393d44e (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 302 of 733 (41.2%) · partial 274 · unstarted 157
-**Tasks merged (throughput only):** 347 of 481
+**Tasks merged (throughput only):** 348 of 481
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -104,7 +104,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 227 of 235 done
+- stage 4: 228 of 235 done
 - stage 5: 0 of 92 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
