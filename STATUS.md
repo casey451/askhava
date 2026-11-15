@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T21:22:47Z by runner ef9418c0e6b9 (actions).
+Updated 2026-11-15T21:26:53Z by runner ef9418c0e6b9 (manual).
 
 **Idle since 21:21Z; 352 of 499 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T21:22:47Z by runner ef9418c0e6b9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 21:21Z (no task in progress)
 - **Week:** 64% used, 66.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:22Z, 0 min before this update
+- **Last run:** 21:23Z, 3 min before this update
 - **Keeper:** last ran 21:22Z, next wake 21:42Z
 
 ## Needs attention
@@ -51,38 +51,37 @@ Updated 2026-11-15T21:22:47Z by runner ef9418c0e6b9 (actions).
 | T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T261 | portals and server (harness): the served Confirm route under | BLOCKED | 2 | 4 min | 21:38Z |  |
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z |  |
-| T300 | server and portals: the business portal is served behind the | resync | 3 | 94 min | 21:25Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
+**Requirements verified:** 288 of 733 (39.3%) · partial 288 · unstarted 157
 **Tasks merged (throughput only):** 352 of 499
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 16 | 6 | 35 |
+| accessibility | 12 | 17 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 21 | 34 | 3 | 58 |
-| calls | 14 | 10 | 1 | 25 |
+| calls | 12 | 12 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 22 | 29 | 1 | 52 |
-| intake | 29 | 11 | 3 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
+| fees | 17 | 34 | 1 | 52 |
+| intake | 27 | 13 | 3 | 43 |
+| job-cards | 19 | 5 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
-| lifecycle | 24 | 4 | 0 | 28 |
-| messaging | 26 | 17 | 2 | 45 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 22 | 21 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 13 | 16 | 2 | 31 |
+| privacy | 10 | 19 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 10 | 40 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 1 | 10 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
