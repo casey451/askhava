@@ -53,20 +53,7 @@ async fn main() -> io::Result<()> {
     let limit = askhava_server::request_timeout::RequestTimeout::from_settings(&settings);
     let hooks = (webhooks, voice, pick_keys, stripe);
     let statics = askhava_server::static_files::StaticRoot::from_settings(&settings);
-    let signin = askhava_server::business_signin::ServedSignIn::from_settings(
-        &settings,
-        pool.clone(),
-        std::env::vars(),
-    )?;
-    let signup = askhava_server::business_signup::ServedSignUp::from_settings(
-        pool.clone(),
-        std::env::vars(),
-    )?;
-    let vault = askhava_server::business_portal::vault_from_settings(&settings, std::env::vars())?;
-    let parts = askhava_server::RouterParts::from((hooks, limit, statics))
-        .with_sign_in(signin)
-        .with_sign_up(signup)
-        .with_vault(vault);
+    let parts = business_parts(&settings, &pool, (hooks, limit, statics).into())?;
     let app = askhava_server::build_router(pool, control.router(), parts);
     axum::serve(
         listener,
@@ -74,6 +61,32 @@ async fn main() -> io::Result<()> {
     )
     .with_graceful_shutdown(askhava_server::shutdown_signal()?)
     .await
+}
+
+/// `parts` with the served business sign-in, sign-up, portal vault and Confirm settings from
+/// `settings` and the process environment (T280, T302, T300, T261); each errors as its own
+/// builder does, naming a key, never a value.
+fn business_parts(
+    settings: &askhava_core::api::Settings,
+    pool: &sqlx::PgPool,
+    parts: askhava_server::RouterParts,
+) -> io::Result<askhava_server::RouterParts> {
+    let signin = askhava_server::business_signin::ServedSignIn::from_settings(
+        settings,
+        pool.clone(),
+        std::env::vars(),
+    )?;
+    let signup = askhava_server::business_signup::ServedSignUp::from_settings(
+        pool.clone(),
+        std::env::vars(),
+    )?;
+    let vault = askhava_server::business_portal::vault_from_settings(settings, std::env::vars())?;
+    let confirm = askhava_server::confirm_settings(settings, std::env::vars())?;
+    Ok(parts
+        .with_sign_in(signin)
+        .with_sign_up(signup)
+        .with_vault(vault)
+        .with_confirm_part(confirm))
 }
 
 /// Applies every pending migration over `ASKHAVA_MIGRATION_DATABASE_URL`, never the app

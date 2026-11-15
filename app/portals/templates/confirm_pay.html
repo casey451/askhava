@@ -9,9 +9,12 @@
     form's) sits in the Confirm form, so the press posts it; a failed code puts "Error: " in the
     title and a focused summary linking to the field first. "Can't take it" (PICK-050) stays on
     every page with a form. A tiers quote's pick shows the package chosen and its price before the
-    fee line (PICK-021, PICK-053, T440). -#}
+    fee line (PICK-021, PICK-053, T440). T261 (D-3700, D-3813): the shared form stylesheet first;
+    `card_off` (no card form can be taken, or the fee terms changed) replaces the card section and
+    drops both scripts, keeping the button. -#}
 {% block title %}{% if let Some(step) = code %}{% if step.error.is_some() %}Error: {% endif %}{% endif %}Confirm job {{ job_number }}{% endblock %}
 {% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
 <h1>Confirm job {{ job_number }}</h1>
 {% if paused %}
 <p id="confirm-paused" role="alert">The homeowner has paused this job, so it can't be confirmed now. Nothing was charged.</p>
@@ -45,20 +48,21 @@
 <p id="code-hint">Type the code from our text. Your phone may fill it in for you. It's good for 10 minutes.</p>
 {% if let Some(message) = step.error %}<p id="code-error">Error: {{ message }}</p>
 {% endif %}<p><input type="text" id="code" name="code" value="" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-why code-hint{% if step.error.is_some() %} code-error{% endif %}"{% if step.error.is_some() %} aria-invalid="true"{% endif %}></p>
-{% endif %}<h2>Card</h2>
+{% endif %}{% if let Some(line) = card_off %}<p id="card-off">{{ line }}</p>
+{% else %}<h2>Card</h2>
 <p id="card-hint">{% if paid %}Enter a card. Your card number goes straight to Stripe. {{ askhava_core::api::brand().display_name() }} never sees it.{% else %}You don't need a card for this one. You can save one here for next time.{% endif %}</p>
 <div id="card-element" aria-describedby="card-hint"></div>
 <noscript><p>Turn on JavaScript to enter a card. Stripe's card form needs it.</p></noscript>
 <p><input type="checkbox" id="save-card" name="save_card" value="yes" aria-describedby="save-card-text">
 <label for="save-card">Save this card for next time</label></p>
 <p id="save-card-text">{% if !paid %}Next time it's one tap. {% endif %}{{ authorization }}</p>
-<div id="confirm-status" role="status"></div>
+{% endif %}<div id="confirm-status" role="status"></div>
 <div id="confirm-error" role="alert"></div>
 <button type="submit" id="confirm-button">{{ button }}</button>
 </form>
 <p><a href="/b/picks/{{ pick }}/cant-take">Can't take it</a></p>
 <p><a href="/b">Go back</a></p>
-<script src="https://js.stripe.com/v3/"></script>
+{% if card_off.is_none() %}<script src="https://js.stripe.com/v3/"></script>
 <script type="module" src="/static/portals/confirm_pay.js"></script>
-{% endif %}
+{% endif %}{% endif %}
 {% endblock %}
