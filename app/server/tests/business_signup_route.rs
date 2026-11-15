@@ -32,7 +32,9 @@ use askhava_licensing::api::{
     Agency, HolderInputs, PestRecordCategory, RECORD_HEADER, bound_roc_number, holder_for,
     import_city_list, import_roc_list,
 };
-use askhava_messaging::api::{DailyLimit, MailboxCodeSender, MailboxKind, SignInLinkSender};
+use askhava_messaging::api::{
+    DailyLimit, MailboxCodeSender, MailboxKind, SignInLinkSender, unsent_business_mailboxes,
+};
 use askhava_portals::api::{
     CODE_SEND_ROUTE, CONSENT_AGAIN, ChannelPost, CodeProblem, CookieJar, EMAIL_CHECK_ROUTE,
     EMAIL_RESEND_ROUTE, IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NUMBER_OLD_ROUTE, SERVICE_AREA_ROUTE,
@@ -970,10 +972,12 @@ fn code_in(text: &str) -> String {
     words.find(|w| w.len() == 6).expect("a code").to_owned()
 }
 
-/// The `messaging.email_outbox` rows queued so far.
-async fn outbox(pool: &PgPool) -> i64 {
-    let q = sqlx::query_scalar("SELECT count(*) FROM messaging.email_outbox");
-    q.fetch_one(pool).await.expect("outbox")
+/// The business mailboxes with a queued `messaging.email_outbox` row not sent: with every
+/// queued row sent at once, a row queued without a provider call would show here.
+async fn outbox(pool: &PgPool) -> usize {
+    let mut conn = pool.acquire().await.expect("connection");
+    let unsent = unsent_business_mailboxes(&mut conn, Timestamp::now()).await;
+    unsent.expect("outbox").len()
 }
 
 /// The email code `POST` with `code` from browser `b` holding `binding`: status, `Set-Cookie`
