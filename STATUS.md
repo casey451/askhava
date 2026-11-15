@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T18:44:57Z by runner 5316a602ce94 (actions).
+Updated 2026-11-15T18:45:54Z by runner 5316a602ce94 (actions).
 
 **Building: T464 in progress since 18:33Z; 351 of 482 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T18:44:57Z by runner 5316a602ce94 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T464 claimed 18:33Z, lease until 21:33Z
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:44Z, 0 min before this update
+- **Last run:** 18:45Z, 0 min before this update
 - **Keeper:** last ran 18:44Z, next wake 21:35Z
 
 ## Needs attention
@@ -60,7 +60,6 @@ Updated 2026-11-15T18:44:57Z by runner 5316a602ce94 (actions).
 - 19:52Z Plan: stage-5 readers and splits, CON-022 purge via definer functions, Spanish switch gates, replay functions (T475–T484, D-3753) (#798)
 - 19:20Z Harness: re-point the stale "second opt-out confirmation" mutant after T357 (D-3751) (#796)
 - 18:53Z Plan: T437 re-verification after a false FIX-MAIN failure; T474 so FIX-MAIN blames only what it reverted (D-3752) (#797)
-- 18:45Z Plan: email sending wired, pick-end texts complete, Can't-take route, T121 unblocked (T469–T473, D-3750) (#794)
 
 ## Progress (requirements verified)
 
