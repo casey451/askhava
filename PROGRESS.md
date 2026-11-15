@@ -5420,3 +5420,4 @@
 - 2026-11-15T17:22:17Z runner 35177f91e0b2 (actions): {"T497": "None -> QUEUED"}
 - 2026-11-15T17:35:53Z runner 35177f91e0b2 (actions): {"T462": "QUEUED -> IN_PROGRESS"}; T462 estimated 1.7M tokens (calibrated); week has 70.0M left (no five-hour budget, D-3056) (session_reading 2026-11-15T16:52:43Z (week)); claimed
 - 2026-11-15T17:36:10Z runner 35177f91e0b2 (actions): {}
+- 2026-11-15T17:37:18Z runner 35177f91e0b2 (actions): {"T495": "QUEUED -> IN_PROGRESS"}; T495 estimated 1.2M tokens (calibrated); week has 68.3M left (no five-hour budget, D-3056) after 1.7M still running in another lane (session_reading 2026-11-15T16:52:43Z (week)); claimed
