@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-15T07:15:36Z by runner 303b9e446e6d (actions).
+Updated 2026-11-15T07:15:57Z by runner 303b9e446e6d (actions).
 
-**Building: T454 in progress since 06:21Z; 345 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 07:15Z; 345 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 345 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T454 claimed 06:21Z, lease until 09:21Z
+- **Lane:** idle since 07:15Z (no task in progress)
 - **Week:** 58% used, 80.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:12Z, 3 min before this update
 - **Keeper:** last ran 07:11Z, next wake 09:24Z
@@ -18,6 +18,7 @@ Updated 2026-11-15T07:15:36Z by runner 303b9e446e6d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T454 | server: the served business portal end to end (TD-BIZ-42's r | MERGE_PENDING | 2 | 53 min | 07:15Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | done | 2 | 50 min | 06:16Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T461 | server: business sign-up's service area, email code and acti | BLOCKED | 3 | 49 min | 06:10Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | check_failed | 1 | 46 min | 04:47Z |  |
@@ -27,7 +28,7 @@ Updated 2026-11-15T07:15:36Z by runner 303b9e446e6d (actions).
 | T261 | portals and server (harness): the served Confirm route under | BLOCKED | 3 | 110 min | 02:57Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z |  |
 | T460 | server: business sign-up's identity steps are served (code s | done | 2 | 68 min | 01:08Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
-| T454 | server: the served business portal end to end (TD-BIZ-42's r | check_failed | 1 | 12 min | 00:56Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
+| T454 | server: the served business portal end to end (TD-BIZ-42's r | check_failed | 1 | 12 min | 00:56Z |  |
 | T486 | businesses and catalog: the free-first-win join dates: a pub | done | 1 | 65 min | 23:37Z |  |
 | T451 | quotes, picks, jobs, payments and server: the "Your numbers" | done | 1 | 41 min | 23:30Z |  |
 | T445 | runner (harness): a failed nightly on an older head keeps th | done | 1 | 24 min | 23:29Z |  |
@@ -140,7 +141,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T454 (lease until 2026-11-15T09:21:57Z)
 
 ## Last usage reading
-- {"task": "T493", "at": "2026-11-15T06:16:34Z", "cache_creation_input_tokens": 128799, "input_tokens": 97, "cache_read_input_tokens": 1481731, "output_tokens": 21545}
+- {"task": "T454", "at": "2026-11-15T07:15:35Z", "output_tokens": 24023, "input_tokens": 138, "cache_read_input_tokens": 2852817, "cache_creation_input_tokens": 120936}
