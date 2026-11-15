@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T14:59:11Z by runner 2c7436fa53ab (actions).
+Updated 2026-11-15T15:03:57Z by runner ddc4e393d44e (actions).
 
 **Idle since 14:58Z; 347 of 481 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-15T14:59:11Z by runner 2c7436fa53ab (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 14:58Z (no task in progress)
 - **Week:** 61% used, 74.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:59Z, 0 min before this update
+- **Last run:** 14:59Z, 4 min before this update
 - **Keeper:** last ran 14:59Z, next wake 15:19Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 29 problem(s) on tasks still to run (+118 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+114 on DONE tasks); first: T399: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -68,12 +68,12 @@ Updated 2026-11-15T14:59:11Z by runner 2c7436fa53ab (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 347 of 480
+**Requirements verified:** 302 of 733 (41.2%) · partial 274 · unstarted 157
+**Tasks merged (throughput only):** 347 of 481
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 14 | 15 | 6 | 35 |
+| accessibility | 13 | 16 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 18 | 37 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
