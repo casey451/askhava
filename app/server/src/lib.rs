@@ -20,7 +20,8 @@ use askhava_core::api::{
 use askhava_intake::api::JobTextKeys;
 use askhava_payments::api::{Minter, stripe_webhook_routes};
 use askhava_portals::api::{
-    PickCodeKeys, feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
+    ApprovalSecret, ConfirmRoute, ConfirmSettings, PickCodeKeys, SecretAnswer, confirm_routes,
+    feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
 };
 use askhava_privacy::api::{SessionMint, Vault};
 use axum::Router;
@@ -106,13 +107,15 @@ pub struct RouterParts {
     business: BusinessParts,
 }
 
-/// The business pages' parts: the served sign-in (T280), sign-up (T302) and the portal's vault
-/// (T300); each absent part serves less (sign-in, sign-up) or reads the webhooks' vault (portal).
+/// The business pages' parts: the served sign-in (T280), sign-up (T302), the portal's vault
+/// (T300) and the Confirm route's settings (T261); each absent part serves less (sign-in,
+/// sign-up), reads the webhooks' vault (portal) or charges nothing (Confirm).
 #[derive(Default)]
 struct BusinessParts {
     signin: Option<business_signin::ServedSignIn>,
     signup: Option<business_signup::ServedSignUp>,
     vault: Option<Arc<Vault>>,
+    confirm: Option<ConfirmSettings>,
 }
 
 impl RouterParts {
@@ -136,6 +139,33 @@ impl RouterParts {
     pub fn with_vault(mut self, vault: Option<Vault>) -> Self {
         self.business.vault = vault.map(Arc::new);
         self
+    }
+
+    /// Adds the Confirm route's settings (T261, D-3813, D-3717): Stripe's publishable key, the
+    /// launch instant and `ASKHAVA_ID_SECRET`, which [`confirm_settings`] reads. Without them the
+    /// Confirm page shows "Card payments can't be taken right now." and a press charges nothing.
+    #[must_use]
+    pub fn with_confirm_settings(
+        mut self,
+        publishable_key: String,
+        launch: jiff::Timestamp,
+        id_secret: SecretString,
+    ) -> Self {
+        self.business.confirm = Some(ConfirmSettings {
+            publishable_key,
+            launch,
+            secret: id_secret,
+        });
+        self
+    }
+
+    /// [`Self::with_confirm_settings`] with [`confirm_settings`]'s answer; `None` adds nothing.
+    #[must_use]
+    pub fn with_confirm_part(self, part: Option<(String, jiff::Timestamp, SecretString)>) -> Self {
+        match part {
+            Some((key, launch, secret)) => self.with_confirm_settings(key, launch, secret),
+            None => self,
+        }
     }
 }
 
@@ -173,17 +203,46 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
     }
 }
 
+/// FEE-014, D-2076, D-3717: the Confirm route's bank-approval client secret, from Stripe's answer
+/// to the pick's PaymentIntent create under its original key (the same intent comes back).
+struct StripeApproval(askhava_adapters::api::StripePayments);
+
+impl ApprovalSecret for StripeApproval {
+    fn approval_secret<'a>(
+        &'a self,
+        key: &'a askhava_adapters::api::IdempotencyKey,
+        customer: &'a str,
+        (cents, pick): (u32, &'a str),
+    ) -> SecretAnswer<'a> {
+        Box::pin(async move {
+            let made = self.0.create_unconfirmed_intent(key, customer, cents, pick);
+            let made = made.await.ok()?;
+            Some(secrecy::ExposeSecret::expose_secret(&made.client_secret).to_owned())
+        })
+    }
+}
+
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
-/// and the business portal (T300) over `pool`, always (`business_portal::served`).
+/// the business portal (T300) over `pool`, always (`business_portal::served`), and the Confirm
+/// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none.
 fn business_pages(
     parts: BusinessParts,
     pool: PgPool,
-    (webhooks, voice): (
-        Option<&Arc<inbound_text::Webhooks>>,
-        Option<&Arc<inbound_voice::VoiceHooks>>,
+    (webhooks, voice, stripe): (
+        &Option<Arc<inbound_text::Webhooks>>,
+        &Option<Arc<inbound_voice::VoiceHooks>>,
+        &Option<release_sink::StripeHooks>,
     ),
 ) -> Router {
-    let portal = business_portal::served(pool, parts.vault, (webhooks, voice));
+    let (webhooks, voice) = (webhooks.as_ref(), voice.as_ref());
+    let confirm = stripe.as_ref().map_or_else(Router::new, |hooks| {
+        confirm_routes(ConfirmRoute {
+            hooks: Arc::clone(hooks),
+            settings: parts.confirm.clone(),
+            approval: Arc::new(StripeApproval(hooks.stripe.clone())),
+        })
+    });
+    let portal = business_portal::served(pool, parts.vault, (webhooks, voice)).merge(confirm);
     (parts.signin)
         .map_or_else(Router::new, business_signin::ServedSignIn::into_router)
         .merge(
@@ -224,7 +283,9 @@ fn business_pages(
 /// "Nothing was picked" lines. `stripe` ([`release_sink::stripe_webhook`]) adds `payments`' Stripe
 /// webhook route, whose cleared picks [`release_sink::PickReleaser`] settles, mints and releases
 /// (PICK-022, SEC-039, D-1480, D-1739); serve with connect info, so the socket peer is known
-/// (SEC-040). `None` adds none. Inside the request-ID and security-headers layers, every route
+/// (SEC-040). `None` adds none. The business Confirm route (`portals::api::confirm_routes`,
+/// T261, D-3813) is merged from the same Stripe hooks, with the parts' Confirm settings
+/// ([`RouterParts::with_confirm_settings`]). Inside the request-ID and security-headers layers, every route
 /// runs under the whole-request time limit (`request_timeout`, 503 with `Retry-After`, D-1870)
 /// and, innermost, the panic layer (500 naming no panic message, D-2208).
 pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterParts>) -> Router {
@@ -235,7 +296,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         business,
     } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
-    let business = business_pages(business, pool.clone(), (webhooks.as_ref(), voice.as_ref()));
+    let business = business_pages(business, pool.clone(), (&webhooks, &voice, &stripe));
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
@@ -280,6 +341,39 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .layer(PropagateRequestIdLayer::x_request_id())
         .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
         .layer(axum::middleware::from_fn(security_headers))
+}
+
+/// The Confirm route's settings part from `settings` and `pairs` (T261, D-3813, D-3717): the
+/// publishable key, the launch date and `ASKHAVA_ID_SECRET`, all three or `None` in dev and CI;
+/// in the test and live projects a missing one is an error naming its key, so the server does
+/// not start without them.
+///
+/// # Errors
+/// A missing key in test or live, named, never a value.
+pub fn confirm_settings<I>(
+    settings: &Settings,
+    pairs: I,
+) -> io::Result<Option<(String, jiff::Timestamp, SecretString)>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let secret = pairs
+        .into_iter()
+        .find(|(k, v)| k == "ASKHAVA_ID_SECRET" && !v.trim().is_empty())
+        .map(|(_, v)| SecretString::from(v.trim().to_owned()));
+    let key = settings.stripe_publishable_key().map(str::to_owned);
+    let missing = match (key, settings.launch_date(), secret) {
+        (Some(key), Some(launch), Some(secret)) => return Ok(Some((key, launch, secret))),
+        (None, _, _) => "ASKHAVA_STRIPE_PUBLISHABLE_KEY",
+        (_, None, _) => "ASKHAVA_LAUNCH_DATE",
+        (_, _, None) => "ASKHAVA_ID_SECRET",
+    };
+    match settings.environment() {
+        Environment::Dev | Environment::Ci => Ok(None),
+        Environment::Test | Environment::Live => {
+            Err(io::Error::other(format!("missing {missing}")))
+        }
+    }
 }
 
 /// The vault's sealing keys, named as in `docs/architecture.md` (PRIV-002, PRIV-024).

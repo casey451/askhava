@@ -34,24 +34,50 @@
 //! line then reads that price; [`confirm_page_with_code`] is it with no package.
 
 use std::net::IpAddr;
+use std::pin::Pin;
+use std::sync::Arc;
 
 use askama::Template;
 use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
-use askhava_businesses::api::members;
-use askhava_intake::api::Admission;
+use askhava_businesses::api::{ConfirmTerms, confirm_assent_line, members, record_confirm_terms};
+use askhava_intake::api::{Admission, paused_by_homeowner};
+use askhava_jobs::api::job_number;
 use askhava_messaging::api::{NoticeKind, notice_log, record_first_open};
-use askhava_payments::api::{AUTHORIZATION_TEXT, ChargeOutcome, Fee, Tier};
-use askhava_picks::api::ChosenTier;
+use askhava_ops::api::Actor;
+use askhava_payments::api::{
+    AUTHORIZATION_TEXT, ChargeError, ChargeOutcome, ConfirmError, Fee, FeeJob, FeeMode, FeeQuote,
+    FreeWinError, INTENT_ACTION, IntentStripe, PeriodJob, PickNow, PickedFee, Press, RecurringCap,
+    ReleaseSink, Service, StoredPickFee, StripeWebhook, Tier, VisitTier, Waiver, confirm_and_pay,
+    end_intent_unless_charging, ensure_customer, fee_at_pick, fee_terms_in_force, intent_label,
+    may_confirm as fee_terms_accepted, open_intent, pick_fee,
+};
+use askhava_picks::api::{Backup, ChosenTier, cant_take_job, end_for_fee_terms};
+use axum::Router;
+use axum::extract::{FromRef, Path, State};
+use axum::http::header::{ACCEPT, VARY};
+use axum::http::{HeaderMap, HeaderValue, StatusCode};
+use axum::middleware::{from_fn, from_fn_with_state};
+use axum::response::{Html, IntoResponse, Json, Response};
+use axum::routing::get;
+use axum_extra::extract::CookieJar;
 use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::action_links::{ActionKind, fresh_code_needed};
-use crate::business_auth::{BusinessPrincipal, CodeAddress, CodeTo, Need};
+use crate::business_auth::{
+    BusinessPrincipal, CodeAddress, CodeTo, Need, SIGNIN_ROUTE, business_principal,
+};
 use crate::business_portal::inbox_shared;
+use crate::confirm_waiver::{
+    ConfirmFee, ConfirmWaiverError, ConfirmedPick, decide_at_confirm, release_no_fee,
+};
 use crate::limits::{admit_code_send, admit_code_try};
-use crate::session::PortalsError;
+use crate::security::{
+    CsrfField, CsrfForm, StripeConfirmCsp, WebSecurity, no_store, refuse_cross_site,
+};
+use crate::session::{PortalsError, csrf_token};
 
 /// The one refund line every Confirm page shows (PICK-021).
 pub const REFUND_LINE: &str = "Refund if you can't reach them: 2 call attempts at least 3 hours \
@@ -111,6 +137,7 @@ struct ConfirmView<'a> {
     stripe_key: &'a str,
     code: Option<CodeStep>,
     package: Option<String>,
+    card_off: Option<&'static str>,
 }
 
 /// The page's name for the tier (FEE-001).
@@ -175,6 +202,16 @@ pub fn confirm_page_with_tier(
     code: Option<CodeStep>,
     package: Option<&ChosenTier>,
 ) -> Result<String, askama::Error> {
+    render_page(facts, (code, package), None)
+}
+
+/// The page, with `card_off` (the served route's [`CARD_OFF_LINE`] or [`FEE_TERMS_LINE`], D-3813)
+/// shown in place of the card section and both scripts dropped.
+fn render_page(
+    facts: &ConfirmFacts,
+    (code, package): (Option<CodeStep>, Option<&ChosenTier>),
+    card_off: Option<&'static str>,
+) -> Result<String, askama::Error> {
     let (tier, no_fee_line) = match (facts.fee, facts.waived) {
         (Fee::FeeFree { .. }, _) => ("", FEE_FREE_LINE),
         (Fee::Charged { tier, .. }, None) => (tier_name(tier), ""),
@@ -204,6 +241,7 @@ pub fn confirm_page_with_tier(
         stripe_key: &facts.stripe_key,
         code,
         package: package.map(|p| format!("The homeowner chose: {}, {}.", p.name, money(p.cents))),
+        card_off,
     }
     .render()
 }
@@ -516,6 +554,674 @@ pub async fn check_confirm_code<V: VerifyAdapter + Send + Sync>(
         Err(AdapterError::Vendor { status, .. }) if status < 500 => CodeCheck::Ended,
         Err(_) => CodeCheck::Unchecked,
     })
+}
+
+/// The served Confirm route (D-1480, D-3813, T261): the page, its `Accept: application/json`
+/// state and the press.
+pub const CONFIRM_ROUTE: &str = "/b/picks/{pick}/confirm";
+
+/// D-3813: shown in place of the card form when the route has no settings part (dev and CI
+/// without the keys, the door tests); a press then charges nothing.
+pub const CARD_OFF_LINE: &str = "Card payments can't be taken right now.";
+
+/// D-1871, D-3722: shown in place of the card form when the fee mode in force differs from the
+/// one the pick's fee was fixed under; no PaymentIntent is opened.
+pub const FEE_TERMS_LINE: &str = "The fee terms changed after the homeowner picked you, so you \
+can't confirm this one. Nothing was charged.";
+
+/// CON-029: the press reply for a job the homeowner paused, said only when no charge attempt
+/// can still succeed.
+const PAUSED_LINE: &str =
+    "The homeowner has paused this job, so it can't be confirmed now. Nothing was charged.";
+
+/// D-1871, D-3722: the press reply when the fee terms changed: the pick ended with no fee.
+const FEE_TERMS_ENDED: &str = "The fee terms changed after the homeowner picked you, so you \
+can't confirm this one. Nothing was charged and this pick is now closed.";
+
+/// D-3813: the press reply without the settings part.
+const CARD_OFF_REPLY: &str =
+    "Card payments can't be taken right now. Nothing was charged. Try again later.";
+
+/// SEC-027, D-3717: a shared inbox needs a fresh code, which this page can't send yet.
+const CODE_LINE: &str = "This inbox is shared, so you need a code sent to your own phone to \
+confirm. This page can't send that code. Nothing was charged.";
+
+/// FEE-007, FEE-015: the business has not accepted the card authorization the terms need.
+const AUTHORIZATION_LINE: &str = "Accept the updated card authorization in your portal, then \
+confirm. Nothing was charged.";
+
+/// FEE-014: a paid press that carried no card.
+const NO_CARD_LINE: &str =
+    "Enter a card, then press \"Confirm and pay\" again. Nothing was charged.";
+
+/// FEE-016: the attempt's state when nothing is charging and the pick still waits.
+const NOT_CHARGED_LINE: &str = "Nothing was charged. Check your card and try again.";
+
+/// FEE-012, PICK-022: a $0 Confirm, released through the production sink.
+const CONFIRMED_LINE: &str =
+    "Confirmed. No fee is due. The homeowner's details are in your portal.";
+
+/// The served route's settings part (D-3813, D-3717): Stripe's publishable key, the launch
+/// instant and `ASKHAVA_ID_SECRET` (the idempotency and entity-key secret), which `main` builds.
+#[derive(Clone)]
+pub struct ConfirmSettings {
+    /// `pk_test_…` or `pk_live_…`, public by design.
+    pub publishable_key: String,
+    /// The launch instant of FEE-010's launch window.
+    pub launch: Timestamp,
+    /// `ASKHAVA_ID_SECRET`.
+    pub secret: SecretString,
+}
+
+/// What [`ApprovalSecret::approval_secret`] answers: the client secret, none on any failure.
+pub type SecretAnswer<'a> = Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>>;
+
+/// FEE-014, D-2076, D-3717: the client secret of a bank approval, which `IntentStripe` does not
+/// give: `server` reads it from Stripe's answer to the pick's PaymentIntent create under its
+/// original key (Stripe replays the same answer); only `server` may name the Stripe client.
+pub trait ApprovalSecret: Send + Sync {
+    /// The client secret for `intent.1`'s PaymentIntent of `intent.0` cents, created under
+    /// `key` for `customer`.
+    fn approval_secret<'a>(
+        &'a self,
+        key: &'a IdempotencyKey,
+        customer: &'a str,
+        intent: (u32, &'a str),
+    ) -> SecretAnswer<'a>;
+}
+
+/// The served route's parts: the Stripe webhook's hooks (pool, Stripe client, release sink,
+/// clock; D-3744's pattern) and the optional settings part (D-3813).
+pub struct ConfirmRoute<S, R> {
+    /// The Stripe webhook's state.
+    pub hooks: Arc<StripeWebhook<S, R>>,
+    /// `main`'s settings part; none serves the page with [`CARD_OFF_LINE`] and charges nothing.
+    pub settings: Option<ConfirmSettings>,
+    /// The bank approval's client secret.
+    pub approval: Arc<dyn ApprovalSecret>,
+}
+
+struct Served<S, R> {
+    route: Arc<ConfirmRoute<S, R>>,
+    security: WebSecurity,
+}
+
+impl<S, R> Clone for Served<S, R> {
+    fn clone(&self) -> Self {
+        Self {
+            route: Arc::clone(&self.route),
+            security: self.security.clone(),
+        }
+    }
+}
+
+impl<S, R> FromRef<Served<S, R>> for WebSecurity {
+    fn from_ref(served: &Served<S, R>) -> Self {
+        served.security.clone()
+    }
+}
+
+/// PICK-021, FEE-016, SEC-012, SEC-019, SEC-034, SEC-042, D-3813: `GET` and `POST`
+/// [`CONFIRM_ROUTE`] behind `no-store` and the cross-site refusal; only the page carries
+/// [`StripeConfirmCsp`].
+pub fn confirm_routes<S, R>(route: ConfirmRoute<S, R>) -> Router
+where
+    S: IntentStripe + Send + Sync + 'static,
+    R: ReleaseSink,
+{
+    let security = WebSecurity::new(route.hooks.pool.clone(), Arc::clone(&route.hooks.clock));
+    let state = Served {
+        route: Arc::new(route),
+        security: security.clone(),
+    };
+    Router::new()
+        .route(CONFIRM_ROUTE, get(load::<S, R>).post(press::<S, R>))
+        .with_state(state)
+        .layer(from_fn(no_store))
+        .layer(from_fn_with_state(security, refuse_cross_site))
+}
+
+/// SEC-004: no business person: 401 with the sign-in link, no detail.
+fn signed_out() -> Response {
+    let page = format!(
+        "<!doctype html><html lang=\"en\"><head><title>Sign in</title></head><body><main>\
+         <h1>Sign in to your business account</h1><p><a href=\"{SIGNIN_ROUTE}\">Sign in</a> to \
+         see this page.</p></main></body></html>"
+    );
+    (StatusCode::UNAUTHORIZED, Html(page)).into_response()
+}
+
+/// SEC-019: the one not-found answer for another business's, a "Cards and quotes" member's or an
+/// unknown pick.
+fn not_found() -> Response {
+    let page = format!(
+        "<!doctype html><html lang=\"en\"><head><title>Page not found</title></head><body><main>\
+         <h1>We can't find that page</h1><p>The link may be old, or it may be for a different \
+         business account. <a href=\"{PORTAL_LINK}\">Go to your business home</a>.</p>\
+         </main></body></html>"
+    );
+    (StatusCode::NOT_FOUND, Html(page)).into_response()
+}
+
+/// A failed read or write: a bare 500, logged once without values (R5).
+fn failed() -> Response {
+    tracing::warn!("confirm route failed");
+    StatusCode::INTERNAL_SERVER_ERROR.into_response()
+}
+
+/// The pick as its own business sees it: the person and the fee fixed at the pick.
+struct Mine {
+    who: BusinessPrincipal,
+    pick: Uuid,
+    fee: StoredPickFee,
+}
+
+/// PICK-033, SEC-004, SEC-019: the signed-in owner or "Confirm and billing" member of `pick`'s
+/// business, else the answer to send.
+async fn mine(
+    pool: &PgPool,
+    jar: &CookieJar,
+    pick: &str,
+    now: Timestamp,
+) -> Result<Mine, Box<Response>> {
+    let mut db = pool.acquire().await.map_err(|_| Box::new(failed()))?;
+    let who = match business_principal(&mut db, jar, now).await {
+        Ok(Some(who)) => who,
+        Ok(None) => return Err(Box::new(signed_out())),
+        Err(_) => return Err(Box::new(failed())),
+    };
+    let Ok(pick) = Uuid::try_parse(pick) else {
+        return Err(Box::new(not_found()));
+    };
+    let fee = pick_fee(&mut db, pick)
+        .await
+        .map_err(|_| Box::new(failed()))?;
+    match fee.filter(|f| may_confirm(Some(&who), f.business.0)) {
+        Some(fee) => Ok(Mine { who, pick, fee }),
+        None => Err(Box::new(not_found())),
+    }
+}
+
+/// FEE-017, CON-029: in `tx`, the pick's job while it waits for Confirm (row locked) and whether
+/// the homeowner paused it; `None` once it moved on.
+async fn waiting(tx: &mut PgConnection, mine: &Mine) -> Result<Option<(Uuid, bool)>, ()> {
+    let job = cant_take_job(tx, mine.pick, mine.fee.business.0).await;
+    let Some(job) = job.map_err(|_| ())? else {
+        return Ok(None);
+    };
+    let paused = paused_by_homeowner(tx, job).await.map_err(|_| ())?;
+    Ok(Some((job, paused)))
+}
+
+/// A reply with no new press ID and no client secret.
+const fn said(
+    state: &'static str,
+    message: &'static str,
+    link: Option<&'static str>,
+) -> PressReply {
+    PressReply {
+        state,
+        message,
+        next_press: None,
+        client_secret: None,
+        link,
+    }
+}
+
+/// FEE-016, CON-029, D-3813: the attempt's state with no new attempt, in `tx`, which the caller
+/// rolls back: `end_intent_unless_charging` locks the pick's PaymentIntent row and re-reads its
+/// attempts, so "Nothing was charged" is said only while no attempt can still succeed.
+async fn attempt_state(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    at: (Option<(Uuid, bool)>, Timestamp),
+) -> Result<PressReply, ()> {
+    let idle = end_intent_unless_charging(tx, pick, at.1).await;
+    let fresh = Uuid::new_v4();
+    Ok(match (idle.map_err(|_| ())?, at.0) {
+        (false, _) => press_reply(&ChargeOutcome::Pending, fresh, None),
+        (true, Some((_, true))) => said("ended", PAUSED_LINE, None),
+        (true, Some((_, false))) => PressReply {
+            next_press: Some(fresh),
+            ..said("declined", NOT_CHARGED_LINE, None)
+        },
+        (true, None) => press_reply(&ChargeOutcome::MovedOn, fresh, None),
+    })
+}
+
+/// Whether the request asks for the attempt's state as JSON (D-3813).
+fn wants_json(headers: &HeaderMap) -> bool {
+    headers
+        .get(ACCEPT)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|v| v.contains("application/json"))
+}
+
+/// `GET` [`CONFIRM_ROUTE`] (PICK-021, CON-029, FEE-047, OPS-037, D-3813): the page, or with
+/// `Accept: application/json` the attempt's state, which opens nothing and stores nothing.
+async fn load<S, R>(
+    State(served): State<Served<S, R>>,
+    jar: CookieJar,
+    headers: HeaderMap,
+    Path(pick): Path<String>,
+) -> Response
+where
+    S: IntentStripe + Send + Sync + 'static,
+    R: ReleaseSink,
+{
+    let route = &served.route;
+    let now = route.hooks.clock.now();
+    let mine = match mine(&route.hooks.pool, &jar, &pick, now).await {
+        Ok(mine) => mine,
+        Err(answer) => return *answer,
+    };
+    let answer = if wants_json(&headers) {
+        state_json(&route.hooks.pool, &mine, now).await
+    } else {
+        page(route, &mine, &jar, now).await
+    };
+    let mut response = answer.unwrap_or_else(|()| failed());
+    response
+        .headers_mut()
+        .insert(VARY, HeaderValue::from_static("accept"));
+    response
+}
+
+/// D-3813: the attempt's state in the press reply's shape, never a client secret; every write
+/// of the read is rolled back.
+async fn state_json(pool: &PgPool, mine: &Mine, now: Timestamp) -> Result<Response, ()> {
+    let mut tx = pool.begin().await.map_err(|_| ())?;
+    let at = waiting(&mut tx, mine).await?;
+    let reply = attempt_state(&mut tx, mine.pick, (at, now)).await?;
+    tx.rollback().await.map_err(|_| ())?;
+    Ok(Json(reply).into_response())
+}
+
+/// What the page shows beside the facts: the line in place of the card section and a waiver.
+type Shown = (Option<&'static str>, Option<NoFee>);
+
+/// The page for `mine` (PICK-021, CON-029, OPS-037): a waiting pick stamps the pick notice's
+/// first opening; a paused one gets the refusal; one that moved on shows the attempt's state.
+async fn page<S, R>(
+    route: &ConfirmRoute<S, R>,
+    mine: &Mine,
+    jar: &CookieJar,
+    now: Timestamp,
+) -> Result<Response, ()>
+where
+    S: IntentStripe + Send + Sync,
+    R: ReleaseSink,
+{
+    let pool = &route.hooks.pool;
+    let mut tx = pool.begin().await.map_err(|_| ())?;
+    let at = waiting(&mut tx, mine).await?;
+    let (shown, paused) = match at {
+        Some((job, false)) => {
+            let member = mine.who.member();
+            let opened = open_confirm_page(&mut tx, (mine.fee.business.0, job, member), now);
+            opened.await.map_err(|_| ())?;
+            tx.commit().await.map_err(|_| ())?;
+            (card_section(route, mine, now).await?, false)
+        }
+        Some((_, true)) => ((None, None), true),
+        None => {
+            let reply = attempt_state(&mut tx, mine.pick, (None, now)).await?;
+            tx.rollback().await.map_err(|_| ())?;
+            ((Some(reply.message), None), false)
+        }
+    };
+    let mut db = pool.acquire().await.map_err(|_| ())?;
+    let number = job_number(&mut db, mine.fee.job).await.map_err(|_| ())?;
+    let key = route.settings.as_ref().map(|s| s.publishable_key.clone());
+    let csrf = csrf_token(jar).ok_or(())?;
+    served_page(
+        mine,
+        (number, paused),
+        shown,
+        (csrf, key.unwrap_or_default()),
+    )
+}
+
+/// The tier a stored fee of `cents` is (FEE-001).
+fn tier_of(cents: u64) -> Option<Tier> {
+    [Tier::Small, Tier::Medium, Tier::Large]
+        .into_iter()
+        .find(|t| t.cents() == cents)
+}
+
+/// FEE-005, D-1871: the fee fixed at the pick, as the page shows it; no stored basis exists, so
+/// the page shows none (D-3717).
+fn shown_fee(fee: &StoredPickFee) -> Fee {
+    match tier_of(fee.cents).filter(|_| fee.charged) {
+        Some(tier) => Fee::Charged { basis: None, tier },
+        None => Fee::FeeFree { basis: None },
+    }
+}
+
+/// FEE-005, D-3717: the stored fee as the [`PickedFee`] `waive_at_confirm` reads (its amount
+/// only), rebuilt through `fee_at_pick` with the stored tier as a flat edit.
+fn picked_fee(fee: &StoredPickFee) -> Option<PickedFee> {
+    let job = PeriodJob {
+        job: FeeJob {
+            diagnostic_visit: false,
+            visit_tier: VisitTier::DEFAULT,
+            fee_free: !fee.charged,
+        },
+        service: Service::NotRecurring,
+        cap: RecurringCap::DEFAULT,
+    };
+    let tier = tier_of(fee.cents);
+    if fee.charged && tier.is_none() {
+        return None;
+    }
+    fee_at_pick(FeeQuote::Fixed(fee.cents), None, job, FeeMode::Flat, tier).ok()
+}
+
+/// Renders the served page with the Confirm route's CSP marker (SEC-012, D-3813).
+fn served_page(
+    mine: &Mine,
+    (job_number, paused): (i64, bool),
+    (card_off, waived): Shown,
+    (csrf, stripe_key): (String, String),
+) -> Result<Response, ()> {
+    let facts = ConfirmFacts {
+        pick: mine.pick,
+        job_number,
+        fee: shown_fee(&mine.fee),
+        waived,
+        terms_version: mine.fee.terms_version,
+        paused,
+        press: Uuid::new_v4(),
+        csrf,
+        stripe_key,
+    };
+    let html = render_page(&facts, (None, None), card_off).map_err(|_| ())?;
+    Ok((StripeConfirmCsp, Html(html)).into_response())
+}
+
+/// D-1871, D-3722, D-3813, FEE-047: the fee-terms line when the mode in force differs from the
+/// pick's (no PaymentIntent), the card-off line without settings or when Stripe can't be
+/// reached; else the $0 decision as it stands (rolled back) and, for a fee, the pick's one
+/// PaymentIntent opened.
+async fn card_section<S, R>(
+    route: &ConfirmRoute<S, R>,
+    mine: &Mine,
+    now: Timestamp,
+) -> Result<Shown, ()>
+where
+    S: IntentStripe + Send + Sync,
+    R: ReleaseSink,
+{
+    let pool = &route.hooks.pool;
+    let mut db = pool.acquire().await.map_err(|_| ())?;
+    let terms = fee_terms_in_force(&mut db).await.map_err(|_| ())?;
+    drop(db);
+    if terms.mode() != mine.fee.mode {
+        return Ok((Some(FEE_TERMS_LINE), None));
+    }
+    let Some(settings) = &route.settings else {
+        return Ok((Some(CARD_OFF_LINE), None));
+    };
+    let waived = waiver_now(pool, mine, settings).await?;
+    if waived.is_some() || !mine.fee.charged {
+        return Ok((None, waived));
+    }
+    let press = press_of(mine, "", Uuid::nil()).ok_or(())?;
+    let (stripe, secret) = (&route.hooks.stripe, &settings.secret);
+    let opened = match ensure_customer(pool, stripe, secret, mine.fee.business).await {
+        Ok(_) => open_intent(pool, stripe, secret, &press, now).await.is_ok(),
+        Err(_) => false,
+    };
+    Ok((if opened { None } else { Some(CARD_OFF_LINE) }, None))
+}
+
+/// FEE-010, FEE-013: the waiver a press would record now, decided in a rolled-back transaction.
+async fn waiver_now(
+    pool: &PgPool,
+    mine: &Mine,
+    settings: &ConfirmSettings,
+) -> Result<Option<NoFee>, ()> {
+    let picked = picked_fee(&mine.fee).ok_or(())?;
+    let mut tx = pool.begin().await.map_err(|_| ())?;
+    let decided = decide_at_confirm(
+        &mut tx,
+        &settings.secret,
+        confirmed(mine, &picked),
+        Some(settings.launch),
+    );
+    let decided = decided.await;
+    tx.rollback().await.map_err(|_| ())?;
+    Ok(match decided {
+        Ok(ConfirmFee::NoFee(Waiver::FreeFirstWin { .. })) => Some(NoFee::FreeFirstWin),
+        Ok(ConfirmFee::NoFee(Waiver::Repeat(_))) => Some(NoFee::RepeatCustomer),
+        Ok(_) | Err(ConfirmWaiverError::FreeWin(FreeWinError::Race)) => None,
+        Err(_) => return Err(()),
+    })
+}
+
+/// The pick for `confirm_waiver`: its own business and job; the customer's other jobs are not
+/// read, so no repeat-customer waiver is found here (D-3717).
+const fn confirmed<'a>(mine: &Mine, picked: &'a PickedFee) -> ConfirmedPick<'a> {
+    ConfirmedPick {
+        pick: mine.pick,
+        business: mine.fee.business,
+        job: mine.fee.job,
+        picked,
+        same_customer_jobs: &[],
+    }
+}
+
+/// FEE-005, FEE-016, D-1871: the press of exactly the stored fee, with `card` and press `id`.
+fn press_of<'a>(mine: &Mine, card: &'a str, id: Uuid) -> Option<Press<'a>> {
+    Some(Press {
+        pick: mine.pick,
+        business: mine.fee.business,
+        job: mine.fee.job,
+        amount_cents: u32::try_from(mine.fee.cents).ok()?,
+        payment_method: card,
+        press: id,
+        emergency: false,
+        now: PickNow::Payable,
+    })
+}
+
+/// The Confirm form's fields (FEE-016, SEC-042); an unknown field is a 422 (SEC-010).
+#[derive(Debug, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PressForm {
+    #[serde(default)]
+    csrf: String,
+    #[serde(default)]
+    press: String,
+    #[serde(default)]
+    payment_method: String,
+    #[serde(default, rename = "code")]
+    _code: String,
+    #[serde(default, rename = "save_card")]
+    _save_card: String,
+}
+
+impl CsrfField for PressForm {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
+/// `POST` [`CONFIRM_ROUTE`] (FEE-014, FEE-016, FEE-041, CON-029, SEC-027, TERMS-033, D-3813):
+/// one press, answered as JSON; without the settings part nothing is charged.
+async fn press<S, R>(
+    State(served): State<Served<S, R>>,
+    jar: CookieJar,
+    Path(pick): Path<String>,
+    CsrfForm(form): CsrfForm<PressForm>,
+) -> Response
+where
+    S: IntentStripe + Send + Sync + 'static,
+    R: ReleaseSink,
+{
+    let route = &served.route;
+    let now = route.hooks.clock.now();
+    let mine = match mine(&route.hooks.pool, &jar, &pick, now).await {
+        Ok(mine) => mine,
+        Err(answer) => return *answer,
+    };
+    let Ok(id) = Uuid::try_parse(&form.press) else {
+        return StatusCode::UNPROCESSABLE_ENTITY.into_response();
+    };
+    let Some(settings) = &route.settings else {
+        return Json(said("try_later", CARD_OFF_REPLY, None)).into_response();
+    };
+    let card = form.payment_method.as_str();
+    match pressed(route, settings, &mine, (id, card), now).await {
+        Ok(reply) => Json(reply).into_response(),
+        Err(()) => failed(),
+    }
+}
+
+/// The press after the route's checks, all in one transaction until the charge: the pick still
+/// waits and is not paused (CON-029, else the attempt's state), no shared-inbox code is owed
+/// (SEC-027), `payments::api::may_confirm` passes (FEE-007; a fee-mode switch ends the pick,
+/// D-3722), the terms row is stored (TERMS-033), then the $0 decision or the charge.
+async fn pressed<S, R>(
+    route: &ConfirmRoute<S, R>,
+    settings: &ConfirmSettings,
+    mine: &Mine,
+    (id, card): (Uuid, &str),
+    now: Timestamp,
+) -> Result<PressReply, ()>
+where
+    S: IntentStripe + Send + Sync,
+    R: ReleaseSink,
+{
+    let mut tx = route.hooks.pool.begin().await.map_err(|_| ())?;
+    let at = waiting(&mut tx, mine).await?;
+    let Some((job, false)) = at else {
+        let reply = attempt_state(&mut tx, mine.pick, (at, now)).await?;
+        tx.rollback().await.map_err(|_| ())?;
+        return Ok(reply);
+    };
+    if confirm_code_needed(&mut tx, mine.who.member(), true)
+        .await
+        .map_err(|_| ())?
+    {
+        return Ok(said("ended", CODE_LINE, None));
+    }
+    match fee_terms_accepted(&mut tx, mine.fee.business, mine.pick).await {
+        Ok(_) => {}
+        Err(ConfirmError::FeeModeChanged) => return fee_terms_changed(tx, mine, job, now).await,
+        Err(ConfirmError::NewAuthorizationNeeded) => {
+            return Ok(said("ended", AUTHORIZATION_LINE, Some(PORTAL_LINK)));
+        }
+        Err(_) => return Err(()),
+    }
+    let version = mine.fee.terms_version;
+    let line = confirm_assent_line(version);
+    let terms = ConfirmTerms {
+        version,
+        published_text: &line,
+        language: "en",
+    };
+    let people = (mine.fee.business.0, mine.who.member());
+    let stored = record_confirm_terms(&mut tx, people, mine.pick, terms, now).await;
+    stored.map_err(|_| ())?;
+    decide_and_pay(route, settings, mine, tx, (id, card, now)).await
+}
+
+/// D-1871, D-3722, PICK-050: the fee mode changed after the pick: nothing is charged and the pick
+/// ends at once with no fee through `end_for_fee_terms`, which queues her PICK-046 text when no
+/// backup takes it; a `Backup::Done` ends nothing and answers the attempt's state.
+async fn fee_terms_changed(
+    mut tx: sqlx::Transaction<'static, sqlx::Postgres>,
+    mine: &Mine,
+    job: Uuid,
+    now: Timestamp,
+) -> Result<PressReply, ()> {
+    let by = (Actor::Business(mine.fee.business.0), now);
+    let ended = end_for_fee_terms(&mut tx, (mine.pick, job), false, by).await;
+    if matches!(ended.map_err(|_| ())?, Backup::Done) {
+        let reply = attempt_state(&mut tx, mine.pick, (Some((job, false)), now)).await?;
+        tx.rollback().await.map_err(|_| ())?;
+        return Ok(reply);
+    }
+    tx.commit().await.map_err(|_| ())?;
+    Ok(said("ended", FEE_TERMS_ENDED, None))
+}
+
+/// FEE-010 to FEE-013, FEE-045, PICK-022, D-3813: the $0 decision in the press's transaction;
+/// after it commits, a $0 pick's one release through the production sink, else the charge.
+async fn decide_and_pay<S, R>(
+    route: &ConfirmRoute<S, R>,
+    settings: &ConfirmSettings,
+    mine: &Mine,
+    mut tx: sqlx::Transaction<'static, sqlx::Postgres>,
+    (id, card, now): (Uuid, &str, Timestamp),
+) -> Result<PressReply, ()>
+where
+    S: IntentStripe + Send + Sync,
+    R: ReleaseSink,
+{
+    let picked = picked_fee(&mine.fee).ok_or(())?;
+    let pick = confirmed(mine, &picked);
+    let decided = decide_at_confirm(&mut tx, &settings.secret, pick, Some(settings.launch)).await;
+    match decided {
+        Ok(ConfirmFee::NoFee(_)) => {
+            tx.commit().await.map_err(|_| ())?;
+            let mut db = route.hooks.pool.acquire().await.map_err(|_| ())?;
+            let released = release_no_fee(&mut db, &route.hooks.sink, pick).await;
+            released.map_err(|_| ())?;
+            Ok(said("confirmed", CONFIRMED_LINE, Some(PORTAL_LINK)))
+        }
+        Ok(ConfirmFee::Charge) => {
+            tx.commit().await.map_err(|_| ())?;
+            charge(route, settings, mine, (id, card, now)).await
+        }
+        Err(ConfirmWaiverError::FreeWin(FreeWinError::Race)) => Ok(press_reply(
+            &ChargeOutcome::StripeDown,
+            Uuid::new_v4(),
+            None,
+        )),
+        Err(_) => Err(()),
+    }
+}
+
+/// FEE-014, FEE-016, FEE-041, FEE-047: one charge attempt of the stored fee through
+/// `confirm_and_pay`; a bank approval carries the PaymentIntent's client secret, nothing else does.
+async fn charge<S, R>(
+    route: &ConfirmRoute<S, R>,
+    settings: &ConfirmSettings,
+    mine: &Mine,
+    (id, card, now): (Uuid, &str, Timestamp),
+) -> Result<PressReply, ()>
+where
+    S: IntentStripe + Send + Sync,
+    R: ReleaseSink,
+{
+    if !card.starts_with("pm_") {
+        return Ok(said("declined", NO_CARD_LINE, None));
+    }
+    let (pool, stripe, secret) = (&route.hooks.pool, &route.hooks.stripe, &settings.secret);
+    let fresh = Uuid::new_v4();
+    let Ok(customer) = ensure_customer(pool, stripe, secret, mine.fee.business).await else {
+        return Ok(press_reply(&ChargeOutcome::StripeDown, fresh, None));
+    };
+    let press = press_of(mine, card, id).ok_or(())?;
+    let outcome = match confirm_and_pay(pool, stripe, secret, &press, now).await {
+        Ok(outcome) => outcome,
+        Err(ChargeError::Stripe) => ChargeOutcome::StripeDown,
+        Err(_) => return Err(()),
+    };
+    let client = if matches!(outcome, ChargeOutcome::NeedsApproval(_)) {
+        let key = IdempotencyKey::derive(secret, INTENT_ACTION, &[&intent_label(mine.pick)]);
+        let pick = mine.pick.to_string();
+        let amount = (press.amount_cents, pick.as_str());
+        let approval = route
+            .approval
+            .approval_secret(&key, customer.as_str(), amount);
+        approval.await
+    } else {
+        None
+    };
+    Ok(press_reply(&outcome, fresh, client))
 }
 
 #[cfg(test)]
