@@ -56055,7 +56055,10 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-15T01:01:07Z",
-   "last_failure": "Ci: failure; Coverage: failure; Checks: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_sec_35_core_default_revoke_exception_is_narrow ... ok\ntest td_sec_10_migrations_and_sql_obey_the_rules ... FAILED\nfailures:\n---- td_sec_10_migrations_and_sql_obey_the_rules stdout ----\nthread 'td_sec_10_migrations_and_sql_obey_the_rules' (18315) panicked at tests/integration/tests/architecture_migrations.rs:731:5:\nassertion `left == right` failed\n  left: [\"app/server/tests/business_portal_route.rs: SQL outside the query macros: `query_scalar`\", \"app/server/tests/business_portal_route.rs: SQL outside the query macros: `query_scalar`\"]\n right: []\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_sec_10_migrations_and_sql_obey_the_rules\ntest result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s\nerror: test failed, to rerun pass `-p askhava-integration --test architecture_migrations`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\nerror: test failed, to rerun pass `-p askhava-integration --test architecture_migrations`\n##[error]Process completed with exit code 101.\nCi fa"
+   "last_failure": "Ci: failure; Coverage: failure; Checks: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_sec_35_core_default_revoke_exception_is_narrow ... ok\ntest td_sec_10_migrations_and_sql_obey_the_rules ... FAILED\nfailures:\n---- td_sec_10_migrations_and_sql_obey_the_rules stdout ----\nthread 'td_sec_10_migrations_and_sql_obey_the_rules' (18315) panicked at tests/integration/tests/architecture_migrations.rs:731:5:\nassertion `left == right` failed\n  left: [\"app/server/tests/business_portal_route.rs: SQL outside the query macros: `query_scalar`\", \"app/server/tests/business_portal_route.rs: SQL outside the query macros: `query_scalar`\"]\n right: []\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_sec_10_migrations_and_sql_obey_the_rules\ntest result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s\nerror: test failed, to rerun pass `-p askhava-integration --test architecture_migrations`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\nerror: test failed, to rerun pass `-p askhava-integration --test architecture_migrations`\n##[error]Process completed with exit code 101.\nCi fa",
+   "runner_closed_prs": [
+    816
+   ]
   },
   {
    "id": "T453",
@@ -62199,7 +62202,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T06:22:19Z",
+ "updated_at": "2026-11-15T06:22:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
