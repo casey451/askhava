@@ -238,15 +238,18 @@ def crate_clash(task: dict[str, Any], others: list[dict[str, Any]], limit: Limit
 
 
 def claimable_together(ids: list[str], state: State, now: datetime, task_def: Callable[[str], dict[str, Any]],
-                       limit: Limit = hard) -> list[str]:
+                       limit: Limit = hard, keep: Callable[[str], bool] = lambda _tid: True) -> list[str]:
     """The ids, in claim order, that runs started now could claim one after another (D-3269, D-3303): each
     is the first `within_limits` allows beside the tasks in flight and the ones taken before it, reservation
-    included. `cycle.refill_lanes` counts these, so refill and the claim apply one rule and no run is
-    started for a lane whose only candidates would be over a crate's limit."""
+    included, that `keep` passes. `cycle.refill_lanes` counts these, so refill and the claim apply one rule and
+    no run is started for a lane whose only candidates would be over a crate's limit. `keep` is the claim's
+    plan-health verdict, applied after the crate rule as the claim applies it (`cycle.plan_health_pass`
+    after `cycle._exclusive`, D-3812), asked lazily at each step and only for the ids the crate rule leaves: a
+    refused id is never taken, yet still reserves its crates."""
     flying = [task_def(tid) for tid in st.in_flight(state, now)]
     taken: list[str] = []
     left = list(ids)
-    while nxt := within_limits(left, flying + [task_def(t) for t in taken], task_def, limit):
+    while nxt := [tid for tid in within_limits(left, flying + [task_def(t) for t in taken], task_def, limit) if keep(tid)]:
         taken.append(nxt[0])
         left.remove(nxt[0])
     return taken
