@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T00:07:32Z by runner b3ae0baddcd3 (actions).
+Updated 2026-11-15T00:08:04Z by runner b3ae0baddcd3 (actions).
 
 **Building: T460 in progress since 00:00Z; 339 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -115,7 +115,6 @@ Updated 2026-11-15T00:07:32Z by runner b3ae0baddcd3 (actions).
 - 05:15Z Plan: move build notes out of architecture.md into crate NOTES.md; prompts shrink (D-3620) (#744)
 - 03:45Z Plan: pre-claim scout fixes (T396, T300 + new T451) and stale-graph claim guard (D-3618, D-3619) (#733)
 - 01:13Z Plan: T302 plan gap — new T450 sign-up code screens and verified consent (D-3602) (#730)
-- 00:07Z Plan: follow-up tasks T447–T449 from spot-review of pre-D-3444 fix rounds (D-3581) (#724)
 
 ## Progress (requirements verified)
 
