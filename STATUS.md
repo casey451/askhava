@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-15T01:24:43Z by runner 30d12d87a2fd (actions).
+Updated 2026-11-15T01:28:06Z by runner 88f0d709d2c2 (actions).
 
-**Building: T261 in progress since 01:07Z; 341 of 471 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T261 in progress since 01:07Z; 342 of 471 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 341 of 471 build tasks (owner gates not counted)
+- **Tasks done:** 342 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T261 claimed 01:07Z, lease until 04:07Z
 - **Week:** 54% used, 84.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:24Z, 0 min before this update
+- **Last run:** 01:24Z, 3 min before this update
 - **Keeper:** last ran 01:24Z, next wake 04:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 29 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 30 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T460 | server: business sign-up's identity steps are served (code s | MERGE_PENDING | 2 | 68 min | 01:08Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
+| T460 | server: business sign-up's identity steps are served (code s | done | 2 | 68 min | 01:08Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | check_failed | 1 | 12 min | 00:56Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T486 | businesses and catalog: the free-first-win join dates: a pub | done | 1 | 65 min | 23:37Z |  |
 | T451 | quotes, picks, jobs, payments and server: the "Your numbers" | done | 1 | 41 min | 23:30Z |  |
@@ -114,7 +114,7 @@ Updated 2026-11-15T01:24:43Z by runner 30d12d87a2fd (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 341 of 471
+**Tasks merged (throughput only):** 342 of 471
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -149,7 +149,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 221 of 231 done
+- stage 4: 222 of 231 done
 - stage 5: 0 of 86 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
