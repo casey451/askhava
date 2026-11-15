@@ -17662,8 +17662,8 @@
     "T494",
     "T495"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "e2e-j2-business",
    "type": "build",
    "stage": "4",
@@ -17675,6 +17675,33 @@
     3859,
     3860,
     3861
+   ],
+   "reason": "plan gap reported: PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a random Stripe webhook secret never exposed to specs; the stand-in signs with a different secret (stand_ins/stripe.py:82), so no spec can post a valid signed webhook and the post-payment closing checks (portal view, reload, one release row, no second fee, D-1739) cannot run. Reviewer confirmed the gap. Smallest fix: a harness task passing the keyed webhook secret to specs as E2E_KEYED_* . Reviewer round 2 also noted: free-win $0 Confirm release checks possible without webhook (te; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T099 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a random Stripe webhook secret never exposed to specs; the stand-in signs with a different secret (stand_ins/stripe.py:82), so no spec can post a valid signed webhook and the post-payment closing checks (portal view, reload, one release row, no second fee, D-1739) cannot run. Reviewer confirmed the gap. Smallest fix: a harness task passing the keyed webhook secret to specs as E2E_KEYED_* . Reviewer round 2 also noted: free-win $0 Confirm release checks possible without webhook (test 3), and top-of-file comment in j2_business.spec.ts lines 10-11 wrongly cites FEE-010 for the $75 test.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-sonnet-5-5",
+     "model_evidence_count": 266,
+     "head_sha": "7b28987a9717c6cf0e6e015710cc832b3484706c",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-15T20:23:03Z",
+     "ended_at": "2026-11-15T21:21:50Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 14085741,
+       "turns": 149
+      },
+      "reviewer": {
+       "tokens": 2461389,
+       "turns": 48
+      }
+     }
+    }
    ]
   },
   {
@@ -60037,12 +60064,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T464",
-   "at": "2026-11-15T19:56:35Z",
-   "output_tokens": 92265,
-   "input_tokens": 341,
-   "cache_read_input_tokens": 20985211,
-   "cache_creation_input_tokens": 352690
+   "task": "T099",
+   "at": "2026-11-15T21:21:50Z",
+   "input_tokens": 377,
+   "output_tokens": 114147,
+   "cache_read_input_tokens": 16057184,
+   "cache_creation_input_tokens": 375422
   },
   "source": "session_reading 2026-11-15T19:57:20Z (week)",
   "by_task": {
@@ -63660,17 +63687,27 @@
    },
    "T099": {
     "estimated_bytes": 287404,
-    "estimated_tokens": 313255
+    "estimated_tokens": 313255,
+    "usage_counting": "message_id",
+    "input_tokens": 377,
+    "output_tokens": 114147,
+    "cache_read_input_tokens": 16057184,
+    "cache_creation_input_tokens": 375422,
+    "worker_tokens": 14085741,
+    "worker_turns": 149,
+    "reviewer_tokens": 2461389,
+    "reviewer_turns": 48,
+    "last_model": "claude-sonnet-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-15T16:50:29Z",
-    "tokens": 5388771
+    "tokens": 7484435
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 169635869
+    "tokens": 171731533
    }
   },
   "session_reading": {
@@ -63681,7 +63718,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T20:30:28Z",
+ "updated_at": "2026-11-15T21:21:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -63779,7 +63816,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ef9418c0e6b96abc973cf4c79821ee9ad5e34dc3",
+ "runner_sha": "7b28987a9717c6cf0e6e015710cc832b3484706c",
  "starter": "actions",
  "smoke_runs": [
   {

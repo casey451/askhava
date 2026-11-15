@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-15T20:30:28Z by runner ef9418c0e6b9 (actions).
+Updated 2026-11-15T21:21:51Z by runner 7b28987a9717 (actions).
 
-**Building: T099 in progress since 20:23Z; 352 of 499 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 21:21Z; 352 of 499 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 352 of 499 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T099 claimed 20:23Z, lease until 23:23Z
+- **Lane:** idle since 21:21Z (no task in progress)
 - **Week:** 64% used, 66.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:30Z, 0 min before this update
+- **Last run:** 20:30Z, 51 min before this update
 - **Keeper:** last ran 20:30Z, next wake 23:25Z
 
 ## Needs attention
+- BLOCKED T099: plan gap reported: PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a random Stripe webhook secret never exposed to specs; the stand-in signs with a different secret (stand_ins/stripe.py:82), so no spec can post a valid signed webhook and the post-payment closing checks (portal view, reload, one release row, no second fee, D-1739) cannot run. Reviewer confirmed the gap. Smallest fix: a harness task passing the keyed webhook secret to specs as E2E_KEYED_* . Reviewer round 2 also noted: free-win $0 Confirm release checks possible without webhook (te; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T099 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 22 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T099 | Journey J2 (business) and its variants, keyboard-only, with  | BLOCKED | 1 | 58 min | 21:21Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
 | T464 | server and portals: the sign-up capability step is served af | done | 1 | 83 min | 19:56Z |  |
 | T495 | e2e: the served Confirm and pay journey in the browser again | done | 1 | 44 min | 18:21Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | done | 3 | 35 min | 18:05Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
@@ -50,7 +52,6 @@ Updated 2026-11-15T20:30:28Z by runner ef9418c0e6b9 (actions).
 | T261 | portals and server (harness): the served Confirm route under | BLOCKED | 2 | 4 min | 21:38Z |  |
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z |  |
 | T300 | server and portals: the business portal is served behind the | resync | 3 | 94 min | 21:25Z |  |
-| T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -102,7 +103,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T099 (lease until 2026-11-15T23:23:03Z)
 
 ## Last usage reading
-- {"task": "T464", "at": "2026-11-15T19:56:35Z", "output_tokens": 92265, "input_tokens": 341, "cache_read_input_tokens": 20985211, "cache_creation_input_tokens": 352690}
+- {"task": "T099", "at": "2026-11-15T21:21:50Z", "input_tokens": 377, "output_tokens": 114147, "cache_read_input_tokens": 16057184, "cache_creation_input_tokens": 375422}
