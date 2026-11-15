@@ -81,13 +81,30 @@ async fn the_marked_page_adds_only_stripe() {
     assert_eq!(sources(confirm, "frame-src"), Some(vec!["'self'", stripe]));
     let api = "https://api.stripe.com";
     assert_eq!(sources(confirm, "connect-src"), Some(vec!["'self'", api]));
-    for part in CONTENT_SECURITY_POLICY.split(';') {
-        let name = part.split_whitespace().next().expect("a directive");
-        if !["script-src", "connect-src"].contains(&name) {
-            assert!(confirm.contains(part.trim()), "{name} unchanged");
+    assert_eq!(sources(CONTENT_SECURITY_POLICY, "frame-src"), None);
+    let mut want = names(CONTENT_SECURITY_POLICY);
+    want.push("frame-src");
+    want.sort_unstable();
+    let mut got = names(confirm);
+    got.sort_unstable();
+    assert_eq!(
+        got, want,
+        "the strict policy's directives plus frame-src, each once"
+    );
+    for name in names(confirm) {
+        if !["script-src", "connect-src", "frame-src"].contains(&name) {
+            let strict = sources(CONTENT_SECURITY_POLICY, name);
+            assert_eq!(sources(confirm, name), strict, "{name} unchanged");
         }
     }
-    assert_eq!(sources(CONTENT_SECURITY_POLICY, "frame-src"), None);
+}
+
+/// The directive names of `policy`, in order, repeats kept.
+fn names(policy: &str) -> Vec<&str> {
+    policy
+        .split(';')
+        .filter_map(|part| part.split_whitespace().next())
+        .collect()
 }
 
 /// SEC-012, SEC-013: every unmarked response, an error page and a handler's own CSP header
