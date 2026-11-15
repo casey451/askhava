@@ -2915,6 +2915,6 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 ## Accessibility checks: three plan fixes (D-3838, November 15)
 
-- The Confirm and pay page's accessibility state now uses a page that shows no card form, because the card form loads Stripe's own code, which the checker can't scan cleanly; a new small task (T496) will fake Stripe's code in the checker and add the card-form check later.
+- The Confirm and pay page's accessibility state now uses a page that shows no card form, because the card form loads Stripe's own code, which the checker can't scan cleanly; a new small task (T496) will fake Stripe's code in the checker and add the card-form check later. Stripe's own card box itself showed two accessibility problems (a hidden field that can take focus, and low contrast inside it); those are inside Stripe's part, which we don't control, so they are covered by the hands-on VoiceOver check rather than the automatic one, and T496 passing does not mean Stripe's box is clean.
 - The sign-up inbox-check task (T462) may now give the answer buttons a minimum size, so they pass the small-screen tap-target check.
 - Five other page tasks now add their pages to the accessibility checker in the same change, so the check does not fail when they land. Nothing needs you.
