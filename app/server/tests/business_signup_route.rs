@@ -6,22 +6,29 @@
 //! cross-site and CSRF refusals with their security event, the consent seal, the minted mailbox,
 //! the binding cookie and its MAC, the names, the pest and agency writers, the license binding and
 //! name flag, the city-list contact, `no_record_contact`, an unreadable record, and no record
-//! name or contact stored in any table. Fake records are read from a temporary `file://`
-//! directory. No setting is a real key; all data is fake.
+//! name or contact stored in any table. T460's identity steps (BIZ-002, BIZ-026, SEC-019,
+//! D-3641, D-3779): refused without a verified binding cookie, out of order or after the code,
+//! each code to the bound record's own contact through a fake Verify, never a posted license
+//! number. Fake records are read from a temporary `file://` directory. No setting is a real key;
+//! all data is fake.
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use askhava_businesses::api::{business_names, businesses_of_mailbox, review_due};
+use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
+use askhava_businesses::api::{
+    Step, business_names, businesses_of_mailbox, leave, review_due, signup_progress,
+};
 
 use askhava_catalog::api::{load, parse};
 use askhava_core::api::{IdSecret, MIGRATOR, Settings, TestControl};
 use askhava_licensing::api::{
-    Agency, HolderInputs, PestRecordCategory, RECORD_HEADER, holder_for, import_city_list,
-    import_roc_list,
+    Agency, HolderInputs, PestRecordCategory, RECORD_HEADER, bound_roc_number, holder_for,
+    import_city_list, import_roc_list,
 };
 use askhava_portals::api::{
-    CONSENT_AGAIN, ChannelPost, CookieJar, SIGNUP_FORM_ROUTE, SIGNUP_ROUTE, csrf_token,
+    CODE_SEND_ROUTE, CONSENT_AGAIN, ChannelPost, CodeProblem, CookieJar, IDENTITY_CHECK_ROUTE,
+    LETTER_ROUTE, NUMBER_OLD_ROUTE, SESSION_COOKIE, SIGNUP_FORM_ROUTE, SIGNUP_ROUTE, csrf_token,
 };
 use askhava_privacy::api::{Vault, mailboxes_of};
 use askhava_server::business_signup::{SIGNUP_COOKIE, ServedSignUp, bound_signup};
@@ -76,11 +83,20 @@ fn app(pool: &PgPool) -> Router {
 
 /// The router reading license records from the `file://` directory `records`, if any.
 fn app_reading(pool: &PgPool, records: Option<&Records>) -> Router {
+    app_coding(pool, records, None)
+}
+
+/// As [`app_reading`], the identity codes through `verify` when given (TXT-038).
+fn app_coding(pool: &PgPool, records: Option<&Records>, verify: Option<&FakeVerify>) -> Router {
     let dir = records.map(|r| r.0.display().to_string());
     let pairs = pairs(dir.as_deref());
     let settings = Settings::from_pairs(pairs.clone()).expect("fake settings");
     let control = TestControl::from_settings(&settings, pairs.clone()).expect("test control");
-    let signup = ServedSignUp::from_settings(pool.clone(), pairs).expect("sign-up part");
+    let signup = match verify {
+        Some(fake) => ServedSignUp::with_verify(pool.clone(), pairs, fake.clone()),
+        None => ServedSignUp::from_settings(pool.clone(), pairs),
+    };
+    let signup = signup.expect("sign-up part");
     let parts = RouterParts::from((None, None, None, None)).with_sign_up(signup);
     build_router(pool.clone(), control.router(), parts)
 }
@@ -305,6 +321,16 @@ async fn post(
     fields: &[(String, String)],
     site: &str,
 ) -> (StatusCode, Vec<String>, String, String) {
+    post_to(app, (SIGNUP_FORM_ROUTE, &b.pre), fields, site).await
+}
+
+/// `POST route` with the `Cookie` header `cookie` and `fields`, as [`post`].
+async fn post_to(
+    app: &Router,
+    (route, cookie): (&str, &str),
+    fields: &[(String, String)],
+    site: &str,
+) -> (StatusCode, Vec<String>, String, String) {
     let enc = |s: &str| {
         let keep = |c: &u8| c.is_ascii_alphanumeric() || b"-._".contains(c);
         s.bytes()
@@ -321,10 +347,10 @@ async fn post(
         .iter()
         .map(|(k, v)| format!("{}={}", enc(k), enc(v)))
         .collect();
-    let request = Request::post(SIGNUP_FORM_ROUTE)
+    let request = Request::post(route)
         .header(header::HOST, "askhava.test")
         .header("sec-fetch-site", site)
-        .header(header::COOKIE, &b.pre)
+        .header(header::COOKIE, cookie)
         .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
         .body(Body::from(body.join("&")))
         .expect("request");
@@ -626,4 +652,250 @@ async fn td_biz_49_pest_and_agency_writers_and_no_record_value_stored(pool: PgPo
     assert_eq!(names.trade_name, None, "the record's DBA is never stored");
     drop(conn);
     assert!(mailboxes(&pool, "office@example.test").await.is_empty());
+}
+
+/// The one right identity code of [`FakeVerify`].
+const RIGHT: &str = "246810";
+
+/// Verify: records each send's channel and digits and counts checks; only [`RIGHT`] is right.
+#[derive(Clone, Default)]
+struct FakeVerify(Arc<Mutex<(Vec<String>, usize)>>);
+
+impl FakeVerify {
+    fn seen(&self) -> (Vec<String>, usize) {
+        self.0.lock().expect("fake").clone()
+    }
+}
+
+impl VerifyAdapter for FakeVerify {
+    async fn send_code(
+        &self,
+        _: &IdempotencyKey,
+        to: &str,
+        channel: CodeChannel,
+    ) -> Result<String, AdapterError> {
+        let digits: String = to.chars().filter(char::is_ascii_digit).collect();
+        let sent = format!("{channel:?}:{digits}");
+        self.0.lock().expect("fake").0.push(sent);
+        Ok("VE-fake".to_owned())
+    }
+
+    async fn check_code(&self, _: &str, code: &str) -> Result<bool, AdapterError> {
+        self.0.lock().expect("fake").1 += 1;
+        Ok(code == RIGHT)
+    }
+}
+
+/// A stored sign-up (an R-37 plumber, `extra` added, `drop` left out): the browser, its binding
+/// cookie's `name=value` and the business.
+async fn signed(app: &Router, extra: &[(&str, &str)], drop: &[&str]) -> (Browser, String, Uuid) {
+    let b = browser(app).await;
+    let (status, cookies, ..) = post(app, &b, &typed(&b, extra, drop), "same-origin").await;
+    assert_eq!(status, StatusCode::OK);
+    let line = cookies.iter().find(|c| c.starts_with(SIGNUP_COOKIE));
+    let pair = line.and_then(|l| l.split(';').next()).expect("binding");
+    (b, pair.to_owned(), signed_up(&cookies).expect("bound"))
+}
+
+/// A step's same-site `POST` from browser `b` holding `binding` (none when empty), with its
+/// CSRF token and `fields`: the status, `Cache-Control` and the page.
+async fn press(
+    app: &Router,
+    (b, binding): (&Browser, &str),
+    route: &str,
+    fields: &[(&str, &str)],
+) -> (StatusCode, String, String) {
+    let csrf = b.fields.iter().find(|(n, _)| n == "csrf").cloned();
+    let typed = fields
+        .iter()
+        .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()));
+    let posted: Vec<(String, String)> = csrf.into_iter().chain(typed).collect();
+    let cookie = [b.pre.as_str(), binding].join("; ");
+    let (status, _, cache, html) = post_to(app, (route, &cookie), &posted, "same-origin").await;
+    (status, cache, html)
+}
+
+/// The sign-up's stored identity step and whether its code is done (D-3779).
+async fn progress(pool: &PgPool, business: Uuid) -> (Option<Step>, bool) {
+    let mut conn = pool.acquire().await.expect("connection");
+    let read = signup_progress(&mut conn, business)
+        .await
+        .expect("progress");
+    (read.step(), read.code_done())
+}
+
+/// TD-SEC-45 (SEC-019, SEC-042, SEC-048, D-3641): every identity step with no binding cookie,
+/// another sign-up's ID under this cookie's MAC or a made-up cookie is a bare `no-store` 403; a
+/// cross-site post is refused as a `csrf_rejected` event; a removed business is refused however
+/// good its cookie. None of them sends or checks a code or stores a step.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_sec_45_identity_steps_refuse_a_bad_binding(pool: PgPool) {
+    store_lists(&pool).await;
+    let (records, verify) = (Records::new(), FakeVerify::default());
+    let app = app_coding(&pool, Some(&records), Some(&verify));
+    let (b, binding, business) = signed(&app, &[], &[]).await;
+    let (.., stored) = signed(&app, &[], &[]).await;
+    let value = binding.split_once('=').expect("value").1;
+    let other = value.replacen(&business.to_string(), &stored.to_string(), 1);
+    let zeros = format!("{business}.{}.{}", "0".repeat(32), "0".repeat(64));
+    let bad = [
+        String::new(),
+        format!("{SIGNUP_COOKIE}={other}"),
+        format!("{SIGNUP_COOKIE}={zeros}"),
+    ];
+    for route in [
+        CODE_SEND_ROUTE,
+        NUMBER_OLD_ROUTE,
+        LETTER_ROUTE,
+        IDENTITY_CHECK_ROUTE,
+    ] {
+        for cookie in &bad {
+            let (status, cache, _) = press(&app, (&b, cookie), route, &[("code", RIGHT)]).await;
+            let answer = (status, cache.as_str());
+            assert_eq!(answer, (StatusCode::FORBIDDEN, "no-store"), "{route}");
+        }
+    }
+    let events = Events::default();
+    let guard = tracing::subscriber::set_default(events.clone());
+    let cookie = format!("{}; {binding}", b.pre);
+    let csrf = b.fields.iter().find(|(n, _)| n == "csrf").cloned();
+    let posted: Vec<(String, String)> = csrf.into_iter().collect();
+    let (status, ..) = post_to(&app, (CODE_SEND_ROUTE, &cookie), &posted, "cross-site").await;
+    drop(guard);
+    assert_eq!(status, StatusCode::FORBIDDEN, "cross-site");
+    let logged = events.0.lock().expect("events").clone();
+    assert_eq!(
+        logged
+            .iter()
+            .filter(|l| l.contains("\"csrf_rejected\""))
+            .count(),
+        1
+    );
+    let mut conn = pool.acquire().await.expect("connection");
+    leave(&mut conn, business, Timestamp::now())
+        .await
+        .expect("removed");
+    drop(conn);
+    let (status, ..) = press(&app, (&b, &binding), CODE_SEND_ROUTE, &[]).await;
+    assert_eq!(
+        status,
+        StatusCode::FORBIDDEN,
+        "D-3641: only Pending or NeedsReview"
+    );
+    assert_eq!((verify.seen().0.len(), verify.seen().1), (0, 0));
+    assert_eq!(progress(&pool, business).await, (None, false));
+    assert_eq!(
+        progress(&pool, stored).await,
+        (None, false),
+        "the other sign-up"
+    );
+}
+
+/// TD-BIZ-49, TD-SEC-45 (BIZ-002, BIZ-016, BIZ-026, SEC-019, SEC-034, D-3641, D-3779): an R-37
+/// sign-up's out-of-order letter or code check shows the contact screen and calls no Verify; after
+/// a browser restart its code goes to the bound record's phone, shown masked, however another ROC
+/// number is posted (no new check row); in a browser with a business session a wrong code is
+/// refused and the right one goes on to the service area; then every step is refused.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_biz_49_the_identity_code_goes_to_the_bound_record_phone(pool: PgPool) {
+    store_lists(&pool).await;
+    let (records, verify) = (Records::new(), FakeVerify::default());
+    let app = app_coding(&pool, Some(&records), Some(&verify));
+    let (b, binding, business) = signed(&app, &[], &[]).await;
+    for route in [LETTER_ROUTE, IDENTITY_CHECK_ROUTE] {
+        let (status, _, html) = press(&app, (&b, &binding), route, &[("code", RIGHT)]).await;
+        assert_eq!(status, StatusCode::OK);
+        assert!(
+            html.contains("Send the code"),
+            "{route}: the contact screen again"
+        );
+    }
+    assert_eq!(
+        (verify.seen().0.len(), verify.seen().1),
+        (0, 0),
+        "no try used"
+    );
+    let restarted = browser(&app).await;
+    let other_roc = [("roc_number", "ROC200001")];
+    let (status, cache, html) =
+        press(&app, (&restarted, &binding), CODE_SEND_ROUTE, &other_roc).await;
+    assert_eq!(
+        (status, cache.as_str()),
+        (StatusCode::OK, "no-store"),
+        "SEC-034"
+    );
+    assert!(html.contains("(•••) •••-0142"), "BIZ-026: masked");
+    let sent = verify.seen().0;
+    assert!(sent.len() == 1 && sent[0].starts_with("Sms:") && sent[0].ends_with("5550142"));
+    let mut conn = pool.acquire().await.expect("connection");
+    let bound = bound_roc_number(&mut conn, business).await.expect("bound");
+    assert_eq!(bound.as_deref(), Some("ROC100001"), "no new check row");
+    drop(conn);
+    assert_eq!(progress(&pool, business).await, (Some(Step::Text), false));
+    let pair = format!("{SESSION_COOKIE}=fake-business-session-value");
+    let token = csrf_token(&jar_with(&pair)).expect("session token");
+    let fields = vec![("csrf".to_owned(), token)];
+    let session = Browser { pre: pair, fields };
+    let at = (&session, binding.as_str());
+    let (status, _, html) = press(&app, at, IDENTITY_CHECK_ROUTE, &[("code", "000000")]).await;
+    let refused = CodeProblem::Refused
+        .message()
+        .split('\'')
+        .next()
+        .expect("text");
+    assert!(
+        status == StatusCode::OK && html.contains(refused),
+        "A11Y-030"
+    );
+    let (status, _, html) = press(&app, at, IDENTITY_CHECK_ROUTE, &[("code", RIGHT)]).await;
+    assert!(
+        status == StatusCode::OK && html.contains("How far do you travel"),
+        "BIZ-058"
+    );
+    assert_eq!(progress(&pool, business).await, (Some(Step::Text), true));
+    let (status, ..) = press(&app, (&b, &binding), CODE_SEND_ROUTE, &[]).await;
+    assert_eq!(
+        status,
+        StatusCode::FORBIDDEN,
+        "the steps close after the code"
+    );
+    assert_eq!((verify.seen().0.len(), verify.seen().1), (1, 2));
+}
+
+/// TD-SEC-45, TD-BIZ-49 (BIZ-002, BIZ-026, SEC-019): two sign-ups' code sends each reach only
+/// their own record contact (the city-list row's phone, then the ROC record's); "That number is
+/// old" shows the saved screen, and after it a send, letter or code check shows the saved screen
+/// and calls no Verify (D-1712).
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_sec_45_a_code_send_reaches_only_its_own_record(pool: PgPool) {
+    store_lists(&pool).await;
+    let (records, verify) = (Records::new(), FakeVerify::default());
+    let app = app_coding(&pool, Some(&records), Some(&verify));
+    let city = [
+        ("business_name", "Sample Yards"),
+        ("category", "house_cleaning"),
+    ];
+    let drop = ["business_name", "category", "roc_number"];
+    let (cb, city_binding, _) = signed(&app, &city, &drop).await;
+    let (rb, roc_binding, _) = signed(&app, &[], &[]).await;
+    let (status, ..) = press(&app, (&cb, &city_binding), CODE_SEND_ROUTE, &[]).await;
+    assert_eq!(status, StatusCode::OK);
+    let (status, ..) = press(&app, (&rb, &roc_binding), CODE_SEND_ROUTE, &[]).await;
+    assert_eq!(status, StatusCode::OK);
+    let sent = verify.seen().0;
+    assert!(sent.len() == 2 && sent[0].ends_with("5550150") && sent[1].ends_with("5550142"));
+    let (status, _, html) = press(&app, (&cb, &city_binding), NUMBER_OLD_ROUTE, &[]).await;
+    assert!(status == StatusCode::OK && html.contains("Your sign-up is saved"));
+    for route in [CODE_SEND_ROUTE, LETTER_ROUTE, IDENTITY_CHECK_ROUTE] {
+        let (status, cache, html) =
+            press(&app, (&cb, &city_binding), route, &[("code", RIGHT)]).await;
+        let answer = (status, cache.as_str());
+        assert_eq!(answer, (StatusCode::OK, "no-store"), "{route}");
+        assert!(html.contains("Your sign-up is saved"), "D-1712: {route}");
+    }
+    assert_eq!(
+        (verify.seen().0.len(), verify.seen().1),
+        (2, 0),
+        "D-1712: never the old number"
+    );
 }
