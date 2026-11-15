@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T02:40:01Z by runner 88f0d709d2c2 (actions).
+Updated 2026-11-15T02:42:25Z by runner 88f0d709d2c2 (actions).
 
 **Building: T261 in progress since 01:07Z; 342 of 476 done; week 55% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T02:40:01Z by runner 88f0d709d2c2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T261 claimed 01:07Z, lease until 04:07Z
 - **Week:** 55% used, 84.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:39Z, 0 min before this update
+- **Last run:** 02:42Z, 0 min before this update
 - **Keeper:** last ran 02:40Z, next wake 04:10Z
 
 ## Needs attention
@@ -85,7 +85,6 @@ Updated 2026-11-15T02:40:01Z by runner 88f0d709d2c2 (actions).
 | T433 | server and payments: every payments task runs in the product | done | 1 | 57 min | 03:21Z |  |
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 31 min | 03:17Z |  |
 | T450 | portals: the sign-up code screens and the texts choice with  | done | 1 | 79 min | 03:00Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 23 min | 02:41Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
