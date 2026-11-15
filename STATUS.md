@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T04:31:37Z by runner bf3032638103 (actions).
+Updated 2026-11-15T04:31:59Z by runner bf3032638103 (actions).
 
 **Building: T461 in progress since 03:00Z; 342 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 342 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T461 claimed 03:00Z, lease until 06:00Z; lane 3: T494 claimed 04:01Z, lease until 07:01Z; lane 5: T493 claimed 04:00Z, lease until 07:00Z
+- **Lane:** lane 2: T461 claimed 03:00Z, lease until 06:00Z; lane 5: T493 claimed 04:00Z, lease until 07:00Z
 - **Week:** 57% used, 78.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:30Z, 0 min before this update
+- **Last run:** 04:30Z, 1 min before this update
 - **Keeper:** last ran 04:28Z, next wake 06:03Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-15T04:31:37Z by runner bf3032638103 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T494 | portals: the Confirm route's $0 free-first-win decision from | MERGE_PENDING | 1 | 29 min | 04:31Z |  |
 | T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | MERGE_PENDING | 1 | 31 min | 04:26Z |  |
 | T261 | portals and server (harness): the served Confirm route under | BLOCKED | 3 | 110 min | 02:57Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z | runner smoke red on 4d7fe1a7723d (bash scripts/smoke.sh, D-3530): / + [] / - [ / -     'T002', / - ] / FAILED tests/test |
@@ -148,8 +149,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T461 (lease until 2026-11-15T06:00:54Z)
-- lane 3: T494 (lease until 2026-11-15T07:01:42Z)
 - lane 5: T493 (lease until 2026-11-15T07:00:50Z)
 
 ## Last usage reading
-- {"task": "T492", "at": "2026-11-15T04:26:42Z", "output_tokens": 23977, "input_tokens": 94, "cache_creation_input_tokens": 107533, "cache_read_input_tokens": 2577961}
+- {"task": "T494", "at": "2026-11-15T04:31:35Z", "cache_creation_input_tokens": 127713, "output_tokens": 26333, "input_tokens": 84, "cache_read_input_tokens": 2319023}
