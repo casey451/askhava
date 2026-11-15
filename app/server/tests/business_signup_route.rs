@@ -23,7 +23,8 @@ use askhava_adapters::api::{
     AdapterError, CodeChannel, Email, EmailAdapter, IdempotencyKey, VerifyAdapter,
 };
 use askhava_businesses::api::{
-    Step, business, business_names, businesses_of_mailbox, leave, review_due, signup_progress,
+    Acting, EmailCheck, InboxAnswer, Step, business, business_names, businesses_of_mailbox,
+    email_check, leave, members, review_due, signup_progress,
 };
 
 use askhava_catalog::api::{load, parse};
@@ -37,12 +38,15 @@ use askhava_messaging::api::{
 };
 use askhava_portals::api::{
     CODE_SEND_ROUTE, CONSENT_AGAIN, ChannelPost, CodeProblem, CookieJar, EMAIL_CHECK_ROUTE,
-    EMAIL_RESEND_ROUTE, IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NUMBER_OLD_ROUTE, SERVICE_AREA_ROUTE,
-    SESSION_COOKIE, SIGNUP_FORM_ROUTE, SIGNUP_ROUTE, csrf_token,
+    EMAIL_RESEND_ROUTE, IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NUMBER_OLD_ROUTE, PortalsError,
+    SERVICE_AREA_ROUTE, SESSION_COOKIE, SIGNIN_LINK_ROUTE, SIGNUP_FORM_ROUTE, SIGNUP_ROUTE, SignIn,
+    SignInAddress, SignInMail, csrf_token, ensure_pre_session, signin_post,
 };
 use askhava_privacy::api::{Vault, mailboxes_of};
 use askhava_server::business_signin::SignInMailer;
-use askhava_server::business_signup::{SIGNUP_COOKIE, ServedSignUp, SignupMail, bound_signup};
+use askhava_server::business_signup::{
+    INBOX_CHECK_ROUTE, SIGNUP_COOKIE, ServedSignUp, SignupMail, bound_signup,
+};
 use askhava_server::{RouterParts, build_router};
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -50,8 +54,8 @@ use axum::http::{HeaderMap, Request, StatusCode, header};
 use jiff::Timestamp;
 use jiff::civil::date;
 use secrecy::SecretString;
-use sqlx::PgPool;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 use tower::ServiceExt;
 use tracing::field::{Field, Visit};
 use tracing::span::{Attributes, Id, Record};
@@ -1159,4 +1163,176 @@ async fn td_sec_45_email_code_sends_are_capped(pool: PgPool) {
         let done = status == StatusCode::OK && html.contains("signed up</h1>");
         assert!(done, "earlier code works: {status}");
     }
+}
+
+/// Sends no link: the inbox check's owner presses the link the sign-up itself emailed (T462).
+struct NoLinks;
+
+impl SignInMail for NoLinks {
+    async fn addresses(
+        &self,
+        _: &mut PgConnection,
+        _: &str,
+    ) -> Result<Vec<SignInAddress>, PortalsError> {
+        Ok(Vec::new())
+    }
+
+    async fn send_link(
+        &self,
+        _: &mut PgConnection,
+        _: SignInAddress,
+        _: &SecretString,
+    ) -> Result<(), PortalsError> {
+        Ok(())
+    }
+}
+
+/// The session cookie's `name=value` after pressing the sign-in link in `text` (SEC-004).
+async fn signed_in(pool: &PgPool, text: &str) -> String {
+    let token = text.split("/b/sign-in/").nth(1).expect("a link");
+    let link = format!("/b/sign-in/{}", &token[..64]);
+    let routes = Router::new().route(
+        SIGNIN_LINK_ROUTE,
+        axum::routing::post(signin_post::<NoLinks>),
+    );
+    let clock = Arc::new(SystemClock);
+    let app = SignIn::new(pool.clone(), clock, Arc::new(NoLinks)).into_router(routes);
+    let jar = ensure_pre_session(CookieJar::new()).expect("pre-session");
+    let pre: Vec<String> = jar
+        .iter()
+        .map(|c| format!("{}={}", c.name(), c.value()))
+        .collect();
+    let csrf = vec![("csrf".to_owned(), csrf_token(&jar).expect("token"))];
+    let (_, cookies, ..) = post_to(&app, (&link, &pre.join("; ")), &csrf, "same-origin").await;
+    let line = cookies.iter().find(|c| c.starts_with(SESSION_COOKIE));
+    line.and_then(|l| l.split(';').next())
+        .expect("signed in")
+        .to_owned()
+}
+
+/// `GET` [`INBOX_CHECK_ROUTE`] with `query` and the `Cookie` header `cookie`: status,
+/// `Cache-Control` and page.
+async fn inbox(app: &Router, cookie: &str, query: &str) -> (StatusCode, String, String) {
+    let request = Request::get(format!("{INBOX_CHECK_ROUTE}{query}"))
+        .header(header::HOST, "askhava.test")
+        .header(header::COOKIE, cookie)
+        .body(Body::empty())
+        .expect("request");
+    let response = app.clone().oneshot(request).await.expect("answer");
+    let status = response.status();
+    let cache = response.headers().get(header::CACHE_CONTROL).cloned();
+    let cache = cache.and_then(|v| v.to_str().ok().map(str::to_owned));
+    let body = to_bytes(response.into_body(), 1 << 20).await.expect("body");
+    let html = String::from_utf8_lossy(&body).into_owned();
+    (status, cache.unwrap_or_default(), html)
+}
+
+/// The inbox check's same-site `POST` as `session` with its own token and `fields`, from `site`.
+async fn inbox_post(
+    app: &Router,
+    session: &str,
+    fields: &[(&str, &str)],
+    site: &str,
+) -> StatusCode {
+    let csrf = csrf_token(&jar_with(session)).expect("token");
+    let posted: Vec<(String, String)> = [("csrf", csrf.as_str())]
+        .iter()
+        .chain(fields)
+        .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
+        .collect();
+    let (status, _, cache, _) = post_to(app, (INBOX_CHECK_ROUTE, session), &posted, site).await;
+    assert_eq!(cache, "no-store", "SEC-034");
+    status
+}
+
+/// The owner's stored inbox check, read through `businesses`' `api`.
+async fn check_of(pool: &PgPool, business: Uuid) -> EmailCheck {
+    let mut conn = pool.acquire().await.expect("connection");
+    let team = members(&mut conn, business).await.expect("team");
+    let by = Acting {
+        business,
+        member: team[0].id,
+    };
+    email_check(&mut conn, by).await.expect("check")
+}
+
+/// TD-SEC-45 (BIZ-042, SEC-004, SEC-034, SEC-042, SEC-048, D-462, D-3676): after activation the
+/// inbox check is refused without a business session (the Business door's 401 linking to sign-in)
+/// and served to the signed-in owner, `no-store`, with no sample pick step; a sample is sent and
+/// an answer stored once per person; a cross-site or wrong-token `POST` is a 403 that changes
+/// nothing and is a `csrf_rejected` security event.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_sec_45_the_inbox_check_after_activation(pool: PgPool) {
+    store_lists(&pool).await;
+    let (records, verify, mail) = (Records::new(), FakeVerify::default(), FakeMail::default());
+    let app = app_mailing(&pool, &records, &verify, &mail);
+    let (b, binding, id) = signed(&app, &[], &[]).await;
+    let at = (&b, binding.as_str());
+    coded(&app, at).await;
+    press(&app, at, SERVICE_AREA_ROUTE, &AREA).await;
+    let (status, ..) = email_post(&app, at, &code_in(&mail.sent()[0].1)).await;
+    assert!(status == StatusCode::OK && status_of(&pool, id).await == "active");
+    let (status, cache, html) = inbox(&app, &[b.pre.as_str(), &binding].join("; "), "").await;
+    assert_eq!(
+        (status, cache.as_str()),
+        (StatusCode::UNAUTHORIZED, "no-store")
+    );
+    assert!(
+        html.contains("/b/sign-in") && !html.contains("sample"),
+        "SEC-004"
+    );
+    let fields = [("step", "send_sample")];
+    let status = inbox_post(&app, &b.pre, &fields, "same-origin").await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED, "signed out sends nothing");
+    assert!(!check_of(&pool, id).await.sample_sent);
+    let session = signed_in(&pool, &mail.sent()[1].1).await;
+    let (status, cache, html) = inbox(&app, &session, "?app=iphone").await;
+    assert!(status == StatusCode::OK && cache == "no-store");
+    assert!(
+        html.contains("Send me a sample job card") && html.contains("value=\"iphone\" selected")
+    );
+    assert!(!html.contains("Send a sample pick"), "D-462");
+    assert_eq!(
+        inbox_post(&app, &session, &fields, "same-origin").await,
+        StatusCode::SEE_OTHER
+    );
+    assert!(
+        check_of(&pool, id).await.sample_sent,
+        "BIZ-042: the sample sent"
+    );
+    let (_, _, html) = inbox(&app, &session, "").await;
+    assert!(html.contains("Send the sample again") && html.contains("value=\"spam\""));
+    for _ in 0..2 {
+        let status = inbox_post(&app, &session, &[("answer", "spam")], "same-origin").await;
+        assert_eq!(status, StatusCode::SEE_OTHER);
+    }
+    assert_eq!(
+        check_of(&pool, id).await.answer,
+        Some(InboxAnswer::SpamOrJunk)
+    );
+    let events = Events::default();
+    let guard = tracing::subscriber::set_default(events.clone());
+    let inboxed = [("answer", "inbox")];
+    let status = inbox_post(&app, &session, &inboxed, "cross-site").await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "cross-site");
+    let wrong = owned(&[("csrf", &"0".repeat(64)), ("answer", "inbox")]);
+    let (status, ..) = post_to(&app, (INBOX_CHECK_ROUTE, &session), &wrong, "same-origin").await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "wrong CSRF token");
+    drop(guard);
+    let logged = events.0.lock().expect("events").clone();
+    let rejected = logged.iter().filter(|l| l.contains("\"csrf_rejected\""));
+    assert_eq!(rejected.count(), 2, "SEC-048");
+    assert_eq!(
+        check_of(&pool, id).await.answer,
+        Some(InboxAnswer::SpamOrJunk),
+        "unchanged"
+    );
+}
+
+/// `fields` as owned pairs.
+fn owned(fields: &[(&str, &str)]) -> Vec<(String, String)> {
+    fields
+        .iter()
+        .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
+        .collect()
 }
