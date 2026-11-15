@@ -757,6 +757,8 @@ def test_the_ally_selector_names_only_paths_that_can_change_what_ally_renders(tm
         "app/messaging/templates/en.json", "app/core/src/kernel.rs", "app/server/src/lib.rs", "migrations/0099_x.sql",
         "tests/a11y/page_states.ts", "tests/e2e/webserver.ts", "tests/e2e/other.spec.ts", "docs/architecture.md",
         "docs/decisions.md", "package-lock.json", "stand_ins/stripe.py", ".github/workflows/a11y.yml", "scripts/x.py", "",
+        "docs/legal/terms.md", "docs/copy/pages.md", "docs/catalog/markets.yaml", "app/intake/data/towns.json", "Cargo.lock",
+        "app/core/Cargo.toml", "app/portals/templates/parts/card.html", "Cargo.toml", "docs/spec/fees.md",
     ]
     done = subprocess.run(["python3", str(ALLY), "select", "--base", "origin/main", "--root", str(work)],
                           input="\n".join(changed), capture_output=True, text=True, check=True)
@@ -764,7 +766,9 @@ def test_the_ally_selector_names_only_paths_that_can_change_what_ally_renders(tm
         "app/portals/src/view.rs", "app/payments/src/routes.rs", "app/payments/src/old_routes.rs",
         "app/portals/templates/page.html", "app/portals/static/quote_page.ts", "app/server/src/lib.rs",
         "migrations/0099_x.sql", "tests/a11y/page_states.ts", "tests/e2e/webserver.ts", "package-lock.json",
-        "stand_ins/stripe.py", ".github/workflows/a11y.yml",
+        "stand_ins/stripe.py", ".github/workflows/a11y.yml", "docs/legal/terms.md", "docs/copy/pages.md",
+        "docs/catalog/markets.yaml", "app/intake/data/towns.json", "Cargo.lock", "app/core/Cargo.toml",
+        "app/portals/templates/parts/card.html",
     ]
 
 
@@ -802,7 +806,8 @@ def _bare_path(tmp_path: Path) -> str:
 
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    for tool in ("bash", "git", "python3", "grep", "sed", "head", "tail", "mktemp", "rm", "cat", "dirname", "awk", "tr"):
+    for tool in ("bash", "git", "python3", "grep", "sed", "head", "tail", "mktemp", "rm", "cat", "dirname", "awk", "tr",
+                 "timeout", "cut", "mkdir", "cp"):
         found = shutil.which(tool)
         assert found is not None, tool
         (bin_dir / tool).symlink_to(found)
@@ -823,12 +828,13 @@ def test_the_ally_step_says_not_needed_or_skipped_and_is_never_red_without_its_t
 
     quiet = run()
     assert quiet.returncode == 0 and "not needed: no changed path can change what Ally renders" in quiet.stdout
-    assert "prehandin --ally: green" in quiet.stdout and "Sources unchanged" not in quiet.stdout  # --ally runs only Ally
+    assert "prehandin --ally: green (not needed)" in quiet.stdout and "Sources unchanged" not in quiet.stdout  # --ally runs only Ally
     (work / "app/portals/templates/page.html").write_text("<main><button>Go</button></main>\n")
     git(work, "commit", "-qam", "a page changed")
     page = run()
     assert page.returncode == 0, page.stdout
     assert "touches app/portals/templates/page.html" in page.stdout and "skipped: no cargo on PATH (Ci runs Ally)" in page.stdout
+    assert "prehandin --ally: skipped (Ci runs Ally)" in page.stdout and "green" not in page.stdout
 
 
 def test_ally_runs_only_on_its_own_call_and_the_full_gate_points_to_it() -> None:
@@ -843,3 +849,68 @@ def test_ally_runs_only_on_its_own_call_and_the_full_gate_points_to_it() -> None
                for s in a11y["jobs"]["a11y"]["steps"])
     template = (ROOT / "kit/prompts/TEMPLATE.md").read_text(encoding="utf-8")
     assert "bash scripts/prehandin.sh --ally" in template and "prehandin --ally: green" in template
+
+
+def test_a_report_with_only_setup_errors_is_named_and_exits_3(tmp_path: Path) -> None:
+    """Review BLOCKER: the globalSetup threw (cargo build, migrate, a server), so no test ran."""
+    path = tmp_path / "results.json"
+    path.write_text(json.dumps({"suites": [], "errors": [{"message": "Error: Command failed: cargo build\n  at run"}],
+                                "stats": {"expected": 0, "unexpected": 0, "skipped": 0, "flaky": 0}}))
+    done = subprocess.run(["python3", str(ALLY), "summary", str(path)], capture_output=True, text=True, check=False)
+    assert done.returncode == 3
+    assert done.stdout.splitlines() == ["SETUP ERROR Error: Command failed: cargo build", "Ally: 0 failed, 0 passed, 0 skipped"]
+
+
+FAKE_NPX = """#!/usr/bin/env bash
+if [ -n "${FAKE_REPORT:-}" ]; then
+  mkdir -p test-results/a11y-report && cp "$FAKE_REPORT" test-results/a11y-report/results.json
+fi
+echo "fake suite log line: Error: the stand-in server exited with code 1"
+exit "${FAKE_CODE:-0}"
+"""
+REPORTS = {
+    "green": {"suites": [{"specs": [{"title": "axe on /p", "file": "a.spec.ts", "line": 1,
+                                     "tests": [{"results": [{"status": "passed"}]}]}]}], "stats": {"expected": 1}},
+    "failures": {"suites": [{"specs": [{"title": "axe on /p", "file": "a.spec.ts", "line": 1, "tests": [{"results": [
+        {"status": "failed", "error": {"message": "Error: x\n+   \"target-size: button\","}}]}]}]}],
+        "stats": {"expected": 0, "unexpected": 1}},
+    "setup": {"suites": [], "errors": [{"message": "Error: Command failed: target/debug/server migrate"}], "stats": {}},
+}
+CASES = [  # (report, exit code, gate exit, wanted lines)
+    ("green", 0, 0, ["Ally: 0 failed, 1 passed", "prehandin --ally: green"]),
+    ("failures", 1, 1, ['FAIL a.spec.ts:1 axe on /p: Error: x received "target-size', "FAILED: Ally (fix the failures"]),
+    ("setup", 1, 0, ["SETUP ERROR Error: Command failed: target/debug/server migrate",
+                     "skipped: the Ally suite did not start here (Error: Command failed: target/debug/server migrate)",
+                     "fake suite log line", "prehandin --ally: skipped (Ci runs Ally)"]),
+    (None, 1, 0, ["skipped: the Ally suite did not start here (fake suite log line: Error: the stand-in",
+                  "prehandin --ally: skipped (Ci runs Ally)"]),
+    (None, 124, 0, ["skipped: not finished in 540 s (Ci runs Ally)", "prehandin --ally: skipped (Ci runs Ally)"]),
+    ("green", 137, 0, ["skipped: not finished in 540 s (Ci runs Ally)", "prehandin --ally: skipped (Ci runs Ally)"]),
+]
+
+
+@pytest.mark.parametrize(("report", "code", "gate_exit", "wanted"), CASES)
+def test_the_ally_step_fails_only_on_failed_tests_and_skips_what_it_cannot_judge(
+        tmp_path: Path, report: str | None, code: int, gate_exit: int, wanted: list[str]) -> None:
+    """A fake npx (no build, no browser): failed tests are red; a suite that never started, a timeout (124, or 137
+    after the kill grace) and no report are skips that leave the verdict to Ci, and never say "green"."""
+    work = _ally_repo(tmp_path)
+    (work / "app/portals/templates/page.html").write_text("<main><button>Go</button></main>\n")
+    git(work, "commit", "-qam", "a page changed")
+    (work / "node_modules/@playwright/test").mkdir(parents=True)
+    path = _bare_path(tmp_path)
+    for tool, text in (("npx", FAKE_NPX), ("npm", "#!/usr/bin/env bash\nexit 0\n"), ("node", "#!/usr/bin/env bash\nexit 0\n"),
+                       ("cargo", "#!/usr/bin/env bash\nexit 0\n")):
+        (Path(path) / tool).write_text(text)
+        (Path(path) / tool).chmod(0o755)
+    env = {"PATH": path, "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path), "DATABASE_URL": "postgres://fake@localhost/none",
+           "E2E_PORT": "39871", "FAKE_CODE": str(code)}
+    if report is not None:
+        (tmp_path / "report.json").write_text(json.dumps(REPORTS[report]))
+        env["FAKE_REPORT"] = str(tmp_path / "report.json")
+    done = subprocess.run(["bash", str(GATE), "--ally", "--base", "origin/main"], cwd=work, capture_output=True, text=True,
+                          env=env, check=False)
+    assert done.returncode == gate_exit, done.stdout
+    for line in wanted:
+        assert line in done.stdout, (line, done.stdout)
+    assert "green" not in done.stdout or report == "green" and code == 0

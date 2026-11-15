@@ -9,8 +9,10 @@ attempt 1: axe target-size on its own buttons) is fixed inside the session inste
 `select` reads the changed paths (one per line on stdin) and prints each one that can change what `Ally`
 renders or checks, nothing when none can:
 
-- a page template (`app/<crate>/templates/*.html`), a browser script or stylesheet (`app/<crate>/static/`),
+- a page template (`app/<crate>/templates/**.html`), a browser script or stylesheet (`app/<crate>/static/`),
   an `askama.toml`;
+- what pages compile in or render: `docs/legal/`, `docs/copy/`, `docs/catalog/`, `app/<crate>/data/`, a crate's
+  `Cargo.toml` and `Cargo.lock` (a dependency or feature change alters the build the suite starts);
 - the suite and its server: `tests/a11y/`, `tests/e2e/webserver.ts` and `tests/e2e/keyed.ts` (the suite
   imports both), the stand-ins it starts (`stand_ins/`), the npm tree (`package.json`, `package-lock.json`),
   `.github/workflows/a11y.yml`;
@@ -25,7 +27,10 @@ reaches `Ally` through the `.route(` call that serves it, which is a trigger.
 
 `summary` reads the suite's JSON report (`test-results/a11y-report/results.json`) and prints one line per
 failed test, its location, the first line of its error and the first items a list comparison received (the axe
-rule and its targets), then the counts, so the worker reads failures only.
+rule and its targets), then the counts, so the worker reads failures only. Errors outside any test (the suite's
+globalSetup threw: the build, the migrations, the stand-ins or a server) are printed first as `SETUP ERROR` lines;
+when no test ran it exits 3, and scripts/prehandin.sh then says the suite did not start and leaves the verdict
+to `Ci`, since such a fault may not be the change's.
 
 Usage:
   git diff --name-only BASE HEAD | python3 scripts/prehandin_ally.py select --base BASE [--root REPO]
@@ -46,14 +51,16 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent.parent
 # Non-Rust paths that change what `Ally` renders or how it runs.
 ALLY_PATHS = re.compile(
-    r"^(app/[^/]+/templates/[^/]+\.html$|app/[^/]+/static/|app/[^/]+/askama\.toml$|tests/a11y/"
-    r"|tests/e2e/(webserver|keyed)\.ts$|stand_ins/|migrations/|package(-lock)?\.json$|\.github/workflows/a11y\.yml$)"
+    r"^(app/[^/]+/templates/.+\.html$|app/[^/]+/static/|app/[^/]+/askama\.toml$|app/[^/]+/data/|app/[^/]+/Cargo\.toml$"
+    r"|Cargo\.lock$|docs/(legal|copy|catalog)/|tests/a11y/|tests/e2e/(webserver|keyed)\.ts$|stand_ins/|migrations/"
+    r"|package(-lock)?\.json$|\.github/workflows/a11y\.yml$)"
 )
 RUST_SOURCE = re.compile(r"^app/([^/]+)/src/(.+\.rs)$")
 COMPOSITION = ("app/server/src/lib.rs", "app/server/src/main.rs")
 ROUTE_CALL = ".route("
 MAX_FAILURES = 20
 MAX_ITEMS = 3
+NO_TEST_RAN = 3  # `summary`'s exit status when the suite did not start
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 RECEIVED_ITEM = re.compile(r"^\+\s{2,}\S")
 
@@ -136,12 +143,23 @@ def gist(message: str) -> str:
     return (first[:200] + (" received " + " | ".join(received) if received else ""))[:400]
 
 
-def summary(path: Path) -> str:
-    """The failed tests (at most MAX_FAILURES) and the counts of the run."""
-    report = json.loads(path.read_text(encoding="utf-8"))
+def setup_errors(report: dict[str, Any]) -> list[str]:
+    """The first line of each error outside a test: the globalSetup (build, migrate, stand-ins, servers) threw."""
+    return [gist(str(error.get("message", error))) for error in report.get("errors", []) if isinstance(error, dict)]
+
+
+def ran(report: dict[str, Any]) -> int:
+    """How many tests ran (passed, failed, flaky or skipped)."""
+    stats = report.get("stats", {})
+    return sum(int(stats.get(key, 0)) for key in ("expected", "unexpected", "flaky", "skipped"))
+
+
+def summary(report: dict[str, Any]) -> str:
+    """The setup errors, the failed tests (at most MAX_FAILURES) and the counts of the run."""
     failed = list(failures(report))
     stats = report.get("stats", {})
-    lines = [f"FAIL {line}" for line in failed[:MAX_FAILURES]]
+    lines = [f"SETUP ERROR {line}" for line in setup_errors(report)]
+    lines += [f"FAIL {line}" for line in failed[:MAX_FAILURES]]
     if len(failed) > MAX_FAILURES:
         lines.append(f"... and {len(failed) - MAX_FAILURES} more failed tests")
     lines.append(f"Ally: {len(failed)} failed, {stats.get('expected', 0)} passed, {stats.get('skipped', 0)} skipped")
@@ -162,11 +180,12 @@ def main(argv: list[str] | None = None) -> int:
             print(path)
         return 0
     try:
-        print(summary(args.report))
+        report = json.loads(args.report.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         print(f"no readable report at {args.report}: {str(error)[:200]}")
         return 1
-    return 0
+    print(summary(report))
+    return 0 if ran(report) else NO_TEST_RAN
 
 
 if __name__ == "__main__":

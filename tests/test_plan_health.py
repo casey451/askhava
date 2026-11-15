@@ -390,7 +390,9 @@ def test_f_a_get_route_a_goal_quotes_counts_unless_listed_a_stand_in_or_a_call(t
     import plan_pages
 
     goal = ("It serves `GET /terms` from `site`. The stand-in serves `GET /_stand_in/twilio/code`. "
-            "`stand_ins/stripe.py` serves `GET /v1/refunds?payment_intent=`. It links `GET /q/{token}` and `GET /healthz`.")
+            "`stand_ins/stripe.py` serves `GET /v1/refunds?payment_intent=`. It links `GET /q/{token}` and `GET /healthz`. "
+            "It lists charges through Stripe's `GET /charges/list`. It reads `GET /v1/charges` after a dispute. "
+            "Twilio's `GET /Accounts/x` stays.")
     root = pages_repo(tmp_path, [plan_task("T005", goal=goal)])
     found = plan_pages.warnings(root, ["T005"])
     assert len(found) == 1 and "T005: serves `GET /terms` (its goal)" in found[0]

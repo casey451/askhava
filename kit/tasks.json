@@ -1242,7 +1242,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 16
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -32469,7 +32469,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 17
+    "context_pct": 21
    },
    "branch": "claude/task/T449-emergency-texts-counted",
    "prompt": "kit/prompts/T449.md",

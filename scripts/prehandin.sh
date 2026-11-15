@@ -20,11 +20,13 @@
 #     stays inside a 600 s Bash call) it says so and lets `Ci` judge. Measured 271 s warm, 324 s cold for payments, so it is not in --quick (the runner's 240 s).
 #   --ally (its own call, D-3837): the required `Ally` check (.github/workflows/a11y.yml) on the branch, when
 #     scripts/prehandin_ally.py `select` names a changed path that can change what it renders (page templates
-#     and scripts, page-crate and route sources, the router composition, migrations, the suite and its
-#     server); else it prints "not needed". It needs cargo, node_modules with @playwright/test (npm ci when
+#     and scripts, page-crate and route sources, the router composition, migrations, the docs, data and
+#     Cargo files pages compile in, the suite and its server); else it prints "not needed". It needs cargo, node_modules with @playwright/test (npm ci when
 #     missing), a Chromium that launches (one `npx playwright install chromium` try), DATABASE_URL or the
 #     local PostgreSQL 16 smoke.sh uses (a fresh askhava_ally database each run), and the suite's ports free;
-#     a missing one says it skipped, never red. It builds the test-control binaries and runs the suite as
+#     a missing one says it skipped, never red, and so does a run in which no test ran (the build, the
+#     migrations, the stand-ins or a server did not start: its errors and log are shown, `Ci` judges it); a
+#     skip ends `prehandin --ally: skipped (Ci runs Ally)`, never "green". It builds the test-control binaries and runs the suite as
 #     a11y.yml does, printing only failed tests and counts; past PREHANDIN_ALLY_TIMEOUT (540 s for the whole
 #     call, set-up included, inside one 600 s Bash call) it says so and lets `Ci` judge. Measured in a 2-core session (D-3837): 210 s for the
 #     test-control build from cold, 149 s for the suite (334 tests); Ci takes 85 to 115 s and 90 to 120 s.
@@ -226,37 +228,54 @@ ally_ready() {
   done
 }
 
+ALLY_VERDICT="green"
+ally_skip() { echo "skipped: $1 (Ci runs Ally)"; ALLY_VERDICT="skipped (Ci runs Ally)"; }
+
 ally_part() {
   step "Ally: pages changed? (scripts/prehandin_ally.py)"
-  local picked log code=0 ts built=()
+  local picked log code=0 ts built=() left summary
   picked="$(ally_paths)"
   if [ -z "${picked}" ]; then
     echo "not needed: no changed path can change what Ally renders"
+    ALLY_VERDICT="green (not needed)"
     return 0
   fi
   printf '%s\n' "${picked}" | head -3 | sed 's/^/touches /'
   step "Ally (as a11y.yml runs it: test-control build, then the suite)"
-  ally_ready || return 0
-  local left=$((ALLY_TIMEOUT - SECONDS))  # the whole --ally call stays inside PREHANDIN_ALLY_TIMEOUT
-  if [ "${left}" -lt 120 ]; then echo "skipped: ${left} s left of ${ALLY_TIMEOUT} s after the set-up (Ci runs Ally)"; return 0; fi
+  ally_ready || { ALLY_VERDICT="skipped (Ci runs Ally)"; return 0; }
+  # The whole call stays inside PREHANDIN_ALLY_TIMEOUT, the kill grace and the clean-up included.
+  left=$((ALLY_TIMEOUT - SECONDS - 30))
+  if [ "${left}" -lt 120 ]; then ally_skip "${left} s left of ${ALLY_TIMEOUT} s after the set-up"; return 0; fi
   for ts in app/*/static/*.ts; do
     if [ -e "${ts}" ] && [ ! -e "${ts%.ts}.js" ]; then built+=("${ts%.ts}.js"); fi
   done
   log="$(mktemp)"
   rm -f "${ALLY_REPORT}"
   # timeout signals the whole process group, so the servers the suite started stop with it.
-  { npm run build && CI=true SQLX_OFFLINE=true timeout --kill-after=20 "${left}" \
-      npx playwright test --config tests/a11y/playwright.config.ts; } >"${log}" 2>&1 || code=$?
+  CI=true SQLX_OFFLINE=true timeout --kill-after=20 "${left}" bash -c \
+    'npm run build && npx playwright test --config tests/a11y/playwright.config.ts' >"${log}" 2>&1 || code=$?
   [ "${#built[@]}" -eq 0 ] || rm -f "${built[@]}"  # npm run build's .js files are not tracked: leave none behind
   if [ "${code}" -eq 124 ] || [ "${code}" -eq 137 ]; then
-    echo "skipped: not finished in ${ALLY_TIMEOUT} s (Ci runs Ally)"
-  elif [ -f "${ALLY_REPORT}" ]; then
-    python3 scripts/prehandin_ally.py summary "${ALLY_REPORT}"
-    [ "${code}" -eq 0 ] || { rm -f "${log}"; fail "Ally (fix the failures above; the full report is ${ALLY_REPORT})"; }
-  elif [ "${code}" -ne 0 ]; then
-    tail -30 "${log}"; rm -f "${log}"; fail "Ally (the suite did not start; the log's last lines are above)"
+    rm -f "${log}"; ally_skip "not finished in ${ALLY_TIMEOUT} s"; return 0
+  fi
+  summary=0
+  if [ -f "${ALLY_REPORT}" ]; then python3 scripts/prehandin_ally.py summary "${ALLY_REPORT}" || summary=$?; else summary=3; fi
+  if [ "${code}" -ne 0 ] && [ "${summary}" -ne 0 ]; then
+    # No test ran: the build, the migrations, the stand-ins or a server did not start. Not judged here.
+    tail -30 "${log}"
+    ally_skip "the Ally suite did not start here ($(ally_cause "${log}")); its log is ${log}"
+    return 0
   fi
   rm -f "${log}"
+  [ "${code}" -eq 0 ] || fail "Ally (fix the failures above; the full report is ${ALLY_REPORT})"
+}
+
+ally_cause() {
+  # The first error line the report or the log gives, for the skip line.
+  local cause=""
+  [ -f "${ALLY_REPORT}" ] && cause="$(python3 scripts/prehandin_ally.py summary "${ALLY_REPORT}" 2>/dev/null | sed -n 's/^SETUP ERROR //p' | head -1)"
+  [ -n "${cause}" ] || cause="$(grep -m1 -E 'Error|error' "$1" || true)"
+  printf '%s' "${cause:-exit without a report}" | cut -c1-160
 }
 
 # Ci's Coverage job for the floored crates this change touches (D-1440): the same nightly, flags and
@@ -294,7 +313,7 @@ coverage() {
 
 if [ -n "${ALLY}" ]; then
   ally_part
-  printf '\nprehandin --ally: green\n'
+  printf '\nprehandin --ally: %s\n' "${ALLY_VERDICT}"
   exit 0
 fi
 quick_part

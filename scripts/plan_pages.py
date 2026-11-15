@@ -9,8 +9,8 @@ while the plan gave the entry to T495, which ran later: the whole attempt failed
 This module finds that hole from the plan alone. A task serves a GET route when a section 13 row
 `| GET | <path> | <module> | T### |` names it (the queued task that wires the row, D-1868), or when its goal
 or acceptance quotes `` `GET <path>` `` for a path section 13 does not list (a task that serves a route not
-listed adds its row as `yes`; a sentence that names a stand-in, whose routes are not the app's, and a path with
-a query string, a call the app makes, are left out). Such a route is warned unless:
+listed adds its row as `yes`; a sentence that names a stand-in, Stripe or Twilio, whose routes are not the
+app's, and a path with a query string or under `/v1/`, a call the app makes, are left out). Such a route is warned unless:
 
 - `page_states.ts` already quotes the path, `fixtures.ts`' `NOT_PAGES` lists it, or it is a test-control
   `/__test/` route (left out of the route table);
@@ -52,7 +52,7 @@ GET_ROW = re.compile(r"^\|\s*GET\s*\|\s*(/[^\s|]*)\s*\|[^|]*\|\s*([^|]*?)\s*\|",
 GOAL_GET = re.compile(r"`GET (/[^`\s]*)`")
 QUOTED_PATH = re.compile(r"\"(/[^\"\s]*)\"")
 NOT_PAGES = re.compile(r"\[\s*\"(/[^\"]*)\",")
-STAND_IN = re.compile(r"stand[-_ ]in", re.IGNORECASE)
+OUTSIDE = re.compile(r"stand[-_ ]in|\bstripe\b|\btwilio\b", re.IGNORECASE)
 REGISTRY = re.compile(r"\b(PAGE_STATES|PAGE_ENTRIES|NOT_PAGES)\b|page_states\.ts")
 DECLINES = re.compile(r"\badds (none|no)\b|\bis T\d{3}'s\b")
 SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z(`])")
@@ -93,7 +93,8 @@ def sentences(task: dict[str, Any]) -> list[str]:
 def served(plan: Plan, task: dict[str, Any]) -> list[str]:
     """The GET routes the task serves: its section 13 rows, then the unlisted `GET <path>` its text quotes."""
     rows = [path for path, wired in plan.rows.items() if wired == task["id"]]
-    quoted = [p for s in sentences(task) if not STAND_IN.search(s) for p in GOAL_GET.findall(s) if "?" not in p]
+    quoted = [p for s in sentences(task) if not OUTSIDE.search(s) for p in GOAL_GET.findall(s)
+              if "?" not in p and not p.startswith("/v1/")]
     return list(dict.fromkeys(rows + [p for p in quoted if p not in plan.rows]))
 
 
