@@ -212,16 +212,24 @@ def session_id(args: argparse.Namespace, starter: str) -> str:
 
 
 def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, GitHubEnv]:
-    """The Config from kit/tasks.json and the real Env, with stage gating by scripts/stage_exit.py."""
-    kit = json.loads((ROOT / "kit" / "tasks.json").read_text(encoding="utf-8"))
+    """The Config from main's kit/tasks.json and the real Env, with stage gating by scripts/stage_exit.py.
+
+    The run's own checkout may predate main's plan (D-3619: T302 was claimed from an older graph that lacked
+    its dependency T450), so everything below reads main's file at the head just fetched whenever the two
+    differ, and no task is claimed this cycle when main's file cannot be read (`main_kit`, D-3797)."""
+    local = KIT_FILE.read_text(encoding="utf-8")
     starter = starter_name()
-    env = GitHubEnv(ROOT, kit["tasks"], outbox_dir, repo=repo_name(), starter=starter, runner_sha=git_out("rev-parse", "HEAD"),
-                    state_ref=args.state_ref, lease_ref=args.lease_ref, dry_run=args.dry_run, clock=now_utc,
-                    pacing_line=pacing.status_line)
+    env = GitHubEnv(ROOT, json.loads(local)["tasks"], outbox_dir, repo=repo_name(), starter=starter,
+                    runner_sha=git_out("rev-parse", "HEAD"), state_ref=args.state_ref, lease_ref=args.lease_ref,
+                    dry_run=args.dry_run, clock=now_utc, pacing_line=pacing.status_line)
+    kit, refusal = main_kit(local, env.main_head(), git_file)
+    env.graph = kit["tasks"]
 
     def gate(state: st.State) -> set[str]:
-        env.main_head()  # merges must be local for the ancestry check
-        return stage_exit.passed_stages(kit["tasks"], state, env.read_nightly(), {}, stage_exit.git_is_ancestor(ROOT))
+        head = env.main_head()  # merges must be local for the ancestry check
+        ancestor = stage_exit.git_is_ancestor(ROOT)
+        nightly = stage_exit.gate_nightly(env.read_nightly(), head, ancestor)  # D-3795
+        return stage_exit.passed_stages(kit["tasks"], state, nightly, {}, ancestor)
 
     def stage_proof(state: st.State, stage: str) -> tuple[dict[str, Any] | None, list[str]]:
         env.main_head()  # the nightly commit and the merges must be local for git to answer
@@ -237,7 +245,8 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        lanes(ROOT / "kit" / "runner.json"), env.decision_numbers,
                        proof_stages=frozenset(proof.MACHINE_PROOFS), stage_proof=stage_proof,
                        lane_hint=lane_hint(os.environ.get("RUNNER_LANE", "")), locked=locked_path,
-                       plan_health=plan_health_checker(ROOT, kit), model_window=model_window.load(ROOT / "kit" / "runner.json"),
+                       plan_health=claim_health(kit, refusal),
+                       model_window=model_window.load(ROOT / "kit" / "runner.json"),
                        claim_first=claim_first(ROOT / "kit" / "runner.json"),
                        order=claim_order_setting(ROOT / "kit" / "runner.json"),
                        prefer_disjoint_crates=prefer_disjoint_crates(ROOT / "kit" / "runner.json"),
@@ -246,6 +255,41 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        smoke_ancestry=smoke_ancestry(ROOT / "kit" / "runner.json"))
     env.smoke_ancestry = cfg.smoke_ancestry  # the pre-session step's skip and the start routine agree (D-3058)
     return cfg, env
+
+
+KIT_FILE = ROOT / "kit" / "tasks.json"
+KIT_KEYS = ("tasks", "models", "protected_paths", "shared_paths")  # what `build` reads from kit/tasks.json
+
+
+def main_kit(local: str, head: str, show: Callable[[str, str], str | None]) -> tuple[dict[str, Any], str | None]:
+    """The parsed kit every claim reads, and why nothing may be claimed (None when claims may go on): main's
+    kit/tasks.json at `head` when it differs from the checkout's `local` text, the checkout's when they are
+    the same (D-3619, D-3797). Main's file unreadable or not a kit (no head, no file, bad JSON): the
+    checkout's kit and a reason, which `claim_health` turns into a refusal of every claim this cycle."""
+    kit = json.loads(local)
+    remote = show(head, "kit/tasks.json") if head else None
+    if remote is None:
+        return kit, f"main's kit/tasks.json is unreadable at {head[:12] or 'no fetched head'}; no claim this cycle (D-3797)"
+    if remote == local:
+        return kit, None
+    try:
+        main = json.loads(remote)
+        if not all(isinstance(main.get(key), (list, dict)) for key in KIT_KEYS):
+            raise ValueError(f"lacks one of {', '.join(KIT_KEYS)}")
+    except (ValueError, AttributeError) as exc:
+        return kit, f"main's kit/tasks.json at {head[:12]} is not a kit ({str(exc)[:120]}); no claim this cycle (D-3797)"
+    print(f"runner: kit/tasks.json differs from main's at {head[:12]}; main's plan is used (D-3797)")
+    return main, None
+
+
+def claim_health(kit: dict[str, Any], refusal: str | None) -> Callable[[st.State, str], list[str]] | None:
+    """The plan-health check for the chosen kit; with a `refusal` (main's plan unreadable, D-3797) one that
+    refuses every candidate with that reason, so the cycle claims nothing and STATUS.md says why (each
+    candidate's `plan_gap` mark clears itself once main's plan reads again). FIX-MAIN is never checked."""
+    if refusal is None:
+        return plan_health_checker(ROOT, kit)
+    print(f"runner: {refusal}")
+    return lambda _state, _tid: [refusal]
 
 
 def run_to_limit_now() -> Callable[[datetime, st.State], bool]:
