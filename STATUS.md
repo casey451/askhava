@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-15T13:32:38Z by runner 26562e72279f (actions).
+Updated 2026-11-15T13:32:57Z by runner 26562e72279f (actions).
 
-**Building: T261 in progress since 12:48Z; 347 of 480 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 13:32Z; 347 of 480 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 347 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T261 claimed 12:48Z, lease until 15:48Z
+- **Lane:** idle since 13:32Z (no task in progress)
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:25Z, 7 min before this update
 - **Keeper:** last ran 12:14Z, next wake 17:54Z
@@ -18,8 +18,9 @@ Updated 2026-11-15T13:32:38Z by runner 26562e72279f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T261 | portals and server (harness): the served Confirm route under | MERGE_PENDING | 5 | 44 min | 13:32Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T462 | server: the sign-up inbox check is served behind the busines | check_failed | 1 | 30 min | 12:13Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T261 | portals and server (harness): the served Confirm route under | check_failed | 4 | 2 h 6 min | 11:16Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
+| T261 | portals and server (harness): the served Confirm route under | check_failed | 4 | 2 h 6 min | 11:16Z |  |
 | T461 | server: business sign-up's service area, email code and acti | done | 4 | 54 min | 08:38Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | done | 2 | 53 min | 07:15Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | done | 2 | 50 min | 06:16Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -113,7 +114,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T261 (lease until 2026-11-15T15:48:00Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T462", "at": "2026-11-15T12:13:26Z", "cache_read_input_tokens": 6416885, "output_tokens": 40272, "cache_creation_input_tokens": 177669, "input_tokens": 151}
+- {"task": "T261", "at": "2026-11-15T13:32:38Z", "input_tokens": 126, "output_tokens": 21102, "cache_read_input_tokens": 4129264, "cache_creation_input_tokens": 169296}
