@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T01:33:27Z by runner 88f0d709d2c2 (actions).
+Updated 2026-11-15T01:33:48Z by runner 88f0d709d2c2 (actions).
 
 **Building: T261 in progress since 01:07Z; 342 of 471 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-15T01:33:27Z by runner 88f0d709d2c2 (actions).
 - **Lane:** lane 1: T261 claimed 01:07Z, lease until 04:07Z; lane 2: T461 claimed 01:31Z, lease until 04:31Z
 - **Week:** 54% used, 84.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:33Z, 0 min before this update
-- **Keeper:** last ran 01:24Z, next wake 04:09Z
+- **Keeper:** last ran 01:33Z, next wake 04:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -88,7 +88,6 @@ Updated 2026-11-15T01:33:27Z by runner 88f0d709d2c2 (actions).
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | done | 2 | 21 min | 02:25Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T280 | server and messaging (harness): the business sign-in pages a | resync | 3 | 107 min | 02:23Z |  |
-| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 2 | 1 min | 01:33Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
