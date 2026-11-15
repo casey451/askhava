@@ -38,11 +38,10 @@ use askhava_adapters::api::{
     PaymentsAdapter, StripePayments, TwilioConfig, VerifyAdapter, twilio_clients,
 };
 use askhava_businesses::api::{
-    AccountStatus, ConsentChannel, ContactKind, Flag, MaskedContact, NameRefusal, RecordFound,
-    SignUpForm, SignupError, SignupRecord, SignupSettings, Step, business as stored_business,
-    check_code, next_step, number_is_old, record_match, save_business_name, screen_names,
-    send_code_seen, signup_progress, signup_record, stored_category_list, stored_enabled,
-    waitlisted,
+    ConsentChannel, ContactKind, Flag, MaskedContact, NameRefusal, RecordFound, SignUpForm,
+    SignupError, SignupRecord, SignupSettings, Step, business as stored_business, check_code,
+    next_step, number_is_old, record_match, save_business_name, screen_names, send_code_seen,
+    signup_progress, signup_record, stored_category_list, stored_enabled, waitlisted,
 };
 use askhava_core::api::{Environment, IdSecret, LinkKind, LinkSalt, Settings, link_token};
 use askhava_intake::api::Admission;
@@ -663,7 +662,7 @@ async fn step_post(form: Arc<Form>, request: Request, ask: Ask) -> Response {
 
 impl Form {
     /// BIZ-002, BIZ-016, BIZ-026, D-3641, D-3779: the business must be `Pending` or
-    /// `NeedsReview` and its code not done (else the bare 403); its record is read in this request
+    /// `NeedsReview` (`takes_identity_code`) and its code not done (else the bare 403); its record is read in this request
     /// (`signup_record`, the bound ROC number). `ask` acts only when `signup_progress`'s stored
     /// step allows it: a code send when the chain's next step is a text or email, the letter when
     /// it is the letter, the code check once any step was sent (so an early check takes no try);
@@ -676,8 +675,8 @@ impl Form {
         (code, csrf): (&str, &str),
         now: Timestamp,
     ) -> Response {
-        match stored_business(db, business).await.map(|b| b.status) {
-            Ok(AccountStatus::Pending | AccountStatus::NeedsReview) => {}
+        match stored_business(db, business).await {
+            Ok(b) if b.status.takes_identity_code() => {}
             Ok(_) => return not_now("status"),
             Err(_) => return failure("business"),
         }
