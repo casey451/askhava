@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-15T16:50:29Z by runner 2311163dfede (actions).
+Updated 2026-11-15T16:50:53Z by runner 2311163dfede (actions).
 
-**Building: T261 in progress since 15:25Z; 348 of 481 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 16:50Z; 348 of 481 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 348 of 481 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T261 claimed 15:25Z, lease until 18:25Z
+- **Lane:** idle since 16:50Z (no task in progress)
 - **Week:** 61% used, 72.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:25Z, 24 min before this update
 - **Keeper:** last ran 15:55Z, next wake 18:27Z
@@ -18,9 +18,10 @@ Updated 2026-11-15T16:50:29Z by runner 2311163dfede (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T261 | portals and server (harness): the served Confirm route under | MERGE_PENDING | 6 | 85 min | 16:50Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T455 | server: the Pause, Resume and Ask about a charge email links | done | 1 | 38 min | 14:58Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | BLOCKED | 2 | 2 min | 14:14Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
-| T261 | portals and server (harness): the served Confirm route under | check_failed | 5 | 44 min | 13:32Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
+| T261 | portals and server (harness): the served Confirm route under | check_failed | 5 | 44 min | 13:32Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | check_failed | 1 | 30 min | 12:13Z |  |
 | T261 | portals and server (harness): the served Confirm route under | check_failed | 4 | 2 h 6 min | 11:16Z |  |
 | T461 | server: business sign-up's service area, email code and acti | done | 4 | 54 min | 08:38Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
@@ -107,7 +108,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T261 (lease until 2026-11-15T18:25:04Z)
 
 ## Last usage reading
-- {"task": "T455", "at": "2026-11-15T14:58:18Z", "output_tokens": 67693, "cache_creation_input_tokens": 218620, "input_tokens": 216, "cache_read_input_tokens": 12067802}
+- {"task": "T261", "at": "2026-11-15T16:50:29Z", "input_tokens": 222, "cache_read_input_tokens": 5060890, "output_tokens": 40736, "cache_creation_input_tokens": 240221}
