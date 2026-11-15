@@ -27,13 +27,14 @@ use askhava_businesses::api::{
     AccountStatus, Acting, NoticeChannel, OpenCardsTime, OpenCardsTimes, Roles, add_member,
     add_owner, create, notice_channel, open_cards_times, remove_member,
 };
+use askhava_calls::api::job_had_line;
 use askhava_catalog::api::load_embedded;
-use askhava_core::api::{Guarded, MIGRATOR, Settings, SystemClock};
+use askhava_core::api::{Claimed, Guarded, MIGRATOR, Settings, SystemClock, WorkerId, claim};
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer, TextIn, receive_text, record_answer};
 use askhava_jobs::api::{JobStatus, create as create_job, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
-use askhava_ops::api::{Actor as AuditActor, EXPORT_PAGE_MAX, export_audit};
+use askhava_ops::api::{Actor as AuditActor, EXPORT_PAGE_MAX, STREAM_KIND, export_audit};
 use askhava_payments::api::{
     EntryKind, LedgerEntry, NewEntry, business_statement, ledger_append, no_fee_release,
 };
@@ -412,6 +413,11 @@ fn masked() -> MaskedPool {
 /// `business`'s page pick on a new quoted job, released to her on the $0 path (PICK-022, FEE-012,
 /// D-1739): free first win, `no_fee_release`, settled `free`, the minted proof and the release.
 async fn released_pick(pool: &PgPool, business: Uuid) -> Uuid {
+    released_job(pool, business).await.0
+}
+
+/// [`released_pick`]'s pick and its job, for a case that also needs the job (TD-BIZ-42).
+async fn released_job(pool: &PgPool, business: Uuid) -> (Uuid, Uuid) {
     let now = Timestamp::now();
     let mut db = pool.acquire().await.expect("db");
     load_embedded(&mut db).await.expect("catalog");
@@ -452,7 +458,7 @@ async fn released_pick(pool: &PgPool, business: Uuid) -> Uuid {
     let proof = askhava_server::release_minter().mint(cleared, contact);
     let shown = release(pool, (&vault(), &masked()), (proof, false), now).await;
     assert!(matches!(shown.expect("release"), Released::Shown(_)));
-    pick
+    (pick, job)
 }
 
 /// The assembled router, with the vault the portal's vault pages read.
@@ -774,27 +780,53 @@ async fn td_sec_43_forms_refuse_unknown_fields_and_values(pool: PgPool) {
     assert_eq!(actions(&pool).await, audit, "no channel change logged");
 }
 
-/// Counts of the tables a release, a notice, a charge, a task or a masked line would write to
-/// (TD-BIZ-42); a task copying an audit row off the database (OPS-011) is the read's own.
-const WRITES: [&str; 8] = [
-    "SELECT count(*) FROM picks.release",
-    "SELECT count(*) FROM payments.ledger_entry",
-    "SELECT count(*) FROM payments.charge_attempt",
-    "SELECT count(*) FROM calls.number_pool",
-    "SELECT count(*) FROM messaging.outbox",
-    "SELECT count(*) FROM messaging.email_outbox",
-    "SELECT count(*) FROM messaging.portal_notice",
-    "SELECT count(*) FROM core.task WHERE kind <> 'ops.offdb_stream'",
-];
+/// What a page load could have written, read only through the crates' public `api` (no SQL
+/// outside the query macros, SEC-029): the business's ledger rows (a charge), the audit actions
+/// other than `read` (a release, charge attempt or masked line each logs its own action),
+/// whether the job holds a masked line, and the tasks queued since the last call (a notice, a
+/// send or a release step), less the off-database copy of an audit row (OPS-011) (TD-BIZ-42).
+#[derive(Debug, PartialEq)]
+struct Writes {
+    ledger: usize,
+    audit: Vec<String>,
+    line: bool,
+    tasks: Vec<String>,
+}
 
-/// The row count of each of [`WRITES`].
-async fn written(pool: &PgPool) -> Vec<i64> {
-    let mut counts = Vec::new();
-    for sql in WRITES {
-        let n: i64 = sqlx::query_scalar(sql).fetch_one(pool).await.expect(sql);
-        counts.push(n);
+/// Every unclaimed task due by 2030, claimed once, so a later call names only tasks queued since.
+async fn queued(pool: &PgPool) -> Vec<String> {
+    let owner = WorkerId::new(pool).await.expect("worker");
+    let later = Timestamp::from_second(1_900_000_000).expect("time");
+    let claimed = claim(pool, owner, later, SignedDuration::from_secs(60), 1000);
+    let claimed = claimed.await.expect("claim");
+    let copies = |t: &Claimed| t.kind != STREAM_KIND;
+    claimed.into_iter().filter(copies).map(|t| t.kind).collect()
+}
+
+impl Writes {
+    /// The same, less the audit rows of `read`, the action a vault read logs.
+    fn less(mut self, read: &str) -> Self {
+        self.audit.retain(|a| a != read);
+        self
     }
-    counts
+}
+
+/// [`Writes`] for `business`'s `job`.
+async fn written(pool: &PgPool, (business, job): (Uuid, Uuid)) -> Writes {
+    let around = (
+        Timestamp::now() - SignedDuration::from_hours(24 * 40),
+        Timestamp::now() + SignedDuration::from_hours(1),
+    );
+    let ledger = business_statement(pool, business, around).await;
+    let mut db = pool.acquire().await.expect("db");
+    let line = job_had_line(&mut db, job).await.expect("line");
+    drop(db);
+    Writes {
+        ledger: ledger.expect("statement").lines.len(),
+        audit: actions(pool).await,
+        line,
+        tasks: queued(pool).await,
+    }
 }
 
 /// Whether `text` shows her fake phone in any usual shape (PICK-024, PRIV-005).
@@ -812,14 +844,9 @@ fn shows_her_phone(text: &str) -> bool {
     .any(|shape| text.contains(shape))
 }
 
-/// A $75.00 introduction fee charge for `pick`'s job, so the ledger has a non-zero total.
-async fn charge_for(pool: &PgPool, business: Uuid, pick: Uuid) {
+/// A $75.00 introduction fee charge for `job`, so the ledger has a non-zero total.
+async fn charge_for(pool: &PgPool, business: Uuid, job: Uuid) {
     let mut db = pool.acquire().await.expect("db");
-    let job: Uuid = sqlx::query_scalar("SELECT job_id FROM picks.pick WHERE id = $1")
-        .bind(pick)
-        .fetch_one(&mut *db)
-        .await
-        .expect("pick's job");
     let key = format!("t454.charge.{job}.{business}");
     let entry = NewEntry {
         kind: EntryKind::Charge,
@@ -840,8 +867,8 @@ async fn charge_for(pool: &PgPool, business: Uuid, pick: Uuid) {
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_biz_42_home_shows_your_numbers_and_saves_open_cards_times(pool: PgPool) {
     let x = owner(&pool, "owner@x.example").await;
-    let pick = released_pick(&pool, x.by.business).await;
-    charge_for(&pool, x.by.business, pick).await;
+    let (_, job) = released_job(&pool, x.by.business).await;
+    charge_for(&pool, x.by.business, job).await;
     let app = app(&pool);
     let home = get(&app, "/b", &x.jar).await;
     assert!(home.status == 200 && home.no_store, "{}", home.status);
@@ -881,10 +908,19 @@ async fn td_biz_42_released_pick_page_shows_first_name_and_tip_once(pool: PgPool
     let x = owner(&pool, "owner@x.example").await;
     let billing = Roles::new(false, true).expect("roles");
     let biller = member(&pool, x.by, "billing@x.example", billing).await;
-    let pick = released_pick(&pool, x.by.business).await;
-    let (app, path) = (app(&pool), format!("/b/picks/{pick}"));
-    let before = written(&pool).await;
+    let ids = released_job(&pool, x.by.business).await;
+    let (app, path) = (app(&pool), format!("/b/picks/{}", ids.0));
+    queued(&pool).await;
+    let before = written(&pool, (x.by.business, ids.1)).await;
     let first = get(&app, &path, &x.jar).await;
+    let audit = actions(&pool).await;
+    let read = audit[before.audit.len()..]
+        .first()
+        .expect("the read is logged");
+    assert!(
+        audit[before.audit.len()..].iter().all(|a| a == read),
+        "{audit:?}"
+    );
     assert!(first.status == 200 && first.no_store, "{}", first.status);
     assert_eq!(first.text.matches("Dana").count(), 1, "her first name once");
     assert_eq!(first.text.matches(TIP_LINE).count(), 1, "the tip line once");
@@ -895,8 +931,8 @@ async fn td_biz_42_released_pick_page_shows_first_name_and_tip_once(pool: PgPool
         assert_eq!(reload.text, first.text, "the same page on every load");
     }
     assert_eq!(
-        written(&pool).await,
-        before,
+        written(&pool, (x.by.business, ids.1)).await.less(read),
+        before.less(read),
         "a load writes nothing but its read"
     );
 }
@@ -907,8 +943,8 @@ async fn td_biz_42_released_pick_page_shows_first_name_and_tip_once(pool: PgPool
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_biz_42_billing_and_csv_match_the_ledger(pool: PgPool) {
     let x = owner(&pool, "owner@x.example").await;
-    let pick = released_pick(&pool, x.by.business).await;
-    charge_for(&pool, x.by.business, pick).await;
+    let (_, job) = released_job(&pool, x.by.business).await;
+    charge_for(&pool, x.by.business, job).await;
     let now = Timestamp::now();
     let around = (
         now - SignedDuration::from_hours(24 * 40),
