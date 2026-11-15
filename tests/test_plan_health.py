@@ -337,3 +337,78 @@ def test_e_precision_spans_arguments_methods_and_new_variants(tmp_path: Path) ->
     assert len(found) == 1 and "enum `Kind`" in found[0] and "risk: exhaustive match" in found[0]
     (root / "tests/integration/tests/theirs.rs").write_text(user.replace("Kind::B => {}", "_ => {}"), encoding="utf-8")
     assert not any("goal changes" in w for w in plan_symbols.warnings(root, None, ["T001"]))
+
+
+# ---- (f) pages without states (D-3837)
+
+ROUTES_13 = ("## 12. Keeping this file true\n\n## 13. Routes\n\n| Method | Path | Module | Wired |\n|---|---|---|---|\n"
+             "| GET | /q/{token} | portals | yes |\n| GET | /b/picks/{pick}/confirm | portals | T002 |\n"
+             "| POST | /b/picks/{pick}/confirm | portals | T002 |\n| GET | /healthz | server | T003 |\n")
+STATES_TS = 'const QUOTE_ROUTE = "/q/{token}";\nexport const PAGE_ENTRIES = [{ route: QUOTE_ROUTE }];\n'
+FIXTURES_TS = 'const NOT_PAGES: readonly (readonly [string, string])[] = [\n  ["/b/billing/statement.csv", "a download"],\n];\n'
+
+
+def pages_repo(tmp_path: Path, tasks: list[dict[str, Any]], states: str = STATES_TS) -> Path:
+    root = make_repo(tmp_path, tasks)
+    (root / "docs/architecture.md").write_text(ROUTES_13, encoding="utf-8")
+    (root / "tests/a11y").mkdir(parents=True)
+    (root / "tests/a11y/page_states.ts").write_text(states, encoding="utf-8")
+    (root / "tests/a11y/fixtures.ts").write_text(FIXTURES_TS, encoding="utf-8")
+    return root
+
+
+def test_f_a_route_row_with_no_page_states_and_no_plan_for_them_is_warned(tmp_path: Path) -> None:
+    """T261 before D-3836: its section 13 row turns `yes` in its change, the entry was a later task's."""
+    import plan_pages
+
+    later = plan_task("T004", deps=["T002"], goal="It adds the Confirm page's `PAGE_STATES` entry for `/b/picks/{pick}/confirm`.")
+    root = pages_repo(tmp_path, [plan_task("T002", goal="It serves the Confirm page."), later,
+                                 plan_task("T003", goal="It serves the health check.")])
+    found = plan_pages.warnings(root, ["T002", "T003", "T004"])
+    assert len(found) == 2 and "T002: serves `GET /b/picks/{pick}/confirm` (its section 13 row)" in found[0]
+    assert "T003: serves `GET /healthz`" in found[1]  # NOT_PAGES is the way out for a route that is no page
+    assert not any("POST" in w or "/q/{token}" in w for w in found)  # only GET rows; a `yes` row is main's
+
+
+def test_f_its_own_plan_an_earlier_task_or_an_existing_entry_clears_it(tmp_path: Path) -> None:
+    import plan_pages
+
+    own = plan_task("T002", goal="It serves the Confirm page and adds its `PAGE_STATES` entry in `tests/a11y/page_states.ts`.")
+    assert plan_pages.warnings(pages_repo(tmp_path / "a", [own]), ["T002"]) == []
+    declines = plan_task("T002", goal="It serves the Confirm page. The route's `PAGE_STATES` entry is T004's; this task adds none.")
+    assert len(plan_pages.warnings(pages_repo(tmp_path / "b", [declines]), ["T002"])) == 1
+    first = plan_task("T001", goal="It adds `PAGE_STATES` for `/b/picks/{pick}/confirm` ahead of the route.")
+    other = plan_task("T001", goal="It adds `PAGE_STATES` for `/q/{token}`.")
+    serve = plan_task("T002", deps=["T001"], goal="It serves the Confirm page.")
+    assert plan_pages.warnings(pages_repo(tmp_path / "c", [first, serve]), ["T002"]) == []
+    assert len(plan_pages.warnings(pages_repo(tmp_path / "d", [other, serve]), ["T002"])) == 1
+    covered = STATES_TS + 'const CONFIRM_ROUTE = "/b/picks/{pick}/confirm";\n'
+    assert plan_pages.warnings(pages_repo(tmp_path / "e", [serve], covered), ["T002"]) == []
+
+
+def test_f_a_get_route_a_goal_quotes_counts_unless_listed_a_stand_in_or_a_call(tmp_path: Path) -> None:
+    import plan_pages
+
+    goal = ("It serves `GET /terms` from `site`. The stand-in serves `GET /_stand_in/twilio/code`. "
+            "`stand_ins/stripe.py` serves `GET /v1/refunds?payment_intent=`. It links `GET /q/{token}` and `GET /healthz`.")
+    root = pages_repo(tmp_path, [plan_task("T005", goal=goal)])
+    found = plan_pages.warnings(root, ["T005"])
+    assert len(found) == 1 and "T005: serves `GET /terms` (its goal)" in found[0]
+    assert plan_pages.warnings(root, ["T999", "kit"]) == []
+
+
+def test_f_plan_health_prints_it_report_only_and_survives_a_fault(tmp_path: Path, capsys: Any, monkeypatch: Any) -> None:
+    import plan_pages
+
+    root = pages_repo(tmp_path, [plan_task("T002", goal="It serves the Confirm page.")])
+    state_file = write_state(root, st.new_state())
+    assert ph.main(["--root", str(root), "--state", str(state_file), "T002", "--pages"]) == 0
+    out = capsys.readouterr().out
+    assert "WARN T002: serves `GET /b/picks/{pick}/confirm`" in out and "1 report-only page-states warning(s) (D-3837)" in out
+    assert ph.main(["--root", str(root), "--state", str(state_file), "T002", "--pages", "--json"]) == 0
+    assert len(json.loads(capsys.readouterr().out)[ph.PAGES_KEY]) == 1
+    assert ph.main(["--root", str(root), "--state", str(state_file), "T002"]) == 0
+    assert "page-states" not in capsys.readouterr().out  # only under --all or --pages
+    monkeypatch.setattr(plan_pages, "warnings", lambda *a: 1 / 0)
+    assert ph.main(["--root", str(root), "--state", str(state_file), "T002", "--pages"]) == 0
+    assert "check (f) unavailable: ZeroDivisionError" in capsys.readouterr().out

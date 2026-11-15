@@ -18,14 +18,26 @@
 #     comparison, on those floors only (D-1440). It needs cargo-llvm-cov, the pinned nightly and
 #     DATABASE_URL, else it says it skipped; past PREHANDIN_COVERAGE_TIMEOUT (360 s, so the whole gate
 #     stays inside a 600 s Bash call) it says so and lets `Ci` judge. Measured 271 s warm, 324 s cold for payments, so it is not in --quick (the runner's 240 s).
-# Not here: pytest, cargo and tsc (scripts/smoke.sh runs them; the worker runs both scripts), and `Ci`'s
-# workspace-total coverage (4.5 to 6 minutes in a session, D-1300).
+#   --ally (its own call, D-3837): the required `Ally` check (.github/workflows/a11y.yml) on the branch, when
+#     scripts/prehandin_ally.py `select` names a changed path that can change what it renders (page templates
+#     and scripts, page-crate and route sources, the router composition, migrations, the suite and its
+#     server); else it prints "not needed". It needs cargo, node_modules with @playwright/test (npm ci when
+#     missing), a Chromium that launches (one `npx playwright install chromium` try), DATABASE_URL or the
+#     local PostgreSQL 16 smoke.sh uses (a fresh askhava_ally database each run), and the suite's ports free;
+#     a missing one says it skipped, never red. It builds the test-control binaries and runs the suite as
+#     a11y.yml does, printing only failed tests and counts; past PREHANDIN_ALLY_TIMEOUT (540 s for the whole
+#     call, set-up included, inside one 600 s Bash call) it says so and lets `Ci` judge. Measured in a 2-core session (D-3837): 210 s for the
+#     test-control build from cold, 149 s for the suite (334 tests); Ci takes 85 to 115 s and 90 to 120 s.
+#     Too long beside coverage in one call, so it is its own call after this one (kit/prompts/TEMPLATE.md),
+#     and never in --quick (the runner's 240 s).
+# Not here: pytest, cargo and tsc (scripts/smoke.sh runs them; the worker runs both scripts), `Ci`'s
+# workspace-total coverage (4.5 to 6 minutes in a session, D-1300), and Twin.
 #
 # The worker runs it after `bash scripts/smoke.sh` as the last step before hand-in (kit/prompts/TEMPLATE.md).
 # The runner runs main's copy with --quick on the handed-in head at `python3 -m runner --after` and does not
 # hand in a red head (runner/github_env.py `prehandin`, runner/__main__.py `after`, D-1300).
 #
-# Usage: bash scripts/prehandin.sh [--quick] [--base REF] [--branch NAME]
+# Usage: bash scripts/prehandin.sh [--quick | --ally] [--base REF] [--branch NAME]
 #   --base    the main commit to compare with (default origin/main, fetched first when the fetch works)
 #   --branch  the branch name check_pr_change.py checks paths for (default the current branch)
 # PREHANDIN_ROOT names the checkout to check when this file is run from elsewhere (the runner runs
@@ -34,10 +46,11 @@
 set -euo pipefail
 cd "${PREHANDIN_ROOT:-$(dirname "$0")/..}"
 
-QUICK="" BASE="" BRANCH=""
+QUICK="" ALLY="" BASE="" BRANCH=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --quick) QUICK=1 ;;
+    --ally) ALLY=1 ;;
     --base) BASE="$2"; shift ;;
     --branch) BRANCH="$2"; shift ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
@@ -141,7 +154,109 @@ extras() {
     fi
   fi
   coverage
-  echo "not run here: pytest, cargo and tsc (scripts/smoke.sh), Ci's workspace total coverage, Twin, Ally"
+  ally_hint
+  echo "not run here: pytest, cargo and tsc (scripts/smoke.sh), Ci's workspace total coverage, Twin"
+}
+
+# Ally on the branch (D-3837): a11y.yml's suite, run by `--ally` when the change can affect it.
+ALLY_TIMEOUT="${PREHANDIN_ALLY_TIMEOUT:-540}"
+ALLY_REPORT="test-results/a11y-report/results.json"
+ally_paths() {
+  # The changed paths that can change what Ally renders; empty when none can or the selector is missing.
+  [ -f scripts/prehandin_ally.py ] && [ -f tests/a11y/playwright.config.ts ] || return 0
+  printf '%s\n' "${CHANGED}" | python3 scripts/prehandin_ally.py select --base "${MERGE_BASE}" 2>/dev/null || true
+}
+
+ally_hint() {
+  local picked
+  picked="$(ally_paths)"
+  if [ -n "${picked}" ]; then
+    echo "Ally: this change touches $(printf '%s\n' "${picked}" | head -1); run bash scripts/prehandin.sh --ally"
+  else
+    echo "Ally: not needed (no changed path can change what it renders)"
+  fi
+}
+
+ally_database() {
+  # DATABASE_URL as given (Ci), else a fresh askhava_ally database on the local PostgreSQL 16 that
+  # scripts/smoke.sh starts, with smoke.sh's roles and a fresh password never printed. Fails, never exits.
+  [ -n "${DATABASE_URL:-}" ] && return 0
+  command -v pg_lsclusters >/dev/null 2>&1 && sudo -n true 2>/dev/null || return 1
+  pg_lsclusters | awk '$1 == "16" && $2 == "main" {print $4}' | grep -q online || sudo -n pg_ctlcluster 16 main start || return 1
+  local pass role sql=(sudo -n -u postgres psql -q)
+  pass="$(head -c 18 /dev/urandom | base64 | tr -dc 'A-Za-z0-9')"
+  "${sql[@]}" -tc "SELECT 1 FROM pg_roles WHERE rolname = 'askhava_ci'" | grep -q 1 \
+    || "${sql[@]}" -c "CREATE ROLE askhava_ci LOGIN CREATEDB" >/dev/null || return 1
+  "${sql[@]}" -c "ALTER ROLE askhava_ci PASSWORD '${pass}'" >/dev/null || return 1
+  for role in askhava_app askhava_migrator; do
+    "${sql[@]}" -tc "SELECT 1 FROM pg_roles WHERE rolname = '${role}'" | grep -q 1 \
+      || "${sql[@]}" -c "CREATE ROLE ${role} NOLOGIN" >/dev/null || return 1
+    "${sql[@]}" -c "GRANT ${role} TO askhava_ci" >/dev/null 2>&1 || return 1
+  done
+  "${sql[@]}" -c "DROP DATABASE IF EXISTS askhava_ally WITH (FORCE)" >/dev/null 2>&1 || return 1
+  sudo -n -u postgres createdb -O askhava_ci askhava_ally || return 1
+  export DATABASE_URL="postgres://askhava_ci:${pass}@localhost:5432/askhava_ally"
+}
+
+chromium_launches() {
+  timeout 60 node -e "
+    const { chromium } = require('@playwright/test');
+    (async () => { const b = await chromium.launch(); await (await b.newPage()).setContent('<p>x</p>'); await b.close(); })()
+      .catch(() => process.exit(1));" >/dev/null 2>&1
+}
+
+ally_ready() {
+  # Every tool the suite's globalSetup (tests/e2e/webserver.ts) uses; a missing one is a skip, never red.
+  local tool port web="${E2E_PORT:-3000}"
+  for tool in cargo node npx python3; do
+    command -v "${tool}" >/dev/null 2>&1 || { echo "skipped: no ${tool} on PATH (Ci runs Ally)"; return 1; }
+  done
+  if [ ! -d node_modules/@playwright/test ] && ! npm ci --ignore-scripts >/dev/null 2>&1; then
+    echo "skipped: npm ci failed, no @playwright/test (Ci runs Ally)"; return 1
+  fi
+  if ! chromium_launches; then
+    timeout 180 npx playwright install chromium >/dev/null 2>&1 || true
+    chromium_launches || { echo "skipped: Chromium is not installed or does not launch (Ci runs Ally)"; return 1; }
+  fi
+  ally_database || { echo "skipped: no DATABASE_URL and no local PostgreSQL 16 to make one (Ci runs Ally)"; return 1; }
+  for port in 4010 "${web}" "$((web + 19))"; do
+    if (exec 3<>"/dev/tcp/127.0.0.1/${port}") 2>/dev/null; then
+      echo "skipped: port ${port} is in use; the suite needs 4010, ${web} and $((web + 19)) free (Ci runs Ally)"; return 1
+    fi
+  done
+}
+
+ally_part() {
+  step "Ally: pages changed? (scripts/prehandin_ally.py)"
+  local picked log code=0 ts built=()
+  picked="$(ally_paths)"
+  if [ -z "${picked}" ]; then
+    echo "not needed: no changed path can change what Ally renders"
+    return 0
+  fi
+  printf '%s\n' "${picked}" | head -3 | sed 's/^/touches /'
+  step "Ally (as a11y.yml runs it: test-control build, then the suite)"
+  ally_ready || return 0
+  local left=$((ALLY_TIMEOUT - SECONDS))  # the whole --ally call stays inside PREHANDIN_ALLY_TIMEOUT
+  if [ "${left}" -lt 120 ]; then echo "skipped: ${left} s left of ${ALLY_TIMEOUT} s after the set-up (Ci runs Ally)"; return 0; fi
+  for ts in app/*/static/*.ts; do
+    if [ -e "${ts}" ] && [ ! -e "${ts%.ts}.js" ]; then built+=("${ts%.ts}.js"); fi
+  done
+  log="$(mktemp)"
+  rm -f "${ALLY_REPORT}"
+  # timeout signals the whole process group, so the servers the suite started stop with it.
+  { npm run build && CI=true SQLX_OFFLINE=true timeout --kill-after=20 "${left}" \
+      npx playwright test --config tests/a11y/playwright.config.ts; } >"${log}" 2>&1 || code=$?
+  [ "${#built[@]}" -eq 0 ] || rm -f "${built[@]}"  # npm run build's .js files are not tracked: leave none behind
+  if [ "${code}" -eq 124 ] || [ "${code}" -eq 137 ]; then
+    echo "skipped: not finished in ${ALLY_TIMEOUT} s (Ci runs Ally)"
+  elif [ -f "${ALLY_REPORT}" ]; then
+    python3 scripts/prehandin_ally.py summary "${ALLY_REPORT}"
+    [ "${code}" -eq 0 ] || { rm -f "${log}"; fail "Ally (fix the failures above; the full report is ${ALLY_REPORT})"; }
+  elif [ "${code}" -ne 0 ]; then
+    tail -30 "${log}"; rm -f "${log}"; fail "Ally (the suite did not start; the log's last lines are above)"
+  fi
+  rm -f "${log}"
 }
 
 # Ci's Coverage job for the floored crates this change touches (D-1440): the same nightly, flags and
@@ -177,6 +292,11 @@ coverage() {
   rm -f "${report}" "${report}.log"
 }
 
+if [ -n "${ALLY}" ]; then
+  ally_part
+  printf '\nprehandin --ally: green\n'
+  exit 0
+fi
 quick_part
 if [ -z "${QUICK}" ]; then
   extras

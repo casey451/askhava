@@ -716,3 +716,125 @@ def test_the_measuring_tool_install_runs_under_actions_bash_e(tmp_path: Path, ca
         assert f"cargo install --locked --root {tmp_path}/tools --version =0.9.1 cargo-llvm-cov" in calls
     assert ("cargo " in calls) == (source == "crates.io") and ("tar " in calls) == (source == "release")
     assert (tmp_path / "path").read_text() == f"{tmp_path}/tools/bin\n"
+
+
+# ---- Ally on the branch (D-3837)
+
+ALLY = ROOT / "scripts" / "prehandin_ally.py"
+
+
+def _ally_repo(tmp_path: Path) -> Path:
+    """A fake tree: `portals` is a page crate (a template and a route), `payments` has one route file."""
+    work = _git_repo(tmp_path)
+    files = {
+        "app/portals/templates/page.html": "<main></main>\n",
+        "app/portals/src/routes.rs": 'fn r() { Router::new().route("/p", get(page)) }\n',
+        "app/portals/src/view.rs": "pub fn view() {}\n",
+        "app/portals/src/tests/view.rs": "fn t() {}\n",
+        "app/payments/src/routes.rs": 'fn r() { Router::new().route("/webhooks/x", post(hook)) }\n',
+        "app/payments/src/fees.rs": "pub fn fee() {}\n",
+        "app/payments/src/old_routes.rs": 'fn r() { Router::new().route("/old", get(old)) }\n',
+        "app/messaging/templates/email_body.html": "<p></p>\n",
+        "app/messaging/templates/en.json": "{}\n",
+        "app/core/src/kernel.rs": "pub fn k() {}\n",
+        **{rel: (ROOT / rel).read_text(encoding="utf-8") for rel in ("scripts/prehandin_ally.py", "tests/a11y/playwright.config.ts")},
+    }
+    for rel, text in files.items():
+        (work / rel).parent.mkdir(parents=True, exist_ok=True)
+        (work / rel).write_text(text)
+    git(work, "add", "-A")
+    git(work, "commit", "-qm", "base")
+    git(work, "update-ref", "refs/remotes/origin/main", "HEAD")
+    return work
+
+
+def test_the_ally_selector_names_only_paths_that_can_change_what_ally_renders(tmp_path: Path) -> None:
+    work = _ally_repo(tmp_path)
+    (work / "app/payments/src/old_routes.rs").write_text("fn r() {}\n")  # a route removed: still the route table
+    changed = [
+        "app/portals/src/view.rs", "app/portals/src/tests/view.rs", "app/payments/src/routes.rs", "app/payments/src/fees.rs",
+        "app/payments/src/old_routes.rs", "app/portals/templates/page.html", "app/portals/static/quote_page.ts",
+        "app/messaging/templates/en.json", "app/core/src/kernel.rs", "app/server/src/lib.rs", "migrations/0099_x.sql",
+        "tests/a11y/page_states.ts", "tests/e2e/webserver.ts", "tests/e2e/other.spec.ts", "docs/architecture.md",
+        "docs/decisions.md", "package-lock.json", "stand_ins/stripe.py", ".github/workflows/a11y.yml", "scripts/x.py", "",
+    ]
+    done = subprocess.run(["python3", str(ALLY), "select", "--base", "origin/main", "--root", str(work)],
+                          input="\n".join(changed), capture_output=True, text=True, check=True)
+    assert done.stdout.split() == [
+        "app/portals/src/view.rs", "app/payments/src/routes.rs", "app/payments/src/old_routes.rs",
+        "app/portals/templates/page.html", "app/portals/static/quote_page.ts", "app/server/src/lib.rs",
+        "migrations/0099_x.sql", "tests/a11y/page_states.ts", "tests/e2e/webserver.ts", "package-lock.json",
+        "stand_ins/stripe.py", ".github/workflows/a11y.yml",
+    ]
+
+
+def test_the_ally_summary_prints_failed_tests_and_counts_only(tmp_path: Path) -> None:
+    def spec(title: str, status: str, message: str = "") -> dict[str, Any]:
+        result = {"status": status, **({"error": {"message": message}} if message else {})}
+        return {"title": title, "file": "axe_all_pages.spec.ts", "line": 12, "tests": [{"results": [result]}]}
+
+    report = {"suites": [{"specs": [spec("A11Y-002: every GET route", "failed",
+                                         "\x1b[31mError: routes with no entry in PAGE_STATES\x1b[39m\n\nExpected: []"),
+                                    spec("planted", "passed")],
+                          "suites": [{"specs": [spec("axe on /b (x) at 320px", "timedOut")]}]}],
+              "stats": {"expected": 1, "unexpected": 2, "skipped": 0}}
+    path = tmp_path / "results.json"
+    path.write_text(json.dumps(report))
+    done = subprocess.run(["python3", str(ALLY), "summary", str(path)], capture_output=True, text=True, check=True)
+    assert done.stdout.splitlines() == [
+        "FAIL axe_all_pages.spec.ts:12 A11Y-002: every GET route: Error: routes with no entry in PAGE_STATES",
+        "FAIL axe_all_pages.spec.ts:12 axe on /b (x) at 320px: timedOut",
+        "Ally: 2 failed, 1 passed, 0 skipped",
+    ]
+    missing = subprocess.run(["python3", str(ALLY), "summary", str(tmp_path / "none.json")], capture_output=True, text=True,
+                             check=False)
+    assert missing.returncode == 1 and "no readable report" in missing.stdout
+
+
+def _bare_path(tmp_path: Path) -> str:
+    """A PATH with the shell tools the gate needs and no cargo, node or npx, wherever those live."""
+    import shutil
+
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    for tool in ("bash", "git", "python3", "grep", "sed", "head", "tail", "mktemp", "rm", "cat", "dirname", "awk", "tr"):
+        found = shutil.which(tool)
+        assert found is not None, tool
+        (bin_dir / tool).symlink_to(found)
+    return str(bin_dir)
+
+
+def test_the_ally_step_says_not_needed_or_skipped_and_is_never_red_without_its_tools(tmp_path: Path) -> None:
+    work = _ally_repo(tmp_path)
+    (work / "docs").mkdir()
+    (work / "docs/notes.md").write_text("docs only\n")
+    git(work, "add", "-A")
+    git(work, "commit", "-qm", "docs only")
+    env = {"PATH": _bare_path(tmp_path), "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path)}
+
+    def run() -> subprocess.CompletedProcess[str]:
+        return subprocess.run(["bash", str(GATE), "--ally", "--base", "origin/main"], cwd=work, capture_output=True,
+                              text=True, env=env, check=False)
+
+    quiet = run()
+    assert quiet.returncode == 0 and "not needed: no changed path can change what Ally renders" in quiet.stdout
+    assert "prehandin --ally: green" in quiet.stdout and "Sources unchanged" not in quiet.stdout  # --ally runs only Ally
+    (work / "app/portals/templates/page.html").write_text("<main><button>Go</button></main>\n")
+    git(work, "commit", "-qam", "a page changed")
+    page = run()
+    assert page.returncode == 0, page.stdout
+    assert "touches app/portals/templates/page.html" in page.stdout and "skipped: no cargo on PATH (Ci runs Ally)" in page.stdout
+
+
+def test_ally_runs_only_on_its_own_call_and_the_full_gate_points_to_it() -> None:
+    text = GATE.read_text(encoding="utf-8")
+    quick = text.split("quick_part() {", 1)[1].split("\n}\n", 1)[0]
+    extras = text.split("extras() {", 1)[1].split("\n}\n", 1)[0]
+    assert "ally" not in quick, "--quick (the runner's 240 s at --after) never runs Ally"
+    assert "ally_hint" in extras and "ally_part" not in extras, "the full gate names the --ally call, it does not run it"
+    assert "npx playwright test --config tests/a11y/playwright.config.ts" in text  # as a11y.yml runs it
+    a11y = yaml.safe_load((ROOT / ".github/workflows/a11y.yml").read_text(encoding="utf-8"))
+    assert any("npx playwright test --config tests/a11y/playwright.config.ts" in str(s.get("run", ""))
+               for s in a11y["jobs"]["a11y"]["steps"])
+    template = (ROOT / "kit/prompts/TEMPLATE.md").read_text(encoding="utf-8")
+    assert "bash scripts/prehandin.sh --ally" in template and "prehandin --ally: green" in template
