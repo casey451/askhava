@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-15T08:58:07Z by runner 344ce02931ce (actions).
+Updated 2026-11-15T09:01:14Z by runner cb399268cebe (actions).
 
-**Idle since 08:38Z; 346 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 08:59Z; 347 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 346 of 480 build tasks (owner gates not counted)
+- **Tasks done:** 347 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 08:38Z (no task in progress)
+- **Lane:** idle since 08:59Z (no task in progress)
 - **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:58Z, 0 min before this update
+- **Last run:** 08:58Z, 2 min before this update
 - **Keeper:** last ran 08:58Z, next wake 09:18Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 27 problem(s) on tasks still to run (+117 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 29 problem(s) on tasks still to run (+118 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T461 | server: business sign-up's service area, email code and acti | MERGE_PENDING | 4 | 54 min | 08:38Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
+| T461 | server: business sign-up's service area, email code and acti | done | 4 | 54 min | 08:38Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | done | 2 | 53 min | 07:15Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | done | 2 | 50 min | 06:16Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T461 | server: business sign-up's service area, email code and acti | BLOCKED | 3 | 49 min | 06:10Z |  |
@@ -73,7 +73,6 @@ Updated 2026-11-15T08:58:07Z by runner 344ce02931ce (actions).
 | T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 4 | 2 min | 09:18Z |  |
 | T301 | server and portals: the email action links are served (every | BLOCKED | 1 | 4 min | 09:13Z |  |
 | T398 | businesses: notice texts go only to approved phones, and a m | resync | 1 | 32 min | 09:01Z |  |
-| T300 | server and portals: the business portal is served behind the | BLOCKED | 1 | 5 min | 08:59Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -93,7 +92,7 @@ Updated 2026-11-15T08:58:07Z by runner 344ce02931ce (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 346 of 480
+**Tasks merged (throughput only):** 347 of 480
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -128,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 226 of 235 done
+- stage 4: 227 of 235 done
 - stage 5: 0 of 91 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
