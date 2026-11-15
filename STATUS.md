@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T21:22:34Z by runner 7b28987a9717 (actions).
+Updated 2026-11-15T21:22:47Z by runner ef9418c0e6b9 (actions).
 
 **Idle since 21:21Z; 352 of 499 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,12 +9,12 @@ Updated 2026-11-15T21:22:34Z by runner 7b28987a9717 (actions).
 - **Lane:** idle since 21:21Z (no task in progress)
 - **Week:** 64% used, 66.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:22Z, 0 min before this update
-- **Keeper:** last ran 20:30Z, next wake 23:25Z
+- **Keeper:** last ran 21:22Z, next wake 21:42Z
 
 ## Needs attention
 - BLOCKED T099: plan gap reported: PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a random Stripe webhook secret never exposed to specs; the stand-in signs with a different secret (stand_ins/stripe.py:82), so no spec can post a valid signed webhook and the post-payment closing checks (portal view, reload, one release row, no second fee, D-1739) cannot run. Reviewer confirmed the gap. Smallest fix: a harness task passing the keyed webhook secret to specs as E2E_KEYED_* . Reviewer round 2 also noted: free-win $0 Confirm release checks possible without webhook (te; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T099 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 22 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
