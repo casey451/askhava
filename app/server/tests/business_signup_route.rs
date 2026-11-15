@@ -734,8 +734,9 @@ async fn td_sec_45_identity_steps_refuse_a_bad_binding(pool: PgPool) {
     let (records, verify) = (Records::new(), FakeVerify::default());
     let app = app_coding(&pool, Some(&records), Some(&verify));
     let (b, binding, business) = signed(&app, &[], &[]).await;
+    let (.., stored) = signed(&app, &[], &[]).await;
     let value = binding.split_once('=').expect("value").1;
-    let other = value.replacen(&business.to_string(), &Uuid::new_v4().to_string(), 1);
+    let other = value.replacen(&business.to_string(), &stored.to_string(), 1);
     let zeros = format!("{business}.{}.{}", "0".repeat(32), "0".repeat(64));
     let bad = [
         String::new(),
@@ -783,6 +784,11 @@ async fn td_sec_45_identity_steps_refuse_a_bad_binding(pool: PgPool) {
     );
     assert_eq!((verify.seen().0.len(), verify.seen().1), (0, 0));
     assert_eq!(progress(&pool, business).await, (None, false));
+    assert_eq!(
+        progress(&pool, stored).await,
+        (None, false),
+        "the other sign-up"
+    );
 }
 
 /// TD-BIZ-49, TD-SEC-45 (BIZ-002, BIZ-016, BIZ-026, SEC-019, SEC-034, D-3641, D-3779): an R-37
@@ -858,7 +864,8 @@ async fn td_biz_49_the_identity_code_goes_to_the_bound_record_phone(pool: PgPool
 
 /// TD-SEC-45, TD-BIZ-49 (BIZ-002, BIZ-026, SEC-019): two sign-ups' code sends each reach only
 /// their own record contact (the city-list row's phone, then the ROC record's); "That number is
-/// old" shows the saved screen.
+/// old" shows the saved screen, and after it a send, letter or code check shows the saved screen
+/// and calls no Verify (D-1712).
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_sec_45_a_code_send_reaches_only_its_own_record(pool: PgPool) {
     store_lists(&pool).await;
@@ -879,4 +886,16 @@ async fn td_sec_45_a_code_send_reaches_only_its_own_record(pool: PgPool) {
     assert!(sent.len() == 2 && sent[0].ends_with("5550150") && sent[1].ends_with("5550142"));
     let (status, _, html) = press(&app, (&cb, &city_binding), NUMBER_OLD_ROUTE, &[]).await;
     assert!(status == StatusCode::OK && html.contains("Your sign-up is saved"));
+    for route in [CODE_SEND_ROUTE, LETTER_ROUTE, IDENTITY_CHECK_ROUTE] {
+        let (status, cache, html) =
+            press(&app, (&cb, &city_binding), route, &[("code", RIGHT)]).await;
+        let answer = (status, cache.as_str());
+        assert_eq!(answer, (StatusCode::OK, "no-store"), "{route}");
+        assert!(html.contains("Your sign-up is saved"), "D-1712: {route}");
+    }
+    assert_eq!(
+        (verify.seen().0.len(), verify.seen().1),
+        (2, 0),
+        "D-1712: never the old number"
+    );
 }

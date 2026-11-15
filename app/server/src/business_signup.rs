@@ -41,7 +41,8 @@ use askhava_businesses::api::{
     ConsentChannel, ContactKind, Flag, MaskedContact, NameRefusal, RecordFound, SignUpForm,
     SignupError, SignupRecord, SignupSettings, Step, business as stored_business, check_code,
     next_step, number_is_old, record_match, save_business_name, screen_names, send_code_seen,
-    signup_progress, signup_record, stored_category_list, stored_enabled, waitlisted,
+    signup_progress, signup_record, stored_category_list, stored_enabled, waiting_on_record,
+    waitlisted,
 };
 use askhava_core::api::{Environment, IdSecret, LinkKind, LinkSalt, Settings, link_token};
 use askhava_intake::api::Admission;
@@ -681,8 +682,10 @@ impl Form {
     /// (`signup_record`, the bound ROC number). `ask` acts only when `signup_progress`'s stored
     /// step allows it: a code send when the chain's next step is a text or email, the letter when
     /// it is the letter, the code check once any step was sent (so an early check takes no try);
-    /// "That number is old" (D-178) any time, then the saved screen. Any other press shows the stored state's screen and changes
-    /// nothing.
+    /// "That number is old" (D-178) any time, then the saved screen. While the sign-up waits on
+    /// a new record (`waiting_on_record`, D-1712) every other press shows the saved screen and
+    /// sends or checks nothing, so no code reaches the number called old. Any other press shows
+    /// the stored state's screen and changes nothing.
     async fn step(
         &self,
         db: &mut PgConnection,
@@ -700,6 +703,11 @@ impl Form {
             Ok(_) => return not_now("code done"),
             Err(_) => return failure("sign-up progress"),
         };
+        match waiting_on_record(db, business).await {
+            Ok(true) if !matches!(ask, Ask::Old) => return shown(self.saved(csrf)),
+            Ok(_) => {}
+            Err(_) => return failure("waiting on record"),
+        }
         let records = Records(self.start.records.as_ref());
         let found = match signup_record(db, &records, business).await {
             Ok(SignupRecord::Read(found)) => found,
