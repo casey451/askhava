@@ -25,7 +25,16 @@
 //! T460 (BIZ-002, BIZ-026, TXT-038, D-3779): the identity steps ([`Ask`], `Form::step`, D-3769)
 //! act only for the cookie's sign-up while it is open and `signup_progress` allows the step; the
 //! record contact is read in that request, never stored or logged; codes go through
-//! [`IdentityCodes`]. T461 and T462 add the later steps (BIZ-019, BIZ-040, BIZ-042, BIZ-058).
+//! [`IdentityCodes`]. T462 adds the inbox check (BIZ-042).
+//!
+//! T461 (BIZ-016, BIZ-019, BIZ-040, BIZ-058, SEC-014, D-3676, D-3743, D-3830): after the identity
+//! code, [`SERVICE_AREA_ROUTE`] saves the base ZIP and radius and sends the first email code;
+//! [`EMAIL_CHECK_ROUTE`] takes it (`confirm_mailbox`, which settles the sign-up) and
+//! [`EMAIL_RESEND_ROUTE`] sends a new one. Each send is admitted first under `CODE_SENDS_PER_IP`
+//! and [`SIGNUP_EMAIL_CODES_PER_BUSINESS`]; a refused send opens and sends nothing. The code goes
+//! only to the sign-up mailbox through [`SignupMail`] and is never logged or stored here. An
+//! activating code clears the [`SIGNUP_COOKIE`], emails the owner's sign-in link and shows the
+//! done screen; a flagged one shows `Screen::Review` and keeps the cookie.
 
 use std::future::Future;
 use std::io;
@@ -34,8 +43,9 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use askhava_adapters::api::{
-    AdapterError, Charge, CodeChannel, IdempotencyKey, LicenseLists, LicenseRecords, PaymentIntent,
-    PaymentsAdapter, StripePayments, TwilioConfig, VerifyAdapter, twilio_clients,
+    AdapterError, Charge, CodeChannel, EmailAdapter, IdempotencyKey, LicenseLists, LicenseRecords,
+    PaymentIntent, PaymentsAdapter, ResendEmail, StripePayments, TwilioConfig, VerifyAdapter,
+    twilio_clients,
 };
 use askhava_businesses::api::{
     ConsentChannel, ContactKind, Flag, MaskedContact, NameRefusal, RecordFound, SignUpForm,
@@ -44,12 +54,20 @@ use askhava_businesses::api::{
     signup_progress, signup_record, stored_category_list, stored_enabled, waiting_on_record,
     waitlisted,
 };
-use askhava_core::api::{Environment, IdSecret, LinkKind, LinkSalt, Settings, link_token};
-use askhava_intake::api::Admission;
+use askhava_businesses::api::{
+    ServiceArea, confirm_mailbox, join_facts, save_service_area, service_area, signup_mailbox,
+    start_signup_check,
+};
+use askhava_catalog::api::category as catalog_category;
+use askhava_core::api::{
+    Clock, Environment, IdSecret, LinkKind, LinkSalt, Settings, SystemClock, link_token,
+};
+use askhava_intake::api::{Admission, Key, Limit, admit};
 use askhava_licensing::api::{
     Agency, ClassMap, DailyCheck, ImportError, PestAttestation, check_license,
     record_agency_license, record_pest_attestation,
 };
+use askhava_messaging::api::MailboxCodeSender;
 use askhava_ops::api::Actor;
 use askhava_picks::api::{ConfirmSettings, WindowRules};
 use askhava_portals::api::{
@@ -60,7 +78,13 @@ use askhava_portals::api::{
     is_cross_site, record_security_event, refusal_problem, sealed_signup_page,
     security_event_client, submit_signup,
 };
-use askhava_privacy::api::{BusinessContactError, Vault, mailbox_for};
+use askhava_portals::api::{
+    CODE_SENDS_PER_IP, DoneFacts, EMAIL_CHECK_ROUTE, EMAIL_RESEND_ROUTE, SERVICE_AREA_ROUTE,
+    SignInAddress, done_facts, send_sign_in_link,
+};
+use askhava_privacy::api::{
+    BusinessContactError, BusinessPurpose, Vault, mailbox_for, read_business_mailbox,
+};
 use axum::Router;
 use axum::extract::{FromRequest, Request, State};
 use axum::http::header::{CACHE_CONTROL, HOST, HeaderValue, RETRY_AFTER, SET_COOKIE};
@@ -74,7 +98,7 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use super::business_contacts::ContactDirectory;
-use super::business_signin::NoVerify;
+use super::business_signin::{NoVerify, SignInMailer};
 
 /// TXT-035: business texting is off, so the form offers email notices alone and the E-SIGN box
 /// names email only (BIZ-036, CON-019).
@@ -88,6 +112,11 @@ const SIGNUP_COOKIE_SECS: i64 = 30 * 24 * 60 * 60;
 
 /// LIC-008: how long a business waits before trying again after an unreadable record.
 const TRY_AGAIN_SECS: &str = "30";
+
+/// SEC-014, SEC-025, PICK-055 (T461): sign-up email code sends per business, 5 per Arizona day,
+/// counted after `CODE_SENDS_PER_IP`, so the cookie's holder cannot flood the address.
+pub const SIGNUP_EMAIL_CODES_PER_BUSINESS: Limit =
+    Limit::daily("signup.email_codes_per_business", 5);
 
 /// What the form `POST` calls besides the pool (T459), each built from settings by
 /// [`ServedSignUp::from_settings`].
@@ -107,6 +136,8 @@ pub struct StartAdapters {
     pub settings: SignupSettings,
     /// TXT-038: the Verify client the identity codes are sent and checked through (T460).
     pub verify: IdentityCodes,
+    /// BIZ-016, BIZ-040: the email code and the owner's sign-in link (T461).
+    pub mail: SignupMail,
 }
 
 /// A boxed Verify answer, so [`IdentityCodes`] can hold any Verify client.
@@ -201,6 +232,9 @@ impl ServedSignUp {
             .route(NUMBER_OLD_ROUTE, post(number_old))
             .route(LETTER_ROUTE, post(letter))
             .route(IDENTITY_CHECK_ROUTE, post(identity_check))
+            .route(SERVICE_AREA_ROUTE, post(area_post))
+            .route(EMAIL_CHECK_ROUTE, post(email_check))
+            .route(EMAIL_RESEND_ROUTE, post(email_resend))
             .with_state(state);
         Self(routes)
     }
@@ -217,7 +251,7 @@ impl ServedSignUp {
     where
         I: IntoIterator<Item = (String, String)>,
     {
-        Self::built(pool, pairs, None)
+        Self::built(pool, pairs, (None, None))
     }
 
     /// As [`ServedSignUp::from_settings`], the identity codes going through `verify` instead
@@ -231,10 +265,28 @@ impl ServedSignUp {
         I: IntoIterator<Item = (String, String)>,
         V: VerifyAdapter + Send + Sync + 'static,
     {
-        Self::built(pool, pairs, Some(IdentityCodes::new(verify)))
+        Self::built(pool, pairs, (Some(IdentityCodes::new(verify)), None))
     }
 
-    fn built<I>(pool: PgPool, pairs: I, verify: Option<IdentityCodes>) -> io::Result<Self>
+    /// As [`ServedSignUp::with_verify`], the email code and sign-in link going through `mail`
+    /// (route tests' recording provider, BIZ-040).
+    ///
+    /// # Errors
+    ///
+    /// As [`ServedSignUp::from_settings`].
+    pub fn with_mail<I, V>(pool: PgPool, pairs: I, verify: V, mail: SignupMail) -> io::Result<Self>
+    where
+        I: IntoIterator<Item = (String, String)>,
+        V: VerifyAdapter + Send + Sync + 'static,
+    {
+        Self::built(pool, pairs, (Some(IdentityCodes::new(verify)), Some(mail)))
+    }
+
+    fn built<I>(
+        pool: PgPool,
+        pairs: I,
+        (verify, mail): (Option<IdentityCodes>, Option<SignupMail>),
+    ) -> io::Result<Self>
     where
         I: IntoIterator<Item = (String, String)>,
     {
@@ -246,7 +298,11 @@ impl ServedSignUp {
             .ok_or_else(|| io::Error::other("missing ASKHAVA_ID_SECRET"))?;
         let secret = IdSecret::new(1, raw.clone()).map_err(io::Error::other)?;
         let confirm = ConfirmSettings::from_pairs(pairs.clone()).map_err(io::Error::other)?;
-        let start = start_adapters(raw, &pairs, verify)?;
+        let mail = match mail {
+            Some(mail) => mail,
+            None => unsent_mail(&pool, &pairs)?,
+        };
+        let start = start_adapters(raw, &pairs, (verify, mail))?;
         Ok(Self::new(pool, secret, confirm, start))
     }
 
@@ -261,7 +317,7 @@ impl ServedSignUp {
 fn start_adapters(
     id_secret: SecretString,
     pairs: &[(String, String)],
-    verify: Option<IdentityCodes>,
+    (verify, mail): (Option<IdentityCodes>, SignupMail),
 ) -> io::Result<StartAdapters> {
     let settings = Settings::from_pairs(pairs.to_vec()).map_err(io::Error::other)?;
     let vault = super::vault_from(&settings, pairs.to_vec())?;
@@ -287,7 +343,84 @@ fn start_adapters(
             Some(verify) => verify,
             None => identity_codes(&settings, pairs)?,
         },
+        mail,
     })
+}
+
+/// D-3186: the app builds no Resend client yet, so the email code and the sign-in link are
+/// stored but not emailed, as `ServedSignIn::from_settings` builds its mailer.
+fn unsent_mail(pool: &PgPool, pairs: &[(String, String)]) -> io::Result<SignupMail> {
+    let settings = Settings::from_pairs(pairs.to_vec()).map_err(io::Error::other)?;
+    let vault = super::vault_from(&settings, pairs.to_vec())?.map(Arc::new);
+    let clock: Arc<dyn Clock> = Arc::new(SystemClock);
+    let link = SignInMailer::<ResendEmail>::new((pool.clone(), clock), vault.clone(), None);
+    Ok(SignupMail::new(vault, None, link))
+}
+
+/// A boxed email send's answer; the error carries no value (R5).
+type Sent<'a> = Pin<Box<dyn Future<Output = Result<(), ()>> + Send + 'a>>;
+
+/// The two emails sign-up sends, in a form that can sit behind `dyn`.
+trait Mails: Send + Sync {
+    fn code<'a>(
+        &'a self,
+        db: &'a mut PgConnection,
+        to: (Uuid, &'a SecretString),
+        now: Timestamp,
+    ) -> Sent<'a>;
+    fn link<'a>(&'a self, db: &'a mut PgConnection, to: SignInAddress, now: Timestamp) -> Sent<'a>;
+}
+
+/// The vault the code's address is opened in, the code mailer and the sign-in mailer.
+struct Mailers<E> {
+    vault: Option<Arc<Vault>>,
+    code: Option<MailboxCodeSender<E>>,
+    link: SignInMailer<E>,
+}
+
+impl<E: EmailAdapter + Send + Sync + 'static> Mails for Mailers<E> {
+    fn code<'a>(
+        &'a self,
+        db: &'a mut PgConnection,
+        (mailbox, code): (Uuid, &'a SecretString),
+        now: Timestamp,
+    ) -> Sent<'a> {
+        Box::pin(async move {
+            let (Some(vault), Some(sender)) = (&self.vault, &self.code) else {
+                return Ok(());
+            };
+            let purpose = BusinessPurpose::AccountEmail;
+            let address = read_business_mailbox(db, vault, purpose, mailbox).await;
+            let address = address.map_err(|_| ())?;
+            let sent = sender.send(db, (mailbox, &address), code, now).await;
+            sent.map(|_| ()).map_err(|_| ())
+        })
+    }
+
+    fn link<'a>(&'a self, db: &'a mut PgConnection, to: SignInAddress, now: Timestamp) -> Sent<'a> {
+        Box::pin(async move {
+            let sent = send_sign_in_link(db, &self.link, to, now).await;
+            sent.map_err(|_| ())
+        })
+    }
+}
+
+/// BIZ-016, BIZ-040, SEC-004, D-3743: what sign-up emails: the mailbox code, opened under
+/// `AccountEmail` and sent by `MailboxCodeSender` to the sign-up mailbox only, and the owner's
+/// normal sign-in link through `send_sign_in_link` and the server's [`SignInMailer`].
+pub struct SignupMail(Box<dyn Mails>);
+
+impl SignupMail {
+    /// Codes opened in `vault` and sent by `code`, links sent by `link`; with no vault or no
+    /// code sender no code is emailed (D-3186).
+    #[must_use]
+    pub fn new<E: EmailAdapter + Send + Sync + 'static>(
+        vault: Option<Arc<Vault>>,
+        code: Option<MailboxCodeSender<E>>,
+        link: SignInMailer<E>,
+    ) -> Self {
+        Self(Box::new(Mailers { vault, code, link }))
+    }
 }
 
 /// TXT-038, D-3216: the Twilio Verify client, or in dev and CI without Twilio settings the
@@ -548,8 +681,10 @@ impl Form {
         sealed_signup_page(screen, &parts, &self.secret).ok()
     }
 
-    /// SEC-019, D-3641: after the sign-up is stored: the binding cookie, the names and licenses,
-    /// then the contact screen, all `no-store` (SEC-034).
+    /// SEC-019, D-3641: after the sign-up is stored: the binding cookie, the sign-up email's
+    /// check opened unsent so activation waits for it (BIZ-040, D-1846; its code is dropped and
+    /// the email step opens a new one), the names and licenses, then the contact screen, all
+    /// `no-store` (SEC-034).
     async fn stored(
         &self,
         business: Uuid,
@@ -563,6 +698,10 @@ impl Form {
         let Ok(mut db) = self.pool.acquire().await else {
             return failure("database");
         };
+        let held = start_signup_check(&mut db, &self.start.id_secret, business, now).await;
+        if held.is_err() {
+            return failure("email check");
+        }
         let mut response = match licenses(&mut db, business, posted).await {
             Ok(roc) => self.contact(&mut db, (business, roc), csrf, now).await,
             Err(()) => failure("names or licenses"),
@@ -799,6 +938,253 @@ impl Form {
         let delay = self.start.settings.list_delay_days;
         self.page(Screen::NumberOld(delay), csrf)
     }
+}
+
+/// BIZ-040, BIZ-058: a step after the identity code, one per route (D-3676).
+#[derive(Debug, Clone, Copy)]
+enum Later {
+    /// The base ZIP and radius, then the first email code.
+    Area,
+    /// The typed email code.
+    Check,
+    /// "Send the email again".
+    Resend,
+}
+
+impl Later {
+    /// The step's route, the security event's route (SEC-048).
+    const fn path(self) -> &'static str {
+        match self {
+            Self::Area => SERVICE_AREA_ROUTE,
+            Self::Check => EMAIL_CHECK_ROUTE,
+            Self::Resend => EMAIL_RESEND_ROUTE,
+        }
+    }
+}
+
+/// BIZ-058: `POST` [`SERVICE_AREA_ROUTE`], [`Later::Area`].
+async fn area_post(State(form): State<Arc<Form>>, request: Request) -> Response {
+    later_post(form, request, Later::Area).await
+}
+
+/// BIZ-040: `POST` [`EMAIL_CHECK_ROUTE`], [`Later::Check`].
+async fn email_check(State(form): State<Arc<Form>>, request: Request) -> Response {
+    later_post(form, request, Later::Check).await
+}
+
+/// BIZ-040: `POST` [`EMAIL_RESEND_ROUTE`], [`Later::Resend`].
+async fn email_resend(State(form): State<Arc<Form>>, request: Request) -> Response {
+    later_post(form, request, Later::Resend).await
+}
+
+/// SEC-019, SEC-042, SEC-048, D-3641: a later step's `POST`, as [`step_post`]: the cross-site or
+/// wrong-CSRF 403 with its event, the bare 403 for a missing or bad binding cookie, then
+/// [`Form::later`] for the cookie's sign-up and the client IP (SEC-040).
+async fn later_post(form: Arc<Form>, request: Request, later: Later) -> Response {
+    let now = Timestamp::now();
+    let ip = security_event_client(&request);
+    let (fields, jar) = match same_site(&form.pool, request, later.path(), now).await {
+        Ok(posted) => posted,
+        Err(refused) => return *refused,
+    };
+    let Some(business) = bound_signup(&jar, &form.secret) else {
+        return not_now("binding");
+    };
+    let Ok(mut db) = form.pool.acquire().await else {
+        return failure("database");
+    };
+    let posted = Posted(&fields);
+    form.later(&mut db, (business, later), &posted, (ip, now))
+        .await
+}
+
+impl Form {
+    /// BIZ-016, BIZ-058, D-3641, D-3779: the business must be `Pending` or `NeedsReview`, its
+    /// identity code done and its email not yet verified (`signup_progress`), else the bare 403.
+    /// The service area is taken once; the email steps only once it is saved (else the 403).
+    async fn later(
+        &self,
+        db: &mut PgConnection,
+        (business, later): (Uuid, Later),
+        posted: &Posted<'_>,
+        (ip, now): (IpAddr, Timestamp),
+    ) -> Response {
+        match stored_business(db, business).await {
+            Ok(b) if b.status.takes_identity_code() => {}
+            Ok(_) => return not_now("status"),
+            Err(_) => return failure("business"),
+        }
+        match signup_progress(db, business).await {
+            Ok(p) if p.code_done() && !p.email_verified() => {}
+            Ok(_) => return not_now("order"),
+            Err(_) => return failure("sign-up progress"),
+        }
+        let Ok(area) = service_area(db, business).await else {
+            return failure("service area");
+        };
+        let csrf = posted.get("csrf");
+        match (later, area.is_some()) {
+            (Later::Area, false) => self.area(db, business, posted, (ip, now)).await,
+            (Later::Area, true) => shown(self.page(Screen::EmailCode(None), csrf)),
+            (Later::Check | Later::Resend, false) => not_now("no service area"),
+            (Later::Resend, true) => self.email_code(db, business, (ip, now), csrf).await,
+            (Later::Check, true) => {
+                let code = posted.get("code").trim();
+                self.email_checked(db, business, (code, csrf), now).await
+            }
+        }
+    }
+
+    /// BIZ-058, BIZ-049, A11Y-030: the base ZIP and radius parsed and saved, then the first
+    /// email code; refused fields show the screen again with what was typed.
+    async fn area(
+        &self,
+        db: &mut PgConnection,
+        business: Uuid,
+        posted: &Posted<'_>,
+        (ip, now): (IpAddr, Timestamp),
+    ) -> Response {
+        let (base_zip, radius, csrf) = (
+            posted.get("base_zip"),
+            posted.get("radius"),
+            posted.get("csrf"),
+        );
+        let area = match ServiceArea::parse(base_zip, radius) {
+            Ok(area) => area,
+            Err(problems) => {
+                let entered = AreaEntered {
+                    base_zip,
+                    radius,
+                    problems: &problems,
+                    carried: &[],
+                };
+                return shown(self.page(Screen::ServiceArea(&entered), csrf));
+            }
+        };
+        let by = (Actor::Business(business), now);
+        if save_service_area(db, business, &area, by).await.is_err() {
+            return failure("service area save");
+        }
+        self.email_code(db, business, (ip, now), csrf).await
+    }
+
+    /// BIZ-040, SEC-014: one email code send ([`Form::send_email_code`]), then the email code
+    /// screen, the same whether the send was admitted or refused.
+    async fn email_code(
+        &self,
+        db: &mut PgConnection,
+        business: Uuid,
+        (ip, now): (IpAddr, Timestamp),
+        csrf: &str,
+    ) -> Response {
+        match self.send_email_code(db, business, (ip, now)).await {
+            Ok(()) => shown(self.page(Screen::EmailCode(None), csrf)),
+            Err(()) => failure("email code send"),
+        }
+    }
+
+    /// SEC-014, SEC-015, SEC-025, BIZ-040: admitted first under `CODE_SENDS_PER_IP` then
+    /// [`SIGNUP_EMAIL_CODES_PER_BUSINESS`] (a refusal or counter error opens and sends nothing,
+    /// so the earlier code still works); then `start_signup_check` opens the check and the code
+    /// goes to the sign-up mailbox alone. The code is never logged or kept.
+    async fn send_email_code(
+        &self,
+        db: &mut PgConnection,
+        business: Uuid,
+        (ip, now): (IpAddr, Timestamp),
+    ) -> Result<(), ()> {
+        let checks = [
+            (CODE_SENDS_PER_IP, Key::Ip(ip)),
+            (SIGNUP_EMAIL_CODES_PER_BUSINESS, Key::Record(business)),
+        ];
+        if !matches!(
+            admit(&self.pool, &checks, now).await,
+            Ok(Admission::Admitted)
+        ) {
+            tracing::info!("sign-up email code send refused");
+            return Ok(());
+        }
+        let secret = &self.start.id_secret;
+        let opened = start_signup_check(db, secret, business, now).await;
+        let Some(code) = opened.map_err(|_| ())? else {
+            return Ok(());
+        };
+        let mailbox = signup_mailbox(db, business).await.map_err(|_| ())?;
+        let code = SecretString::from(code);
+        self.start.mail.0.code(db, (mailbox, &code), now).await
+    }
+
+    /// BIZ-040, BIZ-016, A11Y-030: the typed code through `confirm_mailbox`; a wrong or expired
+    /// code (`confirm` answers only taken or not) shows `CodeProblem::Refused` and changes
+    /// nothing else; a taken one leaves the business `Active` (`receives_cards`,
+    /// [`Form::activated`]) or waiting in `NeedsReview` (`Screen::Review`, the cookie kept).
+    async fn email_checked(
+        &self,
+        db: &mut PgConnection,
+        business: Uuid,
+        (code, csrf): (&str, &str),
+        now: Timestamp,
+    ) -> Response {
+        let Ok(mailbox) = signup_mailbox(db, business).await else {
+            return failure("sign-up mailbox");
+        };
+        let secret = &self.start.id_secret;
+        match confirm_mailbox(db, secret, (business, mailbox), code, now).await {
+            Ok(true) => {}
+            Ok(false) => {
+                let refused = Screen::EmailCode(Some(CodeProblem::Refused));
+                return shown(self.page(refused, csrf));
+            }
+            Err(_) => return failure("email code check"),
+        }
+        let Ok(status) = stored_business(db, business).await.map(|b| b.status) else {
+            return failure("business");
+        };
+        if status.receives_cards() {
+            self.activated(db, (business, mailbox), csrf, now).await
+        } else if status.takes_identity_code() {
+            shown(self.page(Screen::Review, csrf))
+        } else {
+            failure("status after email")
+        }
+    }
+
+    /// BIZ-016, SEC-004, D-3743: the owner's sign-in link to the sign-up mailbox (a failed send
+    /// is logged once; the owner can ask for one at sign-in), the done screen and the cleared
+    /// [`SIGNUP_COOKIE`].
+    async fn activated(
+        &self,
+        db: &mut PgConnection,
+        (business, mailbox): (Uuid, Uuid),
+        csrf: &str,
+        now: Timestamp,
+    ) -> Response {
+        let to = SignInAddress { business, mailbox };
+        if self.start.mail.0.link(db, to, now).await.is_err() {
+            tracing::warn!("sign-up sign-in link not sent");
+        }
+        let Some(facts) = done(db, business).await else {
+            return failure("done facts");
+        };
+        let mut response = shown(self.page(Screen::Done(&facts), csrf));
+        let cleared =
+            format!("{SIGNUP_COOKIE}=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0");
+        if let Ok(cleared) = HeaderValue::from_str(&cleared) {
+            response.headers_mut().append(SET_COOKIE, cleared);
+        }
+        response
+    }
+}
+
+/// BIZ-031: the done screen's facts for an active business, in its first sign-up trade by the
+/// catalog's name; `None` when a read fails.
+async fn done(db: &mut PgConnection, business: Uuid) -> Option<DoneFacts> {
+    let joined = join_facts(db, business).await.ok()??;
+    let code = joined.trades().first()?.clone();
+    let name = catalog_category(db, &code).await.ok()??.name;
+    done_facts(db, business, (&code, &name), (false, true))
+        .await
+        .ok()
 }
 
 /// BIZ-026, PRIV-016: the masked record contact `step` goes to; a letter's shows the record
