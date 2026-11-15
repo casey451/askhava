@@ -200,6 +200,9 @@ def built(tmp_path: Path, monkeypatch: Any, local: Any, main: Any) -> tuple[cycl
     checkout = tmp_path / "tasks.json"
     checkout.write_text(local if isinstance(local, str) else json.dumps(local), encoding="utf-8")
     shown = main if main is None or isinstance(main, str) else json.dumps(main)
+    # A backup-runner job sets RUNNER_LANE for its own lane; `build` reads it into `lane_hint`, so on a
+    # lane other than lane 1 these claims would see no free lane (D-3811). The test's lane is its own.
+    monkeypatch.delenv("RUNNER_LANE", raising=False)
     monkeypatch.setattr(entry, "KIT_FILE", checkout)
     monkeypatch.setattr(entry, "GitHubEnv", FakeGitHub)
     monkeypatch.setattr(entry, "git_file", lambda sha, path: shown if (sha, path) == (HEAD, "kit/tasks.json") else None)
