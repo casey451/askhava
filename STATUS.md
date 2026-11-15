@@ -1,23 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-15T02:27:55Z by runner 88f0d709d2c2 (actions).
+Updated 2026-11-15T02:31:14Z by runner 4d7fe1a7723d (actions).
 
 **Building: T261 in progress since 01:07Z; 342 of 471 done; week 55% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 342 of 471 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T261 claimed 01:07Z, lease until 04:07Z; lane 2: T461 claimed 01:31Z, lease until 04:31Z
+- **Lane:** lane 1: T261 claimed 01:07Z, lease until 04:07Z
 - **Week:** 55% used, 84.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:27Z, 0 min before this update
+- **Last run:** 02:29Z, 1 min before this update
 - **Keeper:** last ran 02:27Z, next wake 04:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 30 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 31 problem(s) on tasks still to run (+113 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z | runner smoke red on 4d7fe1a7723d (bash scripts/smoke.sh, D-3530): / + [] / - [ / -     'T002', / - ] / FAILED tests/test |
 | T460 | server: business sign-up's identity steps are served (code s | done | 2 | 68 min | 01:08Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | check_failed | 1 | 12 min | 00:56Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T486 | businesses and catalog: the free-first-win join dates: a pub | done | 1 | 65 min | 23:37Z |  |
@@ -85,7 +86,6 @@ Updated 2026-11-15T02:27:55Z by runner 88f0d709d2c2 (actions).
 | T449 | server and intake: emergency first texts count toward the re | resync | 1 | 31 min | 03:17Z |  |
 | T450 | portals: the sign-up code screens and the texts choice with  | done | 1 | 79 min | 03:00Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 1 | 23 min | 02:41Z |  |
-| T449 | server and intake: emergency first texts count toward the re | resync | 1 | 47 min | 02:29Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -154,7 +154,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T261 (lease until 2026-11-15T04:07:00Z)
-- lane 2: T461 (lease until 2026-11-15T04:31:04Z)
 
 ## Last usage reading
-- {"task": "T460", "at": "2026-11-15T01:08:36Z", "input_tokens": 220, "output_tokens": 85137, "cache_creation_input_tokens": 282990, "cache_read_input_tokens": 9959691}
+- {"task": "T461", "at": "2026-11-15T02:31:14Z", "cache_read_input_tokens": 18057544, "cache_creation_input_tokens": 356914, "input_tokens": 323, "output_tokens": 90071}
