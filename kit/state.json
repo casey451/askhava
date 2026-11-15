@@ -28396,7 +28396,7 @@
     "T467",
     "T486"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "served-confirm-route",
    "type": "build",
@@ -28410,8 +28410,8 @@
     3720,
     3721
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership c; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership contradiction and budget overrun. Needed: a harness task adding the Stripe stand-in settings, publishable key and launch date to the keyed e2e binary plus a PAGE_STATES entry, with T261's served spec after it. Other reviewer findings (paused-pick test, FEE-041 over-limit and lost-answer tests, \"Nothing was charged\" race in press paused branch) are fixable inside T261 once re-queued. Work committed at 705f96a54 on claude/task/T261-served-confirm-route (not pushed).",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership contradiction and budget overrun. Needed: a harness task adding the Stripe stand-in settings, publishable key and launch date to the keyed e2e binary plus a PAGE_STATES entry, with T261's served spec after it. Other reviewer findings (paused-pick test, FEE-041 over-limit and lost-answer tests, \"Nothing was charged\" race in press paused branch) are fixable inside T261 once re-queued. Work committed at 705f96a54 on claude/task/T261-served-confirm-route (not pushed).\nre-queued after plan fix D-3813: D-3813 (#821): T492 adds the keyed e2e Stripe stand-in settings; T261 split into T493, T494, T261, T495 within budget; reviewer fixes folded into T261's goal",
    "history": [
     {
      "attempt": 1,
@@ -28509,6 +28509,19 @@
      "plan_head": "8b2105cd4bc7b0dc7397ed968617a12fe8fb5962",
      "plan_then": "a6fe785c7e2abc7b44f860efeebedd4f0f502a1a99bb74bea66940bd3896653b",
      "plan_now": "2667e8ec71a6f76cfaf02ac87a0217beb8e3b8710dec46dfb7c3be1fdc023d80"
+    },
+    {
+     "at": "2026-11-15T03:49:51Z",
+     "reason": "D-3813 (#821): T492 adds the keyed e2e Stripe stand-in settings; T261 split into T493, T494, T261, T495 within budget; reviewer fixes folded into T261's goal",
+     "by": "manual-c94371d2f221",
+     "was": "plan gap reported: PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership c; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 3,
+     "plan_fix": "D-3813",
+     "plan_since": "2026-11-15T01:07:00Z",
+     "plan_base": "30d12d87a2fd2fc957b69878a6af63142bf9d7f9",
+     "plan_head": "862c5fffa7afa8b50b2a7a716d06b3dcb9038fae",
+     "plan_then": "2667e8ec71a6f76cfaf02ac87a0217beb8e3b8710dec46dfb7c3be1fdc023d80",
+     "plan_now": "b78bafbef91d9e6e39e00a30f91e4ad0bbb9b8a69465d1bad7761f99d7d079de"
     }
    ]
   },
@@ -61610,7 +61623,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T03:49:02Z",
+ "updated_at": "2026-11-15T03:49:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -61708,8 +61721,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "feafd8f43d867a4465fe38e7f29edd14a86530b8",
- "starter": "actions",
+ "runner_sha": "862c5fffa7afa8b50b2a7a716d06b3dcb9038fae",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "8a72c0065f442d8490a5124ceb10edffd07127fd",

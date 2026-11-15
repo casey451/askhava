@@ -1,25 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-15T03:49:02Z by runner feafd8f43d86 (actions).
+Updated 2026-11-15T03:49:51Z by runner 862c5fffa7af (manual).
 
-**Building: T461 in progress since 03:00Z; 342 of 476 done; week 56% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T461 in progress since 03:00Z; 342 of 480 done; week 56% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 342 of 476 build tasks (owner gates not counted)
+- **Tasks done:** 342 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T461 claimed 03:00Z, lease until 06:00Z
 - **Week:** 56% used, 84.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:48Z, 0 min before this update
+- **Last run:** 03:49Z, 0 min before this update
 - **Keeper:** last ran 03:49Z, next wake 06:03Z
 
 ## Needs attention
-- BLOCKED T261: plan gap reported: PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership c; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 28 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 3 | 110 min | 02:57Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
+| T261 | portals and server (harness): the served Confirm route under | BLOCKED | 3 | 110 min | 02:57Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z | runner smoke red on 4d7fe1a7723d (bash scripts/smoke.sh, D-3530): / + [] / - [ / -     'T002', / - ] / FAILED tests/test |
 | T460 | server: business sign-up's identity steps are served (code s | done | 2 | 68 min | 01:08Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | check_failed | 1 | 12 min | 00:56Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
@@ -31,7 +30,7 @@ Updated 2026-11-15T03:49:02Z by runner feafd8f43d86 (actions).
 | T301 | server and portals: the email action links are served (every | resync | 3 | 58 min | 22:46Z |  |
 | T443 | --after runs the full smoke itself on a fix-round hand-in; t | done | 1 | 35 min | 22:19Z |  |
 | T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
-| T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z |  |
+| T261 | portals and server (harness): the served Confirm route under | BLOCKED | 2 | 4 min | 21:38Z |  |
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z |  |
 | T300 | server and portals: the business portal is served behind the | resync | 3 | 94 min | 21:25Z |  |
 | T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
@@ -44,7 +43,7 @@ Updated 2026-11-15T03:49:02Z by runner feafd8f43d86 (actions).
 | T439 | --after refuses a hand-in whose head no Opus reviewer approv | done | 1 | 44 min | 16:06Z |  |
 | T465 | docs: move the entry lines left under each crate guide's `## | done | 1 | 31 min | 15:55Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | done | 6 | 35 min | 14:36Z | PLAN GAP: T302 cannot be built as scoped. (1) No route constant exists for the email-check and sample-pick screens (app/ |
-| T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 1 | 3 min | 14:30Z |  |
+| T261 | portals and server (harness): the served Confirm route under | BLOCKED | 1 | 3 min | 14:30Z |  |
 | T353 | payments: a won dispute records the countering fee's return  | done | 1 | 30 min | 14:15Z |  |
 | T432 | intake and server: ask the name-and-address question in prod | done | 1 | 71 min | 13:54Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | done | 4 | 38 min | 13:32Z |  |
@@ -97,38 +96,34 @@ Updated 2026-11-15T03:49:02Z by runner feafd8f43d86 (actions).
 - 12:46Z Plan: split T437 so the NOTES.md rule lands before the crate-doc sweep (D-3698) (#777)
 - 10:42Z Plan: T329 notice-email copy gap (D-3687) (#768)
 - 10:21Z Plan: restructure the business sign-in chain — T300/T301/T302 gaps, 13 ordered follow-up tasks (D-3674, D-3675, D-3676) (#765)
-- 07:59Z Plan: T359 adopts two charge-ledger test expectations (TD-FEE-64), records the checked intent amount (D-3658) (#759)
-- 06:29Z Plan: T280 build note out of architecture.md after D-3620; sweep T393's late paragraph (D-3652) (#753)
-- 05:23Z Plan: T302 door-matrix gap — exact open sign-up step paths, browser-bound sign-up steps (D-3641) (#745)
-- 05:15Z Plan: move build notes out of architecture.md into crate NOTES.md; prompts shrink (D-3620) (#744)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 342 of 476
+**Requirements verified:** 213 of 733 (29.1%) · partial 363 · unstarted 157
+**Tasks merged (throughput only):** 342 of 480
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 14 | 15 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 18 | 37 | 3 | 58 |
-| calls | 14 | 10 | 1 | 25 |
-| consent | 15 | 16 | 4 | 35 |
-| fees | 19 | 32 | 1 | 52 |
-| intake | 29 | 11 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
-| licensing | 38 | 10 | 0 | 48 |
-| lifecycle | 24 | 4 | 0 | 28 |
-| messaging | 26 | 17 | 2 | 45 |
+| accessibility | 12 | 17 | 6 | 35 |
+| ai | 8 | 16 | 5 | 29 |
+| businesses | 11 | 44 | 3 | 58 |
+| calls | 8 | 16 | 1 | 25 |
+| consent | 10 | 21 | 4 | 35 |
+| fees | 10 | 41 | 1 | 52 |
+| intake | 25 | 15 | 3 | 43 |
+| job-cards | 13 | 11 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 18 | 25 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 13 | 16 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
-| recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| privacy | 4 | 25 | 2 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 22 | 33 | 1 | 56 |
+| recurring | 6 | 2 | 3 | 11 |
+| security | 7 | 43 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 1 | 10 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
