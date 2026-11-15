@@ -47,7 +47,7 @@ window.Stripe = (key) => {
   return {
     elements: () => ({ create: () => ({ mount: (at) => window.stripeCalls.push("mount " + at) }) }),
     createPaymentMethod: async () => { window.stripeCalls.push("card"); return { paymentMethod: { id: "pm_fake_card" } }; },
-    handleNextAction: async ({ clientSecret }) => { window.stripeCalls.push("3ds " + clientSecret); return {}; },
+    handleNextAction: async ({ clientSecret }) => { window.stripeCalls.push("3ds " + clientSecret); await window.bankHeld; return {}; },
   };
 };`;
 
@@ -119,9 +119,32 @@ test("TD-FEE-25 FEE-014: a bank approval runs Stripe's 3-D Secure step in the pa
   await standIn(page, [
     { state: "approve", message: "Your bank wants to check this payment. Follow the steps in the window it opens.", next_press: null, client_secret: "pi_fake_secret_fake" },
   ]);
+  // D-3100, D-3813: the fake bank step and the server's state answer are held until the lines
+  // before them are seen, then released.
+  await page.evaluate(() => {
+    const held = window as unknown as { bankHeld: Promise<void>; releaseBank: () => void };
+    held.bankHeld = new Promise((release) => { held.releaseBank = release; });
+  });
+  const stateAsks: string[] = [];
+  let releaseState = (): void => undefined;
+  const stateHeld = new Promise<void>((release) => { releaseState = release; });
+  await page.route(`**${CONFIRM}`, async (route: Route) => {
+    const request = route.request();
+    if (request.method() !== "GET" || request.headers().accept !== "application/json") return route.fallback();
+    stateAsks.push(request.method());
+    await stateHeld;
+    const state = { state: "waiting", message: "Payment sent. You'll get the homeowner's details as soon as Stripe confirms it.", next_press: null };
+    return route.fulfill({ contentType: "application/json", body: JSON.stringify(state) });
+  });
   await page.getByRole("button", { name: "Confirm and pay $75" }).click();
   await expect(page.locator("#confirm-status")).toHaveText(/Your bank wants to check/);
   await expect.poll(() => stripeCalls(page)).toContain("3ds pi_fake_secret_fake");
+  await page.evaluate(() => { (window as unknown as { releaseBank: () => void }).releaseBank(); });
+  await expect(page.locator("#confirm-status")).toHaveText(/^Checking with your bank/);
+  await expect.poll(() => stateAsks).toEqual(["GET"]);
+  releaseState();
+  await expect(page.locator("#confirm-status")).toHaveText(/as soon as Stripe confirms it/);
+  await expect(page.locator("#confirm-error")).toHaveText("");
   await expect(page).toHaveURL(new RegExp(`${CONFIRM}$`));
 });
 
