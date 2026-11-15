@@ -2885,3 +2885,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - The quote form a business opens from its email now shows the introduction fee by job size for its price whenever the form comes back to it (a missing fact, a note that was turned back, or the "bigger than your largest job" check). A quote with nothing wrong is still sent on the first press without the fee shown first, because the page has no price until it is sent; showing the fee as the price is typed needs a small browser extra that no task has built yet.
 - If a business presses "Send quote" twice quickly, the quote is sent once, but the second press shows a plain "not found" page instead of the quote they just sent, so they may think it failed. Fixing it needs a small change in the portal module that this task could not make; it is reported for the plan. No fee, wording or check changed. Nothing needs you.
+
+## Five big queued tasks split in two (D-3805, November 15)
+
+- As you asked, five queued stage-5 tasks that looked likely to run well past 80 builder turns are now two smaller tasks each, with the same requirements and tests and nothing dropped: the ops alerts and safe mode (T105, T487), the Spanish site pages and the Spanish business sign-up (T202, T488), the web chat's conversation and its pages (T103, T489), the email provider and the mailers it feeds (T469, T490), and the "backup has your pick" text and the Confirm window's end (T471, T491).
+- Shorter sessions cost far fewer tokens per turn, so this should cut cost without changing what gets built. Several other big tasks were left whole where a split would not have a clean seam; the decision entry says why for each. Nothing needs you.

@@ -10585,7 +10585,8 @@
     "T432",
     "T328",
     "T446",
-    "T449"
+    "T449",
+    "T489"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14885,7 +14886,7 @@
    "id": "T202",
    "slug": "site-spanish-business-lines",
    "title": "site: Spanish pages, the business page blocks and the required-lines docs test",
-   "goal": "The Spanish pages exist with the Spanish key terms (the Spanish consent draft above the English consent text is T103's request page, WEB-006, D-493); the business page shows a sample card per open trade, the city-license guide and the \"Who runs Laftly\" block, in Spanish too; the business help page (`business_help.html`) holds the WEB-020 safety tip for people working alone; and a docs test finds each required line (quote-page lines, insurance line, privacy lines, independent-business line) on every page that needs it (WEB-002, WEB-019 to WEB-021, WORD-013). The business page also carries, in English and Spanish, the WEB-024 notice line that follows the business-texting switch, the WEB-025 Hava-name answer, both WORD-017 lines, the WORD-002 business statement, every number and offer from the spec (WEB-018), the BIZ-030 \"How you're charged\" summary and the REC-009 pricing copy (four months, capped at $75, the $150-a-month pool example in the $75 row); the Spanish business sign-up is `app/portals/templates/es_business_signup.html` (WEB-019); the required-lines checks of the quote page and quote cards (WORD-005 to WORD-007, WORD-014) are T052's page and T203's scan (D-493). Plan change D-3144 (WEB-019, D-2128): `es_business_signup.html` needs an Askama struct and a route, and `portals`' `SignupView` renders only `business_signup.html` (`app/portals/src/business_signup.rs:254`), so this task also owns that file and T302's `app/server/src/business_signup.rs`, after T302 (and through it T268, whose consent box the Spanish form carries too): `signup_page` renders `es_business_signup.html` through a second view with the same fields when `Parts.language` is `PageLanguage::Es` (already the WEB-024 line's language), and the served sign-up keeps every `Screen` step of the sign-up form in Spanish (`portals`' `Screen`, `app/portals/src/business_signup.rs:256`: every step `business_signup.html` renders) when the request carries `lang=es` (the Spanish business page's sign-up link adds it, and a hidden field carries it through each `POST`), with no new route; the consent box's wording stays exactly what `businesses::api::consent_box` gives, since that text is what the consent record stores; the Spanish copy is a draft marked for native-speaker review (D-180). The site pages extend T101's `site_layout.html` and fill `banner_shown`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (a public `GET` must answer 200, D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3700 (A11Y-007): `es_business_signup.html` draws native checkboxes as `business_signup.html` does, which fail `tests/a11y/targets_contrast.spec.ts`'s `edgeProblems` (:46) while no stylesheet is loaded, so it carries `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/feedback.html:10` has it. Plan change D-3744: \"every screen\" means those `Screen` steps. The email-check page (`email_check.html`, T149's) and the capability step (`capability_setup.html`, T155's and T464's) are separate pages this task does not own; their Spanish versions (the rest of WEB-019's \"business sign-up ... in Spanish\") are logged in D-3744 for a later plan change, not dropped.",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T202 is split into T202 (the site's Spanish pages, the business and business help pages and the required-lines docs test) and T488 (the Spanish business sign-up, which runs after it). The Spanish pages exist with the Spanish key terms (the Spanish consent draft above the English consent text is T103's request page, WEB-006, D-493); the business page shows a sample card per open trade, the city-license guide and the \"Who runs Laftly\" block, in Spanish too; the business help page (`business_help.html`) holds the WEB-020 safety tip for people working alone; and a docs test finds each required line (quote-page lines, insurance line, privacy lines, independent-business line) on every page that needs it (WEB-002, WEB-019 to WEB-021, WORD-013). The business page also carries, in English and Spanish, the WEB-024 notice line that follows the business-texting switch, the WEB-025 Hava-name answer, both WORD-017 lines, the WORD-002 business statement, every number and offer from the spec (WEB-018), the BIZ-030 \"How you're charged\" summary and the REC-009 pricing copy (four months, capped at $75, the $150-a-month pool example in the $75 row); the Spanish business page's sign-up link adds `lang=es` (WEB-019), which T488 serves in Spanish; the Spanish business sign-up itself (`app/portals/templates/es_business_signup.html`, its view and the served steps) is T488's; the required-lines checks of the quote page and quote cards (WORD-005 to WORD-007, WORD-014) are T052's page and T203's scan (D-493). `tests/docs/test_required_lines.py` finds the Spanish pages by pattern (every `es_*.html` under `app/site/templates/` and `app/portals/templates/`), never by a fixed list, so T488's `es_business_signup.html` is checked when it lands (TD-WORD-02, WORD-013). The site pages extend T101's `site_layout.html` and fill `banner_shown`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (a public `GET` must answer 200, D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14910,10 +14911,7 @@
     "tests/docs/test_required_lines.py",
     "app/site/templates/business.html",
     "app/site/templates/es_business.html",
-    "app/site/templates/business_help.html",
-    "app/portals/templates/es_business_signup.html",
-    "app/portals/src/business_signup.rs",
-    "app/server/src/business_signup.rs"
+    "app/site/templates/business_help.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -14966,17 +14964,13 @@
     "D-366",
     "D-371",
     "D-409",
-    "D-3144",
-    "D-2128",
-    "D-3676",
-    "D-3700",
-    "D-3744"
+    "D-3805"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
-    "lines": 450,
-    "context_pct": 22
+    "files": 6,
+    "lines": 300,
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -14988,14 +14982,81 @@
    "copy": true
   },
   {
-   "id": "T103",
-   "slug": "site-web-chat",
-   "title": "site: web chat with the consent text first, typing a verified mobile number is the opt-in",
-   "goal": "A homeowner can start a request by web chat as well as by text: the consent text sits above the chat box with no agree button, the opt-in is typing a mobile number and then its code (no AI call before the code), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021). While the AI-008 switch is on, the chat page shows \"An AI service helps word our questions.\" above the chat box (AI-026, D-492). The request page shows the full consent text (WEB-014's request-page clause; the legal pages are T221's) (D-493). This task's migration adds the request source column INT-047 records (the `g` link code, or 'text' for a request started by text), which T158's scorecard reads (D-493). The WEB-006 Spanish consent draft sits above the English consent text on the request page (D-493). A web-chat request that would open a new request calls `intake::api::admit_new_request` first, on the connection of the transaction that opens it, with her vault contact and the client IP (SEC-014, D-1951; T317 changed it to take a connection, D-2206); a refused one opens nothing and the page says to try again later. It adds one row per method and path the web chat and request page serve to section 13 (module `site`, Wired `yes`; the Public door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: `site` and `intake` may not call `adapters` (`kit/layers.json`), where Verify is (`adapters::api::VerifyAdapter`, `app/adapters/src/verify.rs:40`), so the chat's code step uses a trait in `app/intake/src/web_chat.rs` (send a code to a number, check it) that the composition implements over the Verify adapter in the new `app/server/src/chat_codes.rs` and hands to the chat router through a new optional builder `RouterParts::with_chat_codes` in the shared `app/server/src/lib.rs` (as `with_sign_in` adds T280's part, `lib.rs:111`), which `main` (the shared `app/server/src/main.rs`) calls with the codes `chat_codes.rs` builds from `Settings`, as `businesses::api::SenderLink` is implemented in `server` (D-963, D-3744); AI-026's line reads the switch through T221's `intake::api::ai_on`; the chat and request pages extend T101's `site_layout.html` and fill `banner_shown`. Plan change D-3189 (PRIV-008): each web-chat message whose words describe a job goes to `quotes::api::keep_description` (T411) with one UUID per chat message as its message ID (since web chat has no inbox row), preferably a key the page sends with the message so a retried POST stores nothing twice, as T162's order does for texts. Plan change D-3744: `build_router` exposes no Verify client (`PickCodeKeys`' fields are private, `app/portals/src/pick_flow.rs:291`), and a new tuple part would have to be wired in `app/server/tests/door_matrix.rs` (`router`, `:651`) and `app/server/tests/route_wiring.rs`, which this task does not own. So the chat router is always merged; without the `with_chat_codes` part (those done route tests, dev and `Ci`) its code step sends and stores nothing and shows a line saying codes cannot be sent right now, answering below 500, as the page pick does without its keys; the end-to-end chat run uses T452's keyed binary, whose `main` gives the part.",
+   "id": "T488",
+   "slug": "es-business-signup",
+   "title": "portals and server: the business sign-up served in Spanish on every step",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T202 is split into T202 (the site's Spanish pages, the business pages and the required-lines docs test) and this task, T488, which runs after it: the Spanish business sign-up is `app/portals/templates/es_business_signup.html` (WEB-019), reached from T202's Spanish business page, whose sign-up link adds `lang=es`. Plan change D-3144 (WEB-019, D-2128): `es_business_signup.html` needs an Askama struct and a route, and `portals`' `SignupView` renders only `business_signup.html` (`app/portals/src/business_signup.rs:254`), so this task also owns that file and T302's `app/server/src/business_signup.rs`, after T302 (and through it T268, whose consent box the Spanish form carries too): `signup_page` renders `es_business_signup.html` through a second view with the same fields when `Parts.language` is `PageLanguage::Es` (already the WEB-024 line's language), and the served sign-up keeps every `Screen` step of the sign-up form in Spanish (`portals`' `Screen`, `app/portals/src/business_signup.rs:256`: every step `business_signup.html` renders) when the request carries `lang=es` (the Spanish business page's sign-up link adds it, and a hidden field carries it through each `POST`), with no new route; the consent box's wording stays exactly what `businesses::api::consent_box` gives, since that text is what the consent record stores; the Spanish copy is a draft marked for native-speaker review (D-180). The sign-up adds no route, so T348's doors stay unchanged: `tests/security/tests/auth_matrix.rs` and `app/server/tests/door_matrix.rs` pass and this task edits neither (D-2440). Plan change D-3700 (A11Y-007): `es_business_signup.html` draws native checkboxes as `business_signup.html` does, which fail `tests/a11y/targets_contrast.spec.ts`'s `edgeProblems` (:46) while no stylesheet is loaded, so it carries `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/feedback.html:10` has it. Plan change D-3744: \"every screen\" means those `Screen` steps. The email-check page (`email_check.html`, T149's) and the capability step (`capability_setup.html`, T155's and T464's) are separate pages this task does not own; their Spanish versions (the rest of WEB-019's \"business sign-up ... in Spanish\") are logged in D-3744 for a later plan change, not dropped. Its Spanish page passes T202's `tests/docs/test_required_lines.py`, which finds every `es_*.html` by pattern (TD-WORD-02, WORD-013). Tests, fake data only, in the new `app/server/tests/es_business_signup_route.rs`: with `lang=es` every `Screen` step of the served sign-up renders `es_business_signup.html` in Spanish with its draft mark and the `forms.css` link, the hidden field carries `lang=es` through each `POST`, the consent box's words equal `businesses::api::consent_box`'s, and without `lang=es` each step renders `business_signup.html` as before.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "site",
+   "deps": [
+    "T202"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "security"
+   ],
+   "owns": [
+    "app/portals/templates/es_business_signup.html",
+    "app/portals/src/business_signup.rs",
+    "app/server/src/business_signup.rs",
+    "app/server/tests/es_business_signup_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/website.md",
+    "docs/spec/wording.md",
+    "docs/spec/businesses.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/brains/accessibility-forms.md",
+    "docs/brains/contractor-lead-experience.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "WEB-019"
+   ],
+   "tests": [
+    "TD-WORD-02"
+   ],
+   "decisions": [
+    "D-180",
+    "D-2128",
+    "D-3144",
+    "D-3676",
+    "D-3700",
+    "D-3744",
+    "D-3805"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 23
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T488-es-business-signup",
+   "prompt": "kit/prompts/T488.md",
+   "copy": true,
+   "acceptance": "`app/server/tests/es_business_signup_route.rs` passes against PostgreSQL: with `lang=es` every `Screen` step of the served business sign-up renders `es_business_signup.html` in Spanish, marked as a draft for native-speaker review, with the `forms.css` link first in its `main` block; the hidden field carries `lang=es` through each `POST`; the consent box's words equal `businesses::api::consent_box`'s; without `lang=es` each step is unchanged; `tests/docs/test_required_lines.py` passes with `es_business_signup.html` among the Spanish pages it finds; `app/server/tests/business_signup_route.rs`, `tests/security/tests/auth_matrix.rs`, `app/server/tests/door_matrix.rs` and the Ally suite pass unchanged."
+  },
+  {
+   "id": "T103",
+   "slug": "site-web-chat",
+   "title": "intake: the web-chat conversation, where typing a verified mobile number is the opt-in, with its request source and new-request limit",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T103 is split into T103 (`intake`'s web-chat conversation: the code step's trait, the opt-in, business intent, the request source and the new-request limit) and T489 (the site's chat and request pages and the composition's Verify codes, which runs after it). A homeowner can start a request by web chat as well as by text: in `app/intake/src/web_chat.rs`, called through `intake::api`, the opt-in is typing a mobile number and then its code (no AI call before the code), which records consent with channel \"web chat\" and no agree button (CON-025), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021); the web-chat path runs the \"Intake order\" table's steps in its order (INT-043). The pages that show the consent text above the chat box are T489's. This task's migration adds the request source column INT-047 records (the `g` link code, or 'text' for a request started by text), which T158's scorecard reads (D-493). A web-chat request that would open a new request calls `intake::api::admit_new_request` first, on the connection of the transaction that opens it, with her vault contact and the client IP (SEC-014, D-1951; T317 changed it to take a connection, D-2206); a refused one opens nothing and `intake` answers so, and T489's page says to try again later. Plan change D-3144: `site` and `intake` may not call `adapters` (`kit/layers.json`), where Verify is (`adapters::api::VerifyAdapter`, `app/adapters/src/verify.rs:40`), so the chat's code step uses a trait in `app/intake/src/web_chat.rs` (send a code to a number, check it), which T489's composition implements over the Verify adapter (D-963); this task's tests use a fake. Plan change D-3189 (PRIV-008): each web-chat message whose words describe a job goes to `quotes::api::keep_description` (T411) with one UUID per chat message as its message ID (since web chat has no inbox row), preferably a key the page (T489's) sends with the message, which this task's API takes, so a retried POST stores nothing twice, as T162's order does for texts. Tests, fake data only, in `tests/integration/tests/web_chat.rs` against PostgreSQL: TD-INT-09's integration cases (web chat starts a request; \"I'm a contractor, send me jobs\" gets one text with the sign-up link and no job opens; the AI second opinion is called only for messages that would otherwise open a request), TD-AI-10's (an unverified web-chat session makes zero adapter calls) and TD-INT-30's integration golden test of the web-chat path's order; and TD-CON-10's cases that only `intake` decides, through the web-chat API: starting the chat alone records no text consent; a number typed in gets only the Verify code until the code is checked; a wrong or missing code sends nothing more to that number and records no consent; the right code records consent (channel \"web chat\") and the consent text goes as its first text; with the texting number suspended, a 911-list message typed in web chat answers the INT-004 text for the chat to show (D-470, D-492). The web-chat API provides each of these to T489's page; the end-to-end cases of TD-CON-10, TD-INT-09 and TD-INT-30 are T489's.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
    "deps": [
     "T202",
     "T255",
@@ -15011,30 +15072,22 @@
     "security"
    ],
    "owns": [
-    "app/site/src/chat.rs",
-    "app/site/templates/request.html",
-    "tests/e2e/web_chat.spec.ts",
     "app/intake/src/web_chat.rs",
     "app/intake/src/conversation.rs",
     "tests/integration/tests/web_chat.rs",
-    "migrations/0191_intake_request_source.sql",
-    "app/server/src/chat_codes.rs"
+    "migrations/0191_intake_request_source.sql"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/consent.md",
     "docs/spec/intake.md",
-    "docs/design/DESIGN_SPEC.md",
     "docs/spec/ai.md",
-    "docs/brains/accessibility-forms.md",
-    "docs/brains/contractor-lead-experience.md",
-    "docs/brains/rust-production.md",
-    "docs/brains/sms-compliance.md",
-    "docs/spec/accessibility.md",
+    "docs/spec/security.md",
     "docs/brains/ai-intake.md",
-    "docs/spec/website.md",
-    "docs/spec/security.md"
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md",
+    "docs/brains/postgres-operations.md"
    ],
    "requirements": [
     "CON-025",
@@ -15042,20 +15095,14 @@
     "INT-020",
     "INT-047",
     "AI-021",
-    "A11Y-035",
     "INT-043",
-    "AI-026",
-    "WEB-014",
-    "WEB-006",
     "SEC-014"
    ],
    "tests": [
-    "TD-CON-10",
     "TD-INT-09",
     "TD-AI-10",
-    "TD-A11Y-02",
     "TD-INT-30",
-    "TD-WEB-01"
+    "TD-CON-10"
    ],
    "decisions": [
     "D-051",
@@ -15066,23 +15113,22 @@
     "D-490",
     "D-492",
     "D-1739",
-    "D-2206",
     "D-1951",
-    "D-2440",
+    "D-2206",
     "D-3144",
     "D-963",
     "D-3189",
     "D-3262",
     "D-3263",
     "D-3722",
-    "D-3744",
-    "D-3779"
+    "D-3779",
+    "D-3805"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
-    "lines": 550,
-    "context_pct": 21
+    "files": 4,
+    "lines": 320,
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -15091,6 +15137,87 @@
    ],
    "branch": "claude/task/T103-site-web-chat",
    "prompt": "kit/prompts/T103.md",
+   "copy": true
+  },
+  {
+   "id": "T489",
+   "slug": "site-web-chat-pages",
+   "title": "site and server: the web chat and request pages with the consent text first, and the Verify codes behind the chat",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T103 is split into T103 (`intake`'s web-chat conversation, its trait for the code step, the request source migration and the new-request limit) and this task, T489, which runs after it and serves it: the consent text sits above the chat box with no agree button, and the chat page drives T103's `intake::api` web-chat calls (CON-025's page). While the AI-008 switch is on, the chat page shows \"An AI service helps word our questions.\" above the chat box (AI-026, D-492). The request page shows the full consent text (WEB-014's request-page clause; the legal pages are T221's) (D-493). The WEB-006 Spanish consent draft sits above the English consent text on the request page (D-493). A web-chat request T103's `admit_new_request` check refuses opens nothing and the page says to try again later (SEC-014). It adds one row per method and path the web chat and request page serve to section 13 (module `site`, Wired `yes`; the Public door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: the composition implements T103's code-step trait (`app/intake/src/web_chat.rs`) over the Verify adapter in the new `app/server/src/chat_codes.rs` and hands it to the chat router through a new optional builder `RouterParts::with_chat_codes` in the shared `app/server/src/lib.rs` (as `with_sign_in` adds T280's part, `lib.rs:111`), which `main` (the shared `app/server/src/main.rs`) calls with the codes `chat_codes.rs` builds from `Settings`, as `businesses::api::SenderLink` is implemented in `server` (D-963, D-3744); AI-026's line reads the switch through T221's `intake::api::ai_on`; the chat and request pages extend T101's `site_layout.html` and fill `banner_shown`. Plan change D-3189 (PRIV-008): the page sends a key with each chat message, which T103's API takes as the message ID, so a retried POST stores nothing twice. Plan change D-3744: `build_router` exposes no Verify client (`PickCodeKeys`' fields are private, `app/portals/src/pick_flow.rs:291`), and a new tuple part would have to be wired in `app/server/tests/door_matrix.rs` (`router`, `:651`) and `app/server/tests/route_wiring.rs`, which this task does not own. So the chat router is always merged; without the `with_chat_codes` part (those done route tests, dev and `Ci`) its code step sends and stores nothing and shows a line saying codes cannot be sent right now, answering below 500, as the page pick does without its keys; the end-to-end chat run uses T452's keyed binary, whose `main` gives the part. Tests: `tests/e2e/web_chat.spec.ts` covers TD-CON-10, TD-A11Y-02's web-chat case, TD-WEB-01's web-chat and request-page cases and the end-to-end cases of TD-INT-09 and TD-INT-30.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "site",
+   "deps": [
+    "T103"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/site/src/chat.rs",
+    "app/site/templates/request.html",
+    "app/server/src/chat_codes.rs",
+    "tests/e2e/web_chat.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/ai.md",
+    "docs/spec/website.md",
+    "docs/spec/accessibility.md",
+    "docs/spec/security.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/brains/accessibility-forms.md",
+    "docs/brains/contractor-lead-experience.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "AI-026",
+    "A11Y-035",
+    "WEB-014",
+    "WEB-006"
+   ],
+   "tests": [
+    "TD-CON-10",
+    "TD-A11Y-02",
+    "TD-WEB-01",
+    "TD-INT-09",
+    "TD-INT-30"
+   ],
+   "decisions": [
+    "D-051",
+    "D-470",
+    "D-480",
+    "D-490",
+    "D-492",
+    "D-1739",
+    "D-2440",
+    "D-3144",
+    "D-963",
+    "D-3189",
+    "D-3744",
+    "D-3805"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T489-site-web-chat-pages",
+   "prompt": "kit/prompts/T489.md",
    "copy": true
   },
   {
@@ -15121,7 +15248,9 @@
     "T310",
     "T457",
     "T469",
-    "T470"
+    "T470",
+    "T489",
+    "T490"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -15194,7 +15323,8 @@
    "stage": "5",
    "module": null,
    "deps": [
-    "T103"
+    "T103",
+    "T489"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -15279,7 +15409,8 @@
    "module": null,
    "deps": [
     "T103",
-    "T104"
+    "T104",
+    "T489"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -15353,8 +15484,8 @@
   {
    "id": "T105",
    "slug": "ops-alerts-safe-mode",
-   "title": "ops: High and critical alerts, safe mode after 24 hours, pause checks",
-   "goal": "Casey is alerted on the delivery-rate, safety, dispute and coverage conditions, one delivery alert at a time with automatic acknowledgement at 97%; owner pause switches are checked by every action; and safe mode pauses only charges and releases when a pushed High alert is unacknowledged for 24 hours, each paused item going ahead after the FEE-017 check when it ends (OPS-001 to OPS-006, OPS-023 to OPS-025). `ops` reads nothing above it: `messaging` reports delivery counts by calling `ops::api::record_delivery_counts` and `businesses` its active-business counts by `ops::api::record_business_counts`, both added here to `ops`' `api.rs` and called here from `messaging`'s delivery handler (`handlers.rs`) and `businesses`' status changes (`service.rs`); the pause-check property test lives in the integration crate, which sees every action, in `tests/integration/tests/safe_mode.rs` (D-491, D-493); `jobs` reports each trade's requests per calendar month by calling `ops::api::record_request_counts` from `app/jobs/src/request_counts.rs`, owned here, so OPS-006 sees which trades had a request (D-493); the email-limit push itself is T204's (TD-OPS-13, D-491). Plan change D-3144 (OPS-001, OPS-003, OPS-024, PICK-048, FEE-038; D-1427): the two `safe_mode_check.rs` files once planned in `payments` and `picks` are dropped (nothing would call them). Safe mode's state is `ops`' (this task's migration and `safe_mode.rs`, read through a new `ops::api::safe_mode_on`), and `payments::handlers::charges_paused` (`app/payments/src/handlers.rs:90`, owned here after T359; D-1427 left this check to the task that builds safe mode) checks it beside the `charging` and `all` switches, which is all the charge side needs: a \"Confirm and pay\" press is refused with \"try again later\" before any Stripe call (`before_attempt`, `app/payments/src/charge.rs:367`, `ChargeOutcome::Paused`, OPS-024), a PICK-048 auto-confirm falls back to the Confirm step (`app/payments/src/off_session.rs:220`, `FellBack`), and the card-fix and Stripe-release timers stop and resume, because `sync_pause` (`handlers.rs:569`) reads `charges_paused` (FEE-038). The release half (a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends) is new T408's, which runs after this task: TD-OPS-01's and TD-OPS-06's release clauses are proven there (TD-OPS-40), and this task's `safe_mode.rs` tests the charge side, the alerts and the switches. The town and trade switches are read where cards go out (T251's card pool, through `ops::api::is_paused`); TD-OPS-01's \"every action checks the pause switches\" property covers the actions on `main` when this task runs. `NewAlert` gains no field (34 files build it by literal); an acknowledgement or push fact this task adds lives in its own column or table.",
+   "title": "ops: High and critical alerts with their automatic acknowledgement, and the delivery, business and request counts they read",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T105 is split into T105 (the alerts, their automatic acknowledgement and the delivery, business and request counts) and T487 (safe mode and the pause checks, which runs after it). This piece: Casey is alerted on the delivery-rate, safety, dispute and coverage conditions, one delivery alert at a time with automatic acknowledgement at 97% (OPS-002, OPS-004 to OPS-006, OPS-023, OPS-025); safe mode, the owner pause switches' every-action check and the charge side are T487's (OPS-001, OPS-003, OPS-024, FEE-038). `ops` reads nothing above it: `messaging` reports delivery counts by calling `ops::api::record_delivery_counts` and `businesses` its active-business counts by `ops::api::record_business_counts`, both added here to `ops`' `api.rs` and called here from `messaging`'s delivery handler (`handlers.rs`) and `businesses`' status changes (`service.rs`); the pause-check property test (T487's) lives in the integration crate, which sees every action, in `tests/integration/tests/safe_mode.rs` (D-491, D-493); `jobs` reports each trade's requests per calendar month by calling `ops::api::record_request_counts` from `app/jobs/src/request_counts.rs`, owned here, so OPS-006 sees which trades had a request (D-493); the email-limit push itself is T204's (TD-OPS-13, D-491). This task's migration (`migrations/0192_ops_alerts_safe_mode.sql`) holds the alert acknowledgement and push facts and also safe mode's state (D-3144: safe mode's state is `ops`', this task's migration and T487's `safe_mode.rs`), which T487 reads and writes and which no later migration adds; T487 owns no migration. The alert cases are tested in the new `tests/integration/tests/ops_alert_conditions.rs`: TD-OPS-01's delivery-rate (6 failures in 50 alerts, 5 don't; 11 in 200 alerts, 10 don't; 3 in 50 at a normal rate never alert) and coverage cases (fewer than 2 active businesses in a town, or in a trade with a request that calendar month, alerts; a trade with no request that month goes to the digest only), TD-OPS-06's acknowledgement cases (97% of the last 200 acknowledges, 96% stays open, after any acknowledgement a second drop fires no new alert until 97% of 200 was reached in between, logged and listed for Casey; a ledger alert is never acknowledged automatically) and TD-LIC-21's OPS-006 case; TD-OPS-01's and TD-OPS-06's safe-mode and pause-switch clauses are T487's, and their release clauses T408's (TD-OPS-40). `NewAlert` gains no field (34 files build it by literal); an acknowledgement or push fact this task adds lives in its own column or table.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15372,14 +15503,12 @@
    ],
    "owns": [
     "app/ops/src/alerts.rs",
-    "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
     "migrations/0192_ops_alerts_safe_mode.sql",
-    "tests/integration/tests/safe_mode.rs",
+    "tests/integration/tests/ops_alert_conditions.rs",
     "app/messaging/src/handlers.rs",
     "app/businesses/src/service.rs",
-    "app/jobs/src/request_counts.rs",
-    "app/payments/src/handlers.rs"
+    "app/jobs/src/request_counts.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15389,54 +15518,46 @@
     "docs/spec/security.md",
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md",
-    "docs/brains/deploy-operations.md",
-    "docs/spec/fees.md"
+    "docs/brains/deploy-operations.md"
    ],
    "requirements": [
-    "OPS-001",
     "OPS-002",
-    "OPS-003",
     "OPS-004",
     "OPS-005",
     "OPS-006",
     "OPS-023",
-    "OPS-024",
-    "OPS-025",
-    "FEE-038"
+    "OPS-025"
    ],
    "tests": [
     "TD-OPS-01",
     "TD-OPS-06",
-    "TD-FEE-20",
     "TD-LIC-21"
    ],
    "decisions": [
     "D-075",
     "D-076",
-    "D-133",
     "D-134",
     "D-163",
     "D-220",
     "D-222",
     "D-277",
-    "D-278",
     "D-280",
     "D-319",
     "D-323",
     "D-344",
     "D-351",
     "D-3144",
-    "D-1427",
     "D-3262",
     "D-3263",
     "D-3722",
-    "D-3779"
+    "D-3779",
+    "D-3805"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
-    "lines": 400,
-    "context_pct": 22
+    "files": 7,
+    "lines": 300,
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -15445,6 +15566,76 @@
    ],
    "branch": "claude/task/T105-ops-alerts-safe-mode",
    "prompt": "kit/prompts/T105.md",
+   "copy": true
+  },
+  {
+   "id": "T487",
+   "slug": "ops-safe-mode-pause-checks",
+   "title": "ops and payments: safe mode after 24 hours pauses charges, and every action checks the owner pause switches",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T105 is split into T105 (the alerts, their automatic acknowledgement and the counts) and this task, T487, which runs after it: owner pause switches are checked by every action; and safe mode pauses only charges and releases when a pushed High alert is unacknowledged for 24 hours, each paused item going ahead after the FEE-017 check when it ends (OPS-001, OPS-003, OPS-024, FEE-038; the alerts, OPS-002, OPS-004 to OPS-006, OPS-023 and OPS-025, are T105's, and safe mode ends when every High alert is acknowledged, OPS-023, through T105's acknowledgements). The pause-check property test lives in the integration crate, which sees every action, in `tests/integration/tests/safe_mode.rs` (D-491, D-493). Plan change D-3144 (OPS-001, OPS-003, OPS-024, PICK-048, FEE-038; D-1427): the two `safe_mode_check.rs` files once planned in `payments` and `picks` are dropped (nothing would call them). Safe mode's state is `ops`' (T105's migration `migrations/0192_ops_alerts_safe_mode.sql` and this task's `safe_mode.rs`, read through a new `ops::api::safe_mode_on`; this task adds no migration, and `app/ops/src/models.rs` and `app/ops/src/alerts.rs` are T105's), and `payments::handlers::charges_paused` (`app/payments/src/handlers.rs:90`, owned here after T359; D-1427 left this check to the task that builds safe mode) checks it beside the `charging` and `all` switches, which is all the charge side needs: a \"Confirm and pay\" press is refused with \"try again later\" before any Stripe call (`before_attempt`, `app/payments/src/charge.rs:367`, `ChargeOutcome::Paused`, OPS-024), a PICK-048 auto-confirm falls back to the Confirm step (`app/payments/src/off_session.rs:220`, `FellBack`), and the card-fix and Stripe-release timers stop and resume, because `sync_pause` (`handlers.rs:569`) reads `charges_paused` (FEE-038). The release half (a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends) is new T408's, which runs after this task: TD-OPS-01's and TD-OPS-06's release clauses are proven there (TD-OPS-40), and this task's `safe_mode.rs` tests the charge side and the switches (safe mode at 24:00:00 after an unacknowledged pushed High alert, not at 23:59:59; a complaint alert never starts it; in safe mode no charge happens while safety texts, STOP confirmations, HELP replies, consent texts and quote texts still go out; safe mode ends when no other High alert is open; a \"Confirm and pay\" press during safe mode is refused with \"try again later\" and reaches no Stripe call; no charge starts by itself when safe mode ends; with safe mode or the charging switch on and a pick in Payment pending, the 1-business-hour card timer and the 4-hour Stripe release stop and resume with the time left, TD-FEE-20), while T105's `ops_alert_conditions.rs` tests the alerts. The town and trade switches are read where cards go out (T251's card pool, through `ops::api::is_paused`); TD-OPS-01's \"every action checks the pause switches\" property covers the actions on `main` when this task runs. `NewAlert` gains no field (34 files build it by literal).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "ops",
+   "deps": [
+    "T105"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/ops/src/safe_mode.rs",
+    "tests/integration/tests/safe_mode.rs",
+    "app/payments/src/handlers.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/fees.md",
+    "docs/spec/security.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md",
+    "docs/brains/payments-stripe.md"
+   ],
+   "requirements": [
+    "OPS-001",
+    "OPS-003",
+    "OPS-024",
+    "FEE-038"
+   ],
+   "tests": [
+    "TD-OPS-01",
+    "TD-OPS-06",
+    "TD-FEE-20"
+   ],
+   "decisions": [
+    "D-075",
+    "D-133",
+    "D-220",
+    "D-278",
+    "D-1427",
+    "D-3144",
+    "D-3805"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 250,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T487-ops-safe-mode-pause-checks",
+   "prompt": "kit/prompts/T487.md",
    "copy": true
   },
   {
@@ -15461,7 +15652,8 @@
     "T359",
     "T255",
     "T266",
-    "T433"
+    "T433",
+    "T487"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -15525,7 +15717,8 @@
    "stage": "5",
    "module": "ops",
    "deps": [
-    "T105"
+    "T105",
+    "T487"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -15588,7 +15781,8 @@
     "T358",
     "T360",
     "T353",
-    "T451"
+    "T451",
+    "T487"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16834,7 +17028,8 @@
    "module": "payments",
    "deps": [
     "T113",
-    "T202"
+    "T202",
+    "T488"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16897,7 +17092,8 @@
    "stage": "5",
    "module": "site",
    "deps": [
-    "T103"
+    "T103",
+    "T489"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -17166,7 +17362,8 @@
     "T103",
     "T106",
     "T118",
-    "T307"
+    "T307",
+    "T489"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -17648,7 +17845,11 @@
     "T481",
     "T482",
     "T483",
-    "T484"
+    "T484",
+    "T488",
+    "T489",
+    "T490",
+    "T491"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -22184,7 +22385,8 @@
    "module": null,
    "deps": [
     "T100",
-    "T103"
+    "T103",
+    "T489"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -22253,7 +22455,8 @@
     "T103",
     "T249",
     "T466",
-    "T301"
+    "T301",
+    "T489"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -22332,7 +22535,8 @@
     "T466",
     "T477",
     "T478",
-    "T479"
+    "T479",
+    "T489"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -22608,7 +22812,8 @@
    "deps": [
     "T203",
     "T202",
-    "T429"
+    "T429",
+    "T488"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -32346,7 +32551,8 @@
    "deps": [
     "T399",
     "T455",
-    "T471"
+    "T471",
+    "T491"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33185,8 +33391,8 @@
   {
    "id": "T469",
    "slug": "email-provider-wiring",
-   "title": "server (harness): the Resend email client from settings, passed to every mailer the composition builds",
-   "goal": "Plan change D-3750 (D-3186, D-3263, D-3743, D-3262; SEC-025, OPS-038, SEC-001, SEC-002, SEC-032, SEC-036): no Resend client is built anywhere in the app, so every mailer the composition builds has no sender: `ServedSignIn::from_settings` builds `SignInMailer::<ResendEmail>` with `None` (`app/server/src/business_signin.rs:133`), T461 builds the sign-up code sender and the activation mailer empty in `app/server/src/business_signup.rs`'s `from_settings` (D-3743), `register_business_handlers` (`app/server/src/lib.rs:1287`) registers the OPS-041 coverage notice, the welcome, the phone-stopped and the business event emails with `None`, `register_accepted_quote` (`:1400`) does too, and the welcome's directory finds no address (`NoAccountDirectory`, `:1381`). This task builds the one email provider from settings and passes it to each. (1) `app/adapters/src/resend_config.rs` (new; one `mod` line in the shared `lib.rs`, one `pub use` in the shared `api.rs`): `ResendConfig::from_settings(settings, pairs)`, shaped as `TwilioConfig` (`app/adapters/src/config.rs:97`): `ASKHAVA_ADAPTER_MODE_RESEND` (`stand_in` or `live` only: Resend has no sandbox, and any valid key sends real email, so there is no `sandbox` mode; `live` is accepted only with `APP_ENV=live` and `stand_in` never there, SEC-002), `ASKHAVA_RESEND_BASE_URL` (default the stand-in, `http://127.0.0.1:4010/resend`, in `stand_in` mode and `https://api.resend.com` in `live`, through `check_base_url`, so a stand-in or local URL stops a live start, SEC-032), `ASKHAVA_RESEND_API_KEY` (a `SecretString`, never logged, echoed or stored; every error names the key, never the value, SEC-001) and the sending domain from `settings.account(Vendor::Resend)` (SEC-036's allow-list); `client()` builds `ResendEmail::new(base, key)`. During the build every environment sends only to `stand_ins/resend.py`; the live key is read from the platform's secret store only after Casey's Gate C, and this task adds no live key, account or domain anywhere (`BUILD_BRIEF.md:68`). (2) `app/server/src/email_provider.rs` (new): `EmailProvider`, holding the client, the email key (`ASKHAVA_ID_SECRET`, as `notice_senders` uses it), the footer postal line (`settings.postal_address()`, as `notice_senders` reads it) and one `messaging::api::DailyLimit` from two new keys in the shared `app/core/src/settings.rs`, `ASKHAVA_EMAIL_DAILY_LIMIT` (default 100, Resend's free-tier daily quota, SEC-025) and `ASKHAVA_EMAIL_BULK_HOLD_PERCENT` (default 90, OPS-038); `email_provider(settings, pairs)` answers `None` in dev and CI when the key or the postal line is missing (nothing is sent, as today) and an error naming the key in test and live, as `twilio_config` (`lib.rs:1175`) does. It also holds `VaultAccountDirectory`, the `businesses::api::AccountDirectory` that reads a sign-in mailbox's address with `privacy::api::read_business_mailbox` under `BusinessPurpose::AccountEmail` (D-3262) on the handler's connection and answers `None` for `last4` (no phone digits are readable, D-3186); it replaces `NoAccountDirectory`, and `PortalNoticeParts::address` makes the same read. (3) Every mailer gets the provider and the vault: `SignInMailer`'s `SignInLinkSender` in `business_signin.rs`, T461's `MailboxCodeSender` and sign-in mailer in `business_signup.rs`, and the five worker registrations above, registered with the provider where the settings are (`worker_registry`, `lib.rs:664`; the shared `lib.rs` and `bin/worker.rs`) and with `None` as today where none exists, each kind still registered once (`tests/integration/tests/task_registry.rs`). They share the one `DailyLimit`, so the code, sign-in and account emails all count against the one daily quota (`send_email` reads the day's sent count, `app/messaging/src/email.rs:454`); SEC-014's per-IP and per-business caps (D-3743) are unchanged. (4) `tests/e2e/webserver.ts`: the keyed binary gets `ASKHAVA_ADAPTER_MODE_RESEND=stand_in`, the stand-in's base URL on `STAND_IN_PORT`, a fake key with the stand-in's `re_stand_in_` prefix (`stand_ins/server.py:50`), the stand-in's sending domain on the vendor list and a fake postal line, so the end-to-end app sends to the fake Resend, whose sent emails T414's control route (done) reads. (5) Tests, fake data only, in `app/server/tests/email_provider_route.rs`, over a local recording server shaped as the stand-in (nothing beyond 127.0.0.1): a sign-in request for a member sends one email to that member's address and none past the cap; a welcome task sends one email to the owner's address; `email_provider` refuses `live` mode outside live, `stand_in` mode in live and a stand-in URL in live, each error naming the key and never a value; with no key in CI no provider is built and no welcome is marked sent. Update `app/server/CLAUDE.md`, `app/adapters/CLAUDE.md` and `docs/decisions.md`.",
+   "title": "server (harness): the Resend email client from settings, the vault account directory and the business sign-in mailer",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T469 is split into T469 (the provider built from settings, the vault account directory and the business sign-in mailer) and T490 (the sign-up mailers, the worker registrations and the end-to-end server's settings, which runs after it). Plan change D-3750 (D-3186, D-3263, D-3743, D-3262; SEC-025, OPS-038, SEC-001, SEC-002, SEC-032, SEC-036): no Resend client is built anywhere in the app, so every mailer the composition builds has no sender: `ServedSignIn::from_settings` builds `SignInMailer::<ResendEmail>` with `None` (`app/server/src/business_signin.rs:133`), T461 builds the sign-up code sender and the activation mailer empty in `app/server/src/business_signup.rs`'s `from_settings` (D-3743), `register_business_handlers` (`app/server/src/lib.rs:1287`) registers the OPS-041 coverage notice, the welcome, the phone-stopped and the business event emails with `None`, `register_accepted_quote` (`:1400`) does too, and the welcome's directory finds no address (`NoAccountDirectory`, `:1381`). This task builds the one email provider from settings and passes it to the sign-in mailer; T490 passes it to the rest. (1) `app/adapters/src/resend_config.rs` (new; one `mod` line in the shared `lib.rs`, one `pub use` in the shared `api.rs`): `ResendConfig::from_settings(settings, pairs)`, shaped as `TwilioConfig` (`app/adapters/src/config.rs:97`): `ASKHAVA_ADAPTER_MODE_RESEND` (`stand_in` or `live` only: Resend has no sandbox, and any valid key sends real email, so there is no `sandbox` mode; `live` is accepted only with `APP_ENV=live` and `stand_in` never there, SEC-002), `ASKHAVA_RESEND_BASE_URL` (default the stand-in, `http://127.0.0.1:4010/resend`, in `stand_in` mode and `https://api.resend.com` in `live`, through `check_base_url`, so a stand-in or local URL stops a live start, SEC-032), `ASKHAVA_RESEND_API_KEY` (a `SecretString`, never logged, echoed or stored; every error names the key, never the value, SEC-001) and the sending domain from `settings.account(Vendor::Resend)` (SEC-036's allow-list); `client()` builds `ResendEmail::new(base, key)`. During the build every environment sends only to `stand_ins/resend.py`; the live key is read from the platform's secret store only after Casey's Gate C, and this task adds no live key, account or domain anywhere (`BUILD_BRIEF.md:68`). (2) `app/server/src/email_provider.rs` (new): `EmailProvider`, holding the client, the email key (`ASKHAVA_ID_SECRET`, as `notice_senders` uses it), the footer postal line (`settings.postal_address()`, as `notice_senders` reads it) and one `messaging::api::DailyLimit` from two new keys in the shared `app/core/src/settings.rs`, `ASKHAVA_EMAIL_DAILY_LIMIT` (default 100, Resend's free-tier daily quota, SEC-025) and `ASKHAVA_EMAIL_BULK_HOLD_PERCENT` (default 90, OPS-038); `email_provider(settings, pairs)` answers `None` in dev and CI when the key or the postal line is missing (nothing is sent, as today) and an error naming the key in test and live, as `twilio_config` (`lib.rs:1175`) does. `VaultAccountDirectory`, the vault-backed `businesses::api::AccountDirectory` that replaces `NoAccountDirectory`, is T490's, beside its only users (the welcome, the phone-stopped email and `PortalNoticeParts`). (3) `SignInMailer`'s `SignInLinkSender` in `business_signin.rs` gets the provider and the vault; T461's `MailboxCodeSender` and sign-in mailer in `business_signup.rs`, the five worker registrations and `tests/e2e/webserver.ts` are T490's. Every mailer shares the one `DailyLimit`, so the code, sign-in and account emails all count against the one daily quota (`send_email` reads the day's sent count, `app/messaging/src/email.rs:454`); SEC-014's per-IP and per-business caps (D-3743) are unchanged. (4) Tests, fake data only, in `app/server/tests/email_provider_route.rs`, over a local recording server shaped as the stand-in (nothing beyond 127.0.0.1): a sign-in request for a member sends one email to that member's address and none past the cap; `email_provider` refuses `live` mode outside live, `stand_in` mode in live and a stand-in URL in live, each error naming the key and never a value; with no key in CI no provider is built and no sign-in email is sent. Update `app/server/CLAUDE.md`, `app/adapters/CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -33207,8 +33413,6 @@
     "app/adapters/src/resend_config.rs",
     "app/server/src/email_provider.rs",
     "app/server/src/business_signin.rs",
-    "app/server/src/business_signup.rs",
-    "tests/e2e/webserver.ts",
     "app/server/tests/email_provider_route.rs"
    ],
    "reads": [
@@ -33217,8 +33421,6 @@
     "docs/spec/security.md",
     "docs/brains/rust-production.md",
     "docs/spec/ops-recovery.md",
-    "docs/spec/businesses.md",
-    "docs/spec/consent.md",
     "docs/brains/email-deliverability.md"
    ],
    "requirements": [
@@ -33227,7 +33429,71 @@
     "SEC-001",
     "SEC-002",
     "SEC-032",
-    "SEC-036",
+    "SEC-036"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-3186",
+    "D-3262",
+    "D-3263",
+    "D-3743",
+    "D-3750",
+    "D-3805"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 450,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T469-email-provider-wiring",
+   "prompt": "kit/prompts/T469.md",
+   "acceptance": "`app/server/tests/email_provider_route.rs` passes against PostgreSQL and a local recording server: one sign-in email per admitted request to the member's own address and none past the cap, `live` refused outside live and `stand_in` and a stand-in URL refused in live with errors that name the key only, no provider and no sign-in email with no key in CI; `app/server/tests/business_signin_route.rs` and `tests/integration/tests/task_registry.rs` pass unchanged; gitleaks and the PII scan find nothing."
+  },
+  {
+   "id": "T490",
+   "slug": "email-provider-mailers",
+   "title": "server (harness): the email provider passed to the sign-up mailers and every worker mailer, and the end-to-end server's fake Resend settings",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T469 is split into T469 (the provider built from settings as `server::email_provider`, the `VaultAccountDirectory` and the business sign-in mailer) and this task, T490, which runs after it and passes T469's provider to every other mailer the composition builds. Plan change D-3750 (D-3186, D-3263, D-3743, D-3262; SEC-025, OPS-038, SEC-001, SEC-002, SEC-032, SEC-036): no Resend client is built anywhere in the app, so every mailer the composition builds has no sender: `ServedSignIn::from_settings` builds `SignInMailer::<ResendEmail>` with `None` (`app/server/src/business_signin.rs:133`), T461 builds the sign-up code sender and the activation mailer empty in `app/server/src/business_signup.rs`'s `from_settings` (D-3743), `register_business_handlers` (`app/server/src/lib.rs:1287`) registers the OPS-041 coverage notice, the welcome, the phone-stopped and the business event emails with `None`, `register_accepted_quote` (`:1400`) does too, and the welcome's directory finds no address (`NoAccountDirectory`, `:1381`). (0) The new `app/server/src/account_directory.rs` holds `VaultAccountDirectory`, the `businesses::api::AccountDirectory` that reads a sign-in mailbox's address with `privacy::api::read_business_mailbox` under `BusinessPurpose::AccountEmail` (D-3262) on the handler's connection and answers `None` for `last4` (no phone digits are readable, D-3186); it replaces `NoAccountDirectory` (`app/server/src/lib.rs:1381`) for the welcome and phone-stopped registrations, and `PortalNoticeParts::address` makes the same read. (1) Every other mailer gets the provider and the vault: T461's `MailboxCodeSender` and sign-in mailer in `business_signup.rs`, and the five worker registrations above, registered with the provider where the settings are (`worker_registry`, `lib.rs:664`; the shared `lib.rs` and `bin/worker.rs`) and with `None` as today where none exists, each kind still registered once (`tests/integration/tests/task_registry.rs`). They share the one `DailyLimit`, so the code, sign-in and account emails all count against the one daily quota (`send_email` reads the day's sent count, `app/messaging/src/email.rs:454`); SEC-014's per-IP and per-business caps (D-3743) are unchanged. (2) `tests/e2e/webserver.ts`: the keyed binary gets `ASKHAVA_ADAPTER_MODE_RESEND=stand_in`, the stand-in's base URL on `STAND_IN_PORT`, a fake key with the stand-in's `re_stand_in_` prefix (`stand_ins/server.py:50`), the stand-in's sending domain on the vendor list and a fake postal line, so the end-to-end app sends to the fake Resend, whose sent emails T414's control route (done) reads. (3) Tests, fake data only, in the new `app/server/tests/email_provider_workers.rs`, over a local recording server shaped as the stand-in (nothing beyond 127.0.0.1): a welcome task sends one email to the owner's address, read through `VaultAccountDirectory` (and a member with no mailbox row gets none, with `last4` always `None`); a sign-up code request sends one code email through the provider and none past the cap; with no key in CI no provider is built and no welcome is marked sent. Update `app/server/CLAUDE.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T469",
+    "T488"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy",
+    "harness"
+   ],
+   "owns": [
+    "app/server/src/business_signup.rs",
+    "tests/e2e/webserver.ts",
+    "app/server/tests/email_provider_workers.rs",
+    "app/server/src/account_directory.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/businesses.md",
+    "docs/spec/consent.md",
+    "docs/brains/email-deliverability.md",
+    "docs/spec/privacy.md"
+   ],
+   "requirements": [
+    "SEC-025",
     "BIZ-040",
     "CON-020"
    ],
@@ -33237,12 +33503,13 @@
     "D-3262",
     "D-3263",
     "D-3743",
-    "D-3750"
+    "D-3750",
+    "D-3805"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
-    "lines": 750,
+    "files": 4,
+    "lines": 300,
     "context_pct": 16
    },
    "checks": [
@@ -33250,9 +33517,9 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T469-email-provider-wiring",
-   "prompt": "kit/prompts/T469.md",
-   "acceptance": "`app/server/tests/email_provider_route.rs` passes against PostgreSQL and a local recording server: one sign-in email per admitted request to the member's own address and none past the cap, one welcome email to the owner's address, `live` refused outside live and `stand_in` and a stand-in URL refused in live with errors that name the key only, no provider and nothing marked sent with no key in CI; `app/server/tests/business_signin_route.rs`, `app/server/tests/business_signup_route.rs`, `tests/integration/tests/task_registry.rs` and the end-to-end suite pass unchanged; gitleaks and the PII scan find nothing."
+   "branch": "claude/task/T490-email-provider-mailers",
+   "prompt": "kit/prompts/T490.md",
+   "acceptance": "`app/server/tests/email_provider_workers.rs` passes against PostgreSQL and a local recording server: one welcome email to the owner's address read through `VaultAccountDirectory` (no `last4`), one sign-up code email per admitted request through the provider and none past the cap, no provider and nothing marked sent with no key in CI; `app/server/tests/business_signup_route.rs`, `tests/integration/tests/task_registry.rs` and the end-to-end suite pass unchanged; gitleaks and the PII scan find nothing."
   },
   {
    "id": "T470",
@@ -33266,7 +33533,8 @@
    "deps": [
     "T469",
     "T100",
-    "T456"
+    "T456",
+    "T490"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33328,8 +33596,8 @@
   {
    "id": "T471",
    "slug": "pick-moved-text",
-   "title": "picks and intake: her \"backup has your pick\" text on every path that moves a pick, and the Confirm window's end through the lapse",
-   "goal": "Plan change D-3750 (D-3722, D-3579, D-3571, D-400, D-446; PICK-047, PICK-046, PICK-019, PICK-050, BIZ-051, QH-001, CON-029): PICK-047's text \"<Business> couldn't take it, so your backup, <Business 2>, has your pick now. We'll text you when they accept.\" has no sender: `backup_text` (`app/picks/src/backup_choice.rs:357`, English and Spanish) has no caller and `intake` renders only `pick_lapsed` among the picks texts (`app/intake/src/job_texts.rs:443`); the business leaving (`end_for_leaving`, `app/picks/src/business_left.rs:52`) queues neither text, though its doc says the caller sends PICK-046's and its one caller does not (`app/portals/src/business_left.rs:217`); and the Confirm window's end (`run_confirm_ends`, `app/picks/src/handlers.rs:162`) moves the job and expires the pick with no backup move and no text. (1) In `app/picks/src/pick_ended.rs`, beside `queue_lapsed_text` (`pub(crate)` since T467): `pub const PICK_MOVED_TEMPLATE: &str = \"pick_moved\"` (one name in the shared `api.rs`) and `pub(crate) async fn queue_moved_text`: one `jobs.homeowner_text` event with IDs only (`job`, the ended `pick`, the `moved` pick and the ended pick's `business`), at the job's version read when it is queued, deduped by the ended pick (`{TEXT_KIND}.{pick}.{PICK_MOVED_TEMPLATE}`), due at `lapse_plan((at, row.emergency), business, &[]).send_at` exactly as `queue_lapsed_text` builds PICK-046's (`pick_ended.rs:170`): at once on a job the homeowner chose as an emergency, since QH-004 lets the homeowner's pick, confirm and connect texts go at any hour there (`docs/spec/quiet-hours.md:8`), otherwise under quiet hours. A held text would otherwise go stale: if the backup confirms overnight the job's version moves on and the sender drops the event (`app/jobs/src/handlers.rs:58`, `app/intake/src/job_texts.rs:271`). (2) Each caller that moves a pick to a backup queues it after its own last job move, never inside `backup_choice` (the move bumps the job's version, `app/jobs/src/models.rs:99`, and the sender drops an older version, `app/jobs/src/handlers.rs:56`): `pick_ended` (`pick_ended.rs:101`), `cant_take`'s `end_waiting` (T467's, `app/picks/src/cant_take.rs`, so `end_for_fee_terms` sends it too) and `end_for_leaving`, each on `Backup::Moved`; `end_for_leaving` also queues PICK-046's `pick_lapsed` event through `queue_lapsed_text` on `Backup::NoBackup` when the job is not paused, as `end_waiting` does, and its doc no longer says the caller sends it. (3) The window's end, every way it comes. Today an emergency pick has no window task at all (`notice_sent` returns before `start_window` on an emergency job, `app/picks/src/handlers.rs:121`), so only `jobs`' 60-minute timer (`jobs::api::run_timer`, `app/jobs/src/service.rs:242`) returns the job and the pick stays waiting with no backup move and no PICK-046 text, which the spec sends \"at once on a job chosen as an emergency\"; and on a normal job, when `jobs`' backstop runs before a late `run_confirm_ends`, that task returns on `!awaits_confirm` (`handlers.rs:181`) with the same result. `jobs` cannot call `picks` (`kit/layers.json`), so `picks` sees it through its own task: `notice_sent` on an emergency job also queues one `CONFIRM_ENDS_KIND` task, deduped as the normal one, due at `jobs::api::timeout(AwaitingConfirm, timer_from, true)`'s time with `from` the job's `timer_from` (the same instant `jobs` uses), and still answers `None` (no \"Accept by\", PICK-044). `run_confirm_ends` then, for a pick that still waits: with the job in Awaiting confirm and the task's `from`, runs the lapse; with the job in Awaiting confirm and another `from` (a restarted window), does nothing; with the job already returned to Quotes ready (`jobs`' backstop or the emergency 60 minutes got there first), runs the lapse too, with no job move, at the later of `due` and the worker clock's now (a new `run_confirm_ends_at(pool, task, now)` takes the worker's now as `run_pick_ended` does and the registration in the shared `app/server/src/lib.rs` uses it; `run_confirm_ends(pool, task)` keeps its signature, as `run_confirm_ends_at` with `due` for now, so `tests/integration/tests/confirm_window.rs` compiles and passes unchanged), so a late worker never starts the backup's window in the past and eats it; with the job in any other status, does nothing. Likewise `notice_sent`'s branch for a notice sent after `jobs` already returned the job (`handlers.rs:112` to `:116`, which today only stores the pick expired) runs the lapse when the job is in Quotes ready, still answers `MovedOn` and still queues no window task. The lapse, in its transaction at `due`, is the one `pick_ended` runs: `confirm_reminders::lapse` (the pick expires, then `backup_choice`; `paused` false, since a CANCEL pause withdraws the waiting pick first, CON-029, so a pick still waiting here is never paused), the job's move from Awaiting confirm to Quotes ready only when it is still there and no pick waits after it, then `queue_moved_text` on `Backup::Moved` or `queue_lapsed_text` on `Backup::NoBackup`; the backup's window starts with its own notice, as every page pick's does, and the ended pick stays `expired`, so OPS-034 counts it as before. No `jobs` file changes. (4) `app/intake/src/job_texts.rs`: `pick_moved` joins the job-text templates; its body is `picks::api::backup_text` with both businesses' public names (read as `lapsed_body` reads the ended one's) in her language; `exempt` (`:262`) answers true for `pick_moved` as for `pick_lapsed` on an emergency job, so the existing sender keeps its consent, opt-out and quiet-hours checks with QH-004's `Exemption::EmergencyJob`, and its subject IDs and hold key take the ended pick as PICK-046's do (`:368`, `:397`), so each ended pick gets one text. (5) Tests, fake data only, in `tests/integration/tests/pick_moved_text.rs` against PostgreSQL: on each of the four paths (the window's end, \"Can't take it\", the business leaving, a `payments` end) a pick with a pickable backup moves once and queues one `pick_moved` event at the job's version after the move, which the sender renders as PICK-047's English and Spanish text naming both businesses; with no backup each queues one `pick_lapsed` event; a rerun queues nothing more; an end at night holds `pick_moved` to 8 a.m. on a normal job and sends it at once on an emergency job; an emergency pick's 60 minutes lapse it (backup move or PICK-046) whether `jobs`' timer or the window task runs first, and a normal pick lapses the same when the backstop ran first; an opted-out homeowner gets nothing; the window's end of a pick no longer waiting, or of a restarted window, does nothing. Update `app/picks/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "title": "picks and intake: her \"backup has your pick\" text on every path that moves a pick",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T471 is split into T471 (the PICK-047 text, its queueing on each caller that moves a pick, and its job-text template) and T491 (the Confirm window's end through the lapse, item (3) below, which runs after it). Plan change D-3750 (D-3722, D-3579, D-3571, D-400, D-446; PICK-047, PICK-046, PICK-019, PICK-050, BIZ-051, QH-001, CON-029): PICK-047's text \"<Business> couldn't take it, so your backup, <Business 2>, has your pick now. We'll text you when they accept.\" has no sender: `backup_text` (`app/picks/src/backup_choice.rs:357`, English and Spanish) has no caller and `intake` renders only `pick_lapsed` among the picks texts (`app/intake/src/job_texts.rs:443`); the business leaving (`end_for_leaving`, `app/picks/src/business_left.rs:52`) queues neither text, though its doc says the caller sends PICK-046's and its one caller does not (`app/portals/src/business_left.rs:217`); and the Confirm window's end (`run_confirm_ends`, `app/picks/src/handlers.rs:162`) moves the job and expires the pick with no backup move and no text. (1) In `app/picks/src/pick_ended.rs`, beside `queue_lapsed_text` (`pub(crate)` since T467): `pub const PICK_MOVED_TEMPLATE: &str = \"pick_moved\"` (one name in the shared `api.rs`) and `pub(crate) async fn queue_moved_text`: one `jobs.homeowner_text` event with IDs only (`job`, the ended `pick`, the `moved` pick and the ended pick's `business`), at the job's version read when it is queued, deduped by the ended pick (`{TEXT_KIND}.{pick}.{PICK_MOVED_TEMPLATE}`), due at `lapse_plan((at, row.emergency), business, &[]).send_at` exactly as `queue_lapsed_text` builds PICK-046's (`pick_ended.rs:170`): at once on a job the homeowner chose as an emergency, since QH-004 lets the homeowner's pick, confirm and connect texts go at any hour there (`docs/spec/quiet-hours.md:8`), otherwise under quiet hours. A held text would otherwise go stale: if the backup confirms overnight the job's version moves on and the sender drops the event (`app/jobs/src/handlers.rs:58`, `app/intake/src/job_texts.rs:271`). (2) Each caller that moves a pick to a backup queues it after its own last job move, never inside `backup_choice` (the move bumps the job's version, `app/jobs/src/models.rs:99`, and the sender drops an older version, `app/jobs/src/handlers.rs:56`): `pick_ended` (`pick_ended.rs:101`), `cant_take`'s `end_waiting` (T467's, `app/picks/src/cant_take.rs`, so `end_for_fee_terms` sends it too) and `end_for_leaving`, each on `Backup::Moved`; `end_for_leaving` also queues PICK-046's `pick_lapsed` event through `queue_lapsed_text` on `Backup::NoBackup` when the job is not paused, as `end_waiting` does, and its doc no longer says the caller sends it. (3) The window's end, every way it comes, is T491's. (4) `app/intake/src/job_texts.rs`: `pick_moved` joins the job-text templates; its body is `picks::api::backup_text` with both businesses' public names (read as `lapsed_body` reads the ended one's) in her language; `exempt` (`:262`) answers true for `pick_moved` as for `pick_lapsed` on an emergency job, so the existing sender keeps its consent, opt-out and quiet-hours checks with QH-004's `Exemption::EmergencyJob`, and its subject IDs and hold key take the ended pick as PICK-046's do (`:368`, `:397`), so each ended pick gets one text. (5) Tests, fake data only, in `tests/integration/tests/pick_moved_text.rs` against PostgreSQL: on each of the paths this task wires (\"Can't take it\", the business leaving, a `payments` end) a pick with a pickable backup moves once and queues one `pick_moved` event at the job's version after the move, which the sender renders as PICK-047's English and Spanish text naming both businesses; with no backup each queues one `pick_lapsed` event; a rerun queues nothing more; an end at night holds `pick_moved` to 8 a.m. on a normal job and sends it at once on an emergency job; an opted-out homeowner gets nothing. Update `app/picks/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -33348,7 +33616,6 @@
     "app/picks/src/pick_ended.rs",
     "app/picks/src/cant_take.rs",
     "app/picks/src/business_left.rs",
-    "app/picks/src/handlers.rs",
     "app/intake/src/job_texts.rs",
     "tests/integration/tests/pick_moved_text.rs"
    ],
@@ -33365,11 +33632,70 @@
    "requirements": [
     "PICK-047",
     "PICK-046",
-    "PICK-019",
-    "PICK-044",
     "PICK-050",
     "BIZ-051",
-    "QH-004",
+    "QH-004"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-400",
+    "D-446",
+    "D-3571",
+    "D-3579",
+    "D-3722",
+    "D-3750",
+    "D-3805"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 380,
+    "context_pct": 16
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T471-pick-moved-text",
+   "prompt": "kit/prompts/T471.md",
+   "acceptance": "`tests/integration/tests/pick_moved_text.rs` passes against PostgreSQL: on \"Can't take it\", the business leaving and a `payments` end, a move to a pickable backup queues one `pick_moved` event at the job's version after its move and the sender renders PICK-047's English and Spanish text, no backup queues one `pick_lapsed` event, a rerun queues nothing more, a night end waits for 8 a.m. on a normal job and goes at once on an emergency job, an opted-out homeowner gets nothing; `tests/integration/tests/pick_ended.rs`, `tests/integration/tests/backup_choice.rs`, `tests/integration/tests/fee_terms_changed_end.rs` and `tests/integration/tests/homeowner_job_texts.rs` pass unchanged."
+  },
+  {
+   "id": "T491",
+   "slug": "confirm-window-lapse",
+   "title": "picks: the Confirm window's end, every way it comes, runs the lapse with its backup move or PICK-046 text",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T471 is split into T471 (the PICK-047 text: `queue_moved_text`, its queueing on each caller that moves a pick, and its `pick_moved` job-text template) and this task, T491, which runs after it: the Confirm window's end through the lapse. Plan change D-3750 (D-3722, D-3579, D-3571, D-400, D-446; PICK-047, PICK-046, PICK-019, PICK-050, BIZ-051, QH-001, CON-029): PICK-047's text \"<Business> couldn't take it, so your backup, <Business 2>, has your pick now. We'll text you when they accept.\" has no sender: `backup_text` (`app/picks/src/backup_choice.rs:357`, English and Spanish) has no caller and `intake` renders only `pick_lapsed` among the picks texts (`app/intake/src/job_texts.rs:443`); the business leaving (`end_for_leaving`, `app/picks/src/business_left.rs:52`) queues neither text, though its doc says the caller sends PICK-046's and its one caller does not (`app/portals/src/business_left.rs:217`); and the Confirm window's end (`run_confirm_ends`, `app/picks/src/handlers.rs:162`) moves the job and expires the pick with no backup move and no text. (3) The window's end, every way it comes. Today an emergency pick has no window task at all (`notice_sent` returns before `start_window` on an emergency job, `app/picks/src/handlers.rs:121`), so only `jobs`' 60-minute timer (`jobs::api::run_timer`, `app/jobs/src/service.rs:242`) returns the job and the pick stays waiting with no backup move and no PICK-046 text, which the spec sends \"at once on a job chosen as an emergency\"; and on a normal job, when `jobs`' backstop runs before a late `run_confirm_ends`, that task returns on `!awaits_confirm` (`handlers.rs:181`) with the same result. `jobs` cannot call `picks` (`kit/layers.json`), so `picks` sees it through its own task: `notice_sent` on an emergency job also queues one `CONFIRM_ENDS_KIND` task, deduped as the normal one, due at `jobs::api::timeout(AwaitingConfirm, timer_from, true)`'s time with `from` the job's `timer_from` (the same instant `jobs` uses), and still answers `None` (no \"Accept by\", PICK-044). `run_confirm_ends` then, for a pick that still waits: with the job in Awaiting confirm and the task's `from`, runs the lapse; with the job in Awaiting confirm and another `from` (a restarted window), does nothing; with the job already returned to Quotes ready (`jobs`' backstop or the emergency 60 minutes got there first), runs the lapse too, with no job move, at the later of `due` and the worker clock's now (a new `run_confirm_ends_at(pool, task, now)` takes the worker's now as `run_pick_ended` does and the registration in the shared `app/server/src/lib.rs` uses it; `run_confirm_ends(pool, task)` keeps its signature, as `run_confirm_ends_at` with `due` for now, so `tests/integration/tests/confirm_window.rs` compiles and passes unchanged), so a late worker never starts the backup's window in the past and eats it; with the job in any other status, does nothing. Likewise `notice_sent`'s branch for a notice sent after `jobs` already returned the job (`handlers.rs:112` to `:116`, which today only stores the pick expired) runs the lapse when the job is in Quotes ready, still answers `MovedOn` and still queues no window task. The lapse, in its transaction at `due`, is the one `pick_ended` runs: `confirm_reminders::lapse` (the pick expires, then `backup_choice`; `paused` false, since a CANCEL pause withdraws the waiting pick first, CON-029, so a pick still waiting here is never paused), the job's move from Awaiting confirm to Quotes ready only when it is still there and no pick waits after it, then `queue_moved_text` on `Backup::Moved` or `queue_lapsed_text` on `Backup::NoBackup`; the backup's window starts with its own notice, as every page pick's does, and the ended pick stays `expired`, so OPS-034 counts it as before. No `jobs` file changes. (`queue_moved_text` and `queue_lapsed_text` are T471's in `app/picks/src/pick_ended.rs`, called here.) Tests, fake data only, in the new `tests/integration/tests/confirm_window_lapse.rs` against PostgreSQL: at the window's end a pick with a pickable backup moves once and queues one `pick_moved` event at the job's version after the move, which the sender renders as PICK-047's text, and with no backup one `pick_lapsed` event; a rerun queues nothing more; an emergency pick's 60 minutes lapse it (backup move or PICK-046) whether `jobs`' timer or the window task runs first, and a normal pick lapses the same when the backstop ran first; a late worker starts the backup's window at the later of `due` and its now, never in the past; an opted-out homeowner gets nothing; the window's end of a pick no longer waiting, or of a restarted window, does nothing. Update `app/picks/CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T471"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/picks/src/handlers.rs",
+    "tests/integration/tests/confirm_window_lapse.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/consent.md",
+    "docs/brains/rust-production.md",
+    "docs/brains/sms-compliance.md"
+   ],
+   "requirements": [
+    "PICK-046",
+    "PICK-019",
+    "PICK-044",
     "CON-029"
    ],
    "tests": [],
@@ -33379,22 +33705,23 @@
     "D-3571",
     "D-3579",
     "D-3722",
-    "D-3750"
+    "D-3750",
+    "D-3805"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
-    "lines": 600,
-    "context_pct": 18
+    "files": 2,
+    "lines": 300,
+    "context_pct": 13
    },
    "checks": [
     "Ci",
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T471-pick-moved-text",
-   "prompt": "kit/prompts/T471.md",
-   "acceptance": "`tests/integration/tests/pick_moved_text.rs` passes against PostgreSQL: on the window's end, \"Can't take it\", the business leaving and a `payments` end, a move to a pickable backup queues one `pick_moved` event at the job's version after its move and the sender renders PICK-047's English and Spanish text, no backup queues one `pick_lapsed` event, a rerun queues nothing more, a night end waits for 8 a.m. on a normal job and goes at once on an emergency job, an emergency pick lapses at its 60 minutes whichever task runs first, a normal pick lapses after the backstop returned the job, an opted-out homeowner gets nothing; `tests/integration/tests/pick_ended.rs`, `tests/integration/tests/backup_choice.rs`, `tests/integration/tests/confirm_window.rs`, `tests/integration/tests/fee_terms_changed_end.rs` and `tests/integration/tests/homeowner_job_texts.rs` pass unchanged."
+   "branch": "claude/task/T491-confirm-window-lapse",
+   "prompt": "kit/prompts/T491.md",
+   "acceptance": "`tests/integration/tests/confirm_window_lapse.rs` passes against PostgreSQL: at the window's end a move to a pickable backup queues one `pick_moved` event at the job's version after its move, no backup queues one `pick_lapsed` event, a rerun queues nothing more, an emergency pick lapses at its 60 minutes whichever task runs first, a normal pick lapses after the backstop returned the job, a late worker never starts the backup's window in the past, an opted-out homeowner gets nothing, and the window's end of a pick no longer waiting or of a restarted window does nothing; `tests/integration/tests/confirm_window.rs`, `tests/integration/tests/pick_ended.rs` and `tests/integration/tests/pick_moved_text.rs` pass unchanged."
   },
   {
    "id": "T472",
@@ -33408,7 +33735,8 @@
    "deps": [
     "T100",
     "T471",
-    "T409"
+    "T409",
+    "T491"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
