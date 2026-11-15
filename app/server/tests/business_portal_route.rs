@@ -12,6 +12,11 @@
 //! module APIs only, as `door_matrix.rs` builds its own (T401): a quoted job, her request naming it,
 //! her page pick and its $0 release. Security events are counted from their one log line, since
 //! their table is `portals`' (TD-SEC-10). Every ID, name, address and key is fake.
+//!
+//! TD-BIZ-42 (T454, D-3674; BIZ-013, BIZ-015, BIZ-025, BIZ-036, PICK-024, CARD-022): the same
+//! router's happy paths: the home's "Your numbers" panel and a saved open-cards time, the released
+//! job's page (first name and tip line once, no phone, a reload writes nothing but its audit
+//! read), billing and its CSV against the ledger's own statement, and the owner's channel change.
 
 use std::collections::BTreeSet;
 use std::net::SocketAddr;
@@ -19,8 +24,8 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_adapters::api::{MaskedPool, TwilioConfig};
 use askhava_businesses::api::{
-    AccountStatus, Acting, OpenCardsTimes, Roles, add_member, add_owner, create, open_cards_times,
-    remove_member,
+    AccountStatus, Acting, NoticeChannel, OpenCardsTime, OpenCardsTimes, Roles, add_member,
+    add_owner, create, notice_channel, open_cards_times, remove_member,
 };
 use askhava_catalog::api::load_embedded;
 use askhava_core::api::{Guarded, MIGRATOR, Settings, SystemClock};
@@ -29,12 +34,14 @@ use askhava_intake::api::{Answer, TextIn, receive_text, record_answer};
 use askhava_jobs::api::{JobStatus, create as create_job, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::{Actor as AuditActor, EXPORT_PAGE_MAX, export_audit};
-use askhava_payments::api::{EntryKind, LedgerEntry, NewEntry, ledger_append, no_fee_release};
+use askhava_payments::api::{
+    EntryKind, LedgerEntry, NewEntry, business_statement, ledger_append, no_fee_release,
+};
 use askhava_picks::api::{PagePick, Released, Settled, page_pick, release, settle};
 use askhava_portals::api::{
     CookieJar, PortalsError, Realm, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress,
-    SignInMail, TIP_LINE, csrf_token, ensure_pre_session, signin_post, signin_request,
-    start_session,
+    SignInMail, TIP_LINE, billing_page, csrf_token, ensure_pre_session, signin_post,
+    signin_request, start_session, statement_csv,
 };
 use askhava_privacy::api::{NewContact, store_contact};
 use askhava_privacy::api::{Vault, mailbox_for};
@@ -765,4 +772,202 @@ async fn td_sec_43_forms_refuse_unknown_fields_and_values(pool: PgPool) {
     }
     assert_eq!(times().await, before, "no time stored");
     assert_eq!(actions(&pool).await, audit, "no channel change logged");
+}
+
+/// Counts of the tables a release, a notice, a charge, a task or a masked line would write to
+/// (TD-BIZ-42); a task copying an audit row off the database (OPS-011) is the read's own.
+const WRITES: [&str; 8] = [
+    "SELECT count(*) FROM picks.release",
+    "SELECT count(*) FROM payments.ledger_entry",
+    "SELECT count(*) FROM payments.charge_attempt",
+    "SELECT count(*) FROM calls.number_pool",
+    "SELECT count(*) FROM messaging.outbox",
+    "SELECT count(*) FROM messaging.email_outbox",
+    "SELECT count(*) FROM messaging.portal_notice",
+    "SELECT count(*) FROM core.task WHERE kind <> 'ops.offdb_stream'",
+];
+
+/// The row count of each of [`WRITES`].
+async fn written(pool: &PgPool) -> Vec<i64> {
+    let mut counts = Vec::new();
+    for sql in WRITES {
+        let n: i64 = sqlx::query_scalar(sql).fetch_one(pool).await.expect(sql);
+        counts.push(n);
+    }
+    counts
+}
+
+/// Whether `text` shows her fake phone in any usual shape (PICK-024, PRIV-005).
+fn shows_her_phone(text: &str) -> bool {
+    [
+        "9285550192",
+        "555-0192",
+        "5550192",
+        "555 0192",
+        "(928)",
+        "928-555",
+        "928.555",
+    ]
+    .iter()
+    .any(|shape| text.contains(shape))
+}
+
+/// A $75.00 introduction fee charge for `pick`'s job, so the ledger has a non-zero total.
+async fn charge_for(pool: &PgPool, business: Uuid, pick: Uuid) {
+    let mut db = pool.acquire().await.expect("db");
+    let job: Uuid = sqlx::query_scalar("SELECT job_id FROM picks.pick WHERE id = $1")
+        .bind(pick)
+        .fetch_one(&mut *db)
+        .await
+        .expect("pick's job");
+    let key = format!("t454.charge.{job}.{business}");
+    let entry = NewEntry {
+        kind: EntryKind::Charge,
+        business: Some(business),
+        job: Some(job),
+        amount_cents: 7_500,
+        stripe_id: Some("ch_fakecharge454"),
+        idempotency_key: &key,
+    };
+    ledger_append(&mut db, &LedgerEntry::new(entry).expect("entry"))
+        .await
+        .expect("ledger");
+}
+
+/// TD-BIZ-42 (BIZ-025, CARD-022): the owner signed in through the served sign-in gets the home
+/// with its "Your numbers" panel counting the ledger's fee, and `POST /b/open-cards` stores the
+/// ticked times and shows them ticked on the next load.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_biz_42_home_shows_your_numbers_and_saves_open_cards_times(pool: PgPool) {
+    let x = owner(&pool, "owner@x.example").await;
+    let pick = released_pick(&pool, x.by.business).await;
+    charge_for(&pool, x.by.business, pick).await;
+    let app = app(&pool);
+    let home = get(&app, "/b", &x.jar).await;
+    assert!(home.status == 200 && home.no_store, "{}", home.status);
+    for line in [
+        "<h2>Your numbers this month</h2>",
+        "<dt>Introduction fees charged</dt><dd>$75.00</dd>",
+    ] {
+        assert!(home.text.contains(line), "{line}");
+    }
+    let body = "&time=8am&time=noon";
+    let saved = answer(
+        &app,
+        request(&Method::POST, "/b/open-cards", &x.jar, (Site::Own, body)),
+    );
+    let saved = saved.await;
+    assert!(saved.status == 303 && saved.no_store, "{}", saved.status);
+    let mut db = pool.acquire().await.expect("db");
+    let times = open_cards_times(&mut db, x.by.member).await.expect("times");
+    assert_eq!(times.times(), [OpenCardsTime::EightAm, OpenCardsTime::Noon]);
+    let again = get(&app, "/b", &x.jar).await;
+    for code in ["8am", "noon"] {
+        let ticked = format!("id=\"time-{code}\" name=\"time\" value=\"{code}\" checked");
+        assert!(again.text.contains(&ticked), "{code} ticked");
+    }
+    assert!(
+        !again.text.contains("value=\"5pm\" checked"),
+        "5pm unticked"
+    );
+}
+
+/// TD-BIZ-42 (BIZ-013, PICK-024): the owner and a "Confirm and billing" member each open the
+/// released free pick's page and see her first name once and the tip line once, never her phone;
+/// every reload shows the same and writes no release row, notice, charge, task or masked line
+/// (only the read's audit row and its off-database copy task).
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_biz_42_released_pick_page_shows_first_name_and_tip_once(pool: PgPool) {
+    let x = owner(&pool, "owner@x.example").await;
+    let billing = Roles::new(false, true).expect("roles");
+    let biller = member(&pool, x.by, "billing@x.example", billing).await;
+    let pick = released_pick(&pool, x.by.business).await;
+    let (app, path) = (app(&pool), format!("/b/picks/{pick}"));
+    let before = written(&pool).await;
+    let first = get(&app, &path, &x.jar).await;
+    assert!(first.status == 200 && first.no_store, "{}", first.status);
+    assert_eq!(first.text.matches("Dana").count(), 1, "her first name once");
+    assert_eq!(first.text.matches(TIP_LINE).count(), 1, "the tip line once");
+    assert!(!first.text.contains("Testperson") && !shows_her_phone(&first.text));
+    for jar in [&x.jar, &biller.jar, &biller.jar] {
+        let reload = get(&app, &path, jar).await;
+        assert_eq!(reload.status, 200);
+        assert_eq!(reload.text, first.text, "the same page on every load");
+    }
+    assert_eq!(
+        written(&pool).await,
+        before,
+        "a load writes nothing but its read"
+    );
+}
+
+/// TD-BIZ-42 (BIZ-015): `/b/billing` is the ledger's statement for this month as the billing page
+/// draws it (a $75.00 charge and the free first win), and `/b/billing/statement.csv` is exactly
+/// that statement's rows.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_biz_42_billing_and_csv_match_the_ledger(pool: PgPool) {
+    let x = owner(&pool, "owner@x.example").await;
+    let pick = released_pick(&pool, x.by.business).await;
+    charge_for(&pool, x.by.business, pick).await;
+    let now = Timestamp::now();
+    let around = (
+        now - SignedDuration::from_hours(24 * 40),
+        now + SignedDuration::from_hours(1),
+    );
+    let ledger = business_statement(&pool, x.by.business, around)
+        .await
+        .expect("statement");
+    assert_eq!((ledger.lines.len(), ledger.totals.charges), (2, 7_500));
+    let app = app(&pool);
+    let page = get(&app, "/b/billing", &x.jar).await;
+    assert!(page.status == 200 && page.no_store, "{}", page.status);
+    let drawn = billing_page(&ledger, &[], None).expect("billing page");
+    assert_eq!(page.text, drawn, "the page is the ledger's statement");
+    assert!(
+        page.text
+            .contains("<dt>Introduction fees charged</dt><dd>$75.00</dd>")
+    );
+    let csv = get(&app, "/b/billing/statement.csv", &x.jar).await;
+    assert!(csv.status == 200 && csv.no_store, "{}", csv.status);
+    assert_eq!(
+        csv.text,
+        statement_csv(&ledger),
+        "the CSV is the ledger's rows"
+    );
+    assert_eq!(csv.text.lines().count(), 3, "a header and two rows");
+}
+
+/// TD-BIZ-42 (BIZ-036, TXT-035): the owner changes the notice channel on `/b/notices`: email is
+/// stored with its audit row and the page shows it; text, while business texting is off, stores
+/// nothing.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_biz_42_the_owner_changes_the_notice_channel(pool: PgPool) {
+    let x = owner(&pool, "owner@x.example").await;
+    let app = app(&pool);
+    let page = get(&app, "/b/notices", &x.jar).await;
+    assert!(page.status == 200 && page.text.contains("action=\"/b/notices\""));
+    let send = |channel: &str| {
+        let body = format!("&channel={channel}");
+        answer(
+            &app,
+            request(&Method::POST, "/b/notices", &x.jar, (Site::Own, &body)),
+        )
+    };
+    assert_eq!(send("email").await.status, 303);
+    let stored = async || {
+        let mut db = pool.acquire().await.expect("db");
+        notice_channel(&mut db, x.by.business)
+            .await
+            .expect("channel")
+    };
+    assert_eq!(stored().await, NoticeChannel::Email);
+    let changed = |a: &String| a == "businesses.notice_channel_changed";
+    assert_eq!(
+        actions(&pool).await.iter().filter(|a| changed(a)).count(),
+        1
+    );
+    assert_eq!(send("text").await.status, 303);
+    assert_eq!(stored().await, NoticeChannel::Email, "texting is off");
+    let shown = get(&app, "/b/notices", &x.jar).await;
+    assert!(shown.status == 200 && shown.no_store, "{}", shown.status);
 }
