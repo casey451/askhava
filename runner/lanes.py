@@ -244,7 +244,8 @@ def claimable_together(ids: list[str], state: State, now: datetime, task_def: Ca
     included, that `keep` passes. `cycle.refill_lanes` counts these, so refill and the claim apply one rule and
     no run is started for a lane whose only candidates would be over a crate's limit. `keep` is the claim's
     plan-health verdict, applied after the crate rule as the claim applies it (`cycle.plan_health_pass`
-    after `cycle._exclusive`, D-3812): a refused id is never taken, yet still reserves its crates."""
+    after `cycle._exclusive`, D-3812), asked lazily at each step and only for the ids the crate rule leaves: a
+    refused id is never taken, yet still reserves its crates."""
     flying = [task_def(tid) for tid in st.in_flight(state, now)]
     taken: list[str] = []
     left = list(ids)
