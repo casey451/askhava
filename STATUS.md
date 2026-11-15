@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T21:56:40Z by runner 69880af764d2 (manual).
+Updated 2026-11-15T22:10:43Z by runner 69880af764d2 (manual).
 
 **Building: T515 in progress since 21:53Z; 352 of 500 done; week 65% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T21:56:40Z by runner 69880af764d2 (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T515 claimed 21:53Z, lease until 00:53Z
 - **Week:** 65% used, 64.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:54Z, 2 min before this update
+- **Last run:** 21:56Z, 13 min before this update
 - **Keeper:** last ran 21:49Z, next wake 03:29Z
 
 ## Needs attention
@@ -47,7 +47,6 @@ Updated 2026-11-15T21:56:40Z by runner 69880af764d2 (manual).
 | T485 | businesses: a public read-only reader of a sign-up's identit | done | 1 | 28 min | 22:54Z |  |
 | T301 | server and portals: the email action links are served (every | resync | 3 | 58 min | 22:46Z |  |
 | T443 | --after runs the full smoke itself on a fix-round hand-in; t | done | 1 | 35 min | 22:19Z |  |
-| T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
