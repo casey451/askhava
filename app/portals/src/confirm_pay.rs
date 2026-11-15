@@ -1092,7 +1092,9 @@ async fn waiver_now(
 
 /// FEE-013, D-3719: the jobs of the homeowner who made the pick (her vault contact's, read
 /// through `intake::api::job_homeowner` and `jobs_of_contact`), so `confirm_waiver` finds a
-/// repeat customer; none when no open request opened the job.
+/// repeat customer; none when no open request opened the job. Known limit (D-3719): `intake`
+/// lists only each request's first job, so a job opened by an ALSO reply (INT-032) is missed and
+/// a repeat customer on it is charged the full fee.
 async fn her_jobs(conn: &mut PgConnection, job: Uuid) -> Result<Vec<Uuid>, ()> {
     let Some(her) = job_homeowner(conn, job).await.map_err(|_| ())? else {
         return Ok(Vec::new());
