@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T05:40:44Z by runner 140e446d7d87 (actions).
+Updated 2026-11-15T05:48:30Z by runner 1339ae745b69 (actions).
 
 **Building: T461 in progress since 05:20Z; 344 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T05:40:44Z by runner 140e446d7d87 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T461 claimed 05:20Z, lease until 08:20Z; lane 4: T493 claimed 05:25Z, lease until 08:25Z
 - **Week:** 57% used, 78.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:40Z, 0 min before this update
+- **Last run:** 05:48Z, 0 min before this update
 - **Keeper:** last ran 05:40Z, next wake 08:22Z
 
 ## Needs attention
@@ -79,7 +79,6 @@ Updated 2026-11-15T05:40:44Z by runner 140e446d7d87 (actions).
 | T352 | adapters and stand-in (harness): the PaymentIntent carries S | done | 1 | 51 min | 06:14Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 51 min | 06:03Z |  |
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 51 min | 06:02Z |  |
-| T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 3 | 22 min | 05:44Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
