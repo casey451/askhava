@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-15T06:31:26Z by runner 1339ae745b69 (actions).
+Updated 2026-11-15T06:37:55Z by runner 7303a9cd88d8 (actions).
 
-**Building: T454 in progress since 06:21Z; 344 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T454 in progress since 06:21Z; 345 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 344 of 480 build tasks (owner gates not counted)
+- **Tasks done:** 345 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T454 claimed 06:21Z, lease until 09:21Z
 - **Week:** 58% used, 80.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:31Z, 0 min before this update
+- **Last run:** 06:31Z, 6 min before this update
 - **Keeper:** last ran 06:31Z, next wake 09:24Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-15T06:31:26Z by runner 1339ae745b69 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T493 | portals (harness): the Confirm page's own Stripe CSP marker  | MERGE_PENDING | 2 | 50 min | 06:16Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
+| T493 | portals (harness): the Confirm page's own Stripe CSP marker  | done | 2 | 50 min | 06:16Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T461 | server: business sign-up's service area, email code and acti | BLOCKED | 3 | 49 min | 06:10Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | check_failed | 1 | 46 min | 04:47Z |  |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z |  |
@@ -99,7 +99,7 @@ Updated 2026-11-15T06:31:26Z by runner 1339ae745b69 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 344 of 480
+**Tasks merged (throughput only):** 345 of 480
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -134,7 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 224 of 235 done
+- stage 4: 225 of 235 done
 - stage 5: 0 of 91 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
