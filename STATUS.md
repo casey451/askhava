@@ -1,25 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-15T05:48:49Z by runner 1339ae745b69 (actions).
+Updated 2026-11-15T06:10:14Z by runner 181df2bf1294 (actions).
 
-**Building: T461 in progress since 05:20Z; 344 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T493 in progress since 05:25Z; 344 of 480 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 344 of 480 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T461 claimed 05:20Z, lease until 08:20Z; lane 4: T493 claimed 05:25Z, lease until 08:25Z
+- **Lane:** lane 4: T493 claimed 05:25Z, lease until 08:25Z
 - **Week:** 57% used, 78.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:48Z, 0 min before this update
+- **Last run:** 05:49Z, 21 min before this update
 - **Keeper:** last ran 05:48Z, next wake 08:22Z
 
 ## Needs attention
+- BLOCKED T461: plan gap reported: PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording lives in app/portals/src/business_signup.rs (DoneFacts / done_lines, lines 234-243, owned by T450's line), which T461 does not own (it owns only app/server/src/business_signup.rs and app/server/tests/business_signup_route.rs). Evidence: app/server/src/business_signup.rs:1149 Form::finished gives a NeedsReview sign-up the same Screen::Done with done_facts(..., (false,false)), showing "We'll tell you once, by email, when requests in your trade start." Worker logged it in D-380; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T461 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 28 problem(s) on tasks still to run (+116 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 31 problem(s) on tasks still to run (+116 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T461 | server: business sign-up's service area, email code and acti | BLOCKED | 3 | 49 min | 06:10Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | check_failed | 1 | 46 min | 04:47Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
-| T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z | session ended without handing in; the last pre-hand-in gate before it: runner smoke red on 3cfe0b2b62c7 (bash scripts/sm |
+| T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z |  |
 | T494 | portals: the Confirm route's $0 free-first-win decision from | done | 1 | 29 min | 04:31Z |  |
 | T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | done | 1 | 31 min | 04:26Z |  |
 | T261 | portals and server (harness): the served Confirm route under | BLOCKED | 3 | 110 min | 02:57Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
@@ -77,8 +79,6 @@ Updated 2026-11-15T05:48:49Z by runner 1339ae745b69 (actions).
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 30 min | 06:48Z |  |
 | T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 21 min | 06:40Z |  |
 | T352 | adapters and stand-in (harness): the PaymentIntent carries S | done | 1 | 51 min | 06:14Z |  |
-| T396 | businesses and messaging (harness): a phone a member links o | resync | 2 | 51 min | 06:03Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 2 | 51 min | 06:02Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -144,8 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T461 (lease until 2026-11-15T08:20:15Z)
 - lane 4: T493 (lease until 2026-11-15T08:25:39Z)
 
 ## Last usage reading
-- {"task": "T493", "at": "2026-11-15T04:47:27Z", "input_tokens": 84, "output_tokens": 26910, "cache_read_input_tokens": 2235957, "cache_creation_input_tokens": 106941}
+- {"task": "T461", "at": "2026-11-15T06:10:13Z", "cache_creation_input_tokens": 235714, "output_tokens": 66098, "input_tokens": 230, "cache_read_input_tokens": 13568811}
