@@ -19755,7 +19755,24 @@
    "id": "T127",
    "deps": [
     "T126",
-    "T432"
+    "T432",
+    "T498",
+    "T499",
+    "T500",
+    "T501",
+    "T502",
+    "T503",
+    "T504",
+    "T505",
+    "T506",
+    "T507",
+    "T508",
+    "T509",
+    "T510",
+    "T511",
+    "T512",
+    "T513",
+    "T514"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -59666,6 +59683,201 @@
    "slug": "stand-in-sticky-faults",
    "type": "harness",
    "stage": "5"
+  },
+  {
+   "id": "T498",
+   "deps": [
+    "T126",
+    "T125"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "doc-efficiency-audit",
+   "type": "audit",
+   "stage": "5"
+  },
+  {
+   "id": "T499",
+   "deps": [
+    "T498"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "doc-compaction-tools",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T500",
+   "deps": [
+    "T499"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "decision-digest-d-0001",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T501",
+   "deps": [
+    "T500"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "decision-digest-d-0620",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T502",
+   "deps": [
+    "T501"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "decision-digest-d-1317",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T503",
+   "deps": [
+    "T502"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "decision-digest-d-2013",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T504",
+   "deps": [
+    "T503"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "decision-digest-d-3030",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T505",
+   "deps": [
+    "T504"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "decision-digest-d-3300",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T506",
+   "deps": [
+    "T505"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "decision-digest-d-3600",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T507",
+   "deps": [
+    "T499"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "notes-compact-payments-portals",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T508",
+   "deps": [
+    "T499"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "notes-compact-businesses-intake-picks",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T509",
+   "deps": [
+    "T499"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "notes-compact-quotes-messaging-server",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T510",
+   "deps": [
+    "T499"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "notes-compact-other-crates",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T511",
+   "deps": [
+    "T499"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "test-design-preambles",
+   "type": "cleanup",
+   "stage": "5"
+  },
+  {
+   "id": "T512",
+   "deps": [
+    "T499",
+    "T507",
+    "T508",
+    "T509",
+    "T510"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "guides-compact",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T513",
+   "deps": [
+    "T499"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brains-compact",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T514",
+   "deps": [
+    "T506",
+    "T511",
+    "T512",
+    "T513"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "docs-stick",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -63323,7 +63535,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T18:57:57Z",
+ "updated_at": "2026-11-15T19:34:27Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -63421,8 +63633,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5316a602ce94d535d73c860ab9a40803bd1b454f",
- "starter": "manual",
+ "runner_sha": "95de4b28761c9cf1769e2f1daac2f32c790bb025",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "b70d8180dbc56ebbe7f397c0a58cef000a8db8e6",
