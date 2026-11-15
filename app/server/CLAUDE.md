@@ -28,6 +28,7 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 - `/healthz` belongs to T106 (`src/healthz.rs`); do not add it here.
 - TD-SEC-41, D-1868, D-2269: `tests/route_wiring.rs` checks only the rows listed in `docs/architecture.md` section 13: a `yes` row must be served by `build_router` and a row naming a task must not be, so a listed route never merged fails naming its row. An axum router cannot list its routes, so a route served with no row is not caught: the task that merges a new route adds its row (`yes`) in the same change.
 - BIZ-025, FEE-014, D-3790 to D-3792: the portal home's "Your numbers" come only from `quote_numbers`, `pick_numbers`, `finished_counts` and the statement, and `/b/billing` lists saved cards only through `saved_cards` (brand and last four): `tests/integration/tests/business_numbers.rs`, `tests/business_portal_route.rs`.
+- D-3813: Confirm merges from the Stripe hooks; no settings part, no charge: `tests/confirm_route.rs`.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/server/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/server/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
