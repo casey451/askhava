@@ -62,7 +62,8 @@ const FORMS_CSS: &str = "input[type=checkbox],input[type=radio]{appearance:none;
 height:24px;margin:0 8px 0 0;vertical-align:middle;border:2px solid #1f1d1b;background:#fff}\
 input[type=checkbox]{border-radius:3px}input[type=radio]{border-radius:50%}\
 input[type=checkbox]:checked,input[type=radio]:checked{background:#1f1d1b;\
-box-shadow:inset 0 0 0 4px #fff}span[id$=\"-hint\"],span[id$=\"-error\"]{display:block}\n";
+box-shadow:inset 0 0 0 4px #fff}span[id$=\"-hint\"],span[id$=\"-error\"]{display:block}\
+button{min-height:24px}\n";
 
 /// JOB-017, WORD-001: the share box's label, word for word, with the display name and the public
 /// domain from the brand file (D-1932, T294).
