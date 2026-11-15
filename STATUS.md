@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-15T17:37:18Z by runner 35177f91e0b2 (actions).
+Updated 2026-11-15T18:02:54Z by runner 8914ea0b621e (actions).
 
-**Building: T495 in progress since 17:37Z; 349 of 482 done; week 62% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T495 in progress since 17:37Z; 349 of 482 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 349 of 482 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T495 claimed 17:37Z, lease until 20:37Z; lane 2: T462 claimed 17:30Z, lease until 20:30Z
-- **Week:** 62% used, 68.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:36Z, 1 min before this update
+- **Week:** 63% used, 68.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 18:02Z, 0 min before this update
 - **Keeper:** last ran 16:53Z, next wake 17:13Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 26 problem(s) on tasks still to run (+119 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+119 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -52,7 +52,6 @@ Updated 2026-11-15T17:37:18Z by runner 35177f91e0b2 (actions).
 | T468 | portals, businesses and messaging: public paths for sign-up' | done | 1 | 29 min | 20:19Z |  |
 | T474 | harness: clearing a red main counts a failed attempt against | done | 1 | 26 min | 20:18Z |  |
 | T467 | picks: a pick whose fee terms changed before its Confirm end | done | 1 | 27 min | 20:15Z |  |
-| FIX-MAIN |  | done | 1 | 78 min | 17:42Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -64,7 +63,7 @@ Updated 2026-11-15T17:37:18Z by runner 35177f91e0b2 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 308 of 733 (42.0%) · partial 268 · unstarted 157
-**Tasks merged (throughput only):** 349 of 481
+**Tasks merged (throughput only):** 349 of 482
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
