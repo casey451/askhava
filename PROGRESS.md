@@ -5391,3 +5391,4 @@
 - 2026-11-15T14:15:26Z runner e1e0b57f22b9 (actions): {}
 - 2026-11-15T14:15:35Z runner 2c7436fa53ab (actions): {}
 - 2026-11-15T14:20:06Z runner 2c7436fa53ab (actions): {"T455": "QUEUED -> IN_PROGRESS"}; T455 estimated 575k tokens (calibrated); week has 74.0M left (no five-hour budget, D-3056) (session_reading 2026-11-15T14:15:12Z (week)); claimed
+- 2026-11-15T14:35:27Z runner ddc4e393d44e (manual): {"T462": "BLOCKED -> QUEUED"}

@@ -57067,7 +57067,7 @@
     "T461",
     "T452"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "signup-inbox-check",
    "type": "build",
@@ -57198,11 +57198,26 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "last_failure": "PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T466 (done, #782). Axe target-size fails at 320px on /b/signup/inbox (sample in spam): the answer buttons inbox/spam/tab are unstyled, email_check.html does not load forms.css, FORMS_CSS styles only checkboxes/radios, CSP style-src 'self' blocks inline styles; T462 Scope is only app/server/src/business_signup.rs and its test. Smallest plan change: let T462 (or a small portals follow-up) own both files; add button{min-height:24px} to FORMS_CSS and link /static/portals/forms.css first in email_check.html's main block as business_signup.html:23 does. Reviewer confirmed.",
+   "last_failure": "PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T466 (done, #782). Axe target-size fails at 320px on /b/signup/inbox (sample in spam): the answer buttons inbox/spam/tab are unstyled, email_check.html does not load forms.css, FORMS_CSS styles only checkboxes/radios, CSP style-src 'self' blocks inline styles; T462 Scope is only app/server/src/business_signup.rs and its test. Smallest plan change: let T462 (or a small portals follow-up) own both files; add button{min-height:24px} to FORMS_CSS and link /static/portals/forms.css first in email_check.html's main block as business_signup.html:23 does. Reviewer confirmed.\nre-queued after plan fix D-3838: D-3838 (#837): Fable-triaged plan fix (T462)",
    "runner_closed_prs": [
     833
    ],
-   "reason": "plan gap reported: PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T466 (done, #782). Axe target-size fails at 320px on /b/signup/inbox (sample in spam): the answer buttons inbox/spam/tab are unstyled, email_check.html does not load forms.css, FORMS_CSS styles only checkboxes/radios, CSP style-src 'self' blocks inline styles; T462 Scope is only app/server/src/business_signup.rs and its test. Smallest plan change: let T462 (or a small portals follow-up) own both files; add button{min-height:24px} to FORMS_CSS and link /static/portals/forms.css ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T462 --plan-fix D-### --reason \"...\"` (D-2859)"
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-15T14:35:27Z",
+     "reason": "D-3838 (#837): Fable-triaged plan fix (T462)",
+     "by": "manual-dc8cf46eb87d",
+     "was": "plan gap reported: PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T466 (done, #782). Axe target-size fails at 320px on /b/signup/inbox (sample in spam): the answer buttons inbox/spam/tab are unstyled, email_check.html does not load forms.css, FORMS_CSS styles only checkboxes/radios, CSP style-src 'self' blocks inline styles; T462 Scope is only app/server/src/business_signup.rs and its test. Smallest plan change: let T462 (or a small portals follow-up) own both files; add button{min-height:24px} to FORMS_CSS and link /static/portals/forms.css ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T462 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-3838",
+     "plan_since": "2026-11-15T14:12:33Z",
+     "plan_base": "2c7436fa53abfd8bf500077425691ef147b93f42",
+     "plan_head": "ddc4e393d44e8adf1694475b6fe8a47837923a56",
+     "plan_then": "be06ba6d895c79ce4fdac342a95dfc6be291e7efe8b267d275b87a7c68fd70fe",
+     "plan_now": "26aafa67991b461159f807214bfd297aa96701a251255ececa4756b56a67d59b"
+    }
+   ]
   },
   {
    "id": "T464",
@@ -62800,7 +62815,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T14:20:06Z",
+ "updated_at": "2026-11-15T14:35:27Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -62898,8 +62913,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "2c7436fa53abfd8bf500077425691ef147b93f42",
- "starter": "actions",
+ "runner_sha": "ddc4e393d44e8adf1694475b6fe8a47837923a56",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "3b9687af32d2c05b2c3344eb019f8f05eed3d81f",
