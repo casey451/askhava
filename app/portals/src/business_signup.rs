@@ -274,6 +274,9 @@ pub enum Screen<'a> {
     IdentityCode(&'a MaskedContact, Option<CodeProblem>),
     /// The code emailed to the sign-up address, with the resend button (BIZ-040, BIZ-042).
     EmailCode(Option<CodeProblem>),
+    /// After the email code, a flagged sign-up waits in needs review: no facts, no date, no code
+    /// (BIZ-016, BIZ-020, D-3830).
+    Review,
 }
 
 /// A11Y-030, BIZ-002, BIZ-040: why a typed sign-up code was refused, shown beside the code field.
@@ -295,6 +298,12 @@ impl CodeProblem {
         }
     }
 }
+
+/// BIZ-016, D-3830: the review screen's title.
+const REVIEW_TITLE: &str = "We're checking your sign-up by hand";
+/// BIZ-016, BIZ-020, D-349, D-3830: the review screen's one line: it waits for review and its
+/// status comes by email; no decision time, code, start date or name.
+const REVIEW_LINE: &str = "Some sign-ups wait for a review by hand before they go live. We'll email you to say where yours stands.";
 
 /// BIZ-042: the email code's hint, word for word.
 pub const NO_EMAIL_HINT: &str = "No email? Check your Spam or Junk folder.";
@@ -956,6 +965,10 @@ fn fill_record(v: &mut SignupView<'_>, screen: Screen<'_>) {
         Screen::Done(facts) => {
             v.title = "You're signed up";
             (v.lines, v.links) = done_lines(facts);
+        }
+        Screen::Review => {
+            v.title = REVIEW_TITLE;
+            v.lines = vec![REVIEW_LINE.to_owned()];
         }
         _ => {}
     }

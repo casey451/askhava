@@ -561,9 +561,9 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /b/signup/old | portals | yes |
 | POST | /b/signup/letter | portals | yes |
 | POST | /b/signup/identity-code | portals | yes |
-| POST | /b/signup/email-code | portals | T461 |
-| POST | /b/signup/email-code/resend | portals | T461 |
-| POST | /b/signup/service-area | portals | T461 |
+| POST | /b/signup/email-code | portals | yes |
+| POST | /b/signup/email-code/resend | portals | yes |
+| POST | /b/signup/service-area | portals | yes |
 | GET | /b/signup/inbox | portals | T462 |
 | POST | /b/signup/inbox | portals | T462 |
 | GET | /b/signup/capability | portals | T464 |
