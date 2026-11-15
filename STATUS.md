@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T19:57:21Z by runner 644749f508ef (actions).
+Updated 2026-11-15T19:57:43Z by runner 6cc6fdcbb269 (actions).
 
 **Idle since 19:56Z; 351 of 499 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,11 +9,11 @@ Updated 2026-11-15T19:57:21Z by runner 644749f508ef (actions).
 - **Lane:** idle since 19:56Z (no task in progress)
 - **Week:** 64% used, 68.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:57Z, 0 min before this update
-- **Keeper:** last ran 19:35Z, next wake 21:35Z
+- **Keeper:** last ran 19:57Z, next wake 20:17Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 23 problem(s) on tasks still to run (+120 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+119 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
