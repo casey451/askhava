@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T06:23:41Z by runner 1339ae745b69 (actions).
+Updated 2026-11-15T06:31:10Z by runner 1339ae745b69 (actions).
 
 **Building: T454 in progress since 06:21Z; 344 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T06:23:41Z by runner 1339ae745b69 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T454 claimed 06:21Z, lease until 09:21Z
 - **Week:** 58% used, 80.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:23Z, 0 min before this update
+- **Last run:** 06:31Z, 0 min before this update
 - **Keeper:** last ran 06:23Z, next wake 09:24Z
 
 ## Needs attention
@@ -95,7 +95,6 @@ Updated 2026-11-15T06:23:41Z by runner 1339ae745b69 (actions).
 - 10:42Z Plan: T329 notice-email copy gap (D-3687) (#768)
 - 10:21Z Plan: restructure the business sign-in chain — T300/T301/T302 gaps, 13 ordered follow-up tasks (D-3674, D-3675, D-3676) (#765)
 - 07:59Z Plan: T359 adopts two charge-ledger test expectations (TD-FEE-64), records the checked intent amount (D-3658) (#759)
-- 06:29Z Plan: T280 build note out of architecture.md after D-3620; sweep T393's late paragraph (D-3652) (#753)
 
 ## Progress (requirements verified)
 
