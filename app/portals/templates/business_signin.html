@@ -4,7 +4,8 @@
     summary first with a link to the field, and keeps the value); "sent" says the same thing
     whether or not the address is on file; "open" is the emailed link's page, whose one button
     signs in (opening the link changes nothing); "ended" is a used, expired or unknown link;
-    "done" is a finished sign-in. Forms post with novalidate and never disable their button. -#}
+    "done" is a finished sign-in, with one more line linking to the capability step for an owner
+    whose business has no saved capability yet (T464, BIZ-049, D-3676). Forms post with novalidate and never disable their button. -#}
 {% block title %}{% if failed %}Error: {% endif %}{% if screen == "sent" %}Check your email{% else if screen == "ended" %}This sign-in link has stopped working{% else if screen == "done" %}You're signed in{% else %}Sign in to your business account{% endif %}{% endblock %}
 {% block main %}
 {% if screen == "sent" %}<h1 id="signin-sent" tabindex="-1" autofocus>Check your email</h1>
@@ -20,7 +21,8 @@
 <p>You can use each link once, and it runs out after 15 minutes. <a href="/b/sign-in">Get a new sign-in link</a>.</p>
 {% else if screen == "done" %}<h1 id="signin-done" tabindex="-1" autofocus>You're signed in</h1>
 <p>You'll stay signed in on this device for 30 days.</p>
-{% else %}<h1>Sign in to your business account</h1>
+{% if let Some(route) = capability %}<p>Next, <a href="{{ route }}" id="capability-link">pick the jobs you want us to send you</a>.</p>
+{% endif %}{% else %}<h1>Sign in to your business account</h1>
 {% if failed %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
 <h2>Check the email address</h2>
 <p><a href="#email">Enter the email address you sign in with, like name@example.com</a></p>
