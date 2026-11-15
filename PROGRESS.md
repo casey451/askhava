@@ -5477,3 +5477,4 @@
 - 2026-11-15T21:53:59Z runner 69880af764d2 (actions): {"T515": "QUEUED -> IN_PROGRESS"}; T515 estimated 579k tokens (calibrated); week has 64.0M left (no five-hour budget, D-3056) (session_reading 2026-11-15T21:48:40Z (week)); claimed
 - 2026-11-15T21:56:40Z runner 69880af764d2 (manual): {}
 - 2026-11-15T22:10:43Z runner 69880af764d2 (manual): {}
+- 2026-11-15T22:11:47Z runner 8295be10cebf (actions): {"T515": "IN_PROGRESS -> BLOCKED"}

@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-15T22:10:43Z by runner 69880af764d2 (manual).
+Updated 2026-11-15T22:11:47Z by runner 8295be10cebf (actions).
 
-**Building: T515 in progress since 21:53Z; 352 of 500 done; week 65% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 22:11Z; 352 of 500 done; week 65% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 352 of 500 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T515 claimed 21:53Z, lease until 00:53Z
+- **Lane:** idle since 22:11Z (no task in progress)
 - **Week:** 65% used, 64.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:56Z, 13 min before this update
+- **Last run:** 22:10Z, 0 min before this update
 - **Keeper:** last ran 21:49Z, next wake 03:29Z
 
 ## Needs attention
+- BLOCKED T515: plan gap reported: PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemode (None). D-3862 says _event adds livemode False and nothing else, but release (app/payments/src/release_proof.rs:359 check_intent) refuses a re-fetched intent without livemode (WrongMode), so the acceptance (one paid release) cannot pass without giving the stand-in PaymentIntent livemode=False, which turns that test red. Smallest plan change: T515 also owns that test (None -> Some(false)), update the stale comment at app/adapters/src/payments.rs:54, and log both in docs/dec; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T515 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T515 | End-to-end harness: specs can deliver a validly signed Strip | BLOCKED | 1 | 17 min | 22:11Z | PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemo |
 | T099 | Journey J2 (business) and its variants, keyboard-only, with  | BLOCKED | 1 | 58 min | 21:21Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
 | T464 | server and portals: the sign-up capability step is served af | done | 1 | 83 min | 19:56Z |  |
 | T495 | e2e: the served Confirm and pay journey in the browser again | done | 1 | 44 min | 18:21Z |  |
@@ -53,31 +55,31 @@ Updated 2026-11-15T22:10:43Z by runner 69880af764d2 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 288 of 733 (39.3%) · partial 288 · unstarted 157
+**Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
 **Tasks merged (throughput only):** 352 of 500
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 12 | 17 | 6 | 35 |
+| accessibility | 13 | 16 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 21 | 34 | 3 | 58 |
-| calls | 12 | 12 | 1 | 25 |
+| calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 17 | 34 | 1 | 52 |
-| intake | 27 | 13 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
+| fees | 22 | 29 | 1 | 52 |
+| intake | 29 | 11 | 3 | 43 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 22 | 21 | 2 | 45 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 10 | 19 | 2 | 31 |
+| privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 10 | 40 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -97,7 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T515 (lease until 2026-11-16T00:53:48Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T099", "at": "2026-11-15T21:21:50Z", "input_tokens": 377, "output_tokens": 114147, "cache_read_input_tokens": 16057184, "cache_creation_input_tokens": 375422}
+- {"task": "T515", "at": "2026-11-15T22:11:47Z", "input_tokens": 165, "cache_read_input_tokens": 7312942, "cache_creation_input_tokens": 156225, "output_tokens": 39078}

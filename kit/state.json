@@ -60069,8 +60069,8 @@
     "T426",
     "T495"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "keyed-stripe-webhook-signing",
    "type": "harness",
    "stage": "4",
@@ -60081,6 +60081,33 @@
     3866,
     3867,
     3868
+   ],
+   "reason": "plan gap reported: PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemode (None). D-3862 says _event adds livemode False and nothing else, but release (app/payments/src/release_proof.rs:359 check_intent) refuses a re-fetched intent without livemode (WrongMode), so the acceptance (one paid release) cannot pass without giving the stand-in PaymentIntent livemode=False, which turns that test red. Smallest plan change: T515 also owns that test (None -> Some(false)), update the stale comment at app/adapters/src/payments.rs:54, and log both in docs/dec; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T515 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemode (None). D-3862 says _event adds livemode False and nothing else, but release (app/payments/src/release_proof.rs:359 check_intent) refuses a re-fetched intent without livemode (WrongMode), so the acceptance (one paid release) cannot pass without giving the stand-in PaymentIntent livemode=False, which turns that test red. Smallest plan change: T515 also owns that test (None -> Some(false)), update the stale comment at app/adapters/src/payments.rs:54, and log both in docs/decisions.md. Reviewer confirmed the gap.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 131,
+     "head_sha": "8295be10cebf29548dc5a498e350158184fe9f09",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-15T21:53:48Z",
+     "ended_at": "2026-11-15T22:11:47Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 7163175,
+       "turns": 77
+      },
+      "reviewer": {
+       "tokens": 345235,
+       "turns": 10
+      }
+     }
+    }
    ]
   }
  ],
@@ -60109,12 +60136,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T099",
-   "at": "2026-11-15T21:21:50Z",
-   "input_tokens": 377,
-   "output_tokens": 114147,
-   "cache_read_input_tokens": 16057184,
-   "cache_creation_input_tokens": 375422
+   "task": "T515",
+   "at": "2026-11-15T22:11:47Z",
+   "input_tokens": 165,
+   "cache_read_input_tokens": 7312942,
+   "cache_creation_input_tokens": 156225,
+   "output_tokens": 39078
   },
   "source": "session_reading 2026-11-15T21:48:40Z (week)",
   "by_task": {
@@ -63746,17 +63773,27 @@
    },
    "T515": {
     "estimated_bytes": 189714,
-    "estimated_tokens": 578505
+    "estimated_tokens": 578505,
+    "usage_counting": "message_id",
+    "input_tokens": 165,
+    "cache_read_input_tokens": 7312942,
+    "cache_creation_input_tokens": 156225,
+    "output_tokens": 39078,
+    "worker_tokens": 7163175,
+    "worker_turns": 77,
+    "reviewer_tokens": 345235,
+    "reviewer_turns": 10,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
-    "start": "2026-11-15T16:50:29Z",
-    "tokens": 7484435
+    "start": "2026-11-15T22:11:47Z",
+    "tokens": 926762
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 171731533
+    "tokens": 172658295
    }
   },
   "session_reading": {
@@ -63767,7 +63804,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T22:10:43Z",
+ "updated_at": "2026-11-15T22:11:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -63865,8 +63902,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "69880af764d2a69164294bd2bf84f574eb480957",
- "starter": "manual",
+ "runner_sha": "8295be10cebf29548dc5a498e350158184fe9f09",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "88f0d709d2c243c8307bbb2ec8ab51abeb60d063",
