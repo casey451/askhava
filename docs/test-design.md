@@ -106,7 +106,7 @@ Variants: with the business-texting switch on, a business that chose both gets t
 1. Fake Twilio starts failing sends: texts retry 3 times over 30 minutes, then the quote link goes by email and appears in the portal (TXT-014); with no email on file, Casey gets a call-back alert (TXT-015).
 2. Fake Twilio reports the number suspended: all texting pauses; the site banner appears with `role="status"` (WEB-007, A11Y-018); a new request through web chat still works (WEB-009); no other number is used (TXT-022); Casey's call list fills (TXT-023); a "smell gas" web-chat message gets the safety text there and a critical alert (TXT-024).
 3. stripe-mock is unreachable when the business confirms: per-attempt idempotency keys (FEE-016); after 4 hours the pick is released and the next quote offered (FEE-018); Stripe comes back and a late success arrives: refunded once, Casey told (FEE-021).
-4. The stand-in AI is down: each step runs at once on the AI-off path, the fixed question bank, with no "we have your message" text and no 30-minute retry (INT-021, D-492, D-3844); "sparks" in a message still gets the safety text within 5 minutes (INT-003).
+4. The stand-in AI is down: each step runs at once on the AI-off path, the fixed question bank, with no "we have your message" text and no 30-minute retry, and the next step tries the AI again (checked once T299 builds the client) (INT-021, D-492, D-3844); "sparks" in a message still gets the safety text within 5 minutes (INT-003).
 5. Everything recovers; the closing checks pass, and the nightly reconcile finds nothing unmatched (FEE-029).
 
 ## 6. Accessibility checks
