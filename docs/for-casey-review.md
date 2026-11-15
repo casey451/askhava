@@ -2919,6 +2919,13 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The sign-up inbox-check task (T462) may now give the answer buttons a minimum size, so they pass the small-screen tap-target check.
 - Five other page tasks now add their pages to the accessibility checker in the same change, so the check does not fail when they land. Nothing needs you.
 
+## Plan fixes before the stage-5 tasks start (D-3844, November 15)
+
+- Before any of the 92 waiting stage-5 tasks starts, five checkers read each one against the code. Twenty-two of the 23 problems they reported were real and are fixed in the plan; one was a false alarm and nothing was changed for it.
+- One new small task (T497) lets the fake Twilio, Stripe and AI services be told to fail, so the "vendor outage" journey (J4) can be tested. The AI part of that journey is fully tested only later, once the app actually talks to the AI (T299, phase 2).
+- The help auto-answer about cost keeps the fixed wording "$25, $75 or $199", as the requirement says, and a test now fails if the fee amounts in the code ever change without that text changing.
+- The 8.6% sales-tax set-aside is now a real setting (default 8.6%) that you can change later.
+- Nothing needs you.
 ## A business that shares its email inbox cannot confirm a pick yet (D-3717, November 15)
 
 - When a business's sign-in email is a shared inbox, pressing "Confirm and pay" first needs a fresh code sent to the owner. The Confirm page (T261) refuses that press and charges nothing, but no task in the plan yet builds the route that sends the code, so such a business cannot confirm any pick. This needs a follow-up task in the plan before launch; nothing else needs you.
