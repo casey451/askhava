@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T00:52:59Z by runner b70d8180dbc5 (actions).
+Updated 2026-11-15T00:56:11Z by runner b70d8180dbc5 (actions).
 
 **Building: T460 in progress since 00:00Z; 341 of 471 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T00:52:59Z by runner b70d8180dbc5 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T460 claimed 00:00Z, lease until 03:00Z; lane 6: T454 claimed 00:44Z, lease until 03:44Z
 - **Week:** 53% used, 86.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:52Z, 0 min before this update
+- **Last run:** 00:56Z, 0 min before this update
 - **Keeper:** last ran 00:52Z, next wake 03:02Z
 
 ## Needs attention
@@ -90,7 +90,6 @@ Updated 2026-11-15T00:52:59Z by runner b70d8180dbc5 (actions).
 | T447 | messaging: a passing vault error holds an outbox row instead | done | 1 | 26 min | 01:30Z |  |
 | T341 | picks (harness): a pick of a tiers quote names its tier, and | resync | 2 | 67 min | 01:10Z |  |
 | T328 | picks and server: an ended pick offers the next quote (`paym | done | 2 | 61 min | 01:04Z | PLAN GAP: app/intake/src/job_texts.rs is outside T328's scope (owned by T240, T247, T278, T402). The PICK-046 text canno |
-| T302 | server (harness): business sign-up's open doors and served p | BLOCKED | 1 | 2 min | 00:54Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
