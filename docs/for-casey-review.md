@@ -2951,5 +2951,5 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 ## The business journey test can now check what happens after payment (D-3862, November 15)
 
-- The full business-journey test (T099) stopped because the test's fake Stripe and the app used different signing keys, so the test could not send the app a valid "payment succeeded" message. A small new task (T515) gives the tests the app's per-run test key, so they can sign that message as Stripe would. The app's own checks stay as strict as before.
+- The full business-journey test (T099) stopped because the test's fake Stripe and the app used different signing keys, so the test could not send the app a valid "payment succeeded" message. A small new task (T515) gives the tests the app's per-run test key, so they can sign that message as Stripe would. The fake Stripe's messages also gain one field every real Stripe message has (whether it is live or a test), so the app acts on them. The app's own checks stay as strict as before.
 - Nothing needs you.
