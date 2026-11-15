@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T14:05:28Z by runner 2c7436fa53ab (manual).
+Updated 2026-11-15T14:12:35Z by runner 2c7436fa53ab (actions).
 
 **Idle since 13:32Z; 347 of 480 done; week 60% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,17 +8,29 @@ Updated 2026-11-15T14:05:28Z by runner 2c7436fa53ab (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 13:32Z (no task in progress)
 - **Week:** 60% used, 76.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:33Z, 31 min before this update
+- **Last run:** 14:05Z, 7 min before this update
 - **Keeper:** last ran 13:33Z, next wake 13:53Z
 
 ## Needs attention
+- BLOCKED T261: Ally: failure
+Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
+    tests/a11y/axe_all_pages.spec.ts:20:5 › A11Y-001 A11Y-002 A11Y-025 TD-A11Y-01: axe on /b/picks/{pick}/confirm (confirm page, fee-free job) at 768px 
+    tests/a11y/axe_all_pages.spec.ts:20:5 › A11Y-001 A11Y-002 A11Y-025 TD-A11Y-01: axe on /b/picks/{pick}/confirm (confirm page, fee-free job) at 1280px 
+    tests/a11y/reflow_spacing.spec.ts:101:7 › text spacing › A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 320px 
+    tests/a11y/reflow_spacing.spec.ts:101:7 › text spacing › A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 768px 
+    tests/a11y/reflow_spacing.spec.ts:101:7 › text spacing › A11Y-009: /b/picks/{pick}/confirm (confirm page, fee-free job) takes the text-spacing override at 1280px 
+    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 320px 
+    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 768px 
+    tests/a11y/targets_contrast.spec.ts:76:5 › A11Y-006 A11Y-007: targets and contrast on /b/picks/{pick}/confirm (confirm page, fee-free job) at 1280px 
+  341 passed (2.2m)
+##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 29 problem(s) on tasks still to run (+118 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T261 | portals and server (harness): the served Confirm route under | MERGE_PENDING | 5 | 44 min | 13:32Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
+| T261 | portals and server (harness): the served Confirm route under | check_failed | 5 | 44 min | 13:32Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T462 | server: the sign-up inbox check is served behind the busines | check_failed | 1 | 30 min | 12:13Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T261 | portals and server (harness): the served Confirm route under | check_failed | 4 | 2 h 6 min | 11:16Z |  |
 | T461 | server: business sign-up's service area, email code and acti | done | 4 | 54 min | 08:38Z | PLAN GAP: T461's acceptance says a flagged (NeedsReview) sign-up's done screen says it waits for review, but the wording |
@@ -69,31 +81,31 @@ Updated 2026-11-15T14:05:28Z by runner 2c7436fa53ab (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 213 of 733 (29.1%) · partial 363 · unstarted 157
+**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
 **Tasks merged (throughput only):** 347 of 480
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 12 | 17 | 6 | 35 |
-| ai | 8 | 16 | 5 | 29 |
-| businesses | 11 | 44 | 3 | 58 |
-| calls | 8 | 16 | 1 | 25 |
-| consent | 10 | 21 | 4 | 35 |
-| fees | 10 | 41 | 1 | 52 |
-| intake | 25 | 15 | 3 | 43 |
-| job-cards | 13 | 11 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 18 | 25 | 2 | 45 |
+| accessibility | 14 | 15 | 6 | 35 |
+| ai | 11 | 13 | 5 | 29 |
+| businesses | 18 | 37 | 3 | 58 |
+| calls | 14 | 10 | 1 | 25 |
+| consent | 15 | 16 | 4 | 35 |
+| fees | 19 | 32 | 1 | 52 |
+| intake | 29 | 11 | 3 | 43 |
+| job-cards | 19 | 5 | 0 | 24 |
+| licensing | 38 | 10 | 0 | 48 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 4 | 25 | 2 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 22 | 33 | 1 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 7 | 43 | 5 | 55 |
+| privacy | 13 | 16 | 2 | 31 |
+| quiet-hours | 7 | 2 | 0 | 9 |
+| quotes-pick | 35 | 20 | 1 | 56 |
+| recurring | 8 | 0 | 3 | 11 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
