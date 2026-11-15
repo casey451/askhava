@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T23:24:30Z by runner ff584ab99111 (manual).
+Updated 2026-11-15T23:47:44Z by runner cdba685caa34 (actions).
 
 **Building: T515 in progress since 22:57Z; 352 of 502 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-15T23:24:30Z by runner ff584ab99111 (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T515 claimed 22:57Z, lease until 01:57Z; lane 2: T516 claimed 23:13Z, lease until 02:13Z
 - **Week:** 67% used, 61.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:15Z, 9 min before this update
+- **Last run:** 23:24Z, 23 min before this update
 - **Keeper:** last ran 23:14Z, next wake 01:59Z
 
 ## Needs attention
@@ -41,17 +41,13 @@ Updated 2026-11-15T23:24:30Z by runner ff584ab99111 (manual).
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z |  |
 | T460 | server: business sign-up's identity steps are served (code s | done | 2 | 68 min | 01:08Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | check_failed | 1 | 12 min | 00:56Z |  |
-| T486 | businesses and catalog: the free-first-win join dates: a pub | done | 1 | 65 min | 23:37Z |  |
-| T451 | quotes, picks, jobs, payments and server: the "Your numbers" | done | 1 | 41 min | 23:30Z |  |
-| T445 | runner (harness): a failed nightly on an older head keeps th | done | 1 | 24 min | 23:29Z |  |
-| T301 | server and portals: the email action links are served (every | done | 3 | 27 min | 23:24Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 293 of 733 (40.0%) · partial 283 · unstarted 157
+**Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
 **Tasks merged (throughput only):** 352 of 502
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -59,23 +55,23 @@ Updated 2026-11-15T23:24:30Z by runner ff584ab99111 (manual).
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 21 | 34 | 3 | 58 |
-| calls | 12 | 12 | 1 | 25 |
+| calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 18 | 33 | 1 | 52 |
+| fees | 22 | 29 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 22 | 21 | 2 | 45 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 11 | 18 | 2 | 31 |
+| privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 10 | 40 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 

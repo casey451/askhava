@@ -60125,7 +60125,15 @@
      "plan_then": "dacbd873cef80c3745392b7c8098b4b59447a89314a0bb44650f5dd82dd5402e",
      "plan_now": "6d981f502c6781acc6cb9acf023badef883d8d6781e316f34d6e1cc41cf4ec5a"
     }
-   ]
+   ],
+   "reviewed_sha": "cdba685caa34c75038466c7b4e6e6a6c29130315",
+   "review_lease": {
+    "task": "T515",
+    "session": "actions-43768746013",
+    "expires": "2026-11-16T01:57:05Z"
+   },
+   "branch": "claude/task/T515-keyed-stripe-webhook-signing",
+   "head_check_since": null
   },
   {
    "id": "T516",
@@ -64050,7 +64058,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T23:24:30Z",
+ "updated_at": "2026-11-15T23:47:44Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -64148,8 +64156,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ff584ab99111f8a95e08b098e5c45cd6f6c660a4",
- "starter": "manual",
+ "runner_sha": "cdba685caa34c75038466c7b4e6e6a6c29130315",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "862c5fffa7afa8b50b2a7a716d06b3dcb9038fae",
