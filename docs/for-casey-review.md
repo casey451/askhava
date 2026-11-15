@@ -2968,5 +2968,6 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## Fable checks every task before it runs, for the rest of phase 1 (D-3871, November 15)
 
 - As you asked, Fable now looks over each phase-1 task before it starts, a group at a time, and any fix goes into the plan before the task runs. This replaces the earlier pre-start checks.
-- The first check, of the copied-code tool and the first copied-code clean-up, made three small fixes: the tool's tests use their own sample files so later tasks can change its keep-list freely, one group is marked as the other clean-up's, and both clean-ups now refresh the plan's fingerprint when they change the tool's keep-list.
+- The first check, of the copied-code tool and the first copied-code clean-up, made two small fixes: one group is marked as the other clean-up's, and both clean-ups now refresh the plan's fingerprint when they change the tool's keep-list.
+- A third fix, making the tool's tests use their own sample files so the later clean-ups can change its keep-list freely, came too late: the tool's task had already started. If its tests turn out to depend on the real keep-list, a small follow-up task fixes them before the clean-ups run. Lesson: plan fixes must land before a task can start.
 - Nothing needs you.
