@@ -2908,3 +2908,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## The Confirm and pay page's accessibility check moves into its own task (D-3836, November 15)
 
 - The Confirm and pay page task (T261) was built but failed the accessibility check, because the check needs every page listed with a test state and that listing had been planned for a later task. T261 now adds it itself; the later task keeps only the browser journey test. Nothing needs you.
+
+## Pages are checked for accessibility before a task hands in (D-3837, November 15)
+
+- The required accessibility check used to run only after a task handed in, so one missing page listing cost the Confirm and pay task a whole attempt. Each task that changes a page now runs that check on its own branch first and fixes what it finds; one that changes no page skips it. The plan check also now warns when a task will add a page without its accessibility listing: it names 4 queued tasks (the legal pages, help pages, accessibility statement and health check) for a later plan fix. Nothing needs you.
