@@ -60069,7 +60069,7 @@
     "T426",
     "T495"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "keyed-stripe-webhook-signing",
    "type": "harness",
@@ -60082,8 +60082,8 @@
     3867,
     3868
    ],
-   "reason": "plan gap reported: PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemode (None). D-3862 says _event adds livemode False and nothing else, but release (app/payments/src/release_proof.rs:359 check_intent) refuses a re-fetched intent without livemode (WrongMode), so the acceptance (one paid release) cannot pass without giving the stand-in PaymentIntent livemode=False, which turns that test red. Smallest plan change: T515 also owns that test (None -> Some(false)), update the stale comment at app/adapters/src/payments.rs:54, and log both in docs/dec; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T515 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemode (None). D-3862 says _event adds livemode False and nothing else, but release (app/payments/src/release_proof.rs:359 check_intent) refuses a re-fetched intent without livemode (WrongMode), so the acceptance (one paid release) cannot pass without giving the stand-in PaymentIntent livemode=False, which turns that test red. Smallest plan change: T515 also owns that test (None -> Some(false)), update the stale comment at app/adapters/src/payments.rs:54, and log both in docs/decisions.md. Reviewer confirmed the gap.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemode (None). D-3862 says _event adds livemode False and nothing else, but release (app/payments/src/release_proof.rs:359 check_intent) refuses a re-fetched intent without livemode (WrongMode), so the acceptance (one paid release) cannot pass without giving the stand-in PaymentIntent livemode=False, which turns that test red. Smallest plan change: T515 also owns that test (None -> Some(false)), update the stale comment at app/adapters/src/payments.rs:54, and log both in docs/decisions.md. Reviewer confirmed the gap.\nre-queued after plan fix D-3869: D-3869: stand-in intent livemode, ssrf_guard assertion, homeowner seed",
    "history": [
     {
      "attempt": 1,
@@ -60107,6 +60107,21 @@
        "turns": 10
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-15T22:27:50Z",
+     "reason": "D-3869: stand-in intent livemode, ssrf_guard assertion, homeowner seed",
+     "by": "manual-0df616b855ab",
+     "was": "plan gap reported: PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemode (None). D-3862 says _event adds livemode False and nothing else, but release (app/payments/src/release_proof.rs:359 check_intent) refuses a re-fetched intent without livemode (WrongMode), so the acceptance (one paid release) cannot pass without giving the stand-in PaymentIntent livemode=False, which turns that test red. Smallest plan change: T515 also owns that test (None -> Some(false)), update the stale comment at app/adapters/src/payments.rs:54, and log both in docs/dec; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T515 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3869",
+     "plan_since": "2026-11-15T21:53:48Z",
+     "plan_base": "69880af764d2a69164294bd2bf84f574eb480957",
+     "plan_head": "e817bed5da275da419ae9609dd4bbe6391b3d371",
+     "plan_then": "dacbd873cef80c3745392b7c8098b4b59447a89314a0bb44650f5dd82dd5402e",
+     "plan_now": "6d981f502c6781acc6cb9acf023badef883d8d6781e316f34d6e1cc41cf4ec5a"
     }
    ]
   }
@@ -63804,7 +63819,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T22:18:02Z",
+ "updated_at": "2026-11-15T22:27:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -63902,8 +63917,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "69880af764d2a69164294bd2bf84f574eb480957",
- "starter": "actions",
+ "runner_sha": "e817bed5da275da419ae9609dd4bbe6391b3d371",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "88f0d709d2c243c8307bbb2ec8ab51abeb60d063",
