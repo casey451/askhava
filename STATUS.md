@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-15T02:54:25Z by runner 41e50f5df2cd (actions).
+Updated 2026-11-15T02:57:22Z by runner 705f96a54731 (actions).
 
-**Building: T261 in progress since 01:07Z; 342 of 476 done; week 55% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 02:57Z; 342 of 476 done; week 55% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 342 of 476 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T261 claimed 01:07Z, lease until 04:07Z
+- **Lane:** idle since 02:57Z (no task in progress)
 - **Week:** 55% used, 84.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:54Z, 0 min before this update
+- **Last run:** 02:54Z, 2 min before this update
 - **Keeper:** last ran 02:54Z, next wake 04:09Z
 
 ## Needs attention
+- BLOCKED T261: plan gap reported: PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227, T385, T452 and T469 own (not T261). Its appEnv (:89) and keyedEnv (:107) set no ASKHAVA_STRIPE_WEBHOOK_SECRET, Stripe account, Stripe stand-in URL, publishable key or launch date, so release_sink::stripe_webhook (app/server/src/release_sink.rs:298-300) returns None, confirm_route returns None, and neither e2e binary serves /b/picks/{pick}/confirm. Also the 800-line budget does not hold: +1936 lines across 18 files (owned files about 1680). Reviewer confirmed the ownership c; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T261 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 28 problem(s) on tasks still to run (+112 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 30 problem(s) on tasks still to run (+113 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 3 | 110 min | 02:57Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z | runner smoke red on 4d7fe1a7723d (bash scripts/smoke.sh, D-3530): / + [] / - [ / -     'T002', / - ] / FAILED tests/test |
 | T460 | server: business sign-up's identity steps are served (code s | done | 2 | 68 min | 01:08Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 | T454 | server: the served business portal end to end (TD-BIZ-42's r | check_failed | 1 | 12 min | 00:56Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
@@ -29,7 +31,7 @@ Updated 2026-11-15T02:54:25Z by runner 41e50f5df2cd (actions).
 | T301 | server and portals: the email action links are served (every | resync | 3 | 58 min | 22:46Z |  |
 | T443 | --after runs the full smoke itself on a fix-round hand-in; t | done | 1 | 35 min | 22:19Z |  |
 | T300 | server and portals: the business portal is served behind the | done | 3 | 17 min | 21:59Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
-| T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z | PLAN GAP: app/payments/src/free_wins.rs:101-112,142 waive_at_confirm needs JoinDates (launch, trades_opened, joined). No |
+| T261 | portals and server (harness): the served Confirm page under  | BLOCKED | 2 | 4 min | 21:38Z |  |
 | T460 | server: business sign-up's identity steps are served (code s | BLOCKED | 1 | 4 min | 21:31Z |  |
 | T300 | server and portals: the business portal is served behind the | resync | 3 | 94 min | 21:25Z |  |
 | T459 | server: business sign-up's form is served (the consent, the  | done | 1 | 69 min | 20:58Z |  |
@@ -109,7 +111,7 @@ Updated 2026-11-15T02:54:25Z by runner 41e50f5df2cd (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
-**Tasks merged (throughput only):** 342 of 476
+**Tasks merged (throughput only):** 342 of 471
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -152,7 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T261 (lease until 2026-11-15T04:07:00Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T461", "at": "2026-11-15T02:31:14Z", "cache_read_input_tokens": 18057544, "cache_creation_input_tokens": 356914, "input_tokens": 323, "output_tokens": 90071}
+- {"task": "T261", "at": "2026-11-15T02:57:21Z", "input_tokens": 413, "cache_read_input_tokens": 44276665, "cache_creation_input_tokens": 409210, "output_tokens": 145159}
