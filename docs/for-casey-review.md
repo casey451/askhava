@@ -2953,3 +2953,14 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - The full business-journey test (T099) stopped because the test's fake Stripe and the app used different signing keys, so the test could not send the app a valid "payment succeeded" message. A small new task (T515) gives the tests the app's per-run test key, so they can sign that message as Stripe would. The fake Stripe's messages also gain one field every real Stripe message has (whether it is live or a test), so the app acts on them. The app's own checks stay as strict as before.
 - Nothing needs you.
+
+## A second look at the business-journey test (D-3863, November 15)
+
+- Following your new rule, Fable looked at the business-journey test after its first failure. The plan for that test now says how the free first win is tested (the sample business is dated inside the first 90 days) and where each check reads its result.
+- Fable also found two problems in the helper task the test waits for: the fake Stripe leaves out one field the app checks, and the sample data has no homeowner. That task had already started, so the fix is written up separately and is used only if the task does not fix them itself.
+- Nothing needs you.
+
+## The stage-4 tidy-up is planned properly before it runs (D-3870, November 15)
+
+- As you asked, Fable checked the stage-4 tidy-up task before it ran. It found that the tool for spotting copied code did not exist yet, and that the job was too big for one task. A small new task builds that tool, and the clean-up of copied code is split in two. The tidy-up task now also says exactly how it proves the architecture notes are current.
+- Nothing needs you.
