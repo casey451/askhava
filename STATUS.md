@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T09:26:31Z by runner cb399268cebe (actions).
+Updated 2026-11-15T11:16:14Z by runner 66a68963a70a (actions).
 
 **Building: T261 in progress since 09:09Z; 347 of 480 done; week 58% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,13 @@ Updated 2026-11-15T09:26:31Z by runner cb399268cebe (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T261 claimed 09:09Z, lease until 12:09Z
 - **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:26Z, 0 min before this update
+- **Last run:** 09:26Z, 109 min before this update
 - **Keeper:** last ran 09:26Z, next wake 12:12Z
+- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 29 problem(s) on tasks still to run (+118 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 30 problem(s) on tasks still to run (+119 on DONE tasks); first: T399: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -62,14 +63,6 @@ Updated 2026-11-15T09:26:31Z by runner cb399268cebe (actions).
 | T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | update_conflict | 3 | 23 min | 11:56Z |  |
 | T302 | server (harness): business sign-up's open doors and served p | check_failed | 5 | 45 min | 11:56Z |  |
 | T329 | businesses: the eight business account events queued today ( | done | 2 | 65 min | 11:49Z | PLAN GAP: kit/prompts/T329.md:166 and :172 (task owns no customer copy; stop if writing words a business reads) contradi |
-| T453 | quotes: the job's quote rules are read from the stored job,  | done | 1 | 27 min | 11:02Z |  |
-| T452 | e2e and Ally (harness): a keyed web binary beside the suite' | done | 1 | 24 min | 10:58Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 31 min | 10:58Z |  |
-| T359 | payments: a successful charge writes its own charge ledger e | check_failed | 2 | 75 min | 10:54Z |  |
-| T435 | calls and server: calls and texts act for the business only  | done | 1 | 30 min | 10:46Z |  |
-| T329 | businesses: the eight business account events queued today ( | BLOCKED | 1 | 2 min | 10:28Z |  |
-| T437 | harness: a crate NOTES.md is a shared path wherever its CLAU | resync | 3 | 52 min | 10:25Z |  |
-| T398 | businesses: notice texts go only to approved phones, and a m | done | 1 | 38 min | 09:41Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: sign-up progress reader (T485) and free-win join dates (T486) unblock T460 and T261 (D-3779) (#807)
@@ -83,8 +76,6 @@ Updated 2026-11-15T09:26:31Z by runner cb399268cebe (actions).
 - 13:12Z Plan: T301 door-matrix Quote-link cases follow BIZ-038/CARD-023; action pages link forms.css (D-3706) (#781)
 - 12:55Z Plan: shared portal forms stylesheet (T466) so business pages pass A11Y-007/009 (D-3699, D-3700) (#780)
 - 12:46Z Plan: split T437 so the NOTES.md rule lands before the crate-doc sweep (D-3698) (#777)
-- 10:42Z Plan: T329 notice-email copy gap (D-3687) (#768)
-- 10:21Z Plan: restructure the business sign-in chain — T300/T301/T302 gaps, 13 ordered follow-up tasks (D-3674, D-3675, D-3676) (#765)
 
 ## Progress (requirements verified)
 
