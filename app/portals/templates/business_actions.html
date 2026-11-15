@@ -25,6 +25,7 @@
 {% macro errby(f, name) %}{% if f.error_for(name).is_some() %} aria-describedby="{{ name }}-error"{% endif %}{% endmacro %}
 {% block title %}{% if let Some(p) = page %}Job {{ p.job_number }}{% else if let Some(a) = action %}{% if a.days_error.is_some() %}Error: {% endif %}{{ a.title }}{% else if let Some(f) = form %}{% if !f.problems.is_empty() || price_error %}Error: {% endif %}Quote job {{ f.job_number }}{% else if let Some(s) = area %}{% if !s.problems.is_empty() %}Error: {% endif %}Where you take jobs{% endif %}{% endblock %}
 {% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
 {% if let Some(p) = page %}
 <h1>Job {{ p.job_number }}</h1>
 <p id="job-counts">Sent to {{ p.sent }} business{% if p.sent != 1 %}es{% endif %}. Quotes so far: {{ p.quoted }}.</p>

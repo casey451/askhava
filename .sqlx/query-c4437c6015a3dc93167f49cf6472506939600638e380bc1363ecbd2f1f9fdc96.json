@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT brand, last4 FROM payments.payment_method\n          WHERE business_id = $1 AND removed_at IS NULL ORDER BY saved_at, last4",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "brand",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.payment_method",
+            "name": "brand"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "last4",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.payment_method",
+            "name": "last4"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "c4437c6015a3dc93167f49cf6472506939600638e380bc1363ecbd2f1f9fdc96"
+}
