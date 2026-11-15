@@ -60136,7 +60136,14 @@
    "attempts": 0,
    "slug": "duplicate-scan",
    "type": "harness",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-15T22:41:55Z",
+    "problems": [
+     "T516: prompt kit/prompts/T516.md is missing; run scripts/gen_prompts.py",
+     "T516: branch claude/task/T516-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
+    ]
+   }
   },
   {
    "id": "T517",
@@ -64037,7 +64044,7 @@
    }
   }
  },
- "updated_at": "2026-11-15T22:41:57Z",
+ "updated_at": "2026-11-15T22:49:23Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-15T22:41:57Z by runner a80dc4476bee (actions).
+Updated 2026-11-15T22:49:23Z by runner a80dc4476bee (actions).
 
 **Idle since 22:11Z; 352 of 502 done; week 66% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,12 @@ Updated 2026-11-15T22:41:57Z by runner a80dc4476bee (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 22:11Z (no task in progress)
 - **Week:** 66% used, 64.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:27Z, 14 min before this update
+- **Last run:** 22:27Z, 21 min before this update
 - **Keeper:** last ran 22:18Z, next wake 03:58Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T516 (since 2026-11-15T22:41:55Z, no attempt used; a plan change fixes it): T516: prompt kit/prompts/T516.md is missing; run scripts/gen_prompts.py; T516: branch claude/task/T516-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
@@ -46,7 +47,6 @@ Updated 2026-11-15T22:41:57Z by runner a80dc4476bee (actions).
 | T445 | runner (harness): a failed nightly on an older head keeps th | done | 1 | 24 min | 23:29Z |  |
 | T301 | server and portals: the email action links are served (every | done | 3 | 27 min | 23:24Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
 | T485 | businesses: a public read-only reader of a sign-up's identit | done | 1 | 28 min | 22:54Z |  |
-| T301 | server and portals: the email action links are served (every | resync | 3 | 58 min | 22:46Z |  |
 
 ### Plan and harness merges on main
 - none
