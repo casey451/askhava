@@ -2895,3 +2895,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## The Confirm and pay page: unblocked by a small test-setup task and a split (D-3813, November 15)
 
 - The task that serves the Confirm and pay page (T261) was stuck: the end-to-end test server had no fake Stripe settings, so the page could not be served in the browser tests, and the work was about twice its size limit. A new small task (T492) gives the test server fake Stripe settings, a test publishable key and a launch date, and T261 is now four smaller tasks (T493, T494, T261, T495) with the same requirements and tests, plus the fixes its reviewer asked for. The test and live servers refuse to start without the launch date and the Stripe page key, so nobody is charged or let off a fee by a missing date; on a developer's machine without them the page says "Card payments can't be taken right now." and charges nothing. Nothing needs you; the real launch date and keys are set only at Gate C.
+
+## The runner no longer starts empty backup runs for a task the plan dropped (D-3812, November 15)
+
+- A task removed from the plan (T365) was still waiting in the runner's state, so each backup run gave it a lane, refused it at claim time, sat idle and started another: about 33 empty runs in under 5 hours. The runner now skips, when deciding how many runs to start, any task the plan check has already turned away and still turns away, so this loop stops; tasks the check has not yet judged still get their runs. Nothing needs you.
