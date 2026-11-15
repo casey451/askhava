@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-15T18:21:50Z by runner cef98a953645 (actions).
+Updated 2026-11-15T18:22:11Z by runner cef98a953645 (actions).
 
-**Building: T495 in progress since 17:37Z; 349 of 482 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 18:21Z; 349 of 482 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 349 of 482 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T495 claimed 17:37Z, lease until 20:37Z
+- **Lane:** idle since 18:21Z (no task in progress)
 - **Week:** 63% used, 68.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:08Z, 13 min before this update
 - **Keeper:** last ran 18:08Z, next wake 20:39Z
@@ -18,6 +18,7 @@ Updated 2026-11-15T18:21:50Z by runner cef98a953645 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T495 | e2e: the served Confirm and pay journey in the browser again | MERGE_PENDING | 1 | 44 min | 18:21Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | MERGE_PENDING | 3 | 35 min | 18:05Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
 | T261 | portals and server (harness): the served Confirm route under | done | 6 | 85 min | 16:50Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T455 | server: the Pause, Resume and Ask about a charge email links | done | 1 | 38 min | 14:58Z |  |
@@ -107,7 +108,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T495 (lease until 2026-11-15T20:37:13Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T462", "at": "2026-11-15T18:05:50Z", "cache_creation_input_tokens": 99665, "cache_read_input_tokens": 1212817, "output_tokens": 12732, "input_tokens": 61}
+- {"task": "T495", "at": "2026-11-15T18:21:48Z", "output_tokens": 72551, "input_tokens": 289, "cache_creation_input_tokens": 266533, "cache_read_input_tokens": 14845747}
