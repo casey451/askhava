@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-15T14:58:19Z by runner 93e1e6b975ad (actions).
+Updated 2026-11-15T14:58:35Z by runner 93e1e6b975ad (actions).
 
-**Building: T455 in progress since 14:19Z; 347 of 481 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 14:58Z; 347 of 481 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 347 of 481 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T455 claimed 14:19Z, lease until 17:19Z
+- **Lane:** idle since 14:58Z (no task in progress)
 - **Week:** 61% used, 74.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:41Z, 16 min before this update
 - **Keeper:** last ran 14:41Z, next wake 17:22Z
@@ -18,6 +18,7 @@ Updated 2026-11-15T14:58:19Z by runner 93e1e6b975ad (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T455 | server: the Pause, Resume and Ask about a charge email links | MERGE_PENDING | 1 | 38 min | 14:58Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | BLOCKED | 2 | 2 min | 14:14Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
 | T261 | portals and server (harness): the served Confirm route under | check_failed | 5 | 44 min | 13:32Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T462 | server: the sign-up inbox check is served behind the busines | check_failed | 1 | 30 min | 12:13Z |  |
@@ -111,7 +112,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T455 (lease until 2026-11-15T17:19:56Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T462", "at": "2026-11-15T14:14:47Z", "input_tokens": 35, "output_tokens": 6895, "cache_creation_input_tokens": 49429, "cache_read_input_tokens": 477002}
+- {"task": "T455", "at": "2026-11-15T14:58:18Z", "output_tokens": 67693, "cache_creation_input_tokens": 218620, "input_tokens": 216, "cache_read_input_tokens": 12067802}
