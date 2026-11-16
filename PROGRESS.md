@@ -6004,3 +6004,4 @@
 - 2026-11-16T22:30:29Z runner 023f304a8802 (actions): {}
 - 2026-11-16T22:30:58Z runner 023f304a8802 (actions): {}
 - 2026-11-16T22:36:08Z runner 17080bb84ed6 (actions): {"T481": "IN_PROGRESS -> QUEUED"}
+- 2026-11-16T22:36:41Z runner 17080bb84ed6 (actions): {"T221": "QUEUED -> IN_PROGRESS"}; T221 estimated 445k tokens (calibrated); week has 184.9M left (no five-hour budget, D-3056) after 1.1M still running in another lane (session_reading 2026-11-16T22:30:28Z (week)); running to the limit (model window, D-2225), claimed
