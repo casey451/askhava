@@ -43,7 +43,7 @@ pub use crate::email::{
     MailboxKind, NewEmail, Notice, OnDomain, PostalAddress, Recipient, Rendered, Sender,
     UpdateChannel, WEBHOOK_GRACE, WEBHOOKS_SILENT_ALERT, check_webhook_silence, email_log,
     email_status, next_reset, queue_email, receive_email_event, render as render_email, reply_to,
-    send_email, set_update_channel, update_channel,
+    send_email, set_update_channel, short_name, update_channel,
 };
 pub use crate::email_timing::{
     NewNoticeLog, NoticeEntry, NoticeKind, ProviderStatus, Sending, mark_sent, notice_log,

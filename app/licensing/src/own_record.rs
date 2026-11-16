@@ -18,7 +18,8 @@ use secrecy::{ExposeSecret, SecretString};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
-use crate::imports::{ImportError, normalise_license_number};
+use crate::imports::{ImportError, normalise_license_number, split};
+use crate::rules::compared;
 
 /// The one-row record format a record read answers in (D-2954). `phone_kind` is `mobile`,
 /// `landline` or empty; any field but the number and the business name may be empty.
@@ -200,36 +201,6 @@ fn parse_record(list: RecordList, number: &str, answer: &[u8]) -> Option<OwnReco
 fn given(text: &str) -> Option<String> {
     let text = text.trim();
     (!text.is_empty()).then(|| text.to_owned())
-}
-
-/// Splits one line on commas, honouring double-quoted fields; `None` on an unclosed quote (as the
-/// list readers do).
-fn split(line: &str) -> Option<Vec<String>> {
-    let (mut fields, mut current, mut quoted) = (Vec::new(), String::new(), false);
-    let mut chars = line.trim_end_matches('\r').chars().peekable();
-    while let Some(c) = chars.next() {
-        match (c, quoted) {
-            ('"', true) if chars.peek() == Some(&'"') => {
-                current.push('"');
-                chars.next();
-            }
-            ('"', _) => quoted = !quoted,
-            (',', false) => fields.push(std::mem::take(&mut current)),
-            _ => current.push(c),
-        }
-    }
-    fields.push(current);
-    (!quoted).then_some(fields)
-}
-
-/// LIC-011's comparison: lower case, letters and digits only, words joined by one space ("LLC"
-/// and "Inc" are kept, so such a difference goes to review).
-fn compared(text: &str) -> String {
-    text.to_lowercase()
-        .split(|c: char| !c.is_alphanumeric())
-        .filter(|word| !word.is_empty())
-        .collect::<Vec<_>>()
-        .join(" ")
 }
 
 /// BIZ-016, LIC-011: whether the business name or trade name the business gave equals the

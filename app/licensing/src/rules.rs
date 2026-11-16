@@ -207,8 +207,9 @@ fn numbers_agree(business: &CityRecord, row: &CityRecord) -> bool {
     }
 }
 
-/// Lower case, letters and digits only, words joined by one space.
-fn compared(text: &str) -> String {
+/// LIC-011's comparison: lower case, letters and digits only, words joined by one space ("LLC"
+/// and "Inc" are kept, so such a difference goes to review); `own_record` uses it too.
+pub(crate) fn compared(text: &str) -> String {
     text.to_lowercase()
         .split(|c: char| !c.is_alphanumeric())
         .filter(|word| !word.is_empty())

@@ -11,8 +11,8 @@
 //! (D-1971), English and Spanish.
 
 use askhava_businesses::api::{OpenCardsTime, open_cards_times};
-use askhava_core::api::{arizona_time, brand};
-use askhava_messaging::api::{Language, MonthCards, listable};
+use askhava_core::api::arizona_time;
+use askhava_messaging::api::{Language, MonthCards, listable, short_name};
 use jiff::{SignedDuration, Timestamp, Zoned};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
@@ -149,13 +149,6 @@ fn end_time(at: Timestamp, now: Timestamp, language: Language) -> String {
     )
 }
 
-fn short(language: Language) -> &'static str {
-    match language {
-        Language::En => brand().short_name(),
-        Language::Es => brand().es().short_name(),
-    }
-}
-
 fn pick_line(p: &WaitingPick<'_>, now: Timestamp, language: Language) -> String {
     let (job, by, link) = (p.job, end_time(p.ends, now, language), p.confirm_link);
     match language {
@@ -195,7 +188,7 @@ pub fn open_cards_email(
     let lines: Vec<String> = (picks.iter().map(|p| pick_line(p, now, language)))
         .chain(listed.map(|c| card_line(c, now, language)))
         .collect();
-    let b = short(language);
+    let b = short_name(language);
     let subject = match (picks.first(), language) {
         (Some(p), Language::En) => format!(
             "{b}: Pick waiting: confirm job {} by {}",
@@ -222,7 +215,7 @@ pub fn missed_cards_line(
     language: Language,
 ) -> String {
     let (b, n, q, k) = (
-        short(language),
+        short_name(language),
         month.got,
         month.quoted,
         month.ended_unquoted,

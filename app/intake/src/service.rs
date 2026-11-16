@@ -744,8 +744,8 @@ fn plain_step<'s, 'm>(
     }
 }
 
-/// The language a request's texts use (CON-026).
-async fn request_language(
+/// The language a request's texts use (CON-026); `zip_step` reads it too.
+pub(crate) async fn request_language(
     db: &mut PgConnection,
     conversation: Uuid,
 ) -> Result<Language, IntakeError> {
@@ -987,8 +987,12 @@ pub async fn on_opt_out(
     }))
 }
 
-/// The request's jobs before a final status (CON-028's "live job").
-async fn live_jobs(db: &mut PgConnection, conversation: Uuid) -> Result<Vec<Uuid>, IntakeError> {
+/// The request's jobs before a final status (CON-028's "live job"), as `on_opt_out` and
+/// `resubscribe`'s repeat-cancel pause read them.
+pub(crate) async fn live_jobs(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Vec<Uuid>, IntakeError> {
     let mut live = Vec::new();
     for job in models::request_jobs(db, conversation).await? {
         let status = current(db, job).await.map_err(|_| IntakeError::Job)?.status;
