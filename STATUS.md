@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T03:33:42Z by runner 3aec94a8ca39 (actions).
+Updated 2026-11-16T03:34:35Z by runner a21eac18f73d (manual).
 
 **Idle since 03:25Z; 355 of 532 done; week 90% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -49,7 +49,7 @@ Updated 2026-11-16T03:33:42Z by runner 3aec94a8ca39 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
+**Requirements verified:** 286 of 733 (39.0%) · partial 290 · unstarted 157
 **Tasks merged (throughput only):** 355 of 532
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -57,23 +57,23 @@ Updated 2026-11-16T03:33:42Z by runner 3aec94a8ca39 (actions).
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 10 | 14 | 5 | 29 |
 | businesses | 19 | 36 | 3 | 58 |
-| calls | 14 | 10 | 1 | 25 |
+| calls | 12 | 12 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 22 | 29 | 1 | 52 |
+| fees | 18 | 33 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
+| job-cards | 19 | 5 | 0 | 24 |
 | licensing | 34 | 14 | 0 | 48 |
-| lifecycle | 24 | 4 | 0 | 28 |
-| messaging | 26 | 17 | 2 | 45 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 22 | 21 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 13 | 16 | 2 | 31 |
+| privacy | 11 | 18 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 10 | 40 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 1 | 10 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
