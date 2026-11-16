@@ -3000,3 +3000,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The business page addresses are now fixed: /business, /es/business, /business/help and /es.
 - Open item for you, before launch: the business page's city business-license guide needs three settings filled in: the license cost, how long it takes, and the city's link. Until you set them, each part is left out, and with none set the guide is hidden.
 - Nothing needs you now.
+
+## Fable's checks of the new tasks and the fifth stage-5 group (D-3881, November 16)
+
+- The switch that turns business texting on is stored in the app, but three places still hard-code it as off. A small new task makes every place follow the stored switch, and treat any read error as off.
+- Spotting a business that texts the homeowner number ("get on your list") works from a phrase list in phase 1. The AI second opinion on those messages comes in phase 2 with the other AI writing work, since nothing in phase 1 calls the AI to read a message.
+- The weekly digest's HELP lines move from the HELP task to the digest task, so the tasks run in a clean order.
+- Nothing needs you.
