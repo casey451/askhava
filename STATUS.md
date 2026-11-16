@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T18:17:05Z by runner d1f1fbf36637 (actions).
+Updated 2026-11-16T18:17:25Z by runner d1f1fbf36637 (actions).
 
 **Building: T324 in progress since 17:53Z; 369 of 539 done; week 98% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 369 of 539 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T324 claimed 17:53Z, lease until 20:53Z; lane 2: T102 claimed 17:43Z, lease until 20:43Z; lane 4: T166 claimed 17:24Z, lease until 20:24Z
+- **Lane:** lane 1: T324 claimed 17:53Z, lease until 20:53Z; lane 2: T102 claimed 17:43Z, lease until 20:43Z
 - **Week:** 98% used, -2.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:14Z, 2 min before this update
 - **Keeper:** last ran 18:14Z, next wake 20:27Z
@@ -20,6 +20,7 @@ Updated 2026-11-16T18:17:05Z by runner d1f1fbf36637 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T166 | site: self-hosted Gelasio and DM Sans fonts and the design-t | MERGE_PENDING | 1 | 52 min | 18:17Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | MERGE_PENDING | 3 | 51 min | 18:12Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T559 | Tests (harness): wait for the code step's autofocus and the  | done | 1 | 64 min | 18:02Z |  |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | resync | 1 | 92 min | 17:52Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
@@ -108,7 +109,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T324 (lease until 2026-11-16T20:53:22Z)
 - lane 2: T102 (lease until 2026-11-16T20:43:33Z)
-- lane 4: T166 (lease until 2026-11-16T20:24:50Z)
 
 ## Last usage reading
-- {"task": "T105", "at": "2026-11-16T18:12:54Z", "cache_creation_input_tokens": 83076, "output_tokens": 14513, "cache_read_input_tokens": 1686243, "input_tokens": 96}
+- {"task": "T166", "at": "2026-11-16T18:17:04Z", "cache_read_input_tokens": 3779716, "input_tokens": 108, "output_tokens": 39147, "cache_creation_input_tokens": 140913}
