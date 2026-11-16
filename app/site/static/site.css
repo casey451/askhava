@@ -88,6 +88,14 @@ a:hover {
   text-decoration-thickness: 2px;
 }
 
+/* A link in a sentence or list item moves to the next line whole rather than splitting across two,
+   so its box is the link itself and a keyboard user's focus ring stays one shape (A11Y-005). */
+p a,
+li a {
+  display: inline-block;
+  max-width: 100%;
+}
+
 :focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
