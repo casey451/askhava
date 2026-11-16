@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-16T16:20:11Z by runner 08bdf67cde48 (actions).
+Updated 2026-11-16T16:21:29Z by runner f91e570d42ac (actions).
 
-**Building: T111 in progress since 16:17Z; 364 of 536 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T101 in progress since 15:19Z; 364 of 536 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 364 of 536 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T111 claimed 16:17Z, lease until 19:17Z; lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 4: T105 claimed 16:15Z, lease until 19:15Z; lane 6: T303 claimed 16:19Z, lease until 19:19Z; lane 7: T475 claimed 15:08Z, lease until 18:56Z
+- **Lane:** lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 4: T105 claimed 16:15Z, lease until 19:15Z; lane 6: T303 claimed 16:19Z, lease until 19:19Z; lane 7: T475 claimed 15:08Z, lease until 18:56Z
 - **Week:** 95% used, -1.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:19Z, 0 min before this update
+- **Last run:** 16:20Z, 1 min before this update
 - **Keeper:** last ran 16:01Z, next wake 18:22Z
 
 ## Needs attention
+- BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T559 (since 2026-11-16T16:07:02Z, no attempt used; a plan change fixes it): T559: prompt kit/prompts/T559.md is missing; run scripts/gen_prompts.py; T559: branch claude/task/T559-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 10 problem(s) on tasks still to run (+123 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
@@ -19,6 +20,7 @@ Updated 2026-11-16T16:20:11Z by runner 08bdf67cde48 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T111 | Draft homeowner and business terms with every required claus | BLOCKED | 1 | 4 min | 16:21Z | PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prom |
 | T105 | ops: High and critical alerts with their automatic acknowled | check_failed | 2 | 104 min | 15:51Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T497 | Stand-ins (harness): sticky vendor faults for the J4 outage  | done | 1 | 75 min | 15:32Z |  |
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -53,17 +55,17 @@ Updated 2026-11-16T16:20:11Z by runner 08bdf67cde48 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 313 of 733 (42.7%) · partial 266 · unstarted 154
-**Tasks merged (throughput only):** 364 of 535
+**Requirements verified:** 309 of 733 (42.2%) · partial 270 · unstarted 154
+**Tasks merged (throughput only):** 364 of 536
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 21 | 34 | 3 | 58 |
+| businesses | 20 | 35 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 23 | 28 | 1 | 52 |
+| fees | 21 | 30 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
@@ -72,7 +74,7 @@ Updated 2026-11-16T16:20:11Z by runner 08bdf67cde48 (actions).
 | ops-recovery | 1 | 11 | 42 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 36 | 19 | 1 | 56 |
+| quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
@@ -98,11 +100,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T111 (lease until 2026-11-16T19:17:19Z)
 - lane 3: T101 (lease until 2026-11-16T18:19:45Z)
 - lane 4: T105 (lease until 2026-11-16T19:15:00Z)
 - lane 6: T303 (lease until 2026-11-16T19:19:40Z)
 - lane 7: T475 (lease until 2026-11-16T18:56:15Z)
 
 ## Last usage reading
-- {"task": "T105", "at": "2026-11-16T15:51:48Z", "output_tokens": 110647, "input_tokens": 359, "cache_creation_input_tokens": 340449, "cache_read_input_tokens": 16127426}
+- {"task": "T111", "at": "2026-11-16T16:21:29Z", "input_tokens": 62, "cache_read_input_tokens": 1914023, "output_tokens": 18971, "cache_creation_input_tokens": 100858}

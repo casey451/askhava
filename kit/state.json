@@ -20083,8 +20083,8 @@
     "T100",
     "T428"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "terms-homeowner-business",
    "type": "docs",
    "stage": "5",
@@ -20100,7 +20100,34 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "reason": "plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains \"subcontract\"; check_legal_docs.py bans \\bsubcontract\\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains \"subcontract\"; check_legal_docs.py bans \\bsubcontract\\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additions. Observed: \"ERROR business-terms-summary-es.md: WORD-022/WORD-023 wording: 'subcontract'\", Errors: 1. Proposed plan fix: let T111 add REQUIRED[\"business-terms-summary-es.md\"] with the WORD-002 and TERMS-026 tuples business-terms.md already uses (~5 lines). Reviewer confirmed, and noted trace_spec.py:77 also bans \\bsubcontrat\\w*, so the Spanish draft must avoid \"subcontrato\" or get its own exemption. Also noted: TD-TERMS-05 says 4 days (D-223) but TERMS-022 says 2 days (D-371); drafts follow 2 days.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 48,
+     "head_sha": "f91e570d42ac6e693724e6257d9b71128e89f0af",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-16T16:17:19Z",
+     "ended_at": "2026-11-16T16:21:29Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 1885371,
+       "turns": 26
+      },
+      "reviewer": {
+       "tokens": 148543,
+       "turns": 6
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T112",
@@ -63153,12 +63180,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T105",
-   "at": "2026-11-16T15:51:48Z",
-   "output_tokens": 110647,
-   "input_tokens": 359,
-   "cache_creation_input_tokens": 340449,
-   "cache_read_input_tokens": 16127426
+   "task": "T111",
+   "at": "2026-11-16T16:21:29Z",
+   "input_tokens": 62,
+   "cache_read_input_tokens": 1914023,
+   "output_tokens": 18971,
+   "cache_creation_input_tokens": 100858
   },
   "source": "session_reading 2026-11-16T16:00:39Z (week)",
   "by_task": {
@@ -66990,7 +67017,17 @@
    },
    "T111": {
     "estimated_bytes": 383523,
-    "estimated_tokens": 1161826
+    "estimated_tokens": 1161826,
+    "usage_counting": "message_id",
+    "input_tokens": 62,
+    "cache_read_input_tokens": 1914023,
+    "output_tokens": 18971,
+    "cache_creation_input_tokens": 100858,
+    "worker_tokens": 1885371,
+    "worker_turns": 26,
+    "reviewer_tokens": 148543,
+    "reviewer_turns": 6,
+    "last_model": "claude-opus-5-5"
    },
    "T303": {
     "estimated_bytes": 362424,
@@ -67000,11 +67037,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-16T13:01:14Z",
-    "tokens": 12398138
+    "tokens": 12709431
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 191030509
+    "tokens": 191341802
    }
   },
   "session_reading": {
@@ -67015,7 +67052,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T16:20:11Z",
+ "updated_at": "2026-11-16T16:21:29Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -67113,7 +67150,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "08bdf67cde488e6ecc4c62e99c23a81964726e48",
+ "runner_sha": "f91e570d42ac6e693724e6257d9b71128e89f0af",
  "starter": "actions",
  "smoke_runs": [
   {
