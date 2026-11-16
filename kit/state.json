@@ -19348,7 +19348,7 @@
     "T516",
     "T517"
    ],
-   "status": "BLOCKED",
+   "status": "DONE",
    "attempts": 0,
    "slug": "cleanup-stage4",
    "type": "cleanup",
@@ -19471,7 +19471,7 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-16T08:23:56Z",
-   "reason": "stage proof missing",
+   "reason": null,
    "merged_sha": "b7a09cb3f8285b6c855a1a3d80979d055e1fc704",
    "merged_at": "2026-11-16T08:35:28Z",
    "files": [
@@ -19498,17 +19498,7 @@
     "kit/plan.lock",
     "scripts/check_duplicates.py"
    ],
-   "proof_waits_for": [
-    "a green nightly-main run containing T515's merge 5b654c54ca2c (last green run: 2b05da2c07fb)",
-    "a green nightly-main run containing T099's merge de89862a7f0a (last green run: 2b05da2c07fb)",
-    "a green nightly-main run containing T516's merge 700f12d2e5a4 (last green run: 2b05da2c07fb)",
-    "a green nightly-main run containing T517's merge 19d98135f0a7 (last green run: 2b05da2c07fb)",
-    "a green nightly-main run containing T100's merge b7a09cb3f828 (last green run: 2b05da2c07fb)",
-    "a green nightly-main run containing T261's merge 35177f91e0b2 (last green run: 2b05da2c07fb)",
-    "a green nightly-main run containing T495's merge 5316a602ce94 (last green run: 2b05da2c07fb)",
-    "a green nightly-main run containing T462's merge 6cc6fdcbb269 (last green run: 2b05da2c07fb)",
-    "a green nightly-main run containing T464's merge ef9418c0e6b9 (last green run: 2b05da2c07fb)"
-   ]
+   "proof_waits_for": null
   },
   {
    "id": "T101",
@@ -60934,7 +60924,7 @@
     "T495",
     "T516"
    ],
-   "status": "BLOCKED",
+   "status": "DONE",
    "attempts": 0,
    "slug": "stage4-dedupe-server-portals",
    "type": "cleanup",
@@ -61055,7 +61045,7 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-16T03:32:53Z",
-   "reason": "stage proof missing",
+   "reason": null,
    "merged_sha": "19d98135f0a72a73cf75e859f1ddb315bbe5fc0f",
    "merged_at": "2026-11-16T03:38:26Z",
    "files": [
@@ -65360,7 +65350,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T12:17:37Z",
+ "updated_at": "2026-11-16T12:21:31Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -65765,6 +65755,12 @@
    "evidence": "nightly-main run 42212161276 (workflow_dispatch 2026-11-06T11:42Z) on main ea22387162b93e90d7a353e6474e7f8998b11b49, which contains every stage-3 merge (T058-T075, T094, T188-T190, T192, T224, T225; T075 #291 ea22387): Ci, Checks, Coverage, E2e, Twin, Ally and named-mutants all green. Stage-3 clauses: T192 trybuild ReleaseProof proofs (#285), T071 ledger reconciles 1,000 simulated jobs with zero drift (#284), T074 Twin against the app's rules through rules_bridge (#288), fee worked examples as unit tests (check_catalog/Ci); the cargo-mutants clause is report-only until tests/mutation/equivalent.toml holds reviewed reasons and app/catalog/src/rules.rs exists (D-1286, D-1473), so stage 3 is HAND_RECORDED. Recorded by the overseer session 2026-11-06T12:00Z under Casey's Nov 5 final-say delegation.",
    "main_sha": "ea22387162b93e90d7a353e6474e7f8998b11b49",
    "at": "2026-11-06T12:00:21Z"
+  },
+  "4": {
+   "evidence": "Recorded by the runner (D-551, D-1473): nightly-main green (ci, a11y) on main b7a09cb3f8285b6c855a1a3d80979d055e1fc704, which contains every stage-4 merge (T191 2e7439c5fa94, T250 1472cf63cdb0, T076 c826ef282bc4, T077 775decc0b7f9, T078 bdd291aafb11, T079 14dd8e5c35ec, T080 1a2389d0e75f, T081 1d94b20ee738, T193 4e0a2e680710, T082 bb6d771b6d33, T083 5aac33d8a77e, T084 ec41a5869889, T194 609e0ed0c74f, T085 00daffc8c325, T195 ba0b00db898b, T086 a6b09fa0a4bc, T256 3b88271ddf7d, T258 ba802a51ae9c, T259 6593f6cb6687, T260 04d388c05746, T263 8c370a378133, T087 327f29be8e81, T088 bf568037d279, T089 9f6ba1044425, T291 a2f57c33619e, T090 f3f3c206b44e, T091 619c8cdb7c9d, T092 85147737a711, T093 6ea04a3a8964, T253 bd7921a49c2b, T254 b3283662cec9, T337 015e158fafa5, T338 9786eb0e62d7, T400 643b878dd6de, T396 4c59dc96b173, T398 d0b8abeaf423, T435 f7c093395ac7, T339 dcd485b408b2, T343 02bdd8d2621e, T401 b4828d610af2, T404 4b1e8df76c3d, T340 31c17d5aa447, T342 ef7f7fc80423, T420 bee96646639a, T421 394341cd00e8, T422 878f71e08df1, T423 fe45a7107588, T424 bfc45ca4a80b, T425 cfda2022c26f, T426 1351eeb1f8c2, T427 bfddc142665e, T430 3820cf2d9e18, T431 fce428953ad0, T432 49857763a082, T428 7cef5359cc4b, T429 f5757405157a, T341 f5b7fd7dcd10, T440 f4c4252669ec, T344 aff86ec723eb, T345 391d544314ba, T346 b1384370ebfb, T347 fff62a9375c6, T348 162c61d4f51a, T349 f8231346d80a, T255 480741987da0, T257 efe87274fc9e, T095 25de4f795882, T096 719236a962a8, T097 0172b97606b9, T230 be5f1f860ff8, T231 73d5bcfa8f33, T098 ed86bb479716, T515 5b654c54ca2c, T099 de89862a7f0a, T147 e03c786a5d8e, T196 03d112b0be45, T148 95d2435b65ac, T197 d0bc6fc268e2, T149 624c0b6013e2, T198 030777a33a7e, T150 7b64fb31242f, T199 d145202dd72b, T516 700f12d2e5a4, T517 19d98135f0a7, T100 b7a09cb3f828, T300 3b9687af32d2, T301 85cb2030d1df, T302 60169623421c, T155 05d8a985f2ee, T292 f973fd9232c2, T293 77805472a1cd, T294 2d9b8e0a8a08, T262 c6409ed7f846, T207 2b62f938b8b8, T157 fdd6e540e3c3, T383 4b70d894e350, T295 ea7b57e0aac0, T411 b513c7d4ca37, T287 7cd8e8f90fac, T209 97c584723c81, T162 dae8c6443b4f, T212 51d43b98c1b2, T164 8eba59454470, T384 db6214706040, T214 50a51df4b7da, T266 6dfa812afb95, T268 9a0cfc9ec6a1, T269 a7b2897013c1, T232 49e840f96747, T388 65ef6c584190, T165 7bf1bf2a7b54, T228 8bc6d03cfc3c, T215 f7189ec863bb, T389 75233a01be7d, T248 6445218d9562, T374 18d7cc8f2592, T251 cb0cac646579, T252 7225ed306641, T492 07b3e1313b13, T493 7303a9cd88d8, T494 140e446d7d87, T261 35177f91e0b2, T495 5316a602ce94, T264 f183f5bd01ba, T265 e00029ca9ea3, T267 6f8908ece341, T249 553bd9eb54c3, T282 e332d652d98c, T270 028378523988, T271 58eef26515d0, T272 d413b0e8998f, T406 e0aae0369e90, T273 63b732518726, T274 474919a2c5bf, T275 4c269f60064d, T276 95f20147558f, T277 c992e962be91, T278 285525e3134a, T279 df839c1e45ae, T280 d6d1d54ea21a, T281 ac135e636d92, T405 912ecf71b550, T283 a4c0b6e5287f, T284 56c277428c17, T285 9c9459249f80, T286 3976d91e2924, T288 e5b1fbdbfd32, T289 c0640d1ba090, T290 974446276d37, T311 5a57f2e1b7f9, T312 bf75098f9a71, T313 0852169ea543, T314 900e97dabbc9, T315 2a3903cde744, T316 74e1f303a72d, T317 fe7a56647b29, T325 976906dd37c9, T326 47a83212b95f, T327 ed6a569f223d, T332 08f1c85bd062, T333 60a8d50b1c56, T334 3aa549cf9ed3, T335 e2313f0f0711, T336 b6463cba40ab, T377 fd946f4ebc08, T378 919ab4941c81, T414 4e15a58f537f, T328 a9be821a3861, T433 ee7a75f4d72a, T329 24008eb1e197, T330 9d7e3b884c94, T331 790d4ec251b2, T318 4a8b6490731d, T319 183c06a7dd69, T436 53256149fffc, T322 7450ca237d55, T323 54ea2ca4035a, T376 bae443e54064, T350 b2a7162807db, T351 5d4b42856a08, T352 61c94cc79081, T353 eeddc510e237, T354 343fd3e7c696, T355 dd258e06710f, T356 34fb4c03a8fb, T357 09bfaf2c02fd, T358 d33f2ffc254d, T359 aa64d53b5f18, T360 d9515904bc86, T362 3328b4e80835, T366 ef5a3860ab5e, T367 128fb2f384de, T368 ec8a9684671f, T369 87abedec7b6e, T370 5e739fa972c5, T371 7772c1d47f57, T372 4ce270481192, T385 9a870b31c911, T386 fe3f0367425d, T387 0137f98c1451, T390 3926dabcc377, T391 e40ebe112f64, T393 6aa7f43d7bd8, T412 5867ca22a4e2, T415 0d5dc61a17e7, T416 46f5fc54dbd7, T417 4aa3c92a5fa0, T418 85f85991bd6f, T419 0b4b84f93392, T438 a409b1914d2f, T439 52bf28dbe1c0, T437 2aad8a530a2f, T442 546c8d32a681, T443 2fca8bb21789, T444 22e740b2d39c, T445 6352f98c340d, T447 918581713bc4, T448 2df926e292cb, T449 d53bdd2875b8, T450 224fe4c7f956, T451 5cac828afd3e, T452 f4b34241abcb, T454 344ce02931ce, T453 1d88b90f747c, T455 77c4da167023, T459 886756c58552, T485 b3ae0baddcd3, T460 88f0d709d2c2, T461 cb399268cebe, T462 6cc6fdcbb269, T464 ef9418c0e6b9, T465 858f0854e89f, T466 3fd009c86341, T467 6e50abaf42cd, T468 5c153897b3f5, T474 1a0927467bbf, T486 30d12d87a2fd); each clause of the exit row ran in it (stage-4 slices of J1 and J2 green (T098, T099): tests/e2e/j1_homeowner.spec.ts, tests/e2e/j2_business.spec.ts, tests/a11y/j1_keyboard.spec.ts, tests/a11y/j2_keyboard.spec.ts [ci, a11y]; authorization matrix covers every route (T088): tests/security/tests/auth_matrix.rs [ci]; masked call through the fake Twilio with the PIN and the CALL-025 limits (T077, T080): tests/integration/tests/pin_routing.rs, tests/integration/tests/voice_calls.rs [ci]; license import and the live-lookup fixture pass: tests/integration/tests/license_imports.rs, tests/integration/tests/license_lookup_failures.rs [ci]; the stage-2 sentinel scan still clean: tests/security/tests/sentinel_db_logs.rs [ci]); every requirement owned only by tasks of stage 4 or earlier is verified (A11Y-001, A11Y-006, A11Y-008, A11Y-009, A11Y-010, A11Y-011, A11Y-012, A11Y-013, A11Y-014, A11Y-015, A11Y-016, A11Y-018, A11Y-023, AI-002, AI-003, AI-011, AI-012, AI-013, AI-014, AI-016, AI-020, AI-022, AI-024, BIZ-005, BIZ-006, BIZ-008, BIZ-009, BIZ-010, BIZ-011, BIZ-013, BIZ-014, BIZ-017, BIZ-018, BIZ-020, BIZ-022, BIZ-024, BIZ-025, BIZ-035, BIZ-037, BIZ-041, BIZ-042, BIZ-044, BIZ-055, BIZ-058, CALL-003, CALL-004, CALL-005, CALL-007, CALL-008, CALL-009, CALL-010, CALL-013, CALL-016, CALL-018, CALL-020, CALL-021, CALL-023, CALL-025, CON-001, CON-002, CON-005, CON-007, CON-008, CON-009, CON-010, CON-011, CON-012, CON-013, CON-014, CON-015, CON-017, CON-021, CON-026, FEE-001, FEE-003, FEE-004, FEE-005, FEE-008, FEE-009, FEE-010, FEE-011, FEE-012, FEE-013, FEE-017, FEE-018, FEE-019, FEE-020, FEE-022, FEE-024, FEE-035, FEE-039, FEE-041, FEE-043, FEE-044, FEE-045, FEE-047, INT-002, INT-003, INT-005, INT-006, INT-008, INT-009, INT-010, INT-011, INT-012, INT-013, INT-015, INT-016, INT-018, INT-019, INT-024, INT-025, INT-026, INT-027, INT-030, INT-032, INT-033, INT-037, INT-038, INT-040, INT-041, INT-044, INT-045, INT-048, INT-049, CARD-001, CARD-002, CARD-003, CARD-004, CARD-005, CARD-006, CARD-007, CARD-008, CARD-009, CARD-012, CARD-013, CARD-014, CARD-016, CARD-017, CARD-018, CARD-021, CARD-022, CARD-023, CARD-024, CARD-025, LIC-008, LIC-009, LIC-012, LIC-013, LIC-014, LIC-015, LIC-016, LIC-017, LIC-018, LIC-019, LIC-020, LIC-021, LIC-022, LIC-023, LIC-024, LIC-025, LIC-026, LIC-028, LIC-029, LIC-030, LIC-031, LIC-032, LIC-034, LIC-035, LIC-036, LIC-037, LIC-038, LIC-040, LIC-041, LIC-043, LIC-044, LIC-045, LIC-047, LIC-048, JOB-001, JOB-002, JOB-003, JOB-004, JOB-005, JOB-006, JOB-007, JOB-008, JOB-009, JOB-010, JOB-011, JOB-012, JOB-013, JOB-014, JOB-015, JOB-017, JOB-020, JOB-021, JOB-022, JOB-023, JOB-025, JOB-026, JOB-027, JOB-028, TXT-001, TXT-002, TXT-003, TXT-004, TXT-005, TXT-006, TXT-007, TXT-008, TXT-009, TXT-010, TXT-016, TXT-017, TXT-018, TXT-019, TXT-020, TXT-023, TXT-025, TXT-026, TXT-029, TXT-031, TXT-032, TXT-033, TXT-036, TXT-040, TXT-041, TXT-042, OPS-053, PRIV-001, PRIV-003, PRIV-004, PRIV-008, PRIV-009, PRIV-012, PRIV-013, PRIV-014, PRIV-015, PRIV-020, PRIV-021, PRIV-023, PRIV-025, QH-002, QH-003, QH-005, QH-006, QH-007, QH-008, QH-009, PICK-001, PICK-002, PICK-003, PICK-004, PICK-005, PICK-006, PICK-009, PICK-010, PICK-011, PICK-012, PICK-014, PICK-015, PICK-018, PICK-020, PICK-024, PICK-026, PICK-027, PICK-028, PICK-029, PICK-030, PICK-031, PICK-032, PICK-033, PICK-034, PICK-035, PICK-036, PICK-037, PICK-038, PICK-039, PICK-041, PICK-042, PICK-045, PICK-051, PICK-052, PICK-055, PICK-056, REC-001, REC-002, REC-003, REC-004, REC-005, REC-006, REC-010, REC-011, SEC-011, SEC-012, SEC-013, SEC-020, SEC-028, SEC-029, SEC-030, SEC-031, SEC-037, SEC-041, SEC-055, TERMS-033, WORD-008, WORD-016).",
+   "main_sha": "b7a09cb3f8285b6c855a1a3d80979d055e1fc704",
+   "by": "runner",
+   "at": "2026-11-16T12:21:19Z"
   }
  },
  "keeper": {

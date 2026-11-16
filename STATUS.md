@@ -1,21 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T12:17:37Z by runner b7a09cb3f828 (actions).
+Updated 2026-11-16T12:21:31Z by runner b7a09cb3f828 (actions).
 
-**Idle since 08:35Z; 355 of 535 done; week 92% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 08:35Z; 357 of 535 done; week 92% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 355 of 535 build tasks (owner gates not counted)
-- **Stage:** stage 4; stage proofs recorded: 1, 2, 3
+- **Tasks done:** 357 of 535 build tasks (owner gates not counted)
+- **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 08:35Z (no task in progress)
 - **Week:** 92% used, 12.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:17Z, 0 min before this update
+- **Last run:** 12:17Z, 3 min before this update
 - **Keeper:** last ran 12:17Z, next wake 17:57Z
 
 ## Needs attention
-- BLOCKED T100: stage proof missing (the proof waits for: a green nightly-main run containing T515's merge 5b654c54ca2c (last green run: 2b05da2c07fb); a green nightly-main run containing T099's merge de89862a7f0a (last green run: 2b05da2c07fb); a green nightly-main run containing T516's merge 700f12d2e5a4 (last green run: 2b05da2c07fb); a green nightly-main run containing T517's merge 19d98135f0a7 (last green run: 2b05da2c07fb); a green nightly-main run containing T100's merge b7a09cb3f828 (last green run: 2b05da2c07fb); a green nightly-main run containing T261's merge 35177f91e0b2 (last green run: 2b05da2c07fb); a green nightly-main run containing T495's merge 5316a602ce94 (last green run: 2b05da2c07fb); a green nightly-main run containing T462's merge 6cc6fdcbb269 (last green run: 2b05da2c07fb); a green nightly-main run containing T464's merge ef9418c0e6b9 (last green run: 2b05da2c07fb))
-- BLOCKED T517: stage proof missing (the proof waits for: a green nightly-main run containing T515's merge 5b654c54ca2c (last green run: 2b05da2c07fb); a green nightly-main run containing T099's merge de89862a7f0a (last green run: 2b05da2c07fb); a green nightly-main run containing T516's merge 700f12d2e5a4 (last green run: 2b05da2c07fb); a green nightly-main run containing T517's merge 19d98135f0a7 (last green run: 2b05da2c07fb); a green nightly-main run containing T100's merge b7a09cb3f828 (last green run: 2b05da2c07fb); a green nightly-main run containing T261's merge 35177f91e0b2 (last green run: 2b05da2c07fb); a green nightly-main run containing T495's merge 5316a602ce94 (last green run: 2b05da2c07fb); a green nightly-main run containing T462's merge 6cc6fdcbb269 (last green run: 2b05da2c07fb); a green nightly-main run containing T464's merge ef9418c0e6b9 (last green run: 2b05da2c07fb))
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 10 problem(s) on tasks still to run (+121 on DONE tasks); first: T517: stored context_pct 1% but it measures 5%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+122 on DONE tasks); first: T129: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -42,17 +40,17 @@ Updated 2026-11-16T12:17:37Z by runner b7a09cb3f828 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 302 of 733 (41.2%) · partial 274 · unstarted 157
-**Tasks merged (throughput only):** 355 of 535
+**Requirements verified:** 308 of 733 (42.0%) · partial 268 · unstarted 157
+**Tasks merged (throughput only):** 357 of 535
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 10 | 14 | 5 | 29 |
-| businesses | 19 | 36 | 3 | 58 |
+| businesses | 21 | 34 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 21 | 30 | 1 | 52 |
+| fees | 23 | 28 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 34 | 14 | 0 | 48 |
@@ -61,9 +59,9 @@ Updated 2026-11-16T12:17:37Z by runner b7a09cb3f828 (actions).
 | ops-recovery | 1 | 10 | 43 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
+| quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
 | wording | 2 | 9 | 21 | 32 |
@@ -78,7 +76,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 235 of 238 done
+- stage 4: 237 of 238 done
 - stage 5: 0 of 143 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
