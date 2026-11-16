@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T21:38:35Z by runner 6740aabac4ed (actions).
+Updated 2026-11-16T21:40:46Z by runner bb135d09a7e0 (manual).
 
 **Building: T481 in progress since 19:16Z; 375 of 540 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-16T21:38:35Z by runner 6740aabac4ed (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T481 claimed 19:16Z, lease until 00:36Z; lane 3: T320 claimed 21:07Z, lease until 00:07Z; lane 5: T111 claimed 21:32Z, lease until 00:32Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
 - **Week:** 2% used, 186.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:36Z, 2 min before this update
+- **Last run:** 21:39Z, 1 min before this update
 - **Keeper:** last ran 21:29Z, next wake 23:37Z
 
 ## Needs attention
-- BLOCKED T307: plan gap reported: PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messaging` and `calls` call `read_contact`), and app/portals/src/homeowner_portal.rs:97 keeps `OnFile::phone()` crate-private (T087's file, not T307's). So `server` has no allowed way to read her number and address for `HomeFacts`. The prompt (kit/prompts/T307.md:9, D-3877 (3)) says to read them through `privacy::api::read_contact` from the server, which those two lines (and the runtime check at app/privacy/src/api.rs:247) rule out. Smallest plan change: let T307 own app/portals/s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T307 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T408: plan gap reported: PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `payments/src/handlers.rs` and `app/ops/src/` ("only charges read safe mode"). This task's goal (D-3144, D-3879; OPS-001 at `docs/spec/ops-recovery.md:5`; TD-OPS-01 at `docs/test-design.md:811`, "in safe mode no charge and no release happen") requires `PickReleaser` and `address_in` in `app/server/src` to call `ops::api::safe_mode_on`. Smallest plan change: a harness task lets that scan also allow `server/src/release_hold.rs`, or the scan checks only that text paths never read safe ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T523: plan gap reported: PLAN GAP: app/ops/src/audit_subjects.rs:13-21 (owned by T477, not T523) — the audit-subjects reader returns only `subject_kind`, `subject_id` and `at` for an action, never the row's `field`, so the jobs reader cannot pick out `day3_no` / `day3_other` rows through it as the goal requires. Smallest plan change: let T523 own `app/ops/src/audit_subjects.rs` (or a harness/T477 follow-up) to add `field: Option<String>` to `AuditSubject` and to its `SELECT`; or have the plan let the jobs reader take the field through a new `ops::api` reader.
 Evidence: AuditSubject has only subject_kind, subject_id, a; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T523 --plan-fix D-### --reason "..."` (D-2859)
@@ -73,31 +72,31 @@ Evidence: AuditSubject has only subject_kind, subject_id, a; fix the plan (the t
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 328 of 733 (44.7%) · partial 273 · unstarted 132
+**Requirements verified:** 307 of 733 (41.9%) · partial 294 · unstarted 132
 **Tasks merged (throughput only):** 375 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 21 | 10 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 22 | 33 | 3 | 58 |
-| calls | 14 | 10 | 1 | 25 |
+| businesses | 21 | 34 | 3 | 58 |
+| calls | 12 | 12 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 24 | 27 | 1 | 52 |
+| fees | 19 | 32 | 1 | 52 |
 | intake | 30 | 10 | 3 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
+| job-cards | 19 | 5 | 0 | 24 |
 | licensing | 39 | 9 | 0 | 48 |
-| lifecycle | 27 | 1 | 0 | 28 |
-| messaging | 26 | 17 | 2 | 45 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 22 | 21 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 13 | 16 | 2 | 31 |
+| privacy | 10 | 19 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 11 | 39 | 5 | 55 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 14 | 14 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 1 | 10 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 

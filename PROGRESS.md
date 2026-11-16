@@ -5965,3 +5965,4 @@
 - 2026-11-16T21:33:33Z runner 6740aabac4ed (actions): {"T523": "QUEUED -> IN_PROGRESS"}; T523 estimated 1.1M tokens (calibrated); week has 186.0M left (no five-hour budget, D-3056) after 4.0M still running in another lane (session_reading 2026-11-16T21:29:16Z (week)); running to the limit (model window, D-2225), claimed
 - 2026-11-16T21:36:07Z runner ed571ff58767 (actions): {}
 - 2026-11-16T21:38:35Z runner 6740aabac4ed (actions): {"T523": "IN_PROGRESS -> BLOCKED"}
+- 2026-11-16T21:40:46Z runner bb135d09a7e0 (manual): {"T307": "BLOCKED -> QUEUED"}

@@ -35997,7 +35997,7 @@
     "T346",
     "T348"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "homeowner-portal-served",
    "type": "build",
@@ -36015,8 +36015,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "plan gap reported: PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messaging` and `calls` call `read_contact`), and app/portals/src/homeowner_portal.rs:97 keeps `OnFile::phone()` crate-private (T087's file, not T307's). So `server` has no allowed way to read her number and address for `HomeFacts`. The prompt (kit/prompts/T307.md:9, D-3877 (3)) says to read them through `privacy::api::read_contact` from the server, which those two lines (and the runtime check at app/privacy/src/api.rs:247) rule out. Smallest plan change: let T307 own app/portals/s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T307 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messaging` and `calls` call `read_contact`), and app/portals/src/homeowner_portal.rs:97 keeps `OnFile::phone()` crate-private (T087's file, not T307's). So `server` has no allowed way to read her number and address for `HomeFacts`. The prompt (kit/prompts/T307.md:9, D-3877 (3)) says to read them through `privacy::api::read_contact` from the server, which those two lines (and the runtime check at app/privacy/src/api.rs:247) rule out. Smallest plan change: let T307 own app/portals/src/homeowner_portal.rs to add one `pub async fn home_facts(db, vault, &HomeownerSessionProof) -> HomeFacts` there, reading phone and address through `read_own_contact` (as `OnFile::read` already does) and `texts_on` through `messaging::api::texts_on`; `server::homeowner_portal` would call it. Messaging's `read_contact` with `Purpose::Send` was not taken: it would log a portal read as a send in the vault audit and skip SEC-046's homeowner proof.\nEvidence: `cargo test -p askhava-security --test vault_readers` exit=101, panicked at tests/security/tests/vault_readers.rs:189:5: [\"app/server/src/homeowner_portal.rs: `read_own_contact` named outside its readers\"]; test result: FAILED. 4 passed; 1 failed.\nReviewer (Opus, fresh eyes) confirmed: T307 owns only app/server/src/homeowner_portal.rs, app/server/tests/homeowner_portal_route.rs, app/messaging/src/held_messages.rs, tests/e2e/homeowner_portal_served.spec.ts; no public API in portals/privacy/messaging/calls/intake returns her phone or address; HomeFacts.phone_last4 and address are required by app/portals/templates/homeowner_home.html:46-47 (T561's file). PLAN-GAP: CONFIRMED.\nWorker's work (routes, tests, e2e spec) was written but not committed; nothing pushed.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messaging` and `calls` call `read_contact`), and app/portals/src/homeowner_portal.rs:97 keeps `OnFile::phone()` crate-private (T087's file, not T307's). So `server` has no allowed way to read her number and address for `HomeFacts`. The prompt (kit/prompts/T307.md:9, D-3877 (3)) says to read them through `privacy::api::read_contact` from the server, which those two lines (and the runtime check at app/privacy/src/api.rs:247) rule out. Smallest plan change: let T307 own app/portals/src/homeowner_portal.rs to add one `pub async fn home_facts(db, vault, &HomeownerSessionProof) -> HomeFacts` there, reading phone and address through `read_own_contact` (as `OnFile::read` already does) and `texts_on` through `messaging::api::texts_on`; `server::homeowner_portal` would call it. Messaging's `read_contact` with `Purpose::Send` was not taken: it would log a portal read as a send in the vault audit and skip SEC-046's homeowner proof.\nEvidence: `cargo test -p askhava-security --test vault_readers` exit=101, panicked at tests/security/tests/vault_readers.rs:189:5: [\"app/server/src/homeowner_portal.rs: `read_own_contact` named outside its readers\"]; test result: FAILED. 4 passed; 1 failed.\nReviewer (Opus, fresh eyes) confirmed: T307 owns only app/server/src/homeowner_portal.rs, app/server/tests/homeowner_portal_route.rs, app/messaging/src/held_messages.rs, tests/e2e/homeowner_portal_served.spec.ts; no public API in portals/privacy/messaging/calls/intake returns her phone or address; HomeFacts.phone_last4 and address are required by app/portals/templates/homeowner_home.html:46-47 (T561's file). PLAN-GAP: CONFIRMED.\nWorker's work (routes, tests, e2e spec) was written but not committed; nothing pushed.\nre-queued after plan fix D-4025: D-4025 merged (#903): HomeFacts reads her own record via portals read_own_contact; Opus triage + 3 Opus review rounds",
    "history": [
     {
      "attempt": 1,
@@ -36040,6 +36040,21 @@
        "turns": 9
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-16T21:40:46Z",
+     "reason": "D-4025 merged (#903): HomeFacts reads her own record via portals read_own_contact; Opus triage + 3 Opus review rounds",
+     "by": "manual-ff145e013efc",
+     "was": "plan gap reported: PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messaging` and `calls` call `read_contact`), and app/portals/src/homeowner_portal.rs:97 keeps `OnFile::phone()` crate-private (T087's file, not T307's). So `server` has no allowed way to read her number and address for `HomeFacts`. The prompt (kit/prompts/T307.md:9, D-3877 (3)) says to read them through `privacy::api::read_contact` from the server, which those two lines (and the runtime check at app/privacy/src/api.rs:247) rule out. Smallest plan change: let T307 own app/portals/s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T307 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4025",
+     "plan_since": "2026-11-16T20:00:14Z",
+     "plan_base": "32d91e1d646edd14081a40599741ee1b9c17205a",
+     "plan_head": "bb135d09a7e0afe1c637cf4da1c1a6df6276037b",
+     "plan_then": "9cf7e56234d67b4137cc2fce00e3d3d891b9393f27eba85695954015e4d9cfcd",
+     "plan_now": "27ff224ace10dcad179bb827402229b1606ab13f316c16e2b919b7ffe1f130a4"
     }
    ]
   },
@@ -69428,7 +69443,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T21:38:35Z",
+ "updated_at": "2026-11-16T21:40:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -69526,8 +69541,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6740aabac4ed85915b9f41d0e86ff388760d90c1",
- "starter": "actions",
+ "runner_sha": "bb135d09a7e0afe1c637cf4da1c1a6df6276037b",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "6f399058c6e1b8b71c5fe453247310fa1985e483",
