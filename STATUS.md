@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T19:37:32Z by runner 015481f7d9ec (actions).
+Updated 2026-11-16T19:37:51Z by runner 015481f7d9ec (actions).
 
 **Building: T481 in progress since 19:16Z; 371 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 371 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 3: T487 claimed 18:57Z, lease until 22:27Z; lane 5: T102 claimed 19:07Z, lease until 22:07Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
+- **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 3: T487 claimed 18:57Z, lease until 22:27Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
 - **Week:** 1% used, 190.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:34Z, 2 min before this update
+- **Last run:** 19:34Z, 3 min before this update
 - **Keeper:** last ran 19:34Z, next wake 21:42Z
 
 ## Needs attention
@@ -19,9 +19,10 @@ Updated 2026-11-16T19:37:32Z by runner 015481f7d9ec (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T102 | site: home and how-it-works pages with the footer, tagline,  | MERGE_PENDING | 1 | 30 min | 19:37Z | merging main into the reviewed head conflicts in app/quotes/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T324 | harness: 95% branch floors for the money and privacy files o | MERGE_PENDING | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | MERGE_PENDING | 1 | 29 min | 18:55Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
-| T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 59 min | 18:42Z | merging main into the reviewed head conflicts in app/quotes/src/lib.rs; a resync merges it in on this attempt (D-891) |
+| T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 59 min | 18:42Z |  |
 | T166 | site: self-hosted Gelasio and DM Sans fonts and the design-t | done | 1 | 52 min | 18:17Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | done | 3 | 51 min | 18:12Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T559 | Tests (harness): wait for the code step's autofocus and the  | done | 1 | 64 min | 18:02Z |  |
@@ -111,8 +112,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T481 (lease until 2026-11-16T22:16:25Z)
 - lane 3: T487 (lease until 2026-11-16T22:27:38Z)
-- lane 5: T102 (lease until 2026-11-16T22:07:14Z)
 - lane 7: T361 (lease until 2026-11-16T21:39:42Z)
 
 ## Last usage reading
-- {"task": "T324", "at": "2026-11-16T19:02:46Z", "output_tokens": 49221, "input_tokens": 168, "cache_read_input_tokens": 4417562, "cache_creation_input_tokens": 194588}
+- {"task": "T102", "at": "2026-11-16T19:37:31Z", "cache_creation_input_tokens": 85181, "output_tokens": 14123, "input_tokens": 81, "cache_read_input_tokens": 1571188}
