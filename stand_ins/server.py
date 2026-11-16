@@ -21,7 +21,14 @@ replies are listed only with `Direction=outbound-reply`. A create's `StatusCallb
 `/_stand_in/twilio/status` answers 409 (nothing recorded) for a message created without one, else
 the URL, params and signature Twilio would post there (D-2761). A call create keeps its script and
 callback fields, and `/_stand_in/twilio/call-progress` gives the script and the signed callbacks
-Twilio would post as the call ends, only to the URLs the create gave (D-2762). It binds to 127.0.0.1 only and holds fake data only.
+Twilio would post as the call ends, only to the URLs the create gave (D-2762).
+`/_stand_in/faults` holds sticky vendor faults until changed (D-3844, D-3940): POST sets
+`twilio` `fail` (every message send answers Twilio's 500) or `suspended` (error 21606, HTTP 400),
+`stripe` `unavailable` (every `/stripe/v1/` request answers a 503) or `drop` (the connection
+closes with no answer), `ai` `529` (a `/anthropic/v1/messages` request without its own
+`x-stand-in-fault` header answers as if it carried `529`), and `null` clears one; DELETE clears
+all, GET shows them. A faulted request stores nothing; control routes, Verify, Resend and Lob
+never fail. It binds to 127.0.0.1 only and holds fake data only.
 
 Usage: python3 -m stand_ins.server [--port 4010]; `--port 0` binds a free port, and the
 "listening" line names the port actually bound, so a test can start it without a port race.
@@ -48,6 +55,8 @@ from stand_ins.common import fake_id
 Out = tuple[int, Any, dict[str, str]]
 AC = r"/twilio/2010-04-01/Accounts/(?P<ac>AC\w{32})"
 RESEND_KEY_PREFIX = "re_stand_in_"
+FAULT_VALUES: dict[str, tuple[str, ...]] = {"twilio": ("fail", "suspended"), "stripe": ("unavailable", "drop"), "ai": ("529",)}
+DROP = -1
 
 
 @dataclass
@@ -73,6 +82,7 @@ class StandIns:
     stripe: stripe.FakeStripe = field(default_factory=stripe.FakeStripe)
     resend: resend.FakeResend = field(default_factory=resend.FakeResend)
     lob: lob.FakeLob = field(default_factory=lob.FakeLob)
+    faults: dict[str, str] = field(default_factory=dict)
     lock: threading.Lock = field(default_factory=threading.Lock)
 
 
@@ -120,9 +130,14 @@ def stripe_params(pairs: dict[str, str]) -> dict[str, Any]:
 
 
 def twilio_send(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """A message create; a sticky `twilio` fault answers Twilio's 500 or 21606 and stores nothing (D-3940)."""
     f = req.form()
     key = req.headers.get("x-askhava-message-key")
     to, frm, body = f.get("To", ""), f.get("From", ""), f.get("Body", "")
+    if s.faults.get("twilio") == "fail":
+        return (*twilio.error(20500, "An internal server error has occurred", 500), {})
+    if s.faults.get("twilio") == "suspended":
+        return (*twilio.error(21606, f"The From phone number {frm} is not a valid, SMS-capable Twilio phone number."), {})
     return (*s.twilio.create_message(to, frm, body, key, f.get("StatusCallback")), {})
 
 
@@ -284,6 +299,34 @@ def control_lob_advance(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     return 200, {"event": s.lob.advance(req.json()["id"])}, {}
 
 
+def control_faults(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """Show (GET), set (POST, `null` clears one) or clear (DELETE) the sticky vendor faults; an
+    unknown vendor or value is a 400 that changes nothing (D-3844, D-3940)."""
+    if req.method == "DELETE":
+        s.faults.clear()
+    elif req.method == "POST":
+        wanted = req.json()
+        bad = [k for k, v in wanted.items() if k not in FAULT_VALUES or (v is not None and v not in FAULT_VALUES[k])]
+        if bad or not wanted:
+            return 400, {"error": f"unknown fault vendor or value: {sorted(bad)}", "allowed": FAULT_VALUES}, {}
+        for vendor, value in wanted.items():
+            if value is None:
+                s.faults.pop(vendor, None)
+            else:
+                s.faults[vendor] = value
+    return 200, {"faults": dict(s.faults)}, {}
+
+
+def stripe_fault(s: StandIns, req: Request) -> Out | None:
+    """A sticky `stripe` fault for any `/stripe/v1/` request: a 503 or a dropped connection (D-3940)."""
+    fault = s.faults.get("stripe") if req.path.startswith("/stripe/v1/") else None
+    if fault == "drop":
+        return DROP, b"", {}
+    if fault == "unavailable":
+        return (*stripe.error("api_error", "service_unavailable", "Stripe is temporarily unavailable", 503), {})
+    return None
+
+
 def control_lob_webhooks(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     """Signed deliveries (lob-signature) of every tracking event of one letter."""
     b = req.json()
@@ -370,7 +413,8 @@ def ai_messages(s: StandIns, req: Request, m: re.Match[str]) -> Out:
         return ai.api_error(400, "invalid_request_error", "anthropic-version header is required")
     if m.group("count"):
         return ai.count_tokens(req.json())
-    return ai.messages(req.json(), req.headers.get("x-stand-in-fault", ""), req.headers.get("x-stand-in-plant", ""))
+    fault = req.headers.get("x-stand-in-fault") or s.faults.get("ai", "")
+    return ai.messages(req.json(), fault, req.headers.get("x-stand-in-plant", ""))
 
 
 PI = r"/stripe/v1/payment_intents/(?P<id>pi_\w+)"
@@ -394,6 +438,7 @@ ROUTES: list[tuple[str, re.Pattern[str], Handler]] = [
         ("POST", r"/_stand_in/resend/webhooks", control_resend_webhooks),
         ("POST", r"/_stand_in/lob/advance", control_lob_advance),
         ("POST", r"/_stand_in/lob/webhooks", control_lob_webhooks),
+        ("GET|POST|DELETE", r"/_stand_in/faults", control_faults),
         ("POST", r"/stripe/v1/(?P<kind>customers|setup_intents|payment_intents|refunds)", stripe_create),
         ("POST", PI + r"/(?P<step>confirm|stand_in_authenticate)", stripe_intent_step),
         ("GET", r"/stripe/v1/(payment_intents|setup_intents|customers|refunds)/(?P<id>\w+)", stripe_fetch),
@@ -417,7 +462,7 @@ def dispatch(s: StandIns, req: Request) -> Out:
         if match and req.method in methods.split("|"):
             problem = None if req.path.startswith("/_stand_in/") else auth_problem(s, req)
             with s.lock:
-                return problem or handler(s, req, match)
+                return problem or stripe_fault(s, req) or handler(s, req, match)
     return 404, {"error": f"no stand-in route for {req.method} {req.path}"}, {}
 
 
@@ -439,6 +484,9 @@ def make_handler(state: StandIns) -> type[BaseHTTPRequestHandler]:
                 raw = self.rfile.read(body_length(self.headers.get("content-length")))
                 req = Request(self.command, url.path, dict(parse_qsl(url.query)), headers, raw, base)
                 status, body, extra = dispatch(state, req)
+                if status == DROP:
+                    self.close_connection = True
+                    return
             except (KeyError, ValueError, TypeError, StopIteration) as exc:
                 status, body, extra = 400, {"error": f"bad stand-in request: {type(exc).__name__}"}, {}
                 self.close_connection = True

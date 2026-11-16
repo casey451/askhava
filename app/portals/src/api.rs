@@ -164,8 +164,8 @@ pub use crate::pick_flow::{
 };
 pub use crate::quote_cards::CARD_FALLBACK_NAME;
 pub use crate::quote_page::{
-    Numbered, QUOTE_PAGE_ROUTE, TOKEN_LIFE_AFTER_CLOSE, number_quotes, quote_page_routes,
-    token_expired,
+    CLOSE_ROUTE, Numbered, QUOTE_PAGE_ROUTE, TOKEN_LIFE_AFTER_CLOSE, number_quotes,
+    quote_page_routes, token_expired,
 };
 pub use crate::receipts_page::{Basis, WHY_CHARGED_ROUTE, WhyCharged, why_charged_page};
 pub use crate::security::CONFIRM_CONTENT_SECURITY_POLICY;

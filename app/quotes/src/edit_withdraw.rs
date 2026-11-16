@@ -20,13 +20,15 @@ use crate::formats::{VisitSchedule, store_schedule};
 use crate::intake::{Quote, Submitted, submit_quote};
 use crate::models::{self, QuotesError};
 use crate::notes::{NoteProblem, check_note};
+use crate::scorecard_inputs::record_note_returned;
 
 /// What [`save_quote`] did.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Saved {
     /// `submit_quote`'s answer; the schedule was stored only with [`Submitted::Saved`].
     Stored(Submitted),
-    /// The note goes back with this reason; nothing was stored (PICK-052).
+    /// The note goes back with this reason; no quote was stored, only the
+    /// `quotes.note_returned` audit row (PICK-052, D-3844).
     NoteBack(NoteProblem),
 }
 
@@ -58,7 +60,8 @@ async fn lock(
 /// `submit_quote` re-reads the window, the status and the edit facts and refuses an edit after a
 /// pick ([`Submitted::EditClosed`]). One transaction, committed only when stored: the old
 /// schedule is cleared before the upsert (migration 0157 keeps a schedule only beside a per-visit
-/// period) and the new one set after it; nothing is kept on a refusal or error.
+/// period) and the new one set after it; nothing is kept on a refusal or error. A returned note
+/// writes only its `record_note_returned` audit row, in a transaction of its own (D-3844).
 ///
 /// # Errors
 ///
@@ -71,6 +74,7 @@ pub async fn save_quote(
     now: Timestamp,
 ) -> Result<Saved, QuotesError> {
     if let Err(problem) = check_note(&quote.form.notes) {
+        record_note_returned(db, ids, problem).await?;
         return Ok(Saved::NoteBack(problem));
     }
     let mut tx = db.begin().await.map_err(|_| QuotesError::Database)?;
