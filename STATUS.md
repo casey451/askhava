@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-16T17:04:25Z by runner bfbe8599eeef (actions).
+Updated 2026-11-16T17:12:40Z by runner 7809c6e44483 (actions).
 
-**Building: T361 in progress since 16:50Z; 366 of 536 done; week 97% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T361 in progress since 16:50Z; 367 of 536 done; week 97% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 366 of 536 build tasks (owner gates not counted)
+- **Tasks done:** 367 of 536 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T361 claimed 16:50Z, lease until 19:50Z; lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 5: T559 claimed 16:58Z, lease until 19:58Z; lane 6: T303 claimed 16:19Z, lease until 20:04Z
 - **Week:** 97% used, -4.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:04Z, 0 min before this update
+- **Last run:** 17:09Z, 2 min before this update
 - **Keeper:** last ran 17:03Z, next wake 19:34Z
 
 ## Needs attention
 - BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 11 problem(s) on tasks still to run (+122 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+123 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +22,7 @@ Updated 2026-11-16T17:04:25Z by runner bfbe8599eeef (actions).
 | T475 | messaging, quotes, payments and ai: the readers behind the O | MERGE_PENDING | 1 | 114 min | 17:02Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | MERGE_PENDING | 3 | 38 min | 16:53Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T473 | Pin backup-runner's Postgres service image by digest | done | 1 | 17 min | 16:46Z |  |
-| T101 | site: base layout in the design spec's look, works without J | MERGE_PENDING | 3 | 80 min | 16:39Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T101 | site: base layout in the design spec's look, works without J | done | 3 | 80 min | 16:39Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 1 | 4 min | 16:21Z | PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prom |
 | T105 | ops: High and critical alerts with their automatic acknowled | check_failed | 2 | 104 min | 15:51Z |  |
 | T497 | Stand-ins (harness): sticky vendor faults for the J4 outage  | done | 1 | 75 min | 15:32Z |  |
@@ -57,12 +57,12 @@ Updated 2026-11-16T17:04:25Z by runner bfbe8599eeef (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 309 of 733 (42.2%) · partial 272 · unstarted 152
-**Tasks merged (throughput only):** 366 of 536
+**Requirements verified:** 309 of 733 (42.2%) · partial 273 · unstarted 151
+**Tasks merged (throughput only):** 367 of 536
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 16 | 6 | 35 |
+| accessibility | 13 | 17 | 5 | 35 |
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 20 | 35 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
@@ -94,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 9 of 144 done
+- stage 5: 10 of 144 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
