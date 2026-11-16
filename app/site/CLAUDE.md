@@ -1,10 +1,12 @@
 # askhava-site: the public website
 
 ## Purpose
-The layer-8 crate for the public website (`docs/architecture.md` section 3). For now it holds only the shared page layout `templates/base.html` that every site and portal page extends (T051, D-491, D-492). T101 adds the routes, the stylesheet and the plaster-and-brass look of `docs/design/DESIGN_SPEC.md`.
+The layer-8 crate for the public website (`docs/architecture.md` section 3). It holds the shared page layout `templates/base.html` that every site and portal page extends (T051, D-491, D-492), the site layout `templates/site_layout.html` with the WEB-007 banner, and the compiled-in stylesheet served at `/static/site/<name>` in the daylight-and-evergreen look of `docs/design/DESIGN_SPEC.md` (T101, D-3331).
 
 ## Never break
 - Every portal page extends `base.html` through `app/portals/askama.toml`; renaming a block breaks every page: `cargo test -p askhava-portals`.
+- `base.html`'s `banner` block stays empty and only `site_layout.html` fills it, so no portal struct needs a `banner_shown` field; the banner is hidden by default: `cargo test -p askhava-site` (`td_web_01_banner_hidden_by_default_and_shown_when_on`).
+- The site's files are served by one `nest_service("/static/site", ...)` with no `.route(` and no `/`-prefixed `*_PATH`/`*_ROUTE` constant (D-3106): `app/server/tests/route_wiring.rs`.
 - No third-party load in any template or static file: `tests/security/tests/no_third_party.rs`.
 
 ## Detail
