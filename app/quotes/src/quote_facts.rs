@@ -170,8 +170,10 @@ fn from_code<T: Copy, const N: usize>(
     all.into_iter().find(|a| code(*a) == stored)
 }
 
-/// The `quotes.quote_facts.trip_fee` code (the quote form's own codes, `portals::api::prefill`).
-const fn trip_code(t: TripFee) -> &'static str {
+/// The `quotes.quote_facts.trip_fee` code, also the quote form's own code (`portals::api::prefill`
+/// calls this one copy, T517).
+#[must_use]
+pub const fn trip_code(t: TripFee) -> &'static str {
     match t {
         TripFee::Counts => "counts",
         TripFee::DoesNotCount => "does_not_count",

@@ -23,9 +23,9 @@ use askhava_jobs::api::feedback::{MAX_CHARS, given, store};
 use askhava_jobs::api::quote_token::resolve;
 use askhava_jobs::api::{current, job_number};
 use axum::Router;
-use axum::extract::{FromRef, Path, Request, State};
-use axum::http::{HeaderName, HeaderValue, StatusCode};
-use axum::middleware::{Next, from_fn, from_fn_with_state};
+use axum::extract::{FromRef, Path, State};
+use axum::http::{HeaderValue, StatusCode};
+use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
 use axum_extra::extract::cookie::CookieJar;
@@ -33,7 +33,7 @@ use jiff::Timestamp;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
-use crate::quote_page::token_expired;
+use crate::quote_page::{noindex, token_expired};
 use crate::security::{CsrfField, CsrfForm, WebSecurity, no_store, refuse_cross_site};
 use crate::session::{csrf_token, ensure_pre_session};
 
@@ -197,16 +197,6 @@ pub fn feedback_routes(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
         .layer(from_fn(noindex))
         .layer(from_fn(no_store))
         .layer(from_fn_with_state(security, refuse_cross_site))
-}
-
-/// `X-Robots-Tag: noindex, nofollow` on every feedback-page response (it is private).
-async fn noindex(request: Request, next: Next) -> Response {
-    let mut response = next.run(request).await;
-    let value = HeaderValue::from_static("noindex, nofollow");
-    response
-        .headers_mut()
-        .insert(HeaderName::from_static("x-robots-tag"), value);
-    response
 }
 
 /// The answer to a read that failed; logged by nothing, carries no value.

@@ -711,8 +711,9 @@ pub fn complaints_page(
     .render()
 }
 
-/// A code (`no_show`, `visa`) in words, first letter capital ("No show", "Visa").
-fn kind_words(code: &str) -> String {
+/// A code (`no_show`, `visa`, `plumbing_repair`) in words, first letter capital ("No show", "Visa",
+/// "Plumbing repair"); the sign-up form's category names use it too (D-1709, T517).
+pub(crate) fn kind_words(code: &str) -> String {
     let words = code.replace('_', " ");
     let mut chars = words.chars();
     chars.next().map_or_else(String::new, |first| {
