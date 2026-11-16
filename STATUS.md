@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T19:02:47Z by runner bb27a5c09bbd (actions).
+Updated 2026-11-16T19:03:08Z by runner bb27a5c09bbd (actions).
 
-**Building: T324 in progress since 17:53Z; 370 of 540 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T487 in progress since 18:57Z; 370 of 540 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 370 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T324 claimed 17:53Z, lease until 21:35Z; lane 3: T487 claimed 18:57Z, lease until 21:57Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
+- **Lane:** lane 3: T487 claimed 18:57Z, lease until 21:57Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
 - **Week:** 0% used, 191.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:00Z, 2 min before this update
+- **Last run:** 19:00Z, 3 min before this update
 - **Keeper:** last ran 18:59Z, next wake 21:37Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-16T19:02:47Z by runner bb27a5c09bbd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T324 | harness: 95% branch floors for the money and privacy files o | MERGE_PENDING | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | MERGE_PENDING | 1 | 29 min | 18:55Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | MERGE_PENDING | 1 | 59 min | 18:42Z |  |
 | T166 | site: self-hosted Gelasio and DM Sans fonts and the design-t | MERGE_PENDING | 1 | 52 min | 18:17Z |  |
@@ -26,7 +27,7 @@ Updated 2026-11-16T19:02:47Z by runner bb27a5c09bbd (actions).
 | T559 | Tests (harness): wait for the code step's autofocus and the  | done | 1 | 64 min | 18:02Z |  |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | resync | 1 | 92 min | 17:52Z |  |
 | T361 | quotes and picks: a quote keeps its number once shown, and a | BLOCKED | 1 | 50 min | 17:41Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
-| T324 | harness: 95% branch floors for the money and privacy files o | QUEUED | 1 | 61 min | 17:33Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
+| T324 | harness: 95% branch floors for the money and privacy files o | QUEUED | 1 | 61 min | 17:33Z |  |
 | T475 | messaging, quotes, payments and ai: the readers behind the O | done | 1 | 114 min | 17:02Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | resync | 3 | 38 min | 16:53Z |  |
 | T473 | Pin backup-runner's Postgres service image by digest | done | 1 | 17 min | 16:46Z |  |
@@ -107,9 +108,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T324 (lease until 2026-11-16T21:35:06Z)
+- nothing
 - lane 3: T487 (lease until 2026-11-16T21:57:08Z)
 - lane 7: T361 (lease until 2026-11-16T21:39:42Z)
 
 ## Last usage reading
-- {"task": "T303", "at": "2026-11-16T18:55:22Z", "output_tokens": 7783, "input_tokens": 49, "cache_read_input_tokens": 600907, "cache_creation_input_tokens": 42607}
+- {"task": "T324", "at": "2026-11-16T19:02:46Z", "output_tokens": 49221, "input_tokens": 168, "cache_read_input_tokens": 4417562, "cache_creation_input_tokens": 194588}
