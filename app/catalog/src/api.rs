@@ -4,13 +4,16 @@
 //! list the categories that are on, test the not-offered kinds, and switch a category as the owner
 //! (LIC-001 to LIC-005, AI-017), and read the carrier-restricted word list `quotes` and `ai` screen
 //! with (CARD-010, AI-021), and when each listed category was last switched on, [`trades_opened`]
-//! (FEE-010, D-195, D-3779). No function takes a license class: classes come from the file only.
+//! (FEE-010, D-195, D-3779), and every stored category with its plural display name and the
+//! not-offered names for the site, [`category_list`] (WEB-015, WEB-023, D-3879). No function takes a license class: classes come from the file
+//! only.
 
 use askhava_ops::api::Actor;
 use sqlx::PgConnection;
 
 use crate::{loader, markets, service};
 
+pub use crate::category_list::{CategoryList, CategoryListing, category_list, category_list_from};
 pub use crate::loader::{normalize, parse};
 pub use crate::markets::{
     Centroid, MarketDef, MarketRefused, MarketTown, Markets, TownDef, is_zip, miles_between,
