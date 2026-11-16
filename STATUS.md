@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-16T18:40:56Z by runner a0ed2742c04e (actions).
+Updated 2026-11-16T18:42:51Z by runner 1be17e41fef0 (actions).
 
-**Building: T324 in progress since 17:53Z; 369 of 540 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T324 in progress since 17:53Z; 370 of 540 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 369 of 540 build tasks (owner gates not counted)
+- **Tasks done:** 370 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T324 claimed 17:53Z, lease until 21:35Z; lane 2: T102 claimed 17:43Z, lease until 21:33Z; lane 6: T303 claimed 18:26Z, lease until 21:26Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
 - **Week:** 0% used, -4.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:40Z, 0 min before this update
+- **Last run:** 18:41Z, 1 min before this update
 - **Keeper:** last ran 18:40Z, next wake 21:28Z
 
 ## Needs attention
 - BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+124 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 13 problem(s) on tasks still to run (+128 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T166 | site: self-hosted Gelasio and DM Sans fonts and the design-t | MERGE_PENDING | 1 | 52 min | 18:17Z |  |
-| T105 | ops: High and critical alerts with their automatic acknowled | MERGE_PENDING | 3 | 51 min | 18:12Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
+| T105 | ops: High and critical alerts with their automatic acknowled | done | 3 | 51 min | 18:12Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T559 | Tests (harness): wait for the code step's autofocus and the  | done | 1 | 64 min | 18:02Z |  |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | resync | 1 | 92 min | 17:52Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T361 | quotes and picks: a quote keeps its number once shown, and a | BLOCKED | 1 | 50 min | 17:41Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
@@ -61,26 +61,26 @@ Updated 2026-11-16T18:40:56Z by runner a0ed2742c04e (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 313 of 733 (42.7%) · partial 270 · unstarted 150
-**Tasks merged (throughput only):** 369 of 539
+**Requirements verified:** 315 of 733 (43.0%) · partial 273 · unstarted 145
+**Tasks merged (throughput only):** 370 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 17 | 5 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 21 | 34 | 3 | 58 |
+| businesses | 22 | 33 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
 | fees | 23 | 28 | 1 | 52 |
-| intake | 29 | 11 | 3 | 43 |
+| intake | 30 | 10 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
-| licensing | 38 | 10 | 0 | 48 |
+| licensing | 39 | 9 | 0 | 48 |
 | lifecycle | 24 | 4 | 0 | 28 |
 | messaging | 26 | 17 | 2 | 45 |
-| ops-recovery | 1 | 14 | 39 | 54 |
+| ops-recovery | 1 | 19 | 34 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 36 | 19 | 1 | 56 |
+| quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
@@ -98,7 +98,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 12 of 148 done
+- stage 5: 13 of 148 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
