@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T20:12:48Z by runner 1104862f9636 (actions).
+Updated 2026-11-16T20:13:12Z by runner 1104862f9636 (actions).
 
 **Building: T481 in progress since 19:16Z; 372 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 372 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
+- **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z
 - **Week:** 1% used, 189.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:11Z, 1 min before this update
 - **Keeper:** last ran 20:11Z, next wake 21:42Z
@@ -19,6 +19,7 @@ Updated 2026-11-16T20:12:48Z by runner 1104862f9636 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T361 | quotes and picks: a quote keeps its number once shown, and a | MERGE_PENDING | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
 | T487 | ops and payments: safe mode after 24 hours pauses charges, a | MERGE_PENDING | 1 | 50 min | 19:47Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | MERGE_PENDING | 1 | 30 min | 19:37Z | merging main into the reviewed head conflicts in app/quotes/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T324 | harness: 95% branch floors for the money and privacy files o | MERGE_PENDING | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
@@ -28,7 +29,7 @@ Updated 2026-11-16T20:12:48Z by runner 1104862f9636 (actions).
 | T105 | ops: High and critical alerts with their automatic acknowled | done | 3 | 51 min | 18:12Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T559 | Tests (harness): wait for the code step's autofocus and the  | done | 1 | 64 min | 18:02Z |  |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | resync | 1 | 92 min | 17:52Z |  |
-| T361 | quotes and picks: a quote keeps its number once shown, and a | BLOCKED | 1 | 50 min | 17:41Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
+| T361 | quotes and picks: a quote keeps its number once shown, and a | BLOCKED | 1 | 50 min | 17:41Z |  |
 | T324 | harness: 95% branch floors for the money and privacy files o | QUEUED | 1 | 61 min | 17:33Z |  |
 | T475 | messaging, quotes, payments and ai: the readers behind the O | done | 1 | 114 min | 17:02Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | resync | 3 | 38 min | 16:53Z |  |
@@ -112,7 +113,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T481 (lease until 2026-11-16T22:16:25Z)
 - lane 6: T307 (lease until 2026-11-16T23:00:14Z)
-- lane 7: T361 (lease until 2026-11-16T21:39:42Z)
 
 ## Last usage reading
-- {"task": "T487", "at": "2026-11-16T19:47:25Z", "input_tokens": 148, "output_tokens": 43618, "cache_read_input_tokens": 6905314, "cache_creation_input_tokens": 187970}
+- {"task": "T361", "at": "2026-11-16T20:12:45Z", "cache_creation_input_tokens": 265300, "input_tokens": 235, "cache_read_input_tokens": 8621007, "output_tokens": 66714}
