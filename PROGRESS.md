@@ -5944,3 +5944,4 @@
 - 2026-11-16T21:04:47Z runner 32d91e1d646e (actions): {}
 - 2026-11-16T21:07:10Z runner 526aa3557dc6 (actions): {}
 - 2026-11-16T21:07:29Z runner 526aa3557dc6 (actions): {"T320": "QUEUED -> IN_PROGRESS"}; T320 estimated 1.2M tokens (calibrated); week has 187.6M left (no five-hour budget, D-3056) after 2.4M still running in another lane (session_reading 2026-11-16T21:04:24Z (week)); running to the limit (model window, D-2225), claimed
+- 2026-11-16T21:08:13Z runner 526aa3557dc6 (actions): {"T408": "QUEUED -> IN_PROGRESS"}; T408 estimated 1.2M tokens (calibrated); week has 186.4M left (no five-hour budget, D-3056) after 3.6M still running in another lane (session_reading 2026-11-16T21:04:24Z (week)); running to the limit (model window, D-2225), claimed
