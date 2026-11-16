@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-16T20:34:48Z by runner b4ad6ead0c92 (actions).
+Updated 2026-11-16T20:39:39Z by runner 526aa3557dc6 (actions).
 
-**Building: T111 in progress since 20:22Z; 373 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T111 in progress since 20:22Z; 374 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 373 of 540 build tasks (owner gates not counted)
+- **Tasks done:** 374 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T111 claimed 20:22Z, lease until 23:22Z; lane 2: T481 claimed 19:16Z, lease until 23:34Z; lane 4: T102 claimed 20:17Z, lease until 23:17Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z
 - **Week:** 1% used, 189.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:22Z, 11 min before this update
+- **Last run:** 20:35Z, 4 min before this update
 - **Keeper:** last ran 20:21Z, next wake 22:18Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 13 problem(s) on tasks still to run (+129 on DONE tasks); first: T481: stored context_pct 10% but it measures 15%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+134 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T361 | quotes and picks: a quote keeps its number once shown, and a | MERGE_PENDING | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
-| T487 | ops and payments: safe mode after 24 hours pauses charges, a | MERGE_PENDING | 1 | 50 min | 19:47Z |  |
+| T487 | ops and payments: safe mode after 24 hours pauses charges, a | done | 1 | 50 min | 19:47Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 30 min | 19:37Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, tests/a11y/page_states.ts; a resync merges it in |
 | T324 | harness: 95% branch floors for the money and privacy files o | done | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | done | 1 | 29 min | 18:55Z |  |
@@ -65,8 +65,8 @@ Updated 2026-11-16T20:34:48Z by runner b4ad6ead0c92 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 733 (44.3%) · partial 265 · unstarted 143
-**Tasks merged (throughput only):** 373 of 540
+**Requirements verified:** 326 of 733 (44.5%) · partial 267 · unstarted 140
+**Tasks merged (throughput only):** 374 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -75,13 +75,13 @@ Updated 2026-11-16T20:34:48Z by runner b4ad6ead0c92 (actions).
 | businesses | 22 | 33 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 23 | 28 | 1 | 52 |
+| fees | 24 | 27 | 1 | 52 |
 | intake | 30 | 10 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 39 | 9 | 0 | 48 |
 | lifecycle | 26 | 2 | 0 | 28 |
 | messaging | 26 | 17 | 2 | 45 |
-| ops-recovery | 1 | 19 | 34 | 54 |
+| ops-recovery | 1 | 22 | 31 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 35 | 20 | 1 | 56 |
@@ -102,7 +102,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 16 of 148 done
+- stage 5: 17 of 148 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
