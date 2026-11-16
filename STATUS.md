@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T01:00:30Z by runner 5b654c54ca2c (actions).
+Updated 2026-11-16T01:12:11Z by runner 6af9b3274084 (actions).
 
-**Building: T099 in progress since 00:13Z; 353 of 505 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T516 in progress since 01:12Z; 353 of 505 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 353 of 505 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T099 claimed 00:13Z, lease until 03:13Z
-- **Week:** 73% used, 53.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:00Z, 0 min before this update
+- **Lane:** lane 1: T516 claimed 01:12Z, lease until 04:12Z; lane 2: T099 claimed 00:13Z, lease until 03:13Z
+- **Week:** 73% used, 47.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:00Z, 11 min before this update
 - **Keeper:** last ran 01:00Z, next wake 03:15Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 17 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -42,7 +42,6 @@ Updated 2026-11-16T01:00:30Z by runner 5b654c54ca2c (actions).
 | T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | done | 1 | 31 min | 04:26Z |  |
 | T261 | portals and server (harness): the served Confirm route under | BLOCKED | 3 | 110 min | 02:57Z |  |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z |  |
-| T460 | server: business sign-up's identity steps are served (code s | done | 2 | 68 min | 01:08Z | PLAN GAP: app/businesses/src/models.rs:269, :307 (pub(crate) SignupState, signup_state; owned by T041, T081, T083). D-36 |
 
 ### Plan and harness merges on main
 - none
@@ -50,7 +49,7 @@ Updated 2026-11-16T01:00:30Z by runner 5b654c54ca2c (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
-**Tasks merged (throughput only):** 353 of 502
+**Tasks merged (throughput only):** 353 of 505
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -78,7 +77,7 @@ Updated 2026-11-16T01:00:30Z by runner 5b654c54ca2c (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T00:01:40Z (week)): week: 140.3M used, 53.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T05:09:44Z.
+- Pacing (session_reading 2026-11-16T01:00:07Z (week)): week: 146.3M used, 47.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T09:10:59Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -93,7 +92,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T516 (lease until 2026-11-16T04:12:02Z)
 - lane 2: T099 (lease until 2026-11-16T03:13:18Z)
 
 ## Last usage reading
