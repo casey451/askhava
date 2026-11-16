@@ -273,6 +273,7 @@ fn business_pages(
 /// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231); the email
 /// action links are `/b/a/{kind}/{object}/{token}` ([`action_links`], T301). The built
 /// browser files are served at `/static/<crate>/` from the parts' folder ([`static_files`], T362).
+/// The site's compiled-in stylesheet is at `/static/site/<name>` (`site::api::site_routes`, T101).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241) and the placed calls' status and safety-key routes
 /// (`voice_status`, CALL-022, OPS-028, T378); `None` adds none. `voice` ([`voice_hooks`]) adds the
@@ -328,7 +329,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(calls)
         .merge(stripe)
         .merge(business)
-        .merge(static_files::router(&statics))
+        .merge(static_files::router(&statics).merge(askhava_site::api::site_routes()))
         .layer(request_timeout::catch_panic())
         .layer(axum::middleware::from_fn_with_state(
             limit,

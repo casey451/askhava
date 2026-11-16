@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT r.trigger AS reason, count(*) AS \"n!\" FROM payments.refund r JOIN payments.charge_evidence c USING (pick_id) WHERE c.job_id = ANY($1) AND r.requested_at >= $2 AND r.requested_at < $3 GROUP BY r.trigger ORDER BY r.trigger",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "reason",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.refund",
+            "name": "trigger"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "68ecd3229aef7e55eff615584669541c1414e4df9279e28c48a95c96c63e1287"
+}

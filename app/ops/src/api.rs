@@ -21,6 +21,7 @@ pub use crate::alerts::{
     DeliveryOutcome, lock_coverage, record_business_counts, record_delivery_counts,
     record_request_counts,
 };
+pub use crate::audit_subjects::{AuditSubject, audit_subjects};
 pub use crate::models::{
     Actor, AuditEntry, AuditRow, Change, NewAlert, OpsError, Severity, Switch, is_code_name,
 };

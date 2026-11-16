@@ -1,0 +1,67 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"rows!\", count(*) FILTER (WHERE kind = 'charge') AS \"paid!\", COALESCE(sum(amount_cents) FILTER (WHERE kind = 'charge'), 0)::bigint AS \"fees!\", COALESCE(sum(amount_cents) FILTER (WHERE kind = 'processing-fee'), 0)::bigint AS \"stripe!\", count(*) FILTER (WHERE kind = 'refund') AS \"refunds!\", COALESCE(sum(CASE kind WHEN 'refund' THEN amount_cents WHEN 'refund-reversal' THEN -amount_cents END), 0)::bigint AS \"refunded!\", count(*) FILTER (WHERE kind = 'dispute') AS \"disputes!\" FROM payments.ledger_entry WHERE job_id = ANY($1) AND recorded_at >= $2 AND recorded_at < $3 AND kind IN ('charge', 'processing-fee', 'refund', 'refund-reversal', 'dispute')",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "rows!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "paid!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "fees!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "stripe!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "refunds!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 5,
+        "name": "refunded!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 6,
+        "name": "disputes!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "cf9cb4e8e1773e28689fbed4dfc0708c220f5c852e3481ca63789d06d8ad427d"
+}

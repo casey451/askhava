@@ -56,6 +56,7 @@ mod pick_withdrawn;
 mod release;
 mod released_view;
 mod rules;
+mod scorecard_inputs;
 mod service;
 mod settle;
 mod share_consent;

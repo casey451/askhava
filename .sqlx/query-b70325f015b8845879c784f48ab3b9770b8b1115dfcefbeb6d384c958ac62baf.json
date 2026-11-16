@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) FILTER (WHERE status = ANY($4::text[])) AS \"part!\", count(*) AS \"whole!\" FROM picks.pick WHERE job_id = ANY($1) AND picked_at >= $2 AND picked_at < $3 AND (status = ANY($4::text[]) OR status = $5)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "part!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "whole!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz",
+        "TextArray",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "b70325f015b8845879c784f48ab3b9770b8b1115dfcefbeb6d384c958ac62baf"
+}

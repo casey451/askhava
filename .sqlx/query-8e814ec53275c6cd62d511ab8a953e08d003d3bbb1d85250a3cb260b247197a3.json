@@ -1,0 +1,67 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH req AS (SELECT job_id, min(sent_at) AS carded, bool_or(cardinality(photo_ids) > 0) AS photo FROM quotes.shown_card WHERE job_id = ANY($1) AND sent_at < $3 GROUP BY job_id HAVING min(sent_at) >= $2), got AS (SELECT r.photo, count(q.id) FILTER (WHERE q.received_at < r.carded + interval '24 hours') AS day, extract(epoch FROM min(q.received_at) - r.carded) AS first FROM req r LEFT JOIN quotes.quote q ON q.job_id = r.job_id AND q.received_at < $3 GROUP BY r.job_id, r.carded, r.photo) SELECT count(*) AS \"requests!\", count(*) FILTER (WHERE day >= 1) AS \"one!\", count(*) FILTER (WHERE day >= 2) AS \"two!\", count(*) FILTER (WHERE day >= 3) AS \"three!\", round(percentile_cont(0.5) WITHIN GROUP (ORDER BY first))::bigint AS median, round(percentile_cont(0.75) WITHIN GROUP (ORDER BY first))::bigint AS p75, count(*) FILTER (WHERE photo) AS \"photo!\" FROM got",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "requests!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "one!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "two!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "three!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "median",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 5,
+        "name": "p75",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 6,
+        "name": "photo!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "8e814ec53275c6cd62d511ab8a953e08d003d3bbb1d85250a3cb260b247197a3"
+}
