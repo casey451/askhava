@@ -153,6 +153,7 @@ async function toCodeStep(page: Page): Promise<void> {
   await axeClean(page, "the final Pick's answer");
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Finish your pick for request \d+$/);
+  await expect(page.locator("#pick-not-open")).toBeFocused();
 }
 
 for (const width of WIDTHS) {
