@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T22:30:58Z by runner 023f304a8802 (actions).
+Updated 2026-11-16T22:36:08Z by runner 17080bb84ed6 (actions).
 
-**Building: T481 in progress since 21:50Z; 376 of 540 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T523 in progress since 22:07Z; 376 of 540 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 376 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T481 claimed 21:50Z, lease until 00:50Z; lane 2: T523 claimed 22:07Z, lease until 01:07Z
+- **Lane:** lane 2: T523 claimed 22:07Z, lease until 01:07Z
 - **Week:** 4% used, 185.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:30Z, 0 min before this update
+- **Last run:** 22:31Z, 4 min before this update
 - **Keeper:** last ran 22:30Z, next wake 00:52Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-16T22:30:58Z by runner 023f304a8802 (actions).
 - "cliente potencial" singular (:80) -> \bclientes?\s+potencial(?:es)?\b
 Each needs a planted sentence in test_planted_spanish_banned_word_fails; think further about other natural Spanish phrasings of every English BANNED/BUSINESS_BANNED idea before hand-in. Minor: module docstring (:15-21) and banned_es_hits docstring (:177) should mention license/data-access and pest words. Local prehandin --ally failed j2_keyboard.spec.ts:149 (business sign-up, "Where your code goes" not shown) 2-3 tests on the fix head; reviewer found no diff path to it (no Rust/page change; only homeowner-terms.md is compiled in, unchanged); likely the per-IP daily sign-up cap (app/portals/src/limits.rs:38) exhausted by repeated local ally runs on a persistent test DB.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 15 problem(s) on tasks still to run (+135 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 16 problem(s) on tasks still to run (+136 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -121,7 +121,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T481 (lease until 2026-11-17T00:50:20Z)
+- nothing
 - lane 2: T523 (lease until 2026-11-17T01:07:25Z)
 
 ## Last usage reading
