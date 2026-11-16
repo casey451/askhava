@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T21:14:12Z by runner b698f9bee18e (actions).
+Updated 2026-11-16T21:16:36Z by runner 526aa3557dc6 (manual).
 
 **Building: T111 in progress since 20:22Z; 374 of 540 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-16T21:14:12Z by runner b698f9bee18e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T111 claimed 20:22Z, lease until 00:14Z; lane 2: T481 claimed 19:16Z, lease until 23:34Z; lane 3: T320 claimed 21:07Z, lease until 00:07Z; lane 5: T408 claimed 21:08Z, lease until 00:08Z
 - **Week:** 2% used, 186.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:12Z, 1 min before this update
+- **Last run:** 21:16Z, 0 min before this update
 - **Keeper:** last ran 21:04Z, next wake 23:24Z
 
 ## Needs attention
 - BLOCKED T307: plan gap reported: PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messaging` and `calls` call `read_contact`), and app/portals/src/homeowner_portal.rs:97 keeps `OnFile::phone()` crate-private (T087's file, not T307's). So `server` has no allowed way to read her number and address for `HomeFacts`. The prompt (kit/prompts/T307.md:9, D-3877 (3)) says to read them through `privacy::api::read_contact` from the server, which those two lines (and the runtime check at app/privacy/src/api.rs:247) rule out. Smallest plan change: let T307 own app/portals/s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T307 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 13 problem(s) on tasks still to run (+132 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+134 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -68,31 +68,31 @@ Updated 2026-11-16T21:14:12Z by runner b698f9bee18e (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 326 of 733 (44.5%) · partial 267 · unstarted 140
+**Requirements verified:** 306 of 733 (41.7%) · partial 287 · unstarted 140
 **Tasks merged (throughput only):** 374 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 21 | 10 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 22 | 33 | 3 | 58 |
-| calls | 14 | 10 | 1 | 25 |
+| businesses | 21 | 34 | 3 | 58 |
+| calls | 12 | 12 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 24 | 27 | 1 | 52 |
+| fees | 19 | 32 | 1 | 52 |
 | intake | 30 | 10 | 3 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
+| job-cards | 19 | 5 | 0 | 24 |
 | licensing | 39 | 9 | 0 | 48 |
-| lifecycle | 26 | 2 | 0 | 28 |
-| messaging | 26 | 17 | 2 | 45 |
+| lifecycle | 23 | 5 | 0 | 28 |
+| messaging | 22 | 21 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 13 | 16 | 2 | 31 |
+| privacy | 11 | 18 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 11 | 39 | 5 | 55 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 6 | 22 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 1 | 10 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
