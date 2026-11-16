@@ -26,7 +26,7 @@
 
 use askhava_adapters::api::PaymentsAdapter;
 use askhava_core::api::{HandlerError, NewTask, add_business_minutes, enqueue, is_business_hours};
-use askhava_ops::api::{Actor, AuditEntry, Change, Switch, audit, is_paused};
+use askhava_ops::api::{Actor, AuditEntry, Change, Switch, audit, is_paused, safe_mode_on};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use serde_json::{Value, json};
@@ -84,8 +84,9 @@ fn db<T>(result: Result<T, sqlx::Error>) -> Result<T, ChargeError> {
     result.map_err(|_| ChargeError::Database)
 }
 
-/// True while safe mode or the owner's charging switch pauses charges (OPS-024, FEE-038). Safe
-/// mode is the `all` switch until OPS-001's own flag exists (D-1427).
+/// True while safe mode or the owner's charging or `all` switch pauses charges (OPS-001, OPS-003,
+/// OPS-024, FEE-038, D-1427, D-3878): safe mode through `ops::api::safe_mode_on`, its stored flag
+/// or a pushed High alert unacknowledged 24 hours by the database's clock, so it never fails open.
 ///
 /// # Errors
 /// [`ChargeError::Database`].
@@ -98,7 +99,7 @@ pub async fn charges_paused(conn: &mut PgConnection) -> Result<bool, ChargeError
             return Ok(true);
         }
     }
-    Ok(false)
+    safe_mode_on(conn).await.map_err(|_| ChargeError::Database)
 }
 
 /// The status Stripe's answer `status` with the intent's `latest_charge` `charge` stands for: a
