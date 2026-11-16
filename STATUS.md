@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-16T15:52:09Z by runner 96944c4fc0ba (actions).
+Updated 2026-11-16T15:52:42Z by runner d995af80b833 (actions).
 
-**Building: T101 in progress since 15:19Z; 362 of 535 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T101 in progress since 15:19Z; 363 of 535 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 362 of 535 build tasks (owner gates not counted)
+- **Tasks done:** 363 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 7: T475 claimed 15:08Z, lease until 18:08Z
 - **Week:** 95% used, 1.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:34Z, 17 min before this update
+- **Last run:** 15:52Z, 0 min before this update
 - **Keeper:** last ran 15:34Z, next wake 17:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+122 on DONE tasks); first: T105: stored context_pct 17% but it measures 23%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T105 | ops: High and critical alerts with their automatic acknowled | MERGE_PENDING | 2 | 104 min | 15:51Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
-| T497 | Stand-ins (harness): sticky vendor faults for the J4 outage  | MERGE_PENDING | 1 | 75 min | 15:32Z |  |
+| T497 | Stand-ins (harness): sticky vendor faults for the J4 outage  | done | 1 | 75 min | 15:32Z |  |
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T521 | catalog: each category's plural display name and a list read | done | 1 | 34 min | 15:09Z |  |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | MERGE_PENDING | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
@@ -53,7 +53,7 @@ Updated 2026-11-16T15:52:09Z by runner 96944c4fc0ba (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 313 of 733 (42.7%) · partial 266 · unstarted 154
-**Tasks merged (throughput only):** 362 of 535
+**Tasks merged (throughput only):** 363 of 535
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -89,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 5 of 143 done
+- stage 5: 6 of 143 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
