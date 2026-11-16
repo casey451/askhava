@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T23:45:19Z by runner f4898b7c0718 (actions).
+Updated 2026-11-16T23:48:57Z by runner f4898b7c0718 (actions).
 
 **Building: T320 in progress since 23:06Z; 376 of 541 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-16T23:45:19Z by runner f4898b7c0718 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T320 claimed 23:06Z, lease until 02:06Z; lane 2: T469 claimed 23:44Z, lease until 02:44Z; lane 3: T111 claimed 23:22Z, lease until 02:22Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 02:31Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
 - **Week:** 6% used, 176.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:37Z, 7 min before this update
+- **Last run:** 23:48Z, 0 min before this update
 - **Keeper:** last ran 23:37Z, next wake 01:38Z
 
 ## Needs attention
@@ -64,7 +64,6 @@ Updated 2026-11-16T23:45:19Z by runner f4898b7c0718 (actions).
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | done | 3 | 30 min | 01:42Z | Second review of head 85baf148e5f34e6d4d48b8c0a54b3e8ff92fdbdd found FINDINGS after the one fix round: scripts/check_dup |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 2 | 40 min | 00:58Z |  |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 1 | 47 min | 00:01Z |  |
-| T515 | End-to-end harness: specs can deliver a validly signed Strip | done | 2 | 50 min | 23:47Z | PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemo |
 
 ### Plan and harness merges on main
 - none
