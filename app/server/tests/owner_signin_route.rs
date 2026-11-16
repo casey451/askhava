@@ -6,7 +6,7 @@
 //! linking to `/owner/sign-in` on every owner route; sign-out and "Sign out everywhere" end the
 //! sessions; every answer is `no-store`; a cross-site or wrong-token `POST` is a 403 that changes
 //! nothing and is a `csrf_rejected` event; password tries past `admit_owner_password`'s limit are
-//! refused before the password is checked. The passkey cases (D-3878): the challenge route
+//! refused before the password is checked, passkey answers too. The passkey cases (D-3878): the challenge route
 //! answers, a fake assertion signs no one in, and `passkey.js` is served. SEC-046's proof types
 //! are proven by `portals`' trybuild case; here an owner session reads nothing outside its door.
 //! The owner's pass phrase, token and authenticator secret are fake and made for this file.
@@ -235,7 +235,6 @@ async fn realm_session(w: &World, realm: Realm) -> Jar {
     own_jar(&jar.await.expect("session"))
 }
 
-/// Runs `sql` with `jar`'s session token as `$1`.
 /// The `security event` log lines captured, `[kind, route]` (SEC-048): the event's row is
 /// `portals`' table, which `server` code may not name (TD-SEC-10), and the line is written by the
 /// same `record_security_event` call (as `door_matrix.rs` reads them).
@@ -531,8 +530,8 @@ async fn td_sec_46_passkey_routes(pool: PgPool) {
 }
 
 /// TD-SEC-46 (SEC-014, SEC-020, D-1951, D-2206): past `admit_owner_password`'s per-IP limit a
-/// password `POST` is refused before the password is checked: the right password and code sign
-/// no one in, no `auth_failed` event is added, and the code stays unused for another address.
+/// password `POST`, or a passkey answer, is refused before the password is checked: the right
+/// password and code sign no one in, no `auth_failed` event is added, and the code stays unused for another address.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_sec_46_password_tries_past_the_limit_are_refused_first(pool: PgPool) {
     let w = world(&pool).await;
@@ -551,6 +550,18 @@ async fn td_sec_46_password_tries_past_the_limit_are_refused_first(pool: PgPool)
         events(&w, "auth_failed", SIGN_IN),
         5,
         "the password was not checked"
+    );
+    let fake = format!(
+        "&password={}&challenge={}&passkey=x",
+        PASSWORD.replace(' ', "+"),
+        Uuid::new_v4()
+    );
+    let passkey = post(&w, SIGN_IN, &jar, &fake, 7).await;
+    assert_eq!(passkey.status, 401, "a passkey answer is limited too");
+    assert_eq!(
+        events(&w, "auth_failed", SIGN_IN),
+        5,
+        "a passkey answer past the limit checks no password"
     );
     let elsewhere = sign_in(&w, &jar, (PASSWORD, &code), 8).await;
     assert_eq!(

@@ -10,9 +10,10 @@
 //! `https://<domain>` (D-3844), so `build_router` needs no new part. Every response is
 //! `no-store`; every `POST` passes `refuse_cross_site` and then the CSRF form check before any
 //! owner check, so a cross-site or wrong-token `POST` from anyone is a 403 with one
-//! `csrf_rejected` event (D-3878). The password `POST` calls `admit_owner_password` first and, when
-//! refused, answers as a wrong password does and checks nothing (D-1951, D-2206); the passkey path
-//! is never limited (D-492). A wrong password or code says nothing about which was wrong.
+//! `csrf_rejected` event (D-3878). Every sign-in `POST`, a passkey answer too (the password is
+//! checked on every path), calls `admit_owner_password` first and, when refused, answers as a
+//! wrong password does and checks nothing (D-1951, D-2206, D-3962). A wrong password or code says
+//! nothing about which was wrong.
 //!
 //! [`require_owner`] is the owner-session check T304, T305 and T310 use (with [`note_owner_site`]
 //! as a route layer): `portals::api::owner_principal` (12 hours at most, 30 minutes idle); no
@@ -291,8 +292,9 @@ fn factor_of(form: &SignInForm) -> SecondFactor<'_> {
     }
 }
 
-/// `POST` [`OWNER_SIGNIN_ROUTE`] (SEC-005, SEC-007, SEC-014, SEC-042, SEC-043): the password
-/// path admits its limit first and a refusal checks nothing (D-1951, D-2206); then both factors,
+/// `POST` [`OWNER_SIGNIN_ROUTE`] (SEC-005, SEC-007, SEC-014, SEC-020, SEC-042, SEC-043): every
+/// try, passkey answers included (`owner_sign_in` checks the password on every path), admits
+/// `admit_owner_password`'s limit first and a refusal checks nothing (D-1951, D-2206); then both factors,
 /// and a 303 to the step-up page with the new session cookie. Any failure is the same 401 page.
 async fn sign_in(
     State(owner): State<Owner>,
@@ -301,18 +303,14 @@ async fn sign_in(
     CsrfForm(form): CsrfForm<SignInForm>,
 ) -> Response {
     let now = owner.clock.now();
-    let factor = factor_of(&form);
-    let password_path = !matches!(factor, SecondFactor::Passkey { .. });
-    if password_path {
-        let admitted = admit_owner_password(&owner.pool, site.client, now).await;
-        if !matches!(admitted, Ok(Admission::Admitted)) {
-            return sign_in_answer(&owner, jar, StatusCode::UNAUTHORIZED).await;
-        }
+    let admitted = admit_owner_password(&owner.pool, site.client, now).await;
+    if !matches!(admitted, Ok(Admission::Admitted)) {
+        return sign_in_answer(&owner, jar, StatusCode::UNAUTHORIZED).await;
     }
     let Ok(mut db) = owner.pool.acquire().await else {
         return failed("database");
     };
-    let factors = (form.password.as_str(), factor);
+    let factors = (form.password.as_str(), factor_of(&form));
     match owner_sign_in(&mut db, jar.clone(), factors, &owner.auth, now).await {
         Ok(jar) => (jar, see_other(OWNER_STEP_UP_ROUTE)).into_response(),
         Err(OwnerAuthError::Refused) => sign_in_answer(&owner, jar, StatusCode::UNAUTHORIZED).await,

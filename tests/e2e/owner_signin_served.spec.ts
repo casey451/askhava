@@ -9,7 +9,8 @@
 // checked in app/server/tests/owner_signin_route.rs), steps up with a fresh code, and signs out,
 // after which the step-up page is the owner door's refusal. The wrong-password and the
 // password-limit cases are the route test's, so this spec uses one password try of the hour's few
-// per address (`OWNER_TRIES_PER_IP`), leaving the rest for the other owner specs. The pages'
+// per address (`OWNER_TRIES_PER_IP`); a second browser then signs in with the helper's kept session
+// and posts no password, as the later owner specs do while that session lives. The pages'
 // axe checks at 320, 768 and 1280 are the Ally suite's (tests/a11y/page_states.ts). Fake data only.
 import { test, expect } from "./fixtures";
 import { ownerCode, signInOwner } from "./owner_session";
@@ -23,6 +24,17 @@ test("TD-SEC-22/TD-SEC-46: the bootstrapped owner signs in with a code, steps up
   await page.getByLabel("Code", { exact: true }).fill(await ownerCode());
   await page.getByRole("button", { name: "Check code" }).click();
   await expect(page.locator("#step-up-done")).toHaveText(/That worked/);
+  const other = await page.context().browser()?.newContext();
+  if (other === undefined) throw new Error("no browser for a second context");
+  const second = await other.newPage();
+  const passwordPosts: string[] = [];
+  second.on("request", (r) => {
+    if (r.method() === "POST" && r.url().endsWith("/owner/sign-in")) passwordPosts.push(r.url());
+  });
+  await signInOwner(second);
+  await expect(second.getByRole("heading", { level: 1 })).toHaveText("Confirm it's you");
+  expect(passwordPosts, "the kept session signs in with no password try").toHaveLength(0);
+  await other.close();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page).toHaveURL(/\/owner\/sign-in$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Owner sign-in");

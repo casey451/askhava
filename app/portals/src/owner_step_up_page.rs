@@ -93,9 +93,16 @@ mod tests {
         assert!(done.contains("step-up-done") && !done.contains("error-summary"));
     }
 
-    #[test]
-    fn the_refusal_links_only_to_the_owner_sign_in() {
+    #[tokio::test]
+    async fn the_refusal_links_only_to_the_owner_sign_in() {
         let refused = owner_signed_out();
         assert_eq!(refused.status(), StatusCode::UNAUTHORIZED);
+        let body = axum::body::to_bytes(refused.into_body(), 1 << 20)
+            .await
+            .expect("body");
+        let page = String::from_utf8(body.to_vec()).expect("utf-8");
+        assert_eq!(page.matches("href=").count(), 1, "one link: {page}");
+        let link = format!("href=\"{OWNER_SIGNIN_ROUTE}\"");
+        assert!(page.contains(&link), "{page}");
     }
 }

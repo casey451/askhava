@@ -11,6 +11,12 @@
 // restarted worker of the same run reuses them and a new run never finds them. Nothing in it is
 // printed or logged; every value is fake.
 //
+// The password limit allows 5 tries per address an hour (`OWNER_TRIES_PER_IP`,
+// app/portals/src/limits.rs) and every spec signs in from 127.0.0.1, so the file also keeps the
+// owner's last session cookie: `signInOwner` puts it in the page's browser context and makes a
+// password try only when `GET /owner/step-up` answers 401 with it (none kept, idle 30 minutes,
+// older than 12 hours or signed out), so the run's owner specs share one try per live session.
+//
 // The server takes each TOTP step once (`use_totp_step`, app/portals/src/models.rs) and accepts the
 // step before and after its own (totp-rs's skew of one), so `ownerCode` uses the current step, or
 // the next one when the current one was used, and waits for the clock to reach the step before a
@@ -34,7 +40,11 @@ interface OwnerCache {
   password: string;
   secret: string;
   lastStep: number;
+  /** The last session cookie's value, when a sign-in kept one. */
+  session?: string;
 }
+
+const SESSION_COOKIE = "__Host-askhava-session";
 
 /** This run's cache file: keyed on the run's control secret, so no other run finds it. */
 function cachePath(): string {
@@ -142,15 +152,42 @@ export async function ownerOrigin(page: Page): Promise<void> {
 }
 
 /**
+ * Puts the kept session cookie in `page`'s context and reports whether the owner door takes it
+ * at `baseUrl` (set on its https form: a `Secure` cookie, which Chromium sends to 127.0.0.1 on
+ * plain http too): 200 yes, 401 no (sign in afresh); any other answer fails the spec.
+ */
+async function sessionLive(page: Page, baseUrl: string): Promise<boolean> {
+  const { session } = owner();
+  if (session === undefined) return false;
+  await page.context().addCookies([{ name: SESSION_COOKIE, value: session, url: baseUrl.replace(/^http:/, "https:"), secure: true, httpOnly: true, sameSite: "Lax" }]);
+  const status = (await page.request.get(`${baseUrl}/owner/step-up`, { maxRedirects: 0 })).status();
+  if (status !== 200 && status !== 401) throw new Error(`owner step-up check answered ${String(status)}`);
+  return status === 200;
+}
+
+/** Keeps the session cookie `page`'s context now holds for the next `signInOwner`. */
+async function keepSession(page: Page): Promise<void> {
+  const cookie = (await page.context().cookies()).find((c) => c.name === SESSION_COOKIE);
+  if (cookie === undefined) throw new Error("owner sign-in set no session cookie");
+  save({ ...owner(), session: cookie.value });
+}
+
+/**
  * Signs the run's owner in on `page` at `baseUrl` (the suite's web binary by default; `keyedUrl()`
- * for the Stripe steps) with the password and a fresh TOTP code, ending on the step-up page.
+ * for the Stripe steps), ending on the step-up page: with the kept session when the owner door
+ * still takes it, else with the password and a fresh TOTP code (one password try).
  */
 export async function signInOwner(page: Page, baseUrl = `http://127.0.0.1:${String(webPort())}`): Promise<void> {
-  const { password } = owner();
   await ownerOrigin(page);
+  if (await sessionLive(page, baseUrl)) {
+    await page.goto(`${baseUrl}/owner/step-up`);
+    return;
+  }
+  const { password } = owner();
   await page.goto(`${baseUrl}/owner/sign-in`);
   await page.getByLabel("Password").fill(password);
   await page.getByLabel("Code", { exact: true }).fill(await ownerCode());
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.waitForURL(/\/owner\/step-up$/);
+  await keepSession(page);
 }
