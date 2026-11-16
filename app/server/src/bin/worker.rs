@@ -67,10 +67,28 @@ async fn main() -> io::Result<()> {
     Ok(())
 }
 
+/// `messaging`'s daily tasks at start: the body cut, the day-31 body scan, the outbox sender's
+/// first run and OPS-046's deferral check (T531, D-3883).
+async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp) -> io::Result<()> {
+    askhava_messaging::api::schedule_cut(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_messaging::api::schedule_body_scan(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_messaging::api::schedule_send_due(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_messaging::api::schedule_deferral_check(conn, now)
+        .await
+        .map_err(io::Error::other)
+}
+
 /// Queues the daily tasks at start (the chain check, the retention sweep, the body cut, the
 /// photo orphan sweep, the day-31 body scan, this hour's dead-letter check, the job timer
 /// backstop, the session sweep and rate-limit prune (T436), the license-map re-apply, each daily license list (T371), the outbox sender's
-/// first run and the first nightly Stripe reconcile (T433)) and runs the intake golden set once.
+/// first run, the deferral check ([`schedule_messaging`]) and the first nightly Stripe reconcile
+/// (T433)) and runs the intake golden set once.
 async fn schedule_start(
     pool: &sqlx::PgPool,
     now: jiff::Timestamp,
@@ -80,19 +98,14 @@ async fn schedule_start(
     schedule_verify(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
+    schedule_messaging(&mut conn, now).await?;
     askhava_jobs::api::schedule_sweep(&mut conn, now)
-        .await
-        .map_err(io::Error::other)?;
-    askhava_messaging::api::schedule_cut(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
     askhava_privacy::api::schedule_orphan_sweep(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
     askhava_privacy::api::schedule_words_cut(&mut conn, now)
-        .await
-        .map_err(io::Error::other)?;
-    askhava_messaging::api::schedule_body_scan(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
     askhava_server::no_handler_alert::schedule(&mut conn, now)
@@ -111,9 +124,6 @@ async fn schedule_start(
         .await
         .map_err(io::Error::other)?;
     askhava_licensing::api::schedule_daily_lists(&mut conn, now, lists)
-        .await
-        .map_err(io::Error::other)?;
-    askhava_messaging::api::schedule_send_due(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
     askhava_server::payment_jobs::schedule_reconcile(&mut conn, now)
