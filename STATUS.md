@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T14:06:03Z by runner cbf7179eefe4 (actions).
+Updated 2026-11-16T14:06:28Z by runner 4a375375e4f7 (actions).
 
-**Building: T519 in progress since 13:17Z; 358 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T519 in progress since 13:17Z; 359 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 358 of 535 build tasks (owner gates not counted)
+- **Tasks done:** 359 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T519 claimed 13:17Z, lease until 16:44Z; lane 5: T308 claimed 13:29Z, lease until 16:29Z
 - **Week:** 93% used, 2.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:05Z, 0 min before this update
+- **Last run:** 14:06Z, 0 min before this update
 - **Keeper:** last ran 14:04Z, next wake 16:32Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 10 problem(s) on tasks still to run (+121 on DONE tasks); first: T129: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+122 on DONE tasks); first: T129: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -23,7 +23,7 @@ Updated 2026-11-16T14:06:03Z by runner cbf7179eefe4 (actions).
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | check_failed | 1 | 69 min | 13:32Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T101 | site: base layout in the design spec's look, works without J | MERGE_PENDING | 1 | 70 min | 13:31Z |  |
 | T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
-| T409 | server (harness): the door probe's owner actor signs in thro | MERGE_PENDING | 1 | 36 min | 13:05Z |  |
+| T409 | server (harness): the door probe's owner actor signs in thro | done | 1 | 36 min | 13:05Z |  |
 | T531 | messaging and server: OPS-046's first-six-weeks email figure | done | 1 | 36 min | 13:01Z |  |
 | T100 | Stage 4 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 39 min | 08:16Z |  |
 | T517 | Stage 4 cleanup, part 1: duplicate functions in server, port | proof_missing | 1 | 84 min | 03:25Z |  |
@@ -47,7 +47,7 @@ Updated 2026-11-16T14:06:03Z by runner cbf7179eefe4 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 308 of 733 (42.0%) · partial 269 · unstarted 156
-**Tasks merged (throughput only):** 358 of 535
+**Tasks merged (throughput only):** 359 of 535
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -83,7 +83,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 1 of 143 done
+- stage 5: 2 of 143 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
