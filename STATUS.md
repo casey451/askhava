@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T22:37:40Z by runner 17080bb84ed6 (actions).
+Updated 2026-11-16T22:41:55Z by runner 17080bb84ed6 (actions).
 
 **Building: T523 in progress since 22:07Z; 376 of 540 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 376 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T523 claimed 22:07Z, lease until 01:07Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
-- **Week:** 4% used, 184.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:36Z, 0 min before this update
+- **Lane:** lane 2: T523 claimed 22:07Z, lease until 01:07Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 01:41Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
+- **Week:** 4% used, 183.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:41Z, 0 min before this update
 - **Keeper:** last ran 22:30Z, next wake 00:52Z
 
 ## Needs attention
@@ -106,7 +106,7 @@ Each needs a planted sentence in test_planted_spanish_banned_word_fails; think f
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T22:30:28Z (week)): week: 9.6M used, 184.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T09:33:57Z.
+- Pacing (session_reading 2026-11-16T22:30:28Z (week)): week: 10.8M used, 183.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T09:38:12Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -124,6 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T523 (lease until 2026-11-17T01:07:25Z)
 - lane 4: T481 (lease until 2026-11-17T01:37:17Z)
+- lane 5: T373 (lease until 2026-11-17T01:41:32Z)
 - lane 7: T221 (lease until 2026-11-17T01:36:07Z)
 
 ## Last usage reading
