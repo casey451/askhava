@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T18:55:23Z by runner 7d50fe1b8e4e (actions).
+Updated 2026-11-16T18:55:42Z by runner 7d50fe1b8e4e (actions).
 
 **Building: T324 in progress since 17:53Z; 370 of 540 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 370 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T324 claimed 17:53Z, lease until 21:35Z; lane 6: T303 claimed 18:26Z, lease until 21:26Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
+- **Lane:** lane 1: T324 claimed 17:53Z, lease until 21:35Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
 - **Week:** 0% used, -4.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:47Z, 8 min before this update
 - **Keeper:** last ran 18:46Z, next wake 21:28Z
@@ -19,11 +19,12 @@ Updated 2026-11-16T18:55:23Z by runner 7d50fe1b8e4e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T303 | server and portals: owner sign-in, sign-out and step-up are  | MERGE_PENDING | 1 | 29 min | 18:55Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | MERGE_PENDING | 1 | 59 min | 18:42Z |  |
 | T166 | site: self-hosted Gelasio and DM Sans fonts and the design-t | MERGE_PENDING | 1 | 52 min | 18:17Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | done | 3 | 51 min | 18:12Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T559 | Tests (harness): wait for the code step's autofocus and the  | done | 1 | 64 min | 18:02Z |  |
-| T303 | server and portals: owner sign-in, sign-out and step-up are  | resync | 1 | 92 min | 17:52Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
+| T303 | server and portals: owner sign-in, sign-out and step-up are  | resync | 1 | 92 min | 17:52Z |  |
 | T361 | quotes and picks: a quote keeps its number once shown, and a | BLOCKED | 1 | 50 min | 17:41Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
 | T324 | harness: 95% branch floors for the money and privacy files o | QUEUED | 1 | 61 min | 17:33Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T475 | messaging, quotes, payments and ai: the readers behind the O | done | 1 | 114 min | 17:02Z |  |
@@ -107,8 +108,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T324 (lease until 2026-11-16T21:35:06Z)
-- lane 6: T303 (lease until 2026-11-16T21:26:18Z)
 - lane 7: T361 (lease until 2026-11-16T21:39:42Z)
 
 ## Last usage reading
-- {"task": "T102", "at": "2026-11-16T18:42:56Z", "output_tokens": 103805, "cache_read_input_tokens": 23569701, "input_tokens": 321, "cache_creation_input_tokens": 310795}
+- {"task": "T303", "at": "2026-11-16T18:55:22Z", "output_tokens": 7783, "input_tokens": 49, "cache_read_input_tokens": 600907, "cache_creation_input_tokens": 42607}
