@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T20:15:59Z by runner 2ee325840f90 (actions).
+Updated 2026-11-16T20:17:31Z by runner 32d91e1d646e (actions).
 
 **Building: T481 in progress since 19:16Z; 373 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,20 +8,20 @@ Updated 2026-11-16T20:15:59Z by runner 2ee325840f90 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z
 - **Week:** 1% used, 189.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:14Z, 1 min before this update
+- **Last run:** 20:16Z, 1 min before this update
 - **Keeper:** last ran 20:14Z, next wake 22:19Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T523 (since 2026-11-16T19:07:14Z, no attempt used; a plan change fixes it): T523: dependency T105 is DONE but its owned file app/ops/src/alerts.rs is not on main; T523: dependency T105 is DONE but its owned file migrations/0192_ops_alerts_safe_mode.sql is not on main; T523: dependency T105 is DONE but its owned file tests/integration/tests/ops_alert_conditions.rs is not on main; T523: dependency T105 is DONE but its owned file app/jobs/src/request_counts.rs is not on main
-- Strict plan check red: 13 problem(s) on tasks still to run (+132 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 13 problem(s) on tasks still to run (+130 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T361 | quotes and picks: a quote keeps its number once shown, and a | MERGE_PENDING | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
 | T487 | ops and payments: safe mode after 24 hours pauses charges, a | MERGE_PENDING | 1 | 50 min | 19:47Z |  |
-| T102 | site: home and how-it-works pages with the footer, tagline,  | MERGE_PENDING | 1 | 30 min | 19:37Z | merging main into the reviewed head conflicts in app/quotes/src/lib.rs; a resync merges it in on this attempt (D-891) |
+| T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 30 min | 19:37Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, tests/a11y/page_states.ts; a resync merges it in |
 | T324 | harness: 95% branch floors for the money and privacy files o | done | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | done | 1 | 29 min | 18:55Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 59 min | 18:42Z |  |
