@@ -102,6 +102,7 @@ pub use crate::job_text::{
     keep_card, keep_description, mark_card_sent, purge_job_text, run_text_purge, sent_card,
     stored_card, unsent_cards,
 };
+pub use crate::models::shown_numbers;
 pub use crate::models::{
     BusinessReach, CardBusiness, CardDecision, CardJob, CardLines, Coverage, OfferTown,
     OwnerPauses, Pool, Pooled, QuotesError, Reach, Recipient, Skip, within_radius,

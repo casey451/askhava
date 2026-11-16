@@ -26,6 +26,17 @@ async fn first_quote(db: &mut PgConnection, job: Uuid, now: Timestamp) -> Result
         .map_err(|_| QuotesError::Job)
 }
 
+/// PICK-008, D-2632: takes the job's row lock (`jobs::api::lock_for_quote_change`) before a quote
+/// is shown, so two quotes confirmed at once never read the same highest shown number.
+async fn lock_job(
+    db: &mut PgConnection,
+    job: Uuid,
+) -> Result<askhava_jobs::api::JobStatus, QuotesError> {
+    askhava_jobs::api::lock_for_quote_change(db, job)
+        .await
+        .map_err(|_| QuotesError::Job)
+}
+
 /// How long each business may quote after its own card was sent, every day of the week (PICK-001).
 pub const QUOTE_WINDOW: SignedDuration = SignedDuration::from_hours(24);
 
@@ -616,7 +627,8 @@ pub enum Submitted {
 /// A quote confirmed at once first calls `jobs::api::first_quote` (after the checks, before the
 /// quote row, so the job lock comes first, D-1051): an Open or No quotes yet job moves to Quotes
 /// ready with the one first-quote text, rolled back with the quote on any error; in any other
-/// status nothing moves (JOB-009, JOB-011, TXT-016, D-1517).
+/// status nothing moves (JOB-009, JOB-011, TXT-016, D-1517). A confirmed quote takes the job's row
+/// lock first and gets its shown number, kept from then on, in the upsert (PICK-008, D-2632).
 ///
 /// # Errors
 ///
@@ -645,6 +657,7 @@ pub async fn submit_quote(
         return Ok(Submitted::EditClosed);
     }
     if !quote.form.ai_read {
+        lock_job(&mut tx, job).await?;
         first_quote(&mut tx, job, now).await?;
     }
     models::upsert_quote(&mut tx, (job, business), quote, now).await?;
@@ -671,7 +684,9 @@ pub async fn confirm_quote(
 }
 
 /// [`confirm_quote`] at `now`, the instant a first quote's move and Quotes ready's 3-day wait
-/// count from (JOB-009, JOB-011, JOB-012, TXT-016, PICK-006, D-1517).
+/// count from (JOB-009, JOB-011, JOB-012, TXT-016, PICK-006, D-1517). The job's status is read
+/// under its row lock, and a quote shown for the first time gets its shown number (PICK-008,
+/// D-2632).
 ///
 /// # Errors
 ///
@@ -682,10 +697,7 @@ pub async fn confirm_quote_at(
     now: Timestamp,
 ) -> Result<Guarded<()>, QuotesError> {
     let mut tx = db.begin().await.map_err(|_| QuotesError::Database)?;
-    let status = askhava_jobs::api::current(&mut tx, job)
-        .await
-        .map_err(|_| QuotesError::Job)?;
-    if !status.status.takes_quotes() {
+    if !lock_job(&mut tx, job).await?.takes_quotes() {
         return Ok(Guarded::MovedOn);
     }
     let done = models::confirm_quote(&mut tx, job, business).await?;
