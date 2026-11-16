@@ -85,6 +85,8 @@ const QUOTE_STATES: readonly PageState[] = [
   ["no quotes yet", "No quotes yet.", "Quote #1", quotePage("open", 0)],
   ["three quotes, #2 gone", "Pick #3", "Pick #2", quotePage("quotes_ready", 3)],
   ["paused by CANCEL", "is still open.", "No quotes yet.", quotePage("open", 1, PAUSED)],
+  // T308 (JOB-019, D-2128): an open job's page with its close button.
+  ["with the close button", "Close request", "is closed.", quotePage("open", 1)],
   // D-1516: while the pick waits for Confirm the other available quotes keep their Pick buttons
   // (PICK-032, TD-PICK-45); once the business confirmed (Payment pending) none shows.
   ["after a pick", "Pick #1", "Pick #2", quotePage("awaiting_confirm", 3)],

@@ -15,7 +15,8 @@
     quote with stored facts shows its card's lines in place of the plain lines: name, license
     lines, Google and Yelp as plain links (no stars, counts or excerpts), the "check it yourself"
     line, PICK-040 facts and the business's words; lang="es" on a Spanish card (PICK-041,
-    BIZ-052, A11Y-004, T393). -#}
+    BIZ-052, A11Y-004, T393). While the job is not final a close button posts its CSRF token to
+    /q/<token>/close, its own path (JOB-019, SEC-042, T308); its answer says the request is closed. -#}
 {% block title %}{% if self.choose_error().is_some() %}Error: {% endif %}Your quotes for request {{ request }}{% endblock %}
 {% block main %}
 {% if let Some(n) = self.choose_error() %}<div id="tier-summary" role="alert" tabindex="-1" autofocus>
@@ -23,7 +24,9 @@
 <ul><li><a href="#quote-{{ n }}-tier-1">Choose one package for quote #{{ n }}</a></li></ul>
 </div>
 {% endif %}<h1>Your quotes for request {{ request }}</h1>
-{% if still_open %}
+{% if self.just_closed() %}
+<p id="closed-note">Request {{ request }} is closed. No more quotes will come in for it.</p>
+{% endif %}{% if still_open %}
 <p>Your request {{ request }} is still open. Close it on your quote page.</p>
 {% endif %}
 <p>Free for you. The business you pick pays {{ askhava_core::api::brand().display_name() }} a set introduction fee.</p>
@@ -83,6 +86,16 @@
 </li>
 {% endfor %}
 </ol>
+{% if let Some(action) = self.close_action() %}
+<section id="close-request" aria-labelledby="close-request-title">
+<h2 id="close-request-title">Don't need this done anymore?</h2>
+<p>Closing request {{ request }} is for good. Businesses will stop sending you quotes for it.</p>
+<form method="post" action="{{ action }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<button type="submit">Close request {{ request }}</button>
+</form>
+</section>
+{% endif %}
 <p>Can't open links? Reply LIST to get your quotes by text.</p>
 <p>{{ askhava_core::api::brand().display_name() }} is not a contractor and does not perform, bid on or supervise work.</p>
 <script type="module" src="/static/portals/quote_page.js"></script>
