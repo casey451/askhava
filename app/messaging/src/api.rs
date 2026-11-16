@@ -101,6 +101,10 @@ pub use crate::rules::{
     PROVIDER_OPT_OUT_WORDS, ProviderKeyword, QuietHoursError, RESUBSCRIBE_WORDS, Release,
     SPANISH_OPT_OUT_WORDS, classify, decide, detect_opt_out, may_send_to, plan_release, retry,
 };
+pub use crate::scorecard_inputs::{
+    DEFERRAL_ALERT, DEFERRAL_CHECK_KIND, DEFERRAL_LIMIT_PERCENT, EmailDay, WINDOW_DAYS,
+    check_deferrals, email_days, register_deferral_check, schedule_deferral_check,
+};
 pub use crate::send_window::{SendWindow, send_window, window};
 pub use crate::sender_held::{sender_drop_held, sender_hold, sender_release};
 pub use crate::sender_pending::{sender_line, sender_put_pending};

@@ -40,6 +40,7 @@ mod receipt_email;
 mod retention;
 mod retries;
 mod rules;
+mod scorecard_inputs;
 mod send_window;
 mod sender_held;
 mod sender_pending;
