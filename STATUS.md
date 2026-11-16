@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T15:10:17Z by runner f2a29ef58d38 (actions).
+Updated 2026-11-16T15:10:27Z by runner f2a29ef58d38 (actions).
 
 **Building: T497 in progress since 14:16Z; 361 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 361 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T497 claimed 14:16Z, lease until 18:07Z; lane 3: T101 claimed 14:32Z, lease until 18:09Z; lane 4: T521 claimed 14:35Z, lease until 18:06Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z; lane 7: T475 claimed 15:08Z, lease until 18:08Z
+- **Lane:** lane 2: T497 claimed 14:16Z, lease until 18:07Z; lane 3: T101 claimed 14:32Z, lease until 18:09Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z; lane 7: T475 claimed 15:08Z, lease until 18:08Z
 - **Week:** 94% used, 1.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:10Z, 0 min before this update
 - **Keeper:** last ran 15:09Z, next wake 17:09Z
@@ -18,6 +18,7 @@ Updated 2026-11-16T15:10:17Z by runner f2a29ef58d38 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T521 | catalog: each category's plural display name and a list read | MERGE_PENDING | 1 | 34 min | 15:09Z |  |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | MERGE_PENDING | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T308 | portals (harness): the quote page's close button (JOB-019) i | MERGE_PENDING | 1 | 72 min | 14:42Z |  |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | done | 2 | 28 min | 14:39Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
@@ -95,9 +96,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T497 (lease until 2026-11-16T18:07:32Z)
 - lane 3: T101 (lease until 2026-11-16T18:09:12Z)
-- lane 4: T521 (lease until 2026-11-16T18:06:25Z)
 - lane 6: T105 (lease until 2026-11-16T17:07:02Z)
 - lane 7: T475 (lease until 2026-11-16T18:08:03Z)
 
 ## Last usage reading
-- {"task": "T477", "at": "2026-11-16T14:55:22Z", "cache_creation_input_tokens": 226698, "input_tokens": 192, "output_tokens": 74296, "cache_read_input_tokens": 9165004}
+- {"task": "T521", "at": "2026-11-16T15:09:58Z", "input_tokens": 84, "output_tokens": 22854, "cache_creation_input_tokens": 104806, "cache_read_input_tokens": 2145978}
