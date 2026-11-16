@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-16T16:50:23Z by runner ac200c8489e3 (actions).
+Updated 2026-11-16T16:50:32Z by runner ac200c8489e3 (actions).
 
-**Building: T324 in progress since 16:31Z; 365 of 536 done; week 96% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T361 in progress since 16:50Z; 365 of 536 done; week 96% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 365 of 536 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 4: T105 claimed 16:15Z, lease until 19:49Z; lane 6: T303 claimed 16:19Z, lease until 19:19Z; lane 7: T475 claimed 15:08Z, lease until 19:42Z
-- **Week:** 96% used, -3.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T361 claimed 16:50Z, lease until 19:50Z; lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 4: T105 claimed 16:15Z, lease until 19:49Z; lane 6: T303 claimed 16:19Z, lease until 19:19Z; lane 7: T475 claimed 15:08Z, lease until 19:42Z
+- **Week:** 96% used, -2.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:50Z, 0 min before this update
 - **Keeper:** last ran 16:48Z, next wake 19:17Z
 
@@ -49,7 +49,6 @@ Updated 2026-11-16T16:50:23Z by runner ac200c8489e3 (actions).
 | T464 | server and portals: the sign-up capability step is served af | done | 1 | 83 min | 19:56Z |  |
 | T495 | e2e: the served Confirm and pay journey in the browser again | done | 1 | 44 min | 18:21Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | done | 3 | 35 min | 18:05Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
-| T261 | portals and server (harness): the served Confirm route under | done | 6 | 85 min | 16:50Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 
 ### Plan and harness merges on main
 - none
@@ -85,7 +84,7 @@ Updated 2026-11-16T16:50:23Z by runner ac200c8489e3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T16:25:47Z (week)): week: 197.1M used, -3.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T23:42:21Z.
+- Pacing (session_reading 2026-11-16T16:48:36Z (week)): week: 196.6M used, -2.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T01:13:44Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -100,7 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T361 (lease until 2026-11-16T19:50:18Z)
 - lane 2: T324 (lease until 2026-11-16T19:31:55Z)
 - lane 4: T105 (lease until 2026-11-16T19:49:48Z)
 - lane 6: T303 (lease until 2026-11-16T19:19:40Z)
