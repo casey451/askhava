@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T04:02:05Z by runner a21eac18f73d (actions).
+Updated 2026-11-16T04:06:43Z by runner 19d98135f0a7 (actions).
 
 **Idle since 03:38Z; 355 of 532 done; week 90% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-16T04:02:05Z by runner a21eac18f73d (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:38Z (no task in progress)
 - **Week:** 90% used, 36.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:34Z, 27 min before this update
+- **Last run:** 03:34Z, 32 min before this update
 - **Keeper:** last ran 03:33Z, next wake 09:13Z
 
 ## Needs attention
-- BLOCKED T517: stage proof missing
+- BLOCKED T517: stage proof missing (the proof waits for: T100 is QUEUED)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T517: stored context_pct 1% but it measures 5%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+121 on DONE tasks); first: T517: stored context_pct 1% but it measures 5%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
