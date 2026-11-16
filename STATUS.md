@@ -1,24 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-16T03:34:35Z by runner a21eac18f73d (manual).
+Updated 2026-11-16T04:02:05Z by runner a21eac18f73d (actions).
 
-**Idle since 03:25Z; 355 of 532 done; week 90% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 03:38Z; 355 of 532 done; week 90% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 355 of 532 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 03:25Z (no task in progress)
+- **Lane:** idle since 03:38Z (no task in progress)
 - **Week:** 90% used, 36.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:33Z, 0 min before this update
+- **Last run:** 03:34Z, 27 min before this update
 - **Keeper:** last ran 03:33Z, next wake 09:13Z
 
 ## Needs attention
+- BLOCKED T517: stage proof missing
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T517: stored context_pct 1% but it measures 5%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T517 | Stage 4 cleanup, part 1: duplicate functions in server, port | MERGE_PENDING | 1 | 84 min | 03:25Z |  |
+| T517 | Stage 4 cleanup, part 1: duplicate functions in server, port | proof_missing | 1 | 84 min | 03:25Z |  |
 | T099 | Journey J2 (business) and its variants, keyboard-only, with  | done | 2 | 92 min | 01:45Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | done | 3 | 30 min | 01:42Z | Second review of head 85baf148e5f34e6d4d48b8c0a54b3e8ff92fdbdd found FINDINGS after the one fix round: scripts/check_dup |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 2 | 40 min | 00:58Z |  |
@@ -49,7 +50,7 @@ Updated 2026-11-16T03:34:35Z by runner a21eac18f73d (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 286 of 733 (39.0%) · partial 290 · unstarted 157
+**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
 **Tasks merged (throughput only):** 355 of 532
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -57,23 +58,23 @@ Updated 2026-11-16T03:34:35Z by runner a21eac18f73d (manual).
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 10 | 14 | 5 | 29 |
 | businesses | 19 | 36 | 3 | 58 |
-| calls | 12 | 12 | 1 | 25 |
+| calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 18 | 33 | 1 | 52 |
+| fees | 22 | 29 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 34 | 14 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 22 | 21 | 2 | 45 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 11 | 18 | 2 | 31 |
+| privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 10 | 40 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
