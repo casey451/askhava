@@ -5,6 +5,7 @@
 //! answers which categories are on. Other crates reach it only through [`api`].
 
 pub mod api;
+mod category_list;
 mod loader;
 mod markets;
 mod models;

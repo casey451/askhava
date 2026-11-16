@@ -8,7 +8,8 @@
 // web binary as ASKHAVA_TEST_CONTROL_SECRET; requests go to the config's `baseURL`. Specs import
 // `test` and `expect` from here instead of from @playwright/test. `sentEmails` alone goes to the
 // Python stand-in's own origin (STAND_IN_ORIGIN, its /_stand_in/resend/emails route) and sends no
-// bearer secret. Fake data only.
+// bearer secret; so do `setFaults` and `clearFaults` (its /_stand_in/faults route, D-3940), and the
+// fixture clears every fault when each test ends, so each test starts and ends with none. Fake data only.
 import { test as base, expect, type APIRequestContext } from "@playwright/test";
 
 /** One text the Twilio stand-in accepted, as its Messages list returns it. */
@@ -40,6 +41,16 @@ export interface SentFilter {
   key?: string;
 }
 
+/** Sticky stand-in vendor faults (D-3844, D-3940); `null` clears one, an absent vendor is unchanged. */
+export interface Faults {
+  /** `fail`: every text send answers Twilio's 500; `suspended`: refused with error 21606. */
+  twilio?: "fail" | "suspended" | null;
+  /** `unavailable`: every Stripe request answers a 503; `drop`: the connection closes unanswered. */
+  stripe?: "unavailable" | "drop" | null;
+  /** `529`: every Claude API message request answers overloaded. */
+  ai?: "529" | null;
+}
+
 /** The test-control router, reached with the per-run bearer secret (SEC-035). */
 export interface Control {
   /** The app's current time, ISO 8601 in UTC. */
@@ -50,6 +61,14 @@ export interface Control {
   sentTexts(filter?: SentFilter): Promise<SentText[]>;
   /** The emails the stand-in Resend accepted, oldest first; `to` keeps one address's emails. */
   sentEmails(filter?: { to?: string }): Promise<SentEmail[]>;
+  /** Sets sticky stand-in vendor faults; returns the faults now set. */
+  setFaults(faults: Faults): Promise<Faults>;
+  /** Clears every stand-in vendor fault. */
+  clearFaults(): Promise<void>;
+}
+
+interface FaultState {
+  faults: Faults;
 }
 
 interface Now {
@@ -77,6 +96,13 @@ export interface ControlOptions {
 async function readJson<T>(reply: Awaited<ReturnType<APIRequestContext["get"]>>, what: string): Promise<T> {
   if (!reply.ok()) {
     throw new Error(`test-control ${what} answered ${String(reply.status())}; is the web binary built with --features askhava-core/test-control and given the same secret?`);
+  }
+  return (await reply.json()) as T;
+}
+
+async function standInJson<T>(reply: Awaited<ReturnType<APIRequestContext["get"]>>, what: string): Promise<T> {
+  if (!reply.ok()) {
+    throw new Error(`stand-in /_stand_in/${what} answered ${String(reply.status())}; is the Python stand-in (stand_ins/server.py) running on ${STAND_IN_ORIGIN}?`);
   }
   return (await reply.json()) as T;
 }
@@ -111,6 +137,14 @@ function makeControl(request: APIRequestContext, secret: string): Control {
       }
       return ((await reply.json()) as EmailLog).emails;
     },
+    async setFaults(faults: Faults) {
+      const reply = await request.post(`${STAND_IN_ORIGIN}/_stand_in/faults`, { data: faults });
+      return (await standInJson<FaultState>(reply, "faults")).faults;
+    },
+    async clearFaults() {
+      const reply = await request.delete(`${STAND_IN_ORIGIN}/_stand_in/faults`);
+      await standInJson<FaultState>(reply, "faults");
+    },
   };
 }
 
@@ -121,7 +155,13 @@ export const test = base.extend<ControlFixtures, ControlOptions>({
     if (controlSecret.length < 32) {
       throw new Error("set controlSecret in the Playwright config to the run's ASKHAVA_TEST_CONTROL_SECRET");
     }
-    await use(makeControl(request, controlSecret));
+    const control = makeControl(request, controlSecret);
+    await control.clearFaults();
+    try {
+      await use(control);
+    } finally {
+      await control.clearFaults();
+    }
   },
 });
 
