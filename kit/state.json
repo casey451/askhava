@@ -20534,7 +20534,7 @@
     "T100",
     "T428"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "terms-homeowner-business",
    "type": "docs",
@@ -20552,8 +20552,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains \"subcontract\"; check_legal_docs.py bans \\bsubcontract\\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains \"subcontract\"; check_legal_docs.py bans \\bsubcontract\\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additions. Observed: \"ERROR business-terms-summary-es.md: WORD-022/WORD-023 wording: 'subcontract'\", Errors: 1. Proposed plan fix: let T111 add REQUIRED[\"business-terms-summary-es.md\"] with the WORD-002 and TERMS-026 tuples business-terms.md already uses (~5 lines). Reviewer confirmed, and noted trace_spec.py:77 also bans \\bsubcontrat\\w*, so the Spanish draft must avoid \"subcontrato\" or get its own exemption. Also noted: TD-TERMS-05 says 4 days (D-223) but TERMS-022 says 2 days (D-371); drafts follow 2 days.",
+   "reason": null,
+   "last_failure": "PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains \"subcontract\"; check_legal_docs.py bans \\bsubcontract\\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additions. Observed: \"ERROR business-terms-summary-es.md: WORD-022/WORD-023 wording: 'subcontract'\", Errors: 1. Proposed plan fix: let T111 add REQUIRED[\"business-terms-summary-es.md\"] with the WORD-002 and TERMS-026 tuples business-terms.md already uses (~5 lines). Reviewer confirmed, and noted trace_spec.py:77 also bans \\bsubcontrat\\w*, so the Spanish draft must avoid \"subcontrato\" or get its own exemption. Also noted: TD-TERMS-05 says 4 days (D-223) but TERMS-022 says 2 days (D-371); drafts follow 2 days.\nre-queued after plan fix D-3968: D-3968 (#883) lets T111 add the REQUIRED entry for business-terms-summary-es.md (WORD-002, TERMS-026) to check_legal_docs.py; Opus triage confirmed the plan gap",
    "history": [
     {
      "attempt": 1,
@@ -20577,6 +20577,21 @@
        "turns": 6
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-16T19:17:16Z",
+     "reason": "D-3968 (#883) lets T111 add the REQUIRED entry for business-terms-summary-es.md (WORD-002, TERMS-026) to check_legal_docs.py; Opus triage confirmed the plan gap",
+     "by": "manual-f1c56ef1cfde",
+     "was": "plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains \"subcontract\"; check_legal_docs.py bans \\bsubcontract\\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3968",
+     "plan_since": "2026-11-16T16:17:19Z",
+     "plan_base": "f91e570d42ac6e693724e6257d9b71128e89f0af",
+     "plan_head": "dbab0ab44a3580fe053c46961ca3a5599e684cb9",
+     "plan_then": "4587993646cadba21f34cebd66d74bfa1b1347e663199fd26b1e6124f7fe4953",
+     "plan_now": "acd577d25655db3e1addaa93a0539197b17c02ddfb27f1ea8e95922bbb4938be"
     }
    ]
   },
@@ -68623,7 +68638,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T19:16:40Z",
+ "updated_at": "2026-11-16T19:17:16Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -68722,7 +68737,7 @@
   ]
  },
  "runner_sha": "dbab0ab44a3580fe053c46961ca3a5599e684cb9",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "b9ee6e1c074552e5b4d71620c82cd1866b66dc3c",
