@@ -78,8 +78,9 @@ pub(crate) fn display_name(language: Language) -> &'static str {
     }
 }
 
-/// The brand's short name in `language`: every subject opens `<short_name>:` (WORD-008, D-1932).
-pub(crate) fn short_name(language: Language) -> &'static str {
+/// The brand's short name in `language`: every subject opens `<short_name>:` (WORD-008, D-1932);
+/// `picks`' emails open with it too.
+pub fn short_name(language: Language) -> &'static str {
     match language {
         Language::En => brand().short_name(),
         Language::Es => brand().es().short_name(),

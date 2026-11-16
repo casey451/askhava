@@ -12,7 +12,6 @@
 //! listed: a sole CANCEL or CANCELAR still pauses her live jobs and withdraws a waiting pick as
 //! `on_opt_out` does, but queues no `intake.opted_out_live_job`.
 
-use askhava_jobs::api::current;
 use askhava_messaging::api::{NewText, Relation, enqueue, render};
 use askhava_ops::api::Actor;
 use askhava_picks::api::withdraw_paused;
@@ -22,7 +21,7 @@ use sqlx::{Connection, PgConnection};
 
 use crate::models::{self, IntakeError};
 use crate::rules::{CONSENT_CALL_TEMPLATE, CONSENT_TEMPLATE, Settings, language_from_code};
-use crate::service::{OptOutJobs, TextIn, audit_action, sha256_hex, sole_cancel};
+use crate::service::{OptOutJobs, TextIn, audit_action, live_jobs, sha256_hex, sole_cancel};
 
 /// CON-001, CON-015, CON-005, TXT-011, D-2629: after the provider's START took contact
 /// `msg.contact` off the opt-out list, queues her open request's consent text again (the
@@ -128,16 +127,4 @@ pub async fn pause_on_repeat_cancel(
         paused: true,
         task: None,
     }))
-}
-
-/// The request's jobs before a final status (CON-028's "live job"), as `on_opt_out` reads them.
-async fn live_jobs(db: &mut PgConnection, conversation: Uuid) -> Result<Vec<Uuid>, IntakeError> {
-    let mut live = Vec::new();
-    for job in models::request_jobs(db, conversation).await? {
-        let status = current(db, job).await.map_err(|_| IntakeError::Job)?.status;
-        if !status.is_final() {
-            live.push(job);
-        }
-    }
-    Ok(live)
 }

@@ -20,7 +20,7 @@
 //! [`crate::confirm_reminders::lapse_text`].
 
 use askhava_jobs::api::{JobStatus, current, restart_timer};
-use askhava_messaging::api::Language;
+use askhava_messaging::api::{Language, short_name};
 use askhava_ops::api::Actor;
 use askhava_quotes::api::page_quotes;
 use jiff::Timestamp;
@@ -30,7 +30,6 @@ use sqlx::types::Uuid;
 
 use askhava_core::api::Guarded;
 
-use crate::confirm_reminders::short;
 use crate::models::{self, PicksError};
 use crate::service::{PagePick, page_pick};
 use crate::status::{PickStatus, awaits_charge, awaits_confirm};
@@ -355,7 +354,7 @@ async fn record(
 /// English or Spanish, built from the brand file (D-1971).
 #[must_use]
 pub fn backup_text(name: &str, backup: &str, language: Language) -> String {
-    let b = short(language);
+    let b = short_name(language);
     match language {
         Language::En => format!(
             "{b}: {name} couldn't take it, so your backup, {backup}, has your pick now. We'll text you when they accept."

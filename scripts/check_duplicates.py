@@ -34,6 +34,14 @@ KEEP: tuple[tuple[frozenset[str], str], ...] = (
         frozenset({"app/licensing/src/daily_lists.rs name", "app/licensing/src/own_record.rs code"}),
         "two enums' strings that only look alike: DailyList's settings name and RecordList's adapter path",
     ),
+    (
+        frozenset({"app/businesses/src/backup_address.rs code_of", "app/businesses/src/email_verification.rs code_of"}),
+        "each keys its code with its own CODE_ACTION (backup_code, mailbox_code), so the codes never cross",
+    ),
+    (
+        frozenset({"app/messaging/src/mailbox_code_mail.rs new", "app/messaging/src/signin_mail.rs new"}),
+        "constructors of two different mailers (Self is MailboxCodeSender, SignInLinkSender)",
+    ),
 )
 
 FN_NAME = re.compile(r"\bfn\s+(\w+)")

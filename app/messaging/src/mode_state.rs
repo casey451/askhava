@@ -35,8 +35,8 @@ use sqlx::{Connection, PgConnection, PgPool};
 use thiserror::Error;
 
 use crate::email::{
-    EmailClass, MailboxKind, NewEmail, Notice, PostalAddress, Recipient, homeowner_email,
-    queue_email,
+    EmailClass, MailboxKind, NewEmail, Notice, PostalAddress, Recipient, audience_kind,
+    homeowner_email, queue_email,
 };
 use crate::mode::{LaunchChannel, Line, Lines, ModeError, NumberState, SendingNumber};
 use crate::models::EmailError;
@@ -246,20 +246,12 @@ async fn change(
     Ok(true)
 }
 
-/// The stored column value of an audience.
-fn audience_code(audience: Audience) -> &'static str {
-    match audience {
-        Audience::Homeowner => "homeowner",
-        Audience::Business => "business",
-    }
-}
-
 /// `audience`'s latest stored mode, or its default.
 async fn stored(db: &mut PgConnection, audience: Audience) -> Result<Stored, ModeStateError> {
     let row = sqlx::query!(
         "SELECT texting_on, line_state, suspended_since, launch_channel \
          FROM messaging.mode_state WHERE audience = $1 ORDER BY seq DESC LIMIT 1",
-        audience_code(audience)
+        audience_kind(audience)
     )
     .fetch_optional(db)
     .await
@@ -308,7 +300,7 @@ async fn insert(
     sqlx::query_scalar!(
         "INSERT INTO messaging.mode_state (audience, texting_on, line_state, suspended_since, \
          launch_channel, actor_id, changed_at) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
-        audience_code(audience),
+        audience_kind(audience),
         s.texting_on,
         state,
         since as _,

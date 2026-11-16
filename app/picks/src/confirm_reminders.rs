@@ -15,7 +15,7 @@
 //! PICK-046's [`lapse_text`] applies.
 
 use askhava_core::api::{add_business_minutes, arizona_time, brand, is_business_hours};
-use askhava_messaging::api::Language;
+use askhava_messaging::api::{Language, short_name};
 use askhava_ops::api::Actor;
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -223,20 +223,13 @@ fn more_time(minutes: u32, language: Language) -> String {
     }
 }
 
-pub(crate) fn short(language: Language) -> &'static str {
-    match language {
-        Language::En => brand().short_name(),
-        Language::Es => brand().es().short_name(),
-    }
-}
-
 /// PICK-037, D-380: the reminder's subject for job `job` ending at `due`, `left` business minutes
 /// after it goes; then the Hold line while a HOLD is offered. The Hold line's length is the
 /// business minutes from `due` to `r.hold_to`, which [`reminders`] sets to `due` plus
 /// [`WindowRules::hold_minutes`], so the words follow the setting (D-1974).
 #[must_use]
 pub fn reminder_lines(job: u32, due: Timestamp, r: Reminder, language: Language) -> Vec<String> {
-    let (b, by) = (short(language), clock(due));
+    let (b, by) = (short_name(language), clock(due));
     let minutes = business_minutes(r.at, due);
     let left = time_left(minutes, language);
     let quedan = if minutes == 60 || minutes == 1 {
@@ -318,7 +311,7 @@ pub async fn lapse(
 /// other quotes (none gives the "we'll text you" text) and `link` the quote page.
 #[must_use]
 pub fn lapse_text(name: &str, lines: &[String], link: &str, language: Language) -> String {
-    let b = short(language);
+    let b = short_name(language);
     let list = lines.join("\n");
     match (lines.is_empty(), language) {
         (true, Language::En) => format!(
@@ -350,7 +343,7 @@ pub fn owner_told(confirmed_by: Uuid, owner: Uuid) -> bool {
 /// a $0 fee says no fee was due instead of "paid ... $0".
 #[must_use]
 pub fn member_confirmed_line(job: u32, fee_cents: i64, member: &str, language: Language) -> String {
-    let (b, fee) = (short(language), dollars(fee_cents));
+    let (b, fee) = (short_name(language), dollars(fee_cents));
     match (fee_cents > 0, language) {
         (true, Language::En) => format!(
             "{b}: {member} confirmed job {job} and paid the introduction fee by job size, {fee}. You can see the job in your portal."
