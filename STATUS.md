@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T17:02:34Z by runner 9931157d40df (actions).
+Updated 2026-11-16T17:02:57Z by runner 9931157d40df (actions).
 
 **Building: T361 in progress since 16:50Z; 366 of 536 done; week 97% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 366 of 536 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T361 claimed 16:50Z, lease until 19:50Z; lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 5: T559 claimed 16:58Z, lease until 19:58Z; lane 6: T303 claimed 16:19Z, lease until 20:01Z; lane 7: T475 claimed 15:08Z, lease until 19:42Z
+- **Lane:** lane 1: T361 claimed 16:50Z, lease until 19:50Z; lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 5: T559 claimed 16:58Z, lease until 19:58Z; lane 6: T303 claimed 16:19Z, lease until 20:01Z
 - **Week:** 97% used, -4.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:01Z, 0 min before this update
+- **Last run:** 17:01Z, 1 min before this update
 - **Keeper:** last ran 16:56Z, next wake 19:21Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-16T17:02:34Z by runner 9931157d40df (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T475 | messaging, quotes, payments and ai: the readers behind the O | MERGE_PENDING | 1 | 114 min | 17:02Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | MERGE_PENDING | 3 | 38 min | 16:53Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T473 | Pin backup-runner's Postgres service image by digest | done | 1 | 17 min | 16:46Z |  |
 | T101 | site: base layout in the design spec's look, works without J | MERGE_PENDING | 3 | 80 min | 16:39Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -104,7 +105,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T324 (lease until 2026-11-16T19:31:55Z)
 - lane 5: T559 (lease until 2026-11-16T19:58:40Z)
 - lane 6: T303 (lease until 2026-11-16T20:01:35Z)
-- lane 7: T475 (lease until 2026-11-16T19:42:10Z)
 
 ## Last usage reading
-- {"task": "T105", "at": "2026-11-16T16:53:29Z", "output_tokens": 20573, "cache_creation_input_tokens": 129279, "input_tokens": 84, "cache_read_input_tokens": 2317060}
+- {"task": "T475", "at": "2026-11-16T17:02:33Z", "input_tokens": 303, "output_tokens": 89526, "cache_read_input_tokens": 9623824, "cache_creation_input_tokens": 354112}
