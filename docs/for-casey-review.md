@@ -3118,3 +3118,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The task that builds the numbers behind the owner-portal flags stopped because the shared reader of the audit log gave back only which record and when, not which answer was logged, so it could not count the day-3 "no" and "other" answers its flag needs.
 - The fix lets that task add the answer's code name (like `day3_no`, never anything personal) to the reader's results. Nothing that already uses the reader changes, and no test or privacy rule was loosened.
 - Nothing needs you now.
+
+## T221: the legal and data pages (D-4027)
+
+- laftly.com now has /terms, /privacy, /sms-terms, /your-data and /business-data, with Spanish data pages at /es/your-data and /es/business-data. The legal pages show the drafts as they are, with the "Draft" note and version line; nothing is published until your go.
+- Before publishing you fill in the business retention days in the privacy policy; the business data page shows the same bracket until then, and a test keeps the two the same.
+- The Spanish data pages are drafts for a native speaker to check before Spanish goes on.
+- Nothing needs you now.
