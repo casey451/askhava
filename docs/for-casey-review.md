@@ -3118,3 +3118,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The task that builds the numbers behind the owner-portal flags stopped because the shared reader of the audit log gave back only which record and when, not which answer was logged, so it could not count the day-3 "no" and "other" answers its flag needs.
 - The fix lets that task add the answer's code name (like `day3_no`, never anything personal) to the reader's results. Nothing that already uses the reader changes, and no test or privacy rule was loosened.
 - Nothing needs you now.
+
+## A changed business phone number needs its texting box ticked again (T373, D-4039, November 16)
+
+- When a business changes a phone's number, the texting agreement given for the old number no longer counts. Job cards and notices for a business that chose text only go by email until someone ticks the texting box for the new number.
+- A box shown for the old number and sent after the change is turned down, so a tick never counts for a number the person did not see.
+- One leftover for a later task: the list of phones that may get a sign-in code still counts the old agreement after a member's own extra phone changes number. It sends nothing extra today beyond the sign-in code that member asked for, but it should follow the same rule.
+- Nothing needs you now.
