@@ -5622,3 +5622,4 @@
 - 2026-11-16T12:17:37Z runner b7a09cb3f828 (actions): {}
 - 2026-11-16T12:21:31Z runner b7a09cb3f828 (actions): {"T100": "BLOCKED -> DONE", "T517": "BLOCKED -> DONE"}
 - 2026-11-16T12:21:50Z runner b7a09cb3f828 (actions): {"T101": "QUEUED -> IN_PROGRESS"}; T101 estimated 1.3M tokens (calibrated); week has 10.0M left (no five-hour budget, D-3056) (session_reading 2026-11-16T12:17:14Z (week)); running to the limit (model window, D-2225), claimed
+- 2026-11-16T12:22:18Z runner b7a09cb3f828 (actions): {"T519": "QUEUED -> IN_PROGRESS"}; T519 estimated 197k tokens (calibrated); week has 8.7M left (no five-hour budget, D-3056) after 1.3M still running in another lane (session_reading 2026-11-16T12:17:14Z (week)); running to the limit (model window, D-2225), claimed
