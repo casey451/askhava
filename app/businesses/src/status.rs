@@ -59,6 +59,18 @@ impl AccountStatus {
         Self::ALL.into_iter().find(|s| s.code() == code)
     }
 
+    /// Whether a business in this status counts toward its towns' and trades' OPS-006 coverage:
+    /// only `Active` (T105). `service` asks this instead of comparing a status (SEC-031).
+    #[must_use]
+    pub const fn counts_for_coverage(self) -> bool {
+        match self {
+            Self::Active => true,
+            Self::Pending | Self::Paused | Self::Waitlist | Self::NeedsReview | Self::Removed => {
+                false
+            }
+        }
+    }
+
     /// Whether a business in this status may receive job cards: only `Active` (CARD-001,
     /// CARD-016). `quotes` asks this instead of comparing a status (SEC-031).
     #[must_use]

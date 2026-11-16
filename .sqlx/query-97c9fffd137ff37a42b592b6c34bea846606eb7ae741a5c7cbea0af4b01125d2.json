@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH r AS (INSERT INTO ops.trade_request (trade, month, requests)\n                 VALUES ($1, date_trunc('month', $3 AT TIME ZONE 'America/Phoenix')::date, $2)\n                 ON CONFLICT (trade, month) DO UPDATE SET requests = EXCLUDED.requests)\n               , c AS (INSERT INTO ops.coverage (scope, code, active, counted_at)\n                 SELECT 'trade', $1, 0, $3 WHERE $2 > 0\n                 ON CONFLICT (scope, code) DO NOTHING RETURNING id)\n               SELECT id AS \"id!\" FROM c\n               UNION ALL SELECT id FROM ops.coverage WHERE scope = 'trade' AND code = $1\n                 AND active < 2 AND $2 > 0",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "97c9fffd137ff37a42b592b6c34bea846606eb7ae741a5c7cbea0af4b01125d2"
+}

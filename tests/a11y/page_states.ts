@@ -367,6 +367,29 @@ const CAPABILITY_STATES: readonly PageState[] = [
   ["capability step, one-page form", "Which towns do you work in?", "Save and continue", businessSql("")],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CAPABILITY_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const OWNER_SIGNIN_ROUTE = "/owner/sign-in";
+const OWNER_STEP_UP_ROUTE = "/owner/step-up";
+
+/** The owner sign-in form (T303, SEC-005): no seed, the plain path; no passkey is registered. */
+const OWNER_SIGNIN_STATES: readonly PageState[] = [
+  ["owner sign-in form", "The 6-digit code from your authenticator app, or one of your paper recovery codes.", "That didn't work", ""],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_SIGNIN_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/**
+ * The owner's step-up form (T303, SEC-043): a fake owner session (its own `portals.owner_session`
+ * row, so `owner_principal` admits it) for the token whose SHA256 is `:hash`.
+ */
+const OWNER_STEP_UP_STATES: readonly PageState[] = [
+  [
+    "owner step-up form",
+    "Settings, refunds and switches need a new code from your authenticator app first.",
+    "That code didn't work",
+    `WITH s AS (INSERT INTO portals.session (token_sha256, realm, actor_id, created_at, expires_at)
+      VALUES (decode(':hash', 'hex'), 'owner', gen_random_uuid(), now(), now() + interval '30 minutes') RETURNING id)
+    INSERT INTO portals.owner_session (session_id, last_seen_at, factor_at) SELECT id, now(), now() FROM s`,
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_STEP_UP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -383,6 +406,8 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: CONFIRM_ROUTE, seed: portalSeed(true), states: CONFIRM_STATES },
   { route: INBOX_ROUTE, seed: portalSeed(false), states: INBOX_STATES },
   { route: CAPABILITY_ROUTE, seed: portalSeed(false), states: CAPABILITY_STATES },
+  { route: OWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: OWNER_SIGNIN_STATES },
+  { route: OWNER_STEP_UP_ROUTE, seed: portalSeed(false), states: OWNER_STEP_UP_STATES },
 ];
 
 /** Every state of every page, in entry order. */
