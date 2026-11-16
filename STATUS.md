@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T18:59:45Z by runner 1be17e41fef0 (actions).
+Updated 2026-11-16T19:02:47Z by runner bb27a5c09bbd (actions).
 
 **Building: T324 in progress since 17:53Z; 370 of 540 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-16T18:59:45Z by runner 1be17e41fef0 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T324 claimed 17:53Z, lease until 21:35Z; lane 3: T487 claimed 18:57Z, lease until 21:57Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
 - **Week:** 0% used, 191.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:59Z, 0 min before this update
+- **Last run:** 19:00Z, 2 min before this update
 - **Keeper:** last ran 18:59Z, next wake 21:37Z
 
 ## Needs attention
 - BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 13 problem(s) on tasks still to run (+128 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 13 problem(s) on tasks still to run (+124 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -63,8 +63,8 @@ Updated 2026-11-16T18:59:45Z by runner 1be17e41fef0 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 315 of 733 (43.0%) · partial 273 · unstarted 145
-**Tasks merged (throughput only):** 370 of 540
+**Requirements verified:** 316 of 733 (43.1%) · partial 272 · unstarted 145
+**Tasks merged (throughput only):** 370 of 539
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -82,7 +82,7 @@ Updated 2026-11-16T18:59:45Z by runner 1be17e41fef0 (actions).
 | ops-recovery | 1 | 19 | 34 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
+| quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
