@@ -20748,7 +20748,7 @@
     "T100",
     "T428"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "terms-homeowner-business",
    "type": "docs",
@@ -20766,8 +20766,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "Review not approved after the one allowed fix round (head a170fa44b89727c74d6ec3159503b7f5b59c17e3). Drafts, clauses, D-3968 script lines, count 9->10, fees, brand and decisions D-3957..D-3959 judged right; the three attempt-1 gaps (cents/\"d\u00f3lares\" amounts, Spanish mejor/verificad/examinad, percent forms) and round-1 findings (Spanish licencia/acceso a datos/derecho de uso/compra de contacto/venta de informaci\u00f3n, plagas, confiables, \"porciento\", vacuous fee-list assertion) are fixed. Remaining gaps, tests/docs/test_terms_clauses.py:80-91 (BANNED_ES, TERMS-027): natural Spanish forms of the forbidden framing pass:\n- \"compra de informaci\u00f3n de contacto\" -> use \\bcompra\\s+de\\s+(?:(?:la\\s+)?informaci[o\u00f3]n\\s+de\\s+|(?:los\\s+)?datos\\s+de\\s+)?contacto\\w*\n- \"derecho a usar\" / \"derecho a utilizar\" -> \\bderecho\\s+(?:de\\s+uso|a\\s+usar|a\\s+utilizar)\\b\n- \"venta de datos\" -> \\bventa\\s+de\\s+(?:la\\s+|los\\s+)?(?:informaci[o\u00f3]n|datos)\\b\n- \"acceso a sus datos\", \"acceso a la informaci\u00f3n del propietario\" -> \\bacceso\\s+a\\s+(?:los\\s+|sus\\s+|la\\s+)?(?:datos|informaci[o\u00f3]n|propietarios)\\b\n- \"cliente potencial\" singular (:80) -> \\bclientes?\\s+potencial(?:es)?\\b\nEach needs a planted sentence in test_planted_spanish_banned_word_fails; think further about other natural Spanish phrasings of every English BANNED/BUSINESS_BANNED idea before hand-in. Minor: module docstring (:15-21) and banned_es_hits docstring (:177) should mention license/data-access and pest words. Local prehandin --ally failed j2_keyboard.spec.ts:149 (business sign-up, \"Where your code goes\" not shown) 2-3 tests on the fix head; reviewer found no diff path to it (no Rust/page change; only homeowner-terms.md is compiled in, unchanged); likely the per-IP daily sign-up cap (app/portals/src/limits.rs:38) exhausted by repeated local ally runs on a persistent test DB.",
-   "last_failure": "Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, scope and the D-3968 script lines were all judged right; the gaps are in tests/docs/test_terms_clauses.py:\n1. :39 and :75 amounts_in drops the cents part, so \"$25.50\" reads as 2500 (an allowed fee); \"A $25.50 setup charge applies.\" in business-terms.md or \"Cargo extra de $25.50\" in the Spanish summary passes. Amounts written without \"$\" (\"59 d\u00f3lares\") are not checked either.\n2. :41 BANNED_ES holds only English words (\"vetted\", \"best\"); \"Los mejores negocios.\" or \"Negocios verificados.\" in the Spanish summary passes. Add Spanish forms (mejor, verificad/examinad, ranking words).\n3. :242-247 FEE-002 catches only the literal \"percentage\"/\"porcentaje\"; \"10 %\", \"10%\", \"10 por ciento\", \"10 percent\" in either business draft passes.\nEarlier fix round (D-3959) already covered: every $ amount must be a code-set figure, the Spanish numbered lines (4 horas, 60 minutos, 180 d\u00edas, 2 d\u00edas, se reembolsa completo), and banned Spanish words comisi/clientes potenciales/prospecto/commission outside the exempt English paragraphs. Worker noted: TD-TERMS-05 says 4 days (D-223) vs TERMS-022 2 days (D-371); drafts follow 2 days (D-3958). Local prehandin --ally showed a J2 keyboard business sign-up timeout (j2_keyboard.spec.ts:149) on the fix head that the first head did not have; the fix touched only a Python test and docs/decisions.md.",
+   "reason": null,
+   "last_failure": "Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, scope and the D-3968 script lines were all judged right; the gaps are in tests/docs/test_terms_clauses.py:\n1. :39 and :75 amounts_in drops the cents part, so \"$25.50\" reads as 2500 (an allowed fee); \"A $25.50 setup charge applies.\" in business-terms.md or \"Cargo extra de $25.50\" in the Spanish summary passes. Amounts written without \"$\" (\"59 d\u00f3lares\") are not checked either.\n2. :41 BANNED_ES holds only English words (\"vetted\", \"best\"); \"Los mejores negocios.\" or \"Negocios verificados.\" in the Spanish summary passes. Add Spanish forms (mejor, verificad/examinad, ranking words).\n3. :242-247 FEE-002 catches only the literal \"percentage\"/\"porcentaje\"; \"10 %\", \"10%\", \"10 por ciento\", \"10 percent\" in either business draft passes.\nEarlier fix round (D-3959) already covered: every $ amount must be a code-set figure, the Spanish numbered lines (4 horas, 60 minutos, 180 d\u00edas, 2 d\u00edas, se reembolsa completo), and banned Spanish words comisi/clientes potenciales/prospecto/commission outside the exempt English paragraphs. Worker noted: TD-TERMS-05 says 4 days (D-223) vs TERMS-022 2 days (D-371); drafts follow 2 days (D-3958). Local prehandin --ally showed a J2 keyboard business sign-up timeout (j2_keyboard.spec.ts:149) on the fix head that the first head did not have; the fix touched only a Python test and docs/decisions.md.\nre-queued after plan fix D-4038: D-4038 merged (#908): closed scan lists; Fable triage + 3 Opus review rounds",
    "history": [
     {
      "attempt": 1,
@@ -20852,6 +20852,19 @@
      "plan_head": "dbab0ab44a3580fe053c46961ca3a5599e684cb9",
      "plan_then": "4587993646cadba21f34cebd66d74bfa1b1347e663199fd26b1e6124f7fe4953",
      "plan_now": "acd577d25655db3e1addaa93a0539197b17c02ddfb27f1ea8e95922bbb4938be"
+    },
+    {
+     "at": "2026-11-16T22:46:30Z",
+     "reason": "D-4038 merged (#908): closed scan lists; Fable triage + 3 Opus review rounds",
+     "by": "manual-f6062d91e8b2",
+     "was": "Review not approved after the one allowed fix round (head a170fa44b89727c74d6ec3159503b7f5b59c17e3). Drafts, clauses, D-3968 script lines, count 9->10, fees, brand and decisions D-3957..D-3959 judged right; the three attempt-1 gaps (cents/\"d\u00f3lares\" amounts, Spanish mejor/verificad/examinad, percent forms) and round-1 findings (Spanish licencia/acceso a datos/derecho de uso/compra de contacto/venta de informaci\u00f3n, plagas, confiables, \"porciento\", vacuous fee-list assertion) are fixed. Remaining gaps, tests/docs/test_terms_clauses.py:80-91 (BANNED_ES, TERMS-027): natural Spanish forms of the forbidden framing pass:\n- \"compra de informaci\u00f3n de contacto\" -> use \\bcompra\\s+de\\s+(?:(?:la\\s+)?informaci[o\u00f3]n\\s+de\\s+|(?:los\\s+)?datos\\s+de\\s+)?contacto\\w*\n- \"derecho a usar\" / \"derecho a utilizar\" -> \\bderecho\\s+(?:de\\s+uso|a\\s+usar|a\\s+utilizar)\\b\n- \"venta de datos\" -> \\bventa\\s+de\\s+(?:la\\s+|los\\s+)?(?:informaci[o\u00f3]n|datos)\\b\n- \"acceso a sus datos\", \"acceso a la informaci\u00f3n del propietario\" -> \\bacceso\\s+a\\s+(?:los\\s+|sus\\s+|la\\s+)?(?:datos|informaci[o\u00f3]n|propietarios)\\b\n- \"cliente potencial\" singular (:80) -> \\bclientes?\\s+potencial(?:es)?\\b\nEach needs a planted sentence in test_planted_spanish_banned_word_fails; think further about other natural Spanish phrasings of every English BANNED/BUSINESS_BANNED idea before hand-in. Minor: module docstring (:15-21) and banned_es_hits docstring (:177) should mention license/data-access and pest words. Local prehandin --ally failed j2_keyboard.spec.ts:149 (business sign-up, \"Where your code goes\" not shown) 2-3 tests on the fix head; reviewer found no diff path to it (no Rust/page change; only homeowner-terms.md is compiled in, unchanged); likely the per-IP daily sign-up cap (app/portals/src/limits.rs:38) exhausted by repeated local ally runs on a persistent test DB.",
+     "attempts": 3,
+     "plan_fix": "D-4038",
+     "plan_since": "2026-11-16T21:32:39Z",
+     "plan_base": "6740aabac4ed85915b9f41d0e86ff388760d90c1",
+     "plan_head": "f4898b7c0718babe4712e00258b8ffeeedcd9acf",
+     "plan_then": "acd577d25655db3e1addaa93a0539197b17c02ddfb27f1ea8e95922bbb4938be",
+     "plan_now": "c49e786509397fad81270d831c343aac225d0159291fd6abacde5b67906dd6de"
     }
    ]
   },
@@ -69711,7 +69724,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T22:44:24Z",
+ "updated_at": "2026-11-16T22:46:30Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -69809,8 +69822,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "17080bb84ed6a05de68895d7e67e741b6c360ca9",
- "starter": "actions",
+ "runner_sha": "f4898b7c0718babe4712e00258b8ffeeedcd9acf",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "d77b0f992ca96caf1609fd69067fc5540b5af52f",
