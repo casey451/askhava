@@ -110,6 +110,9 @@ async fn texts_give_delivery_rates_and_failures_per_audience(pool: PgPool) {
     .await;
     text(&mut db, "homeowner", "failed", "2026-11-13T18:00:00Z", &[]).await;
     text(&mut db, "homeowner", "sent", "2026-11-02T17:00:00Z", d).await;
+    // Sent exactly at the week's start (counted) and at its end (left out).
+    text(&mut db, "homeowner", "sent", "2026-11-09T07:00:00Z", d).await;
+    text(&mut db, "homeowner", "sent", "2026-11-16T07:00:00Z", d).await;
     text(&mut db, "homeowner", "failed", "2026-11-17T17:00:00Z", &[]).await;
     text(&mut db, "homeowner", "queued", "2026-11-12T17:00:00Z", &[]).await;
     text(&mut db, "business", "sent", "2026-11-10T18:00:00Z", d).await;
@@ -119,9 +122,9 @@ async fn texts_give_delivery_rates_and_failures_per_audience(pool: PgPool) {
         .await
         .expect("texts");
     let home = TextFigures {
-        sent: 4,
-        delivered: 3,
-        delivered_per_mille: Some(750),
+        sent: 5,
+        delivered: 4,
+        delivered_per_mille: Some(800),
         failed: 2,
     };
     let biz = TextFigures {
@@ -358,15 +361,17 @@ async fn biz_044_cards_ended_without_a_quote_count_a_withdrawn_quote_as_none(poo
     let b = job_card(&mut db, withdrawn, "2026-11-07T17:00:00Z", "painting").await;
     quote(&mut db, withdrawn, b, true).await;
     job_card(&mut db, open, "2026-11-20T10:00:00Z", "painting").await;
+    // Sent exactly 24 hours before `to`: its window is over at `to`, so it has ended.
+    job_card(&mut db, Uuid::new_v4(), "2026-11-19T19:00:00Z", "painting").await;
     job_card(&mut db, Uuid::new_v4(), "2026-10-20T17:00:00Z", "painting").await;
     let (from, to) = (at("2026-11-01T07:00:00Z"), at("2026-11-20T19:00:00Z"));
     let got = card_figures(&mut *app(&pool).await, from, to)
         .await
         .expect("cards");
     let want = CardFigures {
-        cards: 4,
-        ended_without_quote: 2,
-        without_quote_per_mille: Some(500),
+        cards: 5,
+        ended_without_quote: 3,
+        without_quote_per_mille: Some(600),
     };
     assert_eq!(got, want);
     let (from, to) = empty();
@@ -420,9 +425,14 @@ async fn ops_009_spot_check_draws_ten_distinct_cards_of_the_month_or_fewer(pool:
     assert!(none.is_empty());
 }
 
-/// A charge attempt in `status` started at `started`; with `refund`, a refund in that status
-/// requested then.
-async fn charge(db: &mut PgConnection, status: &str, started: &str, refund: &str) {
+/// A charge attempt in `status`, decided at `decided` (none when empty), started at `started`;
+/// with `refund`, a refund in that status requested then.
+async fn charge(
+    db: &mut PgConnection,
+    (status, decided): (&str, &str),
+    started: &str,
+    refund: &str,
+) {
     let pick = Uuid::new_v4().to_string();
     seed(
         db,
@@ -435,9 +445,11 @@ async fn charge(db: &mut PgConnection, status: &str, started: &str, refund: &str
     .await;
     seed(
         db,
-        "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at)
-         VALUES ($1::uuid, 1, gen_random_uuid(), $2, $3::timestamptz)",
-        &[&pick, status, started],
+        "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at,
+           decided_at)
+         VALUES ($1::uuid, 1, gen_random_uuid(), $2, $3::timestamptz,
+           NULLIF($4, '')::timestamptz)",
+        &[&pick, status, started, decided],
     )
     .await;
     if !refund.is_empty() {
@@ -465,29 +477,34 @@ async fn charge(db: &mut PgConnection, status: &str, started: &str, refund: &str
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn payment_errors_count_failed_and_undecided_charges_and_failed_refunds(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
-    let inside = "2026-11-12T17:00:00Z";
-    for status in [
-        "declined",
-        "needs_action",
-        "unreachable",
-        "sent",
-        "processing",
-        "succeeded",
-    ] {
-        charge(&mut db, status, inside, "").await;
+    let (inside, decided) = ("2026-11-12T17:00:00Z", "2026-11-12T17:05:00Z");
+    for status in ["declined", "needs_action", "unreachable", "succeeded"] {
+        charge(&mut db, (status, decided), inside, "").await;
     }
-    charge(&mut db, "declined", "2026-11-02T17:00:00Z", "").await;
-    charge(&mut db, "succeeded", inside, "failed").await;
-    charge(&mut db, "succeeded", inside, "succeeded").await;
-    charge(&mut db, "succeeded", "2026-11-02T17:00:00Z", "failed").await;
+    for status in ["sent", "processing"] {
+        charge(&mut db, (status, ""), inside, "").await;
+    }
+    let (edge_from, edge_to) = ("2026-11-09T07:00:00Z", "2026-11-16T07:00:00Z");
+    charge(&mut db, ("declined", decided), edge_from, "").await;
+    let (early, later) = ("2026-11-02T17:00:00Z", "2026-11-17T17:00:00Z");
+    charge(&mut db, ("declined", later), edge_to, "").await;
+    charge(&mut db, ("declined", later), inside, "").await;
+    charge(&mut db, ("succeeded", edge_to), inside, "").await;
+    charge(&mut db, ("declined", early), early, "").await;
+    let paid = ("succeeded", decided);
+    for refund in ["failed", "canceled", "succeeded"] {
+        charge(&mut db, paid, inside, refund).await;
+    }
+    charge(&mut db, paid, early, "failed").await;
     let (from, to) = week();
+    assert_eq!((from, to), (at(edge_from), at(edge_to)));
     let got = payment_errors(&mut *app(&pool).await, from, to)
         .await
         .expect("payments");
     let want = PaymentErrors {
-        failed_charges: 3,
-        undecided_charges: 2,
-        failed_refunds: 1,
+        failed_charges: 4,
+        undecided_charges: 4,
+        failed_refunds: 2,
     };
     assert_eq!(got, want);
     let (from, to) = empty();
