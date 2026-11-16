@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T23:54:49Z by runner 99901600bfb1 (actions).
+Updated 2026-11-16T23:55:06Z by runner 7b601a2f6a07 (actions).
 
-**Building: T320 in progress since 23:06Z; 376 of 541 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T469 in progress since 23:44Z; 376 of 541 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 376 of 541 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T320 claimed 23:06Z, lease until 02:06Z; lane 2: T469 claimed 23:44Z, lease until 02:44Z; lane 3: T111 claimed 23:22Z, lease until 02:54Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 02:31Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
+- **Lane:** lane 2: T469 claimed 23:44Z, lease until 02:44Z; lane 3: T111 claimed 23:22Z, lease until 02:54Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 02:31Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
 - **Week:** 6% used, 176.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:54Z, 0 min before this update
 - **Keeper:** last ran 23:49Z, next wake 01:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 17 problem(s) on tasks still to run (+136 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+136 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -71,7 +71,7 @@ Updated 2026-11-16T23:54:49Z by runner 99901600bfb1 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 327 of 733 (44.6%) · partial 274 · unstarted 132
-**Tasks merged (throughput only):** 376 of 540
+**Tasks merged (throughput only):** 376 of 541
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -114,7 +114,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T320 (lease until 2026-11-17T02:06:28Z)
+- nothing
 - lane 2: T469 (lease until 2026-11-17T02:44:59Z)
 - lane 3: T111 (lease until 2026-11-17T02:54:49Z)
 - lane 4: T481 (lease until 2026-11-17T01:37:17Z)

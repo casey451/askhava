@@ -36315,7 +36315,7 @@
     "T105",
     "T487"
    ],
-   "status": "IN_PROGRESS",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "ops-alert-open-once",
    "type": "build",
@@ -36443,6 +36443,13 @@
    "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-16T22:33:45.519732Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":279,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T22:33:45.520363Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":281,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T22:33:45.521833Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":282,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T22:33:45.522625Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":283,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T22:33:45.727159Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":284,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2713  21 tests/e2e/confirm_served.spec.ts:80:1 \u203a TD-PICK-43 TD-TERMS-11 A11Y-001: the served page carries Can't take it, reloading stores no terms row, and axe is clean at 320, 768 and 1280 px (1.2s)\n  \u2718  22 tests/e2e/confirm_served.spec.ts:96:1 \u203a TD-FEE-45 FEE-016 TD-TERMS-11: a new card pressed twice charges once and stores one terms row (341ms)\n##[error]  1) tests/e2e/confirm_served.spec.ts:96:1 \u203a TD-FEE-45 FEE-016 TD-TERMS-11: a new card pressed twice charges once and stores one terms row \nCi failed at step: All five jobs passed",
    "runner_closed_prs": [
     906
+   ],
+   "stale_leases": [
+    {
+     "task": "T320",
+     "session": "actions-43971755304",
+     "expires": "2026-11-17T02:06:28Z"
+    }
    ]
   },
   {
@@ -69829,7 +69836,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T23:54:49Z",
+ "updated_at": "2026-11-16T23:55:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -69927,7 +69934,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "99901600bfb1a5de0619aaba83eb371b2f45b6d5",
+ "runner_sha": "7b601a2f6a07abe315864b077d3541cc305fad2f",
  "starter": "actions",
  "smoke_runs": [
   {
