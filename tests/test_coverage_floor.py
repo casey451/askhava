@@ -140,9 +140,13 @@ def test_a_per_file_floor_is_judged_on_that_files_branches_alone(tree: str) -> N
     rows = [_row(f"{tree}app/pay/src/a.rs", (60, 100)), _row(f"{tree}app/web/src/release.rs", (19, 20)),
             _row(f"{tree}app/web/src/page.rs", (0, 100))]
     (Path(tree) / "app" / "web" / "src").mkdir(parents=True)
+    (Path(tree) / "app" / "web" / "src" / "release.rs").write_text("", encoding="utf-8")
     assert cf.judge(FILE_FLOORS, _report(rows), tree) == [], "the 0% sibling file does not count against release.rs"
     rows[1] = _row(f"{tree}app/web/src/release.rs", (0, 0), (10, 10))
     assert cf.judge(FILE_FLOORS, _report(rows), tree) == [], "a file with no branches is judged by its lines"
+    rows[1] = _row(f"{tree}app/web/src/release.rs", (0, 0), (5, 10))
+    low = ["app/web/src/release.rs 50.00 is below the floor 95.0"]
+    assert cf.judge(FILE_FLOORS, _report(rows), tree) == low, "its lines, not a missing branch figure, decide"
 
 
 def test_a_report_measuring_a_floored_file_below_its_floor_fails(tree: str) -> None:
