@@ -19246,7 +19246,9 @@
    "id": "T221",
    "deps": [
     "T101",
-    "T348"
+    "T348",
+    "T102",
+    "T519"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19257,7 +19259,8 @@
   {
    "id": "T102",
    "deps": [
-    "T101"
+    "T101",
+    "T519"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19532,7 +19535,8 @@
     "T113",
     "T115",
     "T428",
-    "T114"
+    "T114",
+    "T519"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19797,7 +19801,9 @@
     "T490",
     "T491",
     "T496",
-    "T497"
+    "T497",
+    "T518",
+    "T520"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -44741,7 +44747,8 @@
    "deps": [
     "T133",
     "T313",
-    "T425"
+    "T425",
+    "T520"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -60484,6 +60491,40 @@
    "slug": "stage4-dedupe-server-portals",
    "type": "cleanup",
    "stage": "4"
+  },
+  {
+   "id": "T518",
+   "deps": [
+    "T105",
+    "T106",
+    "T204",
+    "T477"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "vendor-error-health-alerts",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T519",
+   "deps": [],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "check-copy-fixed-and-spanish",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T520",
+   "deps": [
+    "T101"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portal-email-colour-tokens",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -64193,7 +64234,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T00:29:23Z",
+ "updated_at": "2026-11-16T00:48:53Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -64291,8 +64332,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ff584ab99111f8a95e08b098e5c45cd6f6c660a4",
- "starter": "manual",
+ "runner_sha": "6af9b32740843c14d05d6a95694f8a450e6e127b",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "862c5fffa7afa8b50b2a7a716d06b3dcb9038fae",
