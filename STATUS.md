@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-16T16:17:28Z by runner d995af80b833 (actions).
+Updated 2026-11-16T16:19:49Z by runner 08bdf67cde48 (actions).
 
-**Building: T111 in progress since 16:17Z; 363 of 536 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T111 in progress since 16:17Z; 364 of 536 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 363 of 536 build tasks (owner gates not counted)
+- **Tasks done:** 364 of 536 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T111 claimed 16:17Z, lease until 19:17Z; lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 4: T105 claimed 16:15Z, lease until 19:15Z; lane 7: T475 claimed 15:08Z, lease until 18:56Z
 - **Week:** 95% used, 0.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:15Z, 2 min before this update
+- **Last run:** 16:19Z, 0 min before this update
 - **Keeper:** last ran 16:01Z, next wake 18:22Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T559 (since 2026-11-16T16:07:02Z, no attempt used; a plan change fixes it): T559: prompt kit/prompts/T559.md is missing; run scripts/gen_prompts.py; T559: branch claude/task/T559-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+123 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -24,7 +24,7 @@ Updated 2026-11-16T16:17:28Z by runner d995af80b833 (actions).
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T521 | catalog: each category's plural display name and a list read | done | 1 | 34 min | 15:09Z |  |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | MERGE_PENDING | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
-| T308 | portals (harness): the quote page's close button (JOB-019) i | MERGE_PENDING | 1 | 72 min | 14:42Z |  |
+| T308 | portals (harness): the quote page's close button (JOB-019) i | done | 1 | 72 min | 14:42Z |  |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | done | 2 | 28 min | 14:39Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T519 | Copy check (harness): template text a requirement fixes, and | done | 2 | 49 min | 14:07Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | QUEUED | 1 | 101 min | 14:05Z |  |
@@ -54,7 +54,7 @@ Updated 2026-11-16T16:17:28Z by runner d995af80b833 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 313 of 733 (42.7%) · partial 266 · unstarted 154
-**Tasks merged (throughput only):** 363 of 535
+**Tasks merged (throughput only):** 364 of 535
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -90,7 +90,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 6 of 144 done
+- stage 5: 7 of 144 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
