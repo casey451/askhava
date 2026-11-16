@@ -3016,3 +3016,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The nightly backup export must be locked to a key only you hold offline. That needs one new encryption library (`age`, a common open-source one); the backup task will confirm it passes the security and license checks when it is built.
 - The owner help page and its reply box, and the email-deferral figures on the scorecard, are now small tasks of their own so no task runs over its size limit.
 - Nothing needs you now. Before the first real backup, the export needs a key pair whose private half stays offline, an item for the account checklist.
+
+## Fable's pre-start checks of the remaining stage-5 tasks, group Y (D-3890, November 16)
+
+- The consent text's character counts in the spec were left over from the old name; the texts themselves were right, so only the counts changed (289 English, 297 Spanish, still 2 texts each).
+- Saving or changing a business's card, changing a notice or backup email address, the business team page and "Away until" each became a small task of their own, so no task runs past its size limit and no card detail is ever taken from a form.
+- Your "re-send the release" button in the owner portal had no task building it; a new task adds it.
+- The automated call for a critical safety alert now says only the alert kind and job number and never connects you to the homeowner by itself; the "Call from the Laftly number" button still does, on your press.
+- Nothing needs you now.
