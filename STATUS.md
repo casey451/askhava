@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T22:44:00Z by runner 17080bb84ed6 (actions).
+Updated 2026-11-16T22:44:24Z by runner 17080bb84ed6 (actions).
 
 **Building: T523 in progress since 22:07Z; 376 of 540 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-16T22:44:00Z by runner 17080bb84ed6 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T523 claimed 22:07Z, lease until 01:07Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 01:41Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
 - **Week:** 4% used, 183.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:42Z, 1 min before this update
-- **Keeper:** last ran 22:30Z, next wake 00:52Z
+- **Last run:** 22:44Z, 0 min before this update
+- **Keeper:** last ran 22:44Z, next wake 01:10Z
 
 ## Needs attention
 - BLOCKED T111: Review not approved after the one allowed fix round (head a170fa44b89727c74d6ec3159503b7f5b59c17e3). Drafts, clauses, D-3968 script lines, count 9->10, fees, brand and decisions D-3957..D-3959 judged right; the three attempt-1 gaps (cents/"dólares" amounts, Spanish mejor/verificad/examinad, percent forms) and round-1 findings (Spanish licencia/acceso a datos/derecho de uso/compra de contacto/venta de información, plagas, confiables, "porciento", vacuous fee-list assertion) are fixed. Remaining gaps, tests/docs/test_terms_clauses.py:80-91 (BANNED_ES, TERMS-027): natural Spanish forms of the forbidden framing pass:
