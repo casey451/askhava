@@ -1,23 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-15T23:59:47Z by runner ff584ab99111 (actions).
+Updated 2026-11-16T00:01:04Z by runner d8e9b6a9822f (actions).
 
-**Building: T516 in progress since 23:13Z; 352 of 502 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 00:01Z; 352 of 502 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 352 of 502 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T516 claimed 23:13Z, lease until 02:13Z
+- **Lane:** idle since 00:01Z (no task in progress)
 - **Week:** 69% used, 61.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:58Z, 1 min before this update
+- **Last run:** 00:00Z, 1 min before this update
 - **Keeper:** last ran 23:50Z, next wake 02:15Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 22 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 1 | 47 min | 00:01Z | review_missing on d8e9b6a9822f (D-3728): not proven reviewed or worker-made / (b) 927e34944d5f T516: scripts/check_dupli |
 | T515 | End-to-end harness: specs can deliver a validly signed Strip | MERGE_PENDING | 2 | 50 min | 23:47Z | PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemo |
 | T515 | End-to-end harness: specs can deliver a validly signed Strip | BLOCKED | 1 | 17 min | 22:11Z |  |
 | T099 | Journey J2 (business) and its variants, keyboard-only, with  | BLOCKED | 1 | 58 min | 21:21Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
@@ -93,7 +94,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T516 (lease until 2026-11-16T02:13:10Z)
 
 ## Last usage reading
-- {"task": "T515", "at": "2026-11-15T23:47:43Z", "output_tokens": 48999, "input_tokens": 185, "cache_creation_input_tokens": 171705, "cache_read_input_tokens": 7279240}
+- {"task": "T516", "at": "2026-11-16T00:01:04Z", "cache_creation_input_tokens": 189310, "input_tokens": 134, "cache_read_input_tokens": 2034709, "output_tokens": 39179}
