@@ -339,6 +339,9 @@ fn columns(quote: &Quote) -> Columns {
 /// as an edit (`edited_at`), and one after a withdrawal clears `withdrawn_at` (D-1049). A form
 /// quote is confirmed as sent; an AI-read one waits for the business's confirm on the read-back
 /// screen, after every edit too (PICK-006, D-149). The caller refuses an edit after a pick.
+/// PICK-008, D-2632: a confirmed quote with no shown number gets the job's highest plus one in
+/// this statement (the caller holds the job's row lock); a number once given is kept, through an
+/// AI-read edit waiting for its confirm too (migration 0202).
 pub(crate) async fn upsert_quote(
     db: &mut PgConnection,
     (job, business): (Uuid, Uuid),
@@ -354,8 +357,9 @@ pub(crate) async fn upsert_quote(
         "INSERT INTO quotes.quote (job_id, business_id, format, amount_cents, low_cents, \
          high_cents, tier_names, tier_cents, period, setup_cents, hourly_rate_cents, hours_low, \
          hours_high, confirm_on_site, notes, original, ai_read, confirmed, earliest_visit, \
-         visit_part, received_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, \
-         $14, $15, $16, $17, NOT $17, $18, $19, $20) \
+         visit_part, received_at, shown_number) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, \
+         $11, $12, $13, $14, $15, $16, $17, NOT $17, $18, $19, $20, CASE WHEN NOT $17 THEN \
+         (SELECT coalesce(max(shown_number), 0) + 1 FROM quotes.quote WHERE job_id = $1) END) \
          ON CONFLICT (job_id, business_id) DO UPDATE SET format = EXCLUDED.format, \
          amount_cents = EXCLUDED.amount_cents, low_cents = EXCLUDED.low_cents, \
          high_cents = EXCLUDED.high_cents, tier_names = EXCLUDED.tier_names, \
@@ -366,7 +370,7 @@ pub(crate) async fn upsert_quote(
          original = EXCLUDED.original, ai_read = EXCLUDED.ai_read, \
          confirmed = EXCLUDED.confirmed, earliest_visit = EXCLUDED.earliest_visit, \
          visit_part = EXCLUDED.visit_part, edited_at = EXCLUDED.received_at, \
-         withdrawn_at = NULL",
+         withdrawn_at = NULL, shown_number = coalesce(quote.shown_number, EXCLUDED.shown_number)",
         job,
         business,
         quote.format.code(),
@@ -434,14 +438,17 @@ pub(crate) async fn mark_unavailable(
     Ok(Guarded::from_returning(row.map(|_| ())))
 }
 
-/// PICK-006: marks the business's quote on the job confirmed, unless it is withdrawn.
+/// PICK-006: marks the business's quote on the job confirmed, unless it is withdrawn. PICK-008,
+/// D-2632: one shown for the first time gets the job's highest shown number plus one, in this
+/// statement (the caller holds the job's row lock); one already numbered keeps its number.
 pub(crate) async fn confirm_quote(
     db: &mut PgConnection,
     job: Uuid,
     business: Uuid,
 ) -> Result<Guarded<()>, QuotesError> {
     let row = sqlx::query_scalar!(
-        "UPDATE quotes.quote SET confirmed = true \
+        "UPDATE quotes.quote SET confirmed = true, shown_number = coalesce(shown_number, \
+         (SELECT coalesce(max(q.shown_number), 0) + 1 FROM quotes.quote q WHERE q.job_id = $1)) \
          WHERE job_id = $1 AND business_id = $2 AND withdrawn_at IS NULL RETURNING true",
         job,
         business
@@ -450,6 +457,35 @@ pub(crate) async fn confirm_quote(
     .await
     .map_err(|_| QuotesError::Database)?;
     Ok(Guarded::from_returning(row.map(|_| ())))
+}
+
+/// PICK-008, D-084, D-2632: `job`'s shown numbers as `(number, business)`, lowest first. Every
+/// quote ever shown keeps its number (migration 0202): a withdrawn or unavailable quote and an
+/// AI-read edit waiting for its confirm are listed too; a quote never shown has none. Callers that
+/// pick filter by availability themselves.
+///
+/// # Errors
+///
+/// [`QuotesError::Database`].
+pub async fn shown_numbers(
+    db: &mut PgConnection,
+    job: Uuid,
+) -> Result<Vec<(u32, Uuid)>, QuotesError> {
+    let rows = sqlx::query!(
+        "SELECT shown_number AS \"number!\", business_id FROM quotes.quote \
+         WHERE job_id = $1 AND shown_number IS NOT NULL ORDER BY shown_number",
+        job
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    rows.into_iter()
+        .map(|r| {
+            u32::try_from(r.number)
+                .map(|n| (n, r.business_id))
+                .map_err(|_| QuotesError::Database)
+        })
+        .collect()
 }
 
 /// TD-PICK-02: the businesses whose quote the homeowner's page may show: confirmed by the

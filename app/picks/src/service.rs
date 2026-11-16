@@ -31,7 +31,7 @@ use std::sync::OnceLock;
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_core::api::{Guarded, IdSecret, NewTask, brand, enqueue as enqueue_task};
 use askhava_jobs::api::quote_token::issue;
-use askhava_jobs::api::{current, job_facts, job_number, move_to};
+use askhava_jobs::api::{current, job_facts, job_number, lock_for_quote_change, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
 use askhava_payments::api::{
@@ -361,7 +361,11 @@ async fn pick_quote(
         }
         _ => {
             let by = (input.actor, input.at);
-            place(tx, (job, waiting), (quote, None), by, Some(input.inbox)).await?
+            let placed = place(tx, (job, waiting), (quote, None), by, Some(input.inbox)).await?;
+            let Some(pick) = placed else {
+                return no_quote(tx, out, job, quote).await;
+            };
+            pick
         }
     };
     let values = [
@@ -370,6 +374,23 @@ async fn pick_quote(
     ];
     out.say(tx, DONE_TEMPLATE, &[pick], &values).await?;
     Ok(Some(pick))
+}
+
+/// PICK-008, D-2912: the no-such-quote reply for a quote withdrawn or made unavailable while the
+/// text pick waited on the job's lock; nothing was picked.
+async fn no_quote(
+    tx: &mut PgConnection,
+    out: &mut Out<'_, '_>,
+    job: &JobView,
+    quote: usize,
+) -> Result<Option<Uuid>, PicksError> {
+    let values = [
+        ("quoted", quote.to_string()),
+        ("job", job.number.to_string()),
+    ];
+    out.say(tx, NO_QUOTE_TEMPLATE, &[job.job, out.input.inbox], &values)
+        .await?;
+    Ok(None)
 }
 
 /// PICK-053, PICK-010, SEC-037, D-2332, D-3580: queues [`PACKAGE_TEMPLATE`] with her quote-page
@@ -439,19 +460,46 @@ async fn quote_price(
 /// and stores the new pick of `quote` with its audit row and pick notice; `inbox` is the text
 /// pick's inbound text, `None` on the page (channel `page`); `tier` is the package chosen on a
 /// tiers quote (D-2332). The fee is fixed with the pick (`new_pick`, D-1871); no free win or
-/// release here.
+/// release here. All of it runs in a savepoint: when `new_pick` finds the quote withdrawn or
+/// unavailable after the move it is rolled back and `None` is answered (PICK-008, D-2912).
 async fn place(
+    tx: &mut PgConnection,
+    view: (&JobView, Option<(Uuid, i32, Uuid)>),
+    quote: (usize, Option<&ChosenTier>),
+    by: (Actor, Timestamp),
+    inbox: Option<Uuid>,
+) -> Result<Option<Uuid>, PicksError> {
+    let mut point = tx.begin().await.map_err(|_| PicksError::Database)?;
+    let pick = moved_pick(&mut point, view, quote, by, inbox).await?;
+    let ended = if pick.is_some() {
+        point.commit().await
+    } else {
+        point.rollback().await
+    };
+    ended.map_err(|_| PicksError::Database)?;
+    Ok(pick)
+}
+
+/// [`place`]'s steps inside its savepoint: the waiting pick's end first (the pick row before
+/// the job row, as `cant_take_job` and the `backup_choice` callers lock them, so the two orders
+/// never deadlock), then the job's row lock (`jobs::api::lock_for_quote_change`, so a quote
+/// withdrawal holding it commits before the pick's re-read, even with no move; D-2912, D-3979),
+/// the job's move and the pick.
+async fn moved_pick(
     tx: &mut PgConnection,
     (job, waiting): (&JobView, Option<(Uuid, i32, Uuid)>),
     quote: (usize, Option<&ChosenTier>),
     (actor, at): (Actor, Timestamp),
     inbox: Option<Uuid>,
-) -> Result<Uuid, PicksError> {
+) -> Result<Option<Uuid>, PicksError> {
     if let Some((old, _, business)) = waiting
         && !end(tx, (job.job, old, business), "replaced", (actor, at)).await?
     {
         return Err(PicksError::MovedOn);
     }
+    lock_for_quote_change(tx, job.job)
+        .await
+        .map_err(|_| PicksError::Job)?;
     if let Some(arrow) = pick_move(job.stage) {
         let moved = move_to(tx, job.job, arrow, at, actor).await;
         if !matches!(moved, Ok(Guarded::Applied(()))) {
@@ -466,14 +514,22 @@ async fn place(
 /// whose fee can't be fixed (a tiers quote with no or a stale package, a per-visit price with no
 /// schedule), or a non-emergency job whose facts are unsettled (D-2331), is
 /// [`PicksError::Quotes`] and nothing is stored; the caller rolls its transaction back. An
-/// emergency pick on default facts raises one [`FEE_FACTS_ALERT`].
+/// emergency pick on default facts raises one [`FEE_FACTS_ALERT`]. PICK-008, PRIV-005, D-2912:
+/// under the job's row lock ([`moved_pick`] takes it) it re-reads the quote after the move, so a
+/// withdrawal committed after the caller's check is seen; a quote now withdrawn or unavailable
+/// stores nothing and is `None`.
 async fn new_pick(
     tx: &mut PgConnection,
     (job, (quote, tier), inbox): (Uuid, (usize, Option<&ChosenTier>), Option<Uuid>),
     (actor, at): (Actor, Timestamp),
-) -> Result<Uuid, PicksError> {
+) -> Result<Option<Uuid>, PicksError> {
     let quotes = page_quotes(tx, job).await.map_err(|_| PicksError::Quotes)?;
-    let business = quotes.get(quote - 1).ok_or(PicksError::Quotes)?.business;
+    let shown = quote.checked_sub(1).and_then(|i| quotes.get(i));
+    let shown = shown.ok_or(PicksError::Quotes)?;
+    if shown.unavailable {
+        return Ok(None);
+    }
+    let business = shown.business;
     let number = i32::try_from(quote).map_err(|_| PicksError::Quotes)?;
     let (fee, unsettled) = picked_fee(tx, (job, business), tier).await?;
     let row = (job, business, number, inbox);
@@ -490,7 +546,7 @@ async fn new_pick(
     pick_audit(tx, actor, "picks.picked", pick).await?;
     let payload = serde_json::json!({ "pick": pick, "job": job, "business": business });
     event(tx, PICK_MADE_KIND, pick, payload, at).await?;
-    Ok(pick)
+    Ok(Some(pick))
 }
 
 /// PICK-053, D-2332, D-3575: writes the chosen package's index, name and price on `pick`, in the pick's
@@ -718,9 +774,8 @@ async fn pick_on_page(
     {
         return Ok(PagePick::Same(id));
     }
-    place(tx, (&view, waiting), (quote, tier), (actor, at), None)
-        .await
-        .map(PagePick::Picked)
+    let placed = place(tx, (&view, waiting), (quote, tier), (actor, at), None).await?;
+    Ok(placed.map_or(PagePick::Taken, PagePick::Picked))
 }
 
 /// PICK-012, PICK-045, CON-029: `job`'s view when quote `quote` can be picked on the page now
