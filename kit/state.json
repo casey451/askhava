@@ -19400,7 +19400,8 @@
     "T101",
     "T102",
     "T221",
-    "T348"
+    "T348",
+    "T521"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19485,7 +19486,8 @@
    "deps": [
     "T103",
     "T104",
-    "T489"
+    "T489",
+    "T521"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19571,7 +19573,8 @@
     "T107",
     "T108",
     "T314",
-    "T466"
+    "T466",
+    "T529"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19647,7 +19650,8 @@
   {
    "id": "T113",
    "deps": [
-    "T112"
+    "T112",
+    "T103"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19929,7 +19933,17 @@
     "T496",
     "T497",
     "T518",
-    "T520"
+    "T520",
+    "T522",
+    "T523",
+    "T524",
+    "T525",
+    "T526",
+    "T527",
+    "T528",
+    "T530",
+    "T531",
+    "T529"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21394,7 +21408,8 @@
     "T477",
     "T478",
     "T479",
-    "T489"
+    "T489",
+    "T531"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -44874,7 +44889,8 @@
     "T133",
     "T313",
     "T425",
-    "T520"
+    "T520",
+    "T526"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -58897,7 +58913,8 @@
    "deps": [
     "T100",
     "T103",
-    "T489"
+    "T489",
+    "T528"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -60782,6 +60799,159 @@
    "attempts": 0,
    "slug": "portal-email-colour-tokens",
    "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T530",
+   "deps": [
+    "T200",
+    "T151",
+    "T303"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-help-reply",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T521",
+   "deps": [
+    "T100",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "catalog-plural-and-list",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T523",
+   "deps": [
+    "T100",
+    "T105",
+    "T477"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-flag-inputs",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T525",
+   "deps": [
+    "T204"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "vault-read-and-volume-checks",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T528",
+   "deps": [
+    "T204",
+    "T105"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "digest-readers",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T524",
+   "deps": [
+    "T204",
+    "T523",
+    "T107",
+    "T277",
+    "T357",
+    "T358",
+    "T360",
+    "T353",
+    "T451",
+    "T525",
+    "T151",
+    "T528",
+    "T490",
+    "T482",
+    "T109"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ops-digest-and-flags",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T529",
+   "deps": [
+    "T332",
+    "T100"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "refund-trigger-owner",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T522",
+   "deps": [
+    "T373",
+    "T410",
+    "T527"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-text-consent-page",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T526",
+   "deps": [
+    "T202",
+    "T115",
+    "T306",
+    "T375",
+    "T483",
+    "T490",
+    "T520",
+    "T527"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-texting-stored-switch",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T527",
+   "deps": [
+    "T480",
+    "T310",
+    "T407"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-texting-eligibility-gate",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T531",
+   "deps": [
+    "T100"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "email-deferral-scorecard",
+   "type": "build",
    "stage": "5"
   }
  ],
@@ -64496,7 +64666,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T02:07:55Z",
+ "updated_at": "2026-11-16T02:35:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -64594,7 +64764,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "de89862a7f0afc783742b503cd1f2a3dd0ab8737",
+ "runner_sha": "dbeb23369988f072171206a3fb93aa79880cb761",
  "starter": "actions",
  "smoke_runs": [
   {

@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T02:07:55Z by runner de89862a7f0a (actions).
+Updated 2026-11-16T02:35:03Z by runner dbeb23369988 (actions).
 
-**Building: T517 in progress since 02:01Z; 355 of 505 done; week 79% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T517 in progress since 02:01Z; 355 of 516 done; week 79% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 355 of 505 build tasks (owner gates not counted)
+- **Tasks done:** 355 of 516 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T517 claimed 02:01Z, lease until 05:01Z
 - **Week:** 79% used, 36.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:07Z, 0 min before this update
+- **Last run:** 02:08Z, 26 min before this update
 - **Keeper:** last ran 02:07Z, next wake 05:03Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 18 problem(s) on tasks still to run (+122 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+122 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -43,27 +43,26 @@ Updated 2026-11-16T02:07:55Z by runner de89862a7f0a (actions).
 | T494 | portals: the Confirm route's $0 free-first-win decision from | done | 1 | 29 min | 04:31Z |  |
 | T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | done | 1 | 31 min | 04:26Z |  |
 | T261 | portals and server (harness): the served Confirm route under | BLOCKED | 3 | 110 min | 02:57Z |  |
-| T461 | server: business sign-up's service area, email code and acti | QUEUED | 1 | 60 min | 02:31Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
-**Tasks merged (throughput only):** 355 of 505
+**Requirements verified:** 305 of 733 (41.6%) · partial 271 · unstarted 157
+**Tasks merged (throughput only):** 355 of 516
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
+| ai | 10 | 14 | 5 | 29 |
 | businesses | 21 | 34 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
 | fees | 22 | 29 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
-| licensing | 38 | 10 | 0 | 48 |
+| licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 24 | 4 | 0 | 28 |
 | messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
@@ -87,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 235 of 238 done
-- stage 5: 0 of 113 done
+- stage 5: 0 of 124 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
