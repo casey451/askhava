@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T19:47:27Z by runner f56b7cc3f68c (actions).
+Updated 2026-11-16T19:47:47Z by runner f56b7cc3f68c (actions).
 
 **Building: T481 in progress since 19:16Z; 371 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 371 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 3: T487 claimed 18:57Z, lease until 22:27Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
+- **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
 - **Week:** 1% used, 190.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:45Z, 1 min before this update
 - **Keeper:** last ran 19:45Z, next wake 21:42Z
@@ -19,6 +19,7 @@ Updated 2026-11-16T19:47:27Z by runner f56b7cc3f68c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T487 | ops and payments: safe mode after 24 hours pauses charges, a | MERGE_PENDING | 1 | 50 min | 19:47Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | MERGE_PENDING | 1 | 30 min | 19:37Z | merging main into the reviewed head conflicts in app/quotes/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T324 | harness: 95% branch floors for the money and privacy files o | MERGE_PENDING | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | MERGE_PENDING | 1 | 29 min | 18:55Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
@@ -111,8 +112,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T481 (lease until 2026-11-16T22:16:25Z)
-- lane 3: T487 (lease until 2026-11-16T22:27:38Z)
 - lane 7: T361 (lease until 2026-11-16T21:39:42Z)
 
 ## Last usage reading
-- {"task": "T102", "at": "2026-11-16T19:37:31Z", "cache_creation_input_tokens": 85181, "output_tokens": 14123, "input_tokens": 81, "cache_read_input_tokens": 1571188}
+- {"task": "T487", "at": "2026-11-16T19:47:25Z", "input_tokens": 148, "output_tokens": 43618, "cache_read_input_tokens": 6905314, "cache_creation_input_tokens": 187970}
