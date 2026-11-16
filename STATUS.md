@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T13:17:46Z by runner b7a09cb3f828 (actions).
+Updated 2026-11-16T13:19:27Z by runner ebf92768662f (actions).
 
-**Building: T477 in progress since 12:23Z; 357 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T477 in progress since 12:23Z; 358 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 357 of 535 build tasks (owner gates not counted)
+- **Tasks done:** 358 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T477 claimed 12:23Z, lease until 16:05Z; lane 2: T105 claimed 12:22Z, lease until 15:22Z; lane 3: T519 claimed 13:17Z, lease until 16:17Z; lane 4: T101 claimed 12:21Z, lease until 15:21Z; lane 7: T529 claimed 12:22Z, lease until 16:10Z
 - **Week:** 93% used, 2.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:13Z, 4 min before this update
+- **Last run:** 13:18Z, 1 min before this update
 - **Keeper:** last ran 13:13Z, next wake 15:24Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-16T13:17:46Z by runner b7a09cb3f828 (actions).
 |---|---|---|---|---|---|---|
 | T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
 | T409 | server (harness): the door probe's owner actor signs in thro | MERGE_PENDING | 1 | 36 min | 13:05Z |  |
-| T531 | messaging and server: OPS-046's first-six-weeks email figure | MERGE_PENDING | 1 | 36 min | 13:01Z |  |
+| T531 | messaging and server: OPS-046's first-six-weeks email figure | done | 1 | 36 min | 13:01Z |  |
 | T100 | Stage 4 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 39 min | 08:16Z |  |
 | T517 | Stage 4 cleanup, part 1: duplicate functions in server, port | proof_missing | 1 | 84 min | 03:25Z |  |
 | T099 | Journey J2 (business) and its variants, keyboard-only, with  | done | 2 | 92 min | 01:45Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
@@ -43,8 +43,8 @@ Updated 2026-11-16T13:17:46Z by runner b7a09cb3f828 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 308 of 733 (42.0%) · partial 268 · unstarted 157
-**Tasks merged (throughput only):** 357 of 535
+**Requirements verified:** 308 of 733 (42.0%) · partial 269 · unstarted 156
+**Tasks merged (throughput only):** 358 of 535
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -59,7 +59,7 @@ Updated 2026-11-16T13:17:46Z by runner b7a09cb3f828 (actions).
 | licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 24 | 4 | 0 | 28 |
 | messaging | 26 | 17 | 2 | 45 |
-| ops-recovery | 1 | 10 | 43 | 54 |
+| ops-recovery | 1 | 11 | 42 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 36 | 19 | 1 | 56 |
@@ -80,7 +80,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 0 of 143 done
+- stage 5: 1 of 143 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
