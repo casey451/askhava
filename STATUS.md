@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T17:34:53Z by runner 94b95b01afb1 (actions).
+Updated 2026-11-16T17:35:13Z by runner 94b95b01afb1 (actions).
 
 **Building: T361 in progress since 16:50Z; 367 of 539 done; week 97% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 367 of 539 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T361 claimed 16:50Z, lease until 20:32Z; lane 3: T105 claimed 17:21Z, lease until 20:21Z; lane 4: T166 claimed 17:24Z, lease until 20:24Z; lane 5: T559 claimed 16:58Z, lease until 20:21Z; lane 6: T303 claimed 16:19Z, lease until 20:34Z
+- **Lane:** lane 1: T361 claimed 16:50Z, lease until 20:32Z; lane 3: T105 claimed 17:21Z, lease until 20:21Z; lane 4: T166 claimed 17:24Z, lease until 20:24Z; lane 5: T559 claimed 16:58Z, lease until 20:21Z; lane 6: T303 claimed 16:19Z, lease until 20:35Z
 - **Week:** 97% used, -5.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:34Z, 0 min before this update
+- **Last run:** 17:35Z, 0 min before this update
 - **Keeper:** last ran 17:34Z, next wake 20:07Z
 
 ## Needs attention
@@ -106,7 +106,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T105 (lease until 2026-11-16T20:21:54Z)
 - lane 4: T166 (lease until 2026-11-16T20:24:50Z)
 - lane 5: T559 (lease until 2026-11-16T20:21:27Z)
-- lane 6: T303 (lease until 2026-11-16T20:34:53Z)
+- lane 6: T303 (lease until 2026-11-16T20:35:13Z)
 
 ## Last usage reading
 - {"task": "T324", "at": "2026-11-16T17:33:26Z", "input_tokens": 144, "cache_creation_input_tokens": 175937, "output_tokens": 39221, "cache_read_input_tokens": 3309128}
