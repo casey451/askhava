@@ -3045,3 +3045,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The old review items you no longer need to see move to an archive in a task of their own.
 - For the overseer: stage 5's sign-off is recorded by hand. Run it as soon as the stage-5 cleanup (T126) merges, from its and the audit's reports; the documentation pass waits for it, so leaving it until the end would stall the build.
 - Nothing needs you now.
+
+## Opus checks of the newest stage-5 tasks (D-3892, November 16)
+
+- Your "re-send the release" button asks only for your normal owner sign-in, not a fresh code. The spec's list of actions that need a fresh code doesn't include it, and the button can only re-send a release that already happened. Say so if you want a fresh code there too; it is a small spec change.
+- A card a business saves on the Confirm page is now saved the way the spec says, so the optional auto-confirm charge can use it later. Before, the task said the opposite. If the bank asks to check a payment, the card isn't saved, and the page says so.
+- Two security tests moved into the server's own test folder, because the test folders are not allowed to reach the server code directly. Nothing they check changed.
+- The full-journey tests now run after the other tests and with the background worker fully set up, so they can't break other tests and their "no texts sent" checks mean something.
+- Nothing needs you now.
