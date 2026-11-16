@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-16T16:07:49Z by runner f91e570d42ac (manual).
+Updated 2026-11-16T16:15:08Z by runner d995af80b833 (actions).
 
 **Building: T101 in progress since 15:19Z; 363 of 536 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 363 of 536 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 7: T475 claimed 15:08Z, lease until 18:56Z
-- **Week:** 95% used, 1.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:07Z, 0 min before this update
+- **Lane:** lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 4: T105 claimed 16:15Z, lease until 19:15Z; lane 7: T475 claimed 15:08Z, lease until 18:56Z
+- **Week:** 95% used, 1.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 16:09Z, 5 min before this update
 - **Keeper:** last ran 16:01Z, next wake 18:22Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T559 (since 2026-11-16T16:07:02Z, no attempt used; a plan change fixes it): T559: prompt kit/prompts/T559.md is missing; run scripts/gen_prompts.py; T559: branch claude/task/T559-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 10 problem(s) on tasks still to run (+123 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -53,36 +53,36 @@ Updated 2026-11-16T16:07:49Z by runner f91e570d42ac (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 290 of 733 (39.6%) · partial 289 · unstarted 154
-**Tasks merged (throughput only):** 363 of 536
+**Requirements verified:** 313 of 733 (42.7%) · partial 266 · unstarted 154
+**Tasks merged (throughput only):** 363 of 535
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 19 | 36 | 3 | 58 |
-| calls | 12 | 12 | 1 | 25 |
+| businesses | 21 | 34 | 3 | 58 |
+| calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 17 | 34 | 1 | 52 |
+| fees | 23 | 28 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 22 | 21 | 2 | 45 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 11 | 42 | 54 |
-| privacy | 11 | 18 | 2 | 31 |
+| privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
+| quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 5 | 23 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T15:18:11Z (week)): week: 192.1M used, 1.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T03:34:13Z.
+- Pacing (session_reading 2026-11-16T16:00:39Z (week)): week: 192.3M used, 1.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T01:39:50Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -99,6 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T101 (lease until 2026-11-16T18:19:45Z)
+- lane 4: T105 (lease until 2026-11-16T19:15:00Z)
 - lane 7: T475 (lease until 2026-11-16T18:56:15Z)
 
 ## Last usage reading

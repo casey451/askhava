@@ -5766,3 +5766,4 @@
 - 2026-11-16T16:07:10Z runner d995af80b833 (actions): {"T105": "MERGE_PENDING -> QUEUED"}
 - 2026-11-16T16:07:28Z runner d995af80b833 (actions): {}
 - 2026-11-16T16:07:49Z runner f91e570d42ac (manual): {}
+- 2026-11-16T16:15:08Z runner d995af80b833 (actions): {"T105": "QUEUED -> IN_PROGRESS"}; T105 estimated 1.5M tokens (calibrated); week has 1.7M left (no five-hour budget, D-3056) after 2.3M still running in another lane (session_reading 2026-11-16T16:00:39Z (week)); running to the limit (model window, D-2225), claimed
