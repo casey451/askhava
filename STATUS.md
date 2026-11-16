@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T14:07:34Z by runner ddbf9559168c (actions).
+Updated 2026-11-16T14:07:54Z by runner ddbf9559168c (actions).
 
-**Building: T519 in progress since 13:17Z; 359 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T308 in progress since 13:29Z; 359 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 359 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T519 claimed 13:17Z, lease until 16:44Z; lane 5: T308 claimed 13:29Z, lease until 16:29Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z
+- **Lane:** lane 5: T308 claimed 13:29Z, lease until 16:29Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z
 - **Week:** 93% used, 6.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:07Z, 0 min before this update
 - **Keeper:** last ran 14:06Z, next wake 16:32Z
@@ -18,11 +18,12 @@ Updated 2026-11-16T14:07:34Z by runner ddbf9559168c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T519 | Copy check (harness): template text a requirement fixes, and | MERGE_PENDING | 2 | 49 min | 14:07Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | QUEUED | 1 | 101 min | 14:05Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | check_failed | 1 | 69 min | 13:32Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T101 | site: base layout in the design spec's look, works without J | MERGE_PENDING | 1 | 70 min | 13:31Z |  |
-| T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
+| T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z |  |
 | T409 | server (harness): the door probe's owner actor signs in thro | done | 1 | 36 min | 13:05Z |  |
 | T531 | messaging and server: OPS-046's first-six-weeks email figure | done | 1 | 36 min | 13:01Z |  |
 | T100 | Stage 4 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 39 min | 08:16Z |  |
@@ -91,9 +92,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T519 (lease until 2026-11-16T16:44:29Z)
 - lane 5: T308 (lease until 2026-11-16T16:29:53Z)
 - lane 6: T105 (lease until 2026-11-16T17:07:02Z)
 
 ## Last usage reading
-- {"task": "T477", "at": "2026-11-16T14:05:07Z", "output_tokens": 92977, "input_tokens": 302, "cache_read_input_tokens": 11601525, "cache_creation_input_tokens": 343281}
+- {"task": "T519", "at": "2026-11-16T14:07:32Z", "input_tokens": 187, "output_tokens": 104482, "cache_creation_input_tokens": 223885, "cache_read_input_tokens": 4922823}
