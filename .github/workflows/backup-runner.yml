@@ -192,9 +192,11 @@ jobs:
     # The runner smokes main before every claim (scripts/smoke.sh) and the worker runs the same
     # checks on its branch, so this job carries what Ci carries: Postgres 16, pytest and PyYAML.
     # The first cycle under the token marked main red because none of these were here (D-498).
+    # Postgres is pinned by the digest ci.yml uses (SEC-021, SEC-045, D-3750); Dependabot's docker
+    # ecosystem opens a PR when the digest moves (.github/dependabot.yml, D-492).
     services:
       postgres:
-        image: postgres:16
+        image: postgres:16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c
         env:
           POSTGRES_USER: askhava_ci
           POSTGRES_HOST_AUTH_METHOD: trust
