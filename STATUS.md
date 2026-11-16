@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T20:39:39Z by runner 526aa3557dc6 (actions).
+Updated 2026-11-16T20:40:06Z by runner 32d91e1d646e (actions).
 
 **Building: T111 in progress since 20:22Z; 374 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 374 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T111 claimed 20:22Z, lease until 23:22Z; lane 2: T481 claimed 19:16Z, lease until 23:34Z; lane 4: T102 claimed 20:17Z, lease until 23:17Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z
+- **Lane:** lane 1: T111 claimed 20:22Z, lease until 23:22Z; lane 2: T481 claimed 19:16Z, lease until 23:34Z; lane 4: T102 claimed 20:17Z, lease until 23:17Z; lane 6: T307 claimed 20:00Z, lease until 23:40Z
 - **Week:** 1% used, 189.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:35Z, 4 min before this update
+- **Last run:** 20:39Z, 0 min before this update
 - **Keeper:** last ran 20:21Z, next wake 22:18Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 15 problem(s) on tasks still to run (+134 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+130 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -112,7 +112,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T111 (lease until 2026-11-16T23:22:29Z)
 - lane 2: T481 (lease until 2026-11-16T23:34:48Z)
 - lane 4: T102 (lease until 2026-11-16T23:17:18Z)
-- lane 6: T307 (lease until 2026-11-16T23:00:14Z)
+- lane 6: T307 (lease until 2026-11-16T23:40:06Z)
 
 ## Last usage reading
 - {"task": "T361", "at": "2026-11-16T20:12:45Z", "cache_creation_input_tokens": 265300, "input_tokens": 235, "cache_read_input_tokens": 8621007, "output_tokens": 66714}
