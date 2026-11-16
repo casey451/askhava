@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-16T18:20:17Z by runner 57089a5749dc (manual).
+Updated 2026-11-16T18:22:54Z by runner d77b0f992ca9 (actions).
 
-**Building: T324 in progress since 17:53Z; 369 of 540 done; week 98% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T324 in progress since 17:53Z; 369 of 539 done; week 98% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 369 of 540 build tasks (owner gates not counted)
+- **Tasks done:** 369 of 539 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T324 claimed 17:53Z, lease until 20:53Z; lane 2: T102 claimed 17:43Z, lease until 20:43Z
 - **Week:** 98% used, -2.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:18Z, 1 min before this update
+- **Last run:** 18:20Z, 2 min before this update
 - **Keeper:** last ran 18:18Z, next wake 20:46Z
 
 ## Needs attention
 - BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+124 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+123 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -55,38 +55,37 @@ Updated 2026-11-16T18:20:17Z by runner 57089a5749dc (manual).
 | T515 | End-to-end harness: specs can deliver a validly signed Strip | BLOCKED | 1 | 17 min | 22:11Z |  |
 | T099 | Journey J2 (business) and its variants, keyboard-only, with  | BLOCKED | 1 | 58 min | 21:21Z |  |
 | T464 | server and portals: the sign-up capability step is served af | done | 1 | 83 min | 19:56Z |  |
-| T495 | e2e: the served Confirm and pay journey in the browser again | done | 1 | 44 min | 18:21Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 733 (0.0%) · partial 583 · unstarted 150
-**Tasks merged (throughput only):** 369 of 540
+**Requirements verified:** 313 of 733 (42.7%) · partial 270 · unstarted 150
+**Tasks merged (throughput only):** 369 of 539
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 30 | 5 | 35 |
-| ai | 0 | 24 | 5 | 29 |
-| businesses | 0 | 55 | 3 | 58 |
-| calls | 0 | 24 | 1 | 25 |
-| consent | 0 | 31 | 4 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 0 | 40 | 3 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 43 | 2 | 45 |
-| ops-recovery | 0 | 15 | 39 | 54 |
-| privacy | 0 | 29 | 2 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 55 | 1 | 56 |
-| recurring | 0 | 8 | 3 | 11 |
-| security | 0 | 50 | 5 | 55 |
-| terms | 0 | 3 | 32 | 35 |
+| accessibility | 13 | 17 | 5 | 35 |
+| ai | 11 | 13 | 5 | 29 |
+| businesses | 21 | 34 | 3 | 58 |
+| calls | 14 | 10 | 1 | 25 |
+| consent | 15 | 16 | 4 | 35 |
+| fees | 23 | 28 | 1 | 52 |
+| intake | 29 | 11 | 3 | 43 |
+| job-cards | 20 | 4 | 0 | 24 |
+| licensing | 38 | 10 | 0 | 48 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
+| ops-recovery | 1 | 14 | 39 | 54 |
+| privacy | 13 | 16 | 2 | 31 |
+| quiet-hours | 7 | 2 | 0 | 9 |
+| quotes-pick | 36 | 19 | 1 | 56 |
+| recurring | 8 | 0 | 3 | 11 |
+| security | 11 | 39 | 5 | 55 |
+| terms | 1 | 2 | 32 | 35 |
 | website | 0 | 5 | 23 | 28 |
-| wording | 0 | 11 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
