@@ -468,19 +468,23 @@ pub enum RefundTrigger {
     FraudWarning,
     /// FEE-021: a payment that succeeded after its job or pick moved on (T332, D-2290).
     LateSuccess,
+    /// FEE-026, SEC-006: the owner refunded the charge through the owner portal's review step
+    /// (T205; T529, D-3883).
+    Owner,
 }
 
 impl RefundTrigger {
     /// Every trigger, in the order of `payments.refund.trigger`'s check.
-    pub const ALL: [Self; 5] = [
+    pub const ALL: [Self; 6] = [
         Self::Rule(RefundReason::Unreachable),
         Self::Rule(RefundReason::CancelledBeforeTalk),
         Self::Rule(RefundReason::ChargedAfterCancel),
         Self::FraudWarning,
         Self::LateSuccess,
+        Self::Owner,
     ];
 
-    /// The stored code name (FEE-026; the check of migrations 0102 and 0177).
+    /// The stored code name (FEE-026; the check of migrations 0102, 0177 and 0197).
     #[must_use]
     pub const fn code(self) -> &'static str {
         match self {
@@ -489,6 +493,7 @@ impl RefundTrigger {
             Self::Rule(RefundReason::ChargedAfterCancel) => "charged-after-cancel",
             Self::FraudWarning => "fraud-warning",
             Self::LateSuccess => "late-success",
+            Self::Owner => "owner",
         }
     }
 
@@ -857,5 +862,21 @@ impl MoneyView {
             - self.disputes
             - self.dispute_fees
             - self.processing_fees
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::RefundTrigger;
+
+    /// TD-FEE-14 (FEE-026; T529, D-3883): the owner's trigger is stored as `owner` and reads back.
+    #[test]
+    fn td_fee_14_owner_trigger_round_trips() {
+        assert_eq!(RefundTrigger::Owner.code(), "owner");
+        assert_eq!(
+            RefundTrigger::from_code("owner"),
+            Some(RefundTrigger::Owner)
+        );
+        assert!(RefundTrigger::ALL.contains(&RefundTrigger::Owner));
     }
 }
