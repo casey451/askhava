@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T08:17:44Z by runner 0a62859ebd74 (actions).
+Updated 2026-11-16T08:18:13Z by runner c0fac254a451 (actions).
 
 **Idle since 08:16Z; 355 of 535 done; week 92% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-16T08:17:44Z by runner 0a62859ebd74 (actions).
 - **Lane:** idle since 08:16Z (no task in progress)
 - **Week:** 92% used, 12.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:17Z, 0 min before this update
-- **Keeper:** last ran 07:45Z, next wake 10:39Z
+- **Keeper:** last ran 08:18Z, next wake 08:38Z
 
 ## Needs attention
 - BLOCKED T517: stage proof missing (the proof waits for: T100 is IN_PROGRESS)
