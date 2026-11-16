@@ -2990,5 +2990,5 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - The services page must say "Get quotes from licensed plumbers." with each trade's plural name, but the catalog had no plural names. A small new task adds them, plus a list the coverage page needs of what's on and what's "not yet".
 - In safe mode, an emergency job whose address arrived late could still have passed the homeowner's details to the business. Now that path waits too, and tries again every 15 minutes until safe mode ends.
-- Open gap: when a business changes a team phone's number, that phone gets job cards by email until it agrees to texts again for the new number, and no page asks for that agreement yet. Nothing is sent to the wrong number; it just stays on email. A later task will need to add the agreement box.
+- A new task adds the page where a business agrees to texts after sign-up: when it switches to texts later, for each team member's own phone, and again after a phone number changes. Until then those phones get email, which is allowed.
 - Nothing needs you.
