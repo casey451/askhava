@@ -3064,3 +3064,21 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - The site layout task (T101) failed twice, but its code was the same in every run. Two older tests had timing gaps: one finished before its last button press got an answer, and one pressed Tab before the page had moved focus where it should. A small new task (T559) makes both tests wait for those things. No test checks less than before. The site layout task is still on its last try and is left as it is; if that try fails, it will be set to run after the fix.
 - Nothing needs you now.
+
+## Three more big queued tasks split in two (D-3967, November 16)
+
+- As you asked this morning, three queued stage-5 tasks that looked likely to run long are now two smaller tasks each. The requirements and tests are the same and nothing was dropped: the homeowner portal (T307 serves sign-in, the home page and the texts-off switch; T561 serves "Download my data" and the delete or copy request), the business account pages (T306 serves the complaints, emergency-email and notice-log pages; T562 serves "Why was I charged?"), and the five-year consent purge (T321 builds the texting side; T563 builds the daily sweep and the intake and phone side).
+- The owner sign-in task (T303) was also on the list, but the runner had already started it, so it was left whole. The number T560 is left unused.
+- Each new task's size estimate is now closer to what similar tasks actually produced, which was about twice their estimates. This changes no cost; it only makes the numbers honest.
+- Nothing needs you now.
+
+## The terms task's blocked check (D-3968, November 16)
+
+- The terms task (T111) stopped because the legal-docs check bans the word "subcontract", but the required English paragraph in the Spanish summary says "There is no subcontract". The check now skips exactly that required English paragraph, and the not-a-contractor statement, in the Spanish summary only. The ban still applies everywhere else, including the Spanish wording. The terms task gets one more try once this change merges.
+- Nothing needs you now.
+
+## The kept-number task's blocked check (D-3999, November 16)
+
+- The task that keeps each quote's number once shown (T361) stopped because other places still counted quotes the old way. If a later quote was shown first, the "couldn't take it" text could offer the very business whose pick just ran out; a "1 YES" from a homeowner who turned texts off could pick a different business than her text list showed as #1; and a pick already waiting could be mistaken for a different quote.
+- The task is now two: T361 only stores the kept number, and a new task (T564) right after it switches every place that reads the number over at once, with a test for each case, so the numbers always agree. Both now fit their size limits. Four queued tasks that touch the same code now wait for the new one.
+- Nothing needs you now.

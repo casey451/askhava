@@ -1,6 +1,6 @@
 # site notes (D-3474): one entry per line, `- [REQUIREMENT-IDS] (section) text`; grep by ID, never read whole; add yours at the end, one line each.
 - [WORD-001] (owns) `templates/base.html`: the plain shared layout: `lang`, the `title` and `main` blocks, a skip link to `#main`, a header with the wordmark link. The title suffix and the wordmark are `{{ askhava_core::api::brand().display_name() }}` (WORD-001, T294, D-1932, D-2486), so the layout compiles only in a crate that depends on `askhava-core` (today `portals`, through its `askama.toml`).
-- [-] (owns) `src/lib.rs`: the crate doc only; no code yet.
+- [-] (owns) `src/lib.rs`: the crate doc and the `mod` lines; `src/api.rs` re-exports `site_routes` and `banner_shown` (T101).
 - [WORD-001] (rules) WORD-001, D-1932: `base.html` names the brand only through `brand()`; `tests/docs/test_brand_literals.py` fails on a literal.
 - [SEC-011] (rules) SEC-011: `base.html` escapes every value (no `|safe`, checked by `scripts/check_rust_rules.py`).
 - [SEC-013] (rules) SEC-013: `base.html` loads no script, style or font from another host (`tests/security/tests/no_third_party.rs`).
@@ -10,3 +10,9 @@
 - [-] (tests) `app/portals/src/security.rs` `tests` (TD-SEC-04): `cargo test -p askhava-portals`.
 - [-] (tests) `app/portals/src/feedback.rs` `brand_tests` (TD-WORD-37: the title suffix and home link are today's bytes): `cargo test -p askhava-portals feedback::brand_tests`.
 - [WORD-001 WEB-001 SEC-025] (task 294) cross-reference (D-3620): the build note of T294 is in `app/portals/NOTES.md`: `grep -n '(task 294)' app/portals/NOTES.md`.
+- [WEB-001 A11Y-003 A11Y-017] (task 101) `templates/base.html` restyled: it links `/static/site/site.css`, keeps the skip link first, has an empty `banner` block above the header, and the header holds the wordmark link (`<a href="/">` brand) and a `nav` with Help at `/help` on every site and portal page (D-3878). Not sticky, so no scroll-padding is needed (A11Y-026).
+- [WEB-007] (task 101) `templates/site_layout.html` extends `base.html` and fills `banner` with WEB-007's sentence while the page's `banner_shown` field is true; a site page handler sets it from `site::api::banner_shown(&pool)` (reads `ops::api::banner_shown`; a failed read is hidden and logged once) (D-3144, D-1843).
+- [WEB-001 SEC-013] (task 101) `src/assets.rs` lists the compiled-in files (`include_bytes!`, name, MIME, bytes); `src/routes.rs` `site_routes` serves them at `/static/site/<name>` with one `nest_service` and no `.route(`: unknown name 404, other method 405 with `Allow`; merged in `server::build_router` beside `static_files` (D-3106). T166 and T216 add fonts and photos as more `ASSETS` lines.
+- [WEB-001] (task 101) `static/site.css`: V6 tokens of `docs/design/DESIGN_SPEC.md` section 2, body 18 px, evergreen links (header and main the same colour, `tests/e2e/pick_flow.spec.ts`), 3 px `focus` ring, 44 px header targets, fields with `field-edge`, buttons evergreen; fonts fall back to Georgia and the system sans until T166.
+- [-] (tests) `src/routes.rs` tests (TD-WEB-01 banner case, no-script layout, 200/404/405) and `src/assets.rs` tests: `cargo test -p askhava-site`; browser: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/site_no_js.spec.ts`.
+- [WEB-001 A11Y-030] (task 101) `base.html` links the stylesheet as the first element of `body` and the site mount answers `Cache-Control: public, max-age=3600`, so a page's `autofocus` is never held back by a stylesheet fetch (`tests/a11y/j1_keyboard.spec.ts` code step, D-3901).

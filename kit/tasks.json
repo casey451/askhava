@@ -10561,7 +10561,7 @@
    "id": "T402",
    "slug": "quiet-exempt-producers",
    "title": "intake, picks and server: texts QH-004 lets go at any hour for a fact (an emergency job, a direct reply) are queued with that fact",
-   "goal": "Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/intake/src/job_texts.rs`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -10590,7 +10590,8 @@
     "T328",
     "T446",
     "T449",
-    "T489"
+    "T489",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10628,7 +10629,8 @@
    "decisions": [
     "D-2628",
     "D-3055",
-    "D-3106"
+    "D-3106",
+    "D-3999"
    ],
    "cites": [],
    "budget": {
@@ -17121,9 +17123,9 @@
   {
    "id": "T321",
    "slug": "consent-five-year-purge",
-   "title": "messaging, intake and privacy: consent records, keyword events and message logs go 5 years after a number's last message",
-   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` opt-out-event and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0195_messaging_consent_purge.sql` (headed `-- messaging (T321)`) and `migrations/0196_intake_consent_purge.sql` (headed `-- intake (T321)`, the `intake` function only; `tests/integration/tests/architecture_migrations.rs` fails a migration naming another module's schema). Plan change D-3753, design (a): the two append-only tables (`intake.consent_record`, `messaging.optout_event`) get no DELETE grant, since `tests/integration/tests/schema_grants.rs` (`APPEND_ONLY`, `:51` to `:56`, `:109`, `:153`, `:317`), `app/intake/src/tests/consent.rs:317` to `:375` and `tests/integration/tests/message_log_retention.rs:291` to `:294` require the app role never to change or delete them, and they stay unchanged. The purge goes through `SECURITY DEFINER` functions owned by the migrating role, each with `SET search_path = <own schema>, pg_temp` (`pg_temp` last, the repository's form, `migrations/0157_quotes_formats.sql:20`, `tests/integration/tests/architecture_migrations.rs:756`) and every table and function name schema-qualified anyway, so no temporary table can shadow `suppression` or `outbox`; static SQL only (no `EXECUTE` of a string, TD-SEC-36); `REVOKE ALL ON FUNCTION ... FROM PUBLIC`. (i) `messaging.last_message_at(contact uuid)` (0195): the later of the number's newest `messaging.inbox_contact.received_at` and its newest `messaging.outbox` time, `NULL` when it has neither; no EXECUTE for the app role (only the definer functions call it). (ii) `messaging.purge_expired_optout_events(contact uuid, digests bytea[])` (0195, EXECUTE for `askhava_app`; `digests` are the number's blind-index digests under every index version, computed by `privacy`, so events with no inbox row (email, portal, owner and carrier opt-outs, which `optout_event` keys by digest only) are found too, as CON-022 needs; the digests come only from `privacy::api` for that contact, and the sweep is their only caller): deletes nothing unless `last_message_at` is non-null and strictly older than `now() - interval '1827 days'`, and then only that number's opt-out events themselves strictly older than that, never one a `messaging.suppression` row references and never the number's newest opt-out event (its current STOP or START evidence, kept even if a suppression row is gone). (iii) `intake.purge_expired_consent(contact uuid)` (0196, EXECUTE for `askhava_app`): the same guard through `messaging.last_message_at`, then only that number's `intake.consent_record` rows (through `intake.homeowner`'s `contact_id`) whose `consented_at` is strictly older than `now() - interval '1827 days'`. CON-022 keeps a record 5 years after the last message to that number, and `consented_at` is app-written (`migrations/0053_intake_tables.sql:57`), so row age alone could remove a 6-year-old consent of a number texted yesterday; the last-message guard is read by the database, never passed by the caller. Every function reads `now()` itself (never a time the caller passes) and returns the deleted IDs for the audit rows. The sweep calls both purge functions for a number before it deletes that number's message-log rows, in the same transaction (the guard reads those rows). The schema rule: `tests/integration/tests/architecture_migrations.rs` fails a migration naming another module's schema (`schema_refs`, `:272`, `:799`), and an `intake` marker the message path kept could not see every outbound text (`messaging` cannot call `intake`, `kit/layers.json`) and could be missed by omission, so this task (now a harness task, since that test is T226's, T250's and T252's) adds one logged exception there, as `DYNAMIC_SQL_ALLOWED` does (`:63`): a `CROSS_SCHEMA_CALLS` list with exactly one entry, `migrations/0196_intake_consent_purge.sql` may name `messaging.last_message_at(` and nothing else of `messaging`, with its reason (CON-022, D-3753; `intake` may call `messaging`, `kit/layers.json`); any other `messaging.` name in that file, the same call in any other file, and an entry whose file or call is missing each still fail, with planted cases for all three; every existing case and finding stays as it is. What the guards rest on: `last_message_at` and the suppression check read rows the app role may DELETE (`messaging.outbox`, `messaging.inbox`, `messaging.inbox_contact` and `messaging.suppression`, `schema_grants.rs:141` to `:151`, and `inbox_contact`'s explicit grant), and `received_at` and `consented_at` are app-written, so a compromised app that deleted a number's recent message rows could make it look expired; the damage stays bounded by the row-age floor, since no function removes a row that is itself less than 1,827 days old, and the newest opt-out event always stays. The message-log tables already grant DELETE (`schema_grants.rs:141` to `:151`); `messaging.inbox_contact` gets an explicit DELETE grant in its migration. (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The opt-out events a suppression row references are kept by the `messaging` function's own condition, and the app role has no DELETE on the table at all. That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; the function leaves a referenced opt-out event and the newest one in place; a message in between restarts its clock; and (D-3753) each purge function, with the database clock and strict comparisons, leaves a row and a last message seeded 1,826 days ago and removes a row whose last message and own time are 1,827 days and one minute ago (the minute keeps the test off the boundary); a 6-year-old consent record of a number last messaged yesterday is kept; a temporary table named `suppression` or `outbox` in the session changes nothing; the app role cannot call `messaging.last_message_at`; and a direct DELETE of either append-only table by the app role is still refused. Seeded rows are timed that far in the past, since the functions read the database clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files and `docs/decisions.md`, and add this task's build-note line at the end of `app/messaging/NOTES.md` (the template's rule; D-3620, D-3079, D-3468). Plan change D-3155: (a) the clock: nothing records which number an inbound text came from (`messaging.inbox` holds only `message_sid` and `received_at`, `migrations/0043_messaging_inbox_delivery.sql:22` to `:26`), so the messaging migration adds `messaging.inbox_contact` (`inbox_id` the primary key with no `REFERENCES`, as `messaging.optout_event.inbox_id` has none (`migrations/0128`), because done tests pass made-up inbox IDs (`tests/integration/tests/optout_flow.rs:102`, `help_start.rs:100`, `optout_job_notice.rs:45`, `:115`); the sweep deletes a number's `inbox_contact` rows with its inbox rows, `contact_id` (no `REFERENCES privacy.*`: a cross-schema foreign key fails `tests/integration/tests/architecture_migrations.rs`), `received_at`; SELECT and INSERT for the app role, DELETE with the rest), written once per inbound text by `messaging::api::on_inbound_text` (`app/messaging/src/optout.rs`, owned here after T357; `ON CONFLICT DO NOTHING`, so a resent delivery adds nothing); a number's last message is the later of its newest `inbox_contact.received_at` and its newest `messaging.outbox` row for that `recipient_id`; texts received before this task have no row and count from the outbox only (no live data exists before Gate C); architecture section 3 lists the table. (b) STOP, HELP and START: there is no keyword-event table; STOP and START (every channel) are `messaging.optout_event` rows, and a HELP is its inbox row and the HELP reply's outbox row, so it goes with the message logs; no table is added for them. (c) The numbers are 0195 and 0196 (T151 at 0194, T204 at 0193, each moved up one by D-3262, one more by D-3263, one more by D-3722 and one more by D-3779), both before T109's 0197 (V9). Privacy and security work (D-3753): an Opus worker, an Opus security and privacy review, and two review rounds (the second on the head the first round's fixes produce). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): `messaging` may not call `intake` (`kit/layers.json`), so the sweep cannot be a `messaging` handler: the daily task is `intake.consent_sweep`, its handler in this task's `app/intake/src/consent_purge.rs` (exported through `intake::api`, registered in the shared `app/server/src/lib.rs`), which `intake` may run because it may call `messaging` and `privacy`: the due numbers, the message-log deletes and the opt-out purge come through `messaging::api` (`app/messaging/src/consent_purge.rs`), the phone clear through `privacy::api`. Every mention of `messaging.consent_sweep` above means this task.",
-   "type": "harness",
+   "title": "messaging: the consent-purge functions, the inbound-text clock and the message-log deletes",
+   "goal": "Plan change D-3967 (Casey in chat, Nov 16, 2026: \"Let's split up the tasks if it makes things run smoother\"; nothing weakened or dropped, D-3805's pattern): T321 is split into this task, T321, now a build task because it no longer changes the harness-owned `tests/integration/tests/architecture_migrations.rs`, and T563 (harness), which runs after it. This piece is the `messaging` half: `migrations/0195_messaging_consent_purge.sql` (number unchanged) with `messaging.inbox_contact` and its explicit DELETE grant, `messaging.last_message_at(contact uuid)` (i) and `messaging.purge_expired_optout_events(contact uuid, digests bytea[])` (ii), as the text below designs them (static SQL, `SECURITY DEFINER`, the `search_path` form, `REVOKE ALL ... FROM PUBLIC`, strict 1,827-day comparisons on the database clock, never a referenced or the number's newest opt-out event); the `inbox_contact` write in `messaging::api::on_inbound_text` (`app/messaging/src/optout.rs`, D-3155 (a)); and `app/messaging/src/consent_purge.rs`'s `messaging::api` functions the sweep will call (the due numbers, the opt-out purge and the message-log deletes, `pub` through `messaging::api` and tested directly here; their production caller is T563's sweep, which the reviewer is told). TD-CON-30 cases here, in the new `tests/integration/tests/consent_purge.rs` (T563 adds its cases after this task): the `messaging` function with the database clock keeps a row and a last message seeded 1,826 days ago and removes a row whose last message and own time are 1,827 days and one minute ago; it leaves a referenced opt-out event and the newest one in place; a temporary table named `suppression` or `outbox` in the session changes nothing; the app role cannot call `messaging.last_message_at`; a message in between restarts the clock, an inbound text through its `inbox_contact` row and an outbound one through its outbox row; and the message-log deletes remove only that number's rows. T563 owns `migrations/0196_intake_consent_purge.sql`, `intake.purge_expired_consent`, the `CROSS_SCHEMA_CALLS` exception and its planted cases, the daily `intake.consent_sweep` handler (`app/intake/src/consent_purge.rs`) and its registration, the vault phone clear (`app/privacy/src/consent_phone.rs`) and the sweep, rotation and append-only cases; where the text below names them, they are T563's and are not built here. Each piece keeps D-3753's Opus worker, Opus security and privacy review and two review rounds. Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` opt-out-event and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0195_messaging_consent_purge.sql` (headed `-- messaging (T321)`) and `migrations/0196_intake_consent_purge.sql` (headed `-- intake (T321)`, the `intake` function only; `tests/integration/tests/architecture_migrations.rs` fails a migration naming another module's schema). Plan change D-3753, design (a): the two append-only tables (`intake.consent_record`, `messaging.optout_event`) get no DELETE grant, since `tests/integration/tests/schema_grants.rs` (`APPEND_ONLY`, `:51` to `:56`, `:109`, `:153`, `:317`), `app/intake/src/tests/consent.rs:317` to `:375` and `tests/integration/tests/message_log_retention.rs:291` to `:294` require the app role never to change or delete them, and they stay unchanged. The purge goes through `SECURITY DEFINER` functions owned by the migrating role, each with `SET search_path = <own schema>, pg_temp` (`pg_temp` last, the repository's form, `migrations/0157_quotes_formats.sql:20`, `tests/integration/tests/architecture_migrations.rs:756`) and every table and function name schema-qualified anyway, so no temporary table can shadow `suppression` or `outbox`; static SQL only (no `EXECUTE` of a string, TD-SEC-36); `REVOKE ALL ON FUNCTION ... FROM PUBLIC`. (i) `messaging.last_message_at(contact uuid)` (0195): the later of the number's newest `messaging.inbox_contact.received_at` and its newest `messaging.outbox` time, `NULL` when it has neither; no EXECUTE for the app role (only the definer functions call it). (ii) `messaging.purge_expired_optout_events(contact uuid, digests bytea[])` (0195, EXECUTE for `askhava_app`; `digests` are the number's blind-index digests under every index version, computed by `privacy`, so events with no inbox row (email, portal, owner and carrier opt-outs, which `optout_event` keys by digest only) are found too, as CON-022 needs; the digests come only from `privacy::api` for that contact, and the sweep is their only caller): deletes nothing unless `last_message_at` is non-null and strictly older than `now() - interval '1827 days'`, and then only that number's opt-out events themselves strictly older than that, never one a `messaging.suppression` row references and never the number's newest opt-out event (its current STOP or START evidence, kept even if a suppression row is gone). (iii) `intake.purge_expired_consent(contact uuid)` (0196, EXECUTE for `askhava_app`): the same guard through `messaging.last_message_at`, then only that number's `intake.consent_record` rows (through `intake.homeowner`'s `contact_id`) whose `consented_at` is strictly older than `now() - interval '1827 days'`. CON-022 keeps a record 5 years after the last message to that number, and `consented_at` is app-written (`migrations/0053_intake_tables.sql:57`), so row age alone could remove a 6-year-old consent of a number texted yesterday; the last-message guard is read by the database, never passed by the caller. Every function reads `now()` itself (never a time the caller passes) and returns the deleted IDs for the audit rows. The sweep calls both purge functions for a number before it deletes that number's message-log rows, in the same transaction (the guard reads those rows). The schema rule: `tests/integration/tests/architecture_migrations.rs` fails a migration naming another module's schema (`schema_refs`, `:272`, `:799`), and an `intake` marker the message path kept could not see every outbound text (`messaging` cannot call `intake`, `kit/layers.json`) and could be missed by omission, so this task (now a harness task, since that test is T226's, T250's and T252's) adds one logged exception there, as `DYNAMIC_SQL_ALLOWED` does (`:63`): a `CROSS_SCHEMA_CALLS` list with exactly one entry, `migrations/0196_intake_consent_purge.sql` may name `messaging.last_message_at(` and nothing else of `messaging`, with its reason (CON-022, D-3753; `intake` may call `messaging`, `kit/layers.json`); any other `messaging.` name in that file, the same call in any other file, and an entry whose file or call is missing each still fail, with planted cases for all three; every existing case and finding stays as it is. What the guards rest on: `last_message_at` and the suppression check read rows the app role may DELETE (`messaging.outbox`, `messaging.inbox`, `messaging.inbox_contact` and `messaging.suppression`, `schema_grants.rs:141` to `:151`, and `inbox_contact`'s explicit grant), and `received_at` and `consented_at` are app-written, so a compromised app that deleted a number's recent message rows could make it look expired; the damage stays bounded by the row-age floor, since no function removes a row that is itself less than 1,827 days old, and the newest opt-out event always stays. The message-log tables already grant DELETE (`schema_grants.rs:141` to `:151`); `messaging.inbox_contact` gets an explicit DELETE grant in its migration. (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The opt-out events a suppression row references are kept by the `messaging` function's own condition, and the app role has no DELETE on the table at all. That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; the function leaves a referenced opt-out event and the newest one in place; a message in between restarts its clock; and (D-3753) each purge function, with the database clock and strict comparisons, leaves a row and a last message seeded 1,826 days ago and removes a row whose last message and own time are 1,827 days and one minute ago (the minute keeps the test off the boundary); a 6-year-old consent record of a number last messaged yesterday is kept; a temporary table named `suppression` or `outbox` in the session changes nothing; the app role cannot call `messaging.last_message_at`; and a direct DELETE of either append-only table by the app role is still refused. Seeded rows are timed that far in the past, since the functions read the database clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files and `docs/decisions.md`, and add this task's build-note line at the end of `app/messaging/NOTES.md` (the template's rule; D-3620, D-3079, D-3468). Plan change D-3155: (a) the clock: nothing records which number an inbound text came from (`messaging.inbox` holds only `message_sid` and `received_at`, `migrations/0043_messaging_inbox_delivery.sql:22` to `:26`), so the messaging migration adds `messaging.inbox_contact` (`inbox_id` the primary key with no `REFERENCES`, as `messaging.optout_event.inbox_id` has none (`migrations/0128`), because done tests pass made-up inbox IDs (`tests/integration/tests/optout_flow.rs:102`, `help_start.rs:100`, `optout_job_notice.rs:45`, `:115`); the sweep deletes a number's `inbox_contact` rows with its inbox rows, `contact_id` (no `REFERENCES privacy.*`: a cross-schema foreign key fails `tests/integration/tests/architecture_migrations.rs`), `received_at`; SELECT and INSERT for the app role, DELETE with the rest), written once per inbound text by `messaging::api::on_inbound_text` (`app/messaging/src/optout.rs`, owned here after T357; `ON CONFLICT DO NOTHING`, so a resent delivery adds nothing); a number's last message is the later of its newest `inbox_contact.received_at` and its newest `messaging.outbox` row for that `recipient_id`; texts received before this task have no row and count from the outbox only (no live data exists before Gate C); architecture section 3 lists the table. (b) STOP, HELP and START: there is no keyword-event table; STOP and START (every channel) are `messaging.optout_event` rows, and a HELP is its inbox row and the HELP reply's outbox row, so it goes with the message logs; no table is added for them. (c) The numbers are 0195 and 0196 (T151 at 0194, T204 at 0193, each moved up one by D-3262, one more by D-3263, one more by D-3722 and one more by D-3779), both before T109's 0197 (V9). Privacy and security work (D-3753): an Opus worker, an Opus security and privacy review, and two review rounds (the second on the head the first round's fixes produce). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): `messaging` may not call `intake` (`kit/layers.json`), so the sweep cannot be a `messaging` handler: the daily task is `intake.consent_sweep`, its handler in this task's `app/intake/src/consent_purge.rs` (exported through `intake::api`, registered in the shared `app/server/src/lib.rs`), which `intake` may run because it may call `messaging` and `privacy`: the due numbers, the message-log deletes and the opt-out purge come through `messaging::api` (`app/messaging/src/consent_purge.rs`), the phone clear through `privacy::api`. Every mention of `messaging.consent_sweep` above means this task.",
+   "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "messaging",
@@ -17143,11 +17145,81 @@
    "owns": [
     "migrations/0195_messaging_consent_purge.sql",
     "app/messaging/src/consent_purge.rs",
+    "app/messaging/src/optout.rs",
+    "tests/integration/tests/consent_purge.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/privacy.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CON-022",
+    "CON-036"
+   ],
+   "tests": [
+    "TD-CON-30"
+   ],
+   "decisions": [
+    "D-2208",
+    "D-079",
+    "D-3155",
+    "D-3262",
+    "D-3263",
+    "D-3468",
+    "D-3722",
+    "D-1015",
+    "D-3753",
+    "D-1677",
+    "D-3779",
+    "D-3844",
+    "D-3882",
+    "D-3967"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 550,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T321-consent-five-year-purge",
+   "prompt": "kit/prompts/T321.md",
+   "acceptance": "TD-CON-30's `messaging`-function, clock and message-log cases pass against PostgreSQL in `tests/integration/tests/consent_purge.rs`, and every T029, T093, T356 and T357 opt-out case still passes."
+  },
+  {
+   "id": "T563",
+   "slug": "consent-purge-sweep",
+   "title": "intake and privacy: the daily consent sweep removes consent records, message logs and unsuppressed phones 5 years after a number's last message",
+   "goal": "Plan change D-3967 (Casey in chat, Nov 16, 2026: \"Let's split up the tasks if it makes things run smoother\"; nothing weakened or dropped, D-3805's pattern): T321 is split into T321 (a build task: the `messaging` half) and this task, T563, which runs after it and is the harness task, because it takes over T321's `tests/integration/tests/consent_purge.rs` and changes `tests/integration/tests/architecture_migrations.rs` (T226's, T250's and T252's): `migrations/0196_intake_consent_purge.sql` (headed `-- intake (T563)`, the task that writes it, where the text below says `-- intake (T321)`; number unchanged) with `intake.purge_expired_consent(contact uuid)` (iii); the `CROSS_SCHEMA_CALLS` exception in `architecture_migrations.rs` with exactly one entry and its three planted failing cases, every existing case and finding as it is; the daily `intake.consent_sweep` handler in `app/intake/src/consent_purge.rs` (exported through `intake::api`, registered in the shared `app/server/src/lib.rs` `worker_registry` and queued once a day, so `tests/integration/tests/task_registry.rs` passes), which per number, in one transaction, calls T321's `messaging::api` due-numbers, opt-out purge and message-log deletes and its own `intake` purge, writes the `ops` audit rows of IDs only, and then clears the locked vault phone of a number not on suppression through `privacy::api` (`app/privacy/src/consent_phone.rs`); and the `intake`, `privacy` and sweep cases of TD-CON-30 in `consent_purge.rs` (owned after T321): a number last messaged 1,826 days ago keeps everything through the sweep (its consent records, keyword and opt-out events and message logs); `intake.purge_expired_consent` with the database clock keeps a consent record and last message seeded 1,826 days ago and removes one whose last message and own time are 1,827 days and one minute ago; a 6-year-old consent record of a number last messaged yesterday is kept; at 1,827 days a number not on suppression loses its CON-022 rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation (the two-version `VAULT_INDEX_KEY` and `rotate_batch` as the text below says, not skipped); a direct UPDATE or DELETE of either append-only table by the app role is still refused; and a message in between restarts the sweep's clock. Each piece keeps D-3753's Opus worker, Opus security and privacy review and two review rounds. T321's goal, for the shared design; the parts it gives T321 are not rebuilt here: Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` opt-out-event and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0195_messaging_consent_purge.sql` (headed `-- messaging (T321)`) and `migrations/0196_intake_consent_purge.sql` (headed `-- intake (T321)`, the `intake` function only; `tests/integration/tests/architecture_migrations.rs` fails a migration naming another module's schema). Plan change D-3753, design (a): the two append-only tables (`intake.consent_record`, `messaging.optout_event`) get no DELETE grant, since `tests/integration/tests/schema_grants.rs` (`APPEND_ONLY`, `:51` to `:56`, `:109`, `:153`, `:317`), `app/intake/src/tests/consent.rs:317` to `:375` and `tests/integration/tests/message_log_retention.rs:291` to `:294` require the app role never to change or delete them, and they stay unchanged. The purge goes through `SECURITY DEFINER` functions owned by the migrating role, each with `SET search_path = <own schema>, pg_temp` (`pg_temp` last, the repository's form, `migrations/0157_quotes_formats.sql:20`, `tests/integration/tests/architecture_migrations.rs:756`) and every table and function name schema-qualified anyway, so no temporary table can shadow `suppression` or `outbox`; static SQL only (no `EXECUTE` of a string, TD-SEC-36); `REVOKE ALL ON FUNCTION ... FROM PUBLIC`. (i) `messaging.last_message_at(contact uuid)` (0195): the later of the number's newest `messaging.inbox_contact.received_at` and its newest `messaging.outbox` time, `NULL` when it has neither; no EXECUTE for the app role (only the definer functions call it). (ii) `messaging.purge_expired_optout_events(contact uuid, digests bytea[])` (0195, EXECUTE for `askhava_app`; `digests` are the number's blind-index digests under every index version, computed by `privacy`, so events with no inbox row (email, portal, owner and carrier opt-outs, which `optout_event` keys by digest only) are found too, as CON-022 needs; the digests come only from `privacy::api` for that contact, and the sweep is their only caller): deletes nothing unless `last_message_at` is non-null and strictly older than `now() - interval '1827 days'`, and then only that number's opt-out events themselves strictly older than that, never one a `messaging.suppression` row references and never the number's newest opt-out event (its current STOP or START evidence, kept even if a suppression row is gone). (iii) `intake.purge_expired_consent(contact uuid)` (0196, EXECUTE for `askhava_app`): the same guard through `messaging.last_message_at`, then only that number's `intake.consent_record` rows (through `intake.homeowner`'s `contact_id`) whose `consented_at` is strictly older than `now() - interval '1827 days'`. CON-022 keeps a record 5 years after the last message to that number, and `consented_at` is app-written (`migrations/0053_intake_tables.sql:57`), so row age alone could remove a 6-year-old consent of a number texted yesterday; the last-message guard is read by the database, never passed by the caller. Every function reads `now()` itself (never a time the caller passes) and returns the deleted IDs for the audit rows. The sweep calls both purge functions for a number before it deletes that number's message-log rows, in the same transaction (the guard reads those rows). The schema rule: `tests/integration/tests/architecture_migrations.rs` fails a migration naming another module's schema (`schema_refs`, `:272`, `:799`), and an `intake` marker the message path kept could not see every outbound text (`messaging` cannot call `intake`, `kit/layers.json`) and could be missed by omission, so this task (now a harness task, since that test is T226's, T250's and T252's) adds one logged exception there, as `DYNAMIC_SQL_ALLOWED` does (`:63`): a `CROSS_SCHEMA_CALLS` list with exactly one entry, `migrations/0196_intake_consent_purge.sql` may name `messaging.last_message_at(` and nothing else of `messaging`, with its reason (CON-022, D-3753; `intake` may call `messaging`, `kit/layers.json`); any other `messaging.` name in that file, the same call in any other file, and an entry whose file or call is missing each still fail, with planted cases for all three; every existing case and finding stays as it is. What the guards rest on: `last_message_at` and the suppression check read rows the app role may DELETE (`messaging.outbox`, `messaging.inbox`, `messaging.inbox_contact` and `messaging.suppression`, `schema_grants.rs:141` to `:151`, and `inbox_contact`'s explicit grant), and `received_at` and `consented_at` are app-written, so a compromised app that deleted a number's recent message rows could make it look expired; the damage stays bounded by the row-age floor, since no function removes a row that is itself less than 1,827 days old, and the newest opt-out event always stays. The message-log tables already grant DELETE (`schema_grants.rs:141` to `:151`); `messaging.inbox_contact` gets an explicit DELETE grant in its migration. (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The opt-out events a suppression row references are kept by the `messaging` function's own condition, and the app role has no DELETE on the table at all. That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; the function leaves a referenced opt-out event and the newest one in place; a message in between restarts its clock; and (D-3753) each purge function, with the database clock and strict comparisons, leaves a row and a last message seeded 1,826 days ago and removes a row whose last message and own time are 1,827 days and one minute ago (the minute keeps the test off the boundary); a 6-year-old consent record of a number last messaged yesterday is kept; a temporary table named `suppression` or `outbox` in the session changes nothing; the app role cannot call `messaging.last_message_at`; and a direct DELETE of either append-only table by the app role is still refused. Seeded rows are timed that far in the past, since the functions read the database clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files and `docs/decisions.md`, and add this task's build-note line at the end of `app/messaging/NOTES.md` (the template's rule; D-3620, D-3079, D-3468). Plan change D-3155: (a) the clock: nothing records which number an inbound text came from (`messaging.inbox` holds only `message_sid` and `received_at`, `migrations/0043_messaging_inbox_delivery.sql:22` to `:26`), so the messaging migration adds `messaging.inbox_contact` (`inbox_id` the primary key with no `REFERENCES`, as `messaging.optout_event.inbox_id` has none (`migrations/0128`), because done tests pass made-up inbox IDs (`tests/integration/tests/optout_flow.rs:102`, `help_start.rs:100`, `optout_job_notice.rs:45`, `:115`); the sweep deletes a number's `inbox_contact` rows with its inbox rows, `contact_id` (no `REFERENCES privacy.*`: a cross-schema foreign key fails `tests/integration/tests/architecture_migrations.rs`), `received_at`; SELECT and INSERT for the app role, DELETE with the rest), written once per inbound text by `messaging::api::on_inbound_text` (`app/messaging/src/optout.rs`, owned here after T357; `ON CONFLICT DO NOTHING`, so a resent delivery adds nothing); a number's last message is the later of its newest `inbox_contact.received_at` and its newest `messaging.outbox` row for that `recipient_id`; texts received before this task have no row and count from the outbox only (no live data exists before Gate C); architecture section 3 lists the table. (b) STOP, HELP and START: there is no keyword-event table; STOP and START (every channel) are `messaging.optout_event` rows, and a HELP is its inbox row and the HELP reply's outbox row, so it goes with the message logs; no table is added for them. (c) The numbers are 0195 and 0196 (T151 at 0194, T204 at 0193, each moved up one by D-3262, one more by D-3263, one more by D-3722 and one more by D-3779), both before T109's 0197 (V9). Privacy and security work (D-3753): an Opus worker, an Opus security and privacy review, and two review rounds (the second on the head the first round's fixes produce). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): `messaging` may not call `intake` (`kit/layers.json`), so the sweep cannot be a `messaging` handler: the daily task is `intake.consent_sweep`, its handler in this task's `app/intake/src/consent_purge.rs` (exported through `intake::api`, registered in the shared `app/server/src/lib.rs`), which `intake` may run because it may call `messaging` and `privacy`: the due numbers, the message-log deletes and the opt-out purge come through `messaging::api` (`app/messaging/src/consent_purge.rs`), the phone clear through `privacy::api`. Every mention of `messaging.consent_sweep` above means this task.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T321"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance",
+    "security"
+   ],
+   "owns": [
+    "migrations/0196_intake_consent_purge.sql",
     "app/intake/src/consent_purge.rs",
     "app/privacy/src/consent_phone.rs",
     "tests/integration/tests/consent_purge.rs",
-    "migrations/0196_intake_consent_purge.sql",
-    "app/messaging/src/optout.rs",
     "tests/integration/tests/architecture_migrations.rs"
    ],
    "reads": [
@@ -17179,12 +17251,13 @@
     "D-1677",
     "D-3779",
     "D-3844",
-    "D-3882"
+    "D-3882",
+    "D-3967"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
-    "lines": 700,
+    "files": 5,
+    "lines": 600,
     "context_pct": 22
    },
    "checks": [
@@ -17192,8 +17265,9 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T321-consent-five-year-purge",
-   "prompt": "kit/prompts/T321.md"
+   "branch": "claude/task/T563-consent-purge-sweep",
+   "prompt": "kit/prompts/T563.md",
+   "acceptance": "TD-CON-30's intake-function, sweep (1,826 and 1,827 days), vault-phone, rotation and append-only (UPDATE and DELETE refused) cases pass against PostgreSQL in `tests/integration/tests/consent_purge.rs`, `tests/integration/tests/architecture_migrations.rs` passes with its three new planted cases and every existing case and finding unchanged, and `tests/integration/tests/task_registry.rs` passes with `intake.consent_sweep` registered; every T321 case still passes."
   },
   {
    "id": "T108",
@@ -17844,7 +17918,7 @@
    "id": "T111",
    "slug": "terms-homeowner-business",
    "title": "Draft homeowner and business terms with every required clause",
-   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030). The homeowner terms describe both ways of picking (the quote page and a \"<number> YES\" text pick, TERMS-001); both terms end with the TERMS-035 General section (severability, entire agreement, no waiver, transfer, notices, the 14-day business change notice and the homeowner rule that a change applies only to later requests), and the business terms add the 30-day write-first step and the TERMS-036 account-ending clause and no-promise sentence (D-492). The new summary file fails `scripts/check_legal_docs.py` until it is listed (`DOCUMENTS`, `:45`; any other `.md` under `docs/legal/` is an error, `:460`), so this task adds `business-terms-summary-es.md` to `DOCUMENTS` and to `BUSINESS_DOCUMENTS`, and moves `tests/test_check_legal_docs.py:62`'s count from 9 to 10; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) and DONE T291's, and the test belongs to no task (D-3263). The summary starts, as every draft does, with the English draft note line and a version line naming an English month (`check_header`, `scripts/check_legal_docs.py:360`), its body in Spanish. Brand: the brand is Laftly (Laftly LLC, laftly.com, D-3347, T428). Every 'Ask Hava', 'askhava.com' or 'Ask Hava:' text prefix in the decision quotes, research notes and examples of this prompt is historical and is written as 'Laftly', 'laftly.com' and 'Laftly:' (taken from core::api::brand() or app/core/data/brand.json) in every file this task owns; a test or checklist line that names the old brand is read as the Laftly one. Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): The Spanish summary carries the WORD-002 business statement and the TERMS-026 paragraph in English word for word, each followed by its Spanish draft (TD-TERMS-03). The Spanish summary does not mention arbitration; `check_arbitration`'s pattern `arbitrat` (`scripts/check_legal_docs.py:338`) does not match \"arbitraje\", so the docs test checks that word. The text-pick clause keeps the \"<number> YES\" form. The business terms summary in English is a section of `business-terms.md`.",
+   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030). The homeowner terms describe both ways of picking (the quote page and a \"<number> YES\" text pick, TERMS-001); both terms end with the TERMS-035 General section (severability, entire agreement, no waiver, transfer, notices, the 14-day business change notice and the homeowner rule that a change applies only to later requests), and the business terms add the 30-day write-first step and the TERMS-036 account-ending clause and no-promise sentence (D-492). The new summary file fails `scripts/check_legal_docs.py` until it is listed (`DOCUMENTS`, `:45`; any other `.md` under `docs/legal/` is an error, `:460`), so this task adds `business-terms-summary-es.md` to `DOCUMENTS` and to `BUSINESS_DOCUMENTS`, and moves `tests/test_check_legal_docs.py:62`'s count from 9 to 10; no other line of either changes, except the one `REQUIRED` statement plan change D-3968 adds below. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) and DONE T291's, and the test belongs to no task (D-3263). The summary starts, as every draft does, with the English draft note line and a version line naming an English month (`check_header`, `scripts/check_legal_docs.py:360`), its body in Spanish. Brand: the brand is Laftly (Laftly LLC, laftly.com, D-3347, T428). Every 'Ask Hava', 'askhava.com' or 'Ask Hava:' text prefix in the decision quotes, research notes and examples of this prompt is historical and is written as 'Laftly', 'laftly.com' and 'Laftly:' (taken from core::api::brand() or app/core/data/brand.json) in every file this task owns; a test or checklist line that names the old brand is read as the Laftly one. Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): The Spanish summary carries the WORD-002 business statement and the TERMS-026 paragraph in English word for word, each followed by its Spanish draft (TD-TERMS-03). The Spanish summary does not mention arbitration; `check_arbitration`'s pattern `arbitrat` (`scripts/check_legal_docs.py:338`) does not match \"arbitraje\", so the docs test checks that word. The text-pick clause keeps the \"<number> YES\" form. The business terms summary in English is a section of `business-terms.md`. Plan change D-3968 (T111's attempt-1 plan gap, Nov 16, 2026): the TERMS-026 paragraph the Spanish summary must carry in English word for word holds \"There is no subcontract\", and `check_banned` (`scripts/check_legal_docs.py:414` to `:426`, run at `:458` on each document's text with only its own `REQUIRED` phrases removed by `check_phrases`, `:392` to `:411`) refuses `\\bsubcontract\\w*` (`scripts/trace_spec.py:69`, part of `BANNED` at `scripts/check_legal_docs.py:306`) in every document, so the summary fails without a `REQUIRED` entry. This task adds, right after `REQUIRED`'s closing brace (`scripts/check_legal_docs.py:305`) and before `BANNED`, exactly these four lines: `# D-3877, D-3968: the Spanish business-terms summary quotes these two English paragraphs word for word.`, `REQUIRED[\"business-terms-summary-es.md\"] = tuple(`, `    entry for entry in REQUIRED[\"business-terms.md\"] if entry[0] in (\"WORD-002\", \"TERMS-026\")`, `)`. So the summary must hold the WORD-002 business statement and the TERMS-026 paragraph word for word (as D-3877 already says), only those exact English passages are exempt from the banned-word scan there, and every banned pattern, `BANNED` and `BUSINESS_BANNED` included, still applies to the rest of the summary and unchanged to every other document. The Spanish draft that follows each English paragraph is still scanned: `\\bsubcontrat\\w*` (`scripts/trace_spec.py:78`) refuses \"subcontrato\", so the Spanish words of that sentence say it without that stem (for example \"No existe entre usted y Laftly ninguna relación de empleo, agencia, sociedad o empresa conjunta, ni ningún contrato para trabajar por cuenta de Laftly\"). No other line of `scripts/check_legal_docs.py` changes, and no case of `tests/test_check_legal_docs.py` but the count.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -17942,7 +18016,8 @@
     "D-3263",
     "D-3467",
     "D-3744",
-    "D-3877"
+    "D-3877",
+    "D-3968"
    ],
    "cites": [],
    "budget": {
@@ -18636,7 +18711,8 @@
     "T307",
     "T489",
     "T497",
-    "T536"
+    "T536",
+    "T561"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -19181,7 +19257,11 @@
     "T541",
     "T542",
     "T543",
-    "T544"
+    "T544",
+    "T561",
+    "T562",
+    "T563",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19409,7 +19489,8 @@
     "T483",
     "T490",
     "T520",
-    "T527"
+    "T527",
+    "T562"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -19655,7 +19736,11 @@
     "T542",
     "T543",
     "T544",
-    "T559"
+    "T559",
+    "T561",
+    "T562",
+    "T563",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -23039,8 +23124,8 @@
   {
    "id": "T306",
    "slug": "business-account-pages-served",
-   "title": "server and portals: the complaints page, \"Why was I charged?\", the emergency-email switch and the job page's notice log are served",
-   "goal": "These business pages are built but no route serves them (D-2128): the complaints page and its reply (`complaints_page`, `reply_to_complaint`, `COMPLAINTS_ROUTE`, `COMPLAINT_REPLY_ROUTE`, T195), \"Why was I charged?\" (`why_charged_page`, `WHY_CHARGED_ROUTE` `/b/charges/{pick}`, T068), the emergency-email switch (`emergency_switch_page`, `post_step`, `EMERGENCY_SWITCH_ROUTE`, T150) and the job page's notice log (`notice_log_page`, T198, served under the caller's pick as `/b/picks/{pick}/notices`, the pick giving the job and its number (`app/portals/src/notice_log.rs:99`), because `{job}` is no fill of the door probe, `app/server/tests/door_matrix.rs:71`; D-3112); T479's \"Not a fit for us\" choice on the job page is served here too. (1) Extend T300's `app/server/src/business_portal.rs` and T301's `app/server/src/action_links.rs` (both owned after them): every page behind the business session (`portals::api::business_principal`; none gets a 4xx with a link to `/b/sign-in`); another business's pick, complaint or job and a role the page needs missing get the one not-found answer, reading nothing from the vault; the complaint reply box only within its 5 days (BIZ-029); the emergency switch only for the caller's own person; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event. (2) Tests: `app/server/tests/business_account_route.rs` (TD-SEC-49) and `tests/e2e/business_account_served.spec.ts`. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Nov 11 code review batch 3 (D-2702, D-2711): the emergency-switch POST also serves T369's after-hours step (`SwitchStep::AfterHours`), which calls `businesses::api::set_after_hours`; TD-SEC-49 gains a case. Plan change D-3112: the door probe needs a 200 on the caller's own record for `GET /b/charges/{pick}` (`app/server/tests/door_matrix.rs:403` to `:411`), and `why_charged_page` reads `payments.charge_evidence` (`payments::api::receipt_for`, `app/payments/src/receipts.rs:84`), which only a succeeded charge writes (`app/payments/src/charge.rs:656`); T404, before this task, gives each side of the probe a charged pick for that row. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) \"Why was I charged?\" needs a quote and a fee basis that nothing stores (`WhyCharged`, `app/portals/src/receipts_page.rs:20` to `:42`; `app/portals/src/confirm_pay.rs:1035`): `job_number` comes from `jobs::api::job_number`, `quote` from `quotes::api::accepted_quote((job, business))` (`app/quotes/src/api.rs:528`), and `basis` is derived in the route from that quote's price through `payments::api::fee_for` or `period_fee_for` (`app/payments/src/rules.rs:340`): a fee with no basis (a set-tier visit) gives `Basis::OnSite`, a priced quote with a period gives `Basis::FourMonths`, any other `Basis::Quote` of the basis, the derivation logged in `docs/decisions.md`; a quote that no longer reads back gets the one not-found answer. Review round 1 (D-3890): if the tier the derived basis gives differs from the fee fixed at the pick (`payments::api::pick_fee`), the page shows no basis line rather than a guessed one: a new page function beside `why_charged_page` in `app/portals/src/receipts_page.rs` renders it without the line (`templates/why_charged.html`, owned here after T068 and T294 and before T410); `WhyCharged` keeps its fields, since `tests/integration/tests/receipts.rs:334` builds it. The notice log's pick-to-job read is `payments::api::pick_fee`, as `confirm_pay.rs:863` to `:885` uses it. (2) Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. (3) The cites `door_matrix.rs:71`, `:403` to `:411` and `app/payments/src/charge.rs:656` above are now `:89`, about `:447` to `:461` and `:744`.",
+   "title": "server and portals: the complaints page, the emergency-email switch and the job page's notice log are served",
+   "goal": "Plan change D-3967 (Casey in chat, Nov 16, 2026: \"Let's split up the tasks if it makes things run smoother\"; nothing weakened or dropped, D-3805's pattern): T306 is split into this task, T306 (the complaints page and its reply within 5 days, BIZ-029; the emergency-email switch with T369's after-hours step, BIZ-007; the job page's notice log under `/b/picks/{pick}/notices`, BIZ-045, with its pick-to-job read through `payments::api::pick_fee`; and T479's \"Not a fit for us\" choice, PICK-057; with their `PAGE_STATES` entries), and T562, which runs after it: \"Why was I charged?\" (`GET /b/charges/{pick}`, FEE-031), the fee-basis derivation of D-3890 (1) and its review-round-1 page without the basis line, `app/portals/src/receipts_page.rs` and `app/portals/templates/why_charged.html`, and the Playwright \"opens a charge's page\" case. This piece creates `tests/e2e/business_account_served.spec.ts` with TD-SEC-49's Playwright cases for its routes (a signed-in owner replies to a seeded complaint; its pages axe-clean through `PAGE_STATES`); T562 (a harness task for that reason) adds the charge-page case after it. This piece does not serve `/b/charges/{pick}` (its section 13 row names T562, so `app/server/tests/route_wiring.rs` requires it unreached) and marks only its own rows `yes`. TD-SEC-49 cases here: every case of `app/server/tests/business_account_route.rs` except the `/b/charges/{pick}` ones (the complaints page with no homeowner detail and its reply only within 5 days, the emergency switch changing only the caller's own person and its after-hours step, the notice log and the \"Not a fit for us\" choice, the not-found, no-session, `no-store`, cross-site and CSRF cases for these routes). Where the text below names \"Why was I charged?\", its basis, its files or the Playwright charge-page case, it is T562's and is not built here. These business pages are built but no route serves them (D-2128): the complaints page and its reply (`complaints_page`, `reply_to_complaint`, `COMPLAINTS_ROUTE`, `COMPLAINT_REPLY_ROUTE`, T195), \"Why was I charged?\" (`why_charged_page`, `WHY_CHARGED_ROUTE` `/b/charges/{pick}`, T068), the emergency-email switch (`emergency_switch_page`, `post_step`, `EMERGENCY_SWITCH_ROUTE`, T150) and the job page's notice log (`notice_log_page`, T198, served under the caller's pick as `/b/picks/{pick}/notices`, the pick giving the job and its number (`app/portals/src/notice_log.rs:99`), because `{job}` is no fill of the door probe, `app/server/tests/door_matrix.rs:71`; D-3112); T479's \"Not a fit for us\" choice on the job page is served here too. (1) Extend T300's `app/server/src/business_portal.rs` and T301's `app/server/src/action_links.rs` (both owned after them): every page behind the business session (`portals::api::business_principal`; none gets a 4xx with a link to `/b/sign-in`); another business's pick, complaint or job and a role the page needs missing get the one not-found answer, reading nothing from the vault; the complaint reply box only within its 5 days (BIZ-029); the emergency switch only for the caller's own person; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event. (2) Tests: `app/server/tests/business_account_route.rs` (TD-SEC-49) and `tests/e2e/business_account_served.spec.ts`. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Nov 11 code review batch 3 (D-2702, D-2711): the emergency-switch POST also serves T369's after-hours step (`SwitchStep::AfterHours`), which calls `businesses::api::set_after_hours`; TD-SEC-49 gains a case. Plan change D-3112: the door probe needs a 200 on the caller's own record for `GET /b/charges/{pick}` (`app/server/tests/door_matrix.rs:403` to `:411`), and `why_charged_page` reads `payments.charge_evidence` (`payments::api::receipt_for`, `app/payments/src/receipts.rs:84`), which only a succeeded charge writes (`app/payments/src/charge.rs:656`); T404, before this task, gives each side of the probe a charged pick for that row. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) \"Why was I charged?\" needs a quote and a fee basis that nothing stores (`WhyCharged`, `app/portals/src/receipts_page.rs:20` to `:42`; `app/portals/src/confirm_pay.rs:1035`): `job_number` comes from `jobs::api::job_number`, `quote` from `quotes::api::accepted_quote((job, business))` (`app/quotes/src/api.rs:528`), and `basis` is derived in the route from that quote's price through `payments::api::fee_for` or `period_fee_for` (`app/payments/src/rules.rs:340`): a fee with no basis (a set-tier visit) gives `Basis::OnSite`, a priced quote with a period gives `Basis::FourMonths`, any other `Basis::Quote` of the basis, the derivation logged in `docs/decisions.md`; a quote that no longer reads back gets the one not-found answer. Review round 1 (D-3890): if the tier the derived basis gives differs from the fee fixed at the pick (`payments::api::pick_fee`), the page shows no basis line rather than a guessed one: a new page function beside `why_charged_page` in `app/portals/src/receipts_page.rs` renders it without the line (`templates/why_charged.html`, owned here after T068 and T294 and before T410); `WhyCharged` keeps its fields, since `tests/integration/tests/receipts.rs:334` builds it. The notice log's pick-to-job read is `payments::api::pick_fee`, as `confirm_pay.rs:863` to `:885` uses it. (2) Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. (3) The cites `door_matrix.rs:71`, `:403` to `:411` and `app/payments/src/charge.rs:656` above are now `:89`, about `:447` to `:461` and `:744`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -23079,9 +23164,7 @@
     "app/server/src/business_portal.rs",
     "app/server/src/action_links.rs",
     "app/server/tests/business_account_route.rs",
-    "tests/e2e/business_account_served.spec.ts",
-    "app/portals/src/receipts_page.rs",
-    "app/portals/templates/why_charged.html"
+    "tests/e2e/business_account_served.spec.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -23097,7 +23180,6 @@
     "BIZ-007",
     "BIZ-029",
     "BIZ-045",
-    "FEE-031",
     "PICK-057",
     "SEC-004",
     "SEC-034",
@@ -23118,12 +23200,13 @@
     "D-3675",
     "D-3753",
     "D-3883",
-    "D-3890"
+    "D-3890",
+    "D-3967"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
-    "lines": 600,
+    "files": 4,
+    "lines": 550,
     "context_pct": 20
    },
    "checks": [
@@ -23133,13 +23216,89 @@
    ],
    "branch": "claude/task/T306-business-account-pages-served",
    "prompt": "kit/prompts/T306.md",
-   "acceptance": "TD-SEC-49 passes against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T300, T301, T195, T068, T150, T198 and T158 case still passes."
+   "acceptance": "TD-SEC-49's complaints, emergency-switch, notice-log and \"Not a fit for us\" cases pass against PostgreSQL through the assembled router, `tests/e2e/business_account_served.spec.ts`'s complaint-reply case passes in Playwright against the stand-ins, `app/server/tests/route_wiring.rs` passes with `/b/charges/{pick}` still T562's, and `Ally` passes with the new page states; every T300, T301, T195, T150, T198 and T158 case still passes."
+  },
+  {
+   "id": "T562",
+   "slug": "why-charged-served",
+   "title": "server and portals: \"Why was I charged?\" is served with the fee basis derived from the accepted quote",
+   "goal": "Plan change D-3967 (Casey in chat, Nov 16, 2026: \"Let's split up the tasks if it makes things run smoother\"; nothing weakened or dropped, D-3805's pattern): T306 is split into T306 (the complaints page and its reply within 5 days, the emergency-email switch with the after-hours step, the job page's notice log and the \"Not a fit for us\" choice) and this task, T562, which runs after it: \"Why was I charged?\" (`GET /b/charges/{pick}`, `WHY_CHARGED_ROUTE`, FEE-031): the job number (`jobs::api::job_number`), the accepted quote (`quotes::api::accepted_quote`) and the fee basis derived in the route through `payments::api::fee_for` or `period_fee_for` (D-3890 (1) below, the derivation logged in `docs/decisions.md`); a quote that no longer reads back gets the one not-found answer; when the derived basis's tier differs from the fee fixed at the pick (`payments::api::pick_fee`) the page shows no basis line, through the new page function beside `why_charged_page` in `app/portals/src/receipts_page.rs` and `app/portals/templates/why_charged.html` (both owned here after T068 and T294 and before T410; `WhyCharged` keeps its fields, `tests/integration/tests/receipts.rs:334` builds it). It extends T306's `app/server/src/business_portal.rs` and `app/server/tests/business_account_route.rs` (owned after T306) behind T306's business session, `no_store` and not-found rules; it does not touch `app/server/src/action_links.rs`. It marks its section 13 row `GET /b/charges/{pick}` `yes`, so `app/server/tests/door_matrix.rs` probes it and needs the 200 on the caller's own charged pick that T404 seeds (D-3112), and adds the page's `PAGE_STATES` entry. TD-SEC-49 cases here: `/b/charges/{pick}` shows \"Why was I charged?\" for the business's own charge (with and without the basis line), another business's pick and a missing role get the same not-found answer and read nothing from the vault, no session gets a 4xx with a link to `/b/sign-in`, `no-store`; and the Playwright half's \"opens a charge's page\" case, added to T306's `tests/e2e/business_account_served.spec.ts` after its complaint-reply case (so this is a harness task: it takes over an earlier task's test, `scripts/validate_tasks.py` `check_ownership`; every T306 case there stays as it is). T306's goal, for the shared design; the parts it gives T306 are not rebuilt here: These business pages are built but no route serves them (D-2128): the complaints page and its reply (`complaints_page`, `reply_to_complaint`, `COMPLAINTS_ROUTE`, `COMPLAINT_REPLY_ROUTE`, T195), \"Why was I charged?\" (`why_charged_page`, `WHY_CHARGED_ROUTE` `/b/charges/{pick}`, T068), the emergency-email switch (`emergency_switch_page`, `post_step`, `EMERGENCY_SWITCH_ROUTE`, T150) and the job page's notice log (`notice_log_page`, T198, served under the caller's pick as `/b/picks/{pick}/notices`, the pick giving the job and its number (`app/portals/src/notice_log.rs:99`), because `{job}` is no fill of the door probe, `app/server/tests/door_matrix.rs:71`; D-3112); T479's \"Not a fit for us\" choice on the job page is served here too. (1) Extend T300's `app/server/src/business_portal.rs` and T301's `app/server/src/action_links.rs` (both owned after them): every page behind the business session (`portals::api::business_principal`; none gets a 4xx with a link to `/b/sign-in`); another business's pick, complaint or job and a role the page needs missing get the one not-found answer, reading nothing from the vault; the complaint reply box only within its 5 days (BIZ-029); the emergency switch only for the caller's own person; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event. (2) Tests: `app/server/tests/business_account_route.rs` (TD-SEC-49) and `tests/e2e/business_account_served.spec.ts`. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Nov 11 code review batch 3 (D-2702, D-2711): the emergency-switch POST also serves T369's after-hours step (`SwitchStep::AfterHours`), which calls `businesses::api::set_after_hours`; TD-SEC-49 gains a case. Plan change D-3112: the door probe needs a 200 on the caller's own record for `GET /b/charges/{pick}` (`app/server/tests/door_matrix.rs:403` to `:411`), and `why_charged_page` reads `payments.charge_evidence` (`payments::api::receipt_for`, `app/payments/src/receipts.rs:84`), which only a succeeded charge writes (`app/payments/src/charge.rs:656`); T404, before this task, gives each side of the probe a charged pick for that row. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) \"Why was I charged?\" needs a quote and a fee basis that nothing stores (`WhyCharged`, `app/portals/src/receipts_page.rs:20` to `:42`; `app/portals/src/confirm_pay.rs:1035`): `job_number` comes from `jobs::api::job_number`, `quote` from `quotes::api::accepted_quote((job, business))` (`app/quotes/src/api.rs:528`), and `basis` is derived in the route from that quote's price through `payments::api::fee_for` or `period_fee_for` (`app/payments/src/rules.rs:340`): a fee with no basis (a set-tier visit) gives `Basis::OnSite`, a priced quote with a period gives `Basis::FourMonths`, any other `Basis::Quote` of the basis, the derivation logged in `docs/decisions.md`; a quote that no longer reads back gets the one not-found answer. Review round 1 (D-3890): if the tier the derived basis gives differs from the fee fixed at the pick (`payments::api::pick_fee`), the page shows no basis line rather than a guessed one: a new page function beside `why_charged_page` in `app/portals/src/receipts_page.rs` renders it without the line (`templates/why_charged.html`, owned here after T068 and T294 and before T410); `WhyCharged` keeps its fields, since `tests/integration/tests/receipts.rs:334` builds it. The notice log's pick-to-job read is `payments::api::pick_fee`, as `confirm_pay.rs:863` to `:885` uses it. (2) Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. (3) The cites `door_matrix.rs:71`, `:403` to `:411` and `app/payments/src/charge.rs:656` above are now `:89`, about `:447` to `:461` and `:744`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T306"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/server/src/business_portal.rs",
+    "app/server/tests/business_account_route.rs",
+    "app/portals/src/receipts_page.rs",
+    "app/portals/templates/why_charged.html",
+    "tests/e2e/business_account_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-031",
+    "SEC-004",
+    "SEC-034",
+    "SEC-042",
+    "SEC-048"
+   ],
+   "tests": [
+    "TD-SEC-49"
+   ],
+   "decisions": [
+    "D-1728",
+    "D-1955",
+    "D-2117",
+    "D-2128",
+    "D-2440",
+    "D-2711",
+    "D-3112",
+    "D-3675",
+    "D-3753",
+    "D-3883",
+    "D-3890",
+    "D-3967"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 550,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T562-why-charged-served",
+   "prompt": "kit/prompts/T562.md",
+   "acceptance": "TD-SEC-49's `/b/charges/{pick}` cases pass against PostgreSQL through the assembled router, the door probe gets its 200 on the caller's own charge, `tests/e2e/business_account_served.spec.ts` passes in Playwright against the stand-ins with the charge-page case added and every T306 case unchanged, and `Ally` passes with the page's state; every T068, T300, T301 and T306 case still passes."
   },
   {
    "id": "T307",
    "slug": "homeowner-portal-served",
-   "title": "server and portals: the homeowner portal and \"Download my data\" are served",
-   "goal": "No task serves the homeowner portal (D-2128): `portals::api` has `send_sign_in_code`, `finish_sign_in`, `homeowner_page`, `turn_texts_off`, `open_request`, `confirm_request` and `download_file`, with the route constants `HOMEOWNER_HOME_ROUTE`, `HOMEOWNER_SIGNIN_ROUTE`, `HOMEOWNER_CODE_ROUTE`, `TEXTS_OFF_ROUTE`, `DOWNLOAD_ROUTE`, `DATA_REQUEST_ROUTE` and `DATA_CODE_ROUTE` (T087, \"not served yet\", D-1934) but `server::build_router` merges none of them. (1) `app/server/src/homeowner_portal.rs` builds them: sign-in by phone and texted code (SEC-008), a 30-day session per device; a number not on file gets the same answer as one on file; the portal home, the texts-off switch (one suppression entry at once, CON-035), \"Download my data\" with only her own items (PRIV-031), the delete or copy request and its code step; none or another realm's session gets a 4xx with a link to `/h/sign-in` and no detail; every response `no_store` (SEC-034); every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/homeowner_portal_route.rs` (TD-PRIV-21) and `tests/e2e/homeowner_portal_served.spec.ts`, the code computed from the stand-in Verify's rule as TD-BIZ-42 does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. The sign-in and data-code sends call `portals::api::admit_code_send` first (the IP, then her contact when on file, so an unknown number spends the IP limit and sends nothing) and their code checks `admit_code_try` (D-1951; fourth external audit F12, D-2206). The data-request code step also offers \"Send the code again\", served through T346's `resend_request_code` (behind `admit_code_send` like every send), because a request's code challenge lives 10 minutes while the request stays open 30 days (D-2348). The homeowner sign-in and data-request functions take the router's `&PgPool`, not a connection, after T346 (D-2349): the routes pass the pool and hold no connection of their own across those calls. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): (1) The request screen of `app/portals/templates/homeowner_home.html` gains a second form (hidden `request` and `csrf`) posting to a new `/h/my-data/resend`, a route constant in `app/server/src/homeowner_portal.rs`, with a new section 13 row `| POST | /h/my-data/resend | portals | yes |`. (2) The `/h` routes are always merged, as `business_portal::served` is (`app/server/src/lib.rs:246`). The vault and ID secret are the webhooks' (`inbound_text::Webhooks`, `app/server/src/inbound_text.rs:146`, `:148`). The Verify client is a new optional `RouterParts` builder that only `main.rs` and this task's own tests pass; without it a code send sends nothing and answers the same page. `route_wiring.rs` and `door_matrix.rs` pass no new part. (3) The readers: the four download sections (`HeldItem`, `Section`, `app/portals/src/data_download.rs:394` to `:436`) read Requests through `intake::api::conversations_of_contact` (`app/intake/src/api.rs:183`) and `jobs_of_contact` (`:162`), Quotes with their IDs through `quotes::api::shown_quotes` per job (`app/quotes/src/intake.rs:720`) and their facts (business, time, wording) through `quotes::api::page_quotes` (`app/quotes/src/api.rs:179`), Consent through `intake::api::consent_records` per request (`app/intake/src/service.rs:790`), and Messages through a new reader: no `api` reader returns a contact's held message words, so the new owned `app/messaging/src/held_messages.rs`, re-exported by one `api.rs` line, returns them with contact details masked. `HomeFacts` (`app/portals/src/homeowner_portal.rs:262` to `:271`): `phone_last4` and `address` from `privacy::api::read_contact` (`app/privacy/src/api.rs:240`); `texts_on` is whether her number is off the suppression list, not `may_text` (`app/intake/src/service.rs:817`, which reads consent), and since no `messaging::api` reader answers it, `held_messages.rs` adds that reader too; `spanish` from her requests' stored language, through an existing `intake::api` reader, or reported in the task report if none exists. Budget: 600 lines. (4) `GET /h/my-data` answers a file, so it gets a reasoned `NOT_PAGES` line in the shared `tests/a11y/fixtures.ts`, not a `PAGE_STATES` entry; each `POST` checks CSRF before the realm and the realm before parsing required fields (`app/server/tests/door_matrix.rs:418` to `:441`, `:512`).",
+   "title": "server and portals: the homeowner portal's sign-in, home page and texts-off switch are served",
+   "goal": "Plan change D-3967 (Casey in chat, Nov 16, 2026: \"Let's split up the tasks if it makes things run smoother\"; nothing weakened or dropped, D-3805's pattern): T307 is split into this task, T307 (sign-in by phone and texted code with `admit_code_send` and `admit_code_try` (SEC-008, SEC-014), the 30-day session per device, the portal home with `HomeFacts`, the texts-off switch (CON-035), the always-merged `/h` routes and the optional Verify `RouterParts` builder, the `PAGE_STATES` entries for the sign-in, code and home screens), and T561, which runs after it and serves the data routes: \"Download my data\" (`GET /h/my-data`) with the four sections' readers and the held-message-words reader of D-3877 (3), the delete or copy request and its code step (a confirmed copy hands over the same file, `portals::api::Acted::Copy`, so the readers go with the request), \"Send the code again\" (`/h/my-data/resend`, D-3877 (1), with the template's second form), `GET /h/my-data`'s `NOT_PAGES` line and the Playwright \"data file downloaded\" case (PRIV-031). This piece builds and serves `/h`, `/h/sign-in`, `POST /h/sign-in`, `POST /h/sign-in/code` and `POST /h/texts-off` and marks only those section 13 rows `yes`; it does not serve the `/h/my-data` routes (their rows name T561, so `app/server/tests/route_wiring.rs` requires them unreached), adds no reader of message words, and does not change `app/portals/templates/homeowner_home.html` (T561's). It creates `tests/e2e/homeowner_portal_served.spec.ts` with TD-PRIV-21's Playwright cases for its routes: sign-in with the code computed from the stand-in Verify's rule as TD-BIZ-42 does, texts turned off, and its pages axe-clean through `PAGE_STATES`; T561 (a harness task for that reason) adds the data-file download case after it. `app/messaging/src/held_messages.rs` is created here with only the `texts_on` suppression reader of D-3877 (3), re-exported by one `api.rs` line. TD-PRIV-21 cases here: sign-in by phone and texted code, a number not on file getting the same answer as one on file; the portal home shows only her own record; the texts-off switch puts her number on the suppression list at once; another homeowner's session, a business or owner session and none each get a 4xx with a link to `/h/sign-in` and no detail on these routes; every response `no-store`; a cross-site `POST` or a wrong CSRF token is refused, changes nothing and is logged as a security event; a sign-in code send past `admit_code_send`'s limit (an unknown number too) sends nothing and a code check past `admit_code_try`'s limit calls no Verify. Where the text below names a route, reader, case or file listed above as T561's, it is T561's and is not built here. No task serves the homeowner portal (D-2128): `portals::api` has `send_sign_in_code`, `finish_sign_in`, `homeowner_page`, `turn_texts_off`, `open_request`, `confirm_request` and `download_file`, with the route constants `HOMEOWNER_HOME_ROUTE`, `HOMEOWNER_SIGNIN_ROUTE`, `HOMEOWNER_CODE_ROUTE`, `TEXTS_OFF_ROUTE`, `DOWNLOAD_ROUTE`, `DATA_REQUEST_ROUTE` and `DATA_CODE_ROUTE` (T087, \"not served yet\", D-1934) but `server::build_router` merges none of them. (1) `app/server/src/homeowner_portal.rs` builds them: sign-in by phone and texted code (SEC-008), a 30-day session per device; a number not on file gets the same answer as one on file; the portal home, the texts-off switch (one suppression entry at once, CON-035), \"Download my data\" with only her own items (PRIV-031), the delete or copy request and its code step; none or another realm's session gets a 4xx with a link to `/h/sign-in` and no detail; every response `no_store` (SEC-034); every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/homeowner_portal_route.rs` (TD-PRIV-21) and `tests/e2e/homeowner_portal_served.spec.ts`, the code computed from the stand-in Verify's rule as TD-BIZ-42 does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. The sign-in and data-code sends call `portals::api::admit_code_send` first (the IP, then her contact when on file, so an unknown number spends the IP limit and sends nothing) and their code checks `admit_code_try` (D-1951; fourth external audit F12, D-2206). The data-request code step also offers \"Send the code again\", served through T346's `resend_request_code` (behind `admit_code_send` like every send), because a request's code challenge lives 10 minutes while the request stays open 30 days (D-2348). The homeowner sign-in and data-request functions take the router's `&PgPool`, not a connection, after T346 (D-2349): the routes pass the pool and hold no connection of their own across those calls. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): (1) The request screen of `app/portals/templates/homeowner_home.html` gains a second form (hidden `request` and `csrf`) posting to a new `/h/my-data/resend`, a route constant in `app/server/src/homeowner_portal.rs`, with a new section 13 row `| POST | /h/my-data/resend | portals | yes |`. (2) The `/h` routes are always merged, as `business_portal::served` is (`app/server/src/lib.rs:246`). The vault and ID secret are the webhooks' (`inbound_text::Webhooks`, `app/server/src/inbound_text.rs:146`, `:148`). The Verify client is a new optional `RouterParts` builder that only `main.rs` and this task's own tests pass; without it a code send sends nothing and answers the same page. `route_wiring.rs` and `door_matrix.rs` pass no new part. (3) The readers: the four download sections (`HeldItem`, `Section`, `app/portals/src/data_download.rs:394` to `:436`) read Requests through `intake::api::conversations_of_contact` (`app/intake/src/api.rs:183`) and `jobs_of_contact` (`:162`), Quotes with their IDs through `quotes::api::shown_quotes` per job (`app/quotes/src/intake.rs:720`) and their facts (business, time, wording) through `quotes::api::page_quotes` (`app/quotes/src/api.rs:179`), Consent through `intake::api::consent_records` per request (`app/intake/src/service.rs:790`), and Messages through a new reader: no `api` reader returns a contact's held message words, so the new owned `app/messaging/src/held_messages.rs`, re-exported by one `api.rs` line, returns them with contact details masked. `HomeFacts` (`app/portals/src/homeowner_portal.rs:262` to `:271`): `phone_last4` and `address` from `privacy::api::read_contact` (`app/privacy/src/api.rs:240`); `texts_on` is whether her number is off the suppression list, not `may_text` (`app/intake/src/service.rs:817`, which reads consent), and since no `messaging::api` reader answers it, `held_messages.rs` adds that reader too; `spanish` from her requests' stored language, through an existing `intake::api` reader, or reported in the task report if none exists. (4) `GET /h/my-data` answers a file, so it gets a reasoned `NOT_PAGES` line in the shared `tests/a11y/fixtures.ts`, not a `PAGE_STATES` entry; each `POST` checks CSRF before the realm and the realm before parsing required fields (`app/server/tests/door_matrix.rs:418` to `:441`, `:512`). Budget: 550 lines (D-3967).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -23160,9 +23319,8 @@
    "owns": [
     "app/server/src/homeowner_portal.rs",
     "app/server/tests/homeowner_portal_route.rs",
-    "tests/e2e/homeowner_portal_served.spec.ts",
-    "app/portals/templates/homeowner_home.html",
-    "app/messaging/src/held_messages.rs"
+    "app/messaging/src/held_messages.rs",
+    "tests/e2e/homeowner_portal_served.spec.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -23179,7 +23337,6 @@
     "SEC-042",
     "SEC-046",
     "SEC-048",
-    "PRIV-031",
     "CON-035",
     "SEC-014"
    ],
@@ -23194,7 +23351,80 @@
     "D-1951",
     "D-2348",
     "D-2440",
-    "D-3877"
+    "D-3877",
+    "D-3967"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 550,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T307-homeowner-portal-served",
+   "prompt": "kit/prompts/T307.md",
+   "acceptance": "TD-PRIV-21's sign-in, home, texts-off, realm, no-store, CSRF and code-limit cases for this piece's routes pass against PostgreSQL through the assembled router, `tests/e2e/homeowner_portal_served.spec.ts`'s sign-in and texts-off cases pass in Playwright against the stand-ins, `app/server/tests/route_wiring.rs` passes with the `/h/my-data` rows still T561's, and `Ally` passes with the new page states; every T087 case still passes."
+  },
+  {
+   "id": "T561",
+   "slug": "homeowner-data-served",
+   "title": "server and portals: the homeowner's \"Download my data\" and her delete or copy request are served",
+   "goal": "Plan change D-3967 (Casey in chat, Nov 16, 2026: \"Let's split up the tasks if it makes things run smoother\"; nothing weakened or dropped, D-3805's pattern): T307 is split into T307 (sign-in by phone and code, the 30-day session, the portal home and the texts-off switch) and this task, T561, which runs after it and serves the data routes: \"Download my data\" (`GET /h/my-data`, `DOWNLOAD_ROUTE`) with the four sections' readers of D-3877 (3) below and the held-message-words reader added to `app/messaging/src/held_messages.rs` (re-exported by one `api.rs` line, contact details masked), the delete or copy request (`POST /h/my-data/request`, `DATA_REQUEST_ROUTE`) and its code step (`POST /h/my-data/code`, `DATA_CODE_ROUTE`), whose confirmed copy hands over the same file (`portals::api::Acted::Copy`, `download_file`, `app/portals/src/data_download.rs:133` to `:138`) and whose confirmed delete answers the PRIV-011 sentence, and \"Send the code again\" (`POST /h/my-data/resend`, D-3877 (1): the second form on the request screen of `app/portals/templates/homeowner_home.html`, owned here, and its new section 13 row `| POST | /h/my-data/resend | portals | yes |`), every code send behind `admit_code_send` and every code check behind `admit_code_try` (SEC-014, D-1951, D-2206), and `GET /h/my-data`'s reasoned `NOT_PAGES` line in the shared `tests/a11y/fixtures.ts` (D-3877 (4)) and the request screen's `PAGE_STATES` entry. It extends T307's `app/server/src/homeowner_portal.rs`, `app/server/tests/homeowner_portal_route.rs` and `held_messages.rs` (owned after T307) and adds the routes to T307's always-merged `/h` routes, behind T307's homeowner session, `no_store`, `refuse_cross_site` and the CSRF check (CSRF before the realm, the realm before required fields), passing T307's optional Verify `RouterParts` part; it marks its section 13 rows (`GET /h/my-data`, `POST /h/my-data/request`, `POST /h/my-data/code`) `yes`. TD-PRIV-21 cases here: \"Download my data\" holds only her own items, a delete or copy request acts only after its code (a copy hands over the file, a delete answers the PRIV-011 sentence), a request code send past `admit_code_send`'s limit sends nothing and a code check past `admit_code_try`'s limit calls no Verify, and the realm, `no-store` and cross-site and CSRF cases for these routes; and the Playwright half's \"the data file downloaded\" case, added to T307's `tests/e2e/homeowner_portal_served.spec.ts` after T307's sign-in and texts-off cases (so this is a harness task: it takes over an earlier task's test, `scripts/validate_tasks.py` `check_ownership`; every T307 case there stays as it is). T307's goal, for the shared design (the readers, the session, the door rules); the parts it gives T307 are not rebuilt here: No task serves the homeowner portal (D-2128): `portals::api` has `send_sign_in_code`, `finish_sign_in`, `homeowner_page`, `turn_texts_off`, `open_request`, `confirm_request` and `download_file`, with the route constants `HOMEOWNER_HOME_ROUTE`, `HOMEOWNER_SIGNIN_ROUTE`, `HOMEOWNER_CODE_ROUTE`, `TEXTS_OFF_ROUTE`, `DOWNLOAD_ROUTE`, `DATA_REQUEST_ROUTE` and `DATA_CODE_ROUTE` (T087, \"not served yet\", D-1934) but `server::build_router` merges none of them. (1) `app/server/src/homeowner_portal.rs` builds them: sign-in by phone and texted code (SEC-008), a 30-day session per device; a number not on file gets the same answer as one on file; the portal home, the texts-off switch (one suppression entry at once, CON-035), \"Download my data\" with only her own items (PRIV-031), the delete or copy request and its code step; none or another realm's session gets a 4xx with a link to `/h/sign-in` and no detail; every response `no_store` (SEC-034); every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/homeowner_portal_route.rs` (TD-PRIV-21) and `tests/e2e/homeowner_portal_served.spec.ts`, the code computed from the stand-in Verify's rule as TD-BIZ-42 does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. The sign-in and data-code sends call `portals::api::admit_code_send` first (the IP, then her contact when on file, so an unknown number spends the IP limit and sends nothing) and their code checks `admit_code_try` (D-1951; fourth external audit F12, D-2206). The data-request code step also offers \"Send the code again\", served through T346's `resend_request_code` (behind `admit_code_send` like every send), because a request's code challenge lives 10 minutes while the request stays open 30 days (D-2348). The homeowner sign-in and data-request functions take the router's `&PgPool`, not a connection, after T346 (D-2349): the routes pass the pool and hold no connection of their own across those calls. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): (1) The request screen of `app/portals/templates/homeowner_home.html` gains a second form (hidden `request` and `csrf`) posting to a new `/h/my-data/resend`, a route constant in `app/server/src/homeowner_portal.rs`, with a new section 13 row `| POST | /h/my-data/resend | portals | yes |`. (2) The `/h` routes are always merged, as `business_portal::served` is (`app/server/src/lib.rs:246`). The vault and ID secret are the webhooks' (`inbound_text::Webhooks`, `app/server/src/inbound_text.rs:146`, `:148`). The Verify client is a new optional `RouterParts` builder that only `main.rs` and this task's own tests pass; without it a code send sends nothing and answers the same page. `route_wiring.rs` and `door_matrix.rs` pass no new part. (3) The readers: the four download sections (`HeldItem`, `Section`, `app/portals/src/data_download.rs:394` to `:436`) read Requests through `intake::api::conversations_of_contact` (`app/intake/src/api.rs:183`) and `jobs_of_contact` (`:162`), Quotes with their IDs through `quotes::api::shown_quotes` per job (`app/quotes/src/intake.rs:720`) and their facts (business, time, wording) through `quotes::api::page_quotes` (`app/quotes/src/api.rs:179`), Consent through `intake::api::consent_records` per request (`app/intake/src/service.rs:790`), and Messages through a new reader: no `api` reader returns a contact's held message words, so the new owned `app/messaging/src/held_messages.rs`, re-exported by one `api.rs` line, returns them with contact details masked. `HomeFacts` (`app/portals/src/homeowner_portal.rs:262` to `:271`): `phone_last4` and `address` from `privacy::api::read_contact` (`app/privacy/src/api.rs:240`); `texts_on` is whether her number is off the suppression list, not `may_text` (`app/intake/src/service.rs:817`, which reads consent), and since no `messaging::api` reader answers it, `held_messages.rs` adds that reader too; `spanish` from her requests' stored language, through an existing `intake::api` reader, or reported in the task report if none exists. (4) `GET /h/my-data` answers a file, so it gets a reasoned `NOT_PAGES` line in the shared `tests/a11y/fixtures.ts`, not a `PAGE_STATES` entry; each `POST` checks CSRF before the realm and the realm before parsing required fields (`app/server/tests/door_matrix.rs:418` to `:441`, `:512`). Budget: 600 lines (D-3967).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T307"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/homeowner_portal.rs",
+    "app/server/tests/homeowner_portal_route.rs",
+    "app/messaging/src/held_messages.rs",
+    "app/portals/templates/homeowner_home.html",
+    "tests/e2e/homeowner_portal_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/privacy.md",
+    "docs/spec/consent.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PRIV-031",
+    "SEC-014",
+    "SEC-034",
+    "SEC-042",
+    "SEC-046",
+    "SEC-048"
+   ],
+   "tests": [
+    "TD-PRIV-21"
+   ],
+   "decisions": [
+    "D-1934",
+    "D-1728",
+    "D-2128",
+    "D-2206",
+    "D-1951",
+    "D-2348",
+    "D-2440",
+    "D-3877",
+    "D-3967"
    ],
    "cites": [],
    "budget": {
@@ -23207,9 +23437,9 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T307-homeowner-portal-served",
-   "prompt": "kit/prompts/T307.md",
-   "acceptance": "TD-PRIV-21 passes against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T087 case still passes."
+   "branch": "claude/task/T561-homeowner-data-served",
+   "prompt": "kit/prompts/T561.md",
+   "acceptance": "TD-PRIV-21's download, data-request, resend and code-limit cases pass against PostgreSQL through the assembled router, `tests/e2e/homeowner_portal_served.spec.ts` passes in Playwright against the stand-ins with the download case added and every T307 case unchanged, and `Ally` passes with the request screen's state and `GET /h/my-data`'s `NOT_PAGES` line; every T087 and T307 case still passes."
   },
   {
    "id": "T308",
@@ -33153,8 +33383,8 @@
   {
    "id": "T361",
    "slug": "pick-bound-to-business",
-   "title": "quotes and picks: a quote keeps its number once shown, and a pick resolves to the business it was shown for",
-   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business, so a quote confirmed or edited after a later one, or a withdrawal, shifts the numbers and a pick can land on, notify and charge another business (D-2632 gives the sequence). Plan change D-3497 split this task in two: this task stores the shown number and binds the pick in `quotes` and `picks`; T441 makes the quote page and the review, pick and code forms use them. Today `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering; an AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`. Fix: (1) `migrations/0202_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; the migration backfills existing confirmed rows per job in `(received_at, business_id)` order, adds a unique index on `(job_id, shown_number)` and a `BEFORE INSERT OR UPDATE OF confirmed` trigger on `quotes.quote` (own schema only, no `DO`, as `migrations/0157_quotes_formats.sql:19` to `:28` does) that gives a confirmed row with no `shown_number` the job's highest plus one, so rows inserted by SQL in done tests are numbered; the Rust paths set the number under the job's lock in the same statement, so the trigger only fills a number they left empty; `list_rows` and the text pick order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes that order); `page_quotes` keeps `ORDER BY received_at, business_id` and `page_pick` its position until T441, because `number_quotes` (`app/portals/src/quote_page.rs:77` to `:78`) sorts by arrival itself and `page_pick` resolves a list position (`app/picks/src/service.rs:729` to `:737`); a withdrawn quote keeps its place and number (T384 already keeps it in place, D-2912) and an unconfirmed edit keeps its number while it waits; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches callers only through a new read, defined in `app/quotes/src/models.rs` and re-exported by one line in `quotes::api` (D-3144), and the new business-bound entry point. (2) `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests, D-3144), and a new business-bound entry point beside it, reached through `picks::api`, takes the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret) and answers `Taken` when the number no longer maps to that business; the text pick answers `Taken` the same way; so nothing is stored, notified or charged for another business. The new entry point and the text pick resolve a number by its shown number, never its list position; until T441 merges, the quote page still numbers by position through `number_quotes`, so `page_pick` keeps resolving a number by its position in the list the page shows (still arrival order), and the page and the pick it posts always agree; T441 moves the page to the shown number and the new entry point together (D-3497). (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60) through `quotes::api` and `picks::api`, each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912). Every TD-PICK case passes unchanged. Update the `quotes` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3744: its budget is 550 lines. Plan change D-3883: this task's migration moved up one, to `0202_quotes_shown_number.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history.",
+   "title": "quotes and picks: a quote keeps its number once shown, and a pick re-reads its quote",
+   "goal": "Plan change D-3999 split this task in two (attempt 1's plan gap and its review): this task's share is part (1)'s storage only, `migrations/0202_quotes_shown_number.sql` (the column, the backfill, the unique index and the trigger), the number assigned once under the job's row lock in `submit_quote` and `confirm_quote_at` (`app/quotes/src/intake.rs`), the new shown-number read in `app/quotes/src/models.rs` re-exported by one line in `quotes::api`, and part (3), `new_pick`'s re-read (`app/picks/src/service.rs`); T564, right after it, does everything that reads the number: the LIST and text-pick renumbering, the business-bound entry point, PICK-046's lapse text, PICK-030's opted-out \"<number> YES\" and the waiting-pick comparisons. Nothing reads the shown number after this task alone, so `list_rows`, the text pick, `page_quotes` and `page_pick` keep arrival order and every channel still agrees. Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60's storage cases): a quote shown first gets 1 and keeps it through a later confirm, an AI-read edit and a withdrawal; backfilled and trigger-filled numbers; a withdrawal committed between a caller's check and the move answers `Taken`. The goal below is the original's, for the shared design, which neither piece rebuilds: Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business, so a quote confirmed or edited after a later one, or a withdrawal, shifts the numbers and a pick can land on, notify and charge another business (D-2632 gives the sequence). Plan change D-3497 split this task in two: this task stores the shown number and binds the pick in `quotes` and `picks`; T441 makes the quote page and the review, pick and code forms use them. Today `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering; an AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`. Fix: (1) `migrations/0202_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; the migration backfills existing confirmed rows per job in `(received_at, business_id)` order, adds a unique index on `(job_id, shown_number)` and a `BEFORE INSERT OR UPDATE OF confirmed` trigger on `quotes.quote` (own schema only, no `DO`, as `migrations/0157_quotes_formats.sql:19` to `:28` does) that gives a confirmed row with no `shown_number` the job's highest plus one, so rows inserted by SQL in done tests are numbered; the Rust paths set the number under the job's lock in the same statement, so the trigger only fills a number they left empty; `list_rows` and the text pick order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes that order); `page_quotes` keeps `ORDER BY received_at, business_id` and `page_pick` its position until T441, because `number_quotes` (`app/portals/src/quote_page.rs:77` to `:78`) sorts by arrival itself and `page_pick` resolves a list position (`app/picks/src/service.rs:729` to `:737`); a withdrawn quote keeps its place and number (T384 already keeps it in place, D-2912) and an unconfirmed edit keeps its number while it waits; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches callers only through a new read, defined in `app/quotes/src/models.rs` and re-exported by one line in `quotes::api` (D-3144), and the new business-bound entry point. (2) `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests, D-3144), and a new business-bound entry point beside it, reached through `picks::api`, takes the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret) and answers `Taken` when the number no longer maps to that business; the text pick answers `Taken` the same way; so nothing is stored, notified or charged for another business. The new entry point and the text pick resolve a number by its shown number, never its list position; until T441 merges, the quote page still numbers by position through `number_quotes`, so `page_pick` keeps resolving a number by its position in the list the page shows (still arrival order), and the page and the pick it posts always agree; T441 moves the page to the shown number and the new entry point together (D-3497). (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60) through `quotes::api` and `picks::api`, each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912). Every TD-PICK case passes unchanged. Update the `quotes` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3744: its budget is 550 lines. Plan change D-3883: this task's migration moved up one, to `0202_quotes_shown_number.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -33203,8 +33433,6 @@
    ],
    "requirements": [
     "PICK-008",
-    "PICK-016",
-    "TERMS-016",
     "PRIV-005"
    ],
    "tests": [
@@ -33223,12 +33451,13 @@
     "D-3744",
     "D-3779",
     "D-3878",
-    "D-3883"
+    "D-3883",
+    "D-3999"
    ],
    "cites": [],
    "budget": {
     "files": 6,
-    "lines": 550,
+    "lines": 400,
     "context_pct": 27
    },
    "checks": [
@@ -33237,7 +33466,87 @@
     "Ally"
    ],
    "branch": "claude/task/T361-pick-bound-to-business",
-   "prompt": "kit/prompts/T361.md"
+   "prompt": "kit/prompts/T361.md",
+   "acceptance": "TD-PICK-60's storage cases in `tests/integration/tests/pick_bound_business.rs` pass against PostgreSQL, each failing on `main` before this task (the withdrawal re-read case may already pass, D-2912); every TD-PICK case and every existing quotes and picks test passes unchanged."
+  },
+  {
+   "id": "T564",
+   "slug": "pick-shown-number-readers",
+   "title": "quotes, picks and intake: the LIST, text picks, lapse text and opted-out YES use the kept number, and a pick is bound to its business",
+   "goal": "Plan change D-3999 split T361 in two; this is the second piece, after T361 has stored the shown number and its read. Its share: (a) `list_rows` (`app/quotes/src/models.rs:685`) orders by the shown number and `list_lines` and the LIST texts (`app/quotes/src/notify.rs:462`) number each line by it; the text pick (`app/picks/src/service.rs`, `view` at `:252`) resolves a number by it. (b) Part (2)'s business-bound entry point beside `page_pick`, reached through `picks::api`, and the text pick answering `Taken` when the number no longer maps to the business. (c) PICK-046's lapse text, `lapsed_body` (`app/intake/src/job_texts.rs:459`), numbers the quotes it keeps by page place (`:472`) and keeps the LIST lines with those numbers (`:494`); it pairs each pickable page quote's business with its shown number from T361's read before `lapse_plan` and the LIST filter, so `others` and the lines use one numbering (A AI-read at t0, B by form at t0+5m, B shown #1, A #2: with page places, B's lapse text offers B and leaves out A). (d) PICK-030's opted-out \"<number> YES\", `opted_out_yes` (`app/picks/src/email_code.rs:223`), builds its view from page places (`job_view`, `:198`) and picks by page place (`:241`); its number comes from a LIST or lapse text, so it builds its view as the text pick does and picks through the business-bound entry point with the business the number was shown for (`Taken` answers `OptedOutYes::Nothing`). (e) The waiting pick: `picks.pick.quote_number` stays the page place in every channel until T441: `new_pick` keeps storing the page position of the business the number resolved to (the business-bound entry point and the text pick map their business to its page place first), so T157's `backup_choice.rs` (`backup_changed`, `:211` to `:216`; `ended_pick` to `backup_target`, `:302` to `:318`, `:62`), which compares the stored number with page places, stays right with no edit; T441 moves the stored number with the page. Every comparison in this task's files still goes by `business_id`: wherever a waiting pick is compared with the number being picked (`pick_quote`, `:351`; `JobView.waiting` built in `view` and `job_view`; `pick_on_page`, `:714`; `waiting_quote`, `:657`), compare its `business_id` (`models::waiting_pick` returns it) with the business that number resolves to in that channel's numbering (the shown number for texts, the page place for the page until T441), never the stored `quote_number` (with A picked on the page as place 1 and B shown #1, a text \"1 YES\" would otherwise answer Same and never pick B, and \"2 YES\" would end A's pick and pick A again). `backup_choice.rs` stays on page places until T441: a backup is named only on the page form and `backup_target` also checks the business (`app/picks/src/backup_choice.rs:62` to `:64`). Tests in `tests/integration/tests/pick_bound_business.rs` (after T361's cases), each failing on `main`: TD-PICK-60's pick cases (finish #1 after the reorder, the AI-read edit and the withdrawal, never A's), \"2 YES\" after a reorder picks the business shown as #2, B's lapse text lists A as #2 and never B, an opted-out \"1 YES\" picks B, with A picked on the page a text \"1 YES\" replaces it with B and \"2 YES\" answers Same, and after a text \"1 YES\" for B the stored `quote_number` is B's page place (2). Every T328 `pick_ended.rs` and T095 `email_pick_code.rs` case passes unchanged. This is a harness piece by D-3967's pattern (D-3805). The goal below is the original's, for the shared design, which neither piece rebuilds: Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business, so a quote confirmed or edited after a later one, or a withdrawal, shifts the numbers and a pick can land on, notify and charge another business (D-2632 gives the sequence). Plan change D-3497 split this task in two: this task stores the shown number and binds the pick in `quotes` and `picks`; T441 makes the quote page and the review, pick and code forms use them. Today `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering; an AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`. Fix: (1) `migrations/0202_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; the migration backfills existing confirmed rows per job in `(received_at, business_id)` order, adds a unique index on `(job_id, shown_number)` and a `BEFORE INSERT OR UPDATE OF confirmed` trigger on `quotes.quote` (own schema only, no `DO`, as `migrations/0157_quotes_formats.sql:19` to `:28` does) that gives a confirmed row with no `shown_number` the job's highest plus one, so rows inserted by SQL in done tests are numbered; the Rust paths set the number under the job's lock in the same statement, so the trigger only fills a number they left empty; `list_rows` and the text pick order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes that order); `page_quotes` keeps `ORDER BY received_at, business_id` and `page_pick` its position until T441, because `number_quotes` (`app/portals/src/quote_page.rs:77` to `:78`) sorts by arrival itself and `page_pick` resolves a list position (`app/picks/src/service.rs:729` to `:737`); a withdrawn quote keeps its place and number (T384 already keeps it in place, D-2912) and an unconfirmed edit keeps its number while it waits; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches callers only through a new read, defined in `app/quotes/src/models.rs` and re-exported by one line in `quotes::api` (D-3144), and the new business-bound entry point. (2) `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests, D-3144), and a new business-bound entry point beside it, reached through `picks::api`, takes the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret) and answers `Taken` when the number no longer maps to that business; the text pick answers `Taken` the same way; so nothing is stored, notified or charged for another business. The new entry point and the text pick resolve a number by its shown number, never its list position; until T441 merges, the quote page still numbers by position through `number_quotes`, so `page_pick` keeps resolving a number by its position in the list the page shows (still arrival order), and the page and the pick it posts always agree; T441 moves the page to the shown number and the new entry point together (D-3497). (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60) through `quotes::api` and `picks::api`, each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912). Every TD-PICK case passes unchanged. Update the `quotes` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3744: its budget is 550 lines. Plan change D-3883: this task's migration moved up one, to `0202_quotes_shown_number.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T361"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/quotes/src/models.rs",
+    "app/quotes/src/notify.rs",
+    "app/picks/src/service.rs",
+    "app/picks/src/email_code.rs",
+    "app/intake/src/job_texts.rs",
+    "tests/integration/tests/pick_bound_business.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/terms.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/privacy.md"
+   ],
+   "requirements": [
+    "PICK-008",
+    "PICK-016",
+    "TERMS-016",
+    "PRIV-005",
+    "PICK-046",
+    "PICK-030"
+   ],
+   "tests": [
+    "TD-PICK-60"
+   ],
+   "decisions": [
+    "D-2632",
+    "D-2631",
+    "D-084",
+    "D-2912",
+    "D-3144",
+    "D-3262",
+    "D-3263",
+    "D-3497",
+    "D-3722",
+    "D-3744",
+    "D-3779",
+    "D-3878",
+    "D-3883",
+    "D-3999"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 600,
+    "context_pct": 27
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T564-pick-shown-number-readers",
+   "prompt": "kit/prompts/T564.md",
+   "acceptance": "TD-PICK-60's reorder, lapse-text, opted-out and waiting-pick cases in `tests/integration/tests/pick_bound_business.rs` pass against PostgreSQL, each failing on `main` before this task; every TD-PICK case, every T328 `pick_ended.rs` and T095 `email_pick_code.rs` case and every existing quotes, picks and intake test passes unchanged."
   },
   {
    "id": "T407",
@@ -33329,7 +33638,7 @@
    "id": "T441",
    "slug": "pick-forms-carry-business",
    "title": "portals: the quote page shows the kept number, and the pick forms carry the business it was shown for",
-   "goal": "Plan change D-3497 split T361 in two (D-2632; PICK-008, PRIV-005): T361 stores each quote's shown number, orders `page_quotes` and the LIST by it, gives a `quotes::api` read of the shown numbers and a `picks::api` business-bound pick entry point that answers `Taken` when a number no longer maps to the business; this task makes the pages use them. The quote page numbers each quote by its shown number through T361's read and a new numbering function beside `portals`' `number_quotes` (`app/portals/src/quote_page.rs:61`, rendered at `:257`), which keeps its signature for `app/portals/src/tests/prop_arrival_order.rs` (D-3144); a withdrawn quote keeps its place and number, shown as \"Withdrawn by the business\". The review, pick and code forms (`app/portals/templates/quote_page.html`, `pick_review.html`, `pick_code.html`, posted to `app/portals/src/pick_flow.rs`) carry the business the number was shown for, in the form T361's entry point takes, and `pick_flow.rs` calls that entry point and treats `Taken` as it treats any quote that can no longer be picked, so nothing is stored, notified or charged for another business. Tests in `tests/integration/tests/pick_bound_forms.rs` (TD-PICK-64) against real PostgreSQL, fake data only. Every TD-PICK case passes unchanged. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3878: after T361, `page_quotes` still lists in arrival order and `page_pick` still resolves a list position, so this task's numbering function orders by the shown number itself and the pick forms post only through T361's business-bound entry point. Plan change D-3879 (Fable's pre-claim check of stage-5 wave 2, Nov 16, 2026): Done tests post `quote=N` with no business field (`tests/integration/tests/page_pick.rs:131`, `:139`, `pick_contact_choice.rs:124`, `:343`, `tier_pick_pages.rs`, `share_and_cant_take.rs:264` to `:339`, `backup_choice.rs:298`, `:309`, `tests/security/tests/page_pick_privacy.rs`, `quote_token.rs:168`, `auth_matrix.rs:463`), and `PickForm` and `CodeForm` are `deny_unknown_fields` (`app/portals/src/pick_flow.rs:131`, `:840`). The business field is optional on all three forms (`#[serde(default)]`). A post without it resolves the number to its business through T361's shown-number read (a shown number never moves, so the mapping cannot shift) and then calls the business-bound entry point; a post whose field names another business than the number's is `Taken`. The done tests that post `quote=N` alone pass unchanged. The two `number_quotes` calls in `pick_flow.rs` (`:553` for the packages, `:807` for the available numbers) move to the new numbering function, so the page, the packages and the pick all use the shown number.",
+   "goal": "Plan change D-3497 split T361 in two (D-2632; PICK-008, PRIV-005): T361 stores each quote's shown number, orders `page_quotes` and the LIST by it, gives a `quotes::api` read of the shown numbers and a `picks::api` business-bound pick entry point that answers `Taken` when a number no longer maps to the business; this task makes the pages use them. The quote page numbers each quote by its shown number through T361's read and a new numbering function beside `portals`' `number_quotes` (`app/portals/src/quote_page.rs:61`, rendered at `:257`), which keeps its signature for `app/portals/src/tests/prop_arrival_order.rs` (D-3144); a withdrawn quote keeps its place and number, shown as \"Withdrawn by the business\". The review, pick and code forms (`app/portals/templates/quote_page.html`, `pick_review.html`, `pick_code.html`, posted to `app/portals/src/pick_flow.rs`) carry the business the number was shown for, in the form T361's entry point takes, and `pick_flow.rs` calls that entry point and treats `Taken` as it treats any quote that can no longer be picked, so nothing is stored, notified or charged for another business. Tests in `tests/integration/tests/pick_bound_forms.rs` (TD-PICK-64) against real PostgreSQL, fake data only. Every TD-PICK case passes unchanged. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3878: after T361, `page_quotes` still lists in arrival order and `page_pick` still resolves a list position, so this task's numbering function orders by the shown number itself and the pick forms post only through T361's business-bound entry point. Plan change D-3879 (Fable's pre-claim check of stage-5 wave 2, Nov 16, 2026): Done tests post `quote=N` with no business field (`tests/integration/tests/page_pick.rs:131`, `:139`, `pick_contact_choice.rs:124`, `:343`, `tier_pick_pages.rs`, `share_and_cant_take.rs:264` to `:339`, `backup_choice.rs:298`, `:309`, `tests/security/tests/page_pick_privacy.rs`, `quote_token.rs:168`, `auth_matrix.rs:463`), and `PickForm` and `CodeForm` are `deny_unknown_fields` (`app/portals/src/pick_flow.rs:131`, `:840`). The business field is optional on all three forms (`#[serde(default)]`). A post without it resolves the number to its business through T361's shown-number read (a shown number never moves, so the mapping cannot shift) and then calls the business-bound entry point; a post whose field names another business than the number's is `Taken`. The done tests that post `quote=N` alone pass unchanged. The two `number_quotes` calls in `pick_flow.rs` (`:553` for the packages, `:807` for the available numbers) move to the new numbering function, so the page, the packages and the pick all use the shown number. Plan change D-3999: T361 was split; the shown-number LIST, the text pick and the business-bound entry point this task uses are T564's, so it follows T564.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -33351,7 +33660,8 @@
     "T388",
     "T308",
     "T384",
-    "T440"
+    "T440",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33395,7 +33705,8 @@
     "D-3263",
     "D-3497",
     "D-3878",
-    "D-3879"
+    "D-3879",
+    "D-3999"
    ],
    "cites": [],
    "budget": {
@@ -33415,7 +33726,7 @@
    "id": "T382",
    "slug": "verify-max-tries-cooldown",
    "title": "picks, businesses and portals: Twilio Verify's \"too many tries\" is a cooldown, never an error page",
-   "goal": "Nov 11 vendor-double review batch 4, F10 (callers' half; D-2769; PICK-013, SEC-004, SEC-008, BIZ-002, TXT-038). A Verify resend within the code's 10-minute life reuses the pending verification and its check attempts, so after the app allows a new code's tries Twilio can answer a check with 60202 (HTTP 429, too many attempts), and a send with 60203; the app counts tries per code row (`CODE_TRIES`, `app/picks/src/rules.rs:13`; `app/portals/src/business_auth.rs:88`) and maps any check error to `PicksError::Verify` (`app/picks/src/service.rs:790`), so the homeowner or business sees an error, not \"try again in 15 minutes\". After T131 (whose adapter returns a typed too-many-tries error) and the queued owners of these files: each caller (`app/picks/src/service.rs` and `app/picks/src/email_code.rs` for the pick code, `app/businesses/src/identity.rs` for the identity code, `app/portals/src/business_auth.rs` for sign-in) maps that error to its own cooldown (`CodeCheck::CoolingDown(at + COOLDOWN)` for the pick code; the existing lock-out of the other two), which outlasts the 10-minute verification so the next send starts a fresh one; any other adapter error keeps today's answer. Tests in `tests/integration/tests/verify_max_tries.rs` against the served stand-in (T131's faithful attempts): three wrong tries, a resend, then two more wrong tries; the third check after the resend (Twilio's sixth attempt on that verification, 60202) answers the cooldown, not an error (fails before the fix), for each of the three flows. Update the `picks`, `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 11 vendor-double review batch 4, F10 (callers' half; D-2769; PICK-013, SEC-004, SEC-008, BIZ-002, TXT-038). A Verify resend within the code's 10-minute life reuses the pending verification and its check attempts, so after the app allows a new code's tries Twilio can answer a check with 60202 (HTTP 429, too many attempts), and a send with 60203; the app counts tries per code row (`CODE_TRIES`, `app/picks/src/rules.rs:13`; `app/portals/src/business_auth.rs:88`) and maps any check error to `PicksError::Verify` (`app/picks/src/service.rs:790`), so the homeowner or business sees an error, not \"try again in 15 minutes\". After T131 (whose adapter returns a typed too-many-tries error) and the queued owners of these files: each caller (`app/picks/src/service.rs` and `app/picks/src/email_code.rs` for the pick code, `app/businesses/src/identity.rs` for the identity code, `app/portals/src/business_auth.rs` for sign-in) maps that error to its own cooldown (`CodeCheck::CoolingDown(at + COOLDOWN)` for the pick code; the existing lock-out of the other two), which outlasts the 10-minute verification so the next send starts a fresh one; any other adapter error keeps today's answer. Tests in `tests/integration/tests/verify_max_tries.rs` against the served stand-in (T131's faithful attempts): three wrong tries, a resend, then two more wrong tries; the third check after the resend (Twilio's sixth attempt on that verification, 60202) answers the cooldown, not an error (fails before the fix), for each of the three flows. Update the `picks`, `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/picks/src/email_code.rs`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -33431,7 +33742,8 @@
     "T268",
     "T269",
     "T272",
-    "T464"
+    "T464",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33469,7 +33781,8 @@
    "decisions": [
     "D-2769",
     "D-2771",
-    "D-3676"
+    "D-3676",
+    "D-3999"
    ],
    "cites": [],
    "budget": {
@@ -34415,7 +34728,8 @@
     "T374",
     "T200",
     "T451",
-    "T466"
+    "T466",
+    "T562"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -35874,14 +36188,15 @@
    "id": "T446",
    "slug": "pick-lapsed-email",
    "title": "intake and messaging: PICK-046's \"couldn't take it\" notice goes by email when she cannot be texted",
-   "goal": "Plan change D-3579 follow-up (PICK-046, CON-028, CON-021, PRIV-004; D-2288): PICK-046 (`docs/spec/quotes-pick.md:50`) says its text \"goes by email when the homeowner can't be texted\", but T328's `pick_lapsed` job text (in `app/intake/src/job_texts.rs`) sends nothing to a number that opted out, has no consent record or fails the area-code check. When that event's text cannot go for one of those reasons and she has an email on file (`messaging::api::homeowner_has_email`), queue one email instead, the way `app/intake/src/opted_out_live.rs` queues CON-028's \"still open\" email: a new `Notice::PickLapsed` in `app/messaging/src/email.rs` (English and Spanish: the business's public name, \"couldn't take it this time\", and her quote page link to see and pick her other quotes; no amount, no other business's contact), `queue_email` keyed on the pick, so a rerun stores nothing more; the email sender's keys reach the step from settings in the shared `app/server/src/lib.rs` as `opted_out_live`'s do, through a postal field of its own on `JobTextKeys` (`app/intake/src/job_texts.rs:112`; `StillOpenSender`'s fields are private, `app/intake/src/opted_out_live.rs:46` to `:50`), and with them missing the step sends nothing and logs why. The email read runs outside any transaction (the vault refuses one). A text that can go still goes as T328 built it; never both. Tests in `tests/integration/tests/pick_lapsed_email.rs` against PostgreSQL, fake data only: opted out with an email gets one email and no text; no email on file gets nothing; a rerun stores one email; a textable homeowner gets the text and no email. Update the `intake` and `messaging` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): PICK-046's no-other-quote case gets the same email: \"<Business> couldn't take it this time. We'll email you when another quote comes in. If it can't wait, it's fine to call a company you know.\" (the text's words, with \"email\" for \"text\", since she cannot be texted), in English and Spanish.",
+   "goal": "Plan change D-3579 follow-up (PICK-046, CON-028, CON-021, PRIV-004; D-2288): PICK-046 (`docs/spec/quotes-pick.md:50`) says its text \"goes by email when the homeowner can't be texted\", but T328's `pick_lapsed` job text (in `app/intake/src/job_texts.rs`) sends nothing to a number that opted out, has no consent record or fails the area-code check. When that event's text cannot go for one of those reasons and she has an email on file (`messaging::api::homeowner_has_email`), queue one email instead, the way `app/intake/src/opted_out_live.rs` queues CON-028's \"still open\" email: a new `Notice::PickLapsed` in `app/messaging/src/email.rs` (English and Spanish: the business's public name, \"couldn't take it this time\", and her quote page link to see and pick her other quotes; no amount, no other business's contact), `queue_email` keyed on the pick, so a rerun stores nothing more; the email sender's keys reach the step from settings in the shared `app/server/src/lib.rs` as `opted_out_live`'s do, through a postal field of its own on `JobTextKeys` (`app/intake/src/job_texts.rs:112`; `StillOpenSender`'s fields are private, `app/intake/src/opted_out_live.rs:46` to `:50`), and with them missing the step sends nothing and logs why. The email read runs outside any transaction (the vault refuses one). A text that can go still goes as T328 built it; never both. Tests in `tests/integration/tests/pick_lapsed_email.rs` against PostgreSQL, fake data only: opted out with an email gets one email and no text; no email on file gets nothing; a rerun stores one email; a textable homeowner gets the text and no email. Update the `intake` and `messaging` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): PICK-046's no-other-quote case gets the same email: \"<Business> couldn't take it this time. We'll email you when another quote comes in. If it can't wait, it's fine to call a company you know.\" (the text's words, with \"email\" for \"text\", since she cannot be texted), in English and Spanish. Plan change D-3999: this task follows T564, which also edits `app/intake/src/job_texts.rs` (`lapsed_body` numbers the quotes it keeps by their shown number); line numbers above are from before it.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "intake",
    "deps": [
     "T328",
-    "T320"
+    "T320",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -35908,7 +36223,8 @@
    "decisions": [
     "D-3579",
     "D-2288",
-    "D-3880"
+    "D-3880",
+    "D-3999"
    ],
    "cites": [],
    "budget": {

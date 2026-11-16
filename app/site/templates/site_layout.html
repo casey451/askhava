@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{#- The site layout every public site page extends (T101; WEB-007, D-3144, D-1843). The page's
+    handler sets `banner_shown` from `site::api::banner_shown` before it renders; while it is true
+    the WEB-007 sentence shows above the header, and by default it is hidden. Portal pages extend
+    base.html directly and never show it. -#}
+{% block banner %}
+{%- if banner_shown %}
+<section class="site-banner" aria-label="Site status">
+<p>Texting is temporarily unavailable. You can still use the chat on this site and your quote page.</p>
+</section>
+{%- endif %}
+{% endblock %}

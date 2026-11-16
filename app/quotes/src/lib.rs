@@ -49,6 +49,7 @@ mod emergency_card_notice;
 mod formats;
 mod gate;
 mod handlers;
+mod health_figures;
 mod intake;
 mod job_page;
 mod job_text;
@@ -60,6 +61,7 @@ mod quote_card;
 mod quote_facts;
 mod quote_rules;
 mod rules;
+mod scorecard_inputs;
 mod service;
 mod update_texts;
 

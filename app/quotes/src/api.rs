@@ -90,6 +90,7 @@ pub use crate::formats::{
 };
 pub use crate::gate::final_gate;
 pub use crate::handlers::{WINDOWS_KIND, WindowsCheck, run_windows_end, windows_ended};
+pub use crate::health_figures::{CardFigures, SpotCard, card_figures, spot_check_cards};
 pub use crate::intake::{
     Bounce, DayPart, Format, Period, Price, QUOTE_WINDOW, Quote, QuoteForm, QuoteRules, Submitted,
     confirm_quote, confirm_quote_at, mark_unavailable, parse_quote, shown_quotes, submit_quote,
@@ -125,6 +126,11 @@ pub use crate::quote_card::{
 };
 pub use crate::quote_facts::{last_facts, stored_facts, submit_quote_with_facts, trip_code};
 pub use crate::quote_rules::quote_rules;
+pub use crate::scorecard_inputs::{
+    NOTE_RETURNED_ACTION, RequestQuotes, TradeJobs, active_businesses, diagnostic_quotes,
+    jobs_by_trade, median_quote_minutes, notes_returned, quotes_per_business, record_note_returned,
+    request_quotes, requests_with_quotes,
+};
 pub use crate::service::{
     card_holders, coverage, coverage_in_reach, send_cards, send_job_cards, send_job_cards_in_reach,
     send_late_cards, send_late_cards_in_reach,

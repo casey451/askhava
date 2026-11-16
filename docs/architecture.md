@@ -197,6 +197,7 @@ wargames/            the Phase 2 war games (Python, standard library): personas,
 - Email action links (T301, D-1955, D-3669, D-3675): `server::action_links` serves `GET` and `POST` on `portals::api::ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`), merged with `checkin` in `build_router`, under `refuse_cross_site` with `no-store` outermost. A `GET` reads only (`open_action_link`; the person, where needed, through `use_action_link` in a transaction always rolled back) and shows `portals::api::action_page` or, for a Quote link, `quote_form_page_priced` from `quotes::api::quote_rules`, `sent_card`, `job_page` and `last_facts`. Only the Quote `POST` acts: `admit_quote`, `parse_price`, `parse_facts`, `largest_job_warning` (`businesses::api::capabilities`), `parse_quote` and `submit_quote_with_facts` in one transaction; Pause, Resume and Ask about a charge act with a business session (T455, D-3839): `use_action_link` in the action's transaction, the signed-in person's own link and `session_may`, then `businesses::api::pause_self` or `resume_self`, or `payments::api::receipt_for` and `portals::api::ask_about_charge` (signed out: a 401 before any token read; a refused pause or resume a 409 that rolls back); every other kind's `POST` is the bare 404 until its task (T456, T457, T458, T463, T399).
 - Text templates: `app/messaging/templates/en.json` and `es.json` are the registry of every fixed text (TXT-001, TXT-004), one key per template ID with both languages and a recorded `segments` count; each task adds only its own keys (D-759, D-491).
 - Confirm's $0 decision and release (T494, D-3824; FEE-010, FEE-012, PICK-022): `portals::confirm_waiver` is the one place the Confirm route judges a free first win: `join_dates` builds `payments::api::JoinDates` from `businesses::api::join_facts`, `catalog::api::trades_opened` (a new `portals` to `catalog` call) and the launch-date setting the caller passes (no sign-up row, or no launch setting, is `Timestamp::MAX`: no win); `decide_at_confirm` runs `waive_at_confirm` on the caller's Confirm transaction; after it commits, `release_no_fee` takes `no_fee_release` for the pick's own business and job and hands it to the `payments::api::ReleaseSink` (`server`'s `PickReleaser`, which releases once).
+- Pilot scorecard money, pick and quote inputs (T477, D-3920 to D-3922; OPS-039, OPS-047, PICK-052, FEE-046): read-only readers in `payments::scorecard_inputs`, `picks::scorecard_inputs` and `quotes::scorecard_inputs`, each taking job IDs and a window; `quotes::api::jobs_by_trade(to)` gives every job carded before `to` per trade (first sent card's category), request-level quote inputs are windowed on the job's first card and count quotes received before `to`, and `picks` takes its qualifying job IDs from `quotes` readers. PICK-052's returned notes are `quotes.note_returned` audit rows (`quotes::api::record_note_returned`, field = the reason's code name, never the note), read back through `ops::api::audit_subjects`. FEE-046's set-aside rate is `ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS` (default 860), passed to `LedgerTotals::net_per_introduction_cents`.
 
 ## 3. Modules, what each owns, and its tables
 
@@ -527,6 +528,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /static/portals/feedback.css | portals | yes |
 | GET | /static/portals/forms.css | portals | yes |
 | GET | /static/portals/quote_page.js | server | yes |
+| GET | /static/site/site.css | site | yes |
 | GET | /c/{token}/{answer} | portals | yes |
 | POST | /c/{token}/{answer} | portals | yes |
 | POST | /webhooks/twilio/sms | server | yes |
@@ -569,7 +571,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /b/signup/capability | portals | yes |
 | GET | /b/complaints | portals | T306 |
 | POST | /b/complaints/{complaint}/reply | portals | T306 |
-| GET | /b/charges/{pick} | portals | T306 |
+| GET | /b/charges/{pick} | portals | T562 |
 | GET | /b/emergency-emails | portals | T306 |
 | POST | /b/emergency-emails | portals | T306 |
 | GET | /b/phones | portals | T397 |
@@ -587,9 +589,9 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /h/sign-in | portals | T307 |
 | POST | /h/sign-in/code | portals | T307 |
 | POST | /h/texts-off | portals | T307 |
-| GET | /h/my-data | portals | T307 |
-| POST | /h/my-data/request | portals | T307 |
-| POST | /h/my-data/code | portals | T307 |
+| GET | /h/my-data | portals | T561 |
+| POST | /h/my-data/request | portals | T561 |
+| POST | /h/my-data/code | portals | T561 |
 | GET | /terms | site | T221 |
 | GET | /privacy | site | T221 |
 | GET | /sms-terms | site | T221 |

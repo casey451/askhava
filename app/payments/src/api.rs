@@ -125,6 +125,7 @@ pub use crate::handlers::{
     PAUSE_EVERY, PAUSE_KIND, PICK_ENDED_KIND, RECHECK_AFTER, STRIPE_DOWN_SECONDS, TIMER_KIND,
     card_fix_window, charges_paused, run_charge_check, run_pause_watch, run_pay_timer, sync_pause,
 };
+pub use crate::health_figures::{HealthFigureError, PaymentErrors, payment_errors};
 pub use crate::late::{
     LATE_KIND, LATE_SUCCESS_ALERT, LATE_TRIGGER, LateSuccess, late_success, run_late_refund,
 };
@@ -183,6 +184,9 @@ pub use crate::rules::{
     Fee, FeeError, FeeJob, FeeMode, FeeQuote, FeeTerms, Period, PeriodJob, PickedFee,
     RECURRING_MONTHS, RecurringCap, Service, Tier, VisitTier, fee_at_pick, fee_for, flat_tier,
     period_fee_for,
+};
+pub use crate::scorecard_inputs::{
+    LedgerTotals, Share, free_share, ledger_totals, paying_again, refund_reasons,
 };
 pub use crate::service::{
     Authorized, CONFIRM_FEE_ACTION, CUSTOMER_ACTION, ConfirmError, Confirmed, FEE_MODE_ACTION,
