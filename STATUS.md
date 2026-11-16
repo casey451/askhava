@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T21:42:39Z by runner 6740aabac4ed (actions).
+Updated 2026-11-16T21:42:58Z by runner d8ed76c84fa8 (actions).
 
 **Building: T481 in progress since 19:16Z; 375 of 540 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 375 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T481 claimed 19:16Z, lease until 00:36Z; lane 3: T320 claimed 21:07Z, lease until 00:07Z; lane 5: T111 claimed 21:32Z, lease until 00:32Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
+- **Lane:** lane 2: T481 claimed 19:16Z, lease until 00:36Z; lane 3: T320 claimed 21:07Z, lease until 00:42Z; lane 5: T111 claimed 21:32Z, lease until 00:32Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
 - **Week:** 2% used, 186.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:42Z, 0 min before this update
 - **Keeper:** last ran 21:42Z, next wake 00:09Z
@@ -16,7 +16,7 @@ Updated 2026-11-16T21:42:39Z by runner 6740aabac4ed (actions).
 - BLOCKED T523: plan gap reported: PLAN GAP: app/ops/src/audit_subjects.rs:13-21 (owned by T477, not T523) — the audit-subjects reader returns only `subject_kind`, `subject_id` and `at` for an action, never the row's `field`, so the jobs reader cannot pick out `day3_no` / `day3_other` rows through it as the goal requires. Smallest plan change: let T523 own `app/ops/src/audit_subjects.rs` (or a harness/T477 follow-up) to add `field: Option<String>` to `AuditSubject` and to its `SELECT`; or have the plan let the jobs reader take the field through a new `ops::api` reader.
 Evidence: AuditSubject has only subject_kind, subject_id, a; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T523 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 15 problem(s) on tasks still to run (+135 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 14 problem(s) on tasks still to run (+135 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -118,7 +118,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T481 (lease until 2026-11-17T00:36:07Z)
-- lane 3: T320 (lease until 2026-11-17T00:07:01Z)
+- lane 3: T320 (lease until 2026-11-17T00:42:58Z)
 - lane 5: T111 (lease until 2026-11-17T00:32:39Z)
 - lane 6: T221 (lease until 2026-11-17T00:31:33Z)
 
