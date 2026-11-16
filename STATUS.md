@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T14:13:29Z by runner 996258e4fd7d (actions).
+Updated 2026-11-16T14:15:24Z by runner 996258e4fd7d (actions).
 
 **Building: T477 in progress since 14:13Z; 359 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-16T14:13:29Z by runner 996258e4fd7d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T477 claimed 14:13Z, lease until 17:13Z; lane 5: T308 claimed 13:29Z, lease until 17:11Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z; lane 7: T529 claimed 14:10Z, lease until 17:10Z
 - **Week:** 94% used, 2.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:12Z, 0 min before this update
+- **Last run:** 14:15Z, 0 min before this update
 - **Keeper:** last ran 14:12Z, next wake 17:09Z
 
 ## Needs attention
@@ -40,7 +40,6 @@ Updated 2026-11-16T14:13:29Z by runner 996258e4fd7d (actions).
 | T462 | server: the sign-up inbox check is served behind the busines | done | 3 | 35 min | 18:05Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
 | T261 | portals and server (harness): the served Confirm route under | done | 6 | 85 min | 16:50Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
 | T455 | server: the Pause, Resume and Ask about a charge email links | done | 1 | 38 min | 14:58Z |  |
-| T462 | server: the sign-up inbox check is served behind the busines | BLOCKED | 2 | 2 min | 14:14Z |  |
 
 ### Plan and harness merges on main
 - none
