@@ -19938,7 +19938,7 @@
    "deps": [
     "T100"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "ops-alerts-safe-mode",
    "type": "build",
@@ -19956,7 +19956,7 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-16T15:54:34.561710Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":139,\"kind\":\"payments.receipt\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T15:54:34.697618Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":138,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T15:54:34.764217Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":140,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2713  22 tests/e2e/confirm_served.spec.ts:96:1 \u203a TD-FEE-45 FEE-016 TD-TERMS-11: a new card pressed twice charges once and stores one terms row (1.0s)\n{\"timestamp\":\"2026-11-16T15:54:34.880514Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":141,\"kind\":\"messaging.charge_receipt\",\"outcome\":\"Ok(Retry(2026-11-16T15:55:04.777563663Z))\",\"target\":\"askhava_core\n{\"timestamp\":\"2026-11-16T15:54:34.882208Z\",\"level\":\"WARN\",\"message\":\"there is no transaction in progress\",\"target\":\"sqlx::postgres::notice\"}\n  \u2718  23 tests/e2e/confirm_served.spec.ts:111:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once (877ms)\n##[error]  1) tests/e2e/confirm_served.spec.ts:111:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
+   "last_failure": "merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891)",
    "history": [
     {
      "attempt": 1,
@@ -20054,13 +20054,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 47,
      "head_sha": "f4e0a9e94ea4ead8e5ab91751a18cfd3e9ce1918",
-     "pr": null,
-     "checks": null,
+     "pr": 885,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-16T16:15:00Z",
      "ended_at": "2026-11-16T16:53:29Z",
-     "result": "MERGE_PENDING",
+     "result": "resync",
      "usage": {
       "worker": {
        "tokens": 1463228,
@@ -20087,8 +20132,32 @@
     "head": "f4e0a9e94ea4ead8e5ab91751a18cfd3e9ce1918"
    },
    "runner_closed_prs": [
-    879
-   ]
+    879,
+    885
+   ],
+   "merge_turn_since": "2026-11-16T17:15:23Z",
+   "resync": {
+    "attempt": 3,
+    "from": "f4e0a9e94ea4ead8e5ab91751a18cfd3e9ce1918",
+    "main": "7809c6e44483aca91be1a037986676436fed47f4",
+    "paths": [
+     "app/ops/src/api.rs"
+    ],
+    "at": "2026-11-16T17:15:23Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 3,
+     "from": "f4e0a9e94ea4ead8e5ab91751a18cfd3e9ce1918",
+     "main": "7809c6e44483aca91be1a037986676436fed47f4",
+     "paths": [
+      "app/ops/src/api.rs"
+     ],
+     "at": "2026-11-16T17:15:23Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T204",
@@ -59984,7 +60053,7 @@
      }
     }
    ],
-   "reviewed_sha": "0500314d6bff75588762ec5443da937b0ff76e46",
+   "reviewed_sha": "84c646200c0031a484c37a55f66ca0efb47641cc",
    "review_lease": {
     "task": "T475",
     "session": "actions-43891014092",
@@ -60004,10 +60073,22 @@
      "main": "6cdbf701348d37e2b0f1c1a5bf6a7d4d6a5b711a",
      "how": "hand-in",
      "at": "2026-11-16T17:02:34Z"
+    },
+    {
+     "from": "0500314d6bff75588762ec5443da937b0ff76e46",
+     "to": "84c646200c0031a484c37a55f66ca0efb47641cc",
+     "main": "7809c6e44483aca91be1a037986676436fed47f4",
+     "how": "runner",
+     "checks": {
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-16T17:15:23Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-16T17:15:23Z"
   },
   {
    "id": "T476",
@@ -67507,7 +67588,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T17:13:24Z",
+ "updated_at": "2026-11-16T17:15:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

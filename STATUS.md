@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T17:13:24Z by runner 6cdbf701348d (actions).
+Updated 2026-11-16T17:15:39Z by runner 6cdbf701348d (actions).
 
 **Building: T361 in progress since 16:50Z; 367 of 536 done; week 97% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-16T17:13:24Z by runner 6cdbf701348d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T361 claimed 16:50Z, lease until 19:50Z; lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 5: T559 claimed 16:58Z, lease until 19:58Z; lane 6: T303 claimed 16:19Z, lease until 20:04Z
 - **Week:** 97% used, -4.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:13Z, 0 min before this update
+- **Last run:** 17:13Z, 1 min before this update
 - **Keeper:** last ran 17:13Z, next wake 19:34Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-16T17:13:24Z by runner 6cdbf701348d (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T475 | messaging, quotes, payments and ai: the readers behind the O | MERGE_PENDING | 1 | 114 min | 17:02Z |  |
-| T105 | ops: High and critical alerts with their automatic acknowled | MERGE_PENDING | 3 | 38 min | 16:53Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
+| T105 | ops: High and critical alerts with their automatic acknowled | resync | 3 | 38 min | 16:53Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T473 | Pin backup-runner's Postgres service image by digest | done | 1 | 17 min | 16:46Z |  |
 | T101 | site: base layout in the design spec's look, works without J | done | 3 | 80 min | 16:39Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 1 | 4 min | 16:21Z | PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prom |
