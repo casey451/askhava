@@ -2964,3 +2964,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - As you asked, Fable checked the stage-4 tidy-up task before it ran. It found that the tool for spotting copied code did not exist yet, and that the job was too big for one task. A small new task builds that tool, and the clean-up of copied code is split in two. The tidy-up task now also says exactly how it proves the architecture notes are current.
 - Nothing needs you.
+
+## A new business cannot yet save its card on the Confirm page (D-3857, November 16)
+
+- The business-journey test (T099) found that no page in the app records a business's agreement to be charged for picks. The Confirm page shows the "save my card" box but ignores it, and the app refuses every Confirm, free or paid, until that agreement is on file. So a brand-new business cannot confirm its first pick through the app today.
+- The tests record the agreement directly in the database so the rest of the journey can be checked. The fix belongs to the Confirm page's owner: make the box save the agreement. Claude logged it for that task.
+- Nothing needs you.
