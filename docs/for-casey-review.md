@@ -3008,3 +3008,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The weekly digest's HELP lines move from the HELP task to the digest task, so the tasks run in a clean order.
 - Business texting will turn on only when you switch it on, a separate business number is set, and the texting provider's written "yes" (date, reference and the answer) plus the business campaign reference are filed on the owner settings page. A new task adds that filing form and the check.
 - Nothing needs you.
+
+## Fable's checks of the newest tasks and the sixth stage-5 group (D-3882, November 16)
+
+- The weekly digest task was heading past its size limit, so the counts it needs (no-shows, automatic activations and pauses, license-unknown counts, leaving answers and more) are now a small task of their own. Each line of the digest now says where its number comes from.
+- Two addresses are named once each: the owner inbox (not-covered requests and the weekly digest) and the alert address your phone watches (pushed alerts).
+- Nothing needs you.
