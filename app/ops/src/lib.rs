@@ -8,5 +8,6 @@ mod alerts;
 pub mod api;
 mod audit_subjects;
 mod models;
+mod safe_mode;
 mod service;
 mod status_banner;

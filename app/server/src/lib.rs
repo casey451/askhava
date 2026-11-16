@@ -639,7 +639,7 @@ fn register_intake_asks(registry: &mut Registry, id_secret: &SecretString) {
 /// `ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES`) the pick notice (PICK-037, D-1503) and the Confirm
 /// window's end (PICK-019); `intake` the accepted-quote email after a Confirm, still with no sender
 /// although the footer postal setting now exists, so it sends nothing until a follow-up builds
-/// one (PICK-042, D-3077, D-3098 (2)); `payments` the pause watch that stops and resumes
+/// one (PICK-042, D-3077, D-3098 (2)); `ops` the safe-mode check (OPS-001, T487); `payments` the pause watch that stops and resumes
 /// the payment timers with the charging pause (FEE-038, D-1427); and, with
 /// `texts` ([`job_text_keys`]), the homeowner job texts `jobs` and `picks` queue (JOB-010 to
 /// JOB-012, TXT-042, PICK-046, D-1030 (A)) on the stream's clock. It takes the release mint first, through [`release_minter`], so a second
@@ -668,6 +668,7 @@ where
         askhava_jobs::api::run_check_in,
     );
     register_request_counts(&mut registry, Arc::clone(&clock));
+    register_safe_mode(&mut registry, Arc::clone(&clock));
     registry.register(
         askhava_quotes::api::WINDOWS_KIND,
         askhava_quotes::api::run_windows_end,
@@ -730,6 +731,15 @@ fn register_request_counts(registry: &mut Registry, clock: Arc<dyn Clock>) {
             async move { askhava_jobs::api::run_request_counts(&pool, now).await }
         },
     );
+}
+
+/// Registers `ops`' safe-mode check (`ops.safe_mode_check`) on the worker clock: each minute it
+/// turns safe mode on or off from the pushed High alerts (OPS-001, OPS-023, T487, D-3878).
+fn register_safe_mode(registry: &mut Registry, clock: Arc<dyn Clock>) {
+    registry.register(askhava_ops::api::SAFE_MODE_KIND, move |pool, _task| {
+        let now = clock.now();
+        async move { askhava_ops::api::run_safe_mode_check(&pool, now).await }
+    });
 }
 
 /// Registers `jobs`' daily timer backstop (`jobs.timer_backstop`) on the worker clock: it revives
