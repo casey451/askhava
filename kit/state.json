@@ -19497,6 +19497,17 @@
     "docs/decisions.md",
     "kit/plan.lock",
     "scripts/check_duplicates.py"
+   ],
+   "proof_waits_for": [
+    "a green nightly-main run containing T515's merge 5b654c54ca2c (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T099's merge de89862a7f0a (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T516's merge 700f12d2e5a4 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T517's merge 19d98135f0a7 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T100's merge b7a09cb3f828 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T261's merge 35177f91e0b2 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T495's merge 5316a602ce94 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T462's merge 6cc6fdcbb269 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T464's merge ef9418c0e6b9 (last green run: 2b05da2c07fb)"
    ]
   },
   {
@@ -61071,7 +61082,15 @@
     "docs/decisions.md"
    ],
    "proof_waits_for": [
-    "T100 is MERGE_PENDING"
+    "a green nightly-main run containing T515's merge 5b654c54ca2c (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T099's merge de89862a7f0a (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T516's merge 700f12d2e5a4 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T517's merge 19d98135f0a7 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T100's merge b7a09cb3f828 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T261's merge 35177f91e0b2 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T495's merge 5316a602ce94 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T462's merge 6cc6fdcbb269 (last green run: 2b05da2c07fb)",
+    "a green nightly-main run containing T464's merge ef9418c0e6b9 (last green run: 2b05da2c07fb)"
    ]
   },
   {
@@ -65341,7 +65360,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T08:44:37Z",
+ "updated_at": "2026-11-16T08:46:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
