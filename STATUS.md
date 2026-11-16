@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T14:57:54Z by runner 903e7f8c564d (actions).
+Updated 2026-11-16T15:06:45Z by runner f2a29ef58d38 (actions).
 
 **Building: T497 in progress since 14:16Z; 361 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 361 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T497 claimed 14:16Z, lease until 17:16Z; lane 3: T101 claimed 14:32Z, lease until 17:32Z; lane 4: T521 claimed 14:35Z, lease until 17:35Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z
+- **Lane:** lane 2: T497 claimed 14:16Z, lease until 17:16Z; lane 3: T101 claimed 14:32Z, lease until 17:32Z; lane 4: T521 claimed 14:35Z, lease until 18:06Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z
 - **Week:** 94% used, -1.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:57Z, 0 min before this update
+- **Last run:** 14:58Z, 8 min before this update
 - **Keeper:** last ran 14:56Z, next wake 17:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 9 problem(s) on tasks still to run (+122 on DONE tasks); first: T129: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -42,7 +42,6 @@ Updated 2026-11-16T14:57:54Z by runner 903e7f8c564d (actions).
 | T495 | e2e: the served Confirm and pay journey in the browser again | done | 1 | 44 min | 18:21Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | done | 3 | 35 min | 18:05Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
 | T261 | portals and server (harness): the served Confirm route under | done | 6 | 85 min | 16:50Z | PLAN GAP: tests/e2e/confirm_served.spec.ts can't be built in T261. The fix belongs to tests/e2e/webserver.ts, which T227 |
-| T455 | server: the Pause, Resume and Ask about a charge email links | done | 1 | 38 min | 14:58Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -96,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T497 (lease until 2026-11-16T17:16:59Z)
 - lane 3: T101 (lease until 2026-11-16T17:32:48Z)
-- lane 4: T521 (lease until 2026-11-16T17:35:03Z)
+- lane 4: T521 (lease until 2026-11-16T18:06:25Z)
 - lane 6: T105 (lease until 2026-11-16T17:07:02Z)
 
 ## Last usage reading
