@@ -3053,3 +3053,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - Two security tests moved into the server's own test folder, because the test folders are not allowed to reach the server code directly. Nothing they check changed.
 - The full-journey tests now run after the other tests and with the background worker fully set up, so they can't break other tests and their "no texts sent" checks mean something.
 - Nothing needs you now.
+
+## Leftovers from the Opus checks (D-3893, November 16)
+
+- The decisions summary needs 13 pieces today, not 10, so three more small tasks were added before the final documentation step.
+- Reviews now run on Opus by default, as you asked; Fable is used only when a task has failed twice or an Opus finding is disputed.
+- Nothing needs you now.
