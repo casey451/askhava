@@ -268,6 +268,42 @@ def test_stripe_dispute_and_signed_webhook_controls(base: str) -> None:
     assert call(base, "POST", "/_stand_in/stripe/webhook", body={"id": "evt_none"})[0] == 400
 
 
+def test_stripe_every_event_and_intent_says_test_mode(base: str) -> None:
+    """Every emitted event and every created or fetched intent carries `livemode: false`, as real
+    test-mode Stripe does; the app's envelope and release check need it (D-3862, D-3869)."""
+    cus = stripe_post(base, "customers", {})[1]
+    pay = {"amount": "2500", "currency": "usd", "customer": cus["id"]}
+    paid = stripe_post(base, "payment_intents", {**pay, "payment_method": "pm_card_visa"})[1]
+    declined = stripe_post(base, "payment_intents", {**pay, "payment_method": "pm_card_chargeDeclined"})[1]
+    unconfirmed = stripe_post(base, "payment_intents", {**pay, "confirm": "false"})[1]
+    held_id = stripe_post(base, "payment_intents", {**pay, "confirm": "false"})[1]["id"]
+    method = {"payment_method": "pm_card_authenticationRequired"}
+    held = stripe_post(base, f"payment_intents/{held_id}/confirm", method, "attempt-1")[1]
+    step = f"/stripe/v1/payment_intents/{held['id']}/stand_in_authenticate"
+    passed = call(base, "POST", step, {"result": "pass"}, authorization="Bearer sk_test_fake")[1]
+    dispute = call(base, "POST", "/_stand_in/stripe/disputes", body={"payment_intent": paid["id"]})[1]
+    assert stripe_post(base, f"disputes/{dispute['id']}", {"evidence[product_description]": "fake"}, "dp-1")[0] == 200
+    assert stripe_post(base, "refunds", {"payment_intent": paid["id"]})[0] == 200
+    fetched = [
+        call(base, "GET", f"/stripe/v1/payment_intents/{pi['id']}", authorization="Bearer sk_test_fake")[1]
+        for pi in (paid, held, unconfirmed)
+    ]
+    intents = [paid, declined["error"]["payment_intent"], held, unconfirmed, passed["payment_intent"], *fetched]
+    assert [pi["livemode"] for pi in intents] == [False] * len(intents)
+    events = call(base, "GET", "/stripe/v1/events", authorization="Bearer sk_test_fake")[1]["data"]
+    kinds = {e["type"] for e in events}
+    assert kinds == {
+        "payment_intent.succeeded",
+        "payment_intent.payment_failed",
+        "payment_intent.requires_action",
+        "charge.refunded",
+        "charge.dispute.created",
+        "charge.dispute.updated",
+    }
+    assert [e["livemode"] for e in events] == [False] * len(events)
+    assert json.loads(passed["payload"])["livemode"] is False
+
+
 def test_resend_test_addresses_give_signed_webhooks(base: str) -> None:
     """bounced@resend.dev drives email.bounced; each delivery is Svix-signed with its own id (D-561)."""
     mail = {"from": "Ask Hava <jobs@example.com>", "to": ["bounced@resend.dev"], "subject": "Hi", "text": "Hello"}
