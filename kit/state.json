@@ -47241,7 +47241,7 @@
     "T361",
     "T396"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "phone-change-ends-consent",
    "type": "build",
@@ -47259,6 +47259,31 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 117,
+     "head_sha": "aeb3a925ad17ab07eb79ea8bc8534b307abcf820",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-16T22:41:32Z",
+     "ended_at": "2026-11-16T23:55:43Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 6398437,
+       "turns": 69
+      },
+      "reviewer": {
+       "tokens": 2669222,
+       "turns": 45
+      }
+     }
+    }
+   ],
    "reviewed_sha": "2a0bca4d1f2cfd3911c1d136fac9caf356b099dc",
    "review_lease": {
     "task": "T373",
@@ -47267,7 +47292,11 @@
     "lane": "5"
    },
    "branch": "claude/task/T373-phone-change-ends-consent",
-   "head_check_since": null,
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #910 (gh pr merge)",
+    "head": "2a0bca4d1f2cfd3911c1d136fac9caf356b099dc"
+   },
    "update_merges": [
     {
      "from": "aeb3a925ad17ab07eb79ea8bc8534b307abcf820",
@@ -65794,12 +65823,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T523",
-   "at": "2026-11-16T23:36:32Z",
-   "cache_creation_input_tokens": 308351,
-   "cache_read_input_tokens": 9122184,
-   "output_tokens": 73956,
-   "input_tokens": 286
+   "task": "T373",
+   "at": "2026-11-16T23:55:43Z",
+   "cache_creation_input_tokens": 189073,
+   "cache_read_input_tokens": 8823446,
+   "input_tokens": 219,
+   "output_tokens": 54921
   },
   "source": "session_reading 2026-11-16T23:48:57Z (week)",
   "by_task": {
@@ -69831,7 +69860,17 @@
    },
    "T373": {
     "estimated_bytes": 472127,
-    "estimated_tokens": 1439682
+    "estimated_tokens": 1439682,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 189073,
+    "cache_read_input_tokens": 8823446,
+    "input_tokens": 219,
+    "output_tokens": 54921,
+    "worker_tokens": 6398437,
+    "worker_turns": 69,
+    "reviewer_tokens": 2669222,
+    "reviewer_turns": 45,
+    "last_model": "claude-opus-5-5"
    },
    "T469": {
     "estimated_bytes": 391425,
@@ -69841,11 +69880,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-16T23:36:32Z",
-    "tokens": 1294811
+    "tokens": 2421368
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 212707270
+    "tokens": 213833827
    }
   },
   "session_reading": {
@@ -69856,7 +69895,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T23:55:46Z",
+ "updated_at": "2026-11-16T23:56:10Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T23:55:46Z by runner aeb3a925ad17 (actions).
+Updated 2026-11-16T23:56:10Z by runner aeb3a925ad17 (actions).
 
 **Building: T469 in progress since 23:44Z; 376 of 541 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 376 of 541 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T469 claimed 23:44Z, lease until 02:44Z; lane 3: T111 claimed 23:22Z, lease until 02:54Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 02:31Z; lane 6: T320 claimed 23:55Z, lease until 02:55Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
+- **Lane:** lane 2: T469 claimed 23:44Z, lease until 02:44Z; lane 3: T111 claimed 23:22Z, lease until 02:54Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 6: T320 claimed 23:55Z, lease until 02:55Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
 - **Week:** 6% used, 176.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:55Z, 0 min before this update
 - **Keeper:** last ran 23:49Z, next wake 01:38Z
@@ -18,6 +18,7 @@ Updated 2026-11-16T23:55:46Z by runner aeb3a925ad17 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T373 | businesses: changing a phone's number ends that phone's text | MERGE_PENDING | 1 | 74 min | 23:55Z |  |
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | QUEUED | 2 | 89 min | 23:36Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 3 | 37 min | 22:10Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
 | T320 | ops: a check that runs on a schedule raises its alert once w | check_failed | 1 | 39 min | 21:46Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
@@ -118,9 +119,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T469 (lease until 2026-11-17T02:44:59Z)
 - lane 3: T111 (lease until 2026-11-17T02:54:49Z)
 - lane 4: T481 (lease until 2026-11-17T01:37:17Z)
-- lane 5: T373 (lease until 2026-11-17T02:31:51Z)
 - lane 6: T320 (lease until 2026-11-17T02:55:00Z)
 - lane 7: T221 (lease until 2026-11-17T01:36:07Z)
 
 ## Last usage reading
-- {"task": "T523", "at": "2026-11-16T23:36:32Z", "cache_creation_input_tokens": 308351, "cache_read_input_tokens": 9122184, "output_tokens": 73956, "input_tokens": 286}
+- {"task": "T373", "at": "2026-11-16T23:55:43Z", "cache_creation_input_tokens": 189073, "cache_read_input_tokens": 8823446, "input_tokens": 219, "output_tokens": 54921}
