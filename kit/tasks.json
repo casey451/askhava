@@ -15114,6 +15114,59 @@
    "prompt": "kit/prompts/T519.md"
   },
   {
+   "id": "T559",
+   "slug": "test-races-autofocus-second-press",
+   "title": "Tests (harness): wait for the code step's autofocus and the second press's reply",
+   "goal": "Plan change D-3955 (Fable's triage of T101's two failed attempts, Nov 16, 2026): two test races in done tasks' tests, each fixed by adding a wait that is also an assertion; nothing is loosened and no other line changes. (1) `tests/a11y/j1_keyboard.spec.ts`: `toCodeStep` (`:146` to `:156`) waits only for the code step's `h1` (`:155`), so the next Tab can run before the browser applies the `autofocus` on `#pick-not-open` (`app/portals/templates/pick_code.html:23`), which a render-blocking stylesheet holds back (T101 links `/static/site/site.css` from `base.html`); after `:155` add `await expect(page.locator(\"#pick-not-open\")).toBeFocused();`, as the test already does at `:179` and `:189` (A11Y-005, A11Y-021). (2) `tests/e2e/confirm_served.spec.ts`: the \"pressed twice\" test (`:96` to `:109`) ends without awaiting its second press's POST (`:101`; the route handler records it before `route.fetch` at `tests/e2e/keyed.ts:194` to `:196`), so a slow reply fails the next test with `route.fetch: Test ended`; set `const second = page.waitForResponse((r) => r.request().method() === \"POST\" && r.url().endsWith(confirmPath(seeded.pick)));` before the click at `:101` and `await second;` after it (TD-FEE-45, FEE-014). A harness task because both files are done tasks' tests (T098, T214, T362; T495, T515). Update `docs/decisions.md` only if the fix differs from this goal.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T100"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "tests/a11y/j1_keyboard.spec.ts",
+    "tests/e2e/confirm_served.spec.ts"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/accessibility.md",
+    "tests/e2e/keyed.ts",
+    "app/portals/templates/pick_code.html"
+   ],
+   "requirements": [
+    "A11Y-005",
+    "A11Y-021",
+    "FEE-014"
+   ],
+   "tests": [
+    "TD-FEE-45"
+   ],
+   "decisions": [
+    "D-3955"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 20,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T559-test-races-autofocus-second-press",
+   "prompt": "kit/prompts/T559.md",
+   "acceptance": "`tests/a11y/j1_keyboard.spec.ts` passes at all three widths and `tests/e2e/confirm_served.spec.ts` passes in full, with only the two added waits in the diff (three added lines and one moved click line at most); every other a11y and end-to-end test passes unchanged."
+  },
+  {
    "id": "T101",
    "slug": "site-base",
    "title": "site: base layout in the design spec's look, works without JavaScript, help in one place",
@@ -15126,7 +15179,8 @@
     "T100",
     "T279",
     "T294",
-    "T362"
+    "T362",
+    "T559"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",

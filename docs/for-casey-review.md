@@ -3059,3 +3059,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The decisions summary needs 13 pieces today, not 10, so three more small tasks were added before the final documentation step.
 - Reviews now run on Opus by default, as you asked; Fable is used only when a task has failed twice or an Opus finding is disputed.
 - Nothing needs you now.
+
+## Two flaky tests behind the site layout task's failures (D-3955, November 16)
+
+- The site layout task (T101) failed twice, but its code was the same in every run. Two older tests had timing gaps: one finished before its last button press got an answer, and one pressed Tab before the page had moved focus where it should. A small new task (T559) makes both tests wait for those things. No test checks less than before. The site layout task now runs after it.
+- Nothing needs you now.
