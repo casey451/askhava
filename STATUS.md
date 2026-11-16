@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-16T16:36:06Z by runner cfb763de5f15 (actions).
+Updated 2026-11-16T16:38:24Z by runner ac200c8489e3 (actions).
 
-**Building: T324 in progress since 16:31Z; 364 of 536 done; week 96% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T324 in progress since 16:31Z; 365 of 536 done; week 96% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 364 of 536 build tasks (owner gates not counted)
+- **Tasks done:** 365 of 536 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 3: T101 claimed 15:19Z, lease until 19:36Z; lane 4: T105 claimed 16:15Z, lease until 19:15Z; lane 5: T473 claimed 16:29Z, lease until 19:29Z; lane 6: T303 claimed 16:19Z, lease until 19:19Z; lane 7: T475 claimed 15:08Z, lease until 18:56Z
 - **Week:** 96% used, -3.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:32Z, 3 min before this update
+- **Last run:** 16:36Z, 2 min before this update
 - **Keeper:** last ran 16:26Z, next wake 18:22Z
 
 ## Needs attention
 - BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T129: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+123 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -24,7 +24,7 @@ Updated 2026-11-16T16:36:06Z by runner cfb763de5f15 (actions).
 | T497 | Stand-ins (harness): sticky vendor faults for the J4 outage  | done | 1 | 75 min | 15:32Z |  |
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T521 | catalog: each category's plural display name and a list read | done | 1 | 34 min | 15:09Z |  |
-| T477 | payments, picks and quotes: the scorecard's money, pick and  | MERGE_PENDING | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
+| T477 | payments, picks and quotes: the scorecard's money, pick and  | done | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T308 | portals (harness): the quote page's close button (JOB-019) i | done | 1 | 72 min | 14:42Z |  |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | done | 2 | 28 min | 14:39Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T519 | Copy check (harness): template text a requirement fixes, and | done | 2 | 49 min | 14:07Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
@@ -54,26 +54,26 @@ Updated 2026-11-16T16:36:06Z by runner cfb763de5f15 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 313 of 733 (42.7%) · partial 266 · unstarted 154
-**Tasks merged (throughput only):** 364 of 535
+**Requirements verified:** 309 of 733 (42.2%) · partial 272 · unstarted 152
+**Tasks merged (throughput only):** 365 of 536
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 21 | 34 | 3 | 58 |
+| businesses | 20 | 35 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 23 | 28 | 1 | 52 |
+| fees | 21 | 30 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
 | lifecycle | 24 | 4 | 0 | 28 |
 | messaging | 26 | 17 | 2 | 45 |
-| ops-recovery | 1 | 11 | 42 | 54 |
+| ops-recovery | 1 | 13 | 40 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 36 | 19 | 1 | 56 |
+| quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
@@ -91,7 +91,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 7 of 144 done
+- stage 5: 8 of 144 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
