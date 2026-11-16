@@ -98,7 +98,9 @@ test("TD-FEE-45 FEE-016 TD-TERMS-11: a new card pressed twice charges once and s
   const posted = await openAsOwner(page, seeded, "pm_card_visa");
   await page.getByRole("button", PAY).click();
   await expect(page.locator("#confirm-status")).toHaveText(WAITING);
+  const second = page.waitForResponse((r) => r.request().method() === "POST" && r.url().endsWith(confirmPath(seeded.pick)));
   await page.getByRole("button", PAY).click();
+  await second;
   await expect.poll(() => posted.length).toBe(2);
   await expect(page.locator("#confirm-status")).toHaveText(WAITING);
   expect(posted[0]).not.toContain("save_card");
