@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T08:18:13Z by runner c0fac254a451 (actions).
+Updated 2026-11-16T08:23:57Z by runner a261134fd365 (actions).
 
 **Idle since 08:16Z; 355 of 535 done; week 92% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-16T08:18:13Z by runner c0fac254a451 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 08:16Z (no task in progress)
 - **Week:** 92% used, 12.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:17Z, 0 min before this update
+- **Last run:** 08:18Z, 5 min before this update
 - **Keeper:** last ran 08:18Z, next wake 08:38Z
 
 ## Needs attention
-- BLOCKED T517: stage proof missing (the proof waits for: T100 is IN_PROGRESS)
+- BLOCKED T517: stage proof missing (the proof waits for: T100 is MERGE_PENDING)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 10 problem(s) on tasks still to run (+121 on DONE tasks); first: T517: stored context_pct 1% but it measures 5%; regenerate
 
@@ -45,7 +45,7 @@ Updated 2026-11-16T08:18:13Z by runner c0fac254a451 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 302 of 733 (41.2%) · partial 274 · unstarted 157
-**Tasks merged (throughput only):** 355 of 532
+**Tasks merged (throughput only):** 355 of 535
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
