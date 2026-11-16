@@ -14,11 +14,12 @@
 use std::collections::BTreeMap;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_core::api::MIGRATOR;
 use askhava_portals::api::{
-    CookieJar, OwnerAuth, Realm, SecondFactor, bootstrap_owner, csrf_token, owner_sign_in,
-    start_session,
+    CookieJar, OwnerAuth, Realm, SecondFactor, bootstrap_owner, csrf_token, owner_principal,
+    owner_sign_in, start_session,
 };
 use askhava_server::request_timeout::RequestTimeout;
 use askhava_server::static_files::StaticRoot;
@@ -51,6 +52,8 @@ struct World {
     app: Router,
     pool: PgPool,
     secret: Vec<u8>,
+    events: Events,
+    _guard: tracing::subscriber::DefaultGuard,
 }
 
 /// A browser's cookies by name.
@@ -75,10 +78,14 @@ async fn world(pool: &PgPool) -> World {
         Router::new(),
         RouterParts::from((None, None, None, None)),
     );
+    let events = Events::default();
+    let guard = tracing::subscriber::set_default(events.clone());
     World {
         app,
         pool: pool.clone(),
         secret: secret.as_bytes().to_vec(),
+        events,
+        _guard: guard,
     }
 }
 
@@ -229,27 +236,75 @@ async fn realm_session(w: &World, realm: Realm) -> Jar {
 }
 
 /// Runs `sql` with `jar`'s session token as `$1`.
-async fn on_session(w: &World, jar: &Jar, sql: &'static str) {
-    let token = jar.get("__Host-askhava-session").expect("a session cookie");
-    sqlx::query(sql)
-        .bind(token)
-        .execute(&w.pool)
-        .await
-        .expect("update");
+/// The `security event` log lines captured, `[kind, route]` (SEC-048): the event's row is
+/// `portals`' table, which `server` code may not name (TD-SEC-10), and the line is written by the
+/// same `record_security_event` call (as `door_matrix.rs` reads them).
+#[derive(Clone, Default)]
+struct Events(Arc<Mutex<Vec<[String; 2]>>>);
+
+/// The fields of one log event.
+#[derive(Default)]
+struct Fields(Vec<(String, String)>);
+
+impl tracing::field::Visit for Fields {
+    fn record_str(&mut self, field: &tracing::field::Field, value: &str) {
+        self.0.push((field.name().to_owned(), value.to_owned()));
+    }
+
+    fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
+        self.0.push((field.name().to_owned(), format!("{value:?}")));
+    }
 }
 
-async fn events(w: &World, kind: &str, route: &str) -> i64 {
-    let sql = "SELECT count(*) FROM portals.security_event WHERE kind = $1 AND route = $2";
-    let found = sqlx::query_scalar(sql).bind(kind).bind(route);
-    found.fetch_one(&w.pool).await.expect("events")
+impl tracing::Subscriber for Events {
+    fn enabled(&self, _: &tracing::Metadata<'_>) -> bool {
+        true
+    }
+
+    fn new_span(&self, _: &tracing::span::Attributes<'_>) -> tracing::span::Id {
+        tracing::span::Id::from_u64(1)
+    }
+
+    fn record(&self, _: &tracing::span::Id, _: &tracing::span::Record<'_>) {}
+
+    fn record_follows_from(&self, _: &tracing::span::Id, _: &tracing::span::Id) {}
+
+    fn event(&self, event: &tracing::Event<'_>) {
+        let mut fields = Fields::default();
+        event.record(&mut fields);
+        let get = |name: &str| {
+            let found = fields.0.iter().find(|(n, _)| n == name);
+            found.map(|(_, v)| v.clone()).unwrap_or_default()
+        };
+        if get("message") == "security event" {
+            let mut all = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+            all.push([get("kind"), get("route")]);
+        }
+    }
+
+    fn enter(&self, _: &tracing::span::Id) {}
+
+    fn exit(&self, _: &tracing::span::Id) {}
 }
 
-async fn owner_sessions(w: &World) -> i64 {
-    let sql = "SELECT count(*) FROM portals.owner_session";
-    sqlx::query_scalar(sql)
-        .fetch_one(&w.pool)
-        .await
-        .expect("sessions")
+/// How many `kind` events on `route` the test has logged.
+fn events(w: &World, kind: &str, route: &str) -> usize {
+    let all = w.events.0.lock().unwrap_or_else(PoisonError::into_inner);
+    all.iter().filter(|e| e[0] == kind && e[1] == route).count()
+}
+
+/// An owner session started at `at` and used every 25 minutes until `until` (SEC-043's idle
+/// clock through `portals`' own `owner_principal`).
+async fn kept_until(w: &World, at: Timestamp, until: Timestamp) -> Jar {
+    let jar = owner_at(w, at).await;
+    let mut db = w.pool.acquire().await.expect("db");
+    let mut when = at;
+    while when + SignedDuration::from_mins(25) <= until {
+        when += SignedDuration::from_mins(25);
+        let live = owner_principal(&mut db, &portals_jar(&jar), when).await;
+        assert!(live.expect("read").is_some(), "kept alive at {when}");
+    }
+    jar
 }
 
 /// The owner door's refusal: a 401 linking to the owner sign-in, `no-store`, no owner page.
@@ -294,8 +349,7 @@ async fn td_sec_46_password_and_code_sign_in_step_up_and_sign_out(pool: PgPool) 
         wrong_password.text, wrong_code.text,
         "neither says which was wrong"
     );
-    assert_eq!(events(&w, "auth_failed", SIGN_IN).await, 2);
-    assert_eq!(owner_sessions(&w).await, 0);
+    assert_eq!(events(&w, "auth_failed", SIGN_IN), 2);
     let code = totp_code(&w.secret, Timestamp::now());
     let signed = sign_in(&w, &jar, (PASSWORD, &code), 2).await;
     assert_eq!(
@@ -326,11 +380,6 @@ async fn td_sec_46_password_and_code_sign_in_step_up_and_sign_out(pool: PgPool) 
                 .is_some_and(String::is_empty)
     );
     refused(&get(&w, STEP_UP, &owner).await, "the signed-out cookie");
-    assert_eq!(
-        owner_sessions(&w).await,
-        0,
-        "logout ended the server session"
-    );
 }
 
 /// TD-SEC-46 (SEC-005, SEC-006, SEC-043, SEC-048): no session, a business or homeowner session,
@@ -339,18 +388,11 @@ async fn td_sec_46_password_and_code_sign_in_step_up_and_sign_out(pool: PgPool) 
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_sec_46_every_owner_route_refuses_all_but_a_live_owner(pool: PgPool) {
     let w = world(&pool).await;
-    let start = Timestamp::now() - SignedDuration::from_mins(10);
-    let idle = owner_at(&w, start).await;
-    on_session(&w, &idle, "UPDATE portals.owner_session SET last_seen_at = now() - interval '31 minutes' WHERE session_id = (SELECT id FROM portals.session WHERE token_sha256 = sha256(convert_to($1, 'UTF8')))").await;
-    let old = owner_at(&w, start + SignedDuration::from_secs(30)).await;
-    on_session(&w, &old, "UPDATE portals.session SET created_at = now() - interval '12 hours 1 minute', expires_at = now() - interval '1 minute' WHERE token_sha256 = sha256(convert_to($1, 'UTF8'))").await;
-    on_session(
-        &w,
-        &old,
-        "UPDATE portals.owner_session SET last_seen_at = now() WHERE session_id = (SELECT id FROM portals.session WHERE token_sha256 = sha256(convert_to($1, 'UTF8')))",
-    )
-    .await;
-    let live = owner_at(&w, start + SignedDuration::from_secs(60)).await;
+    let now = Timestamp::now();
+    let twelve = SignedDuration::from_hours(12) + SignedDuration::from_mins(1);
+    let old = kept_until(&w, now - twelve, now - SignedDuration::from_mins(1)).await;
+    let idle = owner_at(&w, now - SignedDuration::from_mins(31)).await;
+    let live = owner_at(&w, now - SignedDuration::from_mins(10)).await;
     let actors = [
         ("no session", visitor(&w).await),
         ("business", realm_session(&w, Realm::Business).await),
@@ -367,7 +409,7 @@ async fn td_sec_46_every_owner_route_refuses_all_but_a_live_owner(pool: PgPool) 
         }
     }
     assert!(
-        events(&w, "authz_denied", STEP_UP).await >= 2,
+        events(&w, "authz_denied", STEP_UP) >= 2,
         "the realm sessions were logged"
     );
     assert_eq!(
@@ -388,7 +430,6 @@ async fn td_sec_46_sign_out_everywhere_ends_every_session(pool: PgPool) {
     let start = Timestamp::now() - SignedDuration::from_mins(5);
     let laptop = owner_at(&w, start).await;
     let phone = owner_at(&w, start + SignedDuration::from_secs(30)).await;
-    assert_eq!(owner_sessions(&w).await, 2);
     let out = post(&w, SIGN_OUT_ALL, &laptop, "", 4).await;
     assert_eq!(
         (out.status, out.location.as_str()),
@@ -399,7 +440,6 @@ async fn td_sec_46_sign_out_everywhere_ends_every_session(pool: PgPool) {
     assert!(out.no_store);
     refused(&get(&w, STEP_UP, &laptop).await, "the signed-out laptop");
     refused(&get(&w, STEP_UP, &phone).await, "the other device");
-    assert_eq!(owner_sessions(&w).await, 0);
 }
 
 /// TD-SEC-46 (SEC-042, SEC-048): on every owner `POST`, a cross-site request (by
@@ -435,9 +475,8 @@ async fn td_sec_46_cross_site_and_wrong_token_posts_change_nothing(pool: PgPool)
             assert_eq!(reply.status, 403, "{path} by {case}");
             assert!(reply.set.is_empty(), "{path} by {case} set no cookie");
         }
-        assert_eq!(events(&w, "csrf_rejected", path).await, 3, "{path}");
+        assert_eq!(events(&w, "csrf_rejected", path), 3, "{path}");
     }
-    assert_eq!(owner_sessions(&w).await, 1, "nothing signed in or out");
     assert_eq!(
         get(&w, STEP_UP, &owner).await.status,
         200,
@@ -466,7 +505,6 @@ async fn td_sec_46_passkey_routes(pool: PgPool) {
     let signed = post(&w, SIGN_IN, &jar, &fake, 6).await;
     assert_eq!(signed.status, 401, "a fake assertion signs no one in");
     assert!(!signed.set.contains_key("__Host-askhava-session"));
-    assert_eq!(owner_sessions(&w).await, 0);
     let root = std::env::temp_dir().join(format!("askhava-t303-{}", std::process::id()));
     std::fs::create_dir_all(root.join("portals")).expect("folder");
     std::fs::write(
@@ -504,13 +542,13 @@ async fn td_sec_46_password_tries_past_the_limit_are_refused_first(pool: PgPool)
         let reply = sign_in(&w, &jar, ("fake wrong pass phrase t303", &wrong), 7).await;
         assert_eq!(reply.status, 401);
     }
-    assert_eq!(events(&w, "auth_failed", SIGN_IN).await, 5);
+    assert_eq!(events(&w, "auth_failed", SIGN_IN), 5);
     let code = totp_code(&w.secret, Timestamp::now());
     let limited = sign_in(&w, &jar, (PASSWORD, &code), 7).await;
     assert_eq!(limited.status, 401, "refused past the limit");
     assert!(!limited.set.contains_key("__Host-askhava-session"));
     assert_eq!(
-        events(&w, "auth_failed", SIGN_IN).await,
+        events(&w, "auth_failed", SIGN_IN),
         5,
         "the password was not checked"
     );
