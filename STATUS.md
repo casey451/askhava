@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-16T21:23:20Z by runner 526aa3557dc6 (actions).
+Updated 2026-11-16T21:23:49Z by runner 6740aabac4ed (actions).
 
-**Building: T111 in progress since 20:22Z; 374 of 540 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T111 in progress since 20:22Z; 375 of 540 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 374 of 540 build tasks (owner gates not counted)
+- **Tasks done:** 375 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T111 claimed 20:22Z, lease until 00:14Z; lane 2: T481 claimed 19:16Z, lease until 23:34Z; lane 3: T320 claimed 21:07Z, lease until 00:07Z
 - **Week:** 2% used, 186.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -15,13 +15,13 @@ Updated 2026-11-16T21:23:20Z by runner 526aa3557dc6 (actions).
 - BLOCKED T307: plan gap reported: PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messaging` and `calls` call `read_contact`), and app/portals/src/homeowner_portal.rs:97 keeps `OnFile::phone()` crate-private (T087's file, not T307's). So `server` has no allowed way to read her number and address for `HomeFacts`. The prompt (kit/prompts/T307.md:9, D-3877 (3)) says to read them through `privacy::api::read_contact` from the server, which those two lines (and the runtime check at app/privacy/src/api.rs:247) rule out. Smallest plan change: let T307 own app/portals/s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T307 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T408: plan gap reported: PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `payments/src/handlers.rs` and `app/ops/src/` ("only charges read safe mode"). This task's goal (D-3144, D-3879; OPS-001 at `docs/spec/ops-recovery.md:5`; TD-OPS-01 at `docs/test-design.md:811`, "in safe mode no charge and no release happen") requires `PickReleaser` and `address_in` in `app/server/src` to call `ops::api::safe_mode_on`. Smallest plan change: a harness task lets that scan also allow `server/src/release_hold.rs`, or the scan checks only that text paths never read safe ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 15 problem(s) on tasks still to run (+134 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+135 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 1 | 14 min | 21:22Z | PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `paymen |
-| T102 | site: home and how-it-works pages with the footer, tagline,  | MERGE_PENDING | 1 | 46 min | 21:03Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, tests/a11y/page_states.ts; a resync merges it in |
+| T102 | site: home and how-it-works pages with the footer, tagline,  | done | 1 | 46 min | 21:03Z |  |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | BLOCKED | 1 | 41 min | 20:41Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T361 | quotes and picks: a quote keeps its number once shown, and a | MERGE_PENDING | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
 | T487 | ops and payments: safe mode after 24 hours pauses charges, a | done | 1 | 50 min | 19:47Z |  |
@@ -69,8 +69,8 @@ Updated 2026-11-16T21:23:20Z by runner 526aa3557dc6 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 326 of 733 (44.5%) · partial 267 · unstarted 140
-**Tasks merged (throughput only):** 374 of 540
+**Requirements verified:** 328 of 733 (44.7%) · partial 273 · unstarted 132
+**Tasks merged (throughput only):** 375 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -83,16 +83,16 @@ Updated 2026-11-16T21:23:20Z by runner 526aa3557dc6 (actions).
 | intake | 30 | 10 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 39 | 9 | 0 | 48 |
-| lifecycle | 26 | 2 | 0 | 28 |
+| lifecycle | 27 | 1 | 0 | 28 |
 | messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
+| quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
-| website | 0 | 6 | 22 | 28 |
+| website | 0 | 14 | 14 | 28 |
 | wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
@@ -106,7 +106,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 17 of 148 done
+- stage 5: 18 of 148 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
