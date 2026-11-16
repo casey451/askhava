@@ -4,6 +4,7 @@
 //! contact value, and never sends or reads anything outside its own `ops` schema
 //! (`docs/architecture.md` section 3, D-491). Other crates reach it only through [`api`].
 
+mod alerts;
 pub mod api;
 mod models;
 mod service;

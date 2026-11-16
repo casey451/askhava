@@ -16,6 +16,11 @@ use sqlx::{Connection, PgConnection};
 // through [`audit`] below, never directly, or the row never reaches the stream (OPS-011, D-734).
 use crate::service;
 
+pub use crate::alerts::{
+    Audience, COVERAGE_ALERT, CoverageCount, CoverageScope, DELIVERY_ALERT, DeliveryCounts,
+    DeliveryOutcome, lock_coverage, record_business_counts, record_delivery_counts,
+    record_request_counts,
+};
 pub use crate::models::{
     Actor, AuditEntry, AuditRow, Change, NewAlert, OpsError, Severity, Switch, is_code_name,
 };
