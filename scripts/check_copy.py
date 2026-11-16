@@ -11,8 +11,14 @@ marked "fixed" and skipped.
 It reads:
 - docs/copy/site-copy.md: each "## <page> · <block> (homeowner|business[, fixed])" heading,
   followed by its copy on lines starting with "> ";
-- once they exist, page templates under app/*/templates/ (visible text only); a path containing
-  "business" is business copy.
+- once they exist, page templates under app/*/templates/ (visible text only, parsed with html.parser); a
+  path containing "business" is business copy. Each block keeps its "<path> · text <n>" name (D-3881).
+
+Template exemptions (T519, D-3878, D-3905) hold only in a "clean" element: only inline tags, no {% %},
+|safe or start tag of its own name inside, closed by its own end tag while innermost (no Askama branch or
+implied end tag stretches it). es_*.html files are skipped. In lang="es", text with a SPANISH and no ENGLISH
+word is skipped; 5 or more words with no SPANISH word are a problem. data-fixed="<ID>" (WORD-029, D-482) is
+skipped when the docs/spec/ "- **ID**" line holds its text word for word ({{ x }} = any one word), else a problem.
 
 Usage: python3 scripts/check_copy.py [--root REPO_ROOT]
 Exit status 1 lists each problem.
@@ -21,10 +27,10 @@ Exit status 1 lists each problem.
 from __future__ import annotations
 
 import argparse
-import html
 import re
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from html.parser import HTMLParser
 from pathlib import Path
 
 SITE_COPY = Path("docs/copy/site-copy.md")
@@ -39,6 +45,12 @@ SUPERLATIVES = re.compile(
 HEADING = re.compile(r"^## (?P<name>.+?) \((?P<tags>[a-z, ]+)\)\s*$")
 SENTENCE_END = re.compile(r"(?<=[.?!])\s+(?=[A-Z0-9$\"“(])")
 WORD = re.compile(r"[A-Za-z0-9$][A-Za-z0-9$'’,.-]*")
+SPANISH = frozenset("de el la los que su para por usted es y en".split())
+ENGLISH = frozenset("the and you your we to with our of for".split())
+INLINE = frozenset("a abbr b bdi bdo br cite code data dfn em i kbd mark q s small span strong sub sup time u wbr".split())
+VOID = frozenset("area base br col embed hr img input link meta source track wbr".split())
+EXPR, STMT = "\ue000", "\ue001"  # a {{ expression }}; a {% statement %} or |safe expression
+REQUIREMENT = re.compile(r"^- \*\*(?P<id>[A-Z]+-\d+)\*\* (?P<text>.+)$", re.MULTILINE)
 
 
 @dataclass
@@ -117,23 +129,153 @@ def site_copy_blocks(root: Path) -> list[Block]:
     return blocks
 
 
-def visible_text(markup: str) -> str:
+@dataclass(eq=False)
+class Element:
+    """An element that may exempt its text (lang, data-fixed); see the module docstring for "clean"."""
+    name: str
+    lang: str | None
+    fixed: str | None
+    clean: bool
+    closed: bool = False
+    text: list[str] = field(default_factory=list)
+
+    def plain(self) -> str:
+        return " ".join("".join(self.text).split())
+
+
+class TemplateText(HTMLParser):
+    """Visible text pieces with the elements open around each, numbered as tags and line breaks split them."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.stack: list[Element] = []
+        self.pieces: list[tuple[int, str, tuple[Element, ...]]] = []
+        self.index, self.buf = 0, ""
+
+    def flush(self) -> None:
+        self.pieces.append((self.index, self.buf, tuple(self.stack)))
+        self.index, self.buf = self.index + 1, ""
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.flush()
+        stmt = STMT in (self.get_starttag_text() or "")
+        for el in self.stack:
+            el.clean = el.clean and not stmt and tag in INLINE and el.name != tag
+        if tag in VOID:
+            return
+        found = dict(reversed(attrs))
+        lang = (found.get("lang") or "").strip().lower() if "lang" in found else None
+        fixed = (found.get("data-fixed") or "").strip() if "data-fixed" in found else None
+        el = Element(tag, lang, fixed, not stmt)
+        self.stack.append(el)
+
+    handle_startendtag = handle_starttag
+
+    def handle_endtag(self, tag: str) -> None:
+        self.flush()
+        i = next((i for i in range(len(self.stack) - 1, -1, -1) if self.stack[i].name == tag), None)
+        if i is not None:
+            self.stack[i].closed = i == len(self.stack) - 1
+            del self.stack[i:]
+
+    def handle_data(self, data: str) -> None:
+        for el in self.stack:
+            el.clean = el.clean and STMT not in data
+            el.text.append(data)
+        first, *rest = data.split("\n")
+        self.buf += first
+        for line in rest:
+            self.flush()
+            self.buf = line
+
+    def handle_comment(self, data: str) -> None:  # a comment or doctype counts as a tag, as before T519
+        self.flush()
+
+    handle_decl = handle_pi = unknown_decl = handle_comment
+
+
+def parse_template(markup: str) -> TemplateText:
     markup = re.sub(r"(?is)<(script|style)\b.*?</\1>", " ", markup)
-    markup = re.sub(r"\{[{%].*?[%}]\}", " ", markup)
-    return html.unescape(re.sub(r"<[^>]+>", "\n", markup))
+    markup = re.sub(r"(?s)\{%.*?%\}|\{\{[^}]*\|\s*safe\b.*?\}\}", STMT, markup)
+    parser = TemplateText()
+    parser.feed(re.sub(r"(?s)\{\{.*?\}\}", EXPR, markup))
+    parser.close()
+    parser.flush()
+    return parser
+
+
+def lowered_words(text: str) -> list[str]:
+    return re.findall(r"\w+", text.replace(EXPR, " ").lower())
+
+
+def innermost_lang(stack: tuple[Element, ...]) -> Element | None:
+    return next((el for el in reversed(stack) if el.lang is not None), None)
+
+
+def is_spanish(el: Element | None) -> bool:
+    return el is not None and (el.lang or "").split("-")[0] == "es"
+
+
+def fixed_problem(el: Element, requirements: dict[str, str]) -> str | None:
+    """Why a data-fixed element exempts nothing, or None when its requirement holds its text (WORD-029, D-482)."""
+    if not (el.clean and el.closed):
+        return "must hold only inline tags, no {% %}, and close with its own end tag"
+    if el.fixed not in requirements:
+        return "names no requirement in docs/spec/"
+    pattern = re.escape(el.plain()).replace(EXPR, r"\S+")
+    if not re.search(pattern, requirements[el.fixed]):
+        return f"text is not word for word in its requirement: {el.plain()[:70]}"
+    return None
+
+
+def load_requirements(root: Path) -> dict[str, str]:
+    texts = [p.read_text(encoding="utf-8") for p in sorted((root / "docs/spec").glob("*.md"))]
+    return {m["id"]: " ".join(m["text"].split()) for t in texts for m in REQUIREMENT.finditer(t)}
+
+
+def parsed_templates(root: Path) -> list[tuple[str, TemplateText]]:
+    """Each page template but es_*.html (Spanish, D-3878), parsed."""
+    app = root / "app"
+    paths = sorted(app.glob("*/templates/**/*.html")) if app.is_dir() else []
+    return [(p.relative_to(root).as_posix(), parse_template(p.read_text(encoding="utf-8")))
+            for p in paths if not p.name.startswith("es_")]
+
+
+def template_problems(root: Path) -> list[str]:
+    """data-fixed markers no requirement holds, and lang="es" text with no Spanish word (WORD-029, D-3878)."""
+    problems: list[str] = []
+    requirements = load_requirements(root)
+    for rel, parser in parsed_templates(root):
+        own: dict[Element | None, list[str]] = {}
+        for _, raw, stack in parser.pieces:
+            own.setdefault(innermost_lang(stack), []).extend(lowered_words(raw))
+        for el in dict.fromkeys(el for _, _, stack in parser.pieces for el in stack):
+            why = fixed_problem(el, requirements) if el.fixed is not None else None
+            if why:
+                problems.append(f'{rel}: data-fixed="{el.fixed}" {why}')
+            mine = own.get(el, [])
+            if is_spanish(el) and len(mine) >= 5 and not SPANISH.intersection(mine):
+                problems.append(f'{rel}: lang="es" text holds no common Spanish word: {el.plain()[:70]}')
+    return problems
+
+
+def exempt(raw: str, stack: tuple[Element, ...], requirements: dict[str, str]) -> bool:
+    """True for text a clean data-fixed element pins, or Spanish text in a clean lang="es" element (D-3878)."""
+    if any(el.fixed is not None and fixed_problem(el, requirements) is None for el in stack):
+        return True
+    lang, found = innermost_lang(stack) or Element("", None, None, False), set(lowered_words(raw))
+    return is_spanish(lang) and lang.clean and lang.closed and bool(found & SPANISH) and not found & ENGLISH
 
 
 def template_blocks(root: Path) -> list[Block]:
     blocks: list[Block] = []
-    app = root / "app"
-    if not app.is_dir():
-        return blocks
-    for path in sorted(app.glob("*/templates/**/*.html")):
-        rel = path.relative_to(root).as_posix()
+    requirements = load_requirements(root)
+    for rel, parser in parsed_templates(root):
         audience = "business" if "business" in rel else "homeowner"
-        for i, para in enumerate(p.strip() for p in visible_text(path.read_text(encoding="utf-8")).split("\n")):
-            if para:
-                blocks.append(Block(f"{rel} · text {i}", audience, False, " ".join(para.split())))
+        for i, raw, stack in parser.pieces:
+            text = " ".join(raw.replace(EXPR, " ").replace(STMT, " ").split())
+            if text and not exempt(raw, stack, requirements):
+                blocks.append(Block(f"{rel} · text {i}", audience, False, text))
     return blocks
 
 
@@ -141,7 +283,7 @@ def run(root: Path) -> list[str]:
     problems: list[str] = []
     for block in site_copy_blocks(root) + template_blocks(root):
         problems += check_block(block)
-    return problems
+    return problems + template_problems(root)
 
 
 def main(argv: list[str] | None = None) -> int:
