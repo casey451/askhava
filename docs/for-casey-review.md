@@ -3064,3 +3064,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - The site layout task (T101) failed twice, but its code was the same in every run. Two older tests had timing gaps: one finished before its last button press got an answer, and one pressed Tab before the page had moved focus where it should. A small new task (T559) makes both tests wait for those things. No test checks less than before. The site layout task is still on its last try and is left as it is; if that try fails, it will be set to run after the fix.
 - Nothing needs you now.
+
+## The ops alerts task waits for the flaky-test fix (D-3956, November 16)
+
+- The ops alerts task (T105) failed its second try on the same flaky payment test the new fix task (T559) repairs; its own code wasn't involved. It has one try left, so it now waits until that fix is in. Nothing else about it changed.
+- Nothing needs you now.
