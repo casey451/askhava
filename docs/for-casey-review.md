@@ -3118,3 +3118,23 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The task that builds the numbers behind the owner-portal flags stopped because the shared reader of the audit log gave back only which record and when, not which answer was logged, so it could not count the day-3 "no" and "other" answers its flag needs.
 - The fix lets that task add the answer's code name (like `day3_no`, never anything personal) to the reader's results. Nothing that already uses the reader changes, and no test or privacy rule was loosened.
 - Nothing needs you now.
+
+## The terms task gets a fixed list of words its test must catch (D-4038, November 16)
+
+- The task that drafts the homeowner and business terms used all three tries. Each time the drafts, fees and brand were judged right, but every new reviewer thought of one more way to say a forbidden idea (like "license fee" or "best") in English or Spanish that the test's word scan missed, so the task could never finish.
+- The fix gives the test a fixed, written list of words and phrases to catch in both languages, each proven by a planted bad sentence. A reviewer who thinks of another phrasing adds it to a list for later instead of failing the task, but any forbidden wording actually in a draft still fails it. The list also now catches "partner" and "affiliate" wording. Nothing was loosened: "introduction fee by job size", never "commission", "vetted" or "best", and the Laftly name all stay required.
+- Nothing needs you now.
+
+## Fourteen queued tasks fixed before they start, and three waits removed (D-4044, November 16)
+
+- Three checkers read the next big tasks before any builder starts them and found places where the plan would have made a builder stop: the alert emails had no email service to send through yet, help requests had no way onto the 9 a.m. and 3 p.m. phone list, a help email had nowhere to keep its words for the 30 days, the word "Hava" on the help and business pages would trip the brand check, and the web chat had no safe way to check the code without reading a locked phone number.
+- Each is now spelled out in that task's plan. The web chat checks the code by matching a scrambled fingerprint of the number, so no part of the site ever reads the locked phone number, and the full number is never logged or stored outside the vault.
+- Three tasks no longer wait on others they never needed (the consent-records task, the email-service task and the web-chat task), so they can start sooner.
+- The alert-routing task (T204) is still one task but looks large. If it runs over, the plan already names how to split it.
+- Nothing needs you now.
+
+## The business step-up task is split in two (D-4045, November 16)
+
+- As you asked, the task that serves the business "enter your code" page before team and billing changes is split: T364 now builds the code page itself, and the new T565 builds the role change, removal and monthly-limit changes behind it, with their tests. Nothing was dropped.
+- The team page task (T544) now waits for T565; the other tasks that only need the code page still wait only for T364.
+- Nothing needs you now.
