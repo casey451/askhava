@@ -3089,3 +3089,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - A town with fewer than 2 active businesses alerts you; a trade does only when it got a request this month.
 - A trade that got a request but has no business at all alerts you too.
 - Gaps: a license change that drops a business's job types is not counted until the next change touching that trade, and a town no business has ever served does not alert yet (D-3911). The overseer adds one small follow-up task for each. Nothing needs you now.
+
+## Test-coverage floors for money and privacy files outside the three main parts (D-3974, November 16)
+
+- Every file outside payments, privacy and licensing that moves money, hands over or deletes personal details, or checks that a message really came from Stripe or Twilio now has its own test-coverage floor, so its tests cannot quietly shrink. Twelve already meet 95% and are held there.
+- These measure lower today, so each is held at its current level less 2 points until its tests grow: `app/picks/src/unreachable_refund.rs` (87%), `app/picks/src/unreachable_steps.rs` (86%), `app/picks/src/release.rs` (81%), `app/picks/src/dispute_steps.rs` (83%), `app/picks/src/auto_confirm.rs` (83%), `app/picks/src/cant_take.rs` (81%), `app/portals/src/confirm_pay.rs` (70%), `app/portals/src/confirm_waiver.rs` (48%), `app/portals/src/data_download.rs` (81%), `app/portals/src/job_release.rs` (51%), `app/portals/src/business_left.rs` (64%), `app/server/src/release_sink.rs` (78%), `app/server/src/business_contacts.rs` (68%), `app/server/src/inbound_text.rs` (25%), `app/server/src/offdb_stream.rs` (21%), `app/adapters/src/signatures.rs` (56%), `app/adapters/src/payments.rs` (84%), `app/adapters/src/sms.rs` (56%), `app/adapters/src/storage.rs` (74%), `app/intake/src/purge.rs` (88%), `app/intake/src/conversation.rs` (84%), `app/businesses/src/complaint_holds.rs` (58%).
+- Nothing needs you now.
