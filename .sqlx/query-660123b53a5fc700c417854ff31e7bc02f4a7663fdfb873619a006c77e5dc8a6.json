@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH first AS (\n             SELECT ((min(sent_at) AT TIME ZONE 'UTC') - interval '7 hours')::date AS day\n             FROM messaging.email_outbox WHERE status = 'sent'),\n           days AS (\n             SELECT ((f.day + n)::timestamp + interval '7 hours') AT TIME ZONE 'UTC' AS start\n             FROM first f, generate_series(0, LEAST($2::int - 1,\n               ((($1::timestamptz AT TIME ZONE 'UTC') - interval '7 hours')::date - f.day))) AS n\n             WHERE f.day IS NOT NULL)\n           SELECT d.start AS \"start!\",\n             (SELECT count(*) FROM messaging.email_outbox o WHERE o.status = 'sent'\n                AND o.sent_at >= d.start AND o.sent_at < d.start + interval '1 day') AS \"sends!\",\n             (SELECT count(DISTINCT e.provider_id) FROM messaging.email_event e\n                WHERE e.kind = 'email.delivery_delayed'\n                AND e.event_at >= d.start AND e.event_at < d.start + interval '1 day') AS \"deferrals!\",\n             (SELECT count(DISTINCT e.provider_id) FROM messaging.email_event e\n                WHERE e.kind = 'email.bounced'\n                AND e.event_at >= d.start AND e.event_at < d.start + interval '1 day') AS \"bounces!\",\n             (SELECT count(DISTINCT e.provider_id) FROM messaging.email_event e\n                WHERE e.kind = 'email.complained'\n                AND e.event_at >= d.start AND e.event_at < d.start + interval '1 day') AS \"complaints!\"\n           FROM days d ORDER BY d.start",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "start!",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "sends!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "deferrals!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "bounces!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "complaints!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "660123b53a5fc700c417854ff31e7bc02f4a7663fdfb873619a006c77e5dc8a6"
+}
