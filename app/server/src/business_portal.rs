@@ -5,11 +5,12 @@
 //! [`JOB_RELEASE_ROUTE`], `GET` [`BILLING_ROUTE`], `GET` [`STATEMENT_ROUTE`] and `GET` and `POST`
 //! [`NOTICE_SETTINGS_ROUTE`] over `portals`' page functions; `build_router` always merges it.
 //! Every route first reads the person with `portals::api::business_principal`: no business person
-//! (signed out, a homeowner or owner session, a removed member) gets [`signed_out`], a 401 linking
-//! to [`SIGNIN_ROUTE`] with no record detail; a refusal by a signed-in person (another business's
-//! pick, a missing role, an unknown ID, a non-owner's channel change) is the one [`not_found`]
-//! answer and an `authz_denied` security event (SEC-048). Every response is `no-store` (SEC-034);
-//! both `POST`s pass `refuse_cross_site` and the CSRF form check (SEC-009, SEC-042).
+//! (signed out, a homeowner or owner session, a removed member) gets `portals::api::signed_out`,
+//! a 401 linking to `portals::api::SIGNIN_ROUTE` with no record detail; a refusal by a signed-in
+//! person (another business's pick, a missing role, an unknown ID, a non-owner's channel change)
+//! is the one [`not_found`] answer and an `authz_denied` security event (SEC-048). Every response
+//! is `no-store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF form check
+//! (SEC-009, SEC-042).
 //!
 //! The facts come through each module's `api`: the home's open-cards times and inbox switch from
 //! `businesses` and `portals`, its "Your numbers" fee total from `payments::api::business_statement`
@@ -37,11 +38,11 @@ use askhava_portals::api::{
     BILLING_ROUTE, BUSINESS_HOME_ROUTE, BusinessPrincipal, ChannelChangeError, ChannelFacts,
     CookieJar, CsrfField, CsrfForm, InboxSwitch, JOB_RELEASE_ROUTE, JobFacts,
     NOTICE_SETTINGS_ROUTE, Need, NoticeAddress, OPEN_CARDS_ROUTE, PaymentMethod, SESSION_COOKIE,
-    SIGNIN_ROUTE, STATEMENT_ROUTE, SecurityEvent, SecurityEventKind, WebSecurity, YourNumbers,
+    STATEMENT_ROUTE, SecurityEvent, SecurityEventKind, WebSecurity, YourNumbers,
     admit_security_event, billing_page, business_home_page, business_principal, change_channel,
     csrf_token, inbox_shared, job_release_page, no_store, notice_settings_page,
     record_security_event, refuse_cross_site, save_open_cards_times, security_event_client,
-    statement_csv,
+    signed_out, statement_csv,
 };
 use askhava_privacy::api::{BusinessContactError, BusinessPurpose, Vault, read_business_mailbox};
 use askhava_quotes::api::quote_numbers;
@@ -183,16 +184,6 @@ async fn note_site(mut request: Request, next: Next) -> Response {
         client,
     });
     next.run(request).await
-}
-
-/// SEC-004: the answer to a request with no business person: 401, a link to sign in, no detail.
-fn signed_out() -> Response {
-    let page = format!(
-        "<!doctype html><html lang=\"en\"><head><title>Sign in</title></head><body><main>\
-         <h1>Sign in to your business account</h1><p><a href=\"{SIGNIN_ROUTE}\">Sign in</a> to \
-         see this page.</p></main></body></html>"
-    );
-    (StatusCode::UNAUTHORIZED, Html(page)).into_response()
 }
 
 /// SEC-019: the one not-found answer, the same for every refusal and unknown ID; it never says

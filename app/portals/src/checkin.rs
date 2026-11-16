@@ -21,16 +21,16 @@ use askhava_jobs::api::{Answer, Inbound, answer_check_in, current, job_number};
 use askhava_messaging::api::{Language, answer_label, parse_check_in_code};
 use askhava_ops::api::Actor;
 use axum::Router;
-use axum::extract::{FromRef, Path, Request, State};
-use axum::http::{HeaderName, HeaderValue, StatusCode};
-use axum::middleware::{Next, from_fn, from_fn_with_state};
+use axum::extract::{FromRef, Path, State};
+use axum::http::StatusCode;
+use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
 use axum_extra::extract::cookie::CookieJar;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 
-use crate::quote_page::token_expired;
+use crate::quote_page::{noindex, token_expired};
 use crate::security::{ButtonForm, CsrfForm, WebSecurity, no_store, refuse_cross_site};
 use crate::session::{csrf_token, ensure_pre_session};
 
@@ -113,16 +113,6 @@ pub fn checkin_routes(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
         .layer(from_fn(noindex))
         .layer(from_fn_with_state(security, refuse_cross_site))
         .layer(from_fn(no_store))
-}
-
-/// `X-Robots-Tag: noindex, nofollow` on every answer-page response (it is private).
-async fn noindex(request: Request, next: Next) -> Response {
-    let mut response = next.run(request).await;
-    let value = HeaderValue::from_static("noindex, nofollow");
-    response
-        .headers_mut()
-        .insert(HeaderName::from_static("x-robots-tag"), value);
-    response
 }
 
 /// What an opened link names: the job, its request number, whether it still takes check-ins.

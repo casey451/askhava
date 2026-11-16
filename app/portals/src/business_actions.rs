@@ -55,7 +55,7 @@ use askhava_quotes::api::{
     AUTO_CONFIRM_VERSION, AutoConfirmError as QuotesAutoError, AutoConfirmTick, DayPart, Format,
     JobPage, NoteProblem, OTHER_SCHEDULE, Parts, Period, Permit, Price, PriceFields, PriceProblem,
     QuoteFacts, Spanish, TripFee, Untick, VisitSchedule, auto_confirm_authorization,
-    auto_confirm_of, format_definition, stripe_answer_filed, tick_auto_confirm,
+    auto_confirm_of, format_definition, stripe_answer_filed, tick_auto_confirm, trip_code,
     untick_auto_confirm,
 };
 use jiff::Timestamp;
@@ -649,14 +649,6 @@ pub fn parse_facts(form: &FactsForm) -> Result<(QuoteFacts, Option<i32>), Vec<Fa
                 .map(|(_, p)| p)
                 .collect())
         }
-    }
-}
-
-fn trip_code(t: TripFee) -> &'static str {
-    match t {
-        TripFee::Counts => "counts",
-        TripFee::DoesNotCount => "does_not_count",
-        TripFee::None => "none",
     }
 }
 

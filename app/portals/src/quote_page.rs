@@ -323,8 +323,9 @@ pub fn quote_page_routes(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
         .layer(from_fn_with_state(security, refuse_cross_site))
 }
 
-/// PICK-010: `X-Robots-Tag: noindex, nofollow` on every quote-page response.
-async fn noindex(request: Request, next: Next) -> Response {
+/// PICK-010: `X-Robots-Tag: noindex, nofollow` on every quote-page response; the feedback and
+/// check-in pages (private too) use this one copy (T517).
+pub(crate) async fn noindex(request: Request, next: Next) -> Response {
     let mut response = next.run(request).await;
     let value = HeaderValue::from_static("noindex, nofollow");
     response

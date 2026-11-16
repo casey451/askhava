@@ -275,8 +275,9 @@ async fn status(
     }
 }
 
-/// The delivery checked against the URL Twilio signed: the public base, path and query (SEC-016).
-fn verified(
+/// The delivery checked against the URL Twilio signed: the public base, path and query (SEC-016);
+/// the voice, call-status and safety-call webhooks check theirs with this one copy (T517).
+pub(crate) fn verified(
     h: &Webhooks,
     uri: &Uri,
     head: &HeaderMap,

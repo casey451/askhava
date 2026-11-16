@@ -822,8 +822,10 @@ async fn denied(
     not_found()
 }
 
-/// SEC-004: no business person: 401 with the sign-in link, no detail.
-fn signed_out() -> Response {
+/// SEC-004: the answer to a request with no business person: 401, a link to sign in, no detail;
+/// `server`'s business portal routes answer with this one copy (T517).
+#[must_use]
+pub fn signed_out() -> Response {
     let page = format!(
         "<!doctype html><html lang=\"en\"><head><title>Sign in</title></head><body><main>\
          <h1>Sign in to your business account</h1><p><a href=\"{SIGNIN_ROUTE}\">Sign in</a> to \
@@ -1612,5 +1614,18 @@ mod tests {
             picked
         ));
         assert!(!may_confirm(None, picked));
+    }
+
+    /// SEC-004 (T517): the one signed-out answer the confirm route and `server`'s business portal
+    /// share is a 401 whose page links to sign-in.
+    #[tokio::test]
+    async fn signed_out_is_a_401_linking_to_sign_in_with_no_detail() {
+        let answer = signed_out();
+        assert_eq!(answer.status(), StatusCode::UNAUTHORIZED);
+        let bytes = axum::body::to_bytes(answer.into_body(), usize::MAX)
+            .await
+            .expect("body");
+        let page = String::from_utf8(bytes.to_vec()).expect("utf-8");
+        assert!(page.contains(&format!("<a href=\"{SIGNIN_ROUTE}\">Sign in</a>")));
     }
 }
