@@ -528,6 +528,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /static/portals/feedback.css | portals | yes |
 | GET | /static/portals/forms.css | portals | yes |
 | GET | /static/portals/quote_page.js | server | yes |
+| GET | /static/site/site.css | site | yes |
 | GET | /c/{token}/{answer} | portals | yes |
 | POST | /c/{token}/{answer} | portals | yes |
 | POST | /webhooks/twilio/sms | server | yes |
