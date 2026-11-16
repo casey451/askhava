@@ -1,8 +1,8 @@
 //! The site's router and the banner read every site page makes (WEB-001, WEB-007, T101).
 //!
 //! [`site_routes`] mounts the compiled-in files of [`crate::assets`] at `/static/site/<name>` with
-//! one `nest_service` and no `.route(` line (D-3106: the security route scan reads `.route(` calls
-//! as page routes); an unlisted name answers 404 and a method other than `GET` or `HEAD` 405 with
+//! one `nest_service` and no route call of its own (D-3106: the security route scan reads
+//! every route call as a page route); an unlisted name answers 404 and a method other than `GET` or `HEAD` 405 with
 //! `Allow`. Each later site task merges its own page router in `server::build_router`. Every site
 //! page extends `templates/site_layout.html` and sets its `banner_shown` field from
 //! [`banner_shown`] before it renders (WEB-007, D-1843, D-3144).
