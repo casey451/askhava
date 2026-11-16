@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T22:18:37Z by runner 023f304a8802 (actions).
+Updated 2026-11-16T22:24:38Z by runner 023f304a8802 (actions).
 
-**Building: T481 in progress since 21:50Z; 375 of 540 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T481 in progress since 21:50Z; 376 of 540 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 375 of 540 build tasks (owner gates not counted)
+- **Tasks done:** 376 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T481 claimed 21:50Z, lease until 00:50Z; lane 2: T523 claimed 22:07Z, lease until 01:07Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
 - **Week:** 3% used, 185.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:18Z, 0 min before this update
+- **Last run:** 22:18Z, 5 min before this update
 - **Keeper:** last ran 22:18Z, next wake 00:33Z
 
 ## Needs attention
@@ -32,7 +32,7 @@ Each needs a planted sentence in test_planted_spanish_banned_word_fails; think f
 | T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 1 | 14 min | 21:22Z | PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `paymen |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | done | 1 | 46 min | 21:03Z |  |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | BLOCKED | 1 | 41 min | 20:41Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
-| T361 | quotes and picks: a quote keeps its number once shown, and a | MERGE_PENDING | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
+| T361 | quotes and picks: a quote keeps its number once shown, and a | done | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
 | T487 | ops and payments: safe mode after 24 hours pauses charges, a | done | 1 | 50 min | 19:47Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 30 min | 19:37Z |  |
 | T324 | harness: 95% branch floors for the money and privacy files o | done | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
@@ -78,7 +78,7 @@ Each needs a planted sentence in test_planted_spanish_banned_word_fails; think f
 ## Progress (requirements verified)
 
 **Requirements verified:** 327 of 733 (44.6%) · partial 274 · unstarted 132
-**Tasks merged (throughput only):** 375 of 540
+**Tasks merged (throughput only):** 376 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -114,7 +114,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 18 of 148 done
+- stage 5: 19 of 148 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
