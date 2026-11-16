@@ -64345,8 +64345,8 @@
     "T105",
     "T477"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "owner-flag-inputs",
    "type": "build",
    "stage": "5",
@@ -64362,7 +64362,34 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "reason": "plan gap reported: PLAN GAP: app/ops/src/audit_subjects.rs:13-21 (owned by T477, not T523) \u2014 the audit-subjects reader returns only `subject_kind`, `subject_id` and `at` for an action, never the row's `field`, so the jobs reader cannot pick out `day3_no` / `day3_other` rows through it as the goal requires. Smallest plan change: let T523 own `app/ops/src/audit_subjects.rs` (or a harness/T477 follow-up) to add `field: Option<String>` to `AuditSubject` and to its `SELECT`; or have the plan let the jobs reader take the field through a new `ops::api` reader.\nEvidence: AuditSubject has only subject_kind, subject_id, a; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T523 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: app/ops/src/audit_subjects.rs:13-21 (owned by T477, not T523) \u2014 the audit-subjects reader returns only `subject_kind`, `subject_id` and `at` for an action, never the row's `field`, so the jobs reader cannot pick out `day3_no` / `day3_other` rows through it as the goal requires. Smallest plan change: let T523 own `app/ops/src/audit_subjects.rs` (or a harness/T477 follow-up) to add `field: Option<String>` to `AuditSubject` and to its `SELECT`; or have the plan let the jobs reader take the field through a new `ops::api` reader.\nEvidence: AuditSubject has only subject_kind, subject_id, at (audit_subjects.rs:13-21); its query (:35-36) selects only those columns filtered by action and window. kit/tasks.json lists app/ops/src/audit_subjects.rs under T477; T523 owns only the four flag_inputs.rs files, tests/integration/tests/flag_inputs.rs and app/jobs/src/followups.rs. Every answer shares the one action jobs.check_in_answer (goal, D-3881(3) at docs/decisions.md:2206), so the reader cannot tell day 3 from day 14 or NO/OTHER from the rest. jobs.status_history moves are ambiguous (followups.rs:108-111, rules.rs:121-126); ops::api::audited (api.rs:229) returns only existence; ops::api::field_changed_last (api.rs:253) has no window and is defeated by later moves; export_audit pages the whole log; modules may not query ops.audit_log themselves (audit_subjects.rs:1-3).\nReviewer afaa2d05071c1f268 confirmed the ownership and contradiction. No commits made.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 25,
+     "head_sha": "6740aabac4ed85915b9f41d0e86ff388760d90c1",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-16T21:33:25Z",
+     "ended_at": "2026-11-16T21:38:35Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 579137,
+       "turns": 15
+      },
+      "reviewer": {
+       "tokens": 235779,
+       "turns": 9
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T525",
@@ -65357,12 +65384,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T111",
-   "at": "2026-11-16T21:28:39Z",
-   "output_tokens": 63501,
-   "cache_read_input_tokens": 6831900,
-   "input_tokens": 196,
-   "cache_creation_input_tokens": 268315
+   "task": "T523",
+   "at": "2026-11-16T21:38:35Z",
+   "input_tokens": 47,
+   "output_tokens": 12280,
+   "cache_creation_input_tokens": 65185,
+   "cache_read_input_tokens": 737404
   },
   "source": "session_reading 2026-11-16T21:29:16Z (week)",
   "by_task": {
@@ -69370,17 +69397,27 @@
    },
    "T523": {
     "estimated_bytes": 368458,
-    "estimated_tokens": 1123162
+    "estimated_tokens": 1123162,
+    "usage_counting": "message_id",
+    "input_tokens": 47,
+    "output_tokens": 12280,
+    "cache_creation_input_tokens": 65185,
+    "cache_read_input_tokens": 737404,
+    "worker_tokens": 579137,
+    "worker_turns": 15,
+    "reviewer_tokens": 235779,
+    "reviewer_turns": 9,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-16T18:02:43Z",
-    "tokens": 11049517
+    "tokens": 11200769
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 210006241
+    "tokens": 210157493
    }
   },
   "session_reading": {
@@ -69391,7 +69428,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T21:36:07Z",
+ "updated_at": "2026-11-16T21:38:35Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -69489,7 +69526,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ed571ff58767b7c166d88fedd8eb8f1b3aed30a3",
+ "runner_sha": "6740aabac4ed85915b9f41d0e86ff388760d90c1",
  "starter": "actions",
  "smoke_runs": [
   {
