@@ -6,7 +6,7 @@
 //! `intake::api::close_from_page`, sends no text and answers with the page saying it is closed; a
 //! second press changes nothing; a job already Done shows no button and a forged `POST` leaves it
 //! Done; a cross-site `POST` or a wrong CSRF token is a 403 that changes nothing and is logged as a
-//! `csrf_rejected` security event; an unknown token is a bare 404.
+//! `csrf_rejected` security event; an unknown token is a bare 404, but only after the CSRF check.
 
 use std::sync::Arc;
 
@@ -241,6 +241,21 @@ async fn td_job_16_cross_site_or_wrong_token_is_refused_and_logged(pool: PgPool)
         let (status, _) = send(&pool, ("POST", &close_path(&token)), &b, site).await;
         assert_eq!(status, 403);
         assert_eq!(status_of(&pool, job).await, open, "changes nothing");
+        assert_eq!(refusals(&pool).await, n, "logged as a security event");
+    }
+}
+
+/// TD-JOB-16 (SEC-042, SEC-048; D-3877 (2)): the CSRF check comes before the token lookup, so a
+/// cross-site `POST` or a wrong CSRF token to a made-up token's close path is a logged 403, never
+/// the 404 that would tell a forger which tokens exist.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_16_an_unknown_token_is_refused_by_csrf_before_its_404(pool: PgPool) {
+    let (_, _, token) = open_job(&pool, 0x9504).await;
+    let b = browser(&pool, &token).await;
+    let unknown = CLOSE_ROUTE.replace("{token}", &"b".repeat(64));
+    for (n, site) in [(1, Site::Cross), (2, Site::WrongToken)] {
+        let (status, _) = send(&pool, ("POST", &unknown), &b, site).await;
+        assert_eq!(status, 403, "CSRF refuses before the token is looked up");
         assert_eq!(refusals(&pool).await, n, "logged as a security event");
     }
 }
