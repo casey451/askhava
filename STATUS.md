@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-16T18:35:06Z by runner b5123392aada (actions).
+Updated 2026-11-16T18:39:56Z by runner f74278e920d2 (actions).
 
 **Building: T324 in progress since 17:53Z; 369 of 540 done; week 98% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 369 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T324 claimed 17:53Z, lease until 21:35Z; lane 2: T102 claimed 17:43Z, lease until 21:33Z; lane 6: T303 claimed 18:26Z, lease until 21:26Z
-- **Week:** 98% used, -3.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:33Z, 1 min before this update
+- **Lane:** lane 1: T324 claimed 17:53Z, lease until 21:35Z; lane 2: T102 claimed 17:43Z, lease until 21:33Z; lane 6: T303 claimed 18:26Z, lease until 21:26Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
+- **Week:** 98% used, -4.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 18:39Z, 0 min before this update
 - **Keeper:** last ran 18:18Z, next wake 20:46Z
 
 ## Needs attention
 - BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 13 problem(s) on tasks still to run (+124 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+124 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,7 +90,7 @@ Updated 2026-11-16T18:35:06Z by runner b5123392aada (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T18:17:56Z (week)): week: 197.4M used, -3.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T05:19:32Z.
+- Pacing (session_reading 2026-11-16T18:17:56Z (week)): week: 198.5M used, -4.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T06:00:07Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -108,6 +108,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T324 (lease until 2026-11-16T21:35:06Z)
 - lane 2: T102 (lease until 2026-11-16T21:33:08Z)
 - lane 6: T303 (lease until 2026-11-16T21:26:18Z)
+- lane 7: T361 (lease until 2026-11-16T21:39:42Z)
 
 ## Last usage reading
 - {"task": "T166", "at": "2026-11-16T18:17:04Z", "cache_read_input_tokens": 3779716, "input_tokens": 108, "output_tokens": 39147, "cache_creation_input_tokens": 140913}
