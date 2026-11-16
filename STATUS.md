@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T23:33:27Z by runner bd99856fca96 (actions).
+Updated 2026-11-16T23:36:33Z by runner bd99856fca96 (actions).
 
 **Building: T320 in progress since 23:06Z; 376 of 540 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 376 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T320 claimed 23:06Z, lease until 02:06Z; lane 2: T523 claimed 22:07Z, lease until 02:33Z; lane 3: T111 claimed 23:22Z, lease until 02:22Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 02:31Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
+- **Lane:** lane 1: T320 claimed 23:06Z, lease until 02:06Z; lane 3: T111 claimed 23:22Z, lease until 02:22Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 02:31Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
 - **Week:** 4% used, 180.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:32Z, 1 min before this update
+- **Last run:** 23:33Z, 2 min before this update
 - **Keeper:** last ran 22:44Z, next wake 01:10Z
 
 ## Needs attention
@@ -18,9 +18,10 @@ Updated 2026-11-16T23:33:27Z by runner bd99856fca96 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T523 | quotes, jobs, picks and intake: the readers the owner flags  | QUEUED | 2 | 89 min | 23:36Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 3 | 37 min | 22:10Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
 | T320 | ops: a check that runs on a schedule raises its alert once w | check_failed | 1 | 39 min | 21:46Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
-| T523 | quotes, jobs, picks and intake: the readers the owner flags  | BLOCKED | 1 | 5 min | 21:38Z | PLAN GAP: app/ops/src/audit_subjects.rs:13-21 (owned by T477, not T523) — the audit-subjects reader returns only `subjec |
+| T523 | quotes, jobs, picks and intake: the readers the owner flags  | BLOCKED | 1 | 5 min | 21:38Z |  |
 | T111 | Draft homeowner and business terms with every required claus | QUEUED | 2 | 66 min | 21:28Z |  |
 | T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 1 | 14 min | 21:22Z | PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `paymen |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | done | 1 | 46 min | 21:03Z |  |
@@ -115,11 +116,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T320 (lease until 2026-11-17T02:06:28Z)
-- lane 2: T523 (lease until 2026-11-17T02:33:27Z)
 - lane 3: T111 (lease until 2026-11-17T02:22:14Z)
 - lane 4: T481 (lease until 2026-11-17T01:37:17Z)
 - lane 5: T373 (lease until 2026-11-17T02:31:51Z)
 - lane 7: T221 (lease until 2026-11-17T01:36:07Z)
 
 ## Last usage reading
-- {"task": "T111", "at": "2026-11-16T22:10:00Z", "cache_read_input_tokens": 5355599, "output_tokens": 59151, "input_tokens": 163, "cache_creation_input_tokens": 252031}
+- {"task": "T523", "at": "2026-11-16T23:36:32Z", "cache_creation_input_tokens": 308351, "cache_read_input_tokens": 9122184, "output_tokens": 73956, "input_tokens": 286}
