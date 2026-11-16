@@ -2964,3 +2964,24 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - As you asked, Fable checked the stage-4 tidy-up task before it ran. It found that the tool for spotting copied code did not exist yet, and that the job was too big for one task. A small new task builds that tool, and the clean-up of copied code is split in two. The tidy-up task now also says exactly how it proves the architecture notes are current.
 - Nothing needs you.
+
+## Fable checks every task before it runs, for the rest of phase 1 (D-3871, November 15)
+
+- As you asked, Fable now looks over each phase-1 task before it starts, a group at a time, and any fix goes into the plan before the task runs. This replaces the earlier pre-start checks.
+- The first check, of the copied-code tool and the first copied-code clean-up, made two small fixes: one group is marked as the other clean-up's, and both clean-ups now refresh the plan's fingerprint when they change the tool's keep-list.
+- A third fix, making the tool's tests use their own sample files so the later clean-ups can change its keep-list freely, came too late: the tool's task had already started. If its tests turn out to depend on the real keep-list, a small follow-up task fixes them before the clean-ups run. Lesson: plan fixes must land before a task can start.
+- Nothing needs you.
+
+## Fable's first group of pre-start checks for stage 5 (D-3877, November 15)
+
+- Fable checked the first stage-5 tasks before they start, and the plan now fixes what would have made them fail. Among them: the site's restyle may adjust the one old test that expects the plain header, and the quote page's close button may adjust the one security-test line that sends it an extra field. Both now run on Opus with a security review.
+- Nothing in the app raised the alerts for "Stripe errors over 30 minutes" or "the health check failed twice". A new small task now raises both; UptimeRobot's own check still emails you directly as before.
+- Nothing needs you.
+
+## Fable's second group of pre-start checks for stage 5 (D-3878, November 16)
+
+- Fable checked the next six stage-5 tasks before they start, and the plan now fixes what would have made them fail. The main one: the copy checker would have failed the exact sentences the spec requires (the launch-offer line, the 911 note, the AI wording, the Spanish lines). A small new task teaches it to skip Spanish text and any sentence marked with the requirement that fixes its words; a marked sentence the requirement doesn't hold still fails, so the marker can't hide ordinary copy.
+- The homeowner and business data pages have no draft document, so their words are written into the pages from the spec. The number of days business records are kept is still the blank you fill in before publishing, as in the privacy policy draft.
+- The site's page addresses are now fixed: /how-it-works, /es/how-it-works, /services, /help and /request for starting a request.
+- The portal form styles and the emails still used the old colours; a second small task moves them to the new look's colours and makes the email footer text 16 px.
+- Nothing needs you.
