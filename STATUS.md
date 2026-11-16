@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T04:34:00Z by runner 42860522d00c (actions).
+Updated 2026-11-16T04:41:28Z by runner 59233847664f (actions).
 
 **Waiting for tokens until 17:00Z; 355 of 532 done; week 91% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-16T04:34:00Z by runner 42860522d00c (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:38Z (no task in progress)
 - **Week:** 91% used, 12.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:33Z, 0 min before this update
+- **Last run:** 04:34Z, 7 min before this update
 - **Keeper:** last ran 04:33Z, next wake 10:13Z
 
 ## Needs attention
@@ -41,7 +41,6 @@ Updated 2026-11-16T04:34:00Z by runner 42860522d00c (actions).
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | done | 2 | 50 min | 06:16Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T461 | server: business sign-up's service area, email code and acti | BLOCKED | 3 | 49 min | 06:10Z |  |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | check_failed | 1 | 46 min | 04:47Z |  |
-| T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -77,7 +76,7 @@ Updated 2026-11-16T04:34:00Z by runner 42860522d00c (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T04:23:09Z (week)): week: 182.0M used, 12.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T11:45:19Z; waiting until 2026-11-19T17:00:00Z.
+- Pacing (session_reading 2026-11-16T04:33:38Z (week)): week: 182.0M used, 12.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T11:54:15Z; waiting until 2026-11-19T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
