@@ -26,6 +26,7 @@ from test_failure_drills import MODELS, NOW, FakeEnv, config, make_task
 
 ROOT = Path(__file__).resolve().parent.parent
 FABLE = "claude-fable-5-1"
+OPUS = "claude-opus-5-5"
 REFUSAL = "There's an issue with the selected model (claude-fable-5-1). It may not exist or you may not have access to it."
 
 
@@ -76,19 +77,22 @@ def test_load_reads_kit_runner_json_and_fails_safe(tmp_path: Path) -> None:
     assert mw.load(f) is not None and entry.lanes(f) == 1
 
 
-def test_the_repository_window_is_caseys_thursday_switch() -> None:
-    """kit/runner.json as Casey asked on November 9: Fable from the weekly reset, open-ended, to the limit."""
+def test_the_repository_window_is_caseys_run_to_the_limit() -> None:
+    """kit/runner.json as Casey asked on November 16 (D-3894): Opus from 07:30Z to the weekly reset, to the
+    limit, closing at the first limit. (D-2225's Fable window, closed before it opened by D-2485, is replaced;
+    the tests below that need a closed or an open Fable window write their own, `_window_root`.)"""
     raw = json.loads((ROOT / "kit" / "runner.json").read_text(encoding="utf-8"))
     assert raw["lanes"] == 7 and raw["owner_review"] is False  # the locked switches as set: seven lanes since D-3269 (five since D-3043, four since D-2986, D-620)
     win = mw.load()
-    assert win is not None and win["model"] == FABLE and win["alias"] == "fable"
-    # Closed before it opens (D-2485, Casey Nov 10): until == from, an empty [from, until) that is never active.
-    assert st.iso(win["from"]) == st.iso(win["until"]) == "2026-11-12T17:00:00Z" and win["run_to_limit"] is True
-    assert win["end_on_limit"] is True
-    reset = st.parse("2026-11-12T17:00:00Z")
-    assert not mw.in_window(win, reset - timedelta(seconds=1)) and not mw.in_window(win, reset)
-    assert mw.session_model(win, reset - timedelta(seconds=1), None) == "claude-sonnet-5-5"
-    assert mw.session_model(win, reset, None) == "claude-sonnet-5-5"  # the plan's models straight through Thursday
+    assert win is not None and win["model"] == OPUS and win["alias"] == "opus"
+    assert st.iso(win["from"]) == "2026-11-16T07:30:00Z" and st.iso(win["until"]) == "2026-11-19T17:00:00Z"
+    assert win["run_to_limit"] is True and win["end_on_limit"] is True
+    start, reset = win["from"], st.parse("2026-11-19T17:00:00Z")
+    assert not mw.in_window(win, start - timedelta(seconds=1)) and mw.in_window(win, start)
+    assert mw.in_window(win, reset - timedelta(seconds=1)) and not mw.in_window(win, reset)
+    assert mw.session_model(win, start - timedelta(seconds=1), None) == "claude-sonnet-5-5"
+    assert mw.session_model(win, start, None) == OPUS  # every model the runner starts is Opus while it is open
+    assert mw.session_model(win, reset, None) == "claude-sonnet-5-5"  # the plan's models again from the reset
 
 
 # ---- workers and reviewers
@@ -234,16 +238,28 @@ def test_the_session_model_follows_the_window() -> None:
     assert mw.session_model(None, NOW, None) == "claude-sonnet-5-5"
 
 
-def _open_window_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
-    """A copy of the repository's kit/runner.json with its window open (`until` null), as entry.ROOT: the
-    entry points' wiring to an active window stays proven while the repository's own window is closed (D-2485)."""
-    root = tmp_path / "open-window"
+def _window_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, until: str | None, name: str) -> Path:
+    """A copy of the repository's kit/runner.json, as entry.ROOT, whose window is D-2225's Fable window from
+    the November 12 reset with this `until`: the entry points' wiring is tested against an explicit window,
+    not against whatever window the repository holds (D-3894)."""
+    root = tmp_path / name
     (root / "kit").mkdir(parents=True)
     raw = json.loads((ROOT / "kit" / "runner.json").read_text(encoding="utf-8"))
-    raw["model_window"]["until"] = None
+    raw["model_window"] = {"model": FABLE, "alias": "fable", "from": "2026-11-12T17:00:00Z", "until": until,
+                           "run_to_limit": True, "end_on_limit": True}
     (root / "kit" / "runner.json").write_text(json.dumps(raw), encoding="utf-8")
     monkeypatch.setattr(entry, "ROOT", root)
     return root
+
+
+def _closed_window_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    """The Fable window closed before it opens (until == from, D-2485): an empty window, never active."""
+    return _window_root(monkeypatch, tmp_path, "2026-11-12T17:00:00Z", "closed-window")
+
+
+def _open_window_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    """The same Fable window open (`until` null): the entry points follow an active window."""
+    return _window_root(monkeypatch, tmp_path, None, "open-window")
 
 
 def _session_model_output(monkeypatch: pytest.MonkeyPatch, when: datetime, state_file: str) -> list[str]:
@@ -255,7 +271,8 @@ def _session_model_output(monkeypatch: pytest.MonkeyPatch, when: datetime, state
 
 
 def test_the_session_model_command_reads_runner_json_and_the_state(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    reset = st.parse("2026-11-12T17:00:00Z")  # the repository's own window, closed before it opens (D-2485)
+    reset = st.parse("2026-11-12T17:00:00Z")  # the Fable window, closed before it opens (D-2485)
+    _closed_window_root(monkeypatch, tmp_path)
     assert _session_model_output(monkeypatch, reset - timedelta(minutes=1), "") == ["model=claude-sonnet-5-5", "windowed=false"]
     assert _session_model_output(monkeypatch, reset, str(tmp_path / "missing.json")) == ["model=claude-sonnet-5-5", "windowed=false"]
     root = _open_window_root(monkeypatch, tmp_path)  # the same window, open: the command prints its model
@@ -438,8 +455,9 @@ def test_the_pacer_runs_to_the_limit_only_inside_the_window(tmp_path: Path, monk
 
 
 def test_the_runner_wires_the_pacer_switch_to_kit_runner_json(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _closed_window_root(monkeypatch, tmp_path)
     switch = entry.run_to_limit_now()
-    reset = st.parse("2026-11-12T17:00:00Z")  # the repository's window is closed before it opens (D-2485)
+    reset = st.parse("2026-11-12T17:00:00Z")  # the Fable window, closed before it opens (D-2485)
     assert switch(reset, st.new_state()) is False and switch(reset - timedelta(seconds=1), st.new_state()) is False
     _open_window_root(monkeypatch, tmp_path)  # the same window, open: the switch follows it
     switch = entry.run_to_limit_now()
@@ -602,7 +620,8 @@ def test_after_the_window_closes_the_pacer_is_back_to_normal(tmp_path: Path, mon
 
 
 def test_the_usage_reading_command_closes_the_window(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    reset = st.parse("2026-11-12T17:00:00Z")  # the repository's own window
+    reset = st.parse("2026-11-12T17:00:00Z")  # the Fable window, closed before it opens (D-2485)
+    _closed_window_root(monkeypatch, tmp_path)
     monkeypatch.setattr(entry, "now_utc", lambda: reset + timedelta(hours=30))
     env = FakeEnv()
     env.outbox_dir = tmp_path  # type: ignore[attr-defined]  # reason: GitHubEnv's outbox folder
@@ -610,7 +629,7 @@ def test_the_usage_reading_command_closes_the_window(monkeypatch: pytest.MonkeyP
     event = {"type": "rate_limit_event", "rate_limit_info": {"unifiedWindows": {"seven_day": {"utilization": 1.0, "resetsAt": 1795000000}}}}
     execution.write_text(json.dumps([event]))
     assert entry.usage_reading(execution, env).startswith("usage_reading_recorded")  # type: ignore[arg-type]  # reason: FakeEnv
-    # The repository's window is closed before it opens (D-2485): the reading is kept and closes nothing.
+    # The window is closed before it opens (D-2485): the reading is kept and closes nothing.
     assert "model_window_ended" not in env.store and not (tmp_path / f"{mw.ENDED_OUTBOX_ID}.md").exists()
     _open_window_root(monkeypatch, tmp_path)  # the same window, open: the limit reading closes it, with its note
     env = FakeEnv()
