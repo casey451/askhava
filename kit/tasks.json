@@ -15302,10 +15302,67 @@
    "prompt": "kit/prompts/T102.md"
   },
   {
+   "id": "T521",
+   "slug": "catalog-plural-and-list",
+   "title": "catalog: each category's plural display name and a list read for the site's services and coverage pages (D-3879)",
+   "goal": "Plan change D-3879 (Fable's pre-claim check of stage-5 wave 2, Nov 16, 2026): WEB-015 opens each licensed trade's page with \"Get quotes from licensed <trade>.\", <trade> being \"the category's plural display name from the catalog\" (`docs/spec/website.md:19`), but `docs/catalog/categories.yaml` holds only `name` (`:72`), and WEB-023's coverage page needs the switched-off and not-offered categories, which `site` cannot read (`catalog::api` has only `enabled_categories`, `category` and `is_not_offered`, `app/catalog/src/api.rs:109` to `:140`). (1) Every category in `docs/catalog/categories.yaml` gains `plural` (lower case, as it reads after \"licensed\", such as `plumbers`), and `CategoryDef` (`app/catalog/src/models.rs:51` to `:73`) a required `plural: String`, so a category without one fails `loader::parse` and the build's catalog tests; `categories.yaml` is a locked file, so this task rewrites `kit/plan.lock` and logs the change. (2) The plural is read from the embedded catalog (`loader::embedded`, the file compiled in), not stored: no migration (the serial order leaves no free number before T201), and `Category` (built by literal in `app/catalog/src/service.rs:211`) gains no field. (3) The new `app/catalog/src/category_list.rs`, re-exported by one line in the shared `app/catalog/src/api.rs`, defines `category_list(db)`: every stored category in code order with its code, name, plural (from the embedded file by code), whether it is switched on and its license kind, plus the not-offered names (`catalog.not_offered`); a stored code missing from the embedded file is an error, never a guessed name. Tests in `tests/integration/tests/catalog_category_list.rs` against real PostgreSQL: the list after `load` holds every category with a non-empty plural, a switched-off category reads off, a switched-on one on, and the not-offered names are listed; a planted catalog text without `plural` fails `parse`. `scripts/check_catalog.py` is unchanged (it checks only required keys it lists). Update the `catalog` `NOTES.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "catalog",
+   "deps": [
+    "T100",
+    "T517"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance"
+   ],
+   "owns": [
+    "docs/catalog/categories.yaml",
+    "app/catalog/src/models.rs",
+    "app/catalog/src/category_list.rs",
+    "tests/integration/tests/catalog_category_list.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/website.md",
+    "docs/spec/licensing.md",
+    "app/catalog/src/loader.rs",
+    "app/catalog/src/service.rs"
+   ],
+   "requirements": [
+    "WEB-015",
+    "WEB-023"
+   ],
+   "tests": [
+    "TD-LIC-01"
+   ],
+   "decisions": [
+    "D-3879"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 250,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T521-catalog-plural-and-list",
+   "prompt": "kit/prompts/T521.md"
+  },
+  {
    "id": "T201",
    "slug": "site-services-help-pages",
    "title": "site: services and help pages, the ROC complaint page",
-   "goal": "The services page opens each licensed trade with \"Get quotes from licensed <trade>.\" and the long statement; the help page answers \"Is Laftly a person?\" with the automated-texts line; laftly.com/help/roc-complaint links to the ROC; and the \"What we cover now\" page (`coverage.html`, with `roc_complaint.html` for the ROC page) lists the open and not-yet categories (WEB-008, WEB-011, WEB-015, WEB-023, WORD-009); the help page also holds the AI-018 switched-off sentence while the AI switch is off (AI-018), and its \"Send the Laftly owner a message\" form is wired to the help-request endpoint by T200 (D-491). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: the help page reads the AI-018 switch through `intake::api::ai_on` (T221 adds it; `site` may not call `ai`), and the pages extend T101's `site_layout.html` and fill `banner_shown`. Plan change D-3838 (A11Y-002, D-3836's lesson): in the same change that serves `/help` and `/help/roc-complaint`, this task adds each route's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts` (fake data only, `shows` and `hides` lines that tell each state apart) and runs `bash scripts/prehandin.sh --ally`, so `tests/a11y/axe_all_pages.spec.ts` stays green. Plan change D-3878: the services page is served at `/services` and the help page at `/help`, the paths T102's footer links; fixed sentences (AI-018's wording, WEB-022's blocks, the WORD-002 help-page statement) carry T519's `data-fixed` marker, so `scripts/check_copy.py` passes.",
+   "goal": "The services page opens each licensed trade with \"Get quotes from licensed <trade>.\" and the long statement; the help page answers \"Is Laftly a person?\" with the automated-texts line; laftly.com/help/roc-complaint links to the ROC; and the \"What we cover now\" page (`coverage.html`, with `roc_complaint.html` for the ROC page) lists the open and not-yet categories (WEB-008, WEB-011, WEB-015, WEB-023, WORD-009); the help page also holds the AI-018 switched-off sentence while the AI switch is off (AI-018), and its \"Send the Laftly owner a message\" form is wired to the help-request endpoint by T200 (D-491). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: the help page reads the AI-018 switch through `intake::api::ai_on` (T221 adds it; `site` may not call `ai`), and the pages extend T101's `site_layout.html` and fill `banner_shown`. Plan change D-3838 (A11Y-002, D-3836's lesson): in the same change that serves `/help` and `/help/roc-complaint`, this task adds each route's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts` (fake data only, `shows` and `hides` lines that tell each state apart) and runs `bash scripts/prehandin.sh --ally`, so `tests/a11y/axe_all_pages.spec.ts` stays green. Plan change D-3878: the services page is served at `/services` and the help page at `/help`, the paths T102's footer links; fixed sentences (AI-018's wording, WEB-022's blocks, the WORD-002 help-page statement) carry T519's `data-fixed` marker, so `scripts/check_copy.py` passes. Plan change D-3879 (Fable's pre-claim check of stage-5 wave 2, Nov 16, 2026): (1) WEB-015's <trade> is \"the category's plural display name from the catalog\", which the catalog lacks (`docs/catalog/categories.yaml` has only `name`; `CategoryDef`, `app/catalog/src/models.rs:51` to `:73`), and WEB-023's \"not yet\" list cannot be read from `site` (`catalog::api` has only `enabled_categories`, `category` and `is_not_offered`, `app/catalog/src/api.rs:109` to `:140`); T521 adds each category's `plural` and the read `catalog::api::category_list`, and this task's services and coverage pages use them (each licensed trade's page opens \"Get quotes from licensed <plural>.\", the coverage page lists the switched-on categories and the switched-off and not-offered ones as \"not yet\"). (2) This task serves `/services`, `/help`, `/help/roc-complaint` and `/coverage`, marks each section 13 row `yes` (the `/services` and `/coverage` rows are added by this plan change) and adds each route's `PAGE_STATES` entry (`tests/security/tests/auth_matrix.rs:637` to `:645`, `tests/a11y/fixtures.ts:86` to `:97`). (3) The help page holds WEB-025's question and answer in English and in Spanish (`lang=\"es\"`), as WEB-008 requires (`docs/spec/website.md:12`, `:29`); T202's TD-WEB-06 test checks it there and on the business page. (4) WEB-008's reply-time sentence (22 words) and WEB-015's statement also carry T519's `data-fixed` marker.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15314,7 +15371,8 @@
     "T101",
     "T102",
     "T221",
-    "T348"
+    "T348",
+    "T521"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -15355,7 +15413,8 @@
     "TD-WORD-02",
     "TD-WORD-03",
     "TD-WEB-07",
-    "TD-TERMS-04"
+    "TD-TERMS-04",
+    "TD-WEB-06"
    ],
    "decisions": [
     "D-175",
@@ -15375,7 +15434,8 @@
     "D-2440",
     "D-3144",
     "D-3838",
-    "D-3878"
+    "D-3878",
+    "D-3879"
    ],
    "cites": [],
    "budget": {
@@ -15917,7 +15977,7 @@
    "id": "T203",
    "slug": "wording-statements-scan",
    "title": "Wording scan: the required statements, business copy lines and no pest advertising",
-   "goal": "A docs test finds the long not-a-contractor statement and its short form wherever WORD-002 and TERMS-004 put them, the job-card and pick lines, the business copy lines, the fee summary and the Hava-name answer, no owner's name anywhere, no page, ad or banner advertising pest control, and no business copy that calls the fee anything but an introduction fee (`tests/docs/test_introduction_fee_wording.py`, WORD-026; the exact consent text is T161's CON-031 check, D-491) (WEB-010, WEB-015, WORD-006, WORD-007, WORD-014, WORD-021, WORD-026, CARD-020, PICK-017, TERMS-004); the business-page lines it scans (WEB-018, WEB-025, WORD-002, WORD-017, BIZ-030) are written by T202, and it adds the insurance, privacy and independent-business line cases of TD-WORD-02 (D-493). Plan change D-3155: the no-owner's-name scan skips Askama comments (`{# ... #}`; `app/portals/templates/business_complaints.html:4` names Casey in a comment no page shows).",
+   "goal": "A docs test finds the long not-a-contractor statement and its short form wherever WORD-002 and TERMS-004 put them, the job-card and pick lines, the business copy lines, the fee summary and the Hava-name answer, no owner's name anywhere, no page, ad or banner advertising pest control, and no business copy that calls the fee anything but an introduction fee (`tests/docs/test_introduction_fee_wording.py`, WORD-026; the exact consent text is T161's CON-031 check, D-491) (WEB-010, WEB-015, WORD-006, WORD-007, WORD-014, WORD-021, WORD-026, CARD-020, PICK-017, TERMS-004); the business-page lines it scans (WEB-018, WEB-025, WORD-002, WORD-017, BIZ-030) are written by T202, and it adds the insurance, privacy and independent-business line cases of TD-WORD-02 (D-493). Plan change D-3155: the no-owner's-name scan skips Askama comments (`{# ... #}`; `app/portals/templates/business_complaints.html:4` names Casey in a comment no page shows). Plan change D-3879: WEB-015's plural trade name is T521's `plural`, read through `catalog::api::category_list`; the scan checks each licensed trade's opening line against it.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15925,7 +15985,8 @@
    "deps": [
     "T103",
     "T104",
-    "T489"
+    "T489",
+    "T521"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -15980,7 +16041,8 @@
     "D-363",
     "D-357",
     "D-1143",
-    "D-3155"
+    "D-3155",
+    "D-3879"
    ],
    "cites": [],
    "budget": {
@@ -16162,7 +16224,7 @@
    "id": "T408",
    "slug": "safe-mode-release-hold",
    "title": "payments and server: a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends",
-   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:61`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T105) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (its payload the pick ID and its due time, since a claimed task carries no run time, `app/core/src/tasks.rs:100`; deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:456`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) while safe mode lasts enqueues the next run 15 minutes later and finishes: a handler cannot move its own `core.task` row (`core::api` exports no defer, and `server` may not write `core` tables), so the payload carries the pick ID and the run's due time, and the next run is `core::api::enqueue`d due 15 minutes after that time under the dedupe key `<kind>.<pick>.<run_at in microseconds>` (`core.task.dedupe_key` stays unique after a task is done, so the first held-release task's per-pick key is never reused, and a rerun of the same run enqueues the same key, which is refused, D-3263) and, once safe mode has ended, clears the pick again through a new `payments::api::held_release(pool, stripe, account, pick)` in `app/payments/src/release_proof.rs`. A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (`store_success`, `app/payments/src/charge.rs:232` and `app/payments/src/reconcile.rs:236`, `:612` all write through the same `handlers::record`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:212` to `:216`), and for a $0 pick keeps `no_fee_release`'s ledger check; nothing else makes a `Releasable` (SEC-030); `held_release` never uses T255's `Releasable::from_stored_success`, which re-clears only a pick whose proof was already spent (D-3358). Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Update the `server` and `payments` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:78`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T487) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (its payload the pick ID and its due time, since a claimed task carries no run time, `app/core/src/tasks.rs:100`; deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:788`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) while safe mode lasts enqueues the next run 15 minutes later and finishes: a handler cannot move its own `core.task` row (`core::api` exports no defer, and `server` may not write `core` tables), so the payload carries the pick ID and the run's due time, and the next run is `core::api::enqueue`d due 15 minutes after that time under the dedupe key `<kind>.<pick>.<run_at in microseconds>` (`core.task.dedupe_key` stays unique after a task is done, so the first held-release task's per-pick key is never reused, and a rerun of the same run enqueues the same key, which is refused, D-3263) and, once safe mode has ended, clears the pick again through a new `payments::api::held_release(pool, stripe, account, pick)` in `app/payments/src/release_proof.rs`. A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (a press, `app/payments/src/charge.rs:234`, a late answer, `:659`, and a verified event's `store_success`, `app/payments/src/release_proof.rs:401`, all write through the same `handlers::record`, `app/payments/src/handlers.rs:118`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:206` to `:224`), and for a $0 pick keeps `no_fee_release`'s ledger check; nothing else makes a `Releasable` (SEC-030); `held_release` never uses T255's `Releasable::from_stored_success`, which re-clears only a pick whose proof was already spent (D-3358). Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Its build notes are `(task 408)` lines at the end of `app/server/NOTES.md` and `app/payments/NOTES.md` (`app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited); update `docs/architecture.md` and `docs/decisions.md`. Plan change D-3879 (Fable's pre-claim check of stage-5 wave 2, Nov 16, 2026): (1b) `address_in` (`app/server/src/release_sink.rs:209` to `:232`, registered at `:254`) re-clears, settles and calls `release_settled` directly, not through `PickReleaser`, so an emergency pick waiting for its address would be released during safe mode (OPS-001 pauses releases). `address_in` checks `ops::api::safe_mode_on` first; while it is on, it releases nothing and enqueues the next `intake.address_in` run 15 minutes later under the same run-time dedupe scheme as the held-release task; TD-OPS-40 has that case.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16210,7 +16272,8 @@
     "D-1478",
     "D-2290",
     "D-3263",
-    "D-3358"
+    "D-3358",
+    "D-3879"
    ],
    "cites": [],
    "budget": {
@@ -16231,7 +16294,7 @@
    "id": "T320",
    "slug": "ops-alert-open-once",
    "title": "ops: a check that runs on a schedule raises its alert once while its condition lasts",
-   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051), narrowed by plan change D-3144: a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:762`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. A rule on every raise is not wanted: two done tests expect a second open alert of one kind and subject, each event its own alert (`tests/integration/tests/disputes.rs:458`, two early fraud warnings on one pick raised through `app/payments/src/refunds.rs:90`; `tests/security/tests/cookies_csrf.rs:343`, the subject-less SEC-048 burst alert once per hour, `app/portals/src/security.rs:345` to `:348`), so `raise_alert` (`app/ops/src/service.rs:96`) and `ops.alert` stay as they are (no unique index, no migration) and a repeating check raises through a once function. (1) `ops::api::raise_alert_once` (`app/ops/src/api.rs:292`: kind and subject under an advisory lock, `None` when one is open) already exists; this task adds its subject-less twin `raise_kind_once(db, kind, severity)` in `service.rs`, exported through the shared `api.rs`, under the same kind of lock keyed on the kind alone, open meaning an unresolved row of that kind with no subject. (2) `check_webhook_silence` (owned here) raises through it, so it opens one alert while webhooks stay silent and a new one only after that one is resolved. Read every caller of `raise_alert` (about 60) and list in the decision each that runs on a schedule (a repeating check rather than one event) and whether it already raises once; one this task does not own is named for its owning task, not changed. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34). Every existing test that raises alerts passes unchanged. Update the `ops` and `messaging` `CLAUDE.md` files and `docs/decisions.md`, and add this task's build-note line at the end of `app/ops/NOTES.md` (the template's rule; D-3620, D-3079).",
+   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051), narrowed by plan change D-3144: a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:762`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. A rule on every raise is not wanted: two done tests expect a second open alert of one kind and subject, each event its own alert (`tests/integration/tests/disputes.rs:458`, two early fraud warnings on one pick raised through `app/payments/src/refunds.rs:90`; `tests/security/tests/cookies_csrf.rs:343`, the subject-less SEC-048 burst alert once per hour, `app/portals/src/security.rs:520` to `:525`), so `raise_alert` (`app/ops/src/service.rs:96`) and `ops.alert` stay as they are (no unique index, no migration) and a repeating check raises through a once function. (1) `ops::api::raise_alert_once` (`app/ops/src/api.rs:340`: kind and subject under an advisory lock, `None` when one is open) already exists; this task adds its subject-less twin `raise_kind_once(db, kind, severity)` in `service.rs`, exported through the shared `api.rs`, under the same kind of lock keyed on the kind alone, open meaning an unresolved row of that kind with no subject. (2) `check_webhook_silence` (owned here) raises through it, so it opens one alert while webhooks stay silent and a new one only after that one is resolved. Read every caller of `raise_alert` (about 47, in 36 files) and list in the decision each that runs on a schedule (a repeating check rather than one event) and whether it already raises once; one this task does not own is named for its owning task, not changed. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34). Every existing test that raises alerts passes unchanged. Update the `ops` and `messaging` `CLAUDE.md` files and `docs/decisions.md`, and add this task's build-note line at the end of `app/ops/NOTES.md` (the template's rule; D-3620, D-3079).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16267,7 +16330,8 @@
    "decisions": [
     "D-2207",
     "D-1872",
-    "D-3144"
+    "D-3144",
+    "D-3879"
    ],
    "cites": [],
    "budget": {
@@ -17301,7 +17365,7 @@
    "id": "T112",
    "slug": "privacy-sms-docs",
    "title": "Draft the privacy policy and SMS terms",
-   "goal": "`docs/legal/` holds the privacy policy and SMS terms drafts (what is collected and shared, the mobile-information line, 5-year consent records, the AI wording of AI-018, the one honest description of Laftly, and no claim that numbers are shared or sold), and a docs test finds each required line (TERMS-002 to TERMS-004, TERMS-006 to TERMS-015, TERMS-018, TERMS-020, TERMS-025, TERMS-027, WORD-018, WORD-023, AI-018, PRIV-027). The AI paragraph carries the AI-018 flagged-content wording, and the policy offers \"Download my data\" and verified requests (PRIV-031) (D-492). The vendor list names Twilio SendGrid, which receives the email addresses Twilio Verify sends codes to (TXT-038; D-2769, D-2771).",
+   "goal": "`docs/legal/` holds the privacy policy and SMS terms drafts (what is collected and shared, the mobile-information line, 5-year consent records, the AI wording of AI-018, the one honest description of Laftly, and no claim that numbers are shared or sold), and a docs test finds each required line (TERMS-002 to TERMS-004, TERMS-006 to TERMS-015, TERMS-018, TERMS-020, TERMS-025, TERMS-027, WORD-018, WORD-023, AI-018, PRIV-027). The AI paragraph carries the AI-018 flagged-content wording, and the policy offers \"Download my data\" and verified requests (PRIV-031) (D-492). The vendor list names Twilio SendGrid, which receives the email addresses Twilio Verify sends codes to (TXT-038; D-2769, D-2771). Plan change D-3879: the business retention bracket at `docs/legal/privacy-policy.md:95` stays byte for byte, because T221's `tests/docs/test_legal_pages.py` checks the business data page against it.",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -17385,7 +17449,8 @@
     "D-490",
     "D-492",
     "D-2769",
-    "D-2771"
+    "D-2771",
+    "D-3879"
    ],
    "cites": [],
    "budget": {
@@ -17493,7 +17558,7 @@
    "id": "T229",
    "slug": "legal-drafts-plain-language",
    "title": "Legal drafts: reading-grade check and plain-language rewrite of the public drafts",
-   "goal": "`scripts/check_copy.py` measures each section of the six public legal drafts (homeowner terms, business terms, privacy policy, SMS terms, business email notice terms and accessibility statement) and fails a homeowner-document section above Flesch-Kincaid grade 9 or a business-document section above grade 10, sentences a requirement fixes word for word excepted; the over-grade sections are rewritten in shorter, plainer sentences without changing any clause's meaning or any phrase `scripts/check_legal_docs.py` lists, so both scripts pass; `tests/test_check_copy.py` plants an over-grade section for each audience and an excepted fixed sentence (WORD-031). The security program, the incident plan and the README are internal and not measured (D-492). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): `docs/legal/business-terms.md` and `docs/legal/privacy-policy.md` are read by T114's docs tests, so this task runs after T114 and the docs tests of T111 to T114 (`tests/docs/`) pass unchanged on its rewrites. `scripts/check_copy.py`'s `MAX_GRADE` (`:32`) is 8 for homeowner and 9 for business copy, below this goal's 9 and 10 for legal sections, so this task adds a separate legal limit (homeowner 9, business 10) for the six legal drafts and leaves `MAX_GRADE` and the copy it measures unchanged. Plan change D-3878: T519 first teaches `scripts/check_copy.py` to skip Spanish template text and `data-fixed` elements a requirement quotes; this task keeps that exemption and its tests.",
+   "goal": "`scripts/check_copy.py` measures each section of the six public legal drafts (homeowner terms, business terms, privacy policy, SMS terms, business email notice terms and accessibility statement) and fails a homeowner-document section above Flesch-Kincaid grade 9 or a business-document section above grade 10, sentences a requirement fixes word for word excepted; the over-grade sections are rewritten in shorter, plainer sentences without changing any clause's meaning or any phrase `scripts/check_legal_docs.py` lists, so both scripts pass; `tests/test_check_copy.py` plants an over-grade section for each audience and an excepted fixed sentence (WORD-031). The security program, the incident plan and the README are internal and not measured (D-492). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): `docs/legal/business-terms.md` and `docs/legal/privacy-policy.md` are read by T114's docs tests, so this task runs after T114 and the docs tests of T111 to T114 (`tests/docs/`) pass unchanged on its rewrites. `scripts/check_copy.py`'s `MAX_GRADE` (`:32`) is 8 for homeowner and 9 for business copy, below this goal's 9 and 10 for legal sections, so this task adds a separate legal limit (homeowner 9, business 10) for the six legal drafts and leaves `MAX_GRADE` and the copy it measures unchanged. Plan change D-3878: T519 first teaches `scripts/check_copy.py` to skip Spanish template text and `data-fixed` elements a requirement quotes; this task keeps that exemption and its tests. Plan change D-3879: its plain-language rewrite keeps the business retention bracket at `docs/legal/privacy-policy.md:95` byte for byte (T221's `tests/docs/test_legal_pages.py` checks the business data page against it).",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -17538,7 +17603,8 @@
    "decisions": [
     "D-492",
     "D-3844",
-    "D-3878"
+    "D-3878",
+    "D-3879"
    ],
    "cites": [],
    "budget": {
@@ -31482,7 +31548,7 @@
    "id": "T441",
    "slug": "pick-forms-carry-business",
    "title": "portals: the quote page shows the kept number, and the pick forms carry the business it was shown for",
-   "goal": "Plan change D-3497 split T361 in two (D-2632; PICK-008, PRIV-005): T361 stores each quote's shown number, orders `page_quotes` and the LIST by it, gives a `quotes::api` read of the shown numbers and a `picks::api` business-bound pick entry point that answers `Taken` when a number no longer maps to the business; this task makes the pages use them. The quote page numbers each quote by its shown number through T361's read and a new numbering function beside `portals`' `number_quotes` (`app/portals/src/quote_page.rs:61`, rendered at `:257`), which keeps its signature for `app/portals/src/tests/prop_arrival_order.rs` (D-3144); a withdrawn quote keeps its place and number, shown as \"Withdrawn by the business\". The review, pick and code forms (`app/portals/templates/quote_page.html`, `pick_review.html`, `pick_code.html`, posted to `app/portals/src/pick_flow.rs`) carry the business the number was shown for, in the form T361's entry point takes, and `pick_flow.rs` calls that entry point and treats `Taken` as it treats any quote that can no longer be picked, so nothing is stored, notified or charged for another business. Tests in `tests/integration/tests/pick_bound_forms.rs` (TD-PICK-64) against real PostgreSQL, fake data only. Every TD-PICK case passes unchanged. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3878: after T361, `page_quotes` still lists in arrival order and `page_pick` still resolves a list position, so this task's numbering function orders by the shown number itself and the pick forms post only through T361's business-bound entry point.",
+   "goal": "Plan change D-3497 split T361 in two (D-2632; PICK-008, PRIV-005): T361 stores each quote's shown number, orders `page_quotes` and the LIST by it, gives a `quotes::api` read of the shown numbers and a `picks::api` business-bound pick entry point that answers `Taken` when a number no longer maps to the business; this task makes the pages use them. The quote page numbers each quote by its shown number through T361's read and a new numbering function beside `portals`' `number_quotes` (`app/portals/src/quote_page.rs:61`, rendered at `:257`), which keeps its signature for `app/portals/src/tests/prop_arrival_order.rs` (D-3144); a withdrawn quote keeps its place and number, shown as \"Withdrawn by the business\". The review, pick and code forms (`app/portals/templates/quote_page.html`, `pick_review.html`, `pick_code.html`, posted to `app/portals/src/pick_flow.rs`) carry the business the number was shown for, in the form T361's entry point takes, and `pick_flow.rs` calls that entry point and treats `Taken` as it treats any quote that can no longer be picked, so nothing is stored, notified or charged for another business. Tests in `tests/integration/tests/pick_bound_forms.rs` (TD-PICK-64) against real PostgreSQL, fake data only. Every TD-PICK case passes unchanged. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3878: after T361, `page_quotes` still lists in arrival order and `page_pick` still resolves a list position, so this task's numbering function orders by the shown number itself and the pick forms post only through T361's business-bound entry point. Plan change D-3879 (Fable's pre-claim check of stage-5 wave 2, Nov 16, 2026): Done tests post `quote=N` with no business field (`tests/integration/tests/page_pick.rs:131`, `:139`, `pick_contact_choice.rs:124`, `:343`, `tier_pick_pages.rs`, `share_and_cant_take.rs:264` to `:339`, `backup_choice.rs:298`, `:309`, `tests/security/tests/page_pick_privacy.rs`, `quote_token.rs:168`, `auth_matrix.rs:463`), and `PickForm` and `CodeForm` are `deny_unknown_fields` (`app/portals/src/pick_flow.rs:131`, `:840`). The business field is optional on all three forms (`#[serde(default)]`). A post without it resolves the number to its business through T361's shown-number read (a shown number never moves, so the mapping cannot shift) and then calls the business-bound entry point; a post whose field names another business than the number's is `Taken`. The done tests that post `quote=N` alone pass unchanged. The two `number_quotes` calls in `pick_flow.rs` (`:553` for the packages, `:807` for the available numbers) move to the new numbering function, so the page, the packages and the pick all use the shown number.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -31531,7 +31597,10 @@
     "docs/brains/rust-production.md",
     "docs/spec/privacy.md"
    ],
-   "requirements": [],
+   "requirements": [
+    "PICK-008",
+    "PRIV-005"
+   ],
    "tests": [
     "TD-PICK-64"
    ],
@@ -31544,7 +31613,8 @@
     "D-3262",
     "D-3263",
     "D-3497",
-    "D-3878"
+    "D-3878",
+    "D-3879"
    ],
    "cites": [],
    "budget": {
@@ -32292,7 +32362,7 @@
    "id": "T373",
    "slug": "phone-change-ends-consent",
    "title": "businesses: changing a phone's number ends that phone's texting consent until the box is ticked again for the new number",
-   "goal": "Nov 11 code review batch 3, F2 (D-2707; CON-019, BIZ-036, D-191): business texting consent is per number, but `change_phone` (`app/businesses/src/team.rs:503`) keeps the line's ID and `may_text` (`app/businesses/src/consent.rs:243`) looks consent up by line ID only, so after a number change job-card texts go to a number nobody consented for (the reviewer's probe: `may_text` true after `change_phone`); and the consent index (`migrations/0121_businesses_consent.sql`, one row per business, member, channel, line and wording version) would refuse a second box for the same line, so the new number could not consent either. Fix: the line keeps its ID (done tests link, change and unlink by it), and `migrations/0203_businesses_consent_per_number.sql` records which number setting a consent row was given for (a per-line number version, raised by `change_phone` in its transaction, and the same version on each text consent row, the unique index including it; existing rows keep version 1; the app role still cannot update or delete consent rows); `may_text` counts only a box ticked for the line's current version; `record_consent` gains a form that takes the phone version the box was shown for and refuses a mismatch (the number changed while the page was open), while the existing form, used by done tests, records against the current version; `change_phone` and `record_consent` both lock the `staff_phone` row (`FOR UPDATE`) before reading or raising the version; after a number change a business whose channel preference is text only gets its job cards and notices by email until the new number consents (BIZ-036's email default); nothing else about consent changes, and the old rows stay as history. Tests in `tests/integration/tests/phone_change_consent.rs` (TD-CON-35), each failing on today's `main`, fake numbers in the 555-01xx block: a consented line gives `may_text` true; after `change_phone` false; after `record_consent` for the new number true again; a box shown for the old version and posted after the change is refused; `change_phone` and `record_consent` racing on one line leave either the old consent ended or the new one recorded for the new version, never a consent for the old number counted on the new one; a text-only business's job card after the change goes by email; a change by a member without the right is refused and leaves consent as it was; the email channel is untouched. Every TD-BIZ and TD-CON case passes unchanged. Stage 5: it runs after T361 only so its migration number follows the serial order (V9, R-42). Update the `businesses` `CLAUDE.md`, `docs/architecture.md` (schema) and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F2 (D-2707; CON-019, BIZ-036, D-191): business texting consent is per number, but `change_phone` (`app/businesses/src/team.rs:606`) keeps the line's ID and `may_text` (`app/businesses/src/consent.rs:243`) looks consent up by line ID only, so after a number change job-card texts go to a number nobody consented for (the reviewer's probe: `may_text` true after `change_phone`); and the consent index (`migrations/0121_businesses_consent.sql`, one row per business, member, channel, line and wording version) would refuse a second box for the same line, so the new number could not consent either. Fix: the line keeps its ID (done tests link, change and unlink by it), and `migrations/0203_businesses_consent_per_number.sql` records which number setting a consent row was given for (a per-line number version, raised by `change_phone` in its transaction, and the same version on each text consent row, the unique index including it; existing rows keep version 1; the app role still cannot update or delete consent rows); `may_text` counts only a box ticked for the line's current version; `record_consent` gains a form that takes the phone version the box was shown for and refuses a mismatch (the number changed while the page was open), while the existing form, used by done tests, records against the current version; `change_phone` and `record_consent` both lock the `staff_phone` row (`FOR UPDATE`) before reading or raising the version; after a number change a business whose channel preference is text only gets its job cards and notices by email until the new number consents (BIZ-036's email default); nothing else about consent changes, and the old rows stay as history. Tests in `tests/integration/tests/phone_change_consent.rs` (TD-CON-35), each failing on today's `main`, fake numbers in the 555-01xx block: a consented line gives `may_text` true; after `change_phone` false; after `record_consent` for the new number true again; a box shown for the old version and posted after the change is refused; `change_phone` and `record_consent` racing on one line leave either the old consent ended or the new one recorded for the new version, never a consent for the old number counted on the new one; a text-only business's job card after the change goes by email; a change by a member without the right is refused and leaves consent as it was; the email channel is untouched. Every TD-BIZ and TD-CON case passes unchanged. Stage 5: it runs after T361 only so its migration number follows the serial order (V9, R-42). Update the `businesses` `CLAUDE.md`, `docs/architecture.md` (schema) and `docs/decisions.md`. Plan change D-3879: no served page calls the new versioned `record_consent` form yet (the sign-up, `app/portals/src/business_signup.rs:703`, uses the current-version form), and no queued task serves a re-consent box, so after a number change a phone stays on email until a re-consent path is wired (BIZ-036's email default; the gap is logged in D-3879).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -32339,7 +32409,8 @@
     "D-3262",
     "D-3263",
     "D-3722",
-    "D-3779"
+    "D-3779",
+    "D-3879"
    ],
    "cites": [],
    "budget": {
