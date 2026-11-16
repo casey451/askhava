@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T21:49:19Z by runner 6740aabac4ed (actions).
+Updated 2026-11-16T21:50:23Z by runner bb135d09a7e0 (actions).
 
-**Building: T481 in progress since 19:16Z; 375 of 540 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T111 in progress since 21:32Z; 375 of 540 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 375 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T481 claimed 19:16Z, lease until 00:36Z; lane 5: T111 claimed 21:32Z, lease until 00:32Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
+- **Lane:** lane 5: T111 claimed 21:32Z, lease until 00:32Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
 - **Week:** 3% used, 186.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:49Z, 0 min before this update
 - **Keeper:** last ran 21:49Z, next wake 00:34Z
@@ -73,7 +73,7 @@ Evidence: AuditSubject has only subject_kind, subject_id, a; fix the plan (the t
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 328 of 733 (44.7%) · partial 273 · unstarted 132
+**Requirements verified:** 327 of 733 (44.6%) · partial 274 · unstarted 132
 **Tasks merged (throughput only):** 375 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -90,7 +90,7 @@ Evidence: AuditSubject has only subject_kind, subject_id, a; fix the plan (the t
 | lifecycle | 27 | 1 | 0 | 28 |
 | messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 13 | 16 | 2 | 31 |
+| privacy | 12 | 17 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
@@ -118,7 +118,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T481 (lease until 2026-11-17T00:36:07Z)
 - lane 5: T111 (lease until 2026-11-17T00:32:39Z)
 - lane 6: T221 (lease until 2026-11-17T00:31:33Z)
 
