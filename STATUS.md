@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T16:39:48Z by runner cfb763de5f15 (actions).
+Updated 2026-11-16T16:40:12Z by runner cfb763de5f15 (actions).
 
 **Building: T324 in progress since 16:31Z; 365 of 536 done; week 96% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 365 of 536 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 3: T101 claimed 15:19Z, lease until 19:36Z; lane 4: T105 claimed 16:15Z, lease until 19:15Z; lane 5: T473 claimed 16:29Z, lease until 19:29Z; lane 6: T303 claimed 16:19Z, lease until 19:19Z; lane 7: T475 claimed 15:08Z, lease until 18:56Z
+- **Lane:** lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 4: T105 claimed 16:15Z, lease until 19:15Z; lane 5: T473 claimed 16:29Z, lease until 19:29Z; lane 6: T303 claimed 16:19Z, lease until 19:19Z; lane 7: T475 claimed 15:08Z, lease until 18:56Z
 - **Week:** 96% used, -3.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:38Z, 1 min before this update
 - **Keeper:** last ran 16:26Z, next wake 18:22Z
@@ -19,10 +19,11 @@ Updated 2026-11-16T16:39:48Z by runner cfb763de5f15 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T101 | site: base layout in the design spec's look, works without J | MERGE_PENDING | 3 | 80 min | 16:39Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 1 | 4 min | 16:21Z | PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prom |
 | T105 | ops: High and critical alerts with their automatic acknowled | check_failed | 2 | 104 min | 15:51Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T497 | Stand-ins (harness): sticky vendor faults for the J4 outage  | done | 1 | 75 min | 15:32Z |  |
-| T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z |  |
 | T521 | catalog: each category's plural display name and a list read | done | 1 | 34 min | 15:09Z |  |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | done | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T308 | portals (harness): the quote page's close button (JOB-019) i | done | 1 | 72 min | 14:42Z |  |
@@ -100,11 +101,10 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T324 (lease until 2026-11-16T19:31:55Z)
-- lane 3: T101 (lease until 2026-11-16T19:36:06Z)
 - lane 4: T105 (lease until 2026-11-16T19:15:00Z)
 - lane 5: T473 (lease until 2026-11-16T19:29:13Z)
 - lane 6: T303 (lease until 2026-11-16T19:19:40Z)
 - lane 7: T475 (lease until 2026-11-16T18:56:15Z)
 
 ## Last usage reading
-- {"task": "T111", "at": "2026-11-16T16:21:29Z", "input_tokens": 62, "cache_read_input_tokens": 1914023, "output_tokens": 18971, "cache_creation_input_tokens": 100858}
+- {"task": "T101", "at": "2026-11-16T16:39:47Z", "output_tokens": 40440, "cache_read_input_tokens": 4319616, "cache_creation_input_tokens": 140077, "input_tokens": 138}
