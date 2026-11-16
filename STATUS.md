@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T03:28:18Z by runner de89862a7f0a (actions).
+Updated 2026-11-16T03:32:57Z by runner 3aec94a8ca39 (actions).
 
 **Idle since 03:25Z; 355 of 532 done; week 90% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-16T03:28:18Z by runner de89862a7f0a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:25Z (no task in progress)
 - **Week:** 90% used, 36.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:28Z, 0 min before this update
+- **Last run:** 03:28Z, 4 min before this update
 - **Keeper:** last ran 03:28Z, next wake 03:48Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 18 problem(s) on tasks still to run (+122 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T517: stored context_pct 1% but it measures 5%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -49,20 +49,20 @@ Updated 2026-11-16T03:28:18Z by runner de89862a7f0a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
-**Tasks merged (throughput only):** 355 of 505
+**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
+**Tasks merged (throughput only):** 355 of 532
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 21 | 34 | 3 | 58 |
+| ai | 10 | 14 | 5 | 29 |
+| businesses | 19 | 36 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
 | fees | 22 | 29 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
-| licensing | 38 | 10 | 0 | 48 |
+| licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 24 | 4 | 0 | 28 |
 | messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
@@ -86,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 235 of 238 done
-- stage 5: 0 of 124 done
+- stage 5: 0 of 140 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

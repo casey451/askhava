@@ -19461,7 +19461,8 @@
     "T469",
     "T470",
     "T489",
-    "T490"
+    "T490",
+    "T472"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19487,7 +19488,8 @@
     "T103",
     "T104",
     "T489",
-    "T521"
+    "T521",
+    "T479"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19734,7 +19736,8 @@
     "T304",
     "T310",
     "T414",
-    "T408"
+    "T408",
+    "T536"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19750,7 +19753,8 @@
     "T118",
     "T307",
     "T489",
-    "T497"
+    "T497",
+    "T536"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19777,7 +19781,8 @@
     "T345",
     "T473",
     "T100",
-    "T458"
+    "T458",
+    "T526"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19807,7 +19812,16 @@
     "T216",
     "T218",
     "T116",
-    "T117"
+    "T117",
+    "T304",
+    "T305",
+    "T310",
+    "T205",
+    "T524",
+    "T529",
+    "T530",
+    "T484",
+    "T540"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19818,17 +19832,7 @@
   {
    "id": "T125",
    "deps": [
-    "T123",
-    "T121",
-    "T203",
-    "T158",
-    "T434",
-    "T161",
-    "T166",
-    "T216",
-    "T218",
-    "T229",
-    "T120"
+    "T550"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19859,6 +19863,7 @@
     "T118",
     "T119",
     "T120",
+    "T548",
     "T121",
     "T122",
     "T123",
@@ -19943,7 +19948,15 @@
     "T528",
     "T530",
     "T531",
-    "T529"
+    "T529",
+    "T532",
+    "T533",
+    "T536",
+    "T540",
+    "T541",
+    "T542",
+    "T543",
+    "T544"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -34342,7 +34355,8 @@
     "T314",
     "T348",
     "T475",
-    "T476"
+    "T476",
+    "T469"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -34357,7 +34371,8 @@
     "T158",
     "T434",
     "T200",
-    "T348"
+    "T348",
+    "T530"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -48131,7 +48146,8 @@
    "deps": [
     "T396",
     "T364",
-    "T412"
+    "T412",
+    "T536"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -48899,7 +48915,8 @@
     "T361",
     "T151",
     "T432",
-    "T449"
+    "T449",
+    "T540"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -49158,7 +49175,11 @@
     "T158",
     "T364",
     "T375",
-    "T397"
+    "T397",
+    "T543",
+    "T541",
+    "T542",
+    "T544"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -56950,7 +56971,8 @@
   {
    "id": "T463",
    "deps": [
-    "T456"
+    "T456",
+    "T543"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -58889,7 +58911,8 @@
    "deps": [
     "T108",
     "T205",
-    "T378"
+    "T378",
+    "T321"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -60196,10 +60219,12 @@
   {
    "id": "T514",
    "deps": [
-    "T506",
     "T511",
     "T512",
-    "T513"
+    "T513",
+    "T555",
+    "T551",
+    "T552"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -61000,6 +61025,315 @@
    "status": "QUEUED",
    "attempts": 0,
    "slug": "email-deferral-scorecard",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T533",
+   "deps": [
+    "T222"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "journeys-web-email",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T532",
+   "deps": [
+    "T222"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "journeys-full-keyboard",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T536",
+   "deps": [
+    "T490"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "e2e-clock-and-keyed-worker",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T548",
+   "deps": [
+    "T119",
+    "T217",
+    "T118",
+    "T202",
+    "T303",
+    "T304",
+    "T305",
+    "T310",
+    "T205",
+    "T158",
+    "T434",
+    "T524",
+    "T529",
+    "T530",
+    "T484",
+    "T540"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "browser-tamper",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T549",
+   "deps": [
+    "T101",
+    "T202",
+    "T103",
+    "T203",
+    "T204",
+    "T106",
+    "T107",
+    "T205",
+    "T109",
+    "T206",
+    "T111",
+    "T112",
+    "T113",
+    "T114",
+    "T115",
+    "T116",
+    "T117",
+    "T118",
+    "T119",
+    "T120",
+    "T548",
+    "T121",
+    "T122",
+    "T123",
+    "T200",
+    "T434",
+    "T161",
+    "T216",
+    "T170",
+    "T218",
+    "T219",
+    "T222",
+    "T229",
+    "T252",
+    "T303",
+    "T304",
+    "T305",
+    "T306",
+    "T307",
+    "T308",
+    "T309",
+    "T310",
+    "T320",
+    "T321",
+    "T324",
+    "T441",
+    "T363",
+    "T364",
+    "T373",
+    "T375",
+    "T397",
+    "T399",
+    "T407",
+    "T420",
+    "T421",
+    "T427",
+    "T428",
+    "T422",
+    "T423",
+    "T424",
+    "T425",
+    "T426",
+    "T429",
+    "T430",
+    "T432",
+    "T438",
+    "T439",
+    "T446",
+    "T456",
+    "T463",
+    "T457",
+    "T458",
+    "T469",
+    "T470",
+    "T471",
+    "T472",
+    "T473",
+    "T475",
+    "T476",
+    "T477",
+    "T478",
+    "T479",
+    "T480",
+    "T481",
+    "T482",
+    "T483",
+    "T484",
+    "T488",
+    "T489",
+    "T490",
+    "T491",
+    "T496",
+    "T497",
+    "T518",
+    "T520",
+    "T522",
+    "T523",
+    "T524",
+    "T525",
+    "T526",
+    "T527",
+    "T528",
+    "T530",
+    "T531",
+    "T529",
+    "T532",
+    "T533",
+    "T536",
+    "T540",
+    "T541",
+    "T542",
+    "T543",
+    "T544"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "phase1-audit-money",
+   "type": "audit",
+   "stage": "5"
+  },
+  {
+   "id": "T550",
+   "deps": [
+    "T549"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "phase1-audit-people",
+   "type": "audit",
+   "stage": "5"
+  },
+  {
+   "id": "T553",
+   "deps": [
+    "T506"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "decision-digest-piece-8",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T554",
+   "deps": [
+    "T553"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "decision-digest-piece-9",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T555",
+   "deps": [
+    "T554"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "decision-digest-piece-10",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T551",
+   "deps": [
+    "T499"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brains-compact-2",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T552",
+   "deps": [
+    "T499"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "for-casey-archive",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T540",
+   "deps": [
+    "T310",
+    "T108",
+    "T303"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-release-button",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T541",
+   "deps": [
+    "T364",
+    "T261"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "saved-card-from-confirm",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T542",
+   "deps": [
+    "T364",
+    "T200",
+    "T412",
+    "T490"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "notice-address-changes",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T544",
+   "deps": [
+    "T364"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-team-page",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T543",
+   "deps": [
+    "T456"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "away-until",
    "type": "build",
    "stage": "5"
   }
@@ -64725,7 +65059,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T03:28:18Z",
+ "updated_at": "2026-11-16T03:32:57Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -64823,7 +65157,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "de89862a7f0afc783742b503cd1f2a3dd0ab8737",
+ "runner_sha": "3aec94a8ca3972eb8e475f62529e3571fa364226",
  "starter": "actions",
  "smoke_runs": [
   {
