@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-16T21:33:33Z by runner 6740aabac4ed (actions).
+Updated 2026-11-16T21:36:07Z by runner ed571ff58767 (actions).
 
 **Building: T481 in progress since 19:16Z; 375 of 540 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 375 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T481 claimed 19:16Z, lease until 23:34Z; lane 3: T320 claimed 21:07Z, lease until 00:07Z; lane 4: T523 claimed 21:33Z, lease until 00:33Z; lane 5: T111 claimed 21:32Z, lease until 00:32Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
+- **Lane:** lane 2: T481 claimed 19:16Z, lease until 00:36Z; lane 3: T320 claimed 21:07Z, lease until 00:07Z; lane 4: T523 claimed 21:33Z, lease until 00:33Z; lane 5: T111 claimed 21:32Z, lease until 00:32Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
 - **Week:** 2% used, 186.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:33Z, 0 min before this update
+- **Last run:** 21:33Z, 2 min before this update
 - **Keeper:** last ran 21:29Z, next wake 23:37Z
 
 ## Needs attention
 - BLOCKED T307: plan gap reported: PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messaging` and `calls` call `read_contact`), and app/portals/src/homeowner_portal.rs:97 keeps `OnFile::phone()` crate-private (T087's file, not T307's). So `server` has no allowed way to read her number and address for `HomeFacts`. The prompt (kit/prompts/T307.md:9, D-3877 (3)) says to read them through `privacy::api::read_contact` from the server, which those two lines (and the runtime check at app/privacy/src/api.rs:247) rule out. Smallest plan change: let T307 own app/portals/s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T307 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T408: plan gap reported: PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `payments/src/handlers.rs` and `app/ops/src/` ("only charges read safe mode"). This task's goal (D-3144, D-3879; OPS-001 at `docs/spec/ops-recovery.md:5`; TD-OPS-01 at `docs/test-design.md:811`, "in safe mode no charge and no release happen") requires `PickReleaser` and `address_in` in `app/server/src` to call `ops::api::safe_mode_on`. Smallest plan change: a harness task lets that scan also allow `server/src/release_hold.rs`, or the scan checks only that text paths never read safe ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 15 problem(s) on tasks still to run (+135 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 13 problem(s) on tasks still to run (+129 on DONE tasks); first: T481: stored context_pct 10% but it measures 16%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -115,7 +115,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T481 (lease until 2026-11-16T23:34:48Z)
+- lane 2: T481 (lease until 2026-11-17T00:36:07Z)
 - lane 3: T320 (lease until 2026-11-17T00:07:01Z)
 - lane 4: T523 (lease until 2026-11-17T00:33:25Z)
 - lane 5: T111 (lease until 2026-11-17T00:32:39Z)
