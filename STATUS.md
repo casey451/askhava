@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T14:39:06Z by runner 86f2fc6ea68e (actions).
+Updated 2026-11-16T14:39:26Z by runner 86f2fc6ea68e (actions).
 
 **Building: T477 in progress since 14:13Z; 360 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 360 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T477 claimed 14:13Z, lease until 17:13Z; lane 2: T497 claimed 14:16Z, lease until 17:16Z; lane 3: T101 claimed 14:32Z, lease until 17:32Z; lane 4: T521 claimed 14:35Z, lease until 17:35Z; lane 5: T308 claimed 13:29Z, lease until 17:11Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z; lane 7: T529 claimed 14:10Z, lease until 17:10Z
+- **Lane:** lane 1: T477 claimed 14:13Z, lease until 17:13Z; lane 2: T497 claimed 14:16Z, lease until 17:16Z; lane 3: T101 claimed 14:32Z, lease until 17:32Z; lane 4: T521 claimed 14:35Z, lease until 17:35Z; lane 5: T308 claimed 13:29Z, lease until 17:11Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z
 - **Week:** 94% used, -1.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:35Z, 3 min before this update
 - **Keeper:** last ran 14:28Z, next wake 17:09Z
@@ -18,10 +18,11 @@ Updated 2026-11-16T14:39:06Z by runner 86f2fc6ea68e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T529 | payments: an owner refund has its own refund trigger (D-3883 | MERGE_PENDING | 2 | 28 min | 14:39Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T519 | Copy check (harness): template text a requirement fixes, and | done | 2 | 49 min | 14:07Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | QUEUED | 1 | 101 min | 14:05Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
-| T529 | payments: an owner refund has its own refund trigger (D-3883 | check_failed | 1 | 69 min | 13:32Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
+| T529 | payments: an owner refund has its own refund trigger (D-3883 | check_failed | 1 | 69 min | 13:32Z |  |
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 1 | 70 min | 13:31Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z |  |
 | T409 | server (harness): the door probe's owner actor signs in thro | done | 1 | 36 min | 13:05Z |  |
@@ -96,7 +97,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T521 (lease until 2026-11-16T17:35:03Z)
 - lane 5: T308 (lease until 2026-11-16T17:11:17Z)
 - lane 6: T105 (lease until 2026-11-16T17:07:02Z)
-- lane 7: T529 (lease until 2026-11-16T17:10:30Z)
 
 ## Last usage reading
-- {"task": "T519", "at": "2026-11-16T14:07:32Z", "input_tokens": 187, "output_tokens": 104482, "cache_creation_input_tokens": 223885, "cache_read_input_tokens": 4922823}
+- {"task": "T529", "at": "2026-11-16T14:39:05Z", "output_tokens": 5609, "cache_read_input_tokens": 470452, "input_tokens": 33, "cache_creation_input_tokens": 53958}
