@@ -8,6 +8,7 @@
 //! only through [`api`]; nothing it returns is executed (AI-006).
 
 pub mod api;
+mod health_figures;
 mod models;
 mod output_checks;
 mod schemas;

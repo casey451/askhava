@@ -1,0 +1,78 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH m AS (\n             SELECT o.recipient_kind AS kind,\n                    count(*) FILTER (WHERE e.kind = 'email.delivered') > 0 AS ok,\n                    count(*) FILTER (WHERE e.kind = 'email.bounced') > 0 AS bounced,\n                    count(*) FILTER (WHERE e.kind = 'email.complained') > 0 AS complained\n               FROM messaging.email_outbox o\n               LEFT JOIN messaging.email_event e ON e.provider_id = o.provider_id\n              WHERE o.status = 'sent' AND o.sent_at >= $1 AND o.sent_at < $2\n              GROUP BY o.id, o.recipient_kind)\n           SELECT kind AS \"kind!\", count(*) AS \"sent!\", count(*) FILTER (WHERE ok) AS \"ok!\",\n                  count(*) FILTER (WHERE bounced) AS \"bounced!\",\n                  count(*) FILTER (WHERE complained) AS \"complained!\",\n                  1000 * count(*) FILTER (WHERE ok) / NULLIF(count(*), 0) AS \"ok_rate?\",\n                  1000 * count(*) FILTER (WHERE bounced) / NULLIF(count(*), 0) AS \"bounced_rate?\",\n                  1000 * count(*) FILTER (WHERE complained) / NULLIF(count(*), 0)\n                    AS \"complained_rate?\"\n             FROM m GROUP BY kind",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "kind!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "recipient_kind"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "sent!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "ok!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "bounced!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "complained!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 5,
+        "name": "ok_rate?",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 6,
+        "name": "bounced_rate?",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 7,
+        "name": "complained_rate?",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "bfc5c4d1dbe702c676b492183668088536aa663b984d8a3f69f2f245af1af006"
+}

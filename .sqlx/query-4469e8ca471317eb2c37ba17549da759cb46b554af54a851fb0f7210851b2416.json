@@ -1,0 +1,61 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT c.id, c.job_id, c.sent_at,\n                  (SELECT s.category FROM quotes.shown_card s\n                    WHERE s.job_id = c.job_id AND s.sent_at IS NOT NULL\n                    ORDER BY s.sent_at DESC, s.id LIMIT 1) AS \"trade?\"\n             FROM quotes.job_card c WHERE c.sent_at >= $1 AND c.sent_at < $2\n            ORDER BY random() LIMIT $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.job_card",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.job_card",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "sent_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "quotes.job_card",
+            "name": "sent_at"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "trade?",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "4469e8ca471317eb2c37ba17549da759cb46b554af54a851fb0f7210851b2416"
+}

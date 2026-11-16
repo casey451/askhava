@@ -125,6 +125,7 @@ pub use crate::handlers::{
     PAUSE_EVERY, PAUSE_KIND, PICK_ENDED_KIND, RECHECK_AFTER, STRIPE_DOWN_SECONDS, TIMER_KIND,
     card_fix_window, charges_paused, run_charge_check, run_pause_watch, run_pay_timer, sync_pause,
 };
+pub use crate::health_figures::{HealthFigureError, PaymentErrors, payment_errors};
 pub use crate::late::{
     LATE_KIND, LATE_SUCCESS_ALERT, LATE_TRIGGER, LateSuccess, late_success, run_late_refund,
 };
