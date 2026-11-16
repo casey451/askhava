@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T22:10:32Z by runner a170fa44b897 (actions).
+Updated 2026-11-16T22:10:53Z by runner 6740aabac4ed (actions).
 
 **Building: T481 in progress since 21:50Z; 375 of 540 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-16T22:10:32Z by runner a170fa44b897 (actions).
 - **Lane:** lane 1: T481 claimed 21:50Z, lease until 00:50Z; lane 2: T523 claimed 22:07Z, lease until 01:07Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
 - **Week:** 3% used, 185.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:10Z, 0 min before this update
-- **Keeper:** last ran 21:59Z, next wake 00:34Z
+- **Keeper:** last ran 22:10Z, next wake 00:33Z
 
 ## Needs attention
 - BLOCKED T111: Review not approved after the one allowed fix round (head a170fa44b89727c74d6ec3159503b7f5b59c17e3). Drafts, clauses, D-3968 script lines, count 9->10, fees, brand and decisions D-3957..D-3959 judged right; the three attempt-1 gaps (cents/"dólares" amounts, Spanish mejor/verificad/examinad, percent forms) and round-1 findings (Spanish licencia/acceso a datos/derecho de uso/compra de contacto/venta de información, plagas, confiables, "porciento", vacuous fee-list assertion) are fixed. Remaining gaps, tests/docs/test_terms_clauses.py:80-91 (BANNED_ES, TERMS-027): natural Spanish forms of the forbidden framing pass:
@@ -20,7 +20,7 @@ Updated 2026-11-16T22:10:32Z by runner a170fa44b897 (actions).
 - "cliente potencial" singular (:80) -> \bclientes?\s+potencial(?:es)?\b
 Each needs a planted sentence in test_planted_spanish_banned_word_fails; think further about other natural Spanish phrasings of every English BANNED/BUSINESS_BANNED idea before hand-in. Minor: module docstring (:15-21) and banned_es_hits docstring (:177) should mention license/data-access and pest words. Local prehandin --ally failed j2_keyboard.spec.ts:149 (business sign-up, "Where your code goes" not shown) 2-3 tests on the fix head; reviewer found no diff path to it (no Rust/page change; only homeowner-terms.md is compiled in, unchanged); likely the per-IP daily sign-up cap (app/portals/src/limits.rs:38) exhausted by repeated local ally runs on a persistent test DB.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 16 problem(s) on tasks still to run (+135 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+135 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
