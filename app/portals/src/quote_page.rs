@@ -26,25 +26,32 @@
 //! from `quote_cards` (name, license lines, review links, the "check it yourself" line, PICK-040
 //! facts), rendered as its lines with plain links; `?lang=es` gives the Spanish card lines
 //! (D-3645). A quote with no card keeps today's lines.
+//!
+//! T308 (JOB-018, JOB-019, SEC-042, SEC-048, D-2128, D-3877): while the job is not final the page
+//! shows its close button, a `ButtonForm` posting its CSRF token to [`CLOSE_ROUTE`] (not the page's
+//! own path, whose `POST` is the pick flow's review step). That `POST` passes the cross-site
+//! refusal and the CSRF check (each refusal a `csrf_rejected` event), then closes the job through
+//! `intake::api::close_from_page`, sending no text, and answers 200 with the page saying it is
+//! closed; a second press or a job already final changes nothing. An unknown token is a bare 404.
 
 use std::sync::Arc;
 
 use askama::Template;
 use askhava_core::api::{Clock, LinkToken};
-use askhava_intake::api::paused_by_homeowner;
+use askhava_intake::api::{close_from_page, paused_by_homeowner};
 use askhava_jobs::api::quote_token::resolve;
-use askhava_jobs::api::{current, job_number};
+use askhava_jobs::api::{JobStatus, current, job_number};
 use askhava_licensing::api::{CardLanguage, CardLine};
 use askhava_picks::api::accepted_pick;
 use askhava_quotes::api::{
     AcceptedQuote, PageQuote, Price, QuotesError, accepted_quote, page_quotes, quoted_prices,
 };
 use axum::Router;
-use axum::extract::{Path, RawQuery, Request, State};
+use axum::extract::{FromRef, Path, RawQuery, Request, State};
 use axum::http::{HeaderName, HeaderValue, StatusCode};
 use axum::middleware::{Next, from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum_extra::extract::cookie::CookieJar;
 use jiff::{SignedDuration, Timestamp};
 use sqlx::PgPool;
@@ -52,7 +59,7 @@ use sqlx::PgPool;
 use crate::confirm_pay::money;
 use crate::pick_flow::tier_value;
 use crate::quote_cards::{Cards, quote_cards};
-use crate::security::{WebSecurity, no_store, refuse_cross_site};
+use crate::security::{ButtonForm, CsrfForm, WebSecurity, no_store, refuse_cross_site};
 use crate::session::{csrf_token, ensure_pre_session};
 
 /// PICK-011: how long a quote-page token keeps working after the job reaches a final status.
@@ -60,6 +67,10 @@ pub const TOKEN_LIFE_AFTER_CLOSE: SignedDuration = SignedDuration::from_hours(30
 
 /// The route of the quote page; the token is the one path segment (PICK-010).
 pub const QUOTE_PAGE_ROUTE: &str = "/q/{token}";
+
+/// The quote page's close button's route (JOB-019, D-2128): its own path, since the page's own
+/// `POST` is the pick flow's review step.
+pub const CLOSE_ROUTE: &str = "/q/{token}/close";
 
 /// One numbered quote on the page (PICK-008).
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -120,11 +131,19 @@ impl From<AcceptedQuote> for Accepted {
     }
 }
 
-/// The quote page's state: the pool and the clock the 30-day rule reads.
+/// The quote page's state: the pool, the clock the 30-day rule reads and the close form's CSRF
+/// refusal's event log (SEC-048).
 #[derive(Clone)]
 struct QuotePage {
     pool: PgPool,
     clock: Arc<dyn Clock>,
+    security: WebSecurity,
+}
+
+impl FromRef<QuotePage> for WebSecurity {
+    fn from_ref(page: &QuotePage) -> Self {
+        page.security.clone()
+    }
 }
 
 /// The page's template (`templates/quote_page.html`): the request number, the lines and the cards.
@@ -173,6 +192,16 @@ impl PageView {
 
     /// The page alone shows its cards in English (D-3645).
     pub(crate) const fn spanish(&self) -> bool {
+        false
+    }
+
+    /// The page alone has no close button; [`ShownPage`] adds it (JOB-019, T308).
+    pub(crate) const fn close_action(&self) -> Option<&str> {
+        None
+    }
+
+    /// The page alone says nothing about a close (JOB-019, T308).
+    pub(crate) const fn just_closed(&self) -> bool {
         false
     }
 }
@@ -228,6 +257,10 @@ struct ShownPage {
     cards: Cards,
     /// The card lines are Spanish (`?lang=es`, D-3645).
     in_spanish: bool,
+    /// The close form's action, `/q/<token>/close`, while the job is not final (JOB-019, T308).
+    close_to: Option<String>,
+    /// The page answers the close button's `POST` for a job now final (JOB-019, T308).
+    closed: bool,
 }
 
 impl ShownPage {
@@ -271,6 +304,16 @@ impl ShownPage {
     const fn spanish(&self) -> bool {
         self.in_spanish
     }
+
+    /// The close form's action while the job is not final (JOB-018, JOB-019).
+    fn close_action(&self) -> Option<&str> {
+        self.close_to.as_deref()
+    }
+
+    /// Whether the page says the request is closed: only the answer to the close button (JOB-019).
+    const fn just_closed(&self) -> bool {
+        self.closed
+    }
 }
 
 /// What the request asks beyond the token: the CSRF token, `choose=<n>` (PICK-053) and the card
@@ -308,16 +351,25 @@ impl std::ops::Deref for ShownPage {
 enum PageError {
     #[error("a quote-page read failed")]
     Read,
+    #[error("the quote page's close failed")]
+    Close,
 }
 
 /// The quote page's router over `pool`, timed by `clock` (PICK-008 to PICK-012, D-491): `GET
-/// /q/{token}` behind the cross-site refusal (TD-PICK-05), `no-store` and `noindex` (PICK-010).
-/// `server::build_router` merges it.
+/// /q/{token}` and the close button's `POST` [`CLOSE_ROUTE`] (JOB-019, SEC-042) behind the
+/// cross-site refusal (TD-PICK-05), `no-store` and `noindex` (PICK-010). `server::build_router`
+/// merges it.
 pub fn quote_page_routes(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
     let security = WebSecurity::new(pool.clone(), Arc::clone(&clock));
+    let state = QuotePage {
+        pool,
+        clock,
+        security: security.clone(),
+    };
     Router::new()
         .route(QUOTE_PAGE_ROUTE, get(show))
-        .with_state(QuotePage { pool, clock })
+        .route(CLOSE_ROUTE, post(close))
+        .with_state(state)
         .layer(from_fn(noindex))
         .layer(from_fn(no_store))
         .layer(from_fn_with_state(security, refuse_cross_site))
@@ -355,7 +407,75 @@ async fn show(
         again,
         language,
     };
-    let view = match load(&page, &token, asked).await {
+    respond(jar, load(&page, &token, asked).await)
+}
+
+/// `POST /q/{token}/close` (JOB-018, JOB-019, SEC-042, SEC-048): the CSRF token is checked first
+/// (`CsrfForm`, a refusal a 403 and a `csrf_rejected` event), then the token (a bare 404 when it
+/// opens nothing); the job closes through `close_from_page`, which sends no text and leaves a job
+/// already final alone, and the answer is the page itself, saying the request is closed.
+async fn close(
+    State(page): State<QuotePage>,
+    Path(raw): Path<String>,
+    jar: CookieJar,
+    CsrfForm(_): CsrfForm<ButtonForm>,
+) -> Response {
+    let Ok(token) = LinkToken::parse(&raw) else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+    let asked = Asked {
+        csrf: csrf_token(&jar).unwrap_or_default(),
+        again: None,
+        language: CardLanguage::English,
+    };
+    let shown = match close_job(&page, &token).await {
+        Ok(true) => load(&page, &token, asked).await,
+        Ok(false) => Ok(None),
+        Err(err) => Err(err),
+    };
+    let shown = shown.map(|view| {
+        view.map(|view| ShownPage {
+            closed: !view.live,
+            ..view
+        })
+    });
+    respond(jar, shown)
+}
+
+/// Closes the job `token` opens now, as its homeowner at the clock's time (JOB-019); `false` when
+/// the token opens nothing (SEC-037, PICK-011).
+async fn close_job(page: &QuotePage, token: &LinkToken) -> Result<bool, PageError> {
+    let mut db = page.pool.acquire().await.map_err(|_| PageError::Read)?;
+    let Some((job, _)) = open_job(&mut db, page, token).await? else {
+        return Ok(false);
+    };
+    close_from_page(&mut db, job, page.clock.now())
+        .await
+        .map_err(|_| PageError::Close)?;
+    Ok(true)
+}
+
+/// The job `token` opens at the clock's time, with its current status; `None` for an unknown,
+/// revoked or expired token (SEC-037, PICK-011).
+async fn open_job(
+    db: &mut sqlx::PgConnection,
+    page: &QuotePage,
+    token: &LinkToken,
+) -> Result<Option<(sqlx::types::Uuid, JobStatus)>, PageError> {
+    let Some(job) = resolve(db, token).await.map_err(|_| PageError::Read)? else {
+        return Ok(None);
+    };
+    let row = current(db, job).await.map_err(|_| PageError::Read)?;
+    if token_expired(row.status.is_final(), row.status_at, page.clock.now()) {
+        return Ok(None);
+    }
+    Ok(Some((job, row.status)))
+}
+
+/// The built page with the pre-session cookie, a bare 404 for `None`, a logged 500 for an error
+/// (rust-production R5).
+fn respond(jar: CookieJar, shown: Result<Option<ShownPage>, PageError>) -> Response {
+    let view = match shown {
         Ok(Some(view)) => view,
         Ok(None) => return StatusCode::NOT_FOUND.into_response(),
         Err(err) => {
@@ -384,14 +504,10 @@ async fn load(
     asked: Asked,
 ) -> Result<Option<ShownPage>, PageError> {
     let mut db = page.pool.acquire().await.map_err(|_| PageError::Read)?;
-    let Some(job) = resolve(&mut db, token).await.map_err(|_| PageError::Read)? else {
+    let Some((job, status)) = open_job(&mut db, page, token).await? else {
         return Ok(None);
     };
-    let row = current(&mut db, job).await.map_err(|_| PageError::Read)?;
-    let is_final = row.status.is_final();
-    if token_expired(is_final, row.status_at, page.clock.now()) {
-        return Ok(None);
-    }
+    let is_final = status.is_final();
     let request = job_number(&mut db, job)
         .await
         .map_err(|_| PageError::Read)?;
@@ -401,7 +517,7 @@ async fn load(
             .map_err(|_| PageError::Read)?;
     let quotes = page_quotes(&mut db, job).await;
     let quotes = number_quotes(quotes.map_err(|_| PageError::Read)?);
-    let pick_open = row.status.takes_pick();
+    let pick_open = status.takes_pick();
     let tiers = if pick_open {
         quote_packages(&mut db, job, &quotes)
             .await
@@ -426,6 +542,8 @@ async fn load(
         again: asked.again,
         cards: cards.map_err(|_| PageError::Read)?,
         in_spanish: asked.language == CardLanguage::Spanish,
+        close_to: (!is_final).then(|| format!("/q/{}/close", token.as_str())),
+        closed: false,
     }))
 }
 
