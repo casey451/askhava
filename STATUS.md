@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T13:29:12Z by runner ebf92768662f (actions).
+Updated 2026-11-16T13:29:39Z by runner 5dcb405bf7c0 (actions).
 
 **Building: T477 in progress since 12:23Z; 358 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 358 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T477 claimed 12:23Z, lease until 16:05Z; lane 2: T105 claimed 12:22Z, lease until 16:21Z; lane 3: T519 claimed 13:17Z, lease until 16:17Z; lane 4: T101 claimed 12:21Z, lease until 15:21Z; lane 7: T529 claimed 12:22Z, lease until 16:10Z
+- **Lane:** lane 1: T477 claimed 12:23Z, lease until 16:05Z; lane 2: T105 claimed 12:22Z, lease until 16:21Z; lane 3: T519 claimed 13:17Z, lease until 16:17Z; lane 4: T101 claimed 12:21Z, lease until 16:29Z; lane 7: T529 claimed 12:22Z, lease until 16:10Z
 - **Week:** 93% used, 2.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:21Z, 7 min before this update
 - **Keeper:** last ran 13:13Z, next wake 15:24Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 9 problem(s) on tasks still to run (+122 on DONE tasks); first: T129: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T129: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,7 +90,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T477 (lease until 2026-11-16T16:05:53Z)
 - lane 2: T105 (lease until 2026-11-16T16:21:25Z)
 - lane 3: T519 (lease until 2026-11-16T16:17:39Z)
-- lane 4: T101 (lease until 2026-11-16T15:21:19Z)
+- lane 4: T101 (lease until 2026-11-16T16:29:39Z)
 - lane 7: T529 (lease until 2026-11-16T16:10:18Z)
 
 ## Last usage reading
