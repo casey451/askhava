@@ -53,6 +53,10 @@ pub struct CategoryDef {
     pub id: String,
     /// The display name.
     pub name: String,
+    /// The plural display name, lower case as it reads after "licensed" (WEB-015, D-3879); empty when
+    /// the file leaves it out, which `category_list` refuses.
+    #[serde(default)]
+    pub plural: String,
     /// The trade group.
     pub group: String,
     /// Whether the K2b review confirmed it (LIC-003); false stays off.
