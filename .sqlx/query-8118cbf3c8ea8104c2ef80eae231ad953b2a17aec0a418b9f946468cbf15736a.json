@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH line AS (SELECT o.recipient_kind FROM messaging.outbox o\n                  WHERE o.provider_sid = $1 LIMIT 1),\n         last AS (SELECT DISTINCT ON (e.provider_sid) e.id, e.status\n                  FROM messaging.delivery_event e\n                  JOIN messaging.outbox o ON o.provider_sid = e.provider_sid\n                  WHERE o.recipient_kind = (SELECT recipient_kind FROM line)\n                    AND e.status IN ('delivered', 'undelivered', 'failed')\n                  ORDER BY e.provider_sid, e.id DESC),\n         w AS (SELECT status, row_number() OVER (ORDER BY id DESC) AS n FROM last\n               ORDER BY id DESC LIMIT 200)\n         SELECT (SELECT recipient_kind FROM line) AS audience,\n           count(*) FILTER (WHERE n <= 50 AND status <> 'delivered') AS \"f50!\",\n           count(*) FILTER (WHERE status <> 'delivered') AS \"f200!\"\n         FROM w",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "audience",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "f50!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "f200!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "8118cbf3c8ea8104c2ef80eae231ad953b2a17aec0a418b9f946468cbf15736a"
+}
