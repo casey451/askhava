@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-16T04:09:45Z by runner 19d98135f0a7 (actions).
+Updated 2026-11-16T04:10:25Z by runner a21eac18f73d (actions).
 
 **Waiting for tokens until 17:00Z; 355 of 532 done; week 91% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 355 of 532 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:38Z (no task in progress)
-- **Week:** 91% used, 14.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:09Z, 0 min before this update
+- **Week:** 91% used, 12.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:10Z, 0 min before this update
 - **Keeper:** last ran 04:09Z, next wake 09:49Z
 
 ## Needs attention
 - BLOCKED T517: stage proof missing (the proof waits for: T100 is QUEUED)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 10 problem(s) on tasks still to run (+121 on DONE tasks); first: T517: stored context_pct 1% but it measures 5%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T517: stored context_pct 1% but it measures 5%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -79,7 +79,7 @@ Updated 2026-11-16T04:09:45Z by runner 19d98135f0a7 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T03:33:22Z (week)): week: 180.0M used, 14.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T11:14:25Z; waiting until 2026-11-19T17:00:00Z.
+- Pacing (session_reading 2026-11-16T04:09:20Z (week)): week: 182.0M used, 12.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T11:20:01Z; waiting until 2026-11-19T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
