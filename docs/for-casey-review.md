@@ -3107,4 +3107,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - The task that makes releases wait while safe mode is on (T408) was stuck: an earlier automatic check said only the charge code may look at safe mode, written before any release code needed to. The spec says safe mode pauses both charges and releases.
 - T408 now also owns that check and lets exactly the two release files look at safe mode, and the check now also fails if either release file stops looking at it, if they pass that look on to other code, or if any texting file touches the release code. Every texting file is still forbidden from looking at safe mode, so safety texts, STOP and HELP keep going.
+## The homeowner portal's home page reads her details through the portal, not the server (D-4025, November 16)
+
+- The task that serves the homeowner portal stopped because its plan told the web server to read her phone and address straight from the locked vault, which the privacy rules forbid: only the homeowner portal code may read a homeowner's own record, and only with her signed-in session.
+- The fix keeps that rule tight: the portal code gains one small function that reads her last four digits, her address and whether texts are on, and the server just shows the result. No privacy check or test was loosened.
 - Nothing needs you now.
