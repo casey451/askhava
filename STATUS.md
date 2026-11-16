@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T04:23:31Z by runner 19d98135f0a7 (actions).
+Updated 2026-11-16T04:33:09Z by runner 42860522d00c (actions).
 
 **Waiting for tokens until 17:00Z; 355 of 532 done; week 91% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-16T04:23:31Z by runner 19d98135f0a7 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:38Z (no task in progress)
 - **Week:** 91% used, 12.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:23Z, 0 min before this update
+- **Last run:** 04:23Z, 9 min before this update
 - **Keeper:** last ran 04:23Z, next wake 10:03Z
 
 ## Needs attention
@@ -42,15 +42,13 @@ Updated 2026-11-16T04:23:31Z by runner 19d98135f0a7 (actions).
 | T461 | server: business sign-up's service area, email code and acti | BLOCKED | 3 | 49 min | 06:10Z |  |
 | T493 | portals (harness): the Confirm page's own Stripe CSP marker  | check_failed | 1 | 46 min | 04:47Z |  |
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z |  |
-| T494 | portals: the Confirm route's $0 free-first-win decision from | done | 1 | 29 min | 04:31Z |  |
-| T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | done | 1 | 31 min | 04:26Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 303 of 733 (41.3%) · partial 273 · unstarted 157
+**Requirements verified:** 302 of 733 (41.2%) · partial 274 · unstarted 157
 **Tasks merged (throughput only):** 355 of 532
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -60,7 +58,7 @@ Updated 2026-11-16T04:23:31Z by runner 19d98135f0a7 (actions).
 | businesses | 19 | 36 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 22 | 29 | 1 | 52 |
+| fees | 21 | 30 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 34 | 14 | 0 | 48 |
