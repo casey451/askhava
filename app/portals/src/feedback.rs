@@ -629,9 +629,7 @@ mod brand_tests {
             .render()
             .expect("form renders");
         assert!(html.contains(&fill("<title>Feedback on request 1042 | {brand}</title>")));
-        assert!(html.contains(&fill(
-            "<header>\n<p><a href=\"/\">{brand}</a></p>\n</header>"
-        )));
+        assert!(html.contains(&fill("<a href=\"/\">{brand}</a>")));
         assert!(html.contains(&fill("<label for=\"feedback-share\">{brand} may show what I wrote on {domain} with my first name and town</label>")));
         assert_eq!(
             share_label(),

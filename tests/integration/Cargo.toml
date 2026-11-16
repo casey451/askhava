@@ -22,6 +22,7 @@ askhava-privacy = { workspace = true }
 askhava-jobs = { workspace = true }
 askhava-payments = { workspace = true }
 askhava-portals = { workspace = true }
+askhava-site = { workspace = true }
 askhava-licensing = { workspace = true }
 askhava-messaging = { workspace = true }
 askhava-businesses = { workspace = true }
