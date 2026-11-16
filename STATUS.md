@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T14:55:23Z by runner f2724f0309ef (actions).
+Updated 2026-11-16T14:55:44Z by runner f2724f0309ef (actions).
 
-**Building: T477 in progress since 14:13Z; 360 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T497 in progress since 14:16Z; 360 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 360 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T477 claimed 14:13Z, lease until 17:51Z; lane 2: T497 claimed 14:16Z, lease until 17:16Z; lane 3: T101 claimed 14:32Z, lease until 17:32Z; lane 4: T521 claimed 14:35Z, lease until 17:35Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z
+- **Lane:** lane 2: T497 claimed 14:16Z, lease until 17:16Z; lane 3: T101 claimed 14:32Z, lease until 17:32Z; lane 4: T521 claimed 14:35Z, lease until 17:35Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z
 - **Week:** 94% used, -1.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:51Z, 3 min before this update
 - **Keeper:** last ran 14:51Z, next wake 17:09Z
@@ -18,10 +18,11 @@ Updated 2026-11-16T14:55:23Z by runner f2724f0309ef (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T477 | payments, picks and quotes: the scorecard's money, pick and  | MERGE_PENDING | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T308 | portals (harness): the quote page's close button (JOB-019) i | MERGE_PENDING | 1 | 72 min | 14:42Z |  |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | MERGE_PENDING | 2 | 28 min | 14:39Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T519 | Copy check (harness): template text a requirement fixes, and | done | 2 | 49 min | 14:07Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
-| T477 | payments, picks and quotes: the scorecard's money, pick and  | QUEUED | 1 | 101 min | 14:05Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
+| T477 | payments, picks and quotes: the scorecard's money, pick and  | QUEUED | 1 | 101 min | 14:05Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | check_failed | 1 | 69 min | 13:32Z |  |
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 1 | 70 min | 13:31Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
@@ -92,11 +93,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T477 (lease until 2026-11-16T17:51:30Z)
+- nothing
 - lane 2: T497 (lease until 2026-11-16T17:16:59Z)
 - lane 3: T101 (lease until 2026-11-16T17:32:48Z)
 - lane 4: T521 (lease until 2026-11-16T17:35:03Z)
 - lane 6: T105 (lease until 2026-11-16T17:07:02Z)
 
 ## Last usage reading
-- {"task": "T308", "at": "2026-11-16T14:42:38Z", "output_tokens": 49444, "cache_creation_input_tokens": 213805, "cache_read_input_tokens": 4933751, "input_tokens": 145}
+- {"task": "T477", "at": "2026-11-16T14:55:22Z", "cache_creation_input_tokens": 226698, "input_tokens": 192, "output_tokens": 74296, "cache_read_input_tokens": 9165004}
