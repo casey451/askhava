@@ -23,6 +23,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - `send_sign_in_link` sends only to a current member and never past `LINKS_PER_LIFE` in `LINK_LIFE`: `tests/integration/tests/signup_mail_paths.rs` (T468).
 - `decide_at_confirm` gives no free first win to a business with no sign-up row or with no launch setting, and `release_no_fee` hands the sink only `no_fee_release`'s pick for its own business and job, after the waiver committed: `tests/integration/tests/confirm_waiver.rs` (T494).
 - The Confirm route charges or waives only the stored `pick_fee`, refuses a paused or moved-on pick, says "Nothing was charged" only while no attempt can succeed, and without `ConfirmSettings` charges nothing: `app/server/tests/confirm_route.rs`.
+- The quote page's close button (JOB-019) posts to `CLOSE_ROUTE`, never the page's own path; only a same-site `POST` with its CSRF token closes, a final job or second press changes nothing, and no text goes: `tests/integration/tests/quote_page_close.rs`.
 - BIZ-049, D-3676: the sign-in done screen adds its capability-step link only for an owner whose business has no saved capability row; every other sign-in (an owner with a saved step, a member who is not the owner) keeps the done screen as it was: `app/server/tests/business_signup_route.rs`.
 
 ## Detail

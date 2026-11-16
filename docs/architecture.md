@@ -522,7 +522,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /q/{token} | portals | yes |
 | POST | /q/{token}/pick | portals | yes |
 | POST | /q/{token}/code | portals | yes |
-| POST | /q/{token}/close | portals | T308 |
+| POST | /q/{token}/close | portals | yes |
 | GET | /f/{token} | portals | yes |
 | POST | /f/{token} | portals | yes |
 | GET | /static/portals/feedback.css | portals | yes |
