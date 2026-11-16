@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T15:13:17Z by runner b9ee6e1c0745 (actions).
+Updated 2026-11-16T15:17:43Z by runner 903e7f8c564d (actions).
 
 **Building: T497 in progress since 14:16Z; 361 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-16T15:13:17Z by runner b9ee6e1c0745 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T497 claimed 14:16Z, lease until 18:07Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z; lane 7: T475 claimed 15:08Z, lease until 18:08Z
 - **Week:** 94% used, 1.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:13Z, 0 min before this update
+- **Last run:** 15:13Z, 4 min before this update
 - **Keeper:** last ran 15:13Z, next wake 17:09Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-16T15:13:17Z by runner b9ee6e1c0745 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T101 | site: base layout in the design spec's look, works without J | MERGE_PENDING | 2 | 39 min | 15:11Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
+| T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T521 | catalog: each category's plural display name and a list read | MERGE_PENDING | 1 | 34 min | 15:09Z |  |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | MERGE_PENDING | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T308 | portals (harness): the quote page's close button (JOB-019) i | MERGE_PENDING | 1 | 72 min | 14:42Z |  |
