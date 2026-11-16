@@ -48,29 +48,28 @@ def test_bad_markers_fail(tmp_path: Path) -> None:
     assert any("claim word 'best'" in p for p in problems)
     assert any('"WEB-999" names no requirement' in p for p in run(tmp_path, f'<p data-fixed="WEB-999">{WEB_005}</p>'))
     assert any("own end tag" in p for p in run(tmp_path, f'<div data-fixed="WEB-005"><p>{WEB_005}</p></div>'))
+    assert any("not word for word" in p for p in run(tmp_path, '<p data-fixed="WEB-005">st</p>'))  # part of a word
 
 
 def test_spanish_is_skipped(tmp_path: Path) -> None:
-    """TD-WORD-31: an over-grade Spanish passage fails unmarked, passes in lang="es" and in es_x.html; English
-    after the lang="es" element closes, or in a nested lang="en", is measured; lang="es" on 5 words or more
-    with no common Spanish word fails."""
+    """TD-WORD-31: over-grade Spanish fails unmarked, passes in lang="es"/"es-MX" and es_x.html; English after or in
+    a nested lang="en" is measured; lang="es" on 5 words or more with no common Spanish word fails, on 4 passes."""
     assert any("reading grade" in p for p in run(tmp_path, f"<p>{SPANISH_HARD}</p>"))
-    assert run(tmp_path, f'<p lang="es">{SPANISH_HARD}</p>') == []
+    assert run(tmp_path, f'<p lang="es">{SPANISH_HARD}</p>') == run(tmp_path, f'<p lang="es-MX">{SPANISH_HARD}</p>') == []
     assert run(tmp_path, f"<p>{SPANISH_HARD}</p>", "es_x.html") == []
     after = run(tmp_path, f'<p lang="es">{SPANISH_HARD}</p>\n<p>The best fee.</p>')
     assert after == ["app/site/templates/page.html · text 4: claim word 'best' (say the fact instead)"]
     nested = run(tmp_path, f'<p lang="es">{SPANISH_HARD} <span lang="en">The best fee.</span></p>')
     assert any("claim word 'best'" in p for p in nested)
-    problems = run(tmp_path, '<p lang="es">Send us your job today, it is quick.</p>')
-    assert any('lang="es" text holds no common Spanish word' in p for p in problems)
-    assert run(tmp_path, '<p lang="es">Gracias, vecino.</p>') == []
+    assert run(tmp_path, '<p lang="es">Send us a job.</p>') == run(tmp_path, '<p lang="es">Gracias, vecino.</p>') == []
+    assert any('no common Spanish word' in p for p in run(tmp_path, '<p lang="es">Send us a job today.</p>'))
 
 
 def test_no_branch_or_implied_end_tag_stretches_an_exemption(tmp_path: Path) -> None:
-    """TD-WORD-31: the T519 attempt-1 review's inputs, and English holding a Spanish word, are measured."""
-    branch = ('{% if es %}<div lang="es">{% else %}<div>{% endif %}<p>Bienvenido a la casa</p></div>'
-              f"<p>{ENGLISH_BAD}</p>")
-    implied = f'<dl><dd lang="es">uno de dos<dd>{ENGLISH_BAD}</dl>'
-    same_name = f'<span lang="es">uno de dos<span>{ENGLISH_BAD}</span></span>'
-    for body in (branch, implied, same_name, '<p lang="es">We send the best pros in La Paz County.</p>'):
+    """TD-WORD-31: the T519 reviews' inputs, and English holding a Spanish word, are measured."""
+    bodies = ['{% if es %}<div lang="es">{% else %}<div>{% endif %}<p>Bienvenido a la casa</p></div><p>X</p>',
+              '<dl><dd lang="es">uno de dos<dd>X</dl>', '<span lang="es">uno de dos<span>X</span></span>',
+              '<!--{% if es %}--><span lang="es"><!--{% else %}--><b><!--{% endif %}-->la casa</b> X</span>',
+              '{# <span lang="es"> #}X{# </span> #}', '<p lang="es">We send the best pros in La Paz County.</p>']
+    for body in (b.replace("X", ENGLISH_BAD) for b in bodies):
         assert any("claim word 'best'" in p for p in run(tmp_path, body)), body

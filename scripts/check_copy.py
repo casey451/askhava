@@ -14,11 +14,11 @@ It reads:
 - once they exist, page templates under app/*/templates/ (visible text only, parsed with html.parser); a
   path containing "business" is business copy. Each block keeps its "<path> · text <n>" name (D-3881).
 
-Template exemptions (T519, D-3878, D-3905) hold only in a "clean" element: only inline tags, no {% %},
-|safe or start tag of its own name inside, closed by its own end tag while innermost (no Askama branch or
-implied end tag stretches it). es_*.html files are skipped. In lang="es", text with a SPANISH and no ENGLISH
-word is skipped; 5 or more words with no SPANISH word are a problem. data-fixed="<ID>" (WORD-029, D-482) is
-skipped when the docs/spec/ "- **ID**" line holds its text word for word ({{ x }} = any one word), else a problem.
+Template exemptions (T519, D-3878, D-3905) hold only in a "clean" element: only inline tags, no {% %} (even in
+an HTML comment), |safe or start tag of its own name inside, closed by its own end tag while innermost; {# #}
+is removed. es_*.html files are skipped. In lang="es", text with a SPANISH and no ENGLISH word is skipped; 5 or
+more words with no SPANISH word are a problem. data-fixed="<ID>" (WORD-029, D-482) is skipped when the docs/spec/
+"- **ID**" line holds its text word for word ({{ x }} = any one word), else a problem.
 
 Usage: python3 scripts/check_copy.py [--root REPO_ROOT]
 Exit status 1 lists each problem.
@@ -142,6 +142,9 @@ class Element:
     def plain(self) -> str:
         return " ".join("".join(self.text).split())
 
+    def spanish(self) -> bool:
+        return (self.lang or "").split("-")[0] == "es"
+
 
 class TemplateText(HTMLParser):
     """Visible text pieces with the elements open around each, numbered as tags and line breaks split them."""
@@ -166,8 +169,7 @@ class TemplateText(HTMLParser):
         found = dict(reversed(attrs))
         lang = (found.get("lang") or "").strip().lower() if "lang" in found else None
         fixed = (found.get("data-fixed") or "").strip() if "data-fixed" in found else None
-        el = Element(tag, lang, fixed, not stmt)
-        self.stack.append(el)
+        self.stack.append(Element(tag, lang, fixed, not stmt))
 
     handle_startendtag = handle_starttag
 
@@ -188,13 +190,17 @@ class TemplateText(HTMLParser):
             self.flush()
             self.buf = line
 
-    def handle_comment(self, data: str) -> None:  # a comment or doctype counts as a tag, as before T519
+    def handle_comment(self, data: str) -> None:  # counts as a tag, as before T519; Askama runs a {% %} in it
         self.flush()
+        for el in self.stack:
+            el.clean = el.clean and STMT not in data
 
     handle_decl = handle_pi = unknown_decl = handle_comment
 
 
 def parse_template(markup: str) -> TemplateText:
+    markup = re.sub(r"(?s)\{#.*?#\}", lambda m: re.sub(  # {# #} never renders; its tags keep block numbers (D-3881)
+        r"</?[A-Za-z][^>]*>|([^<]+|<)", lambda t: "\n" * t[0].count("\n") if t[1] else "<!---->", m[0]), markup)
     markup = re.sub(r"(?is)<(script|style)\b.*?</\1>", " ", markup)
     markup = re.sub(r"(?s)\{%.*?%\}|\{\{[^}]*\|\s*safe\b.*?\}\}", STMT, markup)
     parser = TemplateText()
@@ -212,17 +218,13 @@ def innermost_lang(stack: tuple[Element, ...]) -> Element | None:
     return next((el for el in reversed(stack) if el.lang is not None), None)
 
 
-def is_spanish(el: Element | None) -> bool:
-    return el is not None and (el.lang or "").split("-")[0] == "es"
-
-
 def fixed_problem(el: Element, requirements: dict[str, str]) -> str | None:
     """Why a data-fixed element exempts nothing, or None when its requirement holds its text (WORD-029, D-482)."""
     if not (el.clean and el.closed):
         return "must hold only inline tags, no {% %}, and close with its own end tag"
     if el.fixed not in requirements:
         return "names no requirement in docs/spec/"
-    pattern = re.escape(el.plain()).replace(EXPR, r"\S+")
+    pattern = r"(?<!\w)" + re.escape(el.plain()).replace(EXPR, r"\S+") + r"(?!\w)"
     if not re.search(pattern, requirements[el.fixed]):
         return f"text is not word for word in its requirement: {el.plain()[:70]}"
     return None
@@ -250,11 +252,10 @@ def template_problems(root: Path) -> list[str]:
         for _, raw, stack in parser.pieces:
             own.setdefault(innermost_lang(stack), []).extend(lowered_words(raw))
         for el in dict.fromkeys(el for _, _, stack in parser.pieces for el in stack):
-            why = fixed_problem(el, requirements) if el.fixed is not None else None
-            if why:
+            if el.fixed is not None and (why := fixed_problem(el, requirements)):
                 problems.append(f'{rel}: data-fixed="{el.fixed}" {why}')
             mine = own.get(el, [])
-            if is_spanish(el) and len(mine) >= 5 and not SPANISH.intersection(mine):
+            if el.spanish() and len(mine) >= 5 and not SPANISH.intersection(mine):
                 problems.append(f'{rel}: lang="es" text holds no common Spanish word: {el.plain()[:70]}')
     return problems
 
@@ -264,7 +265,7 @@ def exempt(raw: str, stack: tuple[Element, ...], requirements: dict[str, str]) -
     if any(el.fixed is not None and fixed_problem(el, requirements) is None for el in stack):
         return True
     lang, found = innermost_lang(stack) or Element("", None, None, False), set(lowered_words(raw))
-    return is_spanish(lang) and lang.clean and lang.closed and bool(found & SPANISH) and not found & ENGLISH
+    return lang.spanish() and lang.clean and lang.closed and bool(found & SPANISH) and not found & ENGLISH
 
 
 def template_blocks(root: Path) -> list[Block]:
