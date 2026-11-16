@@ -19627,7 +19627,10 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-16T14:06:20Z",
-   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-16T14:08:19.722671Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":180,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T14:08:19.723400Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":178,\"kind\":\"payments.receipt\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T14:08:19.725245Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":181,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T14:08:19.726432Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":182,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T14:08:19.727643Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":184,\"kind\":\"messaging.charge_receipt\",\"outcome\":\"Ok(Retry(2026-11-16T14:08:49.725950488Z))\",\"target\":\"askhava_core\n{\"timestamp\":\"2026-11-16T14:08:19.728855Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":183,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  23 tests/e2e/confirm_served.spec.ts:111:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once (416ms)\n##[error]  1) tests/e2e/confirm_served.spec.ts:111:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-16T14:08:19.722671Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":180,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T14:08:19.723400Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":178,\"kind\":\"payments.receipt\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T14:08:19.725245Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":181,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T14:08:19.726432Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":182,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T14:08:19.727643Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":184,\"kind\":\"messaging.charge_receipt\",\"outcome\":\"Ok(Retry(2026-11-16T14:08:49.725950488Z))\",\"target\":\"askhava_core\n{\"timestamp\":\"2026-11-16T14:08:19.728855Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":183,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  23 tests/e2e/confirm_served.spec.ts:111:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once (416ms)\n##[error]  1) tests/e2e/confirm_served.spec.ts:111:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
+   "runner_closed_prs": [
+    868
+   ]
   },
   {
    "id": "T221",
@@ -66205,7 +66208,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T14:33:02Z",
+ "updated_at": "2026-11-16T14:33:22Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
