@@ -1,19 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-16T20:17:31Z by runner 32d91e1d646e (actions).
+Updated 2026-11-16T20:17:57Z by runner 32d91e1d646e (actions).
 
 **Building: T481 in progress since 19:16Z; 373 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 373 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z
-- **Week:** 1% used, 189.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 4: T102 claimed 20:17Z, lease until 23:17Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z
+- **Week:** 1% used, 189.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:16Z, 1 min before this update
 - **Keeper:** last ran 20:14Z, next wake 22:19Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T523 (since 2026-11-16T19:07:14Z, no attempt used; a plan change fixes it): T523: dependency T105 is DONE but its owned file app/ops/src/alerts.rs is not on main; T523: dependency T105 is DONE but its owned file migrations/0192_ops_alerts_safe_mode.sql is not on main; T523: dependency T105 is DONE but its owned file tests/integration/tests/ops_alert_conditions.rs is not on main; T523: dependency T105 is DONE but its owned file app/jobs/src/request_counts.rs is not on main
 - Strict plan check red: 13 problem(s) on tasks still to run (+130 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
@@ -95,7 +94,7 @@ Updated 2026-11-16T20:17:31Z by runner 32d91e1d646e (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T19:54:58Z (week)): week: 4.8M used, 189.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T09:04:59Z.
+- Pacing (session_reading 2026-11-16T20:13:48Z (week)): week: 4.3M used, 189.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T08:36:13Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -112,6 +111,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T481 (lease until 2026-11-16T22:16:25Z)
+- lane 4: T102 (lease until 2026-11-16T23:17:18Z)
 - lane 6: T307 (lease until 2026-11-16T23:00:14Z)
 
 ## Last usage reading
