@@ -10417,7 +10417,7 @@
    "id": "T397",
    "slug": "phone-approval-page",
    "title": "server and portals: the owner approves or declines a member-linked phone on a portal page that names the member and the last 4 digits",
-   "goal": "Register row IC-95, the owner's page (D-3081; BIZ-033, BIZ-038, SEC-038, SEC-004, SEC-009, SEC-034, SEC-042, SEC-048; D-311, D-480, D-1848, D-2440, D-2636). After T396 (`businesses::api::approve_phone`, `reject_phone`, `waiting_phones`) and T364 (the served business step-up page, without which `require_step_up` can never pass in production). The owner has no page that lists a phone waiting for approval. (1) `app/portals/src/phone_approval.rs` and `app/portals/templates/phone_approval.html` (new): the owner's waiting-phones page; for each waiting phone, the sign-in email address of the member who set its number (a member has no stored name; the address is read from the vault in `server` by the member's `mailbox_id` with T412's `privacy::api::read_business_mailbox` under `BusinessPurpose::PhoneApproval` on a bare connection, D-1848, D-3262), the phone's last 4 digits (`number_end`) and the time its number was set (Arizona time, never a countdown), with an Approve and a Don't approve button, each its own form with the CSRF token and the phone's `number_set_at` as shown; a `POST` whose `number_set_at` no longer matches (a member changed the number since the page was shown) changes nothing and shows the page again with the new number's digits and a line saying the number changed; an empty state; works without JavaScript; route constants `PHONES_ROUTE` `/b/phones`, `APPROVE_PHONE_ROUTE` `/b/phones/approve` and `REJECT_PHONE_ROUTE` `/b/phones/reject` (the line in the form body, so T348's probe needs no path parameter). (2) `app/server/src/phone_approval.rs` (new) serves `GET /b/phones` and both `POST`s behind `portals::api::business_principal`: a signed-out request gets the 4xx answer with the `/b/sign-in` link; a member who is not the owner, another business's line and an unknown line get the one not-found answer and change nothing; every response is `no_store`; each `POST` passes `refuse_cross_site` and the CSRF check (a refusal is a security event), then `require_step_up` with `SensitiveChange::ApprovePhone` before the change's transaction (no fresh code: to the step-up page and back, nothing changed), then calls `approve_phone` or `reject_phone`; merged in the shared `app/server/src/lib.rs` and composed in `main.rs`. (3) Tests in `app/server/tests/phone_approval_route.rs` (TD-SEC-65) against the assembled router, fake data only. The page's `PAGE_STATES` entries (with and without a waiting phone) go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its three rows in `docs/architecture.md` section 13 are marked `yes`; its routes pass T348's doors unchanged (`tests/security/tests/auth_matrix.rs`, `app/server/tests/door_matrix.rs`), neither of which this task edits, and a route the probe cannot reach is reported, not worked around. The page's words go through the cold read and the copy panel. A link to the page from the portal home is left to that page's next owner, and the email's Approve link is T399's (D-3081). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Plan change D-3744: (a) `phone_approval.html` extends T200's `app/portals/templates/business_layout.html`, not `base.html`, as T364's and T375's signed-in business pages do, so it shows the business-only \"Get help\" link (D-3155, BIZ-047); T410's template check, after this task, lists it. (b) The vault the member's address is read from is the one in the `webhooks` part inside `build_router` (`inbound_text::Webhooks`' `pub vault`, `app/server/src/inbound_text.rs:148`), handed to this task's router where `build_router` merges it; no new `RouterParts` part is added, so `app/server/tests/door_matrix.rs` and `app/server/tests/route_wiring.rs` need no change. The router is merged with or without that part; without it (dev, `Ci` and the end-to-end runs, which set no public base URL) each waiting phone shows one fixed line in place of the address (words for the copy panel) and everything else is unchanged.",
+   "goal": "Register row IC-95, the owner's page (D-3081; BIZ-033, BIZ-038, SEC-038, SEC-004, SEC-009, SEC-034, SEC-042, SEC-048; D-311, D-480, D-1848, D-2440, D-2636). After T396 (`businesses::api::approve_phone`, `reject_phone`, `waiting_phones`) and T364 (the served business step-up page, without which `require_step_up` can never pass in production). The owner has no page that lists a phone waiting for approval. (1) `app/portals/src/phone_approval.rs` and `app/portals/templates/phone_approval.html` (new): the owner's waiting-phones page; for each waiting phone, the sign-in email address of the member who set its number (a member has no stored name; the address is read from the vault in `server` by the member's `mailbox_id` with T412's `privacy::api::read_business_mailbox` under `BusinessPurpose::PhoneApproval` on a bare connection, D-1848, D-3262), the phone's last 4 digits (`number_end`) and the time its number was set (Arizona time, never a countdown), with an Approve and a Don't approve button, each its own form with the CSRF token and the phone's `number_set_at` as shown; a `POST` whose `number_set_at` no longer matches (a member changed the number since the page was shown) changes nothing and shows the page again with the new number's digits and a line saying the number changed; an empty state; works without JavaScript; route constants `PHONES_ROUTE` `/b/phones`, `APPROVE_PHONE_ROUTE` `/b/phones/approve` and `REJECT_PHONE_ROUTE` `/b/phones/reject` (the line in the form body, so T348's probe needs no path parameter). (2) `app/server/src/phone_approval.rs` (new) serves `GET /b/phones` and both `POST`s behind `portals::api::business_principal`: a signed-out request gets the 4xx answer with the `/b/sign-in` link; a member who is not the owner, another business's line and an unknown line get the one not-found answer and change nothing; every response is `no_store`; each `POST` passes `refuse_cross_site` and the CSRF check (a refusal is a security event), then `require_step_up` with `SensitiveChange::ApprovePhone` before the change's transaction (no fresh code: to the step-up page and back, nothing changed), then calls `approve_phone` or `reject_phone`; merged in the shared `app/server/src/lib.rs` and composed in `main.rs`. (3) Tests in `app/server/tests/phone_approval_route.rs` (TD-SEC-65) against the assembled router, fake data only. The page's `PAGE_STATES` entries (with and without a waiting phone) go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its three rows in `docs/architecture.md` section 13 are marked `yes`; its routes pass T348's doors unchanged (`tests/security/tests/auth_matrix.rs`, `app/server/tests/door_matrix.rs`), neither of which this task edits, and a route the probe cannot reach is reported, not worked around. The page's words go through the cold read and the copy panel. A link to the page from the portal home is left to that page's next owner, and the email's Approve link is T399's (D-3081). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Plan change D-3744: (a) `phone_approval.html` extends T200's `app/portals/templates/business_layout.html`, not `base.html`, as T364's and T375's signed-in business pages do, so it shows the business-only \"Get help\" link (D-3155, BIZ-047); T410's template check, after this task, lists it. (b) The vault the member's address is read from is the one in the `webhooks` part inside `build_router` (`inbound_text::Webhooks`' `pub vault`, `app/server/src/inbound_text.rs:148`), handed to this task's router where `build_router` merges it; no new `RouterParts` part is added, so `app/server/tests/door_matrix.rs` and `app/server/tests/route_wiring.rs` need no change. The router is merged with or without that part; without it (dev, `Ci` and the end-to-end runs, which set no public base URL) each waiting phone shows one fixed line in place of the address (words for the copy panel) and everything else is unchanged. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): each `POST` checks in this order: the cross-site layer, the CSRF token, `business_principal`, the owner check, then `require_step_up`, so a non-owner gets the one not-found answer without a step-up (TD-SEC-65) and the anonymous CSRF probe (`app/server/tests/door_matrix.rs:1206`) still gets its 403. `businesses::api::sign_in_lines` answers `None` for a removed member, and the page then shows the same fixed line as when no vault part is present. The `signed_out`, `not_found` and `event` helpers in `app/server/src/business_portal.rs` (`:189` to `:262`) are private; reuse them through a `pub(crate)` path rather than copying them where that fits the budget. Review round (D-3889, independent Opus review): T397 runs after T536, which starts the keyed binary with the webhooks part, so the waiting-phones page's states are written against the suites as T536 leaves them.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10425,7 +10425,8 @@
    "deps": [
     "T396",
     "T364",
-    "T412"
+    "T412",
+    "T536"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10469,7 +10470,8 @@
     "D-480",
     "D-1848",
     "D-3262",
-    "D-3744"
+    "D-3744",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
@@ -10490,7 +10492,7 @@
    "id": "T399",
    "slug": "approve-link",
    "title": "server: the email's Approve link approves the phone, only with the owner's session and step-up",
-   "goal": "Register row IC-95, the email's Approve link (D-3081; BIZ-033, BIZ-038, SEC-038, SEC-004, SEC-025, SEC-026, SEC-048; D-1955, D-2128). After T396 (`businesses::api::approve_phone`), T364 (the served business step-up page) and T306 (the last earlier owner of `app/server/src/action_links.rs`). The owner email's Approve action link (`ActionKind::Approve`, `app/portals/src/action_links.rs:59`, served by T301) only uses up the link: nothing approves the phone. (1) `app/server/src/action_links.rs`: the Approve link's `POST`, with a business session of that link's own owner and a step-up passed in the last 5 minutes (`require_step_up` with `SensitiveChange::ApprovePhone`, checked before the transaction), calls `approve_phone` for the link's object (the line `businesses.phone_linked` names) with the phone's current `number_set_at` in the transaction that uses the link, and only when the link was issued at or after that `number_set_at`: a link issued before the last number change approves nothing and stays unused, and the page says a newer email is on its way (the change queued one, T398); an expired link gets the one not-found answer and approves nothing; without that session it sends the person to sign in, without the step-up to the step-up page, and in both cases the link stays unused and nothing is approved; a refused approval (not waiting, taken, unknown) leaves the link unused and says the phone could not be approved; every other kind is unchanged. (2) Tests in `app/server/tests/approve_link_route.rs` (TD-SEC-66) against the assembled router, links seeded as `app/server/tests/action_links_route.rs` seeds them (D-1955's hash), fake data only. Update the `server` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3744: `portals.login_link.created_at` is not the issue time: `mint_action_link` stores it `LINK_LIFE` back so action links never count toward the sign-in link limits (`app/portals/src/action_links.rs:9`, `:268`), `ActionGrant` carries no time, and `server` may not read `portals` tables. So this task owns `app/portals/src/action_links.rs` (after T148 and T199, done; T457, its only queued owner, follows it through T463 and T456) and `app/portals/src/models.rs` (T084, T086 and T272, all done): a new `models` function beside `use_link` (which `app/portals/src/business_auth.rs:1099` also calls, unchanged) uses the link and returns its `created_at`, and `ActionGrant` gains the issue time (`created_at + LINK_LIFE`) behind a new `issued_at()` accessor, so `use_action_link` and `open_action_link` keep their signatures and no other caller changes. The Approve route compares `issued_at()` with `number_set_at` in the transaction that used the link and rolls it back when the link is older, so the link stays unused. TD-SEC-66 seeds its links with `portals::api::mint_action_link`, never raw SQL, so each link's stored time is the backdated one production writes.",
+   "goal": "Register row IC-95, the email's Approve link (D-3081; BIZ-033, BIZ-038, SEC-038, SEC-004, SEC-025, SEC-026, SEC-048; D-1955, D-2128). After T396 (`businesses::api::approve_phone`), T364 (the served business step-up page) and T306 (the last earlier owner of `app/server/src/action_links.rs`). The owner email's Approve action link (`ActionKind::Approve`, `app/portals/src/action_links.rs:59`, served by T301) only uses up the link: nothing approves the phone. (1) `app/server/src/action_links.rs`: the Approve link's `POST`, with a business session of that link's own owner and a step-up passed in the last 5 minutes (`require_step_up` with `SensitiveChange::ApprovePhone`, checked before the transaction), calls `approve_phone` for the link's object (the line `businesses.phone_linked` names) with the phone's current `number_set_at` in the transaction that uses the link, and only when the link was issued at or after that `number_set_at`: a link issued before the last number change approves nothing and stays unused, and the page says a newer email is on its way (the change queued one, T398); an expired link gets the one not-found answer and approves nothing; without that session it sends the person to sign in, without the step-up to the step-up page, and in both cases the link stays unused and nothing is approved; a refused approval (not waiting, taken, unknown) leaves the link unused and says the phone could not be approved; every other kind is unchanged. (2) Tests in `app/server/tests/approve_link_route.rs` (TD-SEC-66) against the assembled router, links seeded as `app/server/tests/action_links_route.rs` seeds them (D-1955's hash), fake data only. Update `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-3744: `portals.login_link.created_at` is not the issue time: `mint_action_link` stores it `LINK_LIFE` back so action links never count toward the sign-in link limits (`app/portals/src/action_links.rs:9`, `:268`), `ActionGrant` carries no time, and `server` may not read `portals` tables. So this task owns `app/portals/src/action_links.rs` (after T148 and T199, done; T457, its only queued owner, follows it through T463 and T456) and `app/portals/src/models.rs` (T084, T086 and T272, all done): a new `models` function beside `use_link` (which `app/portals/src/business_auth.rs:1166` also calls, unchanged) uses the link and returns its `created_at`, and `ActionGrant` gains the issue time (`created_at + LINK_LIFE`) behind a new `issued_at()` accessor, so `use_action_link` and `open_action_link` keep their signatures and no other caller changes. The Approve route compares `issued_at()` with `number_set_at` in the transaction that used the link and rolls it back when the link is older, so the link stays unused. TD-SEC-66 seeds its links with `portals::api::mint_action_link`, never raw SQL, so each link's stored time is the backdated one production writes. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): a signed-out Approve `POST` now answers \"sign in\" (`signed_out()`, `app/server/src/action_links.rs:605`), which the unowned `td_sec_44_every_other_kind_post_is_not_found_and_uses_nothing` (`app/server/tests/action_links_route.rs:490` to `:506`) forbids, so this task owns that file (its later owners T456, T463, T457 and T458 all follow it) and adds `ActionKind::Approve` to `SESSION_ACTS` (`:487`), changing nothing else there. `app/server/CLAUDE.md` is at its 8,192-byte cap: its action-link line (\"every other kind's `POST` is the bare 404\") is reworded in place to name Approve among the session kinds without growing the file, and the detail goes in `app/server/NOTES.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10510,7 +10512,8 @@
     "app/server/src/action_links.rs",
     "app/server/tests/approve_link_route.rs",
     "app/portals/src/action_links.rs",
-    "app/portals/src/models.rs"
+    "app/portals/src/models.rs",
+    "app/server/tests/action_links_route.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10536,13 +10539,14 @@
     "D-1955",
     "D-2128",
     "D-480",
-    "D-3744"
+    "D-3744",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 420,
-    "context_pct": 15
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -10551,7 +10555,7 @@
    ],
    "branch": "claude/task/T399-approve-link",
    "prompt": "kit/prompts/T399.md",
-   "acceptance": "TD-SEC-66 passes against the assembled router; TD-SEC-44 and every other action link case passes unchanged."
+   "acceptance": "TD-SEC-66 passes against the assembled router; TD-SEC-44 passes with Approve moved to the session kinds, and every other action link case passes unchanged."
   },
   {
    "id": "T402",
@@ -15871,7 +15875,7 @@
    "id": "T222",
    "slug": "journeys-full-variants",
    "title": "Journeys J1 and J2, the full variants: web chat, photos, question order, quote formats, share box, review links",
-   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15's J1 and J2 half, D-3263) go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page (`messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:198`, has no other caller), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by email through Twilio Verify's email channel (`app/picks/src/email_code.rs:113`, read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:344`), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier listing zero texts at the end of each journey. TD-TXT-15's Resend email checks (the safety email, quote, job-card and check-in emails) are parked: nothing in the app sends email to Resend yet (the server builds no `ResendEmail`, `app/server/src/lib.rs:724`, and no task drains the email outbox to a provider), so they wait for a future email-sender wiring task (D-3186's account mailer and the outbox send handler, with the e2e app pointed at the stand-in), which reads them with T414's `control.sentEmails`; this task neither builds that sender nor waits for it. J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492). Plan change D-3744: J2's Confirm from the email with no session, HOLD, Away and BUSY are served by T457 (the Confirm link's code step), T456 (Hold and Away) and T463 (Busy), so this task depends on T457, which follows T463 and, through it, T456. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3750: the email-sender wiring D-3263 waited for is T469 (the Resend client in every account mailer, the end-to-end app on the fake Resend) and T470 (the task that sends queued emails); T222 runs after both, so J1 and J2 run with email reaching the fake Resend, but its parked Resend email checks stay parked, since it is at its 600-line limit; a later plan change un-parks them.",
+   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15's J1 and J2 half, D-3263) go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page (`messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:198`, has no other caller), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by email through Twilio Verify's email channel (`app/picks/src/email_code.rs:113`, read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:388`), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier listing zero texts at the end of each journey. TD-TXT-15's Resend email checks (the safety email, quote, job-card and check-in emails) are parked: nothing in the app sends email to Resend yet (the server built no `ResendEmail` when this was written, and no task drained the email outbox to a provider), so they wait for a future email-sender wiring task (D-3186's account mailer and the outbox send handler, with the e2e app pointed at the stand-in), which reads them with T414's `control.sentEmails`; this task neither builds that sender nor waits for it. J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492). Plan change D-3744: J2's Confirm from the email with no session, HOLD, Away and BUSY are served by T457 (the Confirm link's code step), T456 (Hold and Away) and T463 (Busy), so this task depends on T457, which follows T463 and, through it, T456. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3750: the email-sender wiring D-3263 waited for is T469 (the Resend client in every account mailer, the end-to-end app on the fake Resend) and T470 (the task that sends queued emails); T222 runs after both, so J1 and J2 run with email reaching the fake Resend, but its parked Resend email checks stay parked, since it is at its 600-line limit; a later plan change un-parks them. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): the stage-4 slices alone are about 925 lines, so this task is split in three, each within 600 lines: this task keeps `tests/e2e/j1_full.spec.ts` and `tests/e2e/j2_full.spec.ts` (J1 and J2 with every feature above, TD-BIZ-22 and TD-BIZ-25); T532 takes the keyboard-only variants (`tests/a11y/j_full_keyboard.spec.ts`); T533 takes the web-and-email runs (`tests/e2e/j1_j2_web_email.spec.ts`, TD-TXT-15's J1 and J2 half), which take the pick code by Verify text: the code by email (PICK-029) is parked, since the pick page only ever texts a code (`app/portals/src/pick_flow.rs:670` to `:715`) and no conversation address is stored (D-1612). PICK-050's \"Can't take it\" is served by T472 (`docs/architecture.md:550` to `:551`), so this task depends on it. Earlier sentences about the keyboard variants and the web-and-email runs are history.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15897,7 +15901,8 @@
     "T469",
     "T470",
     "T489",
-    "T490"
+    "T490",
+    "T472"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -15907,9 +15912,7 @@
    ],
    "owns": [
     "tests/e2e/j1_full.spec.ts",
-    "tests/e2e/j2_full.spec.ts",
-    "tests/a11y/j_full_keyboard.spec.ts",
-    "tests/e2e/j1_j2_web_email.spec.ts"
+    "tests/e2e/j2_full.spec.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15927,28 +15930,25 @@
     "CON-025",
     "INT-043",
     "PICK-053",
-    "PICK-049",
-    "TXT-021",
-    "TXT-034",
-    "WEB-009"
+    "PICK-049"
    ],
    "tests": [
     "J1",
     "J2",
     "TD-BIZ-22",
-    "TD-BIZ-25",
-    "TD-TXT-15"
+    "TD-BIZ-25"
    ],
    "decisions": [
     "D-491",
     "D-492",
     "D-3263",
     "D-3744",
-    "D-3750"
+    "D-3750",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 2,
     "lines": 600,
     "context_pct": 11
    },
@@ -15959,6 +15959,113 @@
    ],
    "branch": "claude/task/T222-journeys-full-variants",
    "prompt": "kit/prompts/T222.md"
+  },
+  {
+   "id": "T533",
+   "slug": "journeys-web-email",
+   "title": "Journeys J1 and J2 in web-and-email mode (TD-TXT-15's J1 and J2 half)",
+   "goal": "Plan change D-3889 (split from T222, Fable's pre-claim check, Nov 16, 2026; D-3263, D-3744): the web-and-email runs of J1 and J2 go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner only through T303's shared `tests/e2e/owner_session.ts`, the spec sets the launch channel to web-and-email on the served owner settings page (`messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:198`), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by Verify text (a Verify code is not a carrier message; read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:388`; the code by email, PICK-029, is parked by D-3889's review round), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier listing zero texts at the end of each journey; an `afterAll` switches the launch channel back. TD-TXT-15's Resend email checks stay parked (D-3750). Fake data only. Update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T222"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "tests/e2e/j1_j2_web_email.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/test-design.md",
+    "docs/spec/messaging.md",
+    "docs/spec/website.md",
+    "tests/e2e/fixtures.ts"
+   ],
+   "requirements": [
+    "TXT-021",
+    "TXT-034",
+    "WEB-009"
+   ],
+   "tests": [
+    "TD-TXT-15"
+   ],
+   "decisions": [
+    "D-3889"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 500,
+    "context_pct": 9
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T533-journeys-web-email",
+   "prompt": "kit/prompts/T533.md"
+  },
+  {
+   "id": "T532",
+   "slug": "journeys-full-keyboard",
+   "title": "Journeys J1 and J2 full variants, keyboard-only",
+   "goal": "Plan change D-3889 (split from T222, Fable's pre-claim check, Nov 16, 2026): J1 and J2's full variants (T222) run again keyboard-only in `tests/a11y/j_full_keyboard.spec.ts`, every step reached and used with Tab, Shift+Tab, Enter and Space alone (A11Y-005), each journey ending with the closing checks (A11Y-021), as `tests/a11y/j2_keyboard.spec.ts` does for the stage-4 slice. Shared steps are imported from T222's specs or the existing `tests/e2e/j2.ts` helper, never copied; the spec seeds from the app clock and uses the e2e `test` with `test.use({ controlSecret: controlSecret() })` when it needs the `control` fixture. Fake data only. Update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T222"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility"
+   ],
+   "owns": [
+    "tests/a11y/j_full_keyboard.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/accessibility-forms.md",
+    "docs/test-design.md"
+   ],
+   "requirements": [
+    "A11Y-005",
+    "A11Y-021"
+   ],
+   "tests": [
+    "J1",
+    "J2"
+   ],
+   "decisions": [
+    "D-3889"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 500,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T532-journeys-full-keyboard",
+   "prompt": "kit/prompts/T532.md"
   },
   {
    "id": "T104",
@@ -16050,7 +16157,7 @@
    "id": "T203",
    "slug": "wording-statements-scan",
    "title": "Wording scan: the required statements, business copy lines and no pest advertising",
-   "goal": "A docs test finds the long not-a-contractor statement and its short form wherever WORD-002 and TERMS-004 put them, the job-card and pick lines, the business copy lines, the fee summary and the Hava-name answer, no owner's name anywhere, no page, ad or banner advertising pest control, and no business copy that calls the fee anything but an introduction fee (`tests/docs/test_introduction_fee_wording.py`, WORD-026; the exact consent text is T161's CON-031 check, D-491) (WEB-010, WEB-015, WORD-006, WORD-007, WORD-014, WORD-021, WORD-026, CARD-020, PICK-017, TERMS-004); the business-page lines it scans (WEB-018, WEB-025, WORD-002, WORD-017, BIZ-030) are written by T202, and it adds the insurance, privacy and independent-business line cases of TD-WORD-02 (D-493). Plan change D-3155: the no-owner's-name scan skips Askama comments (`{# ... #}`; `app/portals/templates/business_complaints.html:4` names Casey in a comment no page shows). Plan change D-3879: WEB-015's plural trade name is T521's `plural`, read through `catalog::api::category_list`; the scan checks each licensed trade's opening line against it.",
+   "goal": "A docs test finds the long not-a-contractor statement and its short form wherever WORD-002 and TERMS-004 put them, the job-card and pick lines, the business copy lines, the fee summary and the Hava-name answer, no owner's name anywhere, no page, ad or banner advertising pest control, and no business copy that calls the fee anything but an introduction fee (`tests/docs/test_introduction_fee_wording.py`, WORD-026; the exact consent text is T161's CON-031 check, D-491) (WEB-010, WEB-015, WORD-006, WORD-007, WORD-014, WORD-021, WORD-026, CARD-020, PICK-017, TERMS-004); the business-page lines it scans (WEB-018, WEB-025, WORD-002, WORD-017, BIZ-030) are written by T202, and it adds the insurance, privacy and independent-business line cases of TD-WORD-02 (D-493). Plan change D-3155: the no-owner's-name scan skips Askama comments (`{# ... #}`; `app/portals/templates/business_complaints.html:4` names Casey in a comment no page shows). Plan change D-3879: WEB-015's plural trade name is T521's `plural`; the scan checks each licensed trade's opening line against it (see D-3889 for how it is read). Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): (1) both owned files are Python, so the plural is read from `plural` in `docs/catalog/categories.yaml` (T521; the file `category_list` reads), and the services template's opening line is checked as `Get quotes from licensed <the plural placeholder>.` followed by the long statement. (2) CARD-020's portal card: T479 now shows `businesses::api::business_statement()` under the job page's card, so this task depends on T479. (3) The name scan skips the `**Status:` line of `docs/copy/site-copy.md` (`:5`, a working note no page shows), as it skips Askama comments. (4) The statements are built with `{name}` and brand placeholders (`app/businesses/src/signup.rs:396`), so the scan matches the placeholder form. (5) TD-WORD-04 now reads WORD-021's rule (\"Hava\" alone, the brand file's `forbidden_alone`, and \"the Laftly owner\"). Budget 350 lines.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16059,7 +16166,8 @@
     "T103",
     "T104",
     "T489",
-    "T521"
+    "T521",
+    "T479"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16115,12 +16223,13 @@
     "D-357",
     "D-1143",
     "D-3155",
-    "D-3879"
+    "D-3879",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
     "files": 2,
-    "lines": 200,
+    "lines": 350,
     "context_pct": 8
    },
    "checks": [
@@ -17467,7 +17576,7 @@
    "id": "T481",
    "slug": "replay-sent-and-charge-rebuild",
    "title": "messaging and payments: mark a replayed text sent from the carrier's log, and rebuild a lost charge from Stripe's record",
-   "goal": "Plan change D-3753: T110's replay (OPS-015 to OPS-017) must mark an outbox row sent with the SID it found in Twilio's sent log and rebuild charges from Stripe's records, but `messaging::models::mark_sent` (`app/messaging/src/models.rs:278`) is `pub(crate)` and moves only a `sending` row, and `payments` has no charge rebuild (`book_success`, `app/payments/src/charge.rs:687`, is `pub(crate)`). (1) `app/messaging/src/replay_sent.rs`, through `messaging::api`: `mark_replayed_sent(conn, row, listed, sent_at)` (exported through `messaging::api` and so callable by any higher crate, but its one intended caller is T110's replay in `recovery`; its doc says so) marks an outbox row that is not yet `sent` (`queued`, `sending`, `unknown` or `failed`; never `blocked` or `expired`) sent with the listed message's SID, its body cleared, under the row's lock, once (a second call or a row already sent changes nothing and says so); it refuses a SID already stored on another outbox row and a listed message whose `To` is not the row's recipient (resolved as the sender resolves it, through `privacy::api`) or whose `From` is not one of Laftly's sending numbers, and writes one `ops` audit row of IDs only; it sends nothing. (2) `app/payments/src/charge_rebuild.rs`, through `payments::api`: `rebuild_charge(conn, charge, at)` takes one succeeded charge as `list_charge_page` lists it (`app/adapters/src/payments.rs:435`) and, when its PaymentIntent's label names a pick and try (`pick-<id>-try<n>`, `intent_label`/`attempt_label`) that `payments` holds and its PaymentIntent ID equals the one stored for that pick in `payments.pick_intent`, books it through `book_success` under its derived `charge_key` (one evidence record, one `charge` ledger entry, its receipt task), never calling Stripe to charge; a charge already booked answers `AlreadyBooked` and changes nothing; one whose pick is unknown or whose PaymentIntent ID differs answers `Unmatched` with its `ch_` ID, for T110 to refund and flag (TD-OPS-04); a charge Stripe shows refunded (fully or in part) answers `Refunded` and books nothing, for T110 to list. Money code: 95% branch coverage. Tests in `tests/integration/tests/replay_helpers.rs` against PostgreSQL and the stand-in Stripe, fake data only: each status marked once, a `blocked` row, a SID already on another row and a wrong recipient refused; a lost charge rebuilt once with exactly one ledger row, a second rebuild adding nothing, an unknown pick and a mismatched PaymentIntent answered unmatched, a refunded charge booked nowhere. Update the `messaging` and `payments` `NOTES.md` and `docs/decisions.md`. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): corrects the matching above. Stripe's charge list returns no idempotency key or `pick-<id>-try<n>` label (`ListedCharge`, `app/adapters/src/payments.rs:171` to `:185`, carries only the charge, its PaymentIntent and `metadata[pick_id]`), so `rebuild_charge` matches on `pick_id` and the PaymentIntent stored for that pick in `payments.pick_intent` only, and takes `try_no` from the pick's newest `payments.charge_attempt` row. `book_success` (`app/payments/src/charge.rs:687`) books nothing and still returns `Ok` when `write_evidence`'s join on that attempt (`:761`) finds no row, so a pick with no attempt row (lost in the restore) answers `Unmatched`, never a silent success, and the rebuild reports booked only when the evidence record was written. Money work: an Opus review in two rounds (the second on the head the first round's fixes produce). Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): `mark_replayed_sent` also takes the vault and the sending lines (`mark_replayed_sent(conn, vault, lines, row, listed, sent_at)`); it calls `privacy::api::read_contact` directly and does not copy `homeowner_phone` (`app/messaging/src/outbox_sender.rs:207`). T481 defines the listed-message struct (SID, To, From) in `replay_sent.rs`.",
+   "goal": "Plan change D-3753: T110's replay (OPS-015 to OPS-017) must mark an outbox row sent with the SID it found in Twilio's sent log and rebuild charges from Stripe's records, but `messaging::models::mark_sent` (`app/messaging/src/models.rs:278`) is `pub(crate)` and moves only a `sending` row, and `payments` has no charge rebuild (`book_success`, `app/payments/src/charge.rs:687`, is `pub(crate)`). (1) `app/messaging/src/replay_sent.rs`, through `messaging::api`: `mark_replayed_sent(conn, row, listed, sent_at)` (exported through `messaging::api` and so callable by any higher crate, but its one intended caller is T110's replay in `recovery`; its doc says so) marks an outbox row that is not yet `sent` (`queued`, `sending`, `unknown` or `failed`; never `blocked` or `expired`) sent with the listed message's SID, its body cleared, under the row's lock, once (a second call or a row already sent changes nothing and says so); it refuses a SID already stored on another outbox row and a listed message whose `To` is not the row's recipient (resolved as the sender resolves it, through `privacy::api`) or whose `From` is not one of Laftly's sending numbers, and writes one `ops` audit row of IDs only; it sends nothing. (2) `app/payments/src/charge_rebuild.rs`, through `payments::api`: `rebuild_charge(conn, charge, at)` takes one succeeded charge as `list_charge_page` lists it (`app/adapters/src/payments.rs:435`) and, when its PaymentIntent's label names a pick and try (`pick-<id>-try<n>`, `intent_label`/`attempt_label`) that `payments` holds and its PaymentIntent ID equals the one stored for that pick in `payments.pick_intent`, books it through `book_success` under its derived `charge_key` (one evidence record, one `charge` ledger entry, its receipt task), never calling Stripe to charge; a charge already booked answers `AlreadyBooked` and changes nothing; one whose pick is unknown or whose PaymentIntent ID differs answers `Unmatched` with its `ch_` ID, for T110 to refund and flag (TD-OPS-04); a charge Stripe shows refunded (fully or in part) answers `Refunded` and books nothing, for T110 to list. Money code: 95% branch coverage. Tests in `tests/integration/tests/replay_helpers.rs` against PostgreSQL and the stand-in Stripe, fake data only: each status marked once, a `blocked` row, a SID already on another row and a wrong recipient refused; a lost charge rebuilt once with exactly one ledger row, a second rebuild adding nothing, an unknown pick and a mismatched PaymentIntent answered unmatched, a refunded charge booked nowhere. Update the `messaging` and `payments` `NOTES.md` and `docs/decisions.md`. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): corrects the matching above. Stripe's charge list returns no idempotency key or `pick-<id>-try<n>` label (`ListedCharge`, `app/adapters/src/payments.rs:171` to `:185`, carries only the charge, its PaymentIntent and `metadata[pick_id]`), so `rebuild_charge` matches on `pick_id` and the PaymentIntent stored for that pick in `payments.pick_intent` only, and takes `try_no` from the pick's newest `payments.charge_attempt` row. `book_success` (`app/payments/src/charge.rs:687`) books nothing and still returns `Ok` when `write_evidence`'s join on that attempt (`:761`) finds no row, so a pick with no attempt row (lost in the restore) answers `Unmatched`, never a silent success, and the rebuild reports booked only when the evidence record was written. Money work: an Opus review in two rounds (the second on the head the first round's fixes produce). Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): `mark_replayed_sent` also takes the vault and the sending lines (`mark_replayed_sent(conn, vault, lines, row, listed, sent_at)`); it calls `privacy::api::read_contact` directly and does not copy `homeowner_phone` (`app/messaging/src/outbox_sender.rs:207`). T481 defines the listed-message struct (SID, To, From) in `replay_sent.rs`. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026, revised after the plan change's review): (3) for T110's replay, which can read neither `messaging.outbox` nor the vault, and with no recipient number ever leaving `messaging`: `messaging::api::replay_window(conn)` gives the sending numbers and the earliest and latest send time of the outbox rows not yet `sent` (the statuses `mark_replayed_sent` takes), with no recipient; `messaging::api::replay_match(conn, vault, listed)` takes the messages T110 listed from Twilio (SID, `To`, `From`, body, send time; a `messaging` type) and, inside `messaging`, matches each unsent row by its recipient (resolved under `messaging`'s send grant), sender, the body's SHA-256 (a redacted body matches on recipient, sender and send time within the window) and send time, answering only row IDs with a matched SID, ambiguous or none; no number is returned or logged. `tests/integration/tests/replay_helpers.rs` covers both.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17508,7 +17617,8 @@
     "D-3744",
     "D-3753",
     "D-3844",
-    "D-3877"
+    "D-3877",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
@@ -17529,7 +17639,7 @@
    "id": "T110",
    "slug": "recovery-replay",
    "title": "recovery: replay with derived IDs",
-   "goal": "After a restore, replay rebuilds messages, charges and events from the off-database records and the vendors' records with IDs derived from what each identifies, so nothing replayed sends or charges twice (OPS-015 to OPS-017). Nov 11 vendor-double review batch 4, F5 (D-2764): Twilio stores no custom key on a message and its Messages list filters only by `To`, `From` and `DateSent`, so OPS-017's \"nothing sent twice\" check never asks the sent log for the app's derived key (the stand-in's `MessageKey` filter is test-only, T377): it lists the messages sent from Laftly's numbers to the row's recipient over the row's send window (`To`, `From`, `DateSent>`/`DateSent<`) and matches an outbox row to a listed message by recipient, sender, a SHA-256 digest of the body (a body Twilio already redacted matches on recipient, sender and send time within the window, and an ambiguous match is not resent but listed for Casey) and send time; a matched row is marked sent with that SID, never resent. A test shows a message whose outbox row was lost in the restore is found and not resent without any key filter. Plan change D-3155: no adapter can list Twilio's messages (`SmsAdapter` only sends, `SmsBodyDelete` only redacts, `app/adapters/src/sms.rs:23` to `:49`) and `TwilioHttp` has no `GET` (`app/adapters/src/base.rs:148`, its client and token private). New `app/adapters/src/sms_list.rs`: a separate trait `SmsSentLog: SmsAdapter` (the `SmsBodyDelete` pattern, D-1753, so no existing fake changes) with one method listing the messages from one sender to one recipient over a `DateSent` window (Twilio's `To`, `From`, `DateSent>`, `DateSent<` filters, following `next_page_uri`), implemented for `TwilioSms` through a new Basic-auth `GET` helper on `TwilioHttp` in `base.rs` (after T377); `sms_list` is declared in the shared `lib.rs` and exported through the shared `api.rs`. The stand-in's Messages list already honours those filters (T377), so no stand-in file changes; the replay test runs against the served stand-in. Plan change D-3753: a matched row is marked sent through T481's `messaging::api::mark_replayed_sent`, and charges are rebuilt through T481's `payments::api::rebuild_charge` (an `Unmatched` charge is refunded and flagged here); this task adds no `messaging` or `payments` file. Plan change D-3883: this task's migration moved up one, to `0199_recovery_replay.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history.",
+   "goal": "After a restore, replay rebuilds messages, charges and events from the off-database records and the vendors' records with IDs derived from what each identifies, so nothing replayed sends or charges twice (OPS-015 to OPS-017). Nov 11 vendor-double review batch 4, F5 (D-2764): Twilio stores no custom key on a message and its Messages list filters only by `To`, `From` and `DateSent`, so OPS-017's \"nothing sent twice\" check never asks the sent log for the app's derived key (the stand-in's `MessageKey` filter is test-only, T377): it lists the messages sent from Laftly's numbers to the row's recipient over the row's send window (`To`, `From`, `DateSent>`/`DateSent<`) and matches an outbox row to a listed message by recipient, sender, a SHA-256 digest of the body (a body Twilio already redacted matches on recipient, sender and send time within the window, and an ambiguous match is not resent but listed for Casey) and send time; a matched row is marked sent with that SID, never resent. A test shows a message whose outbox row was lost in the restore is found and not resent without any key filter. Plan change D-3155: no adapter can list Twilio's messages (`SmsAdapter` only sends, `SmsBodyDelete` only redacts, `app/adapters/src/sms.rs:23` to `:49`) and `TwilioHttp` has no `GET` (`app/adapters/src/base.rs:148`, its client and token private). New `app/adapters/src/sms_list.rs`: a separate trait `SmsSentLog: SmsAdapter` (the `SmsBodyDelete` pattern, D-1753, so no existing fake changes) with one method listing the messages from one sender to one recipient over a `DateSent` window (Twilio's `To`, `From`, `DateSent>`, `DateSent<` filters, following `next_page_uri`), implemented for `TwilioSms` through a new Basic-auth `GET` helper on `TwilioHttp` in `base.rs` (after T377); `sms_list` is declared in the shared `lib.rs` and exported through the shared `api.rs`. The stand-in's Messages list already honours those filters (T377), so no stand-in file changes; the replay test runs against the served stand-in. Plan change D-3753: a matched row is marked sent through T481's `messaging::api::mark_replayed_sent`, and charges are rebuilt through T481's `payments::api::rebuild_charge` (an `Unmatched` charge is flagged here; see D-3889 for its refund); this task adds no `messaging` or `payments` file. Plan change D-3883: this task's migration moved up one, to `0199_recovery_replay.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026, revised after the plan change's review): (1) `recovery` can read neither `messaging.outbox` nor a recipient's number, and no number may leave `messaging`, so the match is done inside `messaging` by T481: this task lists the messages sent from each of Laftly's sending numbers over the window T481's `messaging::api::replay_window` gives (`From`, `DateSent>`, `DateSent<`; the `SmsSentLog` method takes no `To`) and hands them to T481's `messaging::api::replay_match`, which answers row IDs with a matched SID, ambiguous (listed for Casey, never resent) or none; matched rows are marked through `mark_replayed_sent`. (2) This task moves no money (FEE-032; `scripts/check_payments_adapter`): an `Unmatched` charge is recorded in `recovery.replay_item` and listed for Casey, and its refund is left to the nightly reconcile's own refund of a charge `payments` has no record of (`own_refund`, `app/payments/src/reconcile.rs:677` to `:685`). (3) This task's migration also creates `recovery.restore_drill` (one row per drill: when it ran, the backup restored, the replay run, the time to restore and the outcome; the app role SELECT and INSERT only), written by T206's drill (`docs/architecture.md:221`). `app/recovery/` is created by T109. Budget 500 lines.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17580,13 +17690,14 @@
     "D-3722",
     "D-3753",
     "D-3779",
-    "D-3883"
+    "D-3883",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
     "files": 6,
-    "lines": 350,
-    "context_pct": 12
+    "lines": 500,
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -17600,7 +17711,7 @@
    "id": "T206",
    "slug": "recovery-local-drill",
    "title": "recovery: the local restore drill with no double send or charge",
-   "goal": "A local drill restores the nightly encrypted export into a fresh database, replays, and shows no duplicate text, email or charge and a ledger that reconciles (OPS-013, OPS-018, OPS-019).",
+   "goal": "A local drill restores the nightly encrypted export into a fresh database, replays, and shows no duplicate text, email or charge and a ledger that reconciles (OPS-013, OPS-018, OPS-019). Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): (1) T206 adds no table and no migration: T110's replay flags unmatched charges and the nightly reconcile refunds them (FEE-032); `service.rs` runs the restore, then the replay, retries the replay while Stripe is unreachable (OPS-018, never guessing), lists each unrebuildable job in T110's `recovery.replay_item` with one `ops::api::raise_alert`, and records the drill in T110's `recovery.restore_drill` (OPS-019). (2) `server replay`, a subcommand in the shared `app/server/src/main.rs` beside `migrate` and `bootstrap-owner` (`:29`, `:32`), calls `recovery::api`'s drill entry; T117's runbook and T139's Railway drill name it. (3) Coverage does not count `askhava-recovery-tests` (`.github/workflows/ci.yml:586` to `:588`, `scripts/coverage_floor.py:38`), so the wait-and-retry and OPS-019 branches have unit tests in `app/recovery/src/tests/service.rs`. (4) The test decrypts the export with a fake `age` identity (`age` is allowed, `kit/allowed_crates.txt:41`; a dev-dependency in the shared `tests/recovery/Cargo.toml`), and `pg_dump` and `pg_restore` come from T109's in-crate path helper, reused, not copied. Budget 600 lines (TD-OPS-04 has eight cases).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17618,7 +17729,8 @@
    ],
    "owns": [
     "app/recovery/src/service.rs",
-    "tests/recovery/tests/local_drill.rs"
+    "tests/recovery/tests/local_drill.rs",
+    "app/recovery/src/tests/service.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -17639,13 +17751,14 @@
     "D-156",
     "D-278",
     "D-492",
-    "D-3155"
+    "D-3155",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
-    "lines": 300,
-    "context_pct": 7
+    "files": 3,
+    "lines": 600,
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -17973,7 +18086,7 @@
    "id": "T229",
    "slug": "legal-drafts-plain-language",
    "title": "Legal drafts: reading-grade check and plain-language rewrite of the public drafts",
-   "goal": "`scripts/check_copy.py` measures each section of the six public legal drafts (homeowner terms, business terms, privacy policy, SMS terms, business email notice terms and accessibility statement) and fails a homeowner-document section above Flesch-Kincaid grade 9 or a business-document section above grade 10, sentences a requirement fixes word for word excepted; the over-grade sections are rewritten in shorter, plainer sentences without changing any clause's meaning or any phrase `scripts/check_legal_docs.py` lists, so both scripts pass; `tests/test_check_copy.py` plants an over-grade section for each audience and an excepted fixed sentence (WORD-031). The security program, the incident plan and the README are internal and not measured (D-492). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): `docs/legal/business-terms.md` and `docs/legal/privacy-policy.md` are read by T114's docs tests, so this task runs after T114 and the docs tests of T111 to T114 (`tests/docs/`) pass unchanged on its rewrites. `scripts/check_copy.py`'s `MAX_GRADE` (`:32`) is 8 for homeowner and 9 for business copy, below this goal's 9 and 10 for legal sections, so this task adds a separate legal limit (homeowner 9, business 10) for the six legal drafts and leaves `MAX_GRADE` and the copy it measures unchanged. Plan change D-3878: T519 first teaches `scripts/check_copy.py` to skip Spanish template text and `data-fixed` elements a requirement quotes; this task keeps that exemption and its tests. Plan change D-3879: its plain-language rewrite keeps the business retention bracket at `docs/legal/privacy-policy.md:95` byte for byte (T221's `tests/docs/test_legal_pages.py` checks the business data page against it).",
+   "goal": "`scripts/check_copy.py` measures each section of the six public legal drafts (homeowner terms, business terms, privacy policy, SMS terms, business email notice terms and accessibility statement) and fails a homeowner-document section above Flesch-Kincaid grade 9 or a business-document section above grade 10, sentences a requirement fixes word for word excepted; the over-grade sections are rewritten in shorter, plainer sentences without changing any clause's meaning or any phrase `scripts/check_legal_docs.py` lists, so both scripts pass; `tests/test_check_copy.py` plants an over-grade section for each audience and an excepted fixed sentence (WORD-031). The security program, the incident plan and the README are internal and not measured (D-492). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): `docs/legal/business-terms.md` and `docs/legal/privacy-policy.md` are read by T114's docs tests, so this task runs after T114 and the docs tests of T111 to T114 (`tests/docs/`) pass unchanged on its rewrites. `scripts/check_copy.py`'s `MAX_GRADE` (`:32`) is 8 for homeowner and 9 for business copy, below this goal's 9 and 10 for legal sections, so this task adds a separate legal limit (homeowner 9, business 10) for the six legal drafts and leaves `MAX_GRADE` and the copy it measures unchanged. Plan change D-3878: T519 first teaches `scripts/check_copy.py` to skip Spanish template text and `data-fixed` elements a requirement quotes; this task keeps that exemption and its tests. Plan change D-3879: its plain-language rewrite keeps the business retention bracket at `docs/legal/privacy-policy.md:95` byte for byte (T221's `tests/docs/test_legal_pages.py` checks the business data page against it). Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): `scripts/check_copy.py` is locked, so `kit/plan.lock` is rewritten in the same commit; the legal measure treats each list item or table row as a sentence (rows have no sentence ends and otherwise score 33 to 58); the line-2 \"Version\" line of `docs/legal/homeowner-terms.md` stays as it is (`app/server/src/lib.rs:412` to `:418` and `tests/integration/tests/brand_setting.rs:69` read it); and T115's `tests/a11y/statement.spec.ts`, T221's `tests/docs/test_legal_pages.py`, `tests/e2e/legal_pages.spec.ts` and `tests/docs/test_published_versions.py` also pass unchanged.",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -18019,7 +18132,8 @@
     "D-492",
     "D-3844",
     "D-3878",
-    "D-3879"
+    "D-3879",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
@@ -18173,7 +18287,7 @@
    "id": "T116",
    "slug": "site-stage05-dns",
    "title": "Stage 0.5 static page set and the DNS records file",
-   "goal": "`scripts/build_stage05.py` builds the Stage 0.5 static page set (every public page of the final site, the request page with the full consent text, no texting number, no requests taken), published only on Casey's separate go, and `docs/dns-records.md` keeps any existing Search Console verification (WEB-013, WEB-016, WEB-017). The DNS records file marks every laftly.com web hostname, including `hooks.laftly.com` for vendor webhooks, DNS-only (SEC-053), and holds CAA records allowing only `letsencrypt.org`, with Cloudflare's HSTS off and no preload submission before the pilot ends (SEC-054) (D-492). Plan change D-3155: the site's pages are Askama-rendered by the `web` process and `tests/docs/test_stage05.py` runs in CI's Python job (no Rust build, no server, no database, `.github/workflows/ci.yml:437` to `:462`). So `scripts/build_stage05.py --base-url <url> --out <folder>` fetches each public page (the `site` rows of `docs/architecture.md` section 13, `GET` only) and `/static/site/` assets from a running server (a local `cargo run` against the stand-ins, run by hand on Casey's go) and applies the Stage 0.5 filters as pure functions (the texting number removed, every `POST` form removed, the request page reduced to the full consent text and an \"opening soon\" line), failing when a filtered page still holds the texting number or a `POST` form; the docs test runs those filters on planted fake HTML and checks the DNS file.",
+   "goal": "`scripts/build_stage05.py` builds the Stage 0.5 static page set (every public page of the final site, the request page with the full consent text, no texting number, no requests taken), published only on Casey's separate go, and `docs/dns-records.md` keeps any existing Search Console verification (WEB-013, WEB-016, WEB-017). The DNS records file marks every laftly.com web hostname, including `hooks.laftly.com` for vendor webhooks, DNS-only (SEC-053), and holds CAA records allowing only `letsencrypt.org`, with Cloudflare's HSTS off and no preload submission before the pilot ends (SEC-054) (D-492). Plan change D-3155: the site's pages are Askama-rendered by the `web` process and `tests/docs/test_stage05.py` runs in CI's Python job (no Rust build, no server, no database, `.github/workflows/ci.yml:437` to `:462`). So `scripts/build_stage05.py --base-url <url> --out <folder>` fetches each public page (the `site` rows of `docs/architecture.md` section 13, `GET` only) and `/static/site/` assets from a running server (a local `cargo run` against the stand-ins, run by hand on Casey's go) and applies the Stage 0.5 filters as pure functions (the texting number removed, every `POST` form removed, the request page reduced to the full consent text and an \"opening soon\" line), failing when a filtered page still holds the texting number or a `POST` form; the docs test runs those filters on planted fake HTML and checks the DNS file. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): its `docs/decisions.md` entry names where inbound mail is received and every service sending as laftly.com (OPS-045), and `tests/docs/test_stage05.py` checks that entry (TD-OPS-21); `scripts/build_stage05.py` is under the locked `scripts/*.py` glob, so `kit/plan.lock` is rewritten in the same commit; the script fails on a `site` row with a `{param}` path, naming it; `/categories` and `/events` (T102, served with the home page) are left out of the static set.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -18226,7 +18340,8 @@
     "D-492",
     "D-1143",
     "D-3155",
-    "D-3307"
+    "D-3307",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
@@ -18247,7 +18362,7 @@
    "id": "T117",
    "slug": "runbook",
    "title": "docs/runbook.md: outages, safe mode, refunds, disputes, complaints, STOP issues, restore, breach steps",
-   "goal": "`docs/runbook.md` covers outages, safe mode, refunds, disputes, STOP issues, the restore drill with the switch to the restored database, the host choice and the breach steps (pause texting and charging, preserve logs, Arizona's 45-day notice), with the key inventory and no hosting key for Claude (OPS-012, OPS-014, OPS-020 to OPS-022, PRIV-024). The breach-notice steps follow OPS-020 (letter, email or a live call, never text alone; substitute notice; the law-enforcement pause; the Attorney General's form; processors' duty), and the runbook says to fix forward after a key rotation and never roll back past it (OPS-054, D-492). Plan change D-3144: the safe-mode steps say that a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends (T408, a dependency), while charges and \"Confirm and pay\" presses are refused until it ends. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the runbook also covers complaints (`BUILD_BRIEF.md:526` lists them): how a homeowner's or business's complaint reaches Casey and what he does with it.",
+   "goal": "`docs/runbook.md` covers outages, safe mode, refunds, disputes, STOP issues, the restore drill with the switch to the restored database, the host choice and the breach steps (pause texting and charging, preserve logs, Arizona's 45-day notice), with the key inventory and no hosting key for Claude (OPS-012, OPS-014, OPS-020 to OPS-022, PRIV-024). The breach-notice steps follow OPS-020 (letter, email or a live call, never text alone; substitute notice; the law-enforcement pause; the Attorney General's form; processors' duty), and the runbook says to fix forward after a key rotation and never roll back past it (OPS-054, D-492). Plan change D-3144: the safe-mode steps say that a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends (T408, a dependency), while charges and \"Confirm and pay\" presses are refused until it ends. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the runbook also covers complaints (`BUILD_BRIEF.md:526` lists them): how a homeowner's or business's complaint reaches Casey and what he does with it. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): TD-PRIV-09's \"inventory names every secret\" is checked against the secret names PRIV-024 lists, never by parsing `KEYS` in `app/core/src/settings.rs`, so a later task adding a key breaks no test of this task's; the restore steps name `server replay` (T206); and if T116's decision keeps inbound mail at the provider, the runbook records the provider's written retention period (OPS-045).",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -18295,7 +18410,8 @@
     "D-492",
     "D-1143",
     "D-3144",
-    "D-3844"
+    "D-3844",
+    "D-3889"
    ],
    "cites": [
     "BUILD_BRIEF.md:526"
@@ -18314,10 +18430,61 @@
    "prompt": "kit/prompts/T117.md"
   },
   {
+   "id": "T536",
+   "slug": "e2e-clock-and-keyed-worker",
+   "title": "E2e harness: clock-advancing journeys last, a keyed worker, a Twilio webhook on the keyed binary",
+   "goal": "Plan change D-3889 (Fable's pre-claim check of T118 and T119, Nov 16, 2026; A11Y-021, D-491, D-492): (1) the test clock is forward-only and shared by every binary (`app/core/src/test_control.rs:343` to `:381`, `tests/e2e/webserver.ts:110`), both Playwright configs run one worker over one database in file-name order, and J3 and J4 advance it by hours while other specs seed sessions from the database's `now()` (`tests/e2e/keyed.ts:85`, `tests/a11y/page_states.ts:156`, `:195`, `:221`), so every spec after `j3_*` would get expired sessions. `tests/e2e/playwright.config.ts` and `tests/a11y/playwright.config.ts` each get a second project holding only the clock-advancing journeys (`j3_*.spec.ts`, `j4_*.spec.ts`) that depends on the first, so they run after every other spec. (2) The suite's worker starts with `env` only (`tests/e2e/webserver.ts:233`), so it registers no outbox sender or Stripe jobs (`app/server/src/lib.rs:845` to `:866`): it now starts with `keyedEnv(env)`'s values, made once and shared with the keyed web binary (vault keys, ID secret, Twilio and Stripe stand-ins and T490's Resend values), so worker tasks run in the journeys. (3) The keyed binary gets a fake `ASKHAVA_PUBLIC_BASE_URL`, so it serves the Twilio webhook, and the new `tests/e2e/twilio_signature.ts` exports a helper that signs a fake inbound text as Twilio does with the keyed auth token (as `tests/e2e/j1_homeowner.spec.ts:5` to `:9` does for its own binary). Every existing e2e and a11y spec passes unchanged; a spec whose result changes because the worker now sends or the keyed binary now serves webhooks (T397's waiting-phones page shows the member's address once the webhooks part exists) is reported, not edited. No value is printed. A harness task because the two configs and `webserver.ts` are T173's, T227's, T053's and T490's. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T490"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "tests/e2e/playwright.config.ts",
+    "tests/a11y/playwright.config.ts",
+    "tests/e2e/webserver.ts",
+    "tests/e2e/twilio_signature.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/test-design.md",
+    "tests/e2e/keyed.ts",
+    "tests/e2e/fixtures.ts"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-3889"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 350,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T536-e2e-clock-and-keyed-worker",
+   "prompt": "kit/prompts/T536.md",
+   "acceptance": "The e2e and a11y suites pass unchanged with the journeys `j3_*` and `j4_*` in a project that runs after every other spec; the worker starts with the keyed values and the keyed binary serves a signed fake Twilio webhook; no secret value appears in any log."
+  },
+  {
    "id": "T118",
    "slug": "e2e-j3-operator",
    "title": "Journey J3 (operator) keyboard-only, with closing checks",
-   "goal": "Journey J3 (owner sign-in, pause, refund, fee mode, safe mode, audit viewer) runs end to end in Playwright, again keyboard-only, ending with the closing checks (A11Y-005, A11Y-021). Plan change D-3744: J3 step 5's paused release that goes ahead once the alert is acknowledged is T408's held-release task (`app/server/src/release_hold.rs`, `payments::api::held_release`), so this task depends on T408. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): J3's refund needs Stripe, which only the keyed binary has (`tests/e2e/webserver.ts:115` to `:137`), so the refund step runs on `keyedUrl()` with the owner signed in there through `owner_session.ts` (which takes the base URL, T303); no step relies on a session made on the other binary's port.",
+   "goal": "Journey J3 (owner sign-in, pause, refund, fee mode, safe mode, audit viewer) runs end to end in Playwright, again keyboard-only, ending with the closing checks (A11Y-005, A11Y-021). Plan change D-3744: J3 step 5's paused release that goes ahead once the alert is acknowledged is T408's held-release task (`app/server/src/release_hold.rs`, `payments::api::held_release`), so this task depends on T408. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): J3's refund needs Stripe, which only the keyed binary has (`tests/e2e/webserver.ts:115` to `:137`), so the refund step runs on `keyedUrl()` with the owner signed in there through `owner_session.ts` (which takes the base URL, T303); no step relies on a session made on the other binary's port. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): T536 runs J3 and J4 in a Playwright project after every other spec (their clock advances would expire later specs' seeded sessions), starts the suite's worker with the keyed values so step 5's held release, safety text and STOP confirmation run, and gives the keyed binary a public base URL and a Twilio-signing helper so a STOP can be posted; so this task depends on T536. Its seeds take the app clock (`GET /__test/clock`), never the database's `now()`. Shared steps live in `tests/e2e/j3.ts` (as `tests/e2e/j2.ts` serves T099's two specs). `j3_keyboard.spec.ts` uses the e2e `test` with `test.use({ controlSecret: controlSecret() })` (the a11y config sets none). Step 4's \"business must accept a new authorization\" asserts only the refusal (no page stores the FEE-015 authorization, D-3857). TD-TXT-15 switches the launch channel to web-and-email (`app/messaging/src/mode_state.rs:198`) and back at the end, and safe mode is ended before the spec exits, each in an `afterAll` so a failure leaves the shared database clean.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -18328,7 +18495,8 @@
     "T304",
     "T310",
     "T414",
-    "T408"
+    "T408",
+    "T536"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -18340,7 +18508,8 @@
    ],
    "owns": [
     "tests/e2e/j3_operator.spec.ts",
-    "tests/a11y/j3_keyboard.spec.ts"
+    "tests/a11y/j3_keyboard.spec.ts",
+    "tests/e2e/j3.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -18360,12 +18529,13 @@
     "D-1143",
     "D-3263",
     "D-3744",
-    "D-3844"
+    "D-3844",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
-    "lines": 550,
+    "files": 3,
+    "lines": 600,
     "context_pct": 6
    },
    "checks": [
@@ -18380,7 +18550,7 @@
    "id": "T119",
    "slug": "e2e-j4-outage",
    "title": "Journey J4 (vendor outage), with closing checks",
-   "goal": "Journey J4 (Twilio failing and suspended, Stripe unreachable, the AI down, then recovery) runs end to end in Playwright, keyboard-only too, ending with the closing checks and a clean nightly reconcile (A11Y-021). Plan change D-3744: J4's quote link that \"appears in the portal\" (TXT-014) is the homeowner portal T307 serves, and \"Casey's call list fills\" (TXT-023) is read on the owner pages T310 serves, which this task reaches through T118 (T118 depends on T303 and T310), so it depends on T118 and T307 (D-3263 assumed T119 followed T118; until now it did not). It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Its Resend email checks wait for the email-sender wiring task, as T118's do (D-3263). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): J4's vendor failures come from T497's sticky stand-in faults (`control.setFaults`, cleared after every test), never from changing the app's settings. The app does not detect a suspension from a send refusal (Casey records it, `record_suspension`, `app/messaging/src/mode_state.rs:156`, D-3844), so J4 step 2 also has the owner, signed in through `owner_session.ts`, record the suspension on T108's owner home control, and step 5 records the restore and switches texting back on. The faults: Twilio sends failing and refused as from a suspended number (Twilio error 21606), Stripe unavailable or dropping the connection, the AI answering 529. No process builds an AI client before T299 (stage 6; `app/server/src/main.rs` and `bin/worker.rs` build none), and a phase-1 task cannot depend on it, so in this stage step 4 sets the AI fault and checks INT-021's AI-off path as the spec now words it (each step at once on the fixed question bank, no \"we have your message\" text and no 30-minute retry, D-492; `docs/test-design.md`'s J4 step 4 corrected to match) and the safety text for \"sparks\" within 5 minutes (INT-003); once T299 builds the client the same spec exercises the real outage, and T299's acceptance requires it to pass unchanged.",
+   "goal": "Journey J4 (Twilio failing and suspended, Stripe unreachable, the AI down, then recovery) runs end to end in Playwright, keyboard-only too, ending with the closing checks and a clean nightly reconcile (A11Y-021). Plan change D-3744: J4's quote link that \"appears in the portal\" (TXT-014) is the homeowner portal T307 serves, and \"Casey's call list fills\" (TXT-023) is read on the owner pages T310 serves, which this task reaches through T118 (T118 depends on T303 and T310), so it depends on T118 and T307 (D-3263 assumed T119 followed T118; until now it did not). It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Its Resend email checks wait for the email-sender wiring task, as T118's do (D-3263). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): J4's vendor failures come from T497's sticky stand-in faults (`control.setFaults`, cleared after every test), never from changing the app's settings. The app does not detect a suspension from a send refusal (Casey records it, `record_suspension`, `app/messaging/src/mode_state.rs:156`, D-3844), so J4 step 2 also has the owner, signed in through `owner_session.ts`, record the suspension on T108's owner home control, and step 5 records the restore and switches texting back on. The faults: Twilio sends failing and refused as from a suspended number (Twilio error 21606), Stripe unavailable or dropping the connection, the AI answering 529. No process builds an AI client before T299 (stage 6; `app/server/src/main.rs` and `bin/worker.rs` build none), and a phase-1 task cannot depend on it, so in this stage step 4 sets the AI fault and checks INT-021's AI-off path as the spec now words it (each step at once on the fixed question bank, no \"we have your message\" text and no 30-minute retry, D-492; `docs/test-design.md`'s J4 step 4 corrected to match) and the safety text for \"sparks\" within 5 minutes (INT-003); once T299 builds the client the same spec exercises the real outage, and T299's acceptance requires it to pass unchanged. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): steps 1 and 3 are worker tasks, so this task depends on T536, which starts the suite's worker with the keyed values (Stripe, Twilio and vault, and T490's Resend values) and runs J3 and J4 after every other spec. J4 seeds from the app clock, never the database's `now()`. Shared steps live in `tests/e2e/j4.ts`. `control.setFaults` is on the e2e `test` only (T497), so `j4_keyboard.spec.ts` uses it with `test.use({ controlSecret: controlSecret() })`. An `afterAll` records the restore and switches texting back on, so a failure midway never leaves the shared database suspended.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -18391,7 +18561,8 @@
     "T118",
     "T307",
     "T489",
-    "T497"
+    "T497",
+    "T536"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -18403,7 +18574,8 @@
    ],
    "owns": [
     "tests/e2e/j4_outage.spec.ts",
-    "tests/a11y/j4_keyboard.spec.ts"
+    "tests/a11y/j4_keyboard.spec.ts",
+    "tests/e2e/j4.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -18421,12 +18593,13 @@
    "decisions": [
     "D-1143",
     "D-3744",
-    "D-3844"
+    "D-3844",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
-    "lines": 550,
+    "files": 3,
+    "lines": 600,
     "context_pct": 6
    },
    "checks": [
@@ -19383,7 +19556,9 @@
     "T528",
     "T530",
     "T531",
-    "T529"
+    "T529",
+    "T532",
+    "T533"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -25147,7 +25322,7 @@
    "id": "T479",
    "slug": "not-a-fit-and-scorecard-entries",
    "title": "ops and portals: \"Not a fit for us\" on the job page, and the ops store for its answers and the weekly minutes entry",
-   "goal": "Plan change D-3753 (split from T158): every job card page offers the business a one-tap \"Not a fit for us\" with the reasons not my trade, not my town, too big or too small, and other; the answer changes no routing or fee (PICK-057). `app/ops/src/scorecard_inputs.rs` (exported through the shared `app/ops/src/api.rs`) is the only writer and reader of `ops.not_a_fit_answer` (job, business, trade, reason, time; one answer per business and job) and `ops.minutes_entry` (OPS-039's weekly minutes entry, split into recruiting and everything else), with the monthly count per trade and reason and the minutes per week for T158's scorecard; `migrations/0200_ops_scorecard_inputs.sql` (headed `-- ops (T479)`, `ops` tables only, `tests/integration/tests/architecture_migrations.rs`; moved from T158) adds both, the app role SELECT and INSERT only (architecture section 3, D-493). The choice is rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), `not_a_fit.rs` and `not_a_fit.html` (PICK-057's reasons; the template links `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` first in its `main` block, as `app/portals/templates/feedback.html:10` does, D-3700, A11Y-007, A11Y-009), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). T301 serves the action links and the job page before this task (D-2128): keep the signatures `app/server/src/action_links.rs` calls, add the choice through new functions, and T306 serves it. Tests in `tests/integration/tests/not_a_fit.rs` (TD-WORD-30's not-a-fit half): every job card page offers the four reasons, an answer changes no routing or fee, a second answer by the same business for the same job adds nothing, and the monthly count by trade and reason is right; a minutes entry is stored and read back per week. Update the `ops` and `portals` `CLAUDE.md` or `NOTES.md` files and `docs/decisions.md`. Plan change D-3883: `app/portals/templates/business_signup.html:23` (not `feedback.html:10`) is the page that links `forms.css`; no field is added to `quotes::api::PageParts` or `portals::api::JobPageLinks` (built by literal in tests this task does not own); the answer's `POST` route constant sits under a path the door probe can fill (for example `/b/a/{kind}/{object}/{token}`) with its section 13 row. Plan change D-3883: this task's migration moved up one, to `0200_ops_scorecard_inputs.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history.",
+   "goal": "Plan change D-3753 (split from T158): every job card page offers the business a one-tap \"Not a fit for us\" with the reasons not my trade, not my town, too big or too small, and other; the answer changes no routing or fee (PICK-057). `app/ops/src/scorecard_inputs.rs` (exported through the shared `app/ops/src/api.rs`) is the only writer and reader of `ops.not_a_fit_answer` (job, business, trade, reason, time; one answer per business and job) and `ops.minutes_entry` (OPS-039's weekly minutes entry, split into recruiting and everything else), with the monthly count per trade and reason and the minutes per week for T158's scorecard; `migrations/0200_ops_scorecard_inputs.sql` (headed `-- ops (T479)`, `ops` tables only, `tests/integration/tests/architecture_migrations.rs`; moved from T158) adds both, the app role SELECT and INSERT only (architecture section 3, D-493). The choice is rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), `not_a_fit.rs` and `not_a_fit.html` (PICK-057's reasons; the template links `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` first in its `main` block, as `app/portals/templates/feedback.html:10` does, D-3700, A11Y-007, A11Y-009), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). T301 serves the action links and the job page before this task (D-2128): keep the signatures `app/server/src/action_links.rs` calls, add the choice through new functions, and T306 serves it. Tests in `tests/integration/tests/not_a_fit.rs` (TD-WORD-30's not-a-fit half): every job card page offers the four reasons, an answer changes no routing or fee, a second answer by the same business for the same job adds nothing, and the monthly count by trade and reason is right; a minutes entry is stored and read back per week. Update the `ops` and `portals` `CLAUDE.md` or `NOTES.md` files and `docs/decisions.md`. Plan change D-3883: `app/portals/templates/business_signup.html:23` (not `feedback.html:10`) is the page that links `forms.css`; no field is added to `quotes::api::PageParts` or `portals::api::JobPageLinks` (built by literal in tests this task does not own); the answer's `POST` route constant sits under a path the door probe can fill (for example `/b/a/{kind}/{object}/{token}`) with its section 13 row. Plan change D-3883: this task's migration moved up one, to `0200_ops_scorecard_inputs.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): the job page also shows `businesses::api::business_statement()` under the job card in `business_actions.html` (CARD-020, TD-WORD-05's portal-card case, which T203 checks); `businesses::api::business_statement` is today called only for the card email (`app/quotes/src/card_notices.rs:63`) and sign-up. `quotes::job_page` may supply it, or `portals` calls `businesses::api` directly.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -25184,11 +25359,13 @@
     "docs/spec/quotes-pick.md",
     "docs/design/DESIGN_SPEC.md",
     "docs/brains/accessibility-forms.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/job-cards.md"
    ],
    "requirements": [
     "PICK-057",
-    "OPS-039"
+    "OPS-039",
+    "CARD-020"
    ],
    "tests": [
     "TD-WORD-30"
@@ -25204,7 +25381,8 @@
     "D-3744",
     "D-3753",
     "D-3779",
-    "D-3883"
+    "D-3883",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
@@ -35842,7 +36020,7 @@
    "id": "T457",
    "slug": "confirm-link-served",
    "title": "portals and server: the Confirm email link asks for a code with no session, signs that device in and opens the Confirm page",
-   "goal": "Plan change D-3675 (T301 plan gap; SEC-004, SEC-027, BIZ-038, PICK-021; D-366, D-2410): the Confirm link (`ActionKind::Confirm`, `UseBy::LinkAndCode`, `app/portals/src/action_links.rs:117`) must lead to T261's served Confirm page (`GET /b/picks/{pick}/confirm`), which answers only a signed-in owner or \"Confirm and billing\" member; with no live session it asks only for a Verify code to that person's own phone (by email when they have none that gets texts), and a correct code also completes sign-in on that device (SEC-004). (1) `app/portals/src/action_links.rs` adds `confirm_link_session(tx, jar, grant, now)`: starts the business session for the grant's member and business as `business_auth::start` does (`start_session` with `BUSINESS_SESSION_LIFE`, then the `portals.business_session` row); and a page for the code step from a new `app/portals/templates/confirm_link_code.html` (the code field, its label and error, A11Y-011, A11Y-012, A11Y-030; words for the copy panel). (2) `app/server/src/action_links.rs`, the Confirm link's `POST`: when `portals::api::confirm_code_needed` says no fresh code is needed (a live session of the link's own person, inbox not shared), it uses the link and answers 303 to `/b/picks/{pick}/confirm`; otherwise the first press sends the code with `portals::api::send_confirm_code` (the same `ConfirmCodes` T261 builds, never using the link) and shows the code step, and the code's `POST` checks it with `check_confirm_code`; only a right code uses the link, starts the session with `confirm_link_session` and answers 303 to the Confirm page; a wrong, expired or capped code uses nothing and shows the step again. Tests: cases in `app/server/tests/action_links_route.rs` (TD-SEC-44) and TD-SEC-68 in `tests/e2e/confirm_link_served.spec.ts` on T452's keyed binary: the Confirm link in a browser with no session reaches the Confirm review step after the stand-in Verify's code. Update the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the keyed binary's Confirm page for a pick that needs a card loads `js.stripe.com`, which nothing stubs until T496 (D-3838), so `confirm_link_served.spec.ts` either seeds D-3838's fee-free state (a $0 pick whose stored `payments.pick_fee.mode` differs from `payments.fee_terms.mode`, so the page shows `FEE_TERMS_LINE` and loads no Stripe script) or stubs `https://js.stripe.com/v3/` as `tests/e2e/confirm_pay.spec.ts:64` does; it makes no live third-party request.",
+   "goal": "Plan change D-3675 (T301 plan gap; SEC-004, SEC-027, BIZ-038, PICK-021; D-366, D-2410): the Confirm link (`ActionKind::Confirm`, `UseBy::LinkAndCode`, `app/portals/src/action_links.rs:117`) must lead to T261's served Confirm page (`GET /b/picks/{pick}/confirm`), which answers only a signed-in owner or \"Confirm and billing\" member; with no live session it asks only for a Verify code to that person's own phone, and a correct code also completes sign-in on that device (SEC-004). (1) `app/portals/src/action_links.rs` adds `confirm_link_session(tx, jar, grant, now)`: starts the business session for the grant's member and business as `business_auth::start` does (`start_session` with `BUSINESS_SESSION_LIFE`, then the `portals.business_session` row); and a page for the code step from a new `app/portals/templates/confirm_link_code.html` (the code field, its label and error, A11Y-011, A11Y-012, A11Y-030; words for the copy panel). (2) `app/server/src/action_links.rs`, the Confirm link's `POST`: when `portals::api::confirm_code_needed` says no fresh code is needed (a live session of the link's own person, inbox not shared), it uses the link and answers 303 to `/b/picks/{pick}/confirm`; otherwise the first press sends the code with `portals::api::send_confirm_code` (never using the link; see D-3889 for the `ConfirmCodes` it uses) and shows the code step, and the code's `POST` checks it with `check_confirm_code`; only a right code uses the link, starts the session with `confirm_link_session` and answers 303 to the Confirm page; a wrong, expired or capped code uses nothing and shows the step again. Tests: cases in `app/server/tests/action_links_route.rs` (TD-SEC-44) and TD-SEC-68 in `tests/e2e/confirm_link_served.spec.ts` on T452's keyed binary: the Confirm link in a browser with no session reaches the Confirm review step after the stand-in Verify's code. Update the `portals` `CLAUDE.md`, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the keyed binary's Confirm page for a pick that needs a card loads `js.stripe.com`, which nothing stubs until T496 (D-3838), so `confirm_link_served.spec.ts` either seeds D-3838's fee-free state (a $0 pick whose stored `payments.pick_fee.mode` differs from `payments.fee_terms.mode`, so the page shows `FEE_TERMS_LINE` and loads no Stripe script) or stubs `https://js.stripe.com/v3/` as `tests/e2e/confirm_pay.spec.ts:64` does; it makes no live third-party request. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): (1) T261 wired no Verify (D-3717 (7)), so this task builds the `ConfirmCodes`: `RouterParts` in the shared `app/server/src/lib.rs` gains `with_confirm_link_codes(ConfirmCodes<business_signup::IdentityCodes>)`, handed to a new `action_links::routes_with(pool, clock, codes)` (`routes` and `routes_at` keep their signatures, `app/server/src/action_links.rs:119` to `:135`); the shared `main.rs` builds it as `ServedSignIn::from_settings` builds `DeviceCodes` (`app/server/src/business_signin.rs:113` to `:131`): the Verify client from `TwilioConfig::from_settings`, `MemberCodeAddress::new(pool, clock, vault)` and `ASKHAVA_ID_SECRET`, with `business_signin::NoVerify` in dev and CI without Twilio settings and an error in test and live. Without the part the Confirm link's `POST` sends nothing, uses nothing and shows the code step with `CodeSent::Failed`'s line. `action_links_route.rs` passes a fake Verify through the same part. The code's `POST` is the same `ACTION_ROUTE` `POST` with a `code` field: no new route, so section 13 and the door matrices are unchanged. (2) A person with no phone that gets texts gets `CodeSent::NoPhone`'s line and the link stays unused; SEC-004's email code for the Confirm link is not built here (`send_confirm_code` never emails one, `app/portals/src/confirm_pay.rs:413` to `:419`): log it in `docs/for-casey-review.md`. (3) A shared-inbox person who passes the link's code lands on a Confirm page whose press is still refused (`CODE_LINE`, the known D-3717 (7) gap), with the link used up; say so in the decision so the reviewer does not charge it to this task.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -35887,7 +36065,8 @@
     "D-366",
     "D-2410",
     "D-3675",
-    "D-3844"
+    "D-3844",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
@@ -35907,7 +36086,7 @@
    "id": "T458",
    "slug": "link-phone-link-acts",
    "title": "businesses, calls and server: the email's \"Link this phone\" link links the blocked phone from a signed-in session, a member's link waiting for the owner",
-   "goal": "Plan change D-3675 (T301 plan gap; CALL-011, CALL-012, BIZ-033, BIZ-038; D-078, D-311, D-3567): the \"Link this phone\" link's object is the blocked call's pending link (`calls.link_request`, T390), which holds only the caller's keyed digests, never the number; only the main phone's \"LINK <PIN>\" text can link it today (`calls::api::link_reply`, `app/calls/src/link_reply.rs:62`). (1) `businesses::api::link_by_reply` (`app/businesses/src/reply_link.rs:49`) always inserts the phone as linked and approved by the owner, which is right for the main phone's reply but not for a web action a \"Confirm and billing\" member may take (CALL-012: a phone a member other than the owner links works only after the owner approves it, BIZ-033). So `app/businesses/src/reply_link.rs` adds `link_pending_phone(conn, by: Acting, now)`: for the owner, as `link_by_reply`; for a \"Confirm and billing\" member, `linked_by` and `number_set_by` that member, `approved_at` NULL, and the owner's `PHONE_LINKED_KIND` email queued as `businesses::api::link_phone` queues it (`complaints::phone_link_notice`); anyone else is refused. `app/calls/src/link_reply.rs` adds `calls::api::link_by_action(conn, by: Acting, request, now)`: for a live pending link (`now < expires_at`, unused) of `by`'s business it runs, in a savepoint, `link_pending_phone`, `messaging::api::sender_put_pending` with the pending digests, then, for a member's link, `messaging::api::sender_hold` on the new line (so the phone stays out of the sender directory until T396's `approve_phone` releases it), marks the pending link used and deletes its digests; it answers linked (approved or waiting for the owner) or refused with no change (expired, used, another business's, a role that may not link); no number or PIN is read, stored or logged. (2) `app/server/src/action_links.rs`: the Link this phone link's `POST`, with a business session `portals::api::session_may` allows, acts once through `use_action_link` and `link_by_action` with the session's `Acting`; a member's link says the owner must approve the phone before it works; a refusal leaves the link unused and says the phone could not be linked. Tests: `tests/integration/tests/link_by_action.rs` and cases in `app/server/tests/action_links_route.rs` (TD-SEC-44). Not in this task, logged in D-3675: no production code mints action links into the CALL-011 email (`portals::api::mint_action_link` has no production caller). Update the `calls` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): T477's `quotes::api::record_note_returned` is called where the served quote form returns a note: `check_note`'s refusal (`app/server/src/action_links.rs:686` to `:693`) and `parse_quote`'s bounce (`:709` to `:712`), with one case in `app/server/tests/action_links_route.rs` posting a note with a phone number through the served `POST` and finding one `quotes.note_returned` audit row with no note text. Budget: 600 lines. `record_note_returned` is called only when the returned `Problems` has a note problem, so a price-only bounce writes no row (`bounced`, `app/server/src/action_links.rs:731` to `:736`).",
+   "goal": "Plan change D-3675 (T301 plan gap; CALL-011, CALL-012, BIZ-033, BIZ-038; D-078, D-311, D-3567): the \"Link this phone\" link's object is the blocked call's pending link (`calls.link_request`, T390), which holds only the caller's keyed digests, never the number; only the main phone's \"LINK <PIN>\" text can link it today (`calls::api::link_reply`, `app/calls/src/link_reply.rs:62`). (1) `businesses::api::link_by_reply` (`app/businesses/src/reply_link.rs:49`) always inserts the phone as linked and approved by the owner, which is right for the main phone's reply but not for a web action a \"Confirm and billing\" member may take (CALL-012: a phone a member other than the owner links works only after the owner approves it, BIZ-033). So `app/businesses/src/reply_link.rs` adds `link_pending_phone(conn, by: Acting, now)`: for the owner, as `link_by_reply`; for a \"Confirm and billing\" member, `linked_by` and `number_set_by` that member, `approved_at` NULL, and the owner's `PHONE_LINKED_KIND` email queued as `businesses::api::link_phone` queues it (`complaints::phone_link_notice`); anyone else is refused. `app/calls/src/link_reply.rs` adds `calls::api::link_by_action(conn, by: Acting, request, now)`: for a live pending link (`now < expires_at`, unused) of `by`'s business it runs, in a savepoint, `link_pending_phone`, `messaging::api::sender_put_pending` with the pending digests, then, for a member's link, `messaging::api::sender_hold` on the new line (so the phone stays out of the sender directory until T396's `approve_phone` releases it), marks the pending link used and deletes its digests; it answers linked (approved or waiting for the owner) or refused with no change (expired, used, another business's, a role that may not link); no number or PIN is read, stored or logged. (2) `app/server/src/action_links.rs`: the Link this phone link's `POST`, with a business session `portals::api::session_may` allows, acts once through `use_action_link` and `link_by_action` with the session's `Acting`; a member's link says the owner must approve the phone before it works; a refusal leaves the link unused and says the phone could not be linked. Tests: `tests/integration/tests/link_by_action.rs` and cases in `app/server/tests/action_links_route.rs` (TD-SEC-44). Not in this task, logged in D-3675: no production code mints action links into the CALL-011 email (`portals::api::mint_action_link` has no production caller). Update the `calls` and `businesses` `CLAUDE.md` files, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): T477's `quotes::api::record_note_returned` is called where the served quote form returns a note: `check_note`'s refusal (`app/server/src/action_links.rs:686` to `:693`) and `parse_quote`'s bounce (`:709` to `:712`), with one case in `app/server/tests/action_links_route.rs` posting a note with a phone number through the served `POST` and finding one `quotes.note_returned` audit row with no note text. Budget: 600 lines. `record_note_returned` is called only when the returned `Problems` has a note problem, so a price-only bounce writes no row (`bounced`, `app/server/src/action_links.rs:731` to `:736`). Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): the owner's `businesses.phone_linked` email this task queues cannot be delivered for a phone with no stored digits (`linked()` fails without the last 4 digits, `app/businesses/src/notice_emails.rs:479` to `:484`, and production `line_last4` answers `None`, `app/server/src/lib.rs:1470` to `:1476`); the owner approves on T397's page; log it in `docs/for-casey-review.md`. `app/server/CLAUDE.md` is at its 8,192-byte cap, so server notes go in `app/server/NOTES.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -35947,7 +36126,8 @@
     "D-078",
     "D-311",
     "D-3675",
-    "D-3877"
+    "D-3877",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
@@ -36732,7 +36912,7 @@
    "id": "T470",
    "slug": "email-outbox-send",
    "title": "messaging and server: the worker task that sends queued emails through the email provider",
-   "goal": "Plan change D-3750 (D-3263, D-3186; SEC-025, OPS-038, SEC-018, PRIV-016, BIZ-019): emails stored in `messaging.email_outbox` by `queue_email` (`app/messaging/src/email.rs:343`) and by the business notice sender (job cards, pick and money notices, `app/messaging/src/business_notices.rs`), the receipts and the homeowner emails are never sent: only the account mailers call `send_email` (`app/messaging/src/email.rs:454`), for their own row, and no task sends a queued row to a provider (D-3263 parked T222's email checks for it). Only the account mailers store a credential mark in place of a credential (`LINK_MARK`, `app/messaging/src/signin_mail.rs`; T468's `CODE_MARK`) and add it only on the way to the provider; business notices store real per-recipient sign-in links in their bodies (`app/messaging/src/business_notices.rs:24`, `:389`), so a stored notice is itself a credential for its recipient. (1) `migrations/0207_messaging_email_lease.sql` (headed `messaging`): `messaging.email_outbox` gains `claimed_at timestamptz` (the drain's lease) and the status `dropped` (a row never to be sent; its subject and bodies are cleared in the same statement, as a sent row's are, so the status CHECKs extend to it); no old migration is edited. Its number follows T456's `0205` (T470 depends on T456 for that order only, V9; each moved up one by D-3779) and T236's migration moves to `0208`. (2) `app/messaging/src/email_due.rs` (new; exported through the shared `api.rs` and `lib.rs`): the `messaging.email_due` worker task. Each run, at the worker clock's now, leases a bounded batch, oldest first, in one short committed statement under `FOR UPDATE SKIP LOCKED` that sets `status = 'sending'` and `claimed_at = now` together: it takes `queued` rows whose `not_before` passed and whose `claimed_at` is null or stale, plus `sending` rows only when their lease is stale (`claimed_at` older than `STALE_AFTER`, 5 minutes, as `outbox_sender`'s, or unset 5 minutes past `not_before`), because `claim_email` itself takes `queued` or `sending` (`app/messaging/src/models.rs:764`) and a non-429 provider error leaves a row `sending` (`app/messaging/src/email.rs:515`). A row a worker leased is therefore `sending` with a fresh lease, which no second lease takes, whether the two runs overlap or follow one another, so each row gets one provider call per lease, under its stored idempotency key (SEC-018: a retry after a stale lease is the same email to Resend). `app/messaging/src/models.rs` (owners done): `hold_email` (`:819`), which puts a row back to `queued`, also clears `claimed_at` and never touches a `dropped` row (`status NOT IN ('sent', 'dropped')`), so a held row is leased again once its `not_before` passes. Each leased row is then sent through `send_email` with the provider, email key and `DailyLimit` it is handed (T469's `EmailProvider`), so OPS-038's bulk hold and the daily quota (SEC-025) hold as for every other email. It takes only templates no other code sends: never a template whose own handler calls `send_email` (the sign-in link, the email code, the welcome and phone-stopped, the coverage notice and the business event emails), listed by template ID in one constant; and, as a backstop, a leased row whose subject or body holds `LINK_MARK` or `CODE_MARK` is `dropped` with one High alert naming the row ID only and never sent, so a literal mark never reaches anyone. A homeowner row's address is read through `EmailTo::Homeowner` (the vault, under `messaging`'s send grant); a business row's comes from a resolver trait the composition supplies, which answers the address, or `Gone` when the row's business has left (BIZ-051: leaving stops all notices) or its mailbox is no longer a current member's (a removed member, SEC-024), and a `Gone` row is `dropped` unsent, since it holds that person's sign-in link. With no provider handed in, a run does nothing: it leases, sends and marks nothing and queues no next run; with one, it queues its next run, as `send_due` does (`app/messaging/src/outbox_sender.rs`). No transaction is open during the provider call, and no address, body or key is logged (PRIV-016). (3) `app/privacy/src/business_contacts.rs`: `BusinessPurpose::Notice` (\"the business notice and card emails: the address only\"), in `ALL`, with its audit label (SEC-047). (4) `app/server/src/email_due.rs` (new): the resolver (the current-member and left-business checks through `businesses::api`, then `read_business_mailbox` under `BusinessPurpose::Notice` on a bare connection) and the handler, registered in `worker_registry` (the shared `app/server/src/lib.rs`) always, with T469's provider when it exists and with none otherwise, so `tests/integration/tests/task_registry.rs` (TD-OPS-36, built from the dev stand-in pairs with no Resend key) passes unchanged; the first run is queued at start only when a provider exists. (5) Tests, fake data only, in `tests/integration/tests/email_due.rs` against PostgreSQL with a recording `EmailAdapter`: a queued homeowner email and a queued business notice email each go once to the right address; two workers' leases over the same rows, run both at once and one after the other (the second after the first committed its lease but before its send finished), leave the adapter with exactly one call per row; a `sending` row with a fresh lease is not taken and one with a stale lease is, under the same key; a row `hold_email` put back to `queued` has no lease and goes once its `not_before` passes, and a `dropped` row is never held or sent; a row whose `not_before` is later waits; a bulk row waits above the hold share while a job card still goes; a refused send goes on a later run under the same key; a row of a self-sending template is never taken; a row holding `LINK_MARK` or `CODE_MARK` is dropped with one alert and never sent; a notice to a removed member or a business that left is dropped unsent; with no provider nothing changes and no next run is queued; no address appears in any log line. Update `app/messaging/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/server/CLAUDE.md` and `docs/decisions.md`. Plan change D-3883: this task's migration moved up one, to `0207_messaging_email_lease.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history.",
+   "goal": "Plan change D-3750 (D-3263, D-3186; SEC-025, OPS-038, SEC-018, PRIV-016, BIZ-019): emails stored in `messaging.email_outbox` by `queue_email` (`app/messaging/src/email.rs:343`) and by the business notice sender (job cards, pick and money notices, `app/messaging/src/business_notices.rs`), the receipts and the homeowner emails are never sent: only the account mailers call `send_email` (`app/messaging/src/email.rs:454`), for their own row, and no task sends a queued row to a provider (D-3263 parked T222's email checks for it). Only the account mailers store a credential mark in place of a credential (`LINK_MARK`, `app/messaging/src/signin_mail.rs`; T468's `CODE_MARK`) and add it only on the way to the provider; business notices store real per-recipient sign-in links in their bodies (`app/messaging/src/business_notices.rs:24`, `:389`), so a stored notice is itself a credential for its recipient. (1) `migrations/0207_messaging_email_lease.sql` (headed `messaging`): `messaging.email_outbox` gains `claimed_at timestamptz` (the drain's lease) and the status `dropped` (a row never to be sent; its subject and bodies are cleared in the same statement, as a sent row's are, so the status CHECKs extend to it); no old migration is edited. Its number follows T456's `0205` (T470 depends on T456 for that order only, V9; each moved up one by D-3779) and T236's migration moves to `0208`. (2) `app/messaging/src/email_due.rs` (new; exported through the shared `api.rs` and `lib.rs`): the `messaging.email_due` worker task. Each run, at the worker clock's now, leases a bounded batch, oldest first, in one short committed statement under `FOR UPDATE SKIP LOCKED` that sets `status = 'sending'` and `claimed_at = now` together: it takes `queued` rows whose `not_before` passed and whose `claimed_at` is null or stale, plus `sending` rows only when their lease is stale (`claimed_at` older than `STALE_AFTER`, 5 minutes, as `outbox_sender`'s, or unset 5 minutes past `not_before`), because `claim_email` itself takes `queued` or `sending` (`app/messaging/src/models.rs:764`) and a non-429 provider error leaves a row `sending` (`app/messaging/src/email.rs:494`). A row a worker leased is therefore `sending` with a fresh lease, which no second lease takes, whether the two runs overlap or follow one another, so each row gets one provider call per lease, under its stored idempotency key (SEC-018: a retry after a stale lease is the same email to Resend). `app/messaging/src/models.rs` (owners done): `hold_email` (`:819`), which puts a row back to `queued`, also clears `claimed_at` and never touches a `dropped` row (`status NOT IN ('sent', 'dropped')`), so a held row is leased again once its `not_before` passes. Each leased row is then sent through `send_email` with the provider, email key and `DailyLimit` it is handed (T469's `EmailProvider`), so OPS-038's bulk hold and the daily quota (SEC-025) hold as for every other email. It takes only templates no other code sends: never a template whose own handler calls `send_email` (the sign-in link, the email code, the welcome and phone-stopped, the coverage notice and the business event emails), listed by template ID in one constant; and, as a backstop, a leased row whose subject or body holds `LINK_MARK` or `CODE_MARK` is `dropped` with one High alert naming the row ID only and never sent, so a literal mark never reaches anyone. A homeowner row's address is read through `EmailTo::Homeowner` (the vault, under `messaging`'s send grant); a business row's comes from a resolver trait the composition supplies, which answers the address, or `Gone` when the row's business has left (BIZ-051: leaving stops all notices) or its mailbox is no longer a current member's (a removed member, SEC-024), and a `Gone` row is `dropped` unsent, since it holds that person's sign-in link. With no provider handed in, a run does nothing: it leases, sends and marks nothing and queues no next run; with one, it queues its next run, as `send_due` does (`app/messaging/src/outbox_sender.rs`). No transaction is open during the provider call, and no address, body or key is logged (PRIV-016). (3) `app/privacy/src/business_contacts.rs`: `BusinessPurpose::Notice` (\"the business notice and card emails: the address only\"), in `ALL`, with its audit label (SEC-047). (4) `app/server/src/email_due.rs` (new): the resolver (the current-member and left-business checks through `businesses::api`, then `read_business_mailbox` under `BusinessPurpose::Notice` on a bare connection) and the handler, registered in `worker_registry` (the shared `app/server/src/lib.rs`) always, with T469's provider when it exists and with none otherwise, so `tests/integration/tests/task_registry.rs` (TD-OPS-36, built from the dev stand-in pairs with no Resend key) passes unchanged; the first run is queued at start only when a provider exists. (5) Tests, fake data only, in `tests/integration/tests/email_due.rs` against PostgreSQL with a recording `EmailAdapter`: a queued homeowner email and a queued business notice email each go once to the right address; two workers' leases over the same rows, run both at once and one after the other (the second after the first committed its lease but before its send finished), leave the adapter with exactly one call per row; a `sending` row with a fresh lease is not taken and one with a stale lease is, under the same key; a row `hold_email` put back to `queued` has no lease and goes once its `not_before` passes, and a `dropped` row is never held or sent; a row whose `not_before` is later waits; a bulk row waits above the hold share while a job card still goes; a refused send goes on a later run under the same key; a row of a self-sending template is never taken; a row holding `LINK_MARK` or `CODE_MARK` is dropped with one alert and never sent; a notice to a removed member or a business that left is dropped unsent; with no provider nothing changes and no next run is queued; no address appears in any log line. Update `app/messaging/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-3883: this task's migration moved up one, to `0207_messaging_email_lease.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): a leased row whose address read answers `EmailError::NoAddress` (`app/messaging/src/email.rs:536` to `:542`) is `dropped`, not left `sending` to be leased again forever; `messaging::api::unsent_business_mailboxes` (`app/messaging/src/api.rs:290`, the shared file) gains `AND status <> 'dropped'`, so a dropped row keeps no removed member's address; if `schedule_start` (`app/server/src/bin/worker.rs:74`, 47 body lines) would pass 50 lines, this task moves its calls into a helper first. `app/server/CLAUDE.md` is at its 8,192-byte cap, so server notes go in `app/server/NOTES.md`. If the change outgrows 600 lines, the natural split is the `messaging` drain versus the `server` resolver and handler: report it.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -36784,7 +36964,8 @@
     "D-3743",
     "D-3750",
     "D-3779",
-    "D-3883"
+    "D-3883",
+    "D-3889"
    ],
    "cites": [],
    "budget": {
@@ -37107,7 +37288,7 @@
    "id": "T480",
    "slug": "spanish-conversations-switch",
    "title": "messaging, server and portals: the stored \"Spanish conversations\" switch, refused until the professional translation review and the campaign note and sample are recorded",
-   "goal": "Plan change D-3753 (TXT-043's code half, moved out of T218 by D-3744; TXT-039's review gate, D-427): `spanish_conversations_on` (`app/intake/src/rules.rs:48`) is a plain field, the inbound text route and its retry pass `Settings::default()` (`app/server/src/lib.rs:410`, `app/server/src/inbound_retry.rs:76`), and nothing stores the switch, so Spanish conversations can never be turned on and nothing refuses turning them on early. (1) `migrations/0208_messaging_spanish_switch.sql` (headed `-- messaging (T480)`): `messaging.spanish_switch`, append-only (each change a new row; the latest is in force): on or off, the campaign note's date and reference (the Console update of the homeowner campaign description saying texts are in English or Spanish, T113's document), the Spanish sample message on file, the paid professional translation review of every Spanish template (TXT-039: its date, the reviewer, and each Spanish template's ID and version as the registry gives them, `app/messaging/src/templates.rs`), the owner who changed it and when; the app role SELECT and INSERT only. (2) `app/messaging/src/spanish_switch.rs`, through `messaging::api`: `spanish_switch(conn)` gives the stored switch (off with no row); turning it on stores a row only when a professional review is recorded with a date, a reviewer and template versions that cover every Spanish template at its current registry version (a template added or changed after the review refuses the switch until a new review is recorded; TXT-039, D-427) and the campaign note's date and reference and a non-empty Spanish sample are recorded (TXT-043), else a typed refusal naming each thing missing; turning it off always succeeds; each change writes one `ops` audit row of IDs and code names only. (3) `app/server/src/inbound_text.rs` and `app/server/src/inbound_retry.rs` read the stored switch per message and pass it as `spanish_conversations_on`, so a change is honoured from the next text. (4) The owner settings page (`app/portals/src/owner_portal.rs`, `app/portals/templates/owner_settings.html`; served by `app/server/src/owner_portal.rs`) shows the switch, off at launch, and the fields for the review record, the note and the sample; each change needs a fresh second factor (SEC-043), CSRF and `no_store`, and a refusal names what is missing. The template links `/static/portals/forms.css` first in its `main` block if it draws a checkbox or radio (D-3700). Tests in `tests/integration/tests/spanish_switch.rs` (TD-TXT-26's refusal clause, now assigned here in `docs/test-design.md`, and TD-TXT-28's first clause, the switch refused without a recorded professional review; that row's checklist clauses stay T122's and its registry half was T026's): turning on with no review, with a review missing one Spanish template or naming an older version, with no note, with a note and no sample, and with an empty sample is refused and stores nothing; with both it turns on and a Spanish text then gets the Spanish consent text; off again, the next Spanish text gets English; the route and the retry read the switch per message. Fake data and the stand-in Twilio only. Its routes pass T348's doors unchanged (D-2440). Update the `messaging`, `server` and `portals` `CLAUDE.md` or `NOTES.md` files, `docs/architecture.md` section 3 (the table) and `docs/decisions.md`. The migration is 0207 after T470's 0206 (each moved up one by D-3779); T236's unstarted `0208_ai_call_budget.sql` follows it (V9). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the registry has no template version (`Registry::template`, `app/messaging/src/templates.rs:233`, gives the text and segment count only, and that file is not this task's), so a Spanish template's version is the lowercase hex SHA-256 of its Spanish text from `Registry::template(id, Language::Es)`, computed in `spanish_switch.rs` (`sha2`, already a workspace crate; `app/messaging/Cargo.toml` is shared): a changed Spanish text is a new version. Plan change D-3881: T527's `0209_messaging_business_eligibility.sql` now follows this migration, and T236's moves to `0210_ai_call_budget.sql`. Plan change D-3883: this task's migration moved up one, to `0208_messaging_spanish_switch.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history.",
+   "goal": "Plan change D-3753 (TXT-043's code half, moved out of T218 by D-3744; TXT-039's review gate, D-427): `spanish_conversations_on` (`app/intake/src/rules.rs:48`) is a plain field, the inbound text route and its retry pass `Settings::default()` (`app/server/src/lib.rs:534` and `:1239`; `app/server/src/inbound_retry.rs:76` is the field, `:136` the pass-through), and nothing stores the switch, so Spanish conversations can never be turned on and nothing refuses turning them on early. (1) `migrations/0208_messaging_spanish_switch.sql` (headed `-- messaging (T480)`): `messaging.spanish_switch`, append-only (each change a new row; the latest is in force): on or off, the campaign note's date and reference (the Console update of the homeowner campaign description saying texts are in English or Spanish, T113's document), the Spanish sample message on file, the paid professional translation review of every Spanish template (TXT-039: its date, the reviewer, and each Spanish template's ID and version as the registry gives them, `app/messaging/src/templates.rs`), the owner who changed it and when; the app role SELECT and INSERT only. (2) `app/messaging/src/spanish_switch.rs`, through `messaging::api`: `spanish_switch(conn)` gives the stored switch (off with no row); turning it on stores a row only when a professional review is recorded with a date, a reviewer and template versions that cover every Spanish template at its current registry version (a template added or changed after the review refuses the switch until a new review is recorded; TXT-039, D-427) and the campaign note's date and reference and a non-empty Spanish sample are recorded (TXT-043), else a typed refusal naming each thing missing; turning it off always succeeds; each change writes one `ops` audit row of IDs and code names only. (3) `app/server/src/inbound_text.rs` and `app/server/src/inbound_retry.rs` read the stored switch per message and pass it as `spanish_conversations_on`, so a change is honoured from the next text. (4) The owner settings page (`app/portals/src/owner_portal.rs`, `app/portals/templates/owner_settings.html`; served by `app/server/src/owner_portal.rs`) shows the switch, off at launch, and the fields for the review record, the note and the sample; each change needs a fresh second factor (SEC-043), CSRF and `no_store`, and a refusal names what is missing. The template links `/static/portals/forms.css` first in its `main` block if it draws a checkbox or radio (D-3700). Tests in `tests/integration/tests/spanish_switch.rs` (TD-TXT-26's refusal clause, now assigned here in `docs/test-design.md`, and TD-TXT-28's first clause, the switch refused without a recorded professional review; that row's checklist clauses stay T122's and its registry half was T026's): turning on with no review, with a review missing one Spanish template or naming an older version, with no note, with a note and no sample, and with an empty sample is refused and stores nothing; with both it turns on and a Spanish text then gets the Spanish consent text; off again, the next Spanish text gets English; the route and the retry read the switch per message. Fake data and the stand-in Twilio only. Its routes pass T348's doors unchanged (D-2440). Update the `messaging`, `server` and `portals` `CLAUDE.md` or `NOTES.md` files, `docs/architecture.md` section 3 (the table) and `docs/decisions.md`. The migration is 0207 after T470's 0206 (each moved up one by D-3779); T236's unstarted `0208_ai_call_budget.sql` follows it (V9). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the registry has no template version (`Registry::template`, `app/messaging/src/templates.rs:233`, gives the text and segment count only, and that file is not this task's), so a Spanish template's version is the lowercase hex SHA-256 of its Spanish text from `Registry::template(id, Language::Es)`, computed in `spanish_switch.rs` (`sha2`, already a workspace crate; `app/messaging/Cargo.toml` is shared): a changed Spanish text is a new version. Plan change D-3881: T527's `0209_messaging_business_eligibility.sql` now follows this migration, and T236's moves to `0210_ai_call_budget.sql`. Plan change D-3883: this task's migration moved up one, to `0208_messaging_spanish_switch.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): T407 does not own `app/server/src/inbound_retry.rs`, so after it the retry still passes `safety_call_on` from `keys.intake` (off by default, `inbound_retry.rs:136`); this task, which owns the file, also has the retry read `calls::api::safety_switch` per message as the route does (CON-031).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -37162,7 +37343,8 @@
     "D-3779",
     "D-3844",
     "D-3881",
-    "D-3883"
+    "D-3883",
+    "D-3889"
    ],
    "cites": [],
    "budget": {

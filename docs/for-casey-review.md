@@ -3000,6 +3000,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The automatic phone call for a critical safety alert is placed by the owner-tools task; the alerts task only asks for it.
 - The business page addresses are now fixed: /business, /es/business, /business/help and /es.
 - Open item for you, before launch: the business page's city business-license guide needs three settings filled in: the license cost, how long it takes, and the city's link. Until you set them, each part is left out, and with none set the guide is hidden.
+- A restore never sends money back by itself. A charge it can't match is listed for you, and the nightly money check refunds it.
 - Nothing needs you now.
 ## Fable's checks of the new tasks and the fifth stage-5 group (D-3881, November 16)
 - The switch that turns business texting on is stored in the app, but three places still hard-code it as off. A small new task makes every place follow the stored switch, and treat any read error as off.
@@ -3016,6 +3017,15 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The nightly backup export must be locked to a key only you hold offline. That needs one new encryption library (`age`, a common open-source one); the backup task will confirm it passes the security and license checks when it is built.
 - The owner help page and its reply box, and the email-deferral figures on the scorecard, are now small tasks of their own so no task runs over its size limit.
 - Nothing needs you now. Before the first real backup, the export needs a key pair whose private half stays offline, an item for the account checklist.
+
+## Fable's checks of the remaining stage-5 tasks (D-3889, November 16)
+
+- Open item: sending the pick code by email when the homeowner can't be texted is put off for now. Doing it safely needs its own locked storage for the email she gives in chat, kept apart from the email she may share with the business she picks. That is a separate plan change. Until then the pick code still comes by a Verify text, and a homeowner who has opted out of texts can't get a code on the quote page.
+- The Confirm link in a business email asks for a code by text only. A business person with no phone that gets texts can't use that link yet; they sign in to the portal instead.
+- The owner's "phone linked" email can't be sent when the phone's last 4 digits aren't stored. You approve the phone on the waiting-phones page instead.
+- The full J1 and J2 journeys were too big for one task, so they are now three. A small test-setup task makes the time-jumping journeys (J3 and J4) run last, so they can't break other tests.
+- A restore never sends money back by itself. A charge it can't match is listed for you, and the nightly money check refunds it.
+- Nothing needs you now.
 
 ## Fable's checks of the stage-5 closers and the documentation pass (D-3891, November 16)
 
