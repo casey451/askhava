@@ -50,6 +50,10 @@ pub use crate::email_timing::{
     record_acted, record_first_open, record_notice,
 };
 pub use crate::handlers::{Callback, receive_inbound, receive_status};
+pub use crate::health_figures::{
+    EmailFigures, NoticeTiming, PerAudience, TextFigures, email_figures, emails_sent,
+    notice_timing, text_figures,
+};
 pub use crate::keywords::{
     HelpSettings, HelpSettingsError, Keyword, help_text, keyword, reply_to_help,
 };

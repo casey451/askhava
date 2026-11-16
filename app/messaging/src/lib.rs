@@ -25,6 +25,7 @@ mod coverage_email;
 mod email;
 mod email_timing;
 mod handlers;
+mod health_figures;
 mod keywords;
 mod mailbox_code_mail;
 mod missed_cards;

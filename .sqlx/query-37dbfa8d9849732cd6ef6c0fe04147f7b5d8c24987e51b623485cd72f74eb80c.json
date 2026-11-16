@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH n AS (\n             SELECT kind, extract(epoch FROM min(first_opened_at) - min(sent_at))::float8 AS open,\n                    extract(epoch FROM min(acted_at) - min(sent_at))::float8 AS acted\n               FROM messaging.notice_log WHERE kind IN ('card', 'pick') AND sent_at IS NOT NULL\n              GROUP BY business_id, job_id, kind\n             HAVING min(sent_at) >= $1 AND min(sent_at) < $2)\n           SELECT round(percentile_cont(0.5) WITHIN GROUP (ORDER BY open))::int8 AS \"open?\",\n                  round(percentile_cont(0.5) WITHIN GROUP (ORDER BY acted)\n                    FILTER (WHERE kind = 'card'))::int8 AS \"quote?\",\n                  round(percentile_cont(0.5) WITHIN GROUP (ORDER BY acted)\n                    FILTER (WHERE kind = 'pick'))::int8 AS \"confirm?\",\n                  1000 * count(*) FILTER (WHERE kind = 'card' AND acted <= $3)\n                    / NULLIF(count(*) FILTER (WHERE kind = 'card'), 0) AS \"within?\"\n             FROM n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "open?",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "quote?",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "confirm?",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "within?",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "37dbfa8d9849732cd6ef6c0fe04147f7b5d8c24987e51b623485cd72f74eb80c"
+}
