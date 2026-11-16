@@ -1,19 +1,26 @@
 <!DOCTYPE html>
-{#- The shared page layout every site and portal page extends (T051, D-491, D-492); T101 gives it
-    the look of docs/design/DESIGN_SPEC.md. A page fills `title` (after a failed submit it begins
-    "Error: ", A11Y-030) and `main`, and may set `lang`. No script, style or font comes from another
-    host (SEC-013); every value is escaped (SEC-011). Forms post with novalidate and never disable
-    their submit button (A11Y-030, A11Y-031). -#}
+{#- The shared page layout every site and portal page extends (T051, D-491, D-492), in the
+    daylight-and-evergreen look of docs/design/DESIGN_SPEC.md (WEB-001, D-3331, T101). A page fills
+    `title` (after a failed submit it begins "Error: ", A11Y-030) and `main`, and may set `lang`
+    (A11Y-004). The `banner` block stays empty here; only site_layout.html fills it, so portal
+    pages carry no banner field (WEB-007, D-3144). The skip link is the first Tab stop (A11Y-003),
+    and Help sits in the header in the same place on every page (A11Y-017, D-3878). The header is
+    not sticky, so nothing covers a focused element (A11Y-026). No script is needed, and no script,
+    style or font comes from another host (SEC-013); every value is escaped (SEC-011). Forms post
+    with novalidate and never disable their submit button (A11Y-030, A11Y-031). -#}
 <html lang="{% block lang %}en{% endblock %}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{% endblock %} | {{ askhava_core::api::brand().display_name() }}</title>
+<link rel="stylesheet" href="/static/site/site.css">
 </head>
 <body>
-<a href="#main">Skip to main content</a>
+<a class="skip-link" href="#main">Skip to main content</a>
+{% block banner %}{% endblock %}
 <header>
-<p><a href="/">{{ askhava_core::api::brand().display_name() }}</a></p>
+<p class="wordmark"><a href="/">{{ askhava_core::api::brand().display_name() }}</a></p>
+<nav aria-label="Site"><a href="/help">Help</a></nav>
 </header>
 <main id="main" tabindex="-1">
 {% block main %}{% endblock %}

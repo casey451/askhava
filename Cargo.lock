@@ -482,6 +482,7 @@ dependencies = [
  "askhava-portals",
  "askhava-privacy",
  "askhava-quotes",
+ "askhava-site",
  "axum",
  "base64 0.23.1",
  "hmac",
@@ -733,6 +734,7 @@ dependencies = [
  "askhava-picks",
  "askhava-portals",
  "askhava-privacy",
+ "askhava-site",
  "axum",
  "base64 0.23.1",
  "hmac",
@@ -770,6 +772,7 @@ dependencies = [
  "askhava-portals",
  "askhava-privacy",
  "askhava-quotes",
+ "askhava-site",
  "axum",
  "base64 0.23.1",
  "hmac",
@@ -790,6 +793,16 @@ dependencies = [
 [[package]]
 name = "askhava-site"
 version = "0.1.0"
+dependencies = [
+ "askama",
+ "askhava-core",
+ "askhava-ops",
+ "axum",
+ "sqlx",
+ "tokio",
+ "tower",
+ "tracing",
+]
 
 [[package]]
 name = "asn1-rs"

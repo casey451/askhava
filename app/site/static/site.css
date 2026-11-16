@@ -1,0 +1,210 @@
+/* The site's stylesheet: the daylight-and-evergreen look of docs/design/DESIGN_SPEC.md (V6,
+   WEB-001, D-3331, T101). Linked from base.html, so every site and portal page gets it; a page's
+   own stylesheet comes later and may refine it. Colours are the spec's section 2 tokens only; no
+   text is under 16 px; the header is not sticky (A11Y-026); focus is a 3 px ring with a 3 px
+   offset (A11Y-005); nothing moves under prefers-reduced-motion (A11Y-009). Fonts: Gelasio and
+   DM Sans arrive with T166; until then Georgia and the system sans stand in. */
+:root {
+  --canvas: #F7F5F0;
+  --surface: #FFFFFF;
+  --band: #ECEFE8;
+  --ink: #1E2926;
+  --ink-soft: #4A5952;
+  --evergreen: #245849;
+  --evergreen-deep: #183F35;
+  --on-evergreen: #FFFFFF;
+  --line: #C8CEC5;
+  --field-edge: #6E8077;
+  --focus: #A8581E;
+  --serif: "Gelasio", Georgia, serif;
+  --sans: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+html {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 18px;
+  line-height: 1.5556;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: var(--evergreen);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  display: inline-block;
+  margin: 4px 20px;
+  font-size: 16px;
+}
+
+.site-banner {
+  background: var(--band);
+  border-bottom: 1px solid var(--line);
+  padding: 8px 20px;
+}
+
+.site-banner p {
+  margin: 0;
+  max-width: 1160px;
+  margin-inline: auto;
+}
+
+body > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  min-height: 60px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+body > header p,
+body > header nav {
+  margin: 0;
+}
+
+body > header a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: none;
+}
+
+body > header a:hover {
+  text-decoration: underline;
+}
+
+.wordmark a {
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+}
+
+main {
+  display: block;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 20px 56px;
+}
+
+main:focus {
+  outline: none;
+}
+
+h1, h2, h3 {
+  font-family: var(--serif);
+  font-weight: 500;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: 30px;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 0 0 24px;
+}
+
+h2 {
+  font-size: 26px;
+  line-height: 1.23;
+}
+
+h3 {
+  font-size: 22px;
+  line-height: 1.27;
+}
+
+p, li {
+  max-width: 70ch;
+}
+
+small {
+  font-size: 16px;
+}
+
+/* A11Y-029: every field's visible <label for> sits above it in bold; no placeholder styling, since a
+   placeholder never carries a label or a hint. */
+label {
+  font-weight: 700;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+textarea,
+select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1.5px solid var(--field-edge);
+  border-radius: 12px;
+  min-height: 48px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):hover,
+textarea:hover,
+select:hover {
+  border-color: var(--ink);
+}
+
+button {
+  font: inherit;
+  font-weight: 700;
+  color: var(--on-evergreen);
+  background: var(--evergreen);
+  border: 1px solid var(--evergreen-deep);
+  border-radius: 12px;
+  min-height: 48px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+
+button:hover,
+button:active {
+  background: var(--evergreen-deep);
+}
+
+@media (min-width: 768px) {
+  body > header {
+    min-height: 76px;
+    padding: 0 40px;
+  }
+
+  main {
+    padding: 56px 40px 96px;
+  }
+
+  h1 {
+    font-size: 44px;
+    line-height: 1.14;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
