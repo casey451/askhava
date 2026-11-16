@@ -129,3 +129,68 @@ def test_the_real_floor_file_has_no_missing_path_and_a_measured_total() -> None:
     assert floors["total"] == int(float(printed.group(2))) - 2 > 0, "rounded down to a whole percent, less 2 points"
     decisions = (ROOT / "docs" / "decisions.md").read_text(encoding="utf-8")
     assert printed.group(1) in decisions and "coverage floor" in decisions
+
+
+# TD-OPS-35 (FEE-034, PRIV-022, LIC-033; D-2209, D-3974, T324): per-file floors for the money and privacy
+# files outside app/payments/, app/privacy/ and app/licensing/.
+FILE_FLOORS = {"total": 0.0, "floors": {"app/pay/": 50.0, "app/web/src/release.rs": 95.0}, "future": []}
+
+
+def test_a_per_file_floor_is_judged_on_that_files_branches_alone(tree: str) -> None:
+    rows = [_row(f"{tree}app/pay/src/a.rs", (60, 100)), _row(f"{tree}app/web/src/release.rs", (19, 20)),
+            _row(f"{tree}app/web/src/page.rs", (0, 100))]
+    (Path(tree) / "app" / "web" / "src").mkdir(parents=True)
+    (Path(tree) / "app" / "web" / "src" / "release.rs").write_text("", encoding="utf-8")
+    assert cf.judge(FILE_FLOORS, _report(rows), tree) == [], "the 0% sibling file does not count against release.rs"
+    rows[1] = _row(f"{tree}app/web/src/release.rs", (0, 0), (10, 10))
+    assert cf.judge(FILE_FLOORS, _report(rows), tree) == [], "a file with no branches is judged by its lines"
+    rows[1] = _row(f"{tree}app/web/src/release.rs", (0, 0), (5, 10))
+    low = ["app/web/src/release.rs 50.00 is below the floor 95.0"]
+    assert cf.judge(FILE_FLOORS, _report(rows), tree) == low, "its lines, not a missing branch figure, decide"
+
+
+def test_a_report_measuring_a_floored_file_below_its_floor_fails(tree: str) -> None:
+    (Path(tree) / "app" / "web" / "src").mkdir(parents=True)
+    rows = [_row(f"{tree}app/pay/src/a.rs", (60, 100)), _row(f"{tree}app/web/src/release.rs", (18, 20))]
+    assert cf.judge(FILE_FLOORS, _report(rows), tree) == ["app/web/src/release.rs 90.00 is below the floor 95.0"]
+    only = cf.judge(FILE_FLOORS, _report(rows), tree, ["app/web/src/release.rs"])
+    assert only == ["app/web/src/release.rs 90.00 is below the floor 95.0"]
+
+
+def _workspace(root: Path) -> None:
+    """A fake workspace: `web` depends on `pay`, `site` on `web`, `other` on neither."""
+    (root / "Cargo.toml").write_text('[workspace]\nmembers = ["app/*"]\n', encoding="utf-8")
+    deps = {"pay": "", "web": 'askhava-pay = { path = "../pay" }', "site": 'askhava-web = { path = "../web" }',
+            "other": ""}
+    for crate, dep in deps.items():
+        (root / "app" / crate / "src").mkdir(parents=True, exist_ok=True)
+        manifest = f'[package]\nname = "askhava-{crate}"\n\n[dependencies]\n{dep}\n'
+        (root / "app" / crate / "Cargo.toml").write_text(manifest, encoding="utf-8")
+    (root / "app" / "web" / "src" / "release.rs").write_text("", encoding="utf-8")
+    (root / "tests").mkdir()
+    (root / cf.FLOOR_FILE).write_text(json.dumps({"floors": {"app/web/src/release.rs": 95.0}}), encoding="utf-8")
+
+
+def test_select_maps_a_floored_file_to_its_crate_and_its_dependents(tmp_path: Path) -> None:
+    _workspace(tmp_path)
+    picked = (["askhava-site", "askhava-web"], ["app/web/src/release.rs"])
+    assert cf.select(tmp_path, ["app/web/src/release.rs"]) == picked
+    assert cf.select(tmp_path, ["app/web/src/page.rs"]) == picked, "a change elsewhere in the crate measures it too"
+    assert cf.select(tmp_path, [cf.FLOOR_FILE]) == picked
+    assert cf.select(tmp_path, ["app/pay/src/a.rs", "app/other/src/b.rs"]) == ([], [])
+
+
+def test_every_per_file_floor_is_at_or_below_its_ci_measurement_on_main() -> None:
+    floors = json.loads((ROOT / cf.FLOOR_FILE).read_text(encoding="utf-8"))
+    files = {p: f for p, f in floors["floors"].items() if not p.endswith("/")}
+    measured = floors["files_measured"]
+    assert files and set(files) == set(measured), "each per-file floor names its measurement, and only those"
+    assert re.match(r"cargo llvm-cov on main \(\w+\)", floors["files_from"]), "the measurement names its commit"
+    review = (ROOT / "docs" / "for-casey-review.md").read_text(encoding="utf-8")
+    decision = next(line for line in (ROOT / "docs" / "decisions.md").read_text(encoding="utf-8").splitlines()
+                    if line.startswith("- **D-3974** "))
+    for path, floor in files.items():
+        assert (ROOT / path).is_file() and path in decision, path
+        assert floor <= measured[path], f"{path}: floor {floor} above the measured {measured[path]}"
+        assert floor == (95.0 if measured[path] >= 95 else int(measured[path]) - 2), f"{path}: D-1759's rule"
+        assert floor == 95.0 or f"`{path}`" in review, f"{path}: a floor under 95 is listed for Casey"
