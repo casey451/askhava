@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T18:43:10Z by runner 91338561fdd6 (actions).
+Updated 2026-11-16T18:43:27Z by runner 91338561fdd6 (actions).
 
 **Building: T324 in progress since 17:53Z; 370 of 540 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 370 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T324 claimed 17:53Z, lease until 21:35Z; lane 2: T102 claimed 17:43Z, lease until 21:33Z; lane 6: T303 claimed 18:26Z, lease until 21:26Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
+- **Lane:** lane 1: T324 claimed 17:53Z, lease until 21:35Z; lane 6: T303 claimed 18:26Z, lease until 21:26Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
 - **Week:** 0% used, -4.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:43Z, 0 min before this update
 - **Keeper:** last ran 18:40Z, next wake 21:28Z
@@ -19,6 +19,7 @@ Updated 2026-11-16T18:43:10Z by runner 91338561fdd6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T102 | site: home and how-it-works pages with the footer, tagline,  | MERGE_PENDING | 1 | 59 min | 18:42Z |  |
 | T166 | site: self-hosted Gelasio and DM Sans fonts and the design-t | MERGE_PENDING | 1 | 52 min | 18:17Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | done | 3 | 51 min | 18:12Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T559 | Tests (harness): wait for the code step's autofocus and the  | done | 1 | 64 min | 18:02Z |  |
@@ -106,9 +107,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T324 (lease until 2026-11-16T21:35:06Z)
-- lane 2: T102 (lease until 2026-11-16T21:33:08Z)
 - lane 6: T303 (lease until 2026-11-16T21:26:18Z)
 - lane 7: T361 (lease until 2026-11-16T21:39:42Z)
 
 ## Last usage reading
-- {"task": "T166", "at": "2026-11-16T18:17:04Z", "cache_read_input_tokens": 3779716, "input_tokens": 108, "output_tokens": 39147, "cache_creation_input_tokens": 140913}
+- {"task": "T102", "at": "2026-11-16T18:42:56Z", "output_tokens": 103805, "cache_read_input_tokens": 23569701, "input_tokens": 321, "cache_creation_input_tokens": 310795}
