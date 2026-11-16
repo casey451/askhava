@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T22:46:30Z by runner f4898b7c0718 (manual).
+Updated 2026-11-16T22:49:58Z by runner 7d8aa1d00717 (actions).
 
 **Building: T523 in progress since 22:07Z; 376 of 540 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 376 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T523 claimed 22:07Z, lease until 01:07Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 01:41Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
+- **Lane:** lane 2: T523 claimed 22:07Z, lease until 01:49Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 01:41Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
 - **Week:** 4% used, 183.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:44Z, 1 min before this update
+- **Last run:** 22:46Z, 3 min before this update
 - **Keeper:** last ran 22:44Z, next wake 01:10Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 16 problem(s) on tasks still to run (+136 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 16 problem(s) on tasks still to run (+138 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -70,31 +70,31 @@ Updated 2026-11-16T22:46:30Z by runner f4898b7c0718 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 303 of 733 (41.3%) · partial 298 · unstarted 132
+**Requirements verified:** 327 of 733 (44.6%) · partial 274 · unstarted 132
 **Tasks merged (throughput only):** 376 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 21 | 10 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 20 | 35 | 3 | 58 |
-| calls | 12 | 12 | 1 | 25 |
+| businesses | 22 | 33 | 3 | 58 |
+| calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 17 | 34 | 1 | 52 |
+| fees | 24 | 27 | 1 | 52 |
 | intake | 30 | 10 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 39 | 9 | 0 | 48 |
-| lifecycle | 24 | 4 | 0 | 28 |
-| messaging | 22 | 21 | 2 | 45 |
+| lifecycle | 27 | 1 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 10 | 19 | 2 | 31 |
+| privacy | 12 | 17 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
+| quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 14 | 14 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -115,7 +115,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T523 (lease until 2026-11-17T01:07:25Z)
+- lane 2: T523 (lease until 2026-11-17T01:49:58Z)
 - lane 4: T481 (lease until 2026-11-17T01:37:17Z)
 - lane 5: T373 (lease until 2026-11-17T01:41:32Z)
 - lane 7: T221 (lease until 2026-11-17T01:36:07Z)
