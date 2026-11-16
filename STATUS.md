@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T15:54:40Z by runner d995af80b833 (actions).
+Updated 2026-11-16T15:56:15Z by runner 848a4c331fcb (actions).
 
-**Building: T101 in progress since 15:19Z; 363 of 535 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T101 in progress since 15:19Z; 363 of 536 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 363 of 535 build tasks (owner gates not counted)
+- **Tasks done:** 363 of 536 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 7: T475 claimed 15:08Z, lease until 18:08Z
+- **Lane:** lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 7: T475 claimed 15:08Z, lease until 18:56Z
 - **Week:** 95% used, 1.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:53Z, 1 min before this update
+- **Last run:** 15:54Z, 1 min before this update
 - **Keeper:** last ran 15:53Z, next wake 18:10Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T475: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -98,7 +98,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T101 (lease until 2026-11-16T18:19:45Z)
-- lane 7: T475 (lease until 2026-11-16T18:08:03Z)
+- lane 7: T475 (lease until 2026-11-16T18:56:15Z)
 
 ## Last usage reading
 - {"task": "T105", "at": "2026-11-16T15:51:48Z", "output_tokens": 110647, "input_tokens": 359, "cache_creation_input_tokens": 340449, "cache_read_input_tokens": 16127426}
