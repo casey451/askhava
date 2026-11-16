@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T01:45:58Z by runner 1f2885e44de7 (actions).
+Updated 2026-11-16T01:46:20Z by runner 1f2885e44de7 (actions).
 
-**Building: T099 in progress since 00:13Z; 353 of 505 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 01:45Z; 353 of 505 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 353 of 505 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T099 claimed 00:13Z, lease until 04:44Z
+- **Lane:** idle since 01:45Z (no task in progress)
 - **Week:** 77% used, 47.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:45Z, 0 min before this update
+- **Last run:** 01:45Z, 1 min before this update
 - **Keeper:** last ran 01:44Z, next wake 03:15Z
 
 ## Needs attention
@@ -18,12 +18,13 @@ Updated 2026-11-16T01:45:58Z by runner 1f2885e44de7 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T099 | Journey J2 (business) and its variants, keyboard-only, with  | MERGE_PENDING | 2 | 92 min | 01:45Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | MERGE_PENDING | 3 | 30 min | 01:42Z | Second review of head 85baf148e5f34e6d4d48b8c0a54b3e8ff92fdbdd found FINDINGS after the one fix round: scripts/check_dup |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 2 | 40 min | 00:58Z |  |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 1 | 47 min | 00:01Z |  |
 | T515 | End-to-end harness: specs can deliver a validly signed Strip | done | 2 | 50 min | 23:47Z | PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemo |
 | T515 | End-to-end harness: specs can deliver a validly signed Strip | BLOCKED | 1 | 17 min | 22:11Z |  |
-| T099 | Journey J2 (business) and its variants, keyboard-only, with  | BLOCKED | 1 | 58 min | 21:21Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
+| T099 | Journey J2 (business) and its variants, keyboard-only, with  | BLOCKED | 1 | 58 min | 21:21Z |  |
 | T464 | server and portals: the sign-up capability step is served af | done | 1 | 83 min | 19:56Z |  |
 | T495 | e2e: the served Confirm and pay journey in the browser again | done | 1 | 44 min | 18:21Z |  |
 | T462 | server: the sign-up inbox check is served behind the busines | done | 3 | 35 min | 18:05Z | PLAN GAP: app/portals/templates/email_check.html:47 owner T149 (done, #354), and app/portals/src/feedback.rs:61 owner T4 |
@@ -94,7 +95,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T099 (lease until 2026-11-16T04:44:43Z)
 
 ## Last usage reading
-- {"task": "T516", "at": "2026-11-16T01:42:09Z", "output_tokens": 23600, "input_tokens": 64, "cache_read_input_tokens": 1240302, "cache_creation_input_tokens": 85555}
+- {"task": "T099", "at": "2026-11-16T01:45:56Z", "cache_read_input_tokens": 21463974, "output_tokens": 107254, "cache_creation_input_tokens": 430642, "input_tokens": 463}
