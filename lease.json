@@ -25,16 +25,11 @@
    "lane": "4"
   },
   "5": null,
-  "6": {
-   "task": "T307",
-   "session": "actions-43943593385",
-   "expires": "2026-11-16T23:40:06Z",
-   "lane": "6"
-  },
+  "6": null,
   "7": null,
   "fix": null
  },
- "seq": 5880,
+ "seq": 5881,
  "runner_sha": "32d91e1d646edd14081a40599741ee1b9c17205a",
  "starter": "actions"
 }
