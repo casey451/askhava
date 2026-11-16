@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.5 (draft, D-492 clauses) · November 13, 2026 · Not yet in effect
+Version 0.6 (draft, D-492 clauses) · November 16, 2026 · Not yet in effect
 
 # Laftly Homeowner Terms
 
@@ -98,14 +98,14 @@ The Laftly Privacy Policy explains what we collect, who sees it and when, and ho
 
 We'll post any change with its effective date. A change applies only to requests you send after that date. The version in effect when you pick governs that request. We keep each version, unchanged, and the date you accepted it.
 
-## 14. General
+## 14. Contact
+
+Laftly LLC, [mailing address: P.O. box or registered agent, never a home address], Lake Havasu City, Arizona. Email help@laftly.com, or text HELP to the Laftly number. The Laftly owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent.
+
+## 15. General
 
 - If any part of these terms can't be enforced, the rest still applies.
 - These terms, the Laftly Privacy Policy and the Laftly SMS Terms are the whole agreement between you and Laftly about the service.
 - If we don't enforce a part of these terms right away, we can still enforce it later.
 - Laftly may transfer these terms to a business that takes over the service, and will tell you first.
 - We send notices about these terms by email or text to the contact you gave us. You can write to us at help@laftly.com.
-
-## 15. Contact
-
-Laftly LLC, [mailing address: P.O. box or registered agent, never a home address], Lake Havasu City, Arizona. Email help@laftly.com, or text HELP to the Laftly number. The Laftly owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent.
