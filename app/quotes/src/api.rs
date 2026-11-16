@@ -90,6 +90,7 @@ pub use crate::formats::{
 };
 pub use crate::gate::final_gate;
 pub use crate::handlers::{WINDOWS_KIND, WindowsCheck, run_windows_end, windows_ended};
+pub use crate::health_figures::{CardFigures, SpotCard, card_figures, spot_check_cards};
 pub use crate::home_numbers::{HomeNumbers, home_numbers, median_wait};
 pub use crate::intake::{
     Bounce, DayPart, Format, Period, Price, QUOTE_WINDOW, Quote, QuoteForm, QuoteRules, Submitted,

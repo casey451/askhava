@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO ops.delivery_alert (alert_id, audience) VALUES ($1, $2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a0641aca9d58e1019bb817673bd9135e6474fe9126415c7d56afbf5f8ab02e5a"
+}

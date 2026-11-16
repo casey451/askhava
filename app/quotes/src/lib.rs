@@ -49,6 +49,7 @@ mod emergency_card_notice;
 mod formats;
 mod gate;
 mod handlers;
+mod health_figures;
 mod home_numbers;
 mod intake;
 mod job_page;
