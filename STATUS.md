@@ -1,23 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-16T14:04:26Z by runner 4a375375e4f7 (actions).
+Updated 2026-11-16T14:05:08Z by runner cbf7179eefe4 (actions).
 
-**Building: T477 in progress since 12:23Z; 358 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T519 in progress since 13:17Z; 358 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 358 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T477 claimed 12:23Z, lease until 16:32Z; lane 3: T519 claimed 13:17Z, lease until 16:44Z; lane 5: T308 claimed 13:29Z, lease until 16:29Z
+- **Lane:** lane 3: T519 claimed 13:17Z, lease until 16:44Z; lane 5: T308 claimed 13:29Z, lease until 16:29Z
 - **Week:** 93% used, 2.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:04Z, 0 min before this update
 - **Keeper:** last ran 14:04Z, next wake 16:32Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 9 problem(s) on tasks still to run (+122 on DONE tasks); first: T129: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+121 on DONE tasks); first: T129: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T477 | payments, picks and quotes: the scorecard's money, pick and  | QUEUED | 1 | 101 min | 14:05Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | check_failed | 1 | 69 min | 13:32Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T101 | site: base layout in the design spec's look, works without J | MERGE_PENDING | 1 | 70 min | 13:31Z |  |
@@ -89,9 +90,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T477 (lease until 2026-11-16T16:32:59Z)
+- nothing
 - lane 3: T519 (lease until 2026-11-16T16:44:29Z)
 - lane 5: T308 (lease until 2026-11-16T16:29:53Z)
 
 ## Last usage reading
-- {"task": "T105", "at": "2026-11-16T13:58:45Z", "output_tokens": 117044, "cache_read_input_tokens": 15042077, "cache_creation_input_tokens": 377988, "input_tokens": 322}
+- {"task": "T477", "at": "2026-11-16T14:05:07Z", "output_tokens": 92977, "input_tokens": 302, "cache_read_input_tokens": 11601525, "cache_creation_input_tokens": 343281}

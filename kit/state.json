@@ -59266,8 +59266,8 @@
    "deps": [
     "T100"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "scorecard-inputs-money",
    "type": "build",
    "stage": "5",
@@ -59282,7 +59282,33 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "last_failure": "T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to) now lists every job carded before `to`, D-3922) was reviewed again with FINDINGS:\nFinding 1 (correctness, money/scorecard): app/quotes/src/scorecard_inputs.rs:183-196 `jobs_with_quotes` has no window (SELECT job_id FROM quotes.quote WHERE job_id = ANY($1) GROUP BY job_id HAVING count(*) >= $2). It feeds \"picks per request with quotes\" and \"picks among requests with 2 or more quotes\" (app/picks/src/scorecard_inputs.rs:7-8). With jobs_by_trade now covering every job carded since the pilot began, the request count becomes every request ever quoted, so the ratio reads too low; a quote received after `to` also still counts toward \"2 or more quotes\". This contradicts D-3922 (request-level inputs stay windowed on the request's own card time). Fix: give jobs_with_quotes a window, limited on the job's first card sent_at as quote_speed does, and count only quotes received before `to`; add a test where a job carded before the window with 2 quotes is not counted.\nMinor (test coverage): no fixture has a job carded after `to`, so an implementation of jobs_by_trade with no upper bound would pass; add one.\nOtherwise approved by both reviewers: all OPS-039/OPS-047/PICK-040/FEE-046 inputs, record_note_returned (PRIV-028), ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS, layers, docs, .sqlx files; scorecard_inputs_money 6 passed; smoke and prehandin green on cbf7179ee (worker run). Note: change is over the prompt's 550-line budget (~1,300 code+test lines plus 18 .sqlx files).",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 212,
+     "head_sha": "cbf7179eefe478d4500d5b295b1d73c38f6ff1fd",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-16T12:23:31Z",
+     "ended_at": "2026-11-16T14:05:07Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 10556490,
+       "turns": 124
+      },
+      "reviewer": {
+       "tokens": 1481595,
+       "turns": 29
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T478",
@@ -62115,12 +62141,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T105",
-   "at": "2026-11-16T13:58:45Z",
-   "output_tokens": 117044,
-   "cache_read_input_tokens": 15042077,
-   "cache_creation_input_tokens": 377988,
-   "input_tokens": 322
+   "task": "T477",
+   "at": "2026-11-16T14:05:07Z",
+   "output_tokens": 92977,
+   "input_tokens": 302,
+   "cache_read_input_tokens": 11601525,
+   "cache_creation_input_tokens": 343281
   },
   "source": "session_reading 2026-11-16T13:12:33Z (week)",
   "by_task": {
@@ -65864,7 +65890,17 @@
    },
    "T477": {
     "estimated_bytes": 422083,
-    "estimated_tokens": 1288601
+    "estimated_tokens": 1288601,
+    "usage_counting": "message_id",
+    "output_tokens": 92977,
+    "input_tokens": 302,
+    "cache_read_input_tokens": 11601525,
+    "cache_creation_input_tokens": 343281,
+    "worker_tokens": 10556490,
+    "worker_turns": 124,
+    "reviewer_tokens": 1481595,
+    "reviewer_turns": 29,
+    "last_model": "claude-opus-5-5"
    },
    "T531": {
     "estimated_bytes": 297586,
@@ -65902,11 +65938,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-16T13:01:14Z",
-    "tokens": 4557391
+    "tokens": 6154103
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 183189762
+    "tokens": 184786474
    }
   },
   "session_reading": {
@@ -65917,7 +65953,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T14:04:26Z",
+ "updated_at": "2026-11-16T14:05:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -66015,7 +66051,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "4a375375e4f738bfba30a5d63f211d4a94006068",
+ "runner_sha": "cbf7179eefe478d4500d5b295b1d73c38f6ff1fd",
  "starter": "actions",
  "smoke_runs": [
   {
