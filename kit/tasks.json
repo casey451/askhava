@@ -14068,7 +14068,7 @@
    "id": "T151",
    "slug": "help-requests",
    "title": "ops and messaging: HELP requests with one owner notification each and the plain-word auto-answers",
-   "goal": "Each HELP request produces one owner notification by alert email within the hourly and daily limits, its body scrubbed of contact details, and inbound help emails arrive only through the signed webhook into `privacy` (OPS-036, PRIV-026, PRIV-030); the plain-word auto-answers after HELP and all of TD-CON-17 are T482's (CON-034, D-3753). The `ops.help_request` and `ops.help_message` tables of architecture section 3 are created by this task's migration in the `ops` schema and written only through `app/ops/src/help_requests.rs` and `ops::api`; the owner's reply box and its link are T200's (TD-OPS-23); the HELP lines with their due dates are added to the digest's `digest_flags.rs` (T204's, extended here) (D-491). `messaging` cannot read `jobs`, `quotes` or `intake`, so `intake`'s inbound handler (`app/intake/src/handlers.rs`, T048's, extended here) puts the job fields the help texts and notification need (status, the LIST line from `quotes::api`, the quote-page link, trade, town, urgency) into the HELP event, and `messaging` composes from the event only. A business's \"Ask about a charge\" (T148) arrives as the `core.task` event `help_request_opened`, which this task's handler turns into one help request (D-492). It also corrects the module doc of `app/intake/src/handlers.rs` (lines 13 to 20), which says `answer_list` has no caller although T241's `receive_reply` calls it, and names `queue_call_back`'s callers as they now stand (fourth external audit F17, D-2206). Plan change D-3155: (a) no file this task owned saw a HELP text: `app/server/src/inbound_text.rs` answers HELP with `messaging::api::reply_to_help` and then halts (`Halt::Ends(\"help\")`, `:938` to `:945`) before intake, and plain follow-ups reach `intake::api::receive_reply` (`app/intake/src/replies.rs:43` to `:66`, T482's), never `handlers.rs`. So it also owns `inbound_text.rs` (after T241, T277, T336, T357, T391 and T435, before T402 and T407): after `reply_to_help` answers, `inbound_text.rs` calls one new `intake::api` function in `handlers.rs` that gathers the job fields and opens or joins the help request (`ops::api`, notification by `messaging`, as above); a business text (\"why was I charged?\") takes the same call; and a new `handlers.rs` function says whether the number's HELP was answered in the last 24 hours, which T482's `receive_reply` change calls, with a second that opens or joins the help request for a follow-up that is not a plain-word question (D-3753). (b) The inbound-email route is T133's (stage 6), which hands each email `privacy` has read to this task's entry point; until then the email cases (TD-OPS-11's automatic reply, TD-PRIV-11's sentinel body) run on `privacy::api::read_inbound_email`'s output, not over HTTP; TD-CON-17's opt-out half moved to T482 (D-3753). (c) TD-OPS-20's notification half is this task's; its docs half (the Gate C checklist) is T122's. (d) The migration is `0194_help_requests.sql` (T321 needs two numbers before T109's 0197; moved up one by D-3262, one more by D-3263, one more by D-3722 and one more by D-3779). Plan change D-3753: split; the auto-answers (`help_answers.rs`, `app/intake/src/replies.rs`, TD-CON-22) went to T482; 7 files, 450 lines.",
+   "goal": "Each HELP request produces one owner notification by alert email within the hourly and daily limits, its body scrubbed of contact details, and inbound help emails arrive only through the signed webhook into `privacy` (OPS-036, PRIV-026, PRIV-030); the plain-word auto-answers after HELP and all of TD-CON-17 are T482's (CON-034, D-3753). The `ops.help_request` and `ops.help_message` tables of architecture section 3 are created by this task's migration in the `ops` schema and written only through `app/ops/src/help_requests.rs` and `ops::api`; the owner's reply box and its link are T200's (TD-OPS-23); the HELP lines with their due dates are added to the digest's `digest_flags.rs` (T204's, extended here) (D-491). `messaging` cannot read `jobs`, `quotes` or `intake`, so `intake`'s inbound handler (`app/intake/src/handlers.rs`, T048's, extended here) puts the job fields the help texts and notification need (status, the LIST line from `quotes::api`, the quote-page link, trade, town, urgency) into the HELP event, and `messaging` composes from the event only. A business's \"Ask about a charge\" (T148) arrives as the `core.task` event `help_request_opened`, which this task's handler turns into one help request (D-492). It also corrects the module doc of `app/intake/src/handlers.rs` (lines 13 to 20), which says `answer_list` has no caller although T241's `receive_reply` calls it, and names `queue_call_back`'s callers as they now stand (fourth external audit F17, D-2206). Plan change D-3155: (a) no file this task owned saw a HELP text: `app/server/src/inbound_text.rs` answers HELP with `messaging::api::reply_to_help` and then halts (`Halt::Ends(\"help\")`, `:938` to `:945`) before intake, and plain follow-ups reach `intake::api::receive_reply` (`app/intake/src/replies.rs:43` to `:66`, T482's), never `handlers.rs`. So it also owns `inbound_text.rs` (after T241, T277, T336, T357, T391 and T435, before T402 and T407): after `reply_to_help` answers, `inbound_text.rs` calls one new `intake::api` function in `handlers.rs` that gathers the job fields and opens or joins the help request (`ops::api`, notification by `messaging`, as above); a business text (\"why was I charged?\") takes the same call; and a new `handlers.rs` function says whether the number's HELP was answered in the last 24 hours, which T482's `receive_reply` change calls, with a second that opens or joins the help request for a follow-up that is not a plain-word question (D-3753). (b) The inbound-email route is T133's (stage 6), which hands each email `privacy` has read to this task's entry point; until then the email cases (TD-OPS-11's automatic reply, TD-PRIV-11's sentinel body) run on `privacy::api::read_inbound_email`'s output, not over HTTP; TD-CON-17's opt-out half moved to T482 (D-3753). (c) TD-OPS-20's notification half is this task's; its docs half (the Gate C checklist) is T122's. (d) The migration is `0194_help_requests.sql` (T321 needs two numbers before T109's 0197; moved up one by D-3262, one more by D-3263, one more by D-3722 and one more by D-3779). Plan change D-3753: split; the auto-answers (`help_answers.rs`, `app/intake/src/replies.rs`, TD-CON-22) went to T482; 7 files, 450 lines. Plan change D-3880: the digest and `digest_flags.rs` are T524's (split from T204), so this task runs after T524.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14079,7 +14079,8 @@
     "T030",
     "T241",
     "T432",
-    "T449"
+    "T449",
+    "T524"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14142,7 +14143,8 @@
     "D-3722",
     "D-3744",
     "D-3753",
-    "D-3779"
+    "D-3779",
+    "D-3880"
    ],
    "cites": [],
    "budget": {
@@ -15456,7 +15458,7 @@
    "id": "T202",
    "slug": "site-spanish-business-lines",
    "title": "site: Spanish pages, the business page blocks and the required-lines docs test",
-   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T202 is split into T202 (the site's Spanish pages, the business and business help pages and the required-lines docs test) and T488 (the Spanish business sign-up, which runs after it). The Spanish pages exist with the Spanish key terms (the Spanish consent draft above the English consent text is T103's request page, WEB-006, D-493); the business page shows a sample card per open trade, the city-license guide and the \"Who runs Laftly\" block, in Spanish too; the business help page (`business_help.html`) holds the WEB-020 safety tip for people working alone; and a docs test finds each required line (quote-page lines, insurance line, privacy lines, independent-business line) on every page that needs it (WEB-002, WEB-019 to WEB-021, WORD-013). The business page also carries, in English and Spanish, the WEB-024 notice line that follows the business-texting switch, the WEB-025 Hava-name answer, both WORD-017 lines, the WORD-002 business statement, every number and offer from the spec (WEB-018), the BIZ-030 \"How you're charged\" summary and the REC-009 pricing copy (four months, capped at $75, the $150-a-month pool example in the $75 row); the Spanish business page's sign-up link adds `lang=es` (WEB-019), which T488 serves in Spanish; the Spanish business sign-up itself (`app/portals/templates/es_business_signup.html`, its view and the served steps) is T488's; the required-lines checks of the quote page and quote cards (WORD-005 to WORD-007, WORD-014) are T052's page and T203's scan (D-493). `tests/docs/test_required_lines.py` finds the Spanish pages by pattern (every `es_*.html` under `app/site/templates/` and `app/portals/templates/`), never by a fixed list, so T488's `es_business_signup.html` is checked when it lands (TD-WORD-02, WORD-013). The site pages extend T101's `site_layout.html` and fill `banner_shown`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (a public `GET` must answer 200, D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): in the same change that serves its new `GET` pages, this task adds each page's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts` (fake data only, `shows` and `hides` lines that tell each state apart) and runs `bash scripts/prehandin.sh --ally`, so `tests/a11y/axe_all_pages.spec.ts` (which fails any `GET` route without a state, D-3836, D-3838) stays green. Plan change D-3878: `scripts/check_copy.py` skips `es_*.html` files and `lang=\"es\"` text (T519), and fixed English sentences carry T519's `data-fixed` marker; `tests/docs/test_required_lines.py` still reads every template, so each required line stays literal template text, never a Rust field.",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T202 is split into T202 (the site's Spanish pages, the business and business help pages and the required-lines docs test) and T488 (the Spanish business sign-up, which runs after it). The Spanish pages exist with the Spanish key terms (the Spanish consent draft above the English consent text is T103's request page, WEB-006, D-493); the business page shows a sample card per open trade, the city-license guide and the \"Who runs Laftly\" block, in Spanish too; the business help page (`business_help.html`) holds the WEB-020 safety tip for people working alone; and a docs test finds each required line (quote-page lines, insurance line, privacy lines, independent-business line) on every page that needs it (WEB-002, WEB-019 to WEB-021, WORD-013). The business page also carries, in English and Spanish, the WEB-024 notice line that follows the business-texting switch, the WEB-025 Hava-name answer, both WORD-017 lines, the WORD-002 business statement, every number and offer from the spec (WEB-018), the BIZ-030 \"How you're charged\" summary and the REC-009 pricing copy (four months, capped at $75, the $150-a-month pool example in the $75 row); the Spanish business page's sign-up link adds `lang=es` (WEB-019), which T488 serves in Spanish; the Spanish business sign-up itself (`app/portals/templates/es_business_signup.html`, its view and the served steps) is T488's; the required-lines checks of the quote page and quote cards (WORD-005 to WORD-007, WORD-014) are T052's page and T203's scan (D-493). `tests/docs/test_required_lines.py` finds the Spanish pages by pattern (every `es_*.html` under `app/site/templates/` and `app/portals/templates/`), never by a fixed list, so T488's `es_business_signup.html` is checked when it lands (TD-WORD-02, WORD-013). The site pages extend T101's `site_layout.html` and fill `banner_shown`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (a public `GET` must answer 200, D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): in the same change that serves its new `GET` pages, this task adds each page's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts` (fake data only, `shows` and `hides` lines that tell each state apart) and runs `bash scripts/prehandin.sh --ally`, so `tests/a11y/axe_all_pages.spec.ts` (which fails any `GET` route without a state, D-3836, D-3838) stays green. Plan change D-3878: `scripts/check_copy.py` skips `es_*.html` files and `lang=\"es\"` text (T519), and fixed English sentences carry T519's `data-fixed` marker; `tests/docs/test_required_lines.py` still reads every template, so each required line stays literal template text, never a Rust field. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): (1) The city-license guide's cost, time and link (WEB-020) are three optional settings added to the shared `app/core/src/settings.rs` (`ASKHAVA_CITY_LICENSE_COST`, `ASKHAVA_CITY_LICENSE_TIME`, `ASKHAVA_CITY_LICENSE_URL`); each part is left out while its setting is empty and the guide is hidden while all three are; no figure is typed in, and filling them is an open item for the owner in `docs/for-casey-review.md`. (2) No stored business-texting switch exists yet (`app/intake/src/cards_out.rs:68` and the served sign-up use the constant `false`; `site` may not call `portals`, where `notice_line` lives, `app/portals/src/business_signup.rs:140`): the page struct takes `texting_on: bool`, the handler passes `false` as the served sign-up does, both WEB-024 lines are literal text in `business.html` and `es_business.html` under `{% if texting_on %}`, and TD-WEB-05's switch-on case renders the struct with `true` in a Rust test in `pages.rs`. (3) Paths: the business page is `/business`, its Spanish page `/es/business`, the business help page `/business/help` and the Spanish home `/es`; each has its section 13 row (added by this plan change) marked `yes` and its `PAGE_STATES` entry; the Spanish sign-up link is `/b/signup?lang=es`. (4) `tests/docs/test_required_lines.py` covers the not-a-contractor line, the automated-texts line, the Spanish key terms and the WORD-013 Spanish-to-English comparison only (the insurance, privacy and independent-business lines are T203's); a WORD-013 failure in T102's `es_how_it_works.html` is reported, not fixed here. WEB-021's away line is T483's and out of scope. Budget 600 lines.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15536,12 +15538,13 @@
     "D-409",
     "D-3805",
     "D-3844",
-    "D-3878"
+    "D-3878",
+    "D-3880"
    ],
    "cites": [],
    "budget": {
     "files": 6,
-    "lines": 300,
+    "lines": 600,
     "context_pct": 15
    },
    "checks": [
@@ -15625,7 +15628,7 @@
    "id": "T103",
    "slug": "site-web-chat",
    "title": "intake: the web-chat conversation, where typing a verified mobile number is the opt-in, with its request source and new-request limit",
-   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T103 is split into T103 (`intake`'s web-chat conversation: the code step's trait, the opt-in, business intent, the request source and the new-request limit) and T489 (the site's chat and request pages and the composition's Verify codes, which runs after it). A homeowner can start a request by web chat as well as by text: in `app/intake/src/web_chat.rs`, called through `intake::api`, the opt-in is typing a mobile number and then its code (no AI call before the code), which records consent with channel \"web chat\" and no agree button (CON-025), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021); the web-chat path runs the \"Intake order\" table's steps in its order (INT-043). The pages that show the consent text above the chat box are T489's. This task's migration adds the request source column INT-047 records (the `g` link code, or 'text' for a request started by text), which T158's scorecard reads (D-493). A web-chat request that would open a new request calls `intake::api::admit_new_request` first, on the connection of the transaction that opens it, with her vault contact and the client IP (SEC-014, D-1951; T317 changed it to take a connection, D-2206); a refused one opens nothing and `intake` answers so, and T489's page says to try again later. Plan change D-3144: `site` and `intake` may not call `adapters` (`kit/layers.json`), where Verify is (`adapters::api::VerifyAdapter`, `app/adapters/src/verify.rs:40`), so the chat's code step uses a trait in `app/intake/src/web_chat.rs` (send a code to a number, check it), which T489's composition implements over the Verify adapter (D-963); this task's tests use a fake. Plan change D-3189 (PRIV-008): each web-chat message whose words describe a job goes to `quotes::api::keep_description` (T411) with one UUID per chat message as its message ID (since web chat has no inbox row), preferably a key the page (T489's) sends with the message, which this task's API takes, so a retried POST stores nothing twice, as T162's order does for texts. Tests, fake data only, in `tests/integration/tests/web_chat.rs` against PostgreSQL: TD-INT-09's integration cases (web chat starts a request; \"I'm a contractor, send me jobs\" gets one text with the sign-up link and no job opens; the AI second opinion is called only for messages that would otherwise open a request), TD-AI-10's (an unverified web-chat session makes zero adapter calls) and TD-INT-30's integration golden test of the web-chat path's order; and TD-CON-10's cases that only `intake` decides, through the web-chat API: starting the chat alone records no text consent; a number typed in gets only the Verify code until the code is checked; a wrong or missing code sends nothing more to that number and records no consent; the right code records consent (channel \"web chat\") and the consent text goes as its first text; with the texting number suspended, a 911-list message typed in web chat answers the INT-004 text for the chat to show (D-470, D-492). The web-chat API provides each of these to T489's page; the end-to-end cases of TD-CON-10, TD-INT-09 and TD-INT-30 are T489's.",
+   "goal": "Plan change D-3805 (Casey Nov 14, 2026: split stage-5 tasks likely to need well over 80 builder turns; nothing weakened or dropped): T103 is split into T103 (`intake`'s web-chat conversation: the code step's trait, the opt-in, business intent, the request source and the new-request limit) and T489 (the site's chat and request pages and the composition's Verify codes, which runs after it). A homeowner can start a request by web chat as well as by text: in `app/intake/src/web_chat.rs`, called through `intake::api`, the opt-in is typing a mobile number and then its code (no AI call before the code), which records consent with channel \"web chat\" and no agree button (CON-025), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021); the web-chat path runs the \"Intake order\" table's steps in its order (INT-043). The pages that show the consent text above the chat box are T489's. This task's migration adds the request source column INT-047 records (the `g` link code, or 'text' for a request started by text), which T158's scorecard reads (D-493). A web-chat request that would open a new request calls `intake::api::admit_new_request` first, on the connection of the transaction that opens it, with her vault contact and the client IP (SEC-014, D-1951; T317 changed it to take a connection, D-2206); a refused one opens nothing and `intake` answers so, and T489's page says to try again later. Plan change D-3144: `site` and `intake` may not call `adapters` (`kit/layers.json`), where Verify is (`adapters::api::VerifyAdapter`, `app/adapters/src/verify.rs:40`), so the chat's code step uses a trait in `app/intake/src/web_chat.rs` (send a code to a number, check it), which T489's composition implements over the Verify adapter (D-963); this task's tests use a fake. Plan change D-3189 (PRIV-008): each web-chat message whose words describe a job goes to `quotes::api::keep_description` (T411) with one UUID per chat message as its message ID (since web chat has no inbox row), preferably a key the page (T489's) sends with the message, which this task's API takes, so a retried POST stores nothing twice, as T162's order does for texts. Tests, fake data only, in `tests/integration/tests/web_chat.rs` against PostgreSQL: TD-INT-09's integration cases (web chat starts a request; \"I'm a contractor, send me jobs\" gets one text with the sign-up link and no job opens; the AI second opinion is called only for messages that would otherwise open a request), TD-AI-10's (an unverified web-chat session makes zero adapter calls) and TD-INT-30's integration golden test of the web-chat path's order; and TD-CON-10's cases that only `intake` decides, through the web-chat API: starting the chat alone records no text consent; a number typed in gets only the Verify code until the code is checked; a wrong or missing code sends nothing more to that number and records no consent; the right code records consent (channel \"web chat\") and the consent text goes as its first text; with the texting number suspended, a 911-list message typed in web chat answers the INT-004 text for the chat to show (D-470, D-492). The web-chat API provides each of these to T489's page; the end-to-end cases of TD-CON-10, TD-INT-09 and TD-INT-30 are T489's. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): The CON-001 business-intent reply is the new template `business_signup_reply` (audience `homeowner`, English and Spanish) in the shared `app/messaging/templates/en.json` and `es.json`, which T113's campaign samples.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15695,7 +15698,8 @@
     "D-3263",
     "D-3722",
     "D-3779",
-    "D-3805"
+    "D-3805",
+    "D-3880"
    ],
    "cites": [],
    "budget": {
@@ -16348,10 +16352,71 @@
    "prompt": "kit/prompts/T320.md"
   },
   {
+   "id": "T523",
+   "slug": "owner-flag-inputs",
+   "title": "quotes, jobs, picks and intake: the readers the owner flags need (D-3880)",
+   "goal": "Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): The owner-portal flags (OPS-027, OPS-031, OPS-034) need counts no `api` gives: `quotes`, `jobs`, `picks` and `intake` export none of them. This task adds one reader module in each, re-exported by one line in its shared `api.rs`, each returning counts and IDs only, never a phone, name or address: (1) `app/quotes/src/flag_inputs.rs`: per trade and calendar month, the median number of confirmed quotes per job and the quotes per win, and the job IDs of one trade, keyed on `quotes.shown_card.category` (as D-3877's T477 reader is, since `jobs` and `picks` rows may not carry the trade); (2) `app/jobs/src/flag_inputs.rs`: for given job IDs and a month, the connected jobs and how many ended NO or OTHER at the day-3 check-in; (3) `app/picks/src/flag_inputs.rs`: the business IDs with N or more lapsed picks (PICK-019) in a window, with their counts; (4) `app/intake/src/flag_inputs.rs`: homeowner IDs (the vault ID, never a phone) with N or more requests in a window and no pick. Each reader takes its numbers and window as arguments (the settings are T524's). Tests in `tests/integration/tests/flag_inputs.rs` against real PostgreSQL, fake data only: each reader on planted rows, its boundary (4 quotes median against 3, 31% against 30%, 3 lapsed picks against 2, 3 requests against 2), and no contact field in any result. Update each module's `NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "quotes",
+   "deps": [
+    "T100",
+    "T105"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/quotes/src/flag_inputs.rs",
+    "app/jobs/src/flag_inputs.rs",
+    "app/picks/src/flag_inputs.rs",
+    "app/intake/src/flag_inputs.rs",
+    "tests/integration/tests/flag_inputs.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/quotes-pick.md",
+    "docs/brains/postgres-operations.md"
+   ],
+   "requirements": [
+    "OPS-027",
+    "OPS-031",
+    "OPS-034"
+   ],
+   "tests": [
+    "TD-OPS-08"
+   ],
+   "decisions": [
+    "D-251",
+    "D-284",
+    "D-464",
+    "D-3880"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 400,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T523-owner-flag-inputs",
+   "prompt": "kit/prompts/T523.md"
+  },
+  {
    "id": "T204",
    "slug": "ops-pushes-digest-security-alerts",
-   "title": "ops: phone pushes by alert email, the weekly digest, owner flags, the away setting and security-event alerts",
-   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away date is stored here (an `ops` table of this task's migration, read through `ops::api`), and what businesses and HELP replies are told while it is set is T483's (D-3753); security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840). Fourth external audit F28 and SEC-051 (D-2207): the alert email sender is registered in `server::worker_registry` (the shared `app/server/src/lib.rs:456`, which has the `Settings` its configuration, the alert address (OPS-035), comes from; `register_handlers`, `:382`, takes none) on every path (D-3144), so a raised pushing alert reaches the email provider through the worker, and `tests/integration/tests/alert_routing.rs` proves it through the worker, never by calling the sender; and `messaging::api::check_webhook_silence` (SEC-051, `app/messaging/src/email.rs:762`), which nothing runs today, is run hourly by a worker task this task queues, after T320 made it raise through `ops::api::raise_kind_once`, so it keeps one open alert; this task's own daily volume check raises through `raise_alert_once` or `raise_kind_once` as well (D-3144). The weekly digest also counts the `ops` audit rows with action `messaging.optout_wrote_again` that T360 writes for CON-016 (a listed homeowner who wrote again without START and has no email on file), as a count with job numbers only (D-2629, TD-OPS-09); the business statement's won-dispute rows (D-2625) are T483's, which owns the statement's labels (D-3844). Plan change D-3155: its migration is numbered 0193 (moved up one by D-3262, one more by D-3263, one more by D-3722 and one more by D-3779), so T151 and T321 fit before T109's 0197 (V9). Plan change D-3753: split; the away lines on the business home and the HELP reply, the Google and Yelp links and the served home went to T483; 5 files, 450 lines. Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): OPS-023's automatic acknowledgements other than the delivery alert's (T105's) are this task's, as TD-OPS-08 tests them (D-220): a Stripe or webhook alert once there have been no errors for 2 hours, a health-check alert once the check passes again, and a ledger alert (`payments.ledger_mismatch`, `MISMATCH_ALERT`, `app/payments/src/reconcile.rs:90`) once the next nightly reconcile finds no difference; each is acknowledged, logged and listed in the digest. The 2-hour no-errors path never acknowledges a `payments.ledger_mismatch` alert; only a matched reconcile clears it. The `ops::api` acknowledgement takes the alert kind; it is tested with the kinds `ops.vendor_errors` and `ops.health_check_failed`, named exactly, and its callers for those two kinds are T518's. A health-check alert is raised at its second failed check (T518, about 5 minutes after the first failure), so OPS-029's push of a health check still failing 15 minutes after its first failure fires when the alert is still open 10 minutes after it was raised, and TD-OPS-08's 0, 10 and 15-minute cases hold. The rule lives in `app/ops/src/alerts.rs` behind one `ops::api` function; for the ledger alert, `reconcile` (`app/payments/src/reconcile.rs:281`, owned here after DONE T359; it raises the alert at `:309` when `report.matched()` is false) calls it when the run matched, and nothing else in that file changes. No alert kind exists on `main` ff584ab for OPS-004's Stripe-or-webhook errors over 30 minutes or its health check failing twice, so TD-OPS-08's Stripe and health-check cases plant the alert rows directly (fake data only) and prove the acknowledgement rule by kind; raising those two alerts is T518's.",
+   "title": "ops: phone pushes by alert email, OPS-023 acknowledgements, the away setting and the webhook-silence check",
+   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the away date is stored here (an `ops` table of this task's migration, read through `ops::api`), and what businesses and HELP replies are told while it is set is T483's (D-3753); security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840). Fourth external audit F28 and SEC-051 (D-2207): the alert email sender is registered in `server::worker_registry` (the shared `app/server/src/lib.rs:788`, which has the `Settings` its configuration, the alert address (OPS-035), comes from; `register_handlers`, `:613`, takes none) on every path (D-3144), so a raised pushing alert reaches the email provider through the worker, and `tests/integration/tests/alert_routing.rs` proves it through the worker, never by calling the sender; and `messaging::api::check_webhook_silence` (SEC-051, `app/messaging/src/email.rs:762`), which nothing runs today, is run hourly by a worker task this task queues, after T320 made it raise through `ops::api::raise_kind_once`, so it keeps one open alert; this task's own daily volume check raises through `raise_alert_once` or `raise_kind_once` as well (D-3144). The weekly digest also counts the `ops` audit rows with action `messaging.optout_wrote_again` that T360 writes for CON-016 (a listed homeowner who wrote again without START and has no email on file), as a count with job numbers only (D-2629, TD-OPS-09); the business statement's won-dispute rows (D-2625) are T483's, which owns the statement's labels (D-3844). Plan change D-3155: its migration is numbered 0193 (moved up one by D-3262, one more by D-3263, one more by D-3722 and one more by D-3779), so T151 and T321 fit before T109's 0197 (V9). Plan change D-3753: split; the away lines on the business home and the HELP reply, the Google and Yelp links and the served home went to T483; 5 files, 450 lines. Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): OPS-023's automatic acknowledgements other than the delivery alert's (T105's) are this task's, as TD-OPS-08 tests them (D-220): a Stripe or webhook alert once there have been no errors for 2 hours, a health-check alert once the check passes again, and a ledger alert (`payments.ledger_mismatch`, `MISMATCH_ALERT`, `app/payments/src/reconcile.rs:90`) once the next nightly reconcile finds no difference; each is acknowledged, logged and listed in the digest. The 2-hour no-errors path never acknowledges a `payments.ledger_mismatch` alert; only a matched reconcile clears it. The `ops::api` acknowledgement takes the alert kind; it is tested with the kinds `ops.vendor_errors` and `ops.health_check_failed`, named exactly, and its callers for those two kinds are T518's. A health-check alert is raised at its second failed check (T518, about 5 minutes after the first failure), so OPS-029's push of a health check still failing 15 minutes after its first failure fires when the alert is still open 10 minutes after it was raised, and TD-OPS-08's 0, 10 and 15-minute cases hold. The rule lives in `app/ops/src/alerts.rs` behind one `ops::api` function; for the ledger alert, `reconcile` (`app/payments/src/reconcile.rs:281`, owned here after DONE T359; it raises the alert at `:309` when `report.matched()` is false) calls it when the run matched, and nothing else in that file changes. No alert kind exists on `main` ff584ab for OPS-004's Stripe-or-webhook errors over 30 minutes or its health check failing twice, so TD-OPS-08's Stripe and health-check cases plant the alert rows directly (fake data only) and prove the acknowledgement rule by kind; raising those two alerts is T518's. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): T204 is split, as D-3805 split others (nothing weakened or dropped). This task keeps the push rules (OPS-029, OPS-032), the once-a-day push record, the OPS-023 acknowledgements with `reconcile.rs`, the alert email sender and its registration (OPS-035), the hourly webhook-silence task (SEC-051), the away date (OPS-026), its migration and `alert_routing.rs` (TD-OPS-10, TD-OPS-13, and TD-OPS-08's and TD-OPS-09's push and acknowledgement cases). The weekly digest and the owner-portal flags (OPS-027, OPS-030, OPS-031, OPS-033, OPS-034, OPS-041, BIZ-054; `app/portals/src/digest_flags.rs`, no longer owned here) are T524's, reading T523's flag inputs; the SEC-047 hourly vault-read check and the OPS-052 daily volume check (TD-SEC-26) are T525's; the earlier sentences about the digest, the flags, the vault-read count and the volume check are theirs. OPS-035's automated call is not this task's: when `alert_emails.rs` emails a critical safety alert it queues one `core.task` of kind `calls.owner_alert_call` (the alert ID only, a constant named `*_KIND`), which this plan change lists in `tests/task_kinds_deferred.json` for T484, which places it; TD-OPS-10's call case is T484's. New settings keys go in the shared `app/core/src/settings.rs` (an unknown `ASKHAVA_*` key stops start-up). Build notes go to the end of the module `NOTES.md` files (`app/server/CLAUDE.md` is at its 8,192-byte cap). Budget 500 lines.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16379,7 +16444,6 @@
     "app/ops/src/alerts.rs",
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
-    "app/portals/src/digest_flags.rs",
     "migrations/0193_ops_owner_digest.sql",
     "app/payments/src/reconcile.rs"
    ],
@@ -16394,23 +16458,14 @@
    ],
    "requirements": [
     "OPS-026",
-    "OPS-027",
     "OPS-029",
-    "OPS-030",
-    "OPS-031",
     "OPS-032",
-    "OPS-033",
-    "OPS-034",
-    "OPS-035",
-    "SEC-047",
-    "SEC-048",
-    "OPS-052"
+    "OPS-035"
    ],
    "tests": [
     "TD-OPS-08",
     "TD-OPS-09",
     "TD-OPS-10",
-    "TD-SEC-26",
     "TD-OPS-13"
    ],
    "decisions": [
@@ -16451,12 +16506,13 @@
     "D-3753",
     "D-3779",
     "D-3844",
-    "D-3877"
+    "D-3877",
+    "D-3880"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
-    "lines": 550,
+    "files": 5,
+    "lines": 500,
     "context_pct": 22
    },
    "checks": [
@@ -16467,6 +16523,65 @@
    "branch": "claude/task/T204-ops-pushes-digest-security-alerts",
    "prompt": "kit/prompts/T204.md",
    "copy": true
+  },
+  {
+   "id": "T525",
+   "slug": "vault-read-and-volume-checks",
+   "title": "server and ops: the hourly vault-read check and the daily database-volume check run (D-3880)",
+   "goal": "Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): Split from T204. `privacy::api::check_read_rates` (`app/privacy/src/vault.rs:898`, SEC-047's spike and unregistered-read alerts) exists but nothing runs it, and nothing checks the database volume (OPS-052). (1) The new `app/server/src/watch_checks.rs` registers two worker tasks in `worker_registry` (the shared `app/server/src/lib.rs`), each first queued from `schedule_start` (the shared `app/server/src/bin/worker.rs`) under a dedupe key and re-queued: an hourly one calling `check_read_rates` for the hour just ended, and a daily one calling (2) the new `ops::api::check_volume` in `app/ops/src/volume_check.rs`, which compares `pg_database_size` with the volume size (a new setting in the shared `app/core/src/settings.rs`) and raises through `raise_kind_once` a Low alert above 70% and a High alert above 85%, which T204's rules list in the next OPS-032 daytime push; neither starts safe mode. SEC-048's security events and their burst alert already exist (`app/portals/src/security.rs:520` to `:525`); TD-SEC-26's SEC-048 case runs against them unchanged. Tests in `tests/integration/tests/watch_checks.rs` (TD-SEC-26, and TD-OPS-09's volume cases), through the worker, fake data only. Build notes go to the end of `app/server/NOTES.md` and `app/ops/NOTES.md`; update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T204"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/watch_checks.rs",
+    "app/ops/src/volume_check.rs",
+    "tests/integration/tests/watch_checks.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/ops-recovery.md",
+    "docs/brains/postgres-operations.md"
+   ],
+   "requirements": [
+    "SEC-047",
+    "SEC-048",
+    "OPS-052"
+   ],
+   "tests": [
+    "TD-SEC-26",
+    "TD-OPS-09"
+   ],
+   "decisions": [
+    "D-480",
+    "D-492",
+    "D-3880"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 350,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T525-vault-read-and-volume-checks",
+   "prompt": "kit/prompts/T525.md"
   },
   {
    "id": "T106",
@@ -16540,7 +16655,7 @@
    "id": "T107",
    "slug": "consent-records-alerts",
    "title": "Consent records kept 5 years, no export, opt-out rate alerts",
-   "goal": "Consent records, opt-in wording versions, keyword events and message logs are kept 5 years after the last message and never shared or exported, the privacy policy says so, and the owner dashboard shows the weekly opt-out rate and alerts at 3% of homeowners or 5% of businesses (CON-022 to CON-024, TERMS-020). TERMS-020's policy sentence is T112's; the retention display is on the owner portal page T108 owns (D-491).",
+   "goal": "Consent records, opt-in wording versions, keyword events and message logs are kept 5 years after the last message and never shared or exported, the privacy policy says so, and the owner dashboard shows the weekly opt-out rate and alerts at 3% of homeowners or 5% of businesses (CON-022 to CON-024, TERMS-020). TERMS-020's policy sentence is T112's; the retention display is on the owner portal page T108 owns (D-491). Plan change D-3880: the weekly opt-out rates this task computes are read by T524's digest (OPS-030's opt-out line) through `messaging::api`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16577,12 +16692,14 @@
    "tests": [
     "TD-CON-09"
    ],
-   "decisions": [],
+   "decisions": [
+    "D-3880"
+   ],
    "cites": [],
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 18
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -16592,6 +16709,82 @@
    "branch": "claude/task/T107-consent-records-alerts",
    "prompt": "kit/prompts/T107.md",
    "copy": true
+  },
+  {
+   "id": "T524",
+   "slug": "ops-digest-and-flags",
+   "title": "portals and server: the weekly digest and the owner-portal flags (D-3880)",
+   "goal": "Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): Split from T204. The weekly digest email and the owner-portal flags carry counts and job or business numbers only, never a homeowner contact detail (OPS-027, OPS-030, OPS-031, OPS-033, OPS-034, OPS-041, BIZ-054). `app/portals/src/digest_flags.rs` builds both and computes no input itself: it reads T523's readers, T105's `ops` business counts, T107's weekly opt-out rates (OPS-030's opt-out line), and the `ops` alert and audit rows named here (automatic activations and self-acknowledged alerts: acknowledged `ops.alert` rows; complaints and PROBLEM replies: the complaint and `jobs.problem` alerts; disputes: `payments` dispute alerts; unknown charges refunded and unreadable business texts: their alert kinds; CON-016: the `messaging.optout_wrote_again` audit rows, D-2629; not-covered requests by trade, OPS-041; the BIZ-054 leaving answers; the database-volume alerts, T525's); an input with no reader is reported, never queried by naming another module's table. A PROBLEM reply's words come from `privacy::api::problem_words`, which takes an `OwnerSessionProof` (`app/privacy/src/message_body.rs:86` to `:90`), so they appear only on the owner-portal digest view, never in the worker's email, which shows the count and job numbers. The flags' numbers (5 businesses, median 4 quotes, 30% for 2 months, 3 lapsed picks in 30 days, 3 requests in 30 days with no pick) are settings in the shared `app/core/src/settings.rs`; a flag changes nothing. OPS-033: the owner portal lists what falls due in the next 4 days, and an unopened digest is re-sent once after 4 days (the last-opened time is T204's table). The weekly email is a worker task in the new `app/server/src/digest_email.rs`, registered in `worker_registry` and first queued from `schedule_start` under a dedupe key, sending through `messaging::api`'s owner email. Tests in `tests/integration/tests/digest_flags.rs` (TD-OPS-08's flag and digest cases, TD-OPS-09's digest cases), fake data only, including that the email holds no vault field and no problem words. Build notes go to the end of `app/portals/NOTES.md` and `app/server/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T204",
+    "T523",
+    "T107",
+    "T277",
+    "T357",
+    "T358",
+    "T360",
+    "T353",
+    "T451"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/digest_flags.rs",
+    "app/server/src/digest_email.rs",
+    "tests/integration/tests/digest_flags.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/businesses.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "OPS-027",
+    "OPS-030",
+    "OPS-031",
+    "OPS-033",
+    "OPS-034",
+    "OPS-041",
+    "BIZ-054"
+   ],
+   "tests": [
+    "TD-OPS-08",
+    "TD-OPS-09"
+   ],
+   "decisions": [
+    "D-219",
+    "D-221",
+    "D-251",
+    "D-284",
+    "D-464",
+    "D-1840",
+    "D-2629",
+    "D-3880"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 500,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T524-ops-digest-and-flags",
+   "prompt": "kit/prompts/T524.md"
   },
   {
    "id": "T321",
@@ -16968,7 +17161,7 @@
    "id": "T109",
    "slug": "recovery-backup-export",
    "title": "recovery: backup checks and the nightly encrypted export",
-   "goal": "`recovery` makes the nightly encrypted export to separate storage under its own key, kept 30 days with versioning and object lock, runs the monthly test restore with a High alert on failure, and leaves the key inventory to T117; `recovery` records each backup and restore result in `recovery.backup_check` and as one `ops` audit entry (`ops::api::audit`), and `portals` reads the newest such entry through a new `ops::api::latest_audit(conn, action)` added to the shared `app/ops/src/api.rs` (`portals` may not call `recovery`, `kit/layers.json`): the restore result line in `digest_flags.rs` (T204's) and the last-backup figure in `health_page.rs` (T476's, D-3753), both extended here (D-491, D-493) (OPS-013, PRIV-018, PRIV-024, PRIV-029). The export is `pg_dump -Fc`; every restore runs `scripts/bootstrap_roles.sql` first, then `pg_restore --single-transaction`, with the ownership and append-only grant check (OPS-051), and the storage provider is Backblaze B2 (PRIV-029) (D-492). The new `recovery` schema's default privileges give `askhava_app` SELECT and INSERT only, and a table that needs UPDATE or DELETE gets an explicit GRANT in its migration; T250's `schema_grants.rs` checks every schema's default (D-1520). Plan change D-3155: (a) TD-OPS-26's empty cluster: CI's one PostgreSQL already has `askhava_app` and `askhava_migrator` (`.github/workflows/ci.yml:76` to `:80`), so `tests/recovery/tests/export_restores.rs` makes a throwaway cluster with PostgreSQL 16's own `initdb` and `pg_ctl` (the GitHub runner image has them under `/usr/lib/postgresql/16/bin`) in a temporary folder on a free local port (`initdb` refuses root: the test runs it and `pg_ctl` as an unprivileged user, e.g. through `runuser` to a user it creates when it is root, as on CI runners it is not; the `/usr/lib/postgresql/16/bin` path holds while `ubuntu-latest` is Ubuntu 24.04, and the test names the path it looked in), restores into it without and then with `scripts/bootstrap_roles.sql`, and stops and removes it; missing binaries fail the test with a message (never a skip). (b) The runtime image has no `pg_dump` (`Dockerfile:44` to `:47`): this task adds PostgreSQL 16's client tools (`pg_dump`, `pg_restore`) to the runtime stage (Debian trixie ships only 17, so from the PostgreSQL apt repository with its signing key pinned by fingerprint), and the export refuses a `pg_dump` whose major version is not the server's. (c) The nightly export and monthly restore handlers need the storage and backup-key settings, so they register in `worker_registry` (the shared `app/server/src/lib.rs`), and each `*_KIND` is registered, as `tests/integration/tests/task_registry.rs` requires.",
+   "goal": "`recovery` makes the nightly encrypted export to separate storage under its own key, kept 30 days with versioning and object lock, runs the monthly test restore with a High alert on failure, and leaves the key inventory to T117; `recovery` records each backup and restore result in `recovery.backup_check` and as one `ops` audit entry (`ops::api::audit`), and `portals` reads the newest such entry through a new `ops::api::latest_audit(conn, action)` added to the shared `app/ops/src/api.rs` (`portals` may not call `recovery`, `kit/layers.json`): the restore result line in `digest_flags.rs` (T204's) and the last-backup figure in `health_page.rs` (T476's, D-3753), both extended here (D-491, D-493) (OPS-013, PRIV-018, PRIV-024, PRIV-029). The export is `pg_dump -Fc`; every restore runs `scripts/bootstrap_roles.sql` first, then `pg_restore --single-transaction`, with the ownership and append-only grant check (OPS-051), and the storage provider is Backblaze B2 (PRIV-029) (D-492). The new `recovery` schema's default privileges give `askhava_app` SELECT and INSERT only, and a table that needs UPDATE or DELETE gets an explicit GRANT in its migration; T250's `schema_grants.rs` checks every schema's default (D-1520). Plan change D-3155: (a) TD-OPS-26's empty cluster: CI's one PostgreSQL already has `askhava_app` and `askhava_migrator` (`.github/workflows/ci.yml:76` to `:80`), so `tests/recovery/tests/export_restores.rs` makes a throwaway cluster with PostgreSQL 16's own `initdb` and `pg_ctl` (the GitHub runner image has them under `/usr/lib/postgresql/16/bin`) in a temporary folder on a free local port (`initdb` refuses root: the test runs it and `pg_ctl` as an unprivileged user, e.g. through `runuser` to a user it creates when it is root, as on CI runners it is not; the `/usr/lib/postgresql/16/bin` path holds while `ubuntu-latest` is Ubuntu 24.04, and the test names the path it looked in), restores into it without and then with `scripts/bootstrap_roles.sql`, and stops and removes it; missing binaries fail the test with a message (never a skip). (b) The runtime image has no `pg_dump` (`Dockerfile:44` to `:47`): this task adds PostgreSQL 16's client tools (`pg_dump`, `pg_restore`) to the runtime stage (Debian trixie ships only 17, so from the PostgreSQL apt repository with its signing key pinned by fingerprint), and the export refuses a `pg_dump` whose major version is not the server's. (c) The nightly export and monthly restore handlers need the storage and backup-key settings, so they register in `worker_registry` (the shared `app/server/src/lib.rs`), and each `*_KIND` is registered, as `tests/integration/tests/task_registry.rs` requires. Plan change D-3880: the digest and `digest_flags.rs` are T524's (split from T204), so this task runs after T524.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16978,7 +17171,8 @@
     "T204",
     "T151",
     "T106",
-    "T476"
+    "T476",
+    "T524"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17035,13 +17229,14 @@
     "D-3263",
     "D-3722",
     "D-3753",
-    "D-3779"
+    "D-3779",
+    "D-3880"
    ],
    "cites": [],
    "budget": {
     "files": 10,
     "lines": 450,
-    "context_pct": 8
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -17470,13 +17665,14 @@
    "id": "T113",
    "slug": "twilio-campaign",
    "title": "Draft the Twilio campaign description from the real templates",
-   "goal": "`docs/legal/twilio-campaign.md` drafts the homeowner texting campaign from the real templates (sample messages that are exact templates, the consent text, no business traffic, the toll-free fallback only with Casey's go), and a docs test fails when a sample differs from its template (TERMS-002 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-015, TERMS-018, CON-033). After T111 (through T112), which listed the Spanish summary: this task adds `twilio-campaign.md` to `scripts/check_legal_docs.py`'s `DOCUMENTS` (an unlisted `.md` under `docs/legal/` fails it, `:460`) and moves `tests/test_check_legal_docs.py`'s count from 10 to 11; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) (D-3263). Brand: the brand is Laftly (Laftly LLC, laftly.com, D-3347, T428). Every 'Ask Hava', 'askhava.com' or 'Ask Hava:' text prefix in the decision quotes, research notes and examples of this prompt is historical and is written as 'Laftly', 'laftly.com' and 'Laftly:' (taken from core::api::brand() or app/core/data/brand.json) in every file this task owns; a test or checklist line that names the old brand is read as the Laftly one.",
+   "goal": "`docs/legal/twilio-campaign.md` drafts the homeowner texting campaign from the real templates (sample messages that are exact templates, the consent text, no business traffic, the toll-free fallback only with the owner's go), and a docs test fails when a sample differs from its template (TERMS-002 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-015, TERMS-018, CON-033). After T111 (through T112), which listed the Spanish summary: this task adds `twilio-campaign.md` to `scripts/check_legal_docs.py`'s `DOCUMENTS` (an unlisted `.md` under `docs/legal/` fails it, `:460`) and moves `tests/test_check_legal_docs.py`'s count from 10 to 11; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) (D-3263). Brand: the brand is Laftly (Laftly LLC, laftly.com, D-3347, T428). Every 'Ask Hava', 'askhava.com' or 'Ask Hava:' text prefix in the decision quotes, research notes and examples of this prompt is historical and is written as 'Laftly', 'laftly.com' and 'Laftly:' (taken from core::api::brand() or app/core/data/brand.json) in every file this task owns; a test or checklist line that names the old brand is read as the Laftly one. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): No template holds CON-001's business-intent reply yet (`app/messaging/templates/en.json` has none); T103, which builds business intent, adds it, so this task runs after T103. The business sign-up reply sample is T103's `business_signup_reply` template; the six samples are `consent`, `first_quote`, `text_pick_done`, `opt_out_confirmation`, `whos_calling` and `business_signup_reply`, each compared with `en.json` after the brand tokens are filled. TD-TERMS-02's registry check is an `audience` check in this task's Python docs test: no template whose `audience` is not `homeowner` other than `business_signup_reply`'s reply is routable to the homeowner number, and that one is `homeowner`. The campaign text never names the owner (`scripts/check_legal_docs.py:316` bans the name); it says \"the owner\".",
    "type": "harness",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
-    "T112"
+    "T112",
+    "T103"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -17537,7 +17733,8 @@
     "D-1143",
     "D-3263",
     "D-3467",
-    "D-3753"
+    "D-3753",
+    "D-3880"
    ],
    "cites": [],
    "budget": {
@@ -18534,7 +18731,10 @@
     "T497",
     "T518",
     "T520",
-    "T522"
+    "T522",
+    "T523",
+    "T524",
+    "T525"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -21791,7 +21991,7 @@
    "id": "T484",
    "slug": "owner-bridge-optout-stripe-answer",
    "title": "portals and quotes: \"Call from the Laftly number\", the owner-recorded opt-out and Stripe's written answer on the owner pages",
-   "goal": "Plan change D-3753 (split from T108; OPS-028, CON-035, D-2762, D-3155, D-3744): (1) the owner home offers \"Call from the Laftly number\" for a pushed critical safety alert: `ring_owner` needs a voice client, the owner's phone and a pool number, which no page or router state holds (`app/server/src/lib.rs:77` to `:82`), so the press (fresh second factor) only queues one `core.task` of a new kind (the alert and press IDs, deduplicated per press); its handler registers in `worker_registry` (the shared `app/server/src/lib.rs`, which has the Twilio settings) and calls `calls::api::ring_owner` in T378's form (the homeowner's number and the safety words; it sends `owner_bridge_twiml` itself), the owner's phone a new required-in-test-and-live `Settings` value in the shared `app/core/src/settings.rs`; the kind is registered, as `tests/integration/tests/task_registry.rs` requires. (2) CON-035's owner-recorded opt-out: the settings page takes a phone number the owner was asked by any other contact to stop texting (fresh second factor) and calls `messaging::api::suppress` with `RevokeChannel::Owner`, confirmed on screen, never by text. (3) Stripe's written answer for the PICK-048 auto-confirm box is the append-only `quotes.stripe_written_answer` table (`answered_on`, `reference` of 1 to 200 characters, `allows`, `filed_at`; `migrations/0156_quotes_auto_confirm.sql:34`, the app role SELECT and INSERT only), read by `quotes::api::stripe_answer_filed` (`app/quotes/src/auto_confirm_box.rs:219`, D-2783, unchanged); this task adds `file_stripe_answer` in `auto_confirm_box.rs` (one row per filing, `filed_at` the call's time), exported through the shared `app/quotes/src/api.rs`, and the settings page calls it after the fresh second factor and shows the latest filing. The pages are T108's (`owner_portal.rs`, `owner_home.html`, `owner_settings.html`), extended after T108 and T205; their templates link `/static/portals/forms.css` first in `main` if they draw a checkbox or radio (D-3700). T310 serves the two `POST`s and the press (D-2128). Tests in `tests/integration/tests/owner_tools.rs` (the owner-recorded opt-out through the settings page, whose list-at-once case at `suppress` is T482's TD-CON-17 case; TD-FEE-30's filed-answer precondition through `file_stripe_answer`), fake data and the stand-in Twilio: one press queues one task and a second press of the same alert none; the handler rings through the stand-in with the owner's number never shown; an owner-recorded opt-out lists the number at once with channel `owner` and queues no text; each refused without a fresh second factor; a filing is stored once and `stripe_answer_filed` reads it. Update the `portals`, `quotes` and `server` `CLAUDE.md` or `NOTES.md` files and `docs/decisions.md`.",
+   "goal": "Plan change D-3753 (split from T108; OPS-028, CON-035, D-2762, D-3155, D-3744): (1) the owner home offers \"Call from the Laftly number\" for a pushed critical safety alert: `ring_owner` needs a voice client, the owner's phone and a pool number, which no page or router state holds (`app/server/src/lib.rs:77` to `:82`), so the press (fresh second factor) only queues one `core.task` of a new kind (the alert and press IDs, deduplicated per press); its handler registers in `worker_registry` (the shared `app/server/src/lib.rs`, which has the Twilio settings) and calls `calls::api::ring_owner` in T378's form (the homeowner's number and the safety words; it sends `owner_bridge_twiml` itself), the owner's phone a new required-in-test-and-live `Settings` value in the shared `app/core/src/settings.rs`; the kind is registered, as `tests/integration/tests/task_registry.rs` requires. (2) CON-035's owner-recorded opt-out: the settings page takes a phone number the owner was asked by any other contact to stop texting (fresh second factor) and calls `messaging::api::suppress` with `RevokeChannel::Owner`, confirmed on screen, never by text. (3) Stripe's written answer for the PICK-048 auto-confirm box is the append-only `quotes.stripe_written_answer` table (`answered_on`, `reference` of 1 to 200 characters, `allows`, `filed_at`; `migrations/0156_quotes_auto_confirm.sql:34`, the app role SELECT and INSERT only), read by `quotes::api::stripe_answer_filed` (`app/quotes/src/auto_confirm_box.rs:219`, D-2783, unchanged); this task adds `file_stripe_answer` in `auto_confirm_box.rs` (one row per filing, `filed_at` the call's time), exported through the shared `app/quotes/src/api.rs`, and the settings page calls it after the fresh second factor and shows the latest filing. The pages are T108's (`owner_portal.rs`, `owner_home.html`, `owner_settings.html`), extended after T108 and T205; their templates link `/static/portals/forms.css` first in `main` if they draw a checkbox or radio (D-3700). T310 serves the two `POST`s and the press (D-2128). Tests in `tests/integration/tests/owner_tools.rs` (the owner-recorded opt-out through the settings page, whose list-at-once case at `suppress` is T482's TD-CON-17 case; TD-FEE-30's filed-answer precondition through `file_stripe_answer`), fake data and the stand-in Twilio: one press queues one task and a second press of the same alert none; the handler rings through the stand-in with the owner's number never shown; an owner-recorded opt-out lists the number at once with channel `owner` and queues no text; each refused without a fresh second factor; a filing is stored once and `stripe_answer_filed` reads it. Update the `portals`, `quotes` and `server` `CLAUDE.md` or `NOTES.md` files and `docs/decisions.md`. Plan change D-3880: OPS-035's automated call for a critical safety alert is this task's too: T204 queues one `core.task` of kind `calls.owner_alert_call` (the alert ID only) when it emails such an alert; this task registers its handler in `worker_registry` (the shared `app/server/src/lib.rs`) beside the press's, which calls `calls::api::ring_owner` the same way, naming the alert kind and job number with no homeowner contact detail, at any hour and while the texting number is suspended, and the `tests/task_kinds_deferred.json` entry for that kind is then printed as stale; TD-OPS-10's call case is tested here.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -21828,10 +22028,12 @@
    ],
    "requirements": [
     "OPS-028",
-    "CON-035"
+    "CON-035",
+    "OPS-035"
    ],
    "tests": [
-    "TD-FEE-30"
+    "TD-FEE-30",
+    "TD-OPS-10"
    ],
    "decisions": [
     "D-2762",
@@ -21839,7 +22041,8 @@
     "D-3155",
     "D-3700",
     "D-3744",
-    "D-3753"
+    "D-3753",
+    "D-3880"
    ],
    "cites": [],
    "budget": {
@@ -31841,7 +32044,7 @@
    "id": "T363",
    "slug": "pick-code-ip-limits",
    "title": "portals: the served pick and its code step apply the per-IP code send and try limits",
-   "goal": "Nov 10 code review batch 2, portals F3 (D-2634; SEC-014, D-1950, D-1951): the served pick's code step skips T089's per-IP code limits: `final_pick` and `code_step` (`app/portals/src/pick_flow.rs`) call neither of `portals`' own `crate::limits::admit_code_send` and `admit_code_try` (`app/portals/src/limits.rs:107`, `:84`), although `CODE_TRIES_PER_IP` (`:26`) is meant to cover pick codes, and D-1951's wiring list names only T280, T301, T302, T303 and T307. Fix: `final_pick` and \"Send a new code\" call `admit_code_send(pool, (ip, None), (now, threshold))` and \"Finish my pick\" calls `admit_code_try(pool, (ip, None), now)`, with the client IP from `ClientIpPolicy`, each before any Verify call; a refusal shows the existing daily-cap line and sends nothing. After T441 (the last earlier owner of `pick_flow.rs`, D-3497). Tests in `tests/integration/tests/pick_code_limits.rs` (TD-SEC-63): 11 code sends from one IP across different jobs give exactly one refusal and no eleventh send; tries over the per-IP limit are refused before Verify; another IP is unaffected. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3144: the contact passed is `None`: `picks`' `send_code` already counts the per-number and global daily caps (`app/picks/src/service.rs:714`; the global threshold is `VERIFY_DAILY_THRESHOLD`, `app/portals/src/pick_flow.rs:274`), so `Some` would count them twice; `None` spends the per-IP count and two `CODE_SENDS_UNKNOWN` counters that never refuse. The client IP comes from a `ClientIpPolicy` that `PickCodeKeys` gains through a builder beside `with_threshold` (`:309`), so `pick_flow_routes` and `PickCodeKeys::new` keep their signatures (callers `tests/integration/tests/page_pick.rs:91`, `tests/integration/tests/share_and_cant_take.rs:197` to `:199`, `tests/security/tests/page_pick_privacy.rs:102`); `server`'s `pick_code_keys` (the shared `app/server/src/lib.rs:220`) sets it from the settings.",
+   "goal": "Nov 10 code review batch 2, portals F3 (D-2634; SEC-014, D-1950, D-1951): the served pick's code step skips T089's per-IP code limits: `final_pick` and `code_step` (`app/portals/src/pick_flow.rs`) call neither of `portals`' own `crate::limits::admit_code_send` and `admit_code_try` (`app/portals/src/limits.rs:107`, `:84`), although `CODE_TRIES_PER_IP` (`:26`) is meant to cover pick codes, and D-1951's wiring list names only T280, T301, T302, T303 and T307. Fix: `final_pick` and \"Send a new code\" call `admit_code_send(pool, (ip, None), (now, threshold))` and \"Finish my pick\" calls `admit_code_try(pool, (ip, None), now)`, with the client IP from `ClientIpPolicy`, each before any Verify call; a refusal shows the existing daily-cap line and sends nothing. After T441 (the last earlier owner of `pick_flow.rs`, D-3497). Tests in `tests/integration/tests/pick_code_limits.rs` (TD-SEC-63): 11 code sends from one IP across different jobs give exactly one refusal and no eleventh send; tries over the per-IP limit are refused before Verify; another IP is unaffected. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3144: the contact passed is `None`: `picks`' `send_code` already counts the per-number and global daily caps (`app/picks/src/service.rs:714`; the global threshold is `VERIFY_DAILY_THRESHOLD`, `app/portals/src/pick_flow.rs:285`), so `Some` would count them twice; `None` spends the per-IP count and two `CODE_SENDS_UNKNOWN` counters that never refuse. The client IP comes from a `ClientIpPolicy` that `PickCodeKeys` gains through a builder beside `with_threshold` (`:320`), so `pick_flow_routes` and `PickCodeKeys::new` keep their signatures (callers `tests/integration/tests/page_pick.rs:91`, `tests/integration/tests/share_and_cant_take.rs:197` to `:199`, `tests/security/tests/page_pick_privacy.rs:102`); `server`'s `pick_code_keys` (the shared `app/server/src/lib.rs:435`) sets it from the settings. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): `VERIFY_DAILY_THRESHOLD` is an `i64` and `admit_code_send` takes an `i32` (`app/portals/src/limits.rs:110`), so the threshold passes through `i32::try_from`, a value that does not fit refusing the send; `final_pick` (`pick_flow.rs:425` to `:471`) is already 47 lines, so the limit calls go in a helper and every function stays under 50 lines.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -31879,13 +32082,14 @@
     "D-2631",
     "D-1950",
     "D-1951",
-    "D-3144"
+    "D-3144",
+    "D-3880"
    ],
    "cites": [],
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 23
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -33962,7 +34166,7 @@
    "id": "T446",
    "slug": "pick-lapsed-email",
    "title": "intake and messaging: PICK-046's \"couldn't take it\" notice goes by email when she cannot be texted",
-   "goal": "Plan change D-3579 follow-up (PICK-046, CON-028, CON-021, PRIV-004; D-2288): PICK-046 (`docs/spec/quotes-pick.md:50`) says its text \"goes by email when the homeowner can't be texted\", but T328's `pick_lapsed` job text (in `app/intake/src/job_texts.rs`) sends nothing to a number that opted out, has no consent record or fails the area-code check. When that event's text cannot go for one of those reasons and she has an email on file (`messaging::api::homeowner_has_email`), queue one email instead, the way `app/intake/src/opted_out_live.rs` queues CON-028's \"still open\" email: a new `Notice::PickLapsed` in `app/messaging/src/email.rs` (English and Spanish: the business's public name, \"couldn't take it this time\", and her quote page link to see and pick her other quotes; no amount, no other business's contact), `queue_email` keyed on the pick, so a rerun stores nothing more; the email sender's keys (the footer postal line and the vault) reach the step from settings in the shared `app/server/src/lib.rs` as `opted_out_live`'s do, and with them missing the step sends nothing and logs why. The email read runs outside any transaction (the vault refuses one). A text that can go still goes as T328 built it; never both. Tests in `tests/integration/tests/pick_lapsed_email.rs` against PostgreSQL, fake data only: opted out with an email gets one email and no text; no email on file gets nothing; a rerun stores one email; a textable homeowner gets the text and no email. Update the `intake` and `messaging` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Plan change D-3579 follow-up (PICK-046, CON-028, CON-021, PRIV-004; D-2288): PICK-046 (`docs/spec/quotes-pick.md:50`) says its text \"goes by email when the homeowner can't be texted\", but T328's `pick_lapsed` job text (in `app/intake/src/job_texts.rs`) sends nothing to a number that opted out, has no consent record or fails the area-code check. When that event's text cannot go for one of those reasons and she has an email on file (`messaging::api::homeowner_has_email`), queue one email instead, the way `app/intake/src/opted_out_live.rs` queues CON-028's \"still open\" email: a new `Notice::PickLapsed` in `app/messaging/src/email.rs` (English and Spanish: the business's public name, \"couldn't take it this time\", and her quote page link to see and pick her other quotes; no amount, no other business's contact), `queue_email` keyed on the pick, so a rerun stores nothing more; the email sender's keys reach the step from settings in the shared `app/server/src/lib.rs` as `opted_out_live`'s do, through a postal field of its own on `JobTextKeys` (`app/intake/src/job_texts.rs:112`; `StillOpenSender`'s fields are private, `app/intake/src/opted_out_live.rs:46` to `:50`), and with them missing the step sends nothing and logs why. The email read runs outside any transaction (the vault refuses one). A text that can go still goes as T328 built it; never both. Tests in `tests/integration/tests/pick_lapsed_email.rs` against PostgreSQL, fake data only: opted out with an email gets one email and no text; no email on file gets nothing; a rerun stores one email; a textable homeowner gets the text and no email. Update the `intake` and `messaging` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): PICK-046's no-other-quote case gets the same email: \"<Business> couldn't take it this time. We'll email you when another quote comes in. If it can't wait, it's fine to call a company you know.\" (the text's words, with \"email\" for \"text\", since she cannot be texted), in English and Spanish.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -33995,7 +34199,8 @@
    "tests": [],
    "decisions": [
     "D-3579",
-    "D-2288"
+    "D-2288",
+    "D-3880"
    ],
    "cites": [],
    "budget": {
@@ -34010,7 +34215,7 @@
    ],
    "branch": "claude/task/T446-pick-lapsed-email",
    "prompt": "kit/prompts/T446.md",
-   "acceptance": "`tests/integration/tests/pick_lapsed_email.rs` passes against PostgreSQL with every listed case; every T328 `pick_ended.rs` case and every existing intake and messaging test passes unchanged; `scripts/check_copy.py` and `scripts/check_ai_smell.py` report 0 problems for the new email words."
+   "acceptance": "`tests/integration/tests/pick_lapsed_email.rs` passes against PostgreSQL with every listed case; every T328 `pick_ended.rs` case and every existing intake and messaging test passes unchanged; `scripts/check_ai_smell.py` reports 0 problems."
   },
   {
    "type": "build",

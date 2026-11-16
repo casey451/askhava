@@ -599,3 +599,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /events | site | T102 |
 | GET | /services | site | T201 |
 | GET | /coverage | site | T201 |
+| GET | /business | site | T202 |
+| GET | /es/business | site | T202 |
+| GET | /business/help | site | T202 |
+| GET | /es | site | T202 |

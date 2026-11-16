@@ -2992,3 +2992,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - In safe mode, an emergency job whose address arrived late could still have passed the homeowner's details to the business. Now that path waits too, and tries again every 15 minutes until safe mode ends.
 - A new task adds the page where a business agrees to texts after sign-up: when it switches to texts later, for each team member's own phone, and again after a phone number changes. Until then those phones get email, which is allowed.
 - Nothing needs you.
+
+## Fable's fourth group of pre-start checks for stage 5 (D-3880, November 16)
+
+- The big alerts-and-digest task was too large for one task, so it is now four: the phone pushes and alert emails; the counts the owner flags need; the weekly digest and the flags; and the hourly vault-read check with the daily database-size check. Nothing was dropped.
+- The automatic phone call for a critical safety alert is placed by the owner-tools task; the alerts task only asks for it.
+- The business page addresses are now fixed: /business, /es/business, /business/help and /es.
+- Open item for you, before launch: the business page's city business-license guide needs three settings filled in: the license cost, how long it takes, and the city's link. Until you set them, each part is left out, and with none set the guide is hidden.
+- Nothing needs you now.
