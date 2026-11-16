@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T21:47:00Z by runner d8ed76c84fa8 (actions).
+Updated 2026-11-16T21:47:23Z by runner d8ed76c84fa8 (actions).
 
 **Building: T481 in progress since 19:16Z; 375 of 540 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 375 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T481 claimed 19:16Z, lease until 00:36Z; lane 3: T320 claimed 21:07Z, lease until 00:42Z; lane 5: T111 claimed 21:32Z, lease until 00:32Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
+- **Lane:** lane 2: T481 claimed 19:16Z, lease until 00:36Z; lane 5: T111 claimed 21:32Z, lease until 00:32Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
 - **Week:** 2% used, 186.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:43Z, 3 min before this update
+- **Last run:** 21:43Z, 4 min before this update
 - **Keeper:** last ran 21:42Z, next wake 00:09Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Evidence: AuditSubject has only subject_kind, subject_id, a; fix the plan (the t
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T320 | ops: a check that runs on a schedule raises its alert once w | MERGE_PENDING | 1 | 39 min | 21:46Z |  |
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | BLOCKED | 1 | 5 min | 21:38Z | PLAN GAP: app/ops/src/audit_subjects.rs:13-21 (owned by T477, not T523) — the audit-subjects reader returns only `subjec |
 | T111 | Draft homeowner and business terms with every required claus | QUEUED | 2 | 66 min | 21:28Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
 | T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 1 | 14 min | 21:22Z | PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `paymen |
@@ -118,9 +119,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T481 (lease until 2026-11-17T00:36:07Z)
-- lane 3: T320 (lease until 2026-11-17T00:42:58Z)
 - lane 5: T111 (lease until 2026-11-17T00:32:39Z)
 - lane 6: T221 (lease until 2026-11-17T00:31:33Z)
 
 ## Last usage reading
-- {"task": "T523", "at": "2026-11-16T21:38:35Z", "input_tokens": 47, "output_tokens": 12280, "cache_creation_input_tokens": 65185, "cache_read_input_tokens": 737404}
+- {"task": "T320", "at": "2026-11-16T21:46:58Z", "cache_creation_input_tokens": 109561, "cache_read_input_tokens": 2714949, "output_tokens": 26894, "input_tokens": 113}
