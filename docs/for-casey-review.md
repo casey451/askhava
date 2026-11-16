@@ -3027,6 +3027,15 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - A restore never sends money back by itself. A charge it can't match is listed for you, and the nightly money check refunds it.
 - Nothing needs you now.
 
+## Fable's pre-start checks of the remaining stage-5 tasks, group Y (D-3890, November 16)
+
+- The consent text's character counts in the spec were left over from the old name; the texts themselves were right, so only the counts changed (289 English, 297 Spanish, still 2 texts each).
+- Saving or changing a business's card, changing a notice or backup email address, the business team page and "Away until" each became a small task of their own, so no task runs past its size limit and no card detail is ever taken from a form.
+- Your "re-send the release" button in the owner portal had no task building it; a new task adds it.
+- The automated call for a critical safety alert now says only the alert kind and job number and never connects you to the homeowner by itself; the "Call from the Laftly number" button still does, on your press.
+- After review: your "re-send the release" button only re-sends a release that already happened; it can never make a new one, so safe mode and a homeowner's CANCEL still hold. When a business holds a pick for 2 more hours, it is now also told the new end time by its chosen channels (the Away task does this).
+- Nothing needs you now.
+
 ## Fable's checks of the stage-5 closers and the documentation pass (D-3891, November 16)
 
 - The privacy sentinel test was too big for one task, so the browser-tamper test (changing a price or an ID in the page changes nothing) is now its own task. Nothing was dropped.
