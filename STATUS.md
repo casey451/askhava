@@ -1,26 +1,34 @@
 # Ask Hava build status
 
-Updated 2026-11-16T22:08:00Z by runner 023f304a8802 (actions).
+Updated 2026-11-16T22:10:00Z by runner a170fa44b897 (actions).
 
 **Building: T481 in progress since 21:50Z; 375 of 540 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 375 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T481 claimed 21:50Z, lease until 00:50Z; lane 2: T523 claimed 22:07Z, lease until 01:07Z; lane 5: T111 claimed 21:32Z, lease until 00:32Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
+- **Lane:** lane 1: T481 claimed 21:50Z, lease until 00:50Z; lane 2: T523 claimed 22:07Z, lease until 01:07Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
 - **Week:** 3% used, 185.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:59Z, 8 min before this update
+- **Last run:** 22:09Z, 0 min before this update
 - **Keeper:** last ran 21:59Z, next wake 00:34Z
 
 ## Needs attention
+- BLOCKED T111: Review not approved after the one allowed fix round (head a170fa44b89727c74d6ec3159503b7f5b59c17e3). Drafts, clauses, D-3968 script lines, count 9->10, fees, brand and decisions D-3957..D-3959 judged right; the three attempt-1 gaps (cents/"dólares" amounts, Spanish mejor/verificad/examinad, percent forms) and round-1 findings (Spanish licencia/acceso a datos/derecho de uso/compra de contacto/venta de información, plagas, confiables, "porciento", vacuous fee-list assertion) are fixed. Remaining gaps, tests/docs/test_terms_clauses.py:80-91 (BANNED_ES, TERMS-027): natural Spanish forms of the forbidden framing pass:
+- "compra de información de contacto" -> use \bcompra\s+de\s+(?:(?:la\s+)?informaci[oó]n\s+de\s+|(?:los\s+)?datos\s+de\s+)?contacto\w*
+- "derecho a usar" / "derecho a utilizar" -> \bderecho\s+(?:de\s+uso|a\s+usar|a\s+utilizar)\b
+- "venta de datos" -> \bventa\s+de\s+(?:la\s+|los\s+)?(?:informaci[oó]n|datos)\b
+- "acceso a sus datos", "acceso a la información del propietario" -> \bacceso\s+a\s+(?:los\s+|sus\s+|la\s+)?(?:datos|informaci[oó]n|propietarios)\b
+- "cliente potencial" singular (:80) -> \bclientes?\s+potencial(?:es)?\b
+Each needs a planted sentence in test_planted_spanish_banned_word_fails; think further about other natural Spanish phrasings of every English BANNED/BUSINESS_BANNED idea before hand-in. Minor: module docstring (:15-21) and banned_es_hits docstring (:177) should mention license/data-access and pest words. Local prehandin --ally failed j2_keyboard.spec.ts:149 (business sign-up, "Where your code goes" not shown) 2-3 tests on the fix head; reviewer found no diff path to it (no Rust/page change; only homeowner-terms.md is compiled in, unchanged); likely the per-IP daily sign-up cap (app/portals/src/limits.rs:38) exhausted by repeated local ally runs on a persistent test DB.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 15 problem(s) on tasks still to run (+135 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 16 problem(s) on tasks still to run (+135 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T111 | Draft homeowner and business terms with every required claus | BLOCKED | 3 | 37 min | 22:10Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
 | T320 | ops: a check that runs on a schedule raises its alert once w | MERGE_PENDING | 1 | 39 min | 21:46Z |  |
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | BLOCKED | 1 | 5 min | 21:38Z | PLAN GAP: app/ops/src/audit_subjects.rs:13-21 (owned by T477, not T523) — the audit-subjects reader returns only `subjec |
-| T111 | Draft homeowner and business terms with every required claus | QUEUED | 2 | 66 min | 21:28Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
+| T111 | Draft homeowner and business terms with every required claus | QUEUED | 2 | 66 min | 21:28Z |  |
 | T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 1 | 14 min | 21:22Z | PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `paymen |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | done | 1 | 46 min | 21:03Z |  |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | BLOCKED | 1 | 41 min | 20:41Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
@@ -70,7 +78,7 @@ Updated 2026-11-16T22:08:00Z by runner 023f304a8802 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 327 of 733 (44.6%) · partial 274 · unstarted 132
+**Requirements verified:** 328 of 733 (44.7%) · partial 273 · unstarted 132
 **Tasks merged (throughput only):** 375 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -87,7 +95,7 @@ Updated 2026-11-16T22:08:00Z by runner 023f304a8802 (actions).
 | lifecycle | 27 | 1 | 0 | 28 |
 | messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 12 | 17 | 2 | 31 |
+| privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
@@ -116,8 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T481 (lease until 2026-11-17T00:50:20Z)
 - lane 2: T523 (lease until 2026-11-17T01:07:25Z)
-- lane 5: T111 (lease until 2026-11-17T00:32:39Z)
 - lane 6: T221 (lease until 2026-11-17T00:31:33Z)
 
 ## Last usage reading
-- {"task": "T320", "at": "2026-11-16T21:46:58Z", "cache_creation_input_tokens": 109561, "cache_read_input_tokens": 2714949, "output_tokens": 26894, "input_tokens": 113}
+- {"task": "T111", "at": "2026-11-16T22:10:00Z", "cache_read_input_tokens": 5355599, "output_tokens": 59151, "input_tokens": 163, "cache_creation_input_tokens": 252031}

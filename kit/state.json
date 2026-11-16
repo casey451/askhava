@@ -20740,8 +20740,8 @@
     "T100",
     "T428"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "terms-homeowner-business",
    "type": "docs",
    "stage": "5",
@@ -20758,7 +20758,7 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": null,
+   "reason": "Review not approved after the one allowed fix round (head a170fa44b89727c74d6ec3159503b7f5b59c17e3). Drafts, clauses, D-3968 script lines, count 9->10, fees, brand and decisions D-3957..D-3959 judged right; the three attempt-1 gaps (cents/\"d\u00f3lares\" amounts, Spanish mejor/verificad/examinad, percent forms) and round-1 findings (Spanish licencia/acceso a datos/derecho de uso/compra de contacto/venta de informaci\u00f3n, plagas, confiables, \"porciento\", vacuous fee-list assertion) are fixed. Remaining gaps, tests/docs/test_terms_clauses.py:80-91 (BANNED_ES, TERMS-027): natural Spanish forms of the forbidden framing pass:\n- \"compra de informaci\u00f3n de contacto\" -> use \\bcompra\\s+de\\s+(?:(?:la\\s+)?informaci[o\u00f3]n\\s+de\\s+|(?:los\\s+)?datos\\s+de\\s+)?contacto\\w*\n- \"derecho a usar\" / \"derecho a utilizar\" -> \\bderecho\\s+(?:de\\s+uso|a\\s+usar|a\\s+utilizar)\\b\n- \"venta de datos\" -> \\bventa\\s+de\\s+(?:la\\s+|los\\s+)?(?:informaci[o\u00f3]n|datos)\\b\n- \"acceso a sus datos\", \"acceso a la informaci\u00f3n del propietario\" -> \\bacceso\\s+a\\s+(?:los\\s+|sus\\s+|la\\s+)?(?:datos|informaci[o\u00f3]n|propietarios)\\b\n- \"cliente potencial\" singular (:80) -> \\bclientes?\\s+potencial(?:es)?\\b\nEach needs a planted sentence in test_planted_spanish_banned_word_fails; think further about other natural Spanish phrasings of every English BANNED/BUSINESS_BANNED idea before hand-in. Minor: module docstring (:15-21) and banned_es_hits docstring (:177) should mention license/data-access and pest words. Local prehandin --ally failed j2_keyboard.spec.ts:149 (business sign-up, \"Where your code goes\" not shown) 2-3 tests on the fix head; reviewer found no diff path to it (no Rust/page change; only homeowner-terms.md is compiled in, unchanged); likely the per-IP daily sign-up cap (app/portals/src/limits.rs:38) exhausted by repeated local ally runs on a persistent test DB.",
    "last_failure": "Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, scope and the D-3968 script lines were all judged right; the gaps are in tests/docs/test_terms_clauses.py:\n1. :39 and :75 amounts_in drops the cents part, so \"$25.50\" reads as 2500 (an allowed fee); \"A $25.50 setup charge applies.\" in business-terms.md or \"Cargo extra de $25.50\" in the Spanish summary passes. Amounts written without \"$\" (\"59 d\u00f3lares\") are not checked either.\n2. :41 BANNED_ES holds only English words (\"vetted\", \"best\"); \"Los mejores negocios.\" or \"Negocios verificados.\" in the Spanish summary passes. Add Spanish forms (mejor, verificad/examinad, ranking words).\n3. :242-247 FEE-002 catches only the literal \"percentage\"/\"porcentaje\"; \"10 %\", \"10%\", \"10 por ciento\", \"10 percent\" in either business draft passes.\nEarlier fix round (D-3959) already covered: every $ amount must be a code-set figure, the Spanish numbered lines (4 horas, 60 minutos, 180 d\u00edas, 2 d\u00edas, se reembolsa completo), and banned Spanish words comisi/clientes potenciales/prospecto/commission outside the exempt English paragraphs. Worker noted: TD-TERMS-05 says 4 days (D-223) vs TERMS-022 2 days (D-371); drafts follow 2 days (D-3958). Local prehandin --ally showed a J2 keyboard business sign-up timeout (j2_keyboard.spec.ts:149) on the fix head that the first head did not have; the fix touched only a Python test and docs/decisions.md.",
    "history": [
     {
@@ -20804,6 +20804,29 @@
       "reviewer": {
        "tokens": 1311873,
        "turns": 27
+      }
+     }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 114,
+     "head_sha": "a170fa44b89727c74d6ec3159503b7f5b59c17e3",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-16T21:32:39Z",
+     "ended_at": "2026-11-16T22:10:00Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 4714161,
+       "turns": 64
+      },
+      "reviewer": {
+       "tokens": 952783,
+       "turns": 20
       }
      }
     }
@@ -65514,12 +65537,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T320",
-   "at": "2026-11-16T21:46:58Z",
-   "cache_creation_input_tokens": 109561,
-   "cache_read_input_tokens": 2714949,
-   "output_tokens": 26894,
-   "input_tokens": 113
+   "task": "T111",
+   "at": "2026-11-16T22:10:00Z",
+   "cache_read_input_tokens": 5355599,
+   "output_tokens": 59151,
+   "input_tokens": 163,
+   "cache_creation_input_tokens": 252031
   },
   "source": "session_reading 2026-11-16T21:58:39Z (week)",
   "by_task": {
@@ -69363,14 +69386,14 @@
     "estimated_bytes": 385619,
     "estimated_tokens": 1175473,
     "usage_counting": "message_id",
-    "input_tokens": 258,
-    "cache_read_input_tokens": 8745923,
-    "output_tokens": 82472,
-    "cache_creation_input_tokens": 369173,
-    "worker_tokens": 7737410,
-    "worker_turns": 102,
-    "reviewer_tokens": 1460416,
-    "reviewer_turns": 33,
+    "input_tokens": 421,
+    "cache_read_input_tokens": 14101522,
+    "output_tokens": 141623,
+    "cache_creation_input_tokens": 621204,
+    "worker_tokens": 12451571,
+    "worker_turns": 166,
+    "reviewer_tokens": 2413199,
+    "reviewer_turns": 53,
     "last_model": "claude-opus-5-5"
    },
    "T303": {
@@ -69553,11 +69576,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-16T18:02:43Z",
-    "tokens": 11608831
+    "tokens": 12455735
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 210565555
+    "tokens": 211412459
    }
   },
   "session_reading": {
@@ -69568,7 +69591,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T22:08:00Z",
+ "updated_at": "2026-11-16T22:10:00Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -69666,7 +69689,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "023f304a880214dc1042c87568c3bb92ea3f3d78",
+ "runner_sha": "a170fa44b89727c74d6ec3159503b7f5b59c17e3",
  "starter": "actions",
  "smoke_runs": [
   {
