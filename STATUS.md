@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T23:57:53Z by runner 99901600bfb1 (actions).
+Updated 2026-11-16T23:58:06Z by runner 7b601a2f6a07 (manual).
 
 **Building: T469 in progress since 23:44Z; 376 of 541 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -13,7 +13,7 @@ Updated 2026-11-16T23:57:53Z by runner 99901600bfb1 (actions).
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 17 problem(s) on tasks still to run (+136 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+136 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -72,31 +72,31 @@ Updated 2026-11-16T23:57:53Z by runner 99901600bfb1 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 327 of 733 (44.6%) · partial 274 · unstarted 132
-**Tasks merged (throughput only):** 376 of 540
+**Requirements verified:** 302 of 733 (41.2%) · partial 299 · unstarted 132
+**Tasks merged (throughput only):** 376 of 541
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 21 | 10 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 22 | 33 | 3 | 58 |
-| calls | 14 | 10 | 1 | 25 |
+| businesses | 19 | 36 | 3 | 58 |
+| calls | 12 | 12 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 24 | 27 | 1 | 52 |
+| fees | 17 | 34 | 1 | 52 |
 | intake | 30 | 10 | 3 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
+| job-cards | 19 | 5 | 0 | 24 |
 | licensing | 39 | 9 | 0 | 48 |
-| lifecycle | 27 | 1 | 0 | 28 |
-| messaging | 26 | 17 | 2 | 45 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 22 | 21 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 12 | 17 | 2 | 31 |
+| privacy | 10 | 19 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 36 | 19 | 1 | 56 |
+| quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 11 | 39 | 5 | 55 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 14 | 14 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 1 | 10 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
