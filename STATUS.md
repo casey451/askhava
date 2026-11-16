@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T15:51:49Z by runner 96944c4fc0ba (actions).
+Updated 2026-11-16T15:52:09Z by runner 96944c4fc0ba (actions).
 
 **Building: T101 in progress since 15:19Z; 362 of 535 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 362 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z; lane 7: T475 claimed 15:08Z, lease until 18:08Z
+- **Lane:** lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 7: T475 claimed 15:08Z, lease until 18:08Z
 - **Week:** 95% used, 1.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:34Z, 17 min before this update
 - **Keeper:** last ran 15:34Z, next wake 17:09Z
@@ -18,6 +18,7 @@ Updated 2026-11-16T15:51:49Z by runner 96944c4fc0ba (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T105 | ops: High and critical alerts with their automatic acknowled | MERGE_PENDING | 2 | 104 min | 15:51Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
 | T497 | Stand-ins (harness): sticky vendor faults for the J4 outage  | MERGE_PENDING | 1 | 75 min | 15:32Z |  |
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T521 | catalog: each category's plural display name and a list read | done | 1 | 34 min | 15:09Z |  |
@@ -26,7 +27,7 @@ Updated 2026-11-16T15:51:49Z by runner 96944c4fc0ba (actions).
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | done | 2 | 28 min | 14:39Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T519 | Copy check (harness): template text a requirement fixes, and | done | 2 | 49 min | 14:07Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | QUEUED | 1 | 101 min | 14:05Z |  |
-| T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
+| T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z |  |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | check_failed | 1 | 69 min | 13:32Z |  |
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 1 | 70 min | 13:31Z |  |
 | T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z |  |
@@ -97,8 +98,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T101 (lease until 2026-11-16T18:19:45Z)
-- lane 6: T105 (lease until 2026-11-16T17:07:02Z)
 - lane 7: T475 (lease until 2026-11-16T18:08:03Z)
 
 ## Last usage reading
-- {"task": "T497", "at": "2026-11-16T15:32:34Z", "output_tokens": 37078, "cache_read_input_tokens": 2576551, "cache_creation_input_tokens": 169842, "input_tokens": 133}
+- {"task": "T105", "at": "2026-11-16T15:51:48Z", "output_tokens": 110647, "input_tokens": 359, "cache_creation_input_tokens": 340449, "cache_read_input_tokens": 16127426}
