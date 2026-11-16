@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T20:22:48Z by runner 2ee325840f90 (actions).
+Updated 2026-11-16T20:34:48Z by runner b4ad6ead0c92 (actions).
 
 **Building: T111 in progress since 20:22Z; 373 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 373 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T111 claimed 20:22Z, lease until 23:22Z; lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 4: T102 claimed 20:17Z, lease until 23:17Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z
+- **Lane:** lane 1: T111 claimed 20:22Z, lease until 23:22Z; lane 2: T481 claimed 19:16Z, lease until 23:34Z; lane 4: T102 claimed 20:17Z, lease until 23:17Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z
 - **Week:** 1% used, 189.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:21Z, 1 min before this update
+- **Last run:** 20:22Z, 11 min before this update
 - **Keeper:** last ran 20:21Z, next wake 22:18Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 13 problem(s) on tasks still to run (+132 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 13 problem(s) on tasks still to run (+129 on DONE tasks); first: T481: stored context_pct 10% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -110,7 +110,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T111 (lease until 2026-11-16T23:22:29Z)
-- lane 2: T481 (lease until 2026-11-16T22:16:25Z)
+- lane 2: T481 (lease until 2026-11-16T23:34:48Z)
 - lane 4: T102 (lease until 2026-11-16T23:17:18Z)
 - lane 6: T307 (lease until 2026-11-16T23:00:14Z)
 
