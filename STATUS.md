@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T01:57:18Z by runner 700f12d2e5a4 (actions).
+Updated 2026-11-16T02:00:18Z by runner ff584ab99111 (manual).
 
 **Idle since 01:55Z; 355 of 505 done; week 79% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-16T01:57:18Z by runner 700f12d2e5a4 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 01:55Z (no task in progress)
 - **Week:** 79% used, 47.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:57Z, 0 min before this update
+- **Last run:** 01:57Z, 2 min before this update
 - **Keeper:** last ran 01:57Z, next wake 02:17Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T517 (since 2026-11-16T01:56:29Z, no attempt used; a plan change fixes it): T517: dependency T099 is DONE but its owned file tests/e2e/j2_business.spec.ts is not on main; T517: dependency T099 is DONE but its owned file tests/a11y/j2_keyboard.spec.ts is not on main; T517: dependency T099 is DONE but its owned file tests/e2e/j2.ts is not on main
-- Strict plan check red: 18 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -51,31 +51,31 @@ Updated 2026-11-16T01:57:18Z by runner 700f12d2e5a4 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
-**Tasks merged (throughput only):** 355 of 505
+**Requirements verified:** 266 of 733 (36.3%) · partial 310 · unstarted 157
+**Tasks merged (throughput only):** 355 of 502
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 16 | 6 | 35 |
+| accessibility | 12 | 17 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 21 | 34 | 3 | 58 |
-| calls | 14 | 10 | 1 | 25 |
-| consent | 15 | 16 | 4 | 35 |
-| fees | 22 | 29 | 1 | 52 |
-| intake | 29 | 11 | 3 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
-| licensing | 38 | 10 | 0 | 48 |
-| lifecycle | 24 | 4 | 0 | 28 |
-| messaging | 26 | 17 | 2 | 45 |
+| calls | 10 | 14 | 1 | 25 |
+| consent | 11 | 20 | 4 | 35 |
+| fees | 13 | 38 | 1 | 52 |
+| intake | 27 | 13 | 3 | 43 |
+| job-cards | 18 | 6 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 22 | 21 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 13 | 16 | 2 | 31 |
+| privacy | 11 | 18 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
-| recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| quotes-pick | 31 | 24 | 1 | 56 |
+| recurring | 6 | 2 | 3 | 11 |
+| security | 9 | 41 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 1 | 10 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
