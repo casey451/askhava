@@ -34,6 +34,9 @@ const MAIN_NUMBER: &str = "ASKHAVA_MAIN_NUMBER";
 const STRIPE_PUBLISHABLE_KEY: &str = "ASKHAVA_STRIPE_PUBLISHABLE_KEY";
 const LAUNCH_DATE: &str = "ASKHAVA_LAUNCH_DATE";
 const SET_ASIDE: &str = "ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS";
+const HOME_NUMBERS_MIN_JOBS: &str = "ASKHAVA_HOME_NUMBERS_MIN_JOBS";
+const LLC_RECORD_URL: &str = "ASKHAVA_LLC_RECORD_URL";
+const CITY_LICENSE: &str = "ASKHAVA_CITY_BUSINESS_LICENSE_NUMBER";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -65,6 +68,11 @@ const KEYS: &[&str] = &[
     SECURITY_EVENTS_PER_MINUTE,
     // The Laftly main number, read as the safety call's callback (T330, CALL-022, D-3134).
     MAIN_NUMBER,
+    // The home page's numbers threshold and the "Who runs" block's record link and city license
+    // number, each optional (T102, WEB-021, WEB-028, D-3878, D-3890).
+    HOME_NUMBERS_MIN_JOBS,
+    LLC_RECORD_URL,
+    CITY_LICENSE,
     "ASKHAVA_TWILIO_ACCOUNT_SID",
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",
@@ -119,6 +127,8 @@ const DEFAULT_POOL_MAX: u32 = 10;
 const DEFAULT_SET_ASIDE_BASIS_POINTS: u16 = 860;
 /// The default whole-request time limit in seconds (D-1870).
 const DEFAULT_REQUEST_TIMEOUT_SECS: u64 = 60;
+/// WEB-028's default threshold: 50 requests with a card sent (D-468).
+const DEFAULT_HOME_NUMBERS_MIN_JOBS: u32 = 50;
 
 /// Why startup refused the settings. Each variant names a key, never its value (SEC-001).
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -280,6 +290,9 @@ pub struct Settings {
     stripe_publishable_key: Option<String>,
     launch_date: Option<jiff::Timestamp>,
     set_aside_basis_points: u16,
+    home_numbers_min_jobs: u32,
+    llc_record_url: Option<String>,
+    city_license: Option<String>,
 }
 
 impl Settings {
@@ -329,6 +342,9 @@ impl Settings {
             stripe_publishable_key: publishable_key(raw.remove(STRIPE_PUBLISHABLE_KEY))?,
             launch_date: launch_date(raw.remove(LAUNCH_DATE))?,
             set_aside_basis_points: set_aside(raw.remove(SET_ASIDE))?,
+            home_numbers_min_jobs: min_jobs(raw.remove(HOME_NUMBERS_MIN_JOBS))?,
+            llc_record_url: raw.remove(LLC_RECORD_URL).map(|u| u.trim().to_owned()),
+            city_license: raw.remove(CITY_LICENSE).map(|n| n.trim().to_owned()),
         })
     }
 
@@ -473,6 +489,29 @@ impl Settings {
     #[must_use]
     pub fn sales_tax_set_aside_basis_points(&self) -> u16 {
         self.set_aside_basis_points
+    }
+
+    /// WEB-028's threshold (`ASKHAVA_HOME_NUMBERS_MIN_JOBS`, a whole number above 0, default 50):
+    /// the home page shows its numbers only once this many requests have had a card sent (D-468).
+    #[must_use]
+    pub fn home_numbers_min_jobs(&self) -> u32 {
+        self.home_numbers_min_jobs
+    }
+
+    /// WEB-021, WEB-022: the link to the LLC's public record on the Arizona Corporation Commission
+    /// site (`ASKHAVA_LLC_RECORD_URL`, trimmed); `None` while unset, and the "Who runs" block
+    /// leaves it out (D-3890).
+    #[must_use]
+    pub fn llc_record_url(&self) -> Option<&str> {
+        self.llc_record_url.as_deref()
+    }
+
+    /// WEB-021, WEB-022: the Lake Havasu City business license number
+    /// (`ASKHAVA_CITY_BUSINESS_LICENSE_NUMBER`, trimmed); `None` while unset, and the "Who runs"
+    /// block leaves it out (D-3890).
+    #[must_use]
+    pub fn city_business_license_number(&self) -> Option<&str> {
+        self.city_license.as_deref()
     }
 }
 
@@ -750,5 +789,17 @@ fn set_aside(raw: Option<String>) -> Result<u16, SettingsError> {
     match raw.trim().parse::<u16>() {
         Ok(points @ 0..=10_000) => Ok(points),
         _ => Err(SettingsError::Invalid(SET_ASIDE)),
+    }
+}
+
+/// WEB-028, D-468: the home page's threshold is a whole number above 0, 50 when unset; a bad value
+/// names only the key.
+fn min_jobs(raw: Option<String>) -> Result<u32, SettingsError> {
+    let Some(raw) = raw else {
+        return Ok(DEFAULT_HOME_NUMBERS_MIN_JOBS);
+    };
+    match raw.trim().parse::<u32>() {
+        Ok(jobs @ 1..) => Ok(jobs),
+        _ => Err(SettingsError::Invalid(HOME_NUMBERS_MIN_JOBS)),
     }
 }

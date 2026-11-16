@@ -105,6 +105,7 @@ pub struct RouterParts {
     limit: RequestTimeout,
     statics: StaticRoot,
     business: BusinessParts,
+    site: askhava_site::api::SitePages,
 }
 
 /// The business pages' parts: the served sign-in (T280), sign-up (T302), the portal's vault
@@ -159,6 +160,14 @@ impl RouterParts {
         self
     }
 
+    /// Adds the site pages' settings (T102): WEB-028's threshold and the "Who runs" block's facts;
+    /// without them the home page uses the default threshold of 50 and leaves those facts out.
+    #[must_use]
+    pub fn with_site_pages(mut self, pages: askhava_site::api::SitePages) -> Self {
+        self.site = pages;
+        self
+    }
+
     /// [`Self::with_confirm_settings`] with [`confirm_settings`]'s answer; `None` adds nothing.
     #[must_use]
     pub fn with_confirm_part(self, part: Option<(String, jiff::Timestamp, SecretString)>) -> Self {
@@ -176,6 +185,7 @@ impl From<Hooks> for RouterParts {
             limit: RequestTimeout::DEFAULT,
             statics: StaticRoot::default(),
             business: BusinessParts::default(),
+            site: askhava_site::api::SitePages::default(),
         }
     }
 }
@@ -188,6 +198,7 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
             limit,
             statics,
             business: BusinessParts::default(),
+            site: askhava_site::api::SitePages::default(),
         }
     }
 }
@@ -199,6 +210,7 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
             limit,
             statics,
             business: BusinessParts::default(),
+            site: askhava_site::api::SitePages::default(),
         }
     }
 }
@@ -254,6 +266,22 @@ fn business_pages(
         .merge(portal)
 }
 
+/// The feedback page (T230), the check-in answer page (T231), the email action links (T301), the
+/// built browser files (T362), the site's stylesheet (T101) and the site pages with `site`'s
+/// settings (T102), each over `pool`.
+fn link_and_site_pages(
+    pool: &PgPool,
+    statics: &StaticRoot,
+    site: askhava_site::api::SitePages,
+) -> Router {
+    feedback_routes(pool.clone(), Arc::new(SystemClock))
+        .merge(checkin::routes(pool.clone()))
+        .merge(action_links::routes(pool.clone()))
+        .merge(static_files::router(statics))
+        .merge(askhava_site::api::site_routes())
+        .merge(askhava_site::api::page_routes(pool.clone(), site))
+}
+
 /// The app's router: every module's routes, merged once here (D-481), under
 /// the request-ID and tracing layers, so every request log line carries the
 /// request ID and the matched route template, never the URI (PRIV-016,
@@ -273,7 +301,9 @@ fn business_pages(
 /// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231); the email
 /// action links are `/b/a/{kind}/{object}/{token}` ([`action_links`], T301). The built
 /// browser files are served at `/static/<crate>/` from the parts' folder ([`static_files`], T362).
-/// The site's compiled-in stylesheet is at `/static/site/<name>` (`site::api::site_routes`, T101).
+/// The site's compiled-in stylesheet is at `/static/site/<name>` (`site::api::site_routes`, T101);
+/// the home and how-it-works pages and the old directory paths are `site::api::page_routes`, with
+/// the parts' site settings ([`RouterParts::with_site_pages`], T102).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241) and the placed calls' status and safety-key routes
 /// (`voice_status`, CALL-022, OPS-028, T378); `None` adds none. `voice` ([`voice_hooks`]) adds the
@@ -296,13 +326,13 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         limit,
         statics,
         business,
+        site,
     } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let business = business_pages(business, pool.clone(), (&webhooks, &voice, &stripe));
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
-    let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
-    let link_pages = checkin::routes(pool.clone()).merge(action_links::routes(pool.clone()));
+    let pages = link_and_site_pages(&pool, &statics, site);
     // Each 403 of these four is a source or signature refusal, recorded as a capped
     // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
     let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));
@@ -321,15 +351,13 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(test_control)
         .merge(quote_page)
         .merge(pick_flow)
-        .merge(feedback)
-        .merge(link_pages)
+        .merge(pages)
         .merge(twilio)
         .merge(voice)
         .merge(dialed)
         .merge(calls)
         .merge(stripe)
         .merge(business)
-        .merge(static_files::router(&statics).merge(askhava_site::api::site_routes()))
         .layer(request_timeout::catch_panic())
         .layer(axum::middleware::from_fn_with_state(
             limit,

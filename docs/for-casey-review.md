@@ -3076,3 +3076,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - The terms task (T111) stopped because the legal-docs check bans the word "subcontract", but the required English paragraph in the Spanish summary says "There is no subcontract". The check now skips exactly that required English paragraph, and the not-a-contractor statement, in the Spanish summary only. The ban still applies everywhere else, including the Spanish wording. The terms task gets one more try once this change merges.
 - Nothing needs you now.
+
+## The home and how-it-works pages (T102, D-3994 to D-3996, November 16)
+
+- The home page and the how-it-works page are built, with the how-it-works page in Spanish too. Old directory links (`/categories`, `/events`) now open the home page instead of an error.
+- The home page shows its three numbers (requests sent, typical time to the first quote, average quotes per request) only once 50 requests have had job cards sent. The 50 is a setting.
+- The "Who runs Laftly" block says "this page shows when the owner is away", as the spec words it, but the home page has no away notice yet. Worth a look when the away notice is built.
+- The Spanish wording is marked for native-speaker review.
+- Nothing needs you now.

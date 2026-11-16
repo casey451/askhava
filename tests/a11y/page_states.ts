@@ -367,6 +367,18 @@ const CAPABILITY_STATES: readonly PageState[] = [
   ["capability step, one-page form", "Which towns do you work in?", "Save and continue", businessSql("")],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CAPABILITY_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/**
+ * The public site pages (T102; WEB-001, WEB-012): no seed, the plain path. The old directory paths
+ * answer with the home page (WEB-012).
+ */
+const SITE_PAGE_STATES: readonly PageState[] = [
+  ["/", "home page", "without giving out your number", "Para propietarios"],
+  ["/categories", "old categories path, home page", "without giving out your number", "Para propietarios"],
+  ["/events", "old events path, home page", "without giving out your number", "Para propietarios"],
+  ["/how-it-works", "how it works", "Tell us about a job you need done.", "Para propietarios"],
+  ["/es/how-it-works", "how it works in Spanish", "Cuéntenos de un trabajo que necesita.", "Homeowners"],
+].map(([route = "", name = "", shows = "", hides = ""]) => ({ route, name, shows, hides, sql: "", statusRegions: [] }));
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -383,6 +395,11 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: CONFIRM_ROUTE, seed: portalSeed(true), states: CONFIRM_STATES },
   { route: INBOX_ROUTE, seed: portalSeed(false), states: INBOX_STATES },
   { route: CAPABILITY_ROUTE, seed: portalSeed(false), states: CAPABILITY_STATES },
+  { route: "/", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/") },
+  { route: "/categories", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/categories") },
+  { route: "/events", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/events") },
+  { route: "/how-it-works", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/how-it-works") },
+  { route: "/es/how-it-works", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/es/how-it-works") },
 ];
 
 /** Every state of every page, in entry order. */

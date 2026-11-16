@@ -8,6 +8,8 @@ The layer-8 crate for the public website (`docs/architecture.md` section 3). It 
 - `base.html`'s `banner` block stays empty and only `site_layout.html` fills it, so no portal struct needs a `banner_shown` field; the banner is hidden by default: `cargo test -p askhava-site` (`td_web_01_banner_hidden_by_default_and_shown_when_on`).
 - The site's files are served by one `nest_service("/static/site", ...)` with no `.route(` and no `/`-prefixed `*_PATH`/`*_ROUTE` constant (D-3106): `app/server/tests/route_wiring.rs`.
 - No third-party load in any template or static file: `tests/security/tests/no_third_party.rs`.
+- WEB-012, D-3144: the old paths `/categories` and `/events` answer 200 with the home page, and there is no catch-all route, so any other unknown path stays a 404: `tests/e2e/site_pages.spec.ts`, `app/server/tests/route_wiring.rs`.
+- WEB-028, D-466: the home page's numbers come only from `intake::api::home_numbers` and show nothing below `ASKHAVA_HOME_NUMBERS_MIN_JOBS`; no number is typed: `tests/integration/tests/home_numbers.rs`.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/site/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/site/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

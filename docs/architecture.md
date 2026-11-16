@@ -596,8 +596,11 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /help | site | T201 |
 | GET | /accessibility | site | T115 |
 | GET | /help/roc-complaint | site | T201 |
-| GET | /categories | site | T102 |
-| GET | /events | site | T102 |
+| GET | / | site | yes |
+| GET | /how-it-works | site | yes |
+| GET | /es/how-it-works | site | yes |
+| GET | /categories | site | yes |
+| GET | /events | site | yes |
 | GET | /services | site | T201 |
 | GET | /coverage | site | T201 |
 | GET | /business | site | T202 |
