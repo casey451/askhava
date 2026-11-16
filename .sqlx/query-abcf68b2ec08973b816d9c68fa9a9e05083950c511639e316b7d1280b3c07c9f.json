@@ -1,0 +1,57 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH t AS (\n             SELECT o.recipient_kind AS kind, o.status = 'sent' AS sent,\n                    EXISTS (SELECT 1 FROM messaging.delivery_event e\n                             WHERE e.provider_sid = o.provider_sid AND e.status = 'delivered') AS ok,\n                    o.status = 'failed' OR EXISTS (SELECT 1 FROM messaging.delivery_event e\n                             WHERE e.provider_sid = o.provider_sid\n                               AND e.status IN ('undelivered', 'failed')) AS bad\n               FROM messaging.outbox o\n              WHERE (o.status = 'sent' AND o.sent_at >= $1 AND o.sent_at < $2)\n                 OR (o.status = 'failed' AND o.created_at >= $1 AND o.created_at < $2))\n           SELECT kind AS \"kind!\", count(*) FILTER (WHERE sent) AS \"sent!\",\n                  count(*) FILTER (WHERE sent AND ok) AS \"delivered!\",\n                  1000 * count(*) FILTER (WHERE sent AND ok)\n                    / NULLIF(count(*) FILTER (WHERE sent), 0) AS \"rate?\",\n                  count(*) FILTER (WHERE bad) AS \"failed!\"\n             FROM t GROUP BY kind",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "kind!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "recipient_kind"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "sent!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "delivered!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "rate?",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "failed!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "abcf68b2ec08973b816d9c68fa9a9e05083950c511639e316b7d1280b3c07c9f"
+}

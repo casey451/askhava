@@ -572,7 +572,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /b/signup/capability | portals | yes |
 | GET | /b/complaints | portals | T306 |
 | POST | /b/complaints/{complaint}/reply | portals | T306 |
-| GET | /b/charges/{pick} | portals | T306 |
+| GET | /b/charges/{pick} | portals | T562 |
 | GET | /b/emergency-emails | portals | T306 |
 | POST | /b/emergency-emails | portals | T306 |
 | GET | /b/phones | portals | T397 |
@@ -586,9 +586,9 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /h/sign-in | portals | T307 |
 | POST | /h/sign-in/code | portals | T307 |
 | POST | /h/texts-off | portals | T307 |
-| GET | /h/my-data | portals | T307 |
-| POST | /h/my-data/request | portals | T307 |
-| POST | /h/my-data/code | portals | T307 |
+| GET | /h/my-data | portals | T561 |
+| POST | /h/my-data/request | portals | T561 |
+| POST | /h/my-data/code | portals | T561 |
 | GET | /terms | site | T221 |
 | GET | /privacy | site | T221 |
 | GET | /sms-terms | site | T221 |

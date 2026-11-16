@@ -55,6 +55,7 @@ mod fee_facts;
 mod flags;
 mod free_wins;
 mod handlers;
+mod health_figures;
 mod intent_http;
 mod late;
 mod ledger;

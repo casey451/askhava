@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n             (SELECT count(*) FROM payments.charge_attempt\n               WHERE started_at >= $1 AND started_at < $2\n                 AND status IN ('declined', 'needs_action', 'unreachable')\n                 AND decided_at < $2) AS \"failed!\",\n             (SELECT count(*) FROM payments.charge_attempt\n               WHERE started_at >= $1 AND started_at < $2\n                 AND (decided_at IS NULL OR decided_at >= $2)) AS \"undecided!\",\n             (SELECT count(*) FROM payments.refund\n               WHERE requested_at >= $1 AND requested_at < $2\n                 AND status IN ('failed', 'canceled')) AS \"refunds!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "failed!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "undecided!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "refunds!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "857a388d9977024e931a8202eeec4359678a0324d7bb48f7bc560fc347094284"
+}
