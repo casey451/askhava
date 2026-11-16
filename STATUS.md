@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T18:03:36Z by runner d77b0f992ca9 (actions).
+Updated 2026-11-16T18:03:58Z by runner 19940270e8c6 (actions).
 
 **Building: T324 in progress since 17:53Z; 368 of 539 done; week 98% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -15,7 +15,7 @@ Updated 2026-11-16T18:03:36Z by runner d77b0f992ca9 (actions).
 - BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T361: plan gap reported: PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(|(n, _)| others.contains(n))`). kit/tasks.json lists T240, T246, T247, T278, T295, T328, T402, T446 and T471 as owners of this file; T441 owns only portals files; app/quotes/src/notify.rs (list_lines) is owned by T047, T293, T328, T384. Evidence: T361 makes list_rows/list_lines number by shown_number (required by kit/prompts/T361.md:9) while page_quotes must stay in arrival order until T441, so lapsed_body pairs page places with shown-number LIST lines. Counterexample: A AI-read at t0, B by form at t0+5m; B shown ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T361 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+123 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+123 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -63,7 +63,7 @@ Updated 2026-11-16T18:03:36Z by runner d77b0f992ca9 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 309 of 733 (42.2%) · partial 274 · unstarted 150
-**Tasks merged (throughput only):** 368 of 539
+**Tasks merged (throughput only):** 368 of 536
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
