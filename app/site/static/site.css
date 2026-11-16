@@ -4,7 +4,49 @@
    text is under 16 px; the header is not sticky (A11Y-026); focus is a 3 px ring with a 3 px
    offset (A11Y-005); line heights and heading margins are whole pixels, so a focused control scrolled into view
    ends on a whole pixel; nothing moves under prefers-reduced-motion (A11Y-009). Fonts: Gelasio and
-   DM Sans arrive with T166; until then Georgia and the system sans stand in. */
+   DM Sans, self-hosted at /static/site/fonts/ (SIL Open Font License, WEB-027, T166), shown with
+   font-display: swap over Georgia and the system sans. The colour pairs are checked by
+   tests/a11y/design_tokens.spec.ts (TD-WEB-11, A11Y-028). */
+@font-face {
+  font-family: "Gelasio";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/gelasio-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Gelasio";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/gelasio-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/dm-sans-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/dm-sans-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/dm-sans-latin-700-normal.woff2") format("woff2");
+}
+
 :root {
   --canvas: #F7F5F0;
   --surface: #FFFFFF;
@@ -17,6 +59,9 @@
   --line: #C8CEC5;
   --field-edge: #6E8077;
   --focus: #A8581E;
+  --night: #1F4A3E;
+  --on-night: #FFFFFF;
+  --focus-on-night: #F2B27A;
   --serif: "Gelasio", Georgia, serif;
   --sans: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
@@ -41,6 +86,14 @@ a {
 
 a:hover {
   text-decoration-thickness: 2px;
+}
+
+/* A link in a sentence or list item moves to the next line whole rather than splitting across two,
+   so its box is the link itself and a keyboard user's focus ring stays one shape (A11Y-005). */
+p a,
+li a {
+  display: inline-block;
+  max-width: 100%;
 }
 
 :focus-visible {
@@ -189,6 +242,24 @@ button {
 button:hover,
 button:active {
   background: var(--evergreen-deep);
+}
+
+/* The one deep band a page may hold (DESIGN_SPEC section 2): white text and links, and the focus
+   ring in its own night colour, since the light-surface ring is too dark there. */
+.night {
+  background: var(--night);
+  color: var(--on-night);
+}
+
+.night a,
+.night h1,
+.night h2,
+.night h3 {
+  color: var(--on-night);
+}
+
+.night :focus-visible {
+  outline-color: var(--focus-on-night);
 }
 
 @media (min-width: 768px) {
