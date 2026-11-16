@@ -3060,6 +3060,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - Reviews now run on Opus by default, as you asked; Fable is used only when a task has failed twice or an Opus finding is disputed.
 - Nothing needs you now.
 
+## Two flaky tests behind the site layout task's failures (D-3955, November 16)
+
+- The site layout task (T101) failed twice, but its code was the same in every run. Two older tests had timing gaps: one finished before its last button press got an answer, and one pressed Tab before the page had moved focus where it should. A small new task (T559) makes both tests wait for those things. No test checks less than before. The site layout task is still on its last try and is left as it is; if that try fails, it will be set to run after the fix.
+- Nothing needs you now.
+
 ## Delivery and coverage alerts (T105, D-3910, D-3911, November 16)
 
 - A texting line alerts you when 6 of its last 50 texts or 11 of its last 200 fail; it clears itself once at most 6 of the last 200 fail, and the digest lists that. Only one such alert is open at a time.
