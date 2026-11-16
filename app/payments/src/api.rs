@@ -184,6 +184,9 @@ pub use crate::rules::{
     RECURRING_MONTHS, RecurringCap, Service, Tier, VisitTier, fee_at_pick, fee_for, flat_tier,
     period_fee_for,
 };
+pub use crate::scorecard_inputs::{
+    LedgerTotals, Share, free_share, ledger_totals, paying_again, refund_reasons,
+};
 pub use crate::service::{
     Authorized, CONFIRM_FEE_ACTION, CUSTOMER_ACTION, ConfirmError, Confirmed, FEE_MODE_ACTION,
     FEE_MODE_ID, FEE_MODE_SUBJECT_KIND, Saved, accept_authorization, customer_of, ensure_customer,

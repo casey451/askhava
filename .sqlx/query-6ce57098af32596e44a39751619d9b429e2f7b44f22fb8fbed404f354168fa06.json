@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT round(percentile_cont(0.5) WITHIN GROUP (ORDER BY quote_minutes * 60))::bigint FROM quotes.quote WHERE job_id = ANY($1) AND received_at >= $2 AND received_at < $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "round",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "6ce57098af32596e44a39751619d9b429e2f7b44f22fb8fbed404f354168fa06"
+}
