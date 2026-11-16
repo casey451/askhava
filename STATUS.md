@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T18:12:55Z by runner 4d1fba504c82 (actions).
+Updated 2026-11-16T18:13:18Z by runner 4d1fba504c82 (actions).
 
 **Building: T324 in progress since 17:53Z; 369 of 539 done; week 98% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 369 of 539 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T324 claimed 17:53Z, lease until 20:53Z; lane 2: T102 claimed 17:43Z, lease until 20:43Z; lane 3: T105 claimed 17:21Z, lease until 20:21Z; lane 4: T166 claimed 17:24Z, lease until 20:24Z
+- **Lane:** lane 1: T324 claimed 17:53Z, lease until 20:53Z; lane 2: T102 claimed 17:43Z, lease until 20:43Z; lane 4: T166 claimed 17:24Z, lease until 20:24Z
 - **Week:** 98% used, -2.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:10Z, 1 min before this update
+- **Last run:** 18:10Z, 2 min before this update
 - **Keeper:** last ran 18:04Z, next wake 20:24Z
 
 ## Needs attention
@@ -20,12 +20,13 @@ Updated 2026-11-16T18:12:55Z by runner 4d1fba504c82 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T105 | ops: High and critical alerts with their automatic acknowled | MERGE_PENDING | 3 | 51 min | 18:12Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T559 | Tests (harness): wait for the code step's autofocus and the  | done | 1 | 64 min | 18:02Z |  |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | resync | 1 | 92 min | 17:52Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T361 | quotes and picks: a quote keeps its number once shown, and a | BLOCKED | 1 | 50 min | 17:41Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
 | T324 | harness: 95% branch floors for the money and privacy files o | QUEUED | 1 | 61 min | 17:33Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T475 | messaging, quotes, payments and ai: the readers behind the O | done | 1 | 114 min | 17:02Z |  |
-| T105 | ops: High and critical alerts with their automatic acknowled | resync | 3 | 38 min | 16:53Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
+| T105 | ops: High and critical alerts with their automatic acknowled | resync | 3 | 38 min | 16:53Z |  |
 | T473 | Pin backup-runner's Postgres service image by digest | done | 1 | 17 min | 16:46Z |  |
 | T101 | site: base layout in the design spec's look, works without J | done | 3 | 80 min | 16:39Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 1 | 4 min | 16:21Z | PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prom |
@@ -107,8 +108,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T324 (lease until 2026-11-16T20:53:22Z)
 - lane 2: T102 (lease until 2026-11-16T20:43:33Z)
-- lane 3: T105 (lease until 2026-11-16T20:21:54Z)
 - lane 4: T166 (lease until 2026-11-16T20:24:50Z)
 
 ## Last usage reading
-- {"task": "T559", "at": "2026-11-16T18:02:43Z", "input_tokens": 76, "cache_read_input_tokens": 1093969, "output_tokens": 13623, "cache_creation_input_tokens": 72996}
+- {"task": "T105", "at": "2026-11-16T18:12:54Z", "cache_creation_input_tokens": 83076, "output_tokens": 14513, "cache_read_input_tokens": 1686243, "input_tokens": 96}
