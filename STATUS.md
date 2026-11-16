@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-16T19:55:22Z by runner b79bf6a7ad64 (actions).
+Updated 2026-11-16T20:00:29Z by runner 32d91e1d646e (actions).
 
 **Building: T481 in progress since 19:16Z; 372 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 372 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
-- **Week:** 1% used, 190.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:55Z, 0 min before this update
+- **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
+- **Week:** 1% used, 189.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:55Z, 4 min before this update
 - **Keeper:** last ran 19:55Z, next wake 21:42Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T523 (since 2026-11-16T19:07:14Z, no attempt used; a plan change fixes it): T523: dependency T105 is DONE but its owned file app/ops/src/alerts.rs is not on main; T523: dependency T105 is DONE but its owned file migrations/0192_ops_alerts_safe_mode.sql is not on main; T523: dependency T105 is DONE but its owned file tests/integration/tests/ops_alert_conditions.rs is not on main; T523: dependency T105 is DONE but its owned file app/jobs/src/request_counts.rs is not on main
-- Strict plan check red: 12 problem(s) on tasks still to run (+129 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 13 problem(s) on tasks still to run (+130 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -59,7 +59,6 @@ Updated 2026-11-16T19:55:22Z by runner b79bf6a7ad64 (actions).
 | T515 | End-to-end harness: specs can deliver a validly signed Strip | done | 2 | 50 min | 23:47Z | PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemo |
 | T515 | End-to-end harness: specs can deliver a validly signed Strip | BLOCKED | 1 | 17 min | 22:11Z |  |
 | T099 | Journey J2 (business) and its variants, keyboard-only, with  | BLOCKED | 1 | 58 min | 21:21Z |  |
-| T464 | server and portals: the sign-up capability step is served af | done | 1 | 83 min | 19:56Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -95,7 +94,7 @@ Updated 2026-11-16T19:55:22Z by runner b79bf6a7ad64 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T19:13:14Z (week)): week: 3.4M used, 190.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T06:56:20Z.
+- Pacing (session_reading 2026-11-16T19:54:58Z (week)): week: 4.8M used, 189.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T09:04:59Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -112,6 +111,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T481 (lease until 2026-11-16T22:16:25Z)
+- lane 6: T307 (lease until 2026-11-16T23:00:14Z)
 - lane 7: T361 (lease until 2026-11-16T21:39:42Z)
 
 ## Last usage reading
