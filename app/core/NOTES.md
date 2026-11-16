@@ -103,3 +103,4 @@
 - [SEC-002] (tests) `src/tests/stripe_page_settings.rs`: both Confirm page keys optional everywhere, each marker refused in the wrong environment, a bad value named by key only (T492).
 - [SEC-044] (task 303) D-3962: `ASKHAVA_OWNER_BOOTSTRAP_TOKEN` is a known settings key (read only by `server bootstrap-owner`), so `start_up()` no longer refuses the bootstrap command's own token.
 - [FEE-046] (task 477) `settings.rs`: `ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS`, optional, default 860, 0 to 10,000, else `Invalid` naming the key; `Settings::sales_tax_set_aside_basis_points` (D-3922).
+- [WEB-021 WEB-028] (task 102) `settings.rs`: `ASKHAVA_HOME_NUMBERS_MIN_JOBS` (whole number above 0, default 50), `ASKHAVA_LLC_RECORD_URL` and `ASKHAVA_CITY_BUSINESS_LICENSE_NUMBER` (optional, trimmed), read by `site::api::SitePages` (D-3995).

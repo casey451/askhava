@@ -3090,6 +3090,13 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - A trade that got a request but has no business at all alerts you too.
 - Gaps: a license change that drops a business's job types is not counted until the next change touching that trade, and a town no business has ever served does not alert yet (D-3911). The overseer adds one small follow-up task for each. Nothing needs you now.
 
+## The home and how-it-works pages (T102, D-3994 to D-3996, November 16)
+
+- The home page and the how-it-works page are built, with the how-it-works page in Spanish too. Old directory links (`/categories`, `/events`) now open the home page instead of an error.
+- The home page shows its three numbers (requests sent, typical time to the first quote, average quotes per request) only once 50 requests have had job cards sent. The 50 is a setting.
+- The "Who runs Laftly" block says "this page shows when the owner is away", as the spec words it, but the home page has no away notice yet. Worth a look when the away notice is built.
+- The Spanish wording is marked for native-speaker review.
+
 ## Test-coverage floors for money and privacy files outside the three main parts (D-3974, November 16)
 
 - Every file outside payments, privacy and licensing that moves money, hands over or deletes personal details, or checks that a message really came from Stripe or Twilio now has its own test-coverage floor, so its tests cannot quietly shrink. Twelve already meet 95% and are held there.
