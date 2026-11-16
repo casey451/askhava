@@ -3016,3 +3016,14 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The nightly backup export must be locked to a key only you hold offline. That needs one new encryption library (`age`, a common open-source one); the backup task will confirm it passes the security and license checks when it is built.
 - The owner help page and its reply box, and the email-deferral figures on the scorecard, are now small tasks of their own so no task runs over its size limit.
 - Nothing needs you now. Before the first real backup, the export needs a key pair whose private half stays offline, an item for the account checklist.
+
+## Fable's checks of the stage-5 closers and the documentation pass (D-3891, November 16)
+
+- The privacy sentinel test was too big for one task, so the browser-tamper test (changing a price or an ID in the page changes nothing) is now its own task. Nothing was dropped.
+- The final code audit was far too big for one session, so it is now three audits (money, people and messages, web and platform) writing one report. Any Critical or High finding comes back to the plan for a fix before stage 5 is signed off.
+- One more sign-up form now refuses fields it does not expect, and the quote form keeps accepting every field its page really sends.
+- The owner guide now waits until every owner page exists, so it can name each one.
+- The decisions summary is now written in ten pieces whose size is measured when each starts, since the decisions log keeps growing; if ten are not enough, the audit says so and more are added.
+- The old review items you no longer need to see move to an archive in a task of their own.
+- For the overseer: stage 5's sign-off is recorded by hand. Run it as soon as the stage-5 cleanup (T126) merges, from its and the audit's reports; the documentation pass waits for it, so leaving it until the end would stall the build.
+- Nothing needs you now.
