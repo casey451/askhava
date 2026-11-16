@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T14:26:58Z by runner b9ee6e1c0745 (actions).
+Updated 2026-11-16T14:27:29Z by runner 996258e4fd7d (actions).
 
 **Building: T477 in progress since 14:13Z; 360 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-16T14:26:58Z by runner b9ee6e1c0745 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T477 claimed 14:13Z, lease until 17:13Z; lane 2: T497 claimed 14:16Z, lease until 17:16Z; lane 5: T308 claimed 13:29Z, lease until 17:11Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z; lane 7: T529 claimed 14:10Z, lease until 17:10Z
 - **Week:** 94% used, 0.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:17Z, 9 min before this update
+- **Last run:** 14:27Z, 0 min before this update
 - **Keeper:** last ran 14:15Z, next wake 17:09Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-16T14:26:58Z by runner b9ee6e1c0745 (actions).
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | QUEUED | 1 | 101 min | 14:05Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | check_failed | 1 | 69 min | 13:32Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
-| T101 | site: base layout in the design spec's look, works without J | MERGE_PENDING | 1 | 70 min | 13:31Z |  |
+| T101 | site: base layout in the design spec's look, works without J | check_failed | 1 | 70 min | 13:31Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z |  |
 | T409 | server (harness): the door probe's owner actor signs in thro | done | 1 | 36 min | 13:05Z |  |
 | T531 | messaging and server: OPS-046's first-six-weeks email figure | done | 1 | 36 min | 13:01Z |  |
