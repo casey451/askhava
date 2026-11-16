@@ -46,6 +46,7 @@ pub mod inbound_text;
 pub mod inbound_voice;
 pub mod no_handler_alert;
 pub mod offdb_stream;
+pub mod owner_signin;
 pub mod payment_jobs;
 pub mod release_sink;
 pub mod request_timeout;
@@ -225,7 +226,8 @@ impl ApprovalSecret for StripeApproval {
 
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
 /// the business portal (T300) over `pool`, always (`business_portal::served`), and the Confirm
-/// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none.
+/// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; and the
+/// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303), always.
 fn business_pages(
     parts: BusinessParts,
     pool: PgPool,
@@ -243,6 +245,7 @@ fn business_pages(
             approval: Arc::new(StripeApproval(hooks.stripe.clone())),
         })
     });
+    let owner = owner_signin::routes(pool.clone());
     let portal = business_portal::served(pool, parts.vault, (webhooks, voice)).merge(confirm);
     (parts.signin)
         .map_or_else(Router::new, business_signin::ServedSignIn::into_router)
@@ -252,6 +255,7 @@ fn business_pages(
                 .map_or_else(Router::new, business_signup::ServedSignUp::into_router),
         )
         .merge(portal)
+        .merge(owner)
 }
 
 /// The app's router: every module's routes, merged once here (D-481), under
@@ -273,6 +277,8 @@ fn business_pages(
 /// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231); the email
 /// action links are `/b/a/{kind}/{object}/{token}` ([`action_links`], T301). The built
 /// browser files are served at `/static/<crate>/` from the parts' folder ([`static_files`], T362).
+/// The owner's sign-in, passkey challenge, step-up and sign-out routes are always merged
+/// ([`owner_signin`], T303), with the passkey relying party on the brand file's domain (D-3844).
 /// The site's compiled-in stylesheet is at `/static/site/<name>` (`site::api::site_routes`, T101).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241) and the placed calls' status and safety-key routes
