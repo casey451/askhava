@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-16T20:40:06Z by runner 32d91e1d646e (actions).
+Updated 2026-11-16T20:41:37Z by runner 32d91e1d646e (actions).
 
 **Building: T111 in progress since 20:22Z; 374 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 374 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T111 claimed 20:22Z, lease until 23:22Z; lane 2: T481 claimed 19:16Z, lease until 23:34Z; lane 4: T102 claimed 20:17Z, lease until 23:17Z; lane 6: T307 claimed 20:00Z, lease until 23:40Z
+- **Lane:** lane 1: T111 claimed 20:22Z, lease until 23:22Z; lane 2: T481 claimed 19:16Z, lease until 23:34Z; lane 4: T102 claimed 20:17Z, lease until 23:17Z
 - **Week:** 1% used, 189.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:39Z, 0 min before this update
+- **Last run:** 20:40Z, 1 min before this update
 - **Keeper:** last ran 20:21Z, next wake 22:18Z
 
 ## Needs attention
+- BLOCKED T307: plan gap reported: PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messaging` and `calls` call `read_contact`), and app/portals/src/homeowner_portal.rs:97 keeps `OnFile::phone()` crate-private (T087's file, not T307's). So `server` has no allowed way to read her number and address for `HomeFacts`. The prompt (kit/prompts/T307.md:9, D-3877 (3)) says to read them through `privacy::api::read_contact` from the server, which those two lines (and the runtime check at app/privacy/src/api.rs:247) rule out. Smallest plan change: let T307 own app/portals/s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T307 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 15 problem(s) on tasks still to run (+130 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T307 | server and portals: the homeowner portal's sign-in, home pag | BLOCKED | 1 | 41 min | 20:41Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T361 | quotes and picks: a quote keeps its number once shown, and a | MERGE_PENDING | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
 | T487 | ops and payments: safe mode after 24 hours pauses charges, a | done | 1 | 50 min | 19:47Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 30 min | 19:37Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, tests/a11y/page_states.ts; a resync merges it in |
@@ -112,7 +114,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T111 (lease until 2026-11-16T23:22:29Z)
 - lane 2: T481 (lease until 2026-11-16T23:34:48Z)
 - lane 4: T102 (lease until 2026-11-16T23:17:18Z)
-- lane 6: T307 (lease until 2026-11-16T23:40:06Z)
 
 ## Last usage reading
-- {"task": "T361", "at": "2026-11-16T20:12:45Z", "cache_creation_input_tokens": 265300, "input_tokens": 235, "cache_read_input_tokens": 8621007, "output_tokens": 66714}
+- {"task": "T307", "at": "2026-11-16T20:41:37Z", "input_tokens": 227, "output_tokens": 68141, "cache_read_input_tokens": 15035227, "cache_creation_input_tokens": 237356}
