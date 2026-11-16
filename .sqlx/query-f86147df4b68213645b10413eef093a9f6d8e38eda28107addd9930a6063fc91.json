@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(DISTINCT business_id) AS \"n!\" FROM quotes.quote WHERE job_id = ANY($1) AND received_at >= $2::timestamptz - interval '30 days' AND received_at < $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f86147df4b68213645b10413eef093a9f6d8e38eda28107addd9930a6063fc91"
+}

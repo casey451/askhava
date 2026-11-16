@@ -5,6 +5,7 @@
 //! (`docs/architecture.md` section 3, D-491). Other crates reach it only through [`api`].
 
 pub mod api;
+mod audit_subjects;
 mod models;
 mod service;
 mod status_banner;

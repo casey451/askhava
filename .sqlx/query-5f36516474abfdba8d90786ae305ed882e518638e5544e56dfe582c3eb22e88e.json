@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH intro AS (SELECT kind, job_id, recorded_at, row_number() OVER (PARTITION BY business_id ORDER BY recorded_at, seq) AS nth FROM payments.ledger_entry WHERE kind IN ('charge', 'free-first-win', 'repeat-customer', 'fee-free-job-type')) SELECT count(*) FILTER (WHERE kind <> 'charge') AS \"part!\", count(*) AS \"whole!\" FROM intro WHERE nth > 1 AND job_id = ANY($1) AND recorded_at >= $2 AND recorded_at < $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "part!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "whole!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "5f36516474abfdba8d90786ae305ed882e518638e5544e56dfe582c3eb22e88e"
+}

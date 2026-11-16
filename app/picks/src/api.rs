@@ -143,6 +143,7 @@ pub use crate::release::{
     ReleaseView, Released, check_ins_at_release, plan_release, release, release_notice,
 };
 pub use crate::released_view::{Seat, ViewAnswer, ViewFacts, may_view, released_view};
+pub use crate::scorecard_inputs::{confirmed_share, diagnostic_share, picked_requests};
 pub use crate::service::FEE_FACTS_ALERT;
 pub use crate::service::PACKAGE_TEMPLATE;
 pub use crate::service::page_pick_tier;
