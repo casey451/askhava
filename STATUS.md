@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T23:55:14Z by runner 7b601a2f6a07 (actions).
+Updated 2026-11-16T23:55:46Z by runner aeb3a925ad17 (actions).
 
 **Building: T469 in progress since 23:44Z; 376 of 541 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-16T23:55:14Z by runner 7b601a2f6a07 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T469 claimed 23:44Z, lease until 02:44Z; lane 3: T111 claimed 23:22Z, lease until 02:54Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 02:31Z; lane 6: T320 claimed 23:55Z, lease until 02:55Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
 - **Week:** 6% used, 176.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:54Z, 0 min before this update
+- **Last run:** 23:55Z, 0 min before this update
 - **Keeper:** last ran 23:49Z, next wake 01:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 15 problem(s) on tasks still to run (+136 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 16 problem(s) on tasks still to run (+137 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -71,7 +71,7 @@ Updated 2026-11-16T23:55:14Z by runner 7b601a2f6a07 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 327 of 733 (44.6%) · partial 274 · unstarted 132
-**Tasks merged (throughput only):** 376 of 541
+**Tasks merged (throughput only):** 376 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
