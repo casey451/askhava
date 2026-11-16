@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T16:07:10Z by runner d995af80b833 (actions).
+Updated 2026-11-16T16:07:28Z by runner d995af80b833 (actions).
 
 **Building: T101 in progress since 15:19Z; 363 of 536 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,12 @@ Updated 2026-11-16T16:07:10Z by runner d995af80b833 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 7: T475 claimed 15:08Z, lease until 18:56Z
 - **Week:** 95% used, 1.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:01Z, 5 min before this update
+- **Last run:** 16:01Z, 6 min before this update
 - **Keeper:** last ran 16:01Z, next wake 18:22Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T559 (since 2026-11-16T16:07:02Z, no attempt used; a plan change fixes it): T559: prompt kit/prompts/T559.md is missing; run scripts/gen_prompts.py; T559: branch claude/task/T559-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours

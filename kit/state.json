@@ -63006,7 +63006,14 @@
    "attempts": 0,
    "slug": "test-races-autofocus-second-press",
    "type": "harness",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-16T16:07:02Z",
+    "problems": [
+     "T559: prompt kit/prompts/T559.md is missing; run scripts/gen_prompts.py",
+     "T559: branch claude/task/T559-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
+    ]
+   }
   }
  ],
  "owner_waits": [],
@@ -66888,7 +66895,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T16:07:10Z",
+ "updated_at": "2026-11-16T16:07:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
