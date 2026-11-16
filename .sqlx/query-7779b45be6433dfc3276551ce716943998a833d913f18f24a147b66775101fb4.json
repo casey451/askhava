@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH paid AS (SELECT e.business_id, EXISTS (SELECT 1 FROM payments.ledger_entry p WHERE p.kind = 'charge' AND p.business_id = e.business_id AND p.id <> e.id AND p.recorded_at <= e.recorded_at AND p.recorded_at >= e.recorded_at - interval '60 days') AS again FROM payments.ledger_entry e WHERE e.kind = 'charge' AND e.job_id = ANY($1) AND e.recorded_at >= $2 AND e.recorded_at < $3) SELECT count(DISTINCT business_id) FILTER (WHERE again) AS \"part!\", count(DISTINCT business_id) AS \"whole!\" FROM paid",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "part!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "whole!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "7779b45be6433dfc3276551ce716943998a833d913f18f24a147b66775101fb4"
+}

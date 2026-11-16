@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT category, array_agg(job_id ORDER BY job_id) AS \"jobs!\" FROM (SELECT DISTINCT ON (job_id) job_id, category FROM quotes.shown_card WHERE sent_at < $1 ORDER BY job_id, sent_at) first_card GROUP BY category ORDER BY category",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "category",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "category"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "jobs!",
+        "type_info": "UuidArray",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "4ba37412664ea5afb350fd2a779de56090cedf2d4986dc866a3b8434cbeb5565"
+}

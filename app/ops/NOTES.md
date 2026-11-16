@@ -49,3 +49,4 @@
 - [FEE-026 FEE-028 FEE-053] (task 333) cross-reference (D-3620): the build note of T333 is in `app/payments/NOTES.md`: `grep -n '(task 333)' app/payments/NOTES.md`.
 - [BIZ-002 BIZ-016 LIC-008 LIC-010] (task 385) cross-reference (D-3620): the build note of T385 is in `app/licensing/NOTES.md`: `grep -n '(task 385)' app/licensing/NOTES.md`.
 - [INT-049 CARD-025 INT-029 TXT-032] (task 251) cross-reference (D-3620): the build note of T251 is in `app/intake/NOTES.md`: `grep -n '(task 251)' app/intake/NOTES.md`.
+- [OPS-039] (task 477) `audit_subjects.rs`: `audit_subjects(db, action, from, to)` gives each row's subject kind, subject ID and `at`, oldest first, for modules that may not read `ops.audit_log` (D-3844, D-3882).

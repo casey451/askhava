@@ -60,6 +60,7 @@ mod quote_card;
 mod quote_facts;
 mod quote_rules;
 mod rules;
+mod scorecard_inputs;
 mod service;
 mod update_texts;
 
