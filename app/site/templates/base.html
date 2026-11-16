@@ -7,15 +7,17 @@
     and Help sits in the header in the same place on every page (A11Y-017, D-3878). The header is
     not sticky, so nothing covers a focused element (A11Y-026). No script is needed, and no script,
     style or font comes from another host (SEC-013); every value is escaped (SEC-011). Forms post
-    with novalidate and never disable their submit button (A11Y-030, A11Y-031). -#}
+    with novalidate and never disable their submit button (A11Y-030, A11Y-031). The stylesheet is
+    linked first in `body`, not in `head`, so it never holds back a page's `autofocus` (an error
+    summary or answer line takes focus as soon as the page parses, A11Y-030, D-3901). -#}
 <html lang="{% block lang %}en{% endblock %}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{% endblock %} | {{ askhava_core::api::brand().display_name() }}</title>
-<link rel="stylesheet" href="/static/site/site.css">
 </head>
 <body>
+<link rel="stylesheet" href="/static/site/site.css">
 <a class="skip-link" href="#main">Skip to main content</a>
 {% block banner %}{% endblock %}
 <header>

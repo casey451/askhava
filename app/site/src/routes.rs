@@ -21,14 +21,16 @@ pub fn site_routes() -> Router {
     Router::new().nest_service("/static/site", get(asset))
 }
 
-/// `GET /static/site/<name>`: a listed file with its MIME type, else 404 (WEB-001, SEC-013).
+/// `GET /static/site/<name>`: a listed file with its MIME type, else 404 (WEB-001, SEC-013). The
+/// browser keeps a file for an hour, so the next page's stylesheet comes from its cache and a
+/// page's `autofocus` is not held back by a fetch (A11Y-030, D-3901).
 async fn asset(uri: Uri) -> Response {
     let name = uri.path().strip_prefix('/').unwrap_or_default();
     match assets::find(name) {
         Some(file) => (
             [
                 (header::CONTENT_TYPE, file.mime),
-                (header::CACHE_CONTROL, "no-cache"),
+                (header::CACHE_CONTROL, "public, max-age=3600"),
             ],
             file.bytes,
         )
