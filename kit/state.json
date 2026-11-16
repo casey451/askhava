@@ -61712,7 +61712,10 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "last_failure": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_job_08_later_at_day_3_asks_again_at_day_14 ... ok\ntest td_txt_13_problem_reply_in_both_languages ... ok\ntest td_job_08_other_closes_and_a_second_connection_is_checked_again ... ok\ntest td_job_08_ongoing_is_done_with_no_more_check_ins ... ok\ntest td_job_09_problem_with_a_safety_word_raises_the_safety_alert ... ok\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.85s\n     Running tests/free_wins.rs (target/llvm-cov-target/debug/build/askhava-integration/03ecf2304110e75d/out/free_wins-03ecf2304110e75d)\nrunning 9 tests\ntest td_fee_08_keys_are_normalized_digests ... ok\ntest td_fee_08_key_recorded_after_the_win_still_counts ... ok\ntest td_fee_08_one_free_win_recorded_at_zero ... ok\ntest td_fee_08_claim_failures_roll_back ... ok\ntest td_fee_08_free_win_tables_are_append_only ... ok\ntest td_fee_08_window_edges ... ok\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_job_08_later_at_day_3_asks_again_at_day_14 ... ok\ntest td_txt_13_problem_reply_in_both_languages ... ok\ntest td_job_08_other_closes_and_a_second_connection_is_checked_again ... ok\ntest td_job_08_ongoing_is_done_with_no_more_check_ins ... ok\ntest td_job_09_problem_with_a_safety_word_raises_the_safety_alert ... ok\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.85s\n     Running tests/free_wins.rs (target/llvm-cov-target/debug/build/askhava-integration/03ecf2304110e75d/out/free_wins-03ecf2304110e75d)\nrunning 9 tests\ntest td_fee_08_keys_are_normalized_digests ... ok\ntest td_fee_08_key_recorded_after_the_win_still_counts ... ok\ntest td_fee_08_one_free_win_recorded_at_zero ... ok\ntest td_fee_08_claim_failures_roll_back ... ok\ntest td_fee_08_free_win_tables_are_append_only ... ok\ntest td_fee_08_window_edges ... ok\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1.",
+   "runner_closed_prs": [
+    869
+   ]
   },
   {
    "id": "T522",
@@ -66073,7 +66076,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T14:10:48Z",
+ "updated_at": "2026-11-16T14:11:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
