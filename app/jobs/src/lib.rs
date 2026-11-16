@@ -14,6 +14,7 @@ mod job_facts;
 mod models;
 mod purge_events;
 mod quote_token;
+mod request_counts;
 mod rules;
 mod service;
 mod status;

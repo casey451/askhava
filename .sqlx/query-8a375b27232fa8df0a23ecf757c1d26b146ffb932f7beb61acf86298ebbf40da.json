@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH done AS (UPDATE ops.alert SET resolved_at = $2 WHERE id = $1 RETURNING id) INSERT INTO ops.alert_ack (alert_id, acknowledged_by, at) SELECT id, 'system', $2 FROM done",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8a375b27232fa8df0a23ecf757c1d26b146ffb932f7beb61acf86298ebbf40da"
+}
