@@ -27,8 +27,8 @@ use sqlx::{Connection, PgConnection};
 use crate::handlers::queue_body;
 use crate::models::{self, IntakeError};
 use crate::routing::{Outcome, Request, Routing, apply};
-use crate::rules::{Settings, language_from_code};
-use crate::service::{Queued, TextIn};
+use crate::rules::Settings;
+use crate::service::{Queued, TextIn, request_language};
 
 /// INT-049: the ZIP question's template ID.
 pub const ZIP_QUESTION_TEMPLATE: &str = "zip_question";
@@ -189,7 +189,7 @@ async fn close(
     (msg, conversation): (&TextIn<'_>, Uuid),
     settings: Settings,
 ) -> Result<ZipStep, IntakeError> {
-    let language = language(db, conversation).await?;
+    let language = request_language(db, conversation).await?;
     let req = Request {
         town: NO_TOWN,
         area: &[],
@@ -246,7 +246,7 @@ async fn ask(
     settings: Settings,
     template: &'static str,
 ) -> Result<Queued, IntakeError> {
-    let language = language(tx, conversation).await?;
+    let language = request_language(tx, conversation).await?;
     let body = zip_body(template, language, settings.spanish_conversations_on);
     let subject = [conversation, msg.inbox_id];
     let queued = queue_body(tx, secret, (msg.contact, template), &subject, &body).await?;
@@ -276,12 +276,4 @@ pub fn zip_body(template: &str, language: Language, spanish_on: bool) -> String 
         brand().short_name()
     };
     format!("{opening}: {words}")
-}
-
-/// The request's language (CON-026).
-async fn language(db: &mut PgConnection, conversation: Uuid) -> Result<Language, IntakeError> {
-    let row = models::conversation(db, conversation)
-        .await?
-        .ok_or(IntakeError::UnknownRequest)?;
-    Ok(language_from_code(&row.language))
 }

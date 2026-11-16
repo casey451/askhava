@@ -192,8 +192,9 @@ pub(crate) fn shrank_too_far(recorded: u32, previous: Option<u32>) -> bool {
     previous.is_some_and(|before| u64::from(recorded) * 2 < u64::from(before))
 }
 
-/// Splits one line on commas, honouring double-quoted fields; `None` on an unclosed quote.
-fn split(line: &str) -> Option<Vec<String>> {
+/// Splits one line on commas, honouring double-quoted fields; `None` on an unclosed quote
+/// (`own_record` reads its records with it too).
+pub(crate) fn split(line: &str) -> Option<Vec<String>> {
     let (mut fields, mut current, mut quoted) = (Vec::new(), String::new(), false);
     let mut chars = line.trim_end_matches('\r').chars().peekable();
     while let Some(c) = chars.next() {
