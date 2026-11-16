@@ -43,6 +43,8 @@ tracing = { workspace = true }
 base64 = { workspace = true }
 hmac = { workspace = true }
 sha1 = { workspace = true }
+# The owner authenticator secret's base32 decoding in the door probe (T409, D-3155).
+totp-rs = { workspace = true }
 # The paused clock for the request time-limit tests (T286, D-1870).
 tokio = { workspace = true, features = ["test-util"] }
 tower = { workspace = true }
