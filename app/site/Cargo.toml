@@ -1,6 +1,6 @@
 [package]
 name = "askhava-site"
-description = "Laftly public website: the shared page layout every site and portal page extends (templates/base.html, T051, D-491, D-492), the site layout with the WEB-007 status banner, and the stylesheet in the daylight-and-evergreen look (T101, D-3331)"
+description = "Laftly public website: the shared page layout every site and portal page extends (templates/base.html, T051, D-491, D-492), the site layout with the WEB-007 status banner and footer, the home and how-it-works pages (T102), and the stylesheet in the daylight-and-evergreen look (T101, D-3331)"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -8,9 +8,12 @@ publish.workspace = true
 
 [dependencies]
 askhava-core = { workspace = true }
+askhava-intake = { workspace = true }
 askhava-ops = { workspace = true }
+askhava-payments = { workspace = true }
 askama = { workspace = true }
 axum = { workspace = true }
+jiff = { workspace = true }
 sqlx = { workspace = true }
 tracing = { workspace = true }
 

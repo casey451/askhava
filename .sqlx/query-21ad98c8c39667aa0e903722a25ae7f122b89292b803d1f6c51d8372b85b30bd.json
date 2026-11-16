@@ -1,0 +1,54 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH c AS (SELECT job_id, min(sent_at) AS first_card, max(sent_at) AS last_card\n                        FROM quotes.job_card GROUP BY job_id),\n                q AS (SELECT job_id, count(*) AS n, min(received_at) AS first_quote\n                        FROM quotes.quote WHERE confirmed GROUP BY job_id)\n           SELECT c.job_id AS \"job!\", c.first_card AS \"first_card!\",\n                  c.last_card AS \"last_card!\", coalesce(q.n, 0) AS \"quotes!\",\n                  q.first_quote AS \"first_quote\"\n             FROM c LEFT JOIN q ON q.job_id = c.job_id ORDER BY c.first_card, c.job_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job!",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.job_card",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "first_card!",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "last_card!",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "quotes!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "first_quote",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "21ad98c8c39667aa0e903722a25ae7f122b89292b803d1f6c51d8372b85b30bd"
+}

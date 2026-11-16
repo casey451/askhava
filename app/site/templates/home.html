@@ -1,0 +1,60 @@
+{% extends "site_layout.html" %}
+{#- The home page (T102; WEB-001, WEB-005, WEB-009, WEB-022, WEB-028), worded from
+    docs/copy/site-copy.md. It also answers the old directory paths (WEB-012). The chat is always
+    offered (WEB-009, D-297); the texting number shows only after Gate C (WEB-017). The numbers
+    come from `quotes`' card and quote records and show only past the setting (D-466, D-468). -#}
+{% block title %}Local quotes for Havasu homes{% endblock %}
+{% block content %}
+<p>For homes in Lake Havasu City</p>
+<h1>Get quotes from Havasu businesses without giving out your number.</h1>
+<p>Tell us what needs doing, and we'll ask around for you. Havasu businesses that do that work send their quotes, and you see them on one page. Pick one, or none.</p>
+<p><a href="/request">Get quotes</a></p>
+<p><a href="/how-it-works">See how it works</a></p>
+<p>Start in the chat on this site. You don't need to text or call.</p>
+<p>Free for you. The business you pick pays {{ askhava_core::api::brand().display_name() }} a set introduction fee.</p>
+
+<h2>How it works</h2>
+<ol>
+<li>Tell us what you need. Answer a few short questions and add a photo if you have one. Unless it's an emergency, you see the request before it goes out. Your name and number are never on it.</li>
+<li>Havasu businesses quote. Your request goes to Havasu businesses that take this kind of job. Each one has 24 hours to quote. Every quote lists the same details: the price, what's included and when they can come. Not every business answers.</li>
+<li>You pick one. Check their license and reviews, then choose. You hire the business directly. If nothing fits, you don't have to pick anyone.</li>
+</ol>
+{%- if let Some(n) = numbers %}
+
+<h2>Havasu requests so far</h2>
+<ul>
+<li>Requests sent to businesses: {{ n.requests }}</li>
+{%- if let Some(wait) = n.wait %}
+<li>Typical wait for the first quote: {{ wait }} (median)</li>
+{%- endif %}
+<li>Average quotes per request: {{ n.per_request }}</li>
+</ul>
+<p>These numbers cover {{ n.range }} and {{ n.trades }}.</p>
+{%- endif %}
+
+<h2>How we keep it fair</h2>
+<p>Your number stays with us. Businesses see the job, not you. Your first name and address go only to the business you pick.</p>
+<p>Nobody pays to be first. Quotes show in the order they came in.
+{{ askhava_core::api::brand().display_name() }} doesn't rank or rate businesses, and no business can pay for a better spot.</p>
+
+<h2>For businesses</h2>
+<p>Quote for free. Pay only if a homeowner picks you.</p>
+<p>If the homeowner picks you, you pay a fixed introduction fee by job size.
+That's ${{ fees.small }}, ${{ fees.medium }} or ${{ fees.large }}, set by the size of your quote. It's never a share of the job.</p>
+<p data-fixed="WEB-005">Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens.</p>
+
+<h2>Who runs {{ askhava_core::api::brand().display_name() }}</h2>
+<p>{{ askhava_core::api::brand().display_name() }} is run by {{ askhava_core::api::brand().legal_name() }}, a Lake Havasu City business. Its owner lives in Havasu.</p>
+{%- if let Some(address) = who.mailing_address %}
+<p>Mailing address: {{ address }}</p>
+{%- endif %}
+{%- if let Some(url) = who.record_url %}
+<p><a href="{{ url }}">{{ askhava_core::api::brand().legal_name() }} on the Arizona Corporation Commission site</a></p>
+{%- endif %}
+{%- if let Some(number) = who.city_license %}
+<p>Lake Havasu City business license: {{ number }}</p>
+{%- endif %}
+<p>Help email: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
+<p data-fixed="WEB-021">The owner has a full-time day job. Sign-up reviews are usually answered within 4 days, help and charge questions usually within 2 days, and this page shows when the owner is away.</p>
+<p data-fixed="WEB-022">{{ askhava_core::api::brand().display_name() }} isn't an emergency service and doesn't judge what needs an emergency response. If your message mentions gas, smoke, fire, a CO alarm going off or a downed power line, we send one automatic reminder to call 911. Don't rely on {{ askhava_core::api::brand().display_name() }} in an emergency: call 911.</p>
+{% endblock %}
