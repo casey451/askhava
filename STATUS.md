@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-16T12:22:44Z by runner b7a09cb3f828 (actions).
+Updated 2026-11-16T12:23:03Z by runner b7a09cb3f828 (actions).
 
 **Building: T105 in progress since 12:22Z; 357 of 535 done; week 92% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 357 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T105 claimed 12:22Z, lease until 15:22Z; lane 3: T519 claimed 12:22Z, lease until 15:22Z; lane 4: T101 claimed 12:21Z, lease until 15:21Z
-- **Week:** 92% used, 8.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T105 claimed 12:22Z, lease until 15:22Z; lane 3: T519 claimed 12:22Z, lease until 15:22Z; lane 4: T101 claimed 12:21Z, lease until 15:21Z; lane 7: T529 claimed 12:22Z, lease until 15:22Z
+- **Week:** 92% used, 7.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:22Z, 0 min before this update
 - **Keeper:** last ran 12:17Z, next wake 17:57Z
 
@@ -69,7 +69,7 @@ Updated 2026-11-16T12:22:44Z by runner b7a09cb3f828 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T12:17:14Z (week)): week: 185.5M used, 8.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T02:58:02Z.
+- Pacing (session_reading 2026-11-16T12:17:14Z (week)): week: 187.0M used, 7.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T02:58:35Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -88,6 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T105 (lease until 2026-11-16T15:22:25Z)
 - lane 3: T519 (lease until 2026-11-16T15:22:02Z)
 - lane 4: T101 (lease until 2026-11-16T15:21:19Z)
+- lane 7: T529 (lease until 2026-11-16T15:22:58Z)
 
 ## Last usage reading
 - {"task": "T100", "at": "2026-11-16T08:16:42Z", "cache_creation_input_tokens": 132189, "input_tokens": 160, "cache_read_input_tokens": 5253626, "output_tokens": 35849}
