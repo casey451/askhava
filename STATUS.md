@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T01:52:54Z by runner 700f12d2e5a4 (actions).
+Updated 2026-11-16T01:56:32Z by runner 700f12d2e5a4 (actions).
 
-**Idle since 01:47Z; 354 of 505 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 01:55Z; 355 of 505 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 354 of 505 build tasks (owner gates not counted)
+- **Tasks done:** 355 of 505 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 01:47Z (no task in progress)
+- **Lane:** idle since 01:55Z (no task in progress)
 - **Week:** 78% used, 47.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:52Z, 0 min before this update
+- **Last run:** 01:52Z, 3 min before this update
 - **Keeper:** last ran 01:52Z, next wake 02:12Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-16T01:52:54Z by runner 700f12d2e5a4 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T099 | Journey J2 (business) and its variants, keyboard-only, with  | MERGE_PENDING | 2 | 92 min | 01:45Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
+| T099 | Journey J2 (business) and its variants, keyboard-only, with  | done | 2 | 92 min | 01:45Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | done | 3 | 30 min | 01:42Z | Second review of head 85baf148e5f34e6d4d48b8c0a54b3e8ff92fdbdd found FINDINGS after the one fix round: scripts/check_dup |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 2 | 40 min | 00:58Z |  |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 1 | 47 min | 00:01Z |  |
@@ -51,7 +51,7 @@ Updated 2026-11-16T01:52:54Z by runner 700f12d2e5a4 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
-**Tasks merged (throughput only):** 354 of 505
+**Tasks merged (throughput only):** 355 of 505
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -86,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 234 of 238 done
+- stage 4: 235 of 238 done
 - stage 5: 0 of 113 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
