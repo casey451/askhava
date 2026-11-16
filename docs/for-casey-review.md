@@ -3006,4 +3006,5 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The switch that turns business texting on is stored in the app, but three places still hard-code it as off. A small new task makes every place follow the stored switch, and treat any read error as off.
 - Spotting a business that texts the homeowner number ("get on your list") works from a phrase list in phase 1. The AI second opinion on those messages comes in phase 2 with the other AI writing work, since nothing in phase 1 calls the AI to read a message.
 - The weekly digest's HELP lines move from the HELP task to the digest task, so the tasks run in a clean order.
+- Business texting will turn on only when you switch it on, a separate business number is set, and the texting provider's written "yes" (date, reference and the answer) plus the business campaign reference are filed on the owner settings page. A new task adds that filing form and the check.
 - Nothing needs you.

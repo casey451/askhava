@@ -18654,7 +18654,7 @@
    "id": "T526",
    "slug": "business-texting-stored-switch",
    "title": "server, intake, businesses and site: business texting follows the stored switch, never a constant (D-3881)",
-   "goal": "Plan change D-3881 (Fable's pre-claim checks, Nov 16, 2026): The business-texting switch is stored (`messaging.mode_state`, `migrations/0169_messaging_mode_state.sql`, read by `messaging::api::load_lines`, `app/messaging/src/mode_state.rs:82`, set by `switch_on`), but three places ignore it: `const TEXTING_ON: bool = false` in `app/server/src/business_portal.rs:64` and `app/server/src/business_signup.rs:133`, and `BUSINESS_TEXTING_ON` in `app/intake/src/cards_out.rs:68`; T202's business pages pass `false` too, because `site` may not call `messaging` (`kit/layers.json`). This task replaces each with the stored switch, failing closed (a read error means off): `server` and `intake` read `load_lines(db, (None, None))`'s `business.texting_on`; the new `app/businesses/src/texting_switch.rs` defines `businesses::api::business_texting_on(db)` (re-exported by one line in the shared `api.rs`; `businesses` may call `messaging`), which `app/site/src/pages.rs` passes to the business pages' `texting_on`. Nothing else in those files changes. Tests in `tests/integration/tests/business_texting_switch.rs`, fake data only: with the switch off the sign-up and notice settings offer email only, card notices go by email and the business page shows the switch-off WEB-024 line; after `switch_on` text is offered, the page shows the switch-on line and a consented phone gets texts; a failing read counts as off. Every TD-BIZ, TD-CON and TD-WEB case passes unchanged. Build notes go to the end of each module's `NOTES.md`; update `docs/decisions.md`.",
+   "goal": "Plan change D-3881 (Fable's pre-claim checks, Nov 16, 2026): The business-texting switch is stored (`messaging.mode_state`, `migrations/0169_messaging_mode_state.sql`, read by `messaging::api::load_lines`, `app/messaging/src/mode_state.rs:82`, set by `switch_on`), but three places ignore it: `const TEXTING_ON: bool = false` in `app/server/src/business_portal.rs:64` and `app/server/src/business_signup.rs:133`, and `BUSINESS_TEXTING_ON` in `app/intake/src/cards_out.rs:68`; T202's business pages pass `false` too, because `site` may not call `messaging` (`kit/layers.json`). This task replaces each with the stored switch, failing closed: business texting counts as on only when the stored switch is on and a business sending number is configured (TXT-035's own number: a new optional `ASKHAVA_BUSINESS_NUMBER` in the shared `app/core/src/settings.rs`, passed as `load_lines`' business number); a read error, an unset number or the switch off means off; `server` and `intake` read `load_lines(db, (None, None))`'s `business.texting_on`; the new `app/businesses/src/texting_switch.rs` defines `businesses::api::business_texting_on(db)` (re-exported by one line in the shared `api.rs`; `businesses` may call `messaging`), which `app/site/src/pages.rs` passes to the business pages' `texting_on`. Nothing else in those files changes. Tests in `tests/integration/tests/business_texting_switch.rs`, fake data only: with the switch off the sign-up and notice settings offer email only, card notices go by email and the business page shows the switch-off WEB-024 line; with the switch on and no business number configured, everything stays email only; with both, text is offered, the page shows the switch-on line and a consented phone gets texts; a failing read counts as off. Every TD-BIZ, TD-CON and TD-WEB case passes unchanged. Build notes go to the end of each module's `NOTES.md`; update `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -18717,6 +18717,70 @@
    ],
    "branch": "claude/task/T526-business-texting-stored-switch",
    "prompt": "kit/prompts/T526.md"
+  },
+  {
+   "id": "T527",
+   "slug": "business-texting-eligibility-gate",
+   "title": "messaging, portals and server: the business-texting switch turns on only with the provider's eligibility answer on file (D-3881)",
+   "goal": "Plan change D-3881 (review round 1 of Fable's checks, Nov 16, 2026): TXT-035 lets the business-texting switch go on only after Casey has filed the texting provider's written eligibility answer in the owner portal (date, reference and the answer itself) and a separate business campaign is registered, but nothing stores that answer and `messaging::api::switch_on` (`app/messaging/src/mode_state.rs:115`) turns either audience on with no such check; no page offers the business switch. Built the way T480 built the Spanish switch: (1) `migrations/0208_messaging_business_eligibility.sql` (headed `-- messaging (T527)`): `messaging.business_eligibility`, append-only (the latest row is in force): the answer's date, the provider's reference, the answer text as received, whether it says business texting is allowed, the business campaign's registration reference, who filed it and when; the app role may insert and select only. (2) `app/messaging/src/business_eligibility.rs` (new, re-exported by one line in the shared `api.rs`): `file_business_eligibility` and the latest filing; `switch_on` for `Audience::Business` is refused (a new `ModeStateError` refusal) unless the latest filing says allowed and names a campaign reference; the homeowner line is unchanged. (3) The owner settings page (`app/portals/src/owner_portal.rs`, `templates/owner_settings.html`, served by `app/server/src/owner_portal.rs`) gains the filing form and the business-texting switch, each change needing the fresh second factor (SEC-043), the switch showing why it is refused while no allowed answer is on file. Tests in `tests/integration/tests/business_eligibility.rs`, fake data only: with no filing, or a filing that says not allowed or names no campaign, the business switch stays off and the refusal is shown; after an allowed filing with a campaign reference it turns on; the homeowner switch is unaffected; a cross-site or stale-factor `POST` changes nothing. Build notes go to the end of the `messaging`, `portals` and `server` `NOTES.md` files; update `docs/architecture.md` (schema) and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "messaging",
+   "deps": [
+    "T480",
+    "T310",
+    "T407"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "security"
+   ],
+   "owns": [
+    "migrations/0208_messaging_business_eligibility.sql",
+    "app/messaging/src/business_eligibility.rs",
+    "app/messaging/src/mode_state.rs",
+    "app/portals/src/owner_portal.rs",
+    "app/portals/templates/owner_settings.html",
+    "app/server/src/owner_portal.rs",
+    "tests/integration/tests/business_eligibility.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/terms.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "TXT-035",
+    "TERMS-014"
+   ],
+   "tests": [
+    "TD-WEB-12"
+   ],
+   "decisions": [
+    "D-303",
+    "D-304",
+    "D-307",
+    "D-3881"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 450,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T527-business-texting-eligibility-gate",
+   "prompt": "kit/prompts/T527.md"
   },
   {
    "id": "T126",
@@ -18827,7 +18891,8 @@
     "T523",
     "T524",
     "T525",
-    "T526"
+    "T526",
+    "T527"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -20977,7 +21042,7 @@
    "id": "T236",
    "slug": "ai-call-budgets",
    "title": "AI-call budgets per conversation and per job, and no AI call before the area check",
-   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0208_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0208 (it was 0202; D-3675 made it 0204, D-3722 moved it up one more, D-3750 one more, after T470's `0206_messaging_email_lease.sql`, D-3753 one more, after T480's `0207_messaging_spanish_switch.sql`, and D-3779 one more, because T486 took `0190_catalog_switched_on.sql` and every queued migration from 0190 up moved up one) because T456's `0204_picks_hold_away.sql` and `0205_businesses_away_busy.sql` run before this task in the serial order (`scripts/validate_tasks.py` V9).",
+   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0209_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0209 (it was 0202; D-3881 moved it up one more, so T527's 0208 fits before it; D-3675 made it 0204, D-3722 moved it up one more, D-3750 one more, after T470's `0206_messaging_email_lease.sql`, D-3753 one more, after T480's `0207_messaging_spanish_switch.sql`, and D-3779 one more, because T486 took `0190_catalog_switched_on.sql` and every queued migration from 0190 up moved up one) because T456's `0204_picks_hold_away.sql` and `0205_businesses_away_busy.sql` run before this task in the serial order (`scripts/validate_tasks.py` V9).",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -21000,7 +21065,7 @@
     "app/ai/src/service.rs",
     "app/ai/src/models.rs",
     "app/ai/src/switch.rs",
-    "migrations/0208_ai_call_budget.sql",
+    "migrations/0209_ai_call_budget.sql",
     "tests/integration/tests/ai_budget.rs",
     "app/intake/src/service.rs"
    ],
@@ -21037,7 +21102,8 @@
     "D-3722",
     "D-3750",
     "D-3753",
-    "D-3779"
+    "D-3779",
+    "D-3881"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -36220,7 +36286,7 @@
    "id": "T480",
    "slug": "spanish-conversations-switch",
    "title": "messaging, server and portals: the stored \"Spanish conversations\" switch, refused until the professional translation review and the campaign note and sample are recorded",
-   "goal": "Plan change D-3753 (TXT-043's code half, moved out of T218 by D-3744; TXT-039's review gate, D-427): `spanish_conversations_on` (`app/intake/src/rules.rs:48`) is a plain field, the inbound text route and its retry pass `Settings::default()` (`app/server/src/lib.rs:410`, `app/server/src/inbound_retry.rs:76`), and nothing stores the switch, so Spanish conversations can never be turned on and nothing refuses turning them on early. (1) `migrations/0207_messaging_spanish_switch.sql` (headed `-- messaging (T480)`): `messaging.spanish_switch`, append-only (each change a new row; the latest is in force): on or off, the campaign note's date and reference (the Console update of the homeowner campaign description saying texts are in English or Spanish, T113's document), the Spanish sample message on file, the paid professional translation review of every Spanish template (TXT-039: its date, the reviewer, and each Spanish template's ID and version as the registry gives them, `app/messaging/src/templates.rs`), the owner who changed it and when; the app role SELECT and INSERT only. (2) `app/messaging/src/spanish_switch.rs`, through `messaging::api`: `spanish_switch(conn)` gives the stored switch (off with no row); turning it on stores a row only when a professional review is recorded with a date, a reviewer and template versions that cover every Spanish template at its current registry version (a template added or changed after the review refuses the switch until a new review is recorded; TXT-039, D-427) and the campaign note's date and reference and a non-empty Spanish sample are recorded (TXT-043), else a typed refusal naming each thing missing; turning it off always succeeds; each change writes one `ops` audit row of IDs and code names only. (3) `app/server/src/inbound_text.rs` and `app/server/src/inbound_retry.rs` read the stored switch per message and pass it as `spanish_conversations_on`, so a change is honoured from the next text. (4) The owner settings page (`app/portals/src/owner_portal.rs`, `app/portals/templates/owner_settings.html`; served by `app/server/src/owner_portal.rs`) shows the switch, off at launch, and the fields for the review record, the note and the sample; each change needs a fresh second factor (SEC-043), CSRF and `no_store`, and a refusal names what is missing. The template links `/static/portals/forms.css` first in its `main` block if it draws a checkbox or radio (D-3700). Tests in `tests/integration/tests/spanish_switch.rs` (TD-TXT-26's refusal clause, now assigned here in `docs/test-design.md`, and TD-TXT-28's first clause, the switch refused without a recorded professional review; that row's checklist clauses stay T122's and its registry half was T026's): turning on with no review, with a review missing one Spanish template or naming an older version, with no note, with a note and no sample, and with an empty sample is refused and stores nothing; with both it turns on and a Spanish text then gets the Spanish consent text; off again, the next Spanish text gets English; the route and the retry read the switch per message. Fake data and the stand-in Twilio only. Its routes pass T348's doors unchanged (D-2440). Update the `messaging`, `server` and `portals` `CLAUDE.md` or `NOTES.md` files, `docs/architecture.md` section 3 (the table) and `docs/decisions.md`. The migration is 0207 after T470's 0206 (each moved up one by D-3779); T236's unstarted `0208_ai_call_budget.sql` follows it (V9). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the registry has no template version (`Registry::template`, `app/messaging/src/templates.rs:233`, gives the text and segment count only, and that file is not this task's), so a Spanish template's version is the lowercase hex SHA-256 of its Spanish text from `Registry::template(id, Language::Es)`, computed in `spanish_switch.rs` (`sha2`, already a workspace crate; `app/messaging/Cargo.toml` is shared): a changed Spanish text is a new version.",
+   "goal": "Plan change D-3753 (TXT-043's code half, moved out of T218 by D-3744; TXT-039's review gate, D-427): `spanish_conversations_on` (`app/intake/src/rules.rs:48`) is a plain field, the inbound text route and its retry pass `Settings::default()` (`app/server/src/lib.rs:410`, `app/server/src/inbound_retry.rs:76`), and nothing stores the switch, so Spanish conversations can never be turned on and nothing refuses turning them on early. (1) `migrations/0207_messaging_spanish_switch.sql` (headed `-- messaging (T480)`): `messaging.spanish_switch`, append-only (each change a new row; the latest is in force): on or off, the campaign note's date and reference (the Console update of the homeowner campaign description saying texts are in English or Spanish, T113's document), the Spanish sample message on file, the paid professional translation review of every Spanish template (TXT-039: its date, the reviewer, and each Spanish template's ID and version as the registry gives them, `app/messaging/src/templates.rs`), the owner who changed it and when; the app role SELECT and INSERT only. (2) `app/messaging/src/spanish_switch.rs`, through `messaging::api`: `spanish_switch(conn)` gives the stored switch (off with no row); turning it on stores a row only when a professional review is recorded with a date, a reviewer and template versions that cover every Spanish template at its current registry version (a template added or changed after the review refuses the switch until a new review is recorded; TXT-039, D-427) and the campaign note's date and reference and a non-empty Spanish sample are recorded (TXT-043), else a typed refusal naming each thing missing; turning it off always succeeds; each change writes one `ops` audit row of IDs and code names only. (3) `app/server/src/inbound_text.rs` and `app/server/src/inbound_retry.rs` read the stored switch per message and pass it as `spanish_conversations_on`, so a change is honoured from the next text. (4) The owner settings page (`app/portals/src/owner_portal.rs`, `app/portals/templates/owner_settings.html`; served by `app/server/src/owner_portal.rs`) shows the switch, off at launch, and the fields for the review record, the note and the sample; each change needs a fresh second factor (SEC-043), CSRF and `no_store`, and a refusal names what is missing. The template links `/static/portals/forms.css` first in its `main` block if it draws a checkbox or radio (D-3700). Tests in `tests/integration/tests/spanish_switch.rs` (TD-TXT-26's refusal clause, now assigned here in `docs/test-design.md`, and TD-TXT-28's first clause, the switch refused without a recorded professional review; that row's checklist clauses stay T122's and its registry half was T026's): turning on with no review, with a review missing one Spanish template or naming an older version, with no note, with a note and no sample, and with an empty sample is refused and stores nothing; with both it turns on and a Spanish text then gets the Spanish consent text; off again, the next Spanish text gets English; the route and the retry read the switch per message. Fake data and the stand-in Twilio only. Its routes pass T348's doors unchanged (D-2440). Update the `messaging`, `server` and `portals` `CLAUDE.md` or `NOTES.md` files, `docs/architecture.md` section 3 (the table) and `docs/decisions.md`. The migration is 0207 after T470's 0206 (each moved up one by D-3779); T236's unstarted `0208_ai_call_budget.sql` follows it (V9). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the registry has no template version (`Registry::template`, `app/messaging/src/templates.rs:233`, gives the text and segment count only, and that file is not this task's), so a Spanish template's version is the lowercase hex SHA-256 of its Spanish text from `Registry::template(id, Language::Es)`, computed in `spanish_switch.rs` (`sha2`, already a workspace crate; `app/messaging/Cargo.toml` is shared): a changed Spanish text is a new version. Plan change D-3881: T527's `0208_messaging_business_eligibility.sql` now follows this migration, and T236's moves to `0209_ai_call_budget.sql`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -36273,7 +36339,8 @@
     "D-3744",
     "D-3753",
     "D-3779",
-    "D-3844"
+    "D-3844",
+    "D-3881"
    ],
    "cites": [],
    "budget": {
