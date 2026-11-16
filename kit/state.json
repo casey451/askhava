@@ -59552,7 +59552,7 @@
    "deps": [
     "T443"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "backup-runner-postgres-digest",
    "type": "harness",
@@ -59570,6 +59570,31 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 14,
+     "head_sha": "f75048fd44c1bd19cae0faa4dec8f798177f7d50",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-16T16:29:13Z",
+     "ended_at": "2026-11-16T16:46:49Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 308103,
+       "turns": 11
+      },
+      "reviewer": {
+       "tokens": 139337,
+       "turns": 6
+      }
+     }
+    }
+   ],
    "reviewed_sha": "f62134c5c3c068d557ce36a3d5ec92f29be4f676",
    "review_lease": {
     "task": "T473",
@@ -59578,7 +59603,11 @@
     "lane": "5"
    },
    "branch": "claude/task/T473-backup-runner-postgres-digest",
-   "head_check_since": null,
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #884 (gh pr merge)",
+    "head": "f62134c5c3c068d557ce36a3d5ec92f29be4f676"
+   },
    "update_merges": [
     {
      "from": "f75048fd44c1bd19cae0faa4dec8f798177f7d50",
@@ -63340,12 +63369,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T101",
-   "at": "2026-11-16T16:39:47Z",
-   "output_tokens": 40440,
-   "cache_read_input_tokens": 4319616,
-   "cache_creation_input_tokens": 140077,
-   "input_tokens": 138
+   "task": "T473",
+   "at": "2026-11-16T16:46:49Z",
+   "input_tokens": 33,
+   "cache_creation_input_tokens": 37984,
+   "output_tokens": 4788,
+   "cache_read_input_tokens": 404635
   },
   "source": "session_reading 2026-11-16T16:25:47Z (week)",
   "by_task": {
@@ -67195,7 +67224,17 @@
    },
    "T473": {
     "estimated_bytes": 112625,
-    "estimated_tokens": 122755
+    "estimated_tokens": 122755,
+    "usage_counting": "message_id",
+    "input_tokens": 33,
+    "cache_creation_input_tokens": 37984,
+    "output_tokens": 4788,
+    "cache_read_input_tokens": 404635,
+    "worker_tokens": 308103,
+    "worker_turns": 11,
+    "reviewer_tokens": 139337,
+    "reviewer_turns": 6,
+    "last_model": "claude-opus-5-5"
    },
    "T324": {
     "estimated_bytes": 323669,
@@ -67205,11 +67244,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-16T13:01:14Z",
-    "tokens": 13322047
+    "tokens": 13405315
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 191954418
+    "tokens": 192037686
    }
   },
   "session_reading": {
@@ -67220,7 +67259,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T16:46:50Z",
+ "updated_at": "2026-11-16T16:47:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
