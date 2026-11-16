@@ -154,6 +154,10 @@ pub use crate::owner_auth::{
     passkey_registered, passkey_registration_options, passkey_sign_in_options, password_problem,
     require_owner_step_up, sign_out_everywhere,
 };
+pub use crate::owner_step_up_page::{
+    OWNER_SIGN_OUT_ALL_ROUTE, OWNER_SIGN_OUT_ROUTE, OWNER_STEP_UP_ROUTE, StepUpScreen,
+    owner_signed_out, owner_step_up_page,
+};
 pub use crate::photo_upload::{
     HEIC_ERROR, PHOTO_UPLOAD_ROUTE, REASK_ERROR, TOO_BIG_ERROR, TOO_MANY_PIXELS_ERROR,
     UploadScreen, photo_upload_page, upload_screen,

@@ -106,6 +106,9 @@ const KEYS: &[&str] = &[
     "ASKHAVA_LICENSE_LIST_HOUR",
     "ASKHAVA_LICENSE_LIST_RETRY_MINUTES",
     "ASKHAVA_LICENSE_LOOKUP_BATCH",
+    // Read by `server bootstrap-owner` alone, from the host variable, never stored (T303, SEC-044,
+    // D-1918, D-3962).
+    "ASKHAVA_OWNER_BOOTSTRAP_TOKEN",
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).
