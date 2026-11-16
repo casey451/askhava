@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T20:13:49Z by runner 1104862f9636 (actions).
+Updated 2026-11-16T20:14:19Z by runner f74278e920d2 (actions).
 
 **Building: T481 in progress since 19:16Z; 372 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-16T20:13:49Z by runner 1104862f9636 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z
 - **Week:** 1% used, 189.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:13Z, 0 min before this update
-- **Keeper:** last ran 20:11Z, next wake 21:42Z
+- **Last run:** 20:14Z, 0 min before this update
+- **Keeper:** last ran 20:14Z, next wake 22:19Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T523 (since 2026-11-16T19:07:14Z, no attempt used; a plan change fixes it): T523: dependency T105 is DONE but its owned file app/ops/src/alerts.rs is not on main; T523: dependency T105 is DONE but its owned file migrations/0192_ops_alerts_safe_mode.sql is not on main; T523: dependency T105 is DONE but its owned file tests/integration/tests/ops_alert_conditions.rs is not on main; T523: dependency T105 is DONE but its owned file app/jobs/src/request_counts.rs is not on main
-- Strict plan check red: 13 problem(s) on tasks still to run (+126 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+125 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -66,8 +66,8 @@ Updated 2026-11-16T20:13:49Z by runner 1104862f9636 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 733 (44.3%) · partial 265 · unstarted 143
-**Tasks merged (throughput only):** 372 of 540
+**Requirements verified:** 326 of 733 (44.5%) · partial 264 · unstarted 143
+**Tasks merged (throughput only):** 372 of 539
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -85,7 +85,7 @@ Updated 2026-11-16T20:13:49Z by runner 1104862f9636 (actions).
 | ops-recovery | 1 | 19 | 34 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
+| quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
