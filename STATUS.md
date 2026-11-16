@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T01:42:10Z by runner c4c9c8b47334 (actions).
+Updated 2026-11-16T01:42:32Z by runner c4c9c8b47334 (actions).
 
-**Building: T516 in progress since 01:12Z; 353 of 505 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T099 in progress since 00:13Z; 353 of 505 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 353 of 505 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T516 claimed 01:12Z, lease until 04:12Z; lane 2: T099 claimed 00:13Z, lease until 03:13Z
+- **Lane:** lane 2: T099 claimed 00:13Z, lease until 03:13Z
 - **Week:** 73% used, 47.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:39Z, 2 min before this update
 - **Keeper:** last ran 01:00Z, next wake 03:15Z
@@ -18,7 +18,8 @@ Updated 2026-11-16T01:42:10Z by runner c4c9c8b47334 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 2 | 40 min | 00:58Z | Second review of head 85baf148e5f34e6d4d48b8c0a54b3e8ff92fdbdd found FINDINGS after the one fix round: scripts/check_dup |
+| T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | MERGE_PENDING | 3 | 30 min | 01:42Z | Second review of head 85baf148e5f34e6d4d48b8c0a54b3e8ff92fdbdd found FINDINGS after the one fix round: scripts/check_dup |
+| T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 2 | 40 min | 00:58Z |  |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 1 | 47 min | 00:01Z |  |
 | T515 | End-to-end harness: specs can deliver a validly signed Strip | done | 2 | 50 min | 23:47Z | PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemo |
 | T515 | End-to-end harness: specs can deliver a validly signed Strip | BLOCKED | 1 | 17 min | 22:11Z |  |
@@ -92,8 +93,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T516 (lease until 2026-11-16T04:12:02Z)
+- nothing
 - lane 2: T099 (lease until 2026-11-16T03:13:18Z)
 
 ## Last usage reading
-- {"task": "T516", "at": "2026-11-16T00:58:23Z", "cache_creation_input_tokens": 145701, "output_tokens": 34484, "cache_read_input_tokens": 2140646, "input_tokens": 124}
+- {"task": "T516", "at": "2026-11-16T01:42:09Z", "output_tokens": 23600, "input_tokens": 64, "cache_read_input_tokens": 1240302, "cache_creation_input_tokens": 85555}
