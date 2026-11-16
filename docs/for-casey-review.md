@@ -3000,7 +3000,6 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The automatic phone call for a critical safety alert is placed by the owner-tools task; the alerts task only asks for it.
 - The business page addresses are now fixed: /business, /es/business, /business/help and /es.
 - Open item for you, before launch: the business page's city business-license guide needs three settings filled in: the license cost, how long it takes, and the city's link. Until you set them, each part is left out, and with none set the guide is hidden.
-- A restore never sends money back by itself. A charge it can't match is listed for you, and the nightly money check refunds it.
 - Nothing needs you now.
 ## Fable's checks of the new tasks and the fifth stage-5 group (D-3881, November 16)
 - The switch that turns business texting on is stored in the app, but three places still hard-code it as off. A small new task makes every place follow the stored switch, and treat any read error as off.
