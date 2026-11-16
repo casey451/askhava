@@ -6014,3 +6014,4 @@
 - 2026-11-16T22:51:26Z runner 17080bb84ed6 (actions): {"T320": "MERGE_PENDING -> QUEUED"}
 - 2026-11-16T22:59:32Z runner f4898b7c0718 (manual): {}
 - 2026-11-16T22:59:46Z runner f4898b7c0718 (manual): {}
+- 2026-11-16T23:12:54Z runner 17080bb84ed6 (actions): {"T320": "QUEUED -> IN_PROGRESS"}; T320 estimated 1.2M tokens (calibrated); week has 181.8M left (no five-hour budget, D-3056) after 4.2M still running in another lane (session_reading 2026-11-16T22:43:59Z (week)); running to the limit (model window, D-2225), claimed

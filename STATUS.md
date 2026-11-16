@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T22:59:46Z by runner f4898b7c0718 (manual).
+Updated 2026-11-16T23:12:54Z by runner 17080bb84ed6 (actions).
 
-**Building: T523 in progress since 22:07Z; 376 of 540 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T320 in progress since 23:06Z; 376 of 540 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 376 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T523 claimed 22:07Z, lease until 01:49Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 01:41Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
-- **Week:** 4% used, 183.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:59Z, 0 min before this update
+- **Lane:** lane 1: T320 claimed 23:06Z, lease until 02:06Z; lane 2: T523 claimed 22:07Z, lease until 01:49Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 01:41Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
+- **Week:** 4% used, 181.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 23:06Z, 6 min before this update
 - **Keeper:** last ran 22:44Z, next wake 01:10Z
 
 ## Needs attention
@@ -70,36 +70,36 @@ Updated 2026-11-16T22:59:46Z by runner f4898b7c0718 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 303 of 733 (41.3%) · partial 298 · unstarted 132
+**Requirements verified:** 327 of 733 (44.6%) · partial 274 · unstarted 132
 **Tasks merged (throughput only):** 376 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 21 | 10 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 20 | 35 | 3 | 58 |
-| calls | 12 | 12 | 1 | 25 |
+| businesses | 22 | 33 | 3 | 58 |
+| calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 17 | 34 | 1 | 52 |
+| fees | 24 | 27 | 1 | 52 |
 | intake | 30 | 10 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 39 | 9 | 0 | 48 |
-| lifecycle | 24 | 4 | 0 | 28 |
-| messaging | 22 | 21 | 2 | 45 |
+| lifecycle | 27 | 1 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 10 | 19 | 2 | 31 |
+| privacy | 12 | 17 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 35 | 20 | 1 | 56 |
+| quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 14 | 14 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T22:30:28Z (week)): week: 10.8M used, 183.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T09:38:12Z.
+- Pacing (session_reading 2026-11-16T22:43:59Z (week)): week: 12.2M used, 181.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T10:03:08Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -114,7 +114,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T320 (lease until 2026-11-17T02:06:28Z)
 - lane 2: T523 (lease until 2026-11-17T01:49:58Z)
 - lane 4: T481 (lease until 2026-11-17T01:37:17Z)
 - lane 5: T373 (lease until 2026-11-17T01:41:32Z)
