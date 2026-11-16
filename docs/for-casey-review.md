@@ -3016,3 +3016,32 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The nightly backup export must be locked to a key only you hold offline. That needs one new encryption library (`age`, a common open-source one); the backup task will confirm it passes the security and license checks when it is built.
 - The owner help page and its reply box, and the email-deferral figures on the scorecard, are now small tasks of their own so no task runs over its size limit.
 - Nothing needs you now. Before the first real backup, the export needs a key pair whose private half stays offline, an item for the account checklist.
+
+## Fable's checks of the remaining stage-5 tasks (D-3889, November 16)
+
+- Open item: sending the pick code by email when the homeowner can't be texted is put off for now. Doing it safely needs its own locked storage for the email she gives in chat, kept apart from the email she may share with the business she picks. That is a separate plan change. Until then the pick code still comes by a Verify text, and a homeowner who has opted out of texts can't get a code on the quote page.
+- The Confirm link in a business email asks for a code by text only. A business person with no phone that gets texts can't use that link yet; they sign in to the portal instead.
+- The owner's "phone linked" email can't be sent when the phone's last 4 digits aren't stored. You approve the phone on the waiting-phones page instead.
+- The full J1 and J2 journeys were too big for one task, so they are now three. A small test-setup task makes the time-jumping journeys (J3 and J4) run last, so they can't break other tests.
+- A restore never sends money back by itself. A charge it can't match is listed for you, and the nightly money check refunds it.
+- Nothing needs you now.
+
+## Fable's pre-start checks of the remaining stage-5 tasks, group Y (D-3890, November 16)
+
+- The consent text's character counts in the spec were left over from the old name; the texts themselves were right, so only the counts changed (289 English, 297 Spanish, still 2 texts each).
+- Saving or changing a business's card, changing a notice or backup email address, the business team page and "Away until" each became a small task of their own, so no task runs past its size limit and no card detail is ever taken from a form.
+- Your "re-send the release" button in the owner portal had no task building it; a new task adds it.
+- The automated call for a critical safety alert now says only the alert kind and job number and never connects you to the homeowner by itself; the "Call from the Laftly number" button still does, on your press.
+- After review: your "re-send the release" button only re-sends a release that already happened; it can never make a new one, so safe mode and a homeowner's CANCEL still hold. When a business holds a pick for 2 more hours, it is now also told the new end time by its chosen channels (the Away task does this).
+- Nothing needs you now.
+
+## Fable's checks of the stage-5 closers and the documentation pass (D-3891, November 16)
+
+- The privacy sentinel test was too big for one task, so the browser-tamper test (changing a price or an ID in the page changes nothing) is now its own task. Nothing was dropped.
+- The final code audit was far too big for one session, so it is now three audits (money, people and messages, web and platform) writing one report. Any Critical or High finding comes back to the plan for a fix before stage 5 is signed off.
+- One more sign-up form now refuses fields it does not expect, and the quote form keeps accepting every field its page really sends.
+- The owner guide now waits until every owner page exists, so it can name each one.
+- The decisions summary is written in pieces whose size is measured when each starts. Ten are planned, but the decisions log is already big enough to need 12 or 13 and keeps growing, so the documentation audit counts how many are needed and the overseer adds the rest.
+- The old review items you no longer need to see move to an archive in a task of their own.
+- For the overseer: stage 5's sign-off is recorded by hand. Run it as soon as the stage-5 cleanup (T126) merges, from its and the audit's reports; the documentation pass waits for it, so leaving it until the end would stall the build.
+- Nothing needs you now.
