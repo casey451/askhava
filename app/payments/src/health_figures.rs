@@ -2,12 +2,18 @@
 //!
 //! [`payment_errors`] counts, in one query, for a window `[from, to)`: the charge attempts started
 //! in it that failed (`declined`, `needs_action` or `unreachable`, decided before `to`), those
-//! still undecided at `to` (no `decided_at`, or one at or after `to`, so a past window keeps its
-//! count and an attempt decided later counts there as undecided, never also as failed), and the
-//! refunds requested in it that failed or Stripe canceled, from `payments.charge_attempt`
+//! still undecided at `to` (no `decided_at`, or one at or after `to`), and the refunds requested
+//! in it that failed or Stripe canceled, from `payments.charge_attempt`
 //! (`migrations/0096_payments_charge.sql`) and `payments.refund`
 //! (`migrations/0102_payments_refunds_disputes.sql`). Counts only, never an amount, a Stripe ID or
 //! a business (PRIV-005).
+//!
+//! Exact only for a window that ends now, which is how T476 calls it. A charge is judged by its
+//! latest decision: `status.rs` `may_become` lets a final status be replaced (`declined` by
+//! `succeeded`, for one), rewriting `decided_at`, so an attempt decided again after `to` counts in
+//! that window as undecided, no longer as failed. A refund is judged by its current status, so one
+//! that fails after `to` joins an earlier window and one the hourly retry later turns into a
+//! success leaves it.
 
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
