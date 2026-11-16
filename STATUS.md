@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T14:17:15Z by runner 996258e4fd7d (actions).
+Updated 2026-11-16T14:26:58Z by runner b9ee6e1c0745 (actions).
 
-**Building: T477 in progress since 14:13Z; 359 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T477 in progress since 14:13Z; 360 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 359 of 535 build tasks (owner gates not counted)
+- **Tasks done:** 360 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T477 claimed 14:13Z, lease until 17:13Z; lane 2: T497 claimed 14:16Z, lease until 17:16Z; lane 5: T308 claimed 13:29Z, lease until 17:11Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z; lane 7: T529 claimed 14:10Z, lease until 17:10Z
 - **Week:** 94% used, 0.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:16Z, 1 min before this update
+- **Last run:** 14:17Z, 9 min before this update
 - **Keeper:** last ran 14:15Z, next wake 17:09Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-16T14:17:15Z by runner 996258e4fd7d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T519 | Copy check (harness): template text a requirement fixes, and | MERGE_PENDING | 2 | 49 min | 14:07Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
+| T519 | Copy check (harness): template text a requirement fixes, and | done | 2 | 49 min | 14:07Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | QUEUED | 1 | 101 min | 14:05Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | check_failed | 1 | 69 min | 13:32Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
@@ -47,7 +47,7 @@ Updated 2026-11-16T14:17:15Z by runner 996258e4fd7d (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 308 of 733 (42.0%) · partial 269 · unstarted 156
-**Tasks merged (throughput only):** 359 of 535
+**Tasks merged (throughput only):** 360 of 535
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -83,7 +83,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 2 of 143 done
+- stage 5: 3 of 143 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
