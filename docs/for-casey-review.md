@@ -3076,3 +3076,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - The terms task (T111) stopped because the legal-docs check bans the word "subcontract", but the required English paragraph in the Spanish summary says "There is no subcontract". The check now skips exactly that required English paragraph, and the not-a-contractor statement, in the Spanish summary only. The ban still applies everywhere else, including the Spanish wording. The terms task gets one more try once this change merges.
 - Nothing needs you now.
+
+## Test-coverage floors for money and privacy files outside the three main parts (D-3974, November 16)
+
+- Every file outside payments, privacy and licensing that moves money, hands over or deletes personal details, or checks that a message really came from Stripe or Twilio now has its own test-coverage floor, so its tests cannot quietly shrink. Twelve already meet 95% and are held there.
+- These measure lower today, so each is held at its current level less 2 points until its tests grow: `app/picks/src/unreachable_refund.rs` (87%), `app/picks/src/unreachable_steps.rs` (86%), `app/picks/src/release.rs` (81%), `app/picks/src/dispute_steps.rs` (83%), `app/picks/src/auto_confirm.rs` (83%), `app/picks/src/cant_take.rs` (81%), `app/portals/src/confirm_pay.rs` (70%), `app/portals/src/confirm_waiver.rs` (48%), `app/portals/src/data_download.rs` (81%), `app/portals/src/job_release.rs` (51%), `app/portals/src/business_left.rs` (64%), `app/server/src/release_sink.rs` (78%), `app/server/src/business_contacts.rs` (68%), `app/server/src/inbound_text.rs` (25%), `app/server/src/offdb_stream.rs` (21%), `app/adapters/src/signatures.rs` (56%), `app/adapters/src/payments.rs` (84%), `app/adapters/src/sms.rs` (56%), `app/adapters/src/storage.rs` (74%), `app/intake/src/purge.rs` (88%), `app/intake/src/conversation.rs` (84%), `app/businesses/src/complaint_holds.rs` (58%).
+- Nothing needs you now.
