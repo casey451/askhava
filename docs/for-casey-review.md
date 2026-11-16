@@ -3106,5 +3106,5 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## Releases wait in safe mode: a test rule widened by two files (D-4026, November 16)
 
 - The task that makes releases wait while safe mode is on (T408) was stuck: an earlier automatic check said only the charge code may look at safe mode, written before any release code needed to. The spec says safe mode pauses both charges and releases.
-- T408 now also owns that check and lets exactly the two release files look at safe mode, and the check now also fails if either release file stops looking at it. Every texting file is still forbidden from looking at safe mode, so safety texts, STOP and HELP keep going.
+- T408 now also owns that check and lets exactly the two release files look at safe mode, and the check now also fails if either release file stops looking at it, if they pass that look on to other code, or if any texting file touches the release code. Every texting file is still forbidden from looking at safe mode, so safety texts, STOP and HELP keep going.
 - Nothing needs you now.
