@@ -86,7 +86,7 @@ async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp)
 
 /// Queues the daily tasks at start (the chain check, the retention sweep, the body cut, the
 /// photo orphan sweep, the day-31 body scan, this hour's dead-letter check, the job timer
-/// backstop, the hourly request count (T105), the session sweep and rate-limit prune (T436), the license-map re-apply, each daily license list (T371), the outbox sender's
+/// backstop, the hourly request count (T105), the safe-mode check (T487), the session sweep and rate-limit prune (T436), the license-map re-apply, each daily license list (T371), the outbox sender's
 /// first run, the deferral check ([`schedule_messaging`]) and the first nightly Stripe reconcile
 /// (T433)) and runs the intake golden set once.
 async fn schedule_start(
@@ -115,6 +115,9 @@ async fn schedule_start(
         .await
         .map_err(io::Error::other)?;
     askhava_jobs::api::schedule_request_counts(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_ops::api::schedule_safe_mode(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
     askhava_portals::api::schedule_session_sweep(&mut conn, now)

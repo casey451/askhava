@@ -13,6 +13,7 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 - `ops` depends on `core` only (for `enqueue`; layer 1, `kit/layers.json`); it sends nothing itself.
 - A stream event commits or rolls back with its row: `tests/integration/tests/offdb_stream.rs::every_stream_event_reaches_storage_as_it_happens`.
 - The banner clears only by Casey and its history cannot be rewritten: `tests/integration/tests/suspension_mode.rs::td_txt_33_a_restore_keeps_texting_off_and_only_casey_clears_the_banner`.
+- Safe mode starts at 24:00:00 after an unacknowledged pushed High alert (never for a delivery or unpushed alert), ends only when none is open, and is read only by `payments`' `charges_paused`, never by a text path: `tests/integration/tests/safe_mode.rs` (T487).
 - At most one text-delivery alert is open, a second waits for 97% of 200 after an acknowledgement, and only the delivery path acknowledges here: `tests/integration/tests/ops_alert_conditions.rs` (T105).
 
 ## Detail
