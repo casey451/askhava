@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-16T16:53:53Z by runner f4e0a9e94ea4 (actions).
+Updated 2026-11-16T16:55:17Z by runner ac200c8489e3 (actions).
 
-**Building: T361 in progress since 16:50Z; 366 of 536 done; week 96% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T361 in progress since 16:50Z; 366 of 536 done; week 97% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 366 of 536 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T361 claimed 16:50Z, lease until 19:50Z; lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 6: T303 claimed 16:19Z, lease until 19:19Z; lane 7: T475 claimed 15:08Z, lease until 19:42Z
-- **Week:** 96% used, -2.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:53Z, 0 min before this update
+- **Week:** 97% used, -2.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 16:54Z, 1 min before this update
 - **Keeper:** last ran 16:48Z, next wake 19:17Z
 
 ## Needs attention
 - BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+123 on DONE tasks); first: T105: stored context_pct 17% but it measures 23%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+123 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
