@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T13:01:15Z by runner 351f46ebe87d (actions).
+Updated 2026-11-16T13:01:47Z by runner 351f46ebe87d (actions).
 
 **Building: T477 in progress since 12:23Z; 357 of 535 done; week 92% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 357 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T477 claimed 12:23Z, lease until 15:23Z; lane 2: T105 claimed 12:22Z, lease until 15:22Z; lane 3: T519 claimed 12:22Z, lease until 15:48Z; lane 4: T101 claimed 12:21Z, lease until 15:21Z; lane 5: T531 claimed 12:24Z, lease until 15:24Z; lane 6: T409 claimed 12:28Z, lease until 16:00Z; lane 7: T529 claimed 12:22Z, lease until 15:22Z
+- **Lane:** lane 1: T477 claimed 12:23Z, lease until 15:23Z; lane 2: T105 claimed 12:22Z, lease until 15:22Z; lane 3: T519 claimed 12:22Z, lease until 15:48Z; lane 4: T101 claimed 12:21Z, lease until 15:21Z; lane 6: T409 claimed 12:28Z, lease until 16:00Z; lane 7: T529 claimed 12:22Z, lease until 15:22Z
 - **Week:** 92% used, 4.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:01Z, 0 min before this update
 - **Keeper:** last ran 12:17Z, next wake 17:57Z
@@ -18,6 +18,7 @@ Updated 2026-11-16T13:01:15Z by runner 351f46ebe87d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T531 | messaging and server: OPS-046's first-six-weeks email figure | MERGE_PENDING | 1 | 36 min | 13:01Z |  |
 | T100 | Stage 4 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 39 min | 08:16Z |  |
 | T517 | Stage 4 cleanup, part 1: duplicate functions in server, port | proof_missing | 1 | 84 min | 03:25Z |  |
 | T099 | Journey J2 (business) and its variants, keyboard-only, with  | done | 2 | 92 min | 01:45Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
@@ -88,9 +89,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T105 (lease until 2026-11-16T15:22:25Z)
 - lane 3: T519 (lease until 2026-11-16T15:48:11Z)
 - lane 4: T101 (lease until 2026-11-16T15:21:19Z)
-- lane 5: T531 (lease until 2026-11-16T15:24:43Z)
 - lane 6: T409 (lease until 2026-11-16T16:00:50Z)
 - lane 7: T529 (lease until 2026-11-16T15:22:58Z)
 
 ## Last usage reading
-- {"task": "T100", "at": "2026-11-16T08:16:42Z", "cache_creation_input_tokens": 132189, "input_tokens": 160, "cache_read_input_tokens": 5253626, "output_tokens": 35849}
+- {"task": "T531", "at": "2026-11-16T13:01:14Z", "cache_read_input_tokens": 3711896, "input_tokens": 113, "output_tokens": 33154, "cache_creation_input_tokens": 133028}
