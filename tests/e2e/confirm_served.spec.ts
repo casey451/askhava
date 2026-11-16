@@ -10,84 +10,21 @@
 // saved-card picker is served (D-3846); no session gets the sign-in answer (D-3847). The release
 // waits on the signed webhook, so the server says "waiting", never "paid", here. $0, try 2 and
 // FEE-041 are server-only (app/server/tests/confirm_route.rs). Fake data only; nothing is logged.
-import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { spawnSync } from "node:child_process";
+// The seed, the fake Stripe.js and the Confirm steps live in keyed.ts (T515, D-3862), whose seed
+// also gives the job its homeowner, as the release needs.
 import type { APIRequestContext, Page } from "@playwright/test";
 import { axeScan, WIDTHS } from "../a11y/fixtures";
 import { test, expect } from "./fixtures";
-import { keyedUrl } from "./keyed";
+import { confirmPath, keyedUrl, openAsOwner, psql, seedPick, serve, sessionSql, signIn, stripeCalls, token, WAITING } from "./keyed";
 
 /** The Stripe stand-in on the stand-in server (tests/e2e/webserver.ts `STAND_IN_PORT`). */
 const STRIPE = "http://127.0.0.1:4010/stripe";
 /** Any `sk_test_` key: the stand-in checks only the prefix. */
 const STAND_IN_AUTH = { authorization: `Bearer sk_test_${"e2e".repeat(4)}` };
-const SESSION = "__Host-askhava-session";
-/** `payments::api::AUTHORIZATION_VERSION`: a Confirm needs an acceptance of at least it (`required_version`). */
-const AUTHORIZATION_VERSION = 2;
-/** The page script's lines (app/portals/static/confirm_pay.ts) and the server's waiting line. */
+/** The page script's lines (app/portals/static/confirm_pay.ts). */
 const TRY_AGAIN = "We couldn't get an answer. Check your connection and press the button again.";
 const CHECKING = "Checking with your bank. Stay on this page for the answer.";
-const WAITING = /^Payment sent\. You'll get the homeowner's details as soon as Stripe confirms it\.$/;
 const PAUSED = /^The homeowner has paused this job, so it can't be confirmed now\. Nothing was charged\.$/;
-
-const FAKE_STRIPE = `window.stripeCalls = [];
-window.Stripe = (key) => {
-  window.stripeCalls.push(key.startsWith("pk_test_") ? "init test key" : "init other key");
-  return {
-    elements: () => ({ create: () => ({ mount: (at) => window.stripeCalls.push("mount " + at) }) }),
-    createPaymentMethod: async () => ({ paymentMethod: { id: window.fakeCard || "pm_card_visa" } }),
-    handleNextAction: async ({ clientSecret }) => {
-      window.stripeCalls.push("3ds " + clientSecret);
-      const how = await new Promise((settle) => { window.settleBank = settle; });
-      if (how === "error") throw new Error("the bank step failed");
-      return how === "cancel" ? { error: { message: "canceled" } } : {};
-    },
-  };
-};`;
-
-/** Runs `sql` through psql on DATABASE_URL and returns its unaligned output. */
-function psql(sql: string): string {
-  const done = spawnSync("psql", [process.env.DATABASE_URL ?? "", "-v", "ON_ERROR_STOP=1", "-qtA", "-c", sql], { encoding: "utf8" });
-  if (done.status !== 0) throw new Error(`seeding failed with status ${String(done.status)}`);
-  return done.stdout.trim();
-}
-
-/** A business session for member `m` (a CTE name) of the token whose SHA256 is `hash`. */
-function sessionSql(hash: string, m: string): string {
-  return `s AS (INSERT INTO portals.session (token_sha256, realm, actor_id, created_at, expires_at)
-      SELECT decode('${hash}', 'hex'), 'business', id, now(), now() + interval '1 day' FROM ${m} RETURNING id),
-    bs AS (INSERT INTO portals.business_session (session_id, business_id) SELECT s.id, ${m}.business_id FROM s, ${m})`;
-}
-
-/** A fresh session token and its SHA256. */
-function token(): { value: string; hash: string } {
-  const value = randomBytes(32).toString("hex");
-  return { value, hash: createHash("sha256").update(value).digest("hex") };
-}
-
-interface Seeded { business: string; pick: string; job: string; owner: string }
-
-/** An active business, its owner's session and a pick waiting for Confirm with a $25 fee due. */
-function seedPick(): Seeded {
-  const [business, pick, job] = [randomUUID(), randomUUID(), randomUUID()];
-  const owner = token();
-  psql(`WITH b AS (INSERT INTO businesses.business (id, status, created_at, status_changed_at)
-      VALUES ('${business}', 'active', now(), now()) RETURNING id),
-    m AS (INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes,
-      confirm_and_billing, added_at) SELECT id, gen_random_uuid(), true, true, true, now() FROM b
-      RETURNING id, business_id),
-    ${sessionSql(owner.hash, "m")},
-    j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
-      VALUES ('${job}', 'awaiting_confirm', false, now(), now(), now()) RETURNING id),
-    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
-    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
-    p AS (INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, picked_at)
-      SELECT '${pick}', j.id, m.business_id, 1, 'page', 'awaiting_confirm', now() FROM j, m RETURNING id)
-    INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents, terms_version, fixed_at)
-      SELECT p.id, '${business}', '${job}', t.mode, 'charged', 2500, t.authorization_version, now()
-      FROM p, payments.fee_terms t`);
-  return { business, pick, job, owner: owner.value };
-}
 
 /** A member of `business` with only the given role (SEC-019); returns the session token. */
 function seedMember(business: string, role: "cards_and_quotes" | "confirm_and_billing"): string {
@@ -101,13 +38,10 @@ function seedMember(business: string, role: "cards_and_quotes" | "confirm_and_bi
   return member.value;
 }
 
-/** The homeowner's sole-word CANCEL pause on `job` (CON-029), as `intake` stores it. */
+/** The homeowner's sole-word CANCEL pause on `job` (CON-029), on the conversation the seed opened. */
 function pause(job: string): void {
-  psql(`WITH h AS (INSERT INTO intake.homeowner (contact_id, created_at) VALUES (gen_random_uuid(), now()) RETURNING id),
-    c AS (INSERT INTO intake.conversation (homeowner_id, job_id, language, first_inbox_id, consent_template,
-      consent_sent_at, opened_at) SELECT id, '${job}', 'en', gen_random_uuid(), 'consent_first', now(), now() FROM h RETURNING id)
-    INSERT INTO intake.homeowner_pause (conversation_id, job_id, inbox_id, paused_at)
-      SELECT id, '${job}', gen_random_uuid(), now() FROM c`);
+  psql(`INSERT INTO intake.homeowner_pause (conversation_id, job_id, inbox_id, paused_at)
+      SELECT id, job_id, gen_random_uuid(), now() FROM intake.conversation WHERE job_id = '${job}'`);
 }
 
 /** The pick's Confirm-page business-terms rows (TERMS-033). */
@@ -120,53 +54,6 @@ async function charges(request: APIRequestContext, pick: string): Promise<number
   const reply = await request.get(`${STRIPE}/v1/charges?created[gte]=0&limit=100`, { headers: STAND_IN_AUTH });
   const listed = (await reply.json()) as { data: { metadata?: { pick_id?: string }; status: string }[] };
   return listed.data.filter((c) => c.metadata?.pick_id === pick && c.status === "succeeded").length;
-}
-const confirmPath = (pick: string): string => `/b/picks/${pick}/confirm`;
-
-/** Signs `page` in with `session` (none clears it), the cookie set as tests/a11y/fixtures.ts sets it. */
-async function signIn(page: Page, session: string | null): Promise<void> {
-  await page.context().clearCookies();
-  if (session === null) return;
-  const cookie = { name: SESSION, value: session, domain: "127.0.0.1", path: "/", secure: true, httpOnly: true };
-  await page.context().addCookies([{ ...cookie, sameSite: "Lax" }]);
-}
-
-/**
- * Answers Stripe.js with the fake, re-sends the page's POSTs with a same-origin https Origin
- * (D-1250) and holds its JSON state read until `held` settles; returns the posted bodies.
- */
-async function serve(page: Page, card: string, held: Promise<void> = Promise.resolve()): Promise<string[]> {
-  const posted: string[] = [];
-  await page.addInitScript((pm) => {
-    (window as unknown as { fakeCard: string }).fakeCard = pm;
-  }, card);
-  await page.route("https://js.stripe.com/v3/", (route) => route.fulfill({ contentType: "text/javascript", body: FAKE_STRIPE }));
-  await page.route("**/b/picks/*/confirm", async (route) => {
-    const request = route.request();
-    if (request.method() === "GET") {
-      if ((request.headers().accept ?? "").includes("application/json")) await held;
-      return route.continue();
-    }
-    posted.push(request.postData() ?? "");
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-  return posted;
-}
-const stripeCalls = (page: Page): Promise<string[]> => page.evaluate(() => (window as unknown as { stripeCalls: string[] }).stripeCalls);
-
-/** Opens the owner's Confirm page with the fake card `card`, then stores the authorization it shows. */
-async function openAsOwner(page: Page, seeded: Seeded, card: string, held?: Promise<void>): Promise<string[]> {
-  const posted = await serve(page, card, held);
-  await signIn(page, seeded.owner);
-  const reply = await page.goto(keyedUrl() + confirmPath(seeded.pick));
-  expect(reply?.status()).toBe(200);
-  await expect.poll(() => stripeCalls(page)).toEqual(["init test key", "mount #card-element"]);
-  const shown = (await page.locator("#save-card-text").textContent()) ?? "";
-  const text = shown.replaceAll("'", "''");
-  psql(`INSERT INTO payments.card_authorization (business_id, version, text, accepted_at)
-    SELECT '${seeded.business}', GREATEST(authorization_version, ${String(AUTHORIZATION_VERSION)}), '${text}', now() FROM payments.fee_terms`);
-  return posted;
 }
 const PAY = { name: "Confirm and pay $25" };
 

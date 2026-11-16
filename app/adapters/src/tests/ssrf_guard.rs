@@ -487,7 +487,7 @@ async fn payments_client_talks_to_the_stand_in() {
     );
     assert_eq!(
         (paid.metadata.pick_id.as_str(), paid.livemode),
-        ("pick-1", None)
+        ("pick-1", Some(false))
     );
     assert_eq!(stripe.fetch_payment_intent(&paid.id).await.unwrap(), paid);
     refund_replays_once(&stripe, &paid.id).await;

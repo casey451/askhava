@@ -51,9 +51,9 @@ pub struct PaymentIntent {
     pub customer: String,
     /// The metadata Ask Hava set on the create.
     pub metadata: IntentMetadata,
-    /// Stripe's `livemode`; `None` when the body did not say (the stand-in
-    /// omits it, D-727). The release check (SEC-030) treats `None` as a
-    /// mismatch in every mode, never as test mode.
+    /// Stripe's `livemode`; `None` when the body did not say (real Stripe and,
+    /// since D-3869, the stand-in always say). The release check (SEC-030)
+    /// treats `None` as a mismatch in every mode, never as test mode.
     pub livemode: Option<bool>,
     /// Stripe's `latest_charge`, unexpanded: the `ch_…` ID of the intent's most recent charge,
     /// for the charge ledger entry and evidence record (FEE-042, SEC-030, D-2623). It is no
