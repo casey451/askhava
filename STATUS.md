@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T13:29:39Z by runner 5dcb405bf7c0 (actions).
+Updated 2026-11-16T13:30:01Z by runner ebf92768662f (actions).
 
 **Building: T477 in progress since 12:23Z; 358 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 358 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T477 claimed 12:23Z, lease until 16:05Z; lane 2: T105 claimed 12:22Z, lease until 16:21Z; lane 3: T519 claimed 13:17Z, lease until 16:17Z; lane 4: T101 claimed 12:21Z, lease until 16:29Z; lane 7: T529 claimed 12:22Z, lease until 16:10Z
-- **Week:** 93% used, 2.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:21Z, 7 min before this update
+- **Lane:** lane 1: T477 claimed 12:23Z, lease until 16:05Z; lane 2: T105 claimed 12:22Z, lease until 16:21Z; lane 3: T519 claimed 13:17Z, lease until 16:17Z; lane 4: T101 claimed 12:21Z, lease until 16:29Z; lane 5: T308 claimed 13:29Z, lease until 16:29Z; lane 7: T529 claimed 12:22Z, lease until 16:10Z
+- **Week:** 93% used, 2.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:29Z, 0 min before this update
 - **Keeper:** last ran 13:13Z, next wake 15:24Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T129: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+122 on DONE tasks); first: T129: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -72,7 +72,7 @@ Updated 2026-11-16T13:29:39Z by runner 5dcb405bf7c0 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T13:12:33Z (week)): week: 191.2M used, 2.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T03:53:16Z.
+- Pacing (session_reading 2026-11-16T13:12:33Z (week)): week: 191.4M used, 2.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T03:40:41Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -91,6 +91,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T105 (lease until 2026-11-16T16:21:25Z)
 - lane 3: T519 (lease until 2026-11-16T16:17:39Z)
 - lane 4: T101 (lease until 2026-11-16T16:29:39Z)
+- lane 5: T308 (lease until 2026-11-16T16:29:53Z)
 - lane 7: T529 (lease until 2026-11-16T16:10:18Z)
 
 ## Last usage reading
