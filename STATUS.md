@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-16T20:14:19Z by runner f74278e920d2 (actions).
+Updated 2026-11-16T20:15:59Z by runner 2ee325840f90 (actions).
 
-**Building: T481 in progress since 19:16Z; 372 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T481 in progress since 19:16Z; 373 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 372 of 540 build tasks (owner gates not counted)
+- **Tasks done:** 373 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 6: T307 claimed 20:00Z, lease until 23:00Z
 - **Week:** 1% used, 189.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:14Z, 0 min before this update
+- **Last run:** 20:14Z, 1 min before this update
 - **Keeper:** last ran 20:14Z, next wake 22:19Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T523 (since 2026-11-16T19:07:14Z, no attempt used; a plan change fixes it): T523: dependency T105 is DONE but its owned file app/ops/src/alerts.rs is not on main; T523: dependency T105 is DONE but its owned file migrations/0192_ops_alerts_safe_mode.sql is not on main; T523: dependency T105 is DONE but its owned file tests/integration/tests/ops_alert_conditions.rs is not on main; T523: dependency T105 is DONE but its owned file app/jobs/src/request_counts.rs is not on main
-- Strict plan check red: 11 problem(s) on tasks still to run (+125 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 13 problem(s) on tasks still to run (+132 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +22,7 @@ Updated 2026-11-16T20:14:19Z by runner f74278e920d2 (actions).
 | T361 | quotes and picks: a quote keeps its number once shown, and a | MERGE_PENDING | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
 | T487 | ops and payments: safe mode after 24 hours pauses charges, a | MERGE_PENDING | 1 | 50 min | 19:47Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | MERGE_PENDING | 1 | 30 min | 19:37Z | merging main into the reviewed head conflicts in app/quotes/src/lib.rs; a resync merges it in on this attempt (D-891) |
-| T324 | harness: 95% branch floors for the money and privacy files o | MERGE_PENDING | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
+| T324 | harness: 95% branch floors for the money and privacy files o | done | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | done | 1 | 29 min | 18:55Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 59 min | 18:42Z |  |
 | T166 | site: self-hosted Gelasio and DM Sans fonts and the design-t | done | 1 | 52 min | 18:17Z |  |
@@ -66,8 +66,8 @@ Updated 2026-11-16T20:14:19Z by runner f74278e920d2 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 326 of 733 (44.5%) · partial 264 · unstarted 143
-**Tasks merged (throughput only):** 372 of 539
+**Requirements verified:** 325 of 733 (44.3%) · partial 265 · unstarted 143
+**Tasks merged (throughput only):** 373 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -85,7 +85,7 @@ Updated 2026-11-16T20:14:19Z by runner f74278e920d2 (actions).
 | ops-recovery | 1 | 19 | 34 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 36 | 19 | 1 | 56 |
+| quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
@@ -103,7 +103,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 15 of 148 done
+- stage 5: 16 of 148 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
