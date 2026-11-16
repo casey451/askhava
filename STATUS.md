@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T22:10:53Z by runner 6740aabac4ed (actions).
+Updated 2026-11-16T22:18:16Z by runner 023f304a8802 (actions).
 
 **Building: T481 in progress since 21:50Z; 375 of 540 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-16T22:10:53Z by runner 6740aabac4ed (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T481 claimed 21:50Z, lease until 00:50Z; lane 2: T523 claimed 22:07Z, lease until 01:07Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
 - **Week:** 3% used, 185.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:10Z, 0 min before this update
+- **Last run:** 22:18Z, 0 min before this update
 - **Keeper:** last ran 22:10Z, next wake 00:33Z
 
 ## Needs attention
@@ -71,14 +71,13 @@ Each needs a planted sentence in test_planted_spanish_banned_word_fails; think f
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 2 | 40 min | 00:58Z |  |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 1 | 47 min | 00:01Z |  |
 | T515 | End-to-end harness: specs can deliver a validly signed Strip | done | 2 | 50 min | 23:47Z | PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemo |
-| T515 | End-to-end harness: specs can deliver a validly signed Strip | BLOCKED | 1 | 17 min | 22:11Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 328 of 733 (44.7%) · partial 273 · unstarted 132
+**Requirements verified:** 327 of 733 (44.6%) · partial 274 · unstarted 132
 **Tasks merged (throughput only):** 375 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -95,7 +94,7 @@ Each needs a planted sentence in test_planted_spanish_banned_word_fails; think f
 | lifecycle | 27 | 1 | 0 | 28 |
 | messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 13 | 16 | 2 | 31 |
+| privacy | 12 | 17 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
