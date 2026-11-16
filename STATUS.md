@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-16T16:56:50Z by runner d995af80b833 (actions).
+Updated 2026-11-16T16:59:02Z by runner ac200c8489e3 (actions).
 
 **Building: T361 in progress since 16:50Z; 366 of 536 done; week 97% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 366 of 536 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T361 claimed 16:50Z, lease until 19:50Z; lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 6: T303 claimed 16:19Z, lease until 19:19Z; lane 7: T475 claimed 15:08Z, lease until 19:42Z
-- **Week:** 97% used, -2.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:56Z, 0 min before this update
+- **Lane:** lane 1: T361 claimed 16:50Z, lease until 19:50Z; lane 2: T324 claimed 16:31Z, lease until 19:31Z; lane 5: T559 claimed 16:58Z, lease until 19:58Z; lane 6: T303 claimed 16:19Z, lease until 19:19Z; lane 7: T475 claimed 15:08Z, lease until 19:42Z
+- **Week:** 97% used, -4.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 16:57Z, 1 min before this update
 - **Keeper:** last ran 16:56Z, next wake 19:21Z
 
 ## Needs attention
 - BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 10 problem(s) on tasks still to run (+122 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+123 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -56,17 +56,17 @@ Updated 2026-11-16T16:56:50Z by runner d995af80b833 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 313 of 733 (42.7%) · partial 268 · unstarted 152
-**Tasks merged (throughput only):** 366 of 535
+**Requirements verified:** 309 of 733 (42.2%) · partial 272 · unstarted 152
+**Tasks merged (throughput only):** 366 of 536
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 21 | 34 | 3 | 58 |
+| businesses | 20 | 35 | 3 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 23 | 28 | 1 | 52 |
+| fees | 21 | 30 | 1 | 52 |
 | intake | 29 | 11 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 38 | 10 | 0 | 48 |
@@ -75,7 +75,7 @@ Updated 2026-11-16T16:56:50Z by runner d995af80b833 (actions).
 | ops-recovery | 1 | 13 | 40 | 54 |
 | privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 36 | 19 | 1 | 56 |
+| quotes-pick | 35 | 20 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
@@ -85,7 +85,7 @@ Updated 2026-11-16T16:56:50Z by runner d995af80b833 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-16T16:48:36Z (week)): week: 196.6M used, -2.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-28T01:13:44Z.
+- Pacing (session_reading 2026-11-16T16:56:22Z (week)): week: 198.7M used, -4.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-27T23:42:53Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -102,6 +102,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T361 (lease until 2026-11-16T19:50:18Z)
 - lane 2: T324 (lease until 2026-11-16T19:31:55Z)
+- lane 5: T559 (lease until 2026-11-16T19:58:40Z)
 - lane 6: T303 (lease until 2026-11-16T19:19:40Z)
 - lane 7: T475 (lease until 2026-11-16T19:42:10Z)
 
