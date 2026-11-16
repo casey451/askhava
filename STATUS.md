@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T14:56:49Z by runner 996258e4fd7d (actions).
+Updated 2026-11-16T14:57:54Z by runner 903e7f8c564d (actions).
 
-**Building: T497 in progress since 14:16Z; 360 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T497 in progress since 14:16Z; 361 of 535 done; week 94% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 360 of 535 build tasks (owner gates not counted)
+- **Tasks done:** 361 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T497 claimed 14:16Z, lease until 17:16Z; lane 3: T101 claimed 14:32Z, lease until 17:32Z; lane 4: T521 claimed 14:35Z, lease until 17:35Z; lane 6: T105 claimed 14:07Z, lease until 17:07Z
 - **Week:** 94% used, -1.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:56Z, 0 min before this update
+- **Last run:** 14:57Z, 0 min before this update
 - **Keeper:** last ran 14:56Z, next wake 17:09Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-16T14:56:49Z by runner 996258e4fd7d (actions).
 |---|---|---|---|---|---|---|
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | MERGE_PENDING | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T308 | portals (harness): the quote page's close button (JOB-019) i | MERGE_PENDING | 1 | 72 min | 14:42Z |  |
-| T529 | payments: an owner refund has its own refund trigger (D-3883 | MERGE_PENDING | 2 | 28 min | 14:39Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
+| T529 | payments: an owner refund has its own refund trigger (D-3883 | done | 2 | 28 min | 14:39Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T519 | Copy check (harness): template text a requirement fixes, and | done | 2 | 49 min | 14:07Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | QUEUED | 1 | 101 min | 14:05Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
@@ -50,7 +50,7 @@ Updated 2026-11-16T14:56:49Z by runner 996258e4fd7d (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 308 of 733 (42.0%) · partial 269 · unstarted 156
-**Tasks merged (throughput only):** 360 of 535
+**Tasks merged (throughput only):** 361 of 535
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -86,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 3 of 143 done
+- stage 5: 4 of 143 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
