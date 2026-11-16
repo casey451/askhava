@@ -60739,7 +60739,15 @@
    "attempts": 0,
    "slug": "stage4-dedupe-server-portals",
    "type": "cleanup",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-16T01:56:29Z",
+    "problems": [
+     "T517: dependency T099 is DONE but its owned file tests/e2e/j2_business.spec.ts is not on main",
+     "T517: dependency T099 is DONE but its owned file tests/a11y/j2_keyboard.spec.ts is not on main",
+     "T517: dependency T099 is DONE but its owned file tests/e2e/j2.ts is not on main"
+    ]
+   }
   },
   {
    "id": "T518",
@@ -64483,7 +64491,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T01:56:32Z",
+ "updated_at": "2026-11-16T01:56:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

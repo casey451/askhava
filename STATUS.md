@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T01:56:32Z by runner 700f12d2e5a4 (actions).
+Updated 2026-11-16T01:56:46Z by runner 700f12d2e5a4 (actions).
 
 **Idle since 01:55Z; 355 of 505 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -13,6 +13,7 @@ Updated 2026-11-16T01:56:32Z by runner 700f12d2e5a4 (actions).
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T517 (since 2026-11-16T01:56:29Z, no attempt used; a plan change fixes it): T517: dependency T099 is DONE but its owned file tests/e2e/j2_business.spec.ts is not on main; T517: dependency T099 is DONE but its owned file tests/a11y/j2_keyboard.spec.ts is not on main; T517: dependency T099 is DONE but its owned file tests/e2e/j2.ts is not on main
 - Strict plan check red: 18 problem(s) on tasks still to run (+121 on DONE tasks); first: T399: stored context_pct 15% but it measures 21%; regenerate
 
 ## Last 24 hours
