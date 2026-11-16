@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T19:47:47Z by runner f56b7cc3f68c (actions).
+Updated 2026-11-16T19:48:18Z by runner b79bf6a7ad64 (actions).
 
 **Building: T481 in progress since 19:16Z; 371 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-16T19:47:47Z by runner f56b7cc3f68c (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T481 claimed 19:16Z, lease until 22:16Z; lane 7: T361 claimed 18:39Z, lease until 21:39Z
 - **Week:** 1% used, 190.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:45Z, 1 min before this update
+- **Last run:** 19:48Z, 0 min before this update
 - **Keeper:** last ran 19:45Z, next wake 21:42Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T523 (since 2026-11-16T19:07:14Z, no attempt used; a plan change fixes it): T523: dependency T105 is DONE but its owned file app/ops/src/alerts.rs is not on main; T523: dependency T105 is DONE but its owned file migrations/0192_ops_alerts_safe_mode.sql is not on main; T523: dependency T105 is DONE but its owned file tests/integration/tests/ops_alert_conditions.rs is not on main; T523: dependency T105 is DONE but its owned file app/jobs/src/request_counts.rs is not on main
-- Strict plan check red: 16 problem(s) on tasks still to run (+131 on DONE tasks); first: T102: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+129 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
