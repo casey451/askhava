@@ -3023,7 +3023,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The final code audit was far too big for one session, so it is now three audits (money, people and messages, web and platform) writing one report. Any Critical or High finding comes back to the plan for a fix before stage 5 is signed off.
 - One more sign-up form now refuses fields it does not expect, and the quote form keeps accepting every field its page really sends.
 - The owner guide now waits until every owner page exists, so it can name each one.
-- The decisions summary is now written in ten pieces whose size is measured when each starts, since the decisions log keeps growing; if ten are not enough, the audit says so and more are added.
+- The decisions summary is written in pieces whose size is measured when each starts. Ten are planned, but the decisions log is already big enough to need 12 or 13 and keeps growing, so the documentation audit counts how many are needed and the overseer adds the rest.
 - The old review items you no longer need to see move to an archive in a task of their own.
 - For the overseer: stage 5's sign-off is recorded by hand. Run it as soon as the stage-5 cleanup (T126) merges, from its and the audit's reports; the documentation pass waits for it, so leaving it until the end would stall the build.
 - Nothing needs you now.
