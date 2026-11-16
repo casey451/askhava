@@ -3062,5 +3062,5 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 ## Two flaky tests behind the site layout task's failures (D-3955, November 16)
 
-- The site layout task (T101) failed twice, but its code was the same in every run. Two older tests had timing gaps: one finished before its last button press got an answer, and one pressed Tab before the page had moved focus where it should. A small new task (T559) makes both tests wait for those things. No test checks less than before. The site layout task now runs after it.
+- The site layout task (T101) failed twice, but its code was the same in every run. Two older tests had timing gaps: one finished before its last button press got an answer, and one pressed Tab before the page had moved focus where it should. A small new task (T559) makes both tests wait for those things. No test checks less than before. The site layout task is still on its last try and is left as it is; if that try fails, it will be set to run after the fix.
 - Nothing needs you now.
