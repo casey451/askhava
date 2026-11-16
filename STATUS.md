@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T21:58:39Z by runner 7a9d02692402 (actions).
+Updated 2026-11-16T21:59:01Z by runner 7a9d02692402 (actions).
 
 **Building: T481 in progress since 21:50Z; 375 of 540 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-16T21:58:39Z by runner 7a9d02692402 (actions).
 - **Lane:** lane 1: T481 claimed 21:50Z, lease until 00:50Z; lane 5: T111 claimed 21:32Z, lease until 00:32Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
 - **Week:** 3% used, 186.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:58Z, 0 min before this update
-- **Keeper:** last ran 21:56Z, next wake 00:33Z
+- **Keeper:** last ran 21:59Z, next wake 00:34Z
 
 ## Needs attention
 - BLOCKED T523: plan gap reported: PLAN GAP: app/ops/src/audit_subjects.rs:13-21 (owned by T477, not T523) — the audit-subjects reader returns only `subject_kind`, `subject_id` and `at` for an action, never the row's `field`, so the jobs reader cannot pick out `day3_no` / `day3_other` rows through it as the goal requires. Smallest plan change: let T523 own `app/ops/src/audit_subjects.rs` (or a harness/T477 follow-up) to add `field: Option<String>` to `AuditSubject` and to its `SELECT`; or have the plan let the jobs reader take the field through a new `ops::api` reader.
