@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-16T03:25:35Z by runner 543b9087c9d1 (actions).
+Updated 2026-11-16T03:25:55Z by runner 543b9087c9d1 (actions).
 
-**Building: T517 in progress since 02:01Z; 355 of 532 done; week 90% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 03:25Z; 355 of 532 done; week 90% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 355 of 532 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T517 claimed 02:01Z, lease until 05:01Z
+- **Lane:** idle since 03:25Z (no task in progress)
 - **Week:** 90% used, 36.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:09Z, 16 min before this update
 - **Keeper:** last ran 03:09Z, next wake 05:04Z
@@ -18,6 +18,7 @@ Updated 2026-11-16T03:25:35Z by runner 543b9087c9d1 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T517 | Stage 4 cleanup, part 1: duplicate functions in server, port | MERGE_PENDING | 1 | 84 min | 03:25Z |  |
 | T099 | Journey J2 (business) and its variants, keyboard-only, with  | done | 2 | 92 min | 01:45Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | done | 3 | 30 min | 01:42Z | Second review of head 85baf148e5f34e6d4d48b8c0a54b3e8ff92fdbdd found FINDINGS after the one fix round: scripts/check_dup |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 2 | 40 min | 00:58Z |  |
@@ -93,7 +94,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T517 (lease until 2026-11-16T05:01:12Z)
 
 ## Last usage reading
-- {"task": "T099", "at": "2026-11-16T01:45:56Z", "cache_read_input_tokens": 21463974, "output_tokens": 107254, "cache_creation_input_tokens": 430642, "input_tokens": 463}
+- {"task": "T517", "at": "2026-11-16T03:25:33Z", "cache_creation_input_tokens": 146296, "cache_read_input_tokens": 4065889, "input_tokens": 152, "output_tokens": 34196}
