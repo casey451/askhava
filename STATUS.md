@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T13:10:18Z by runner 13a95c794635 (actions).
+Updated 2026-11-16T13:11:21Z by runner a9dde6a48aee (actions).
 
 **Building: T477 in progress since 12:23Z; 357 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 357 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T477 claimed 12:23Z, lease until 16:05Z; lane 2: T105 claimed 12:22Z, lease until 15:22Z; lane 3: T519 claimed 12:22Z, lease until 16:08Z; lane 4: T101 claimed 12:21Z, lease until 15:21Z; lane 7: T529 claimed 12:22Z, lease until 16:10Z
+- **Lane:** lane 1: T477 claimed 12:23Z, lease until 16:05Z; lane 2: T105 claimed 12:22Z, lease until 15:22Z; lane 4: T101 claimed 12:21Z, lease until 15:21Z; lane 7: T529 claimed 12:22Z, lease until 16:10Z
 - **Week:** 93% used, 4.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:09Z, 1 min before this update
+- **Last run:** 13:10Z, 0 min before this update
 - **Keeper:** last ran 13:08Z, next wake 15:23Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-16T13:10:18Z by runner 13a95c794635 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
 | T409 | server (harness): the door probe's owner actor signs in thro | MERGE_PENDING | 1 | 36 min | 13:05Z |  |
 | T531 | messaging and server: OPS-046's first-six-weeks email figure | MERGE_PENDING | 1 | 36 min | 13:01Z |  |
 | T100 | Stage 4 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 39 min | 08:16Z |  |
@@ -88,9 +89,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T477 (lease until 2026-11-16T16:05:53Z)
 - lane 2: T105 (lease until 2026-11-16T15:22:25Z)
-- lane 3: T519 (lease until 2026-11-16T16:08:12Z)
 - lane 4: T101 (lease until 2026-11-16T15:21:19Z)
 - lane 7: T529 (lease until 2026-11-16T16:10:18Z)
 
 ## Last usage reading
-- {"task": "T409", "at": "2026-11-16T13:05:10Z", "output_tokens": 23927, "input_tokens": 79, "cache_creation_input_tokens": 98421, "cache_read_input_tokens": 1713173}
+- {"task": "T519", "at": "2026-11-16T13:11:21Z", "cache_read_input_tokens": 2427633, "output_tokens": 55085, "input_tokens": 119, "cache_creation_input_tokens": 164534}
