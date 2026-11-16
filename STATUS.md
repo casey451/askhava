@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T13:55:04Z by runner dcb6f619b441 (actions).
+Updated 2026-11-16T13:58:46Z by runner dcb6f619b441 (actions).
 
 **Building: T477 in progress since 12:23Z; 358 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 358 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T477 claimed 12:23Z, lease until 16:32Z; lane 2: T105 claimed 12:22Z, lease until 16:55Z; lane 3: T519 claimed 13:17Z, lease until 16:44Z; lane 5: T308 claimed 13:29Z, lease until 16:29Z
+- **Lane:** lane 1: T477 claimed 12:23Z, lease until 16:32Z; lane 3: T519 claimed 13:17Z, lease until 16:44Z; lane 5: T308 claimed 13:29Z, lease until 16:29Z
 - **Week:** 93% used, 2.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:51Z, 3 min before this update
+- **Last run:** 13:55Z, 3 min before this update
 - **Keeper:** last ran 13:51Z, next wake 16:24Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-16T13:55:04Z by runner dcb6f619b441 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | MERGE_PENDING | 1 | 69 min | 13:32Z |  |
 | T101 | site: base layout in the design spec's look, works without J | MERGE_PENDING | 1 | 70 min | 13:31Z |  |
 | T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
@@ -89,9 +90,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T477 (lease until 2026-11-16T16:32:59Z)
-- lane 2: T105 (lease until 2026-11-16T16:55:04Z)
 - lane 3: T519 (lease until 2026-11-16T16:44:29Z)
 - lane 5: T308 (lease until 2026-11-16T16:29:53Z)
 
 ## Last usage reading
-- {"task": "T529", "at": "2026-11-16T13:32:01Z", "input_tokens": 74, "output_tokens": 12391, "cache_read_input_tokens": 1050104, "cache_creation_input_tokens": 75236}
+- {"task": "T105", "at": "2026-11-16T13:58:45Z", "output_tokens": 117044, "cache_read_input_tokens": 15042077, "cache_creation_input_tokens": 377988, "input_tokens": 322}

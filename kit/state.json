@@ -19711,8 +19711,8 @@
    "deps": [
     "T100"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "ops-alerts-safe-mode",
    "type": "build",
    "stage": "5",
@@ -19728,7 +19728,33 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "last_failure": "Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fix round (first round fixed: delivery alert flapping on (6,6), set_towns/set_job_types coverage reporting, concurrent-pause stale count). Remaining:\n1. Trades a license change removes are never reported for coverage (app/businesses/src/capability.rs:644, pause at :671; OPS-006). reapply_license drops job types via models::replace_job_types directly, not set_job_types, so nothing reports; when nothing stays ticked, pause_for_rule -> move_status -> report_counts(.., CoverageKeys::new(), ..) covers only the trades still held (none), so removed trades are missed. D-3913 says \"both edits report\" but omits this path; capability.rs is not T105's file: needs a decision entry naming the gap and follow-up owner, or a plan change.\n2. The \"sorted order\" advisory-lock claim breaks when one transaction reports twice (app/businesses/src/capability.rs:404-405, save_capability calls set_job_types then set_towns in one transaction). town: sorts before trade:, so a newly added town is locked after trade:* keys are held; a concurrent pause of another business serving the same town and trade deadlocks (Postgres 40P01 aborts the save or the pause). Fix in service.rs: lock the union of keys once for the whole outer transaction, or document and retry on deadlock.\nMinor (not a finding): messaging handlers.rs reads delivery counts before record_delivery_counts takes its lock; two callbacks at once can each miss the other's failure (self-corrects next text).\nTests at that head: ops_alert_conditions 12 passed; smoke, prehandin and Ally green; size about 1,300 changed lines outside .sqlx/ against a 600-line budget.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 216,
+     "head_sha": "dcb6f619b44181ec3d8bc89b16743ea25e02c4c0",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-16T12:22:25Z",
+     "ended_at": "2026-11-16T13:58:45Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 13372733,
+       "turns": 122
+      },
+      "reviewer": {
+       "tokens": 2164698,
+       "turns": 39
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T204",
@@ -62043,12 +62069,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T529",
-   "at": "2026-11-16T13:32:01Z",
-   "input_tokens": 74,
-   "output_tokens": 12391,
-   "cache_read_input_tokens": 1050104,
-   "cache_creation_input_tokens": 75236
+   "task": "T105",
+   "at": "2026-11-16T13:58:45Z",
+   "output_tokens": 117044,
+   "cache_read_input_tokens": 15042077,
+   "cache_creation_input_tokens": 377988,
+   "input_tokens": 322
   },
   "source": "session_reading 2026-11-16T13:12:33Z (week)",
   "by_task": {
@@ -65764,7 +65790,17 @@
    },
    "T105": {
     "estimated_bytes": 510451,
-    "estimated_tokens": 1558384
+    "estimated_tokens": 1558384,
+    "usage_counting": "message_id",
+    "output_tokens": 117044,
+    "cache_read_input_tokens": 15042077,
+    "cache_creation_input_tokens": 377988,
+    "input_tokens": 322,
+    "worker_tokens": 13372733,
+    "worker_turns": 122,
+    "reviewer_tokens": 2164698,
+    "reviewer_turns": 39,
+    "last_model": "claude-opus-5-5"
    },
    "T529": {
     "estimated_bytes": 349929,
@@ -65820,11 +65856,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-16T13:01:14Z",
-    "tokens": 2557830
+    "tokens": 4557391
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 181190201
+    "tokens": 183189762
    }
   },
   "session_reading": {
@@ -65835,7 +65871,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T13:55:04Z",
+ "updated_at": "2026-11-16T13:58:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
