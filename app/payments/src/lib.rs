@@ -73,6 +73,7 @@ mod refunds;
 mod release_proof;
 mod routes;
 mod rules;
+mod scorecard_inputs;
 mod service;
 mod status;
 mod three_ds;

@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT c.job_id FROM quotes.shown_card c WHERE c.job_id = ANY($1) AND c.sent_at < $3 GROUP BY c.job_id HAVING min(c.sent_at) >= $2 AND (SELECT count(*) FROM quotes.quote q WHERE q.job_id = c.job_id AND q.received_at < $3) >= $4 ORDER BY c.job_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "job_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "c09f27b85dfbc48a4ab7dd81acdd618c9ebd29934b6a83432afd2b60d5dcd6dc"
+}

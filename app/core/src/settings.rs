@@ -33,6 +33,7 @@ const SECURITY_EVENTS_PER_MINUTE: &str = "ASKHAVA_SECURITY_EVENTS_PER_MINUTE";
 const MAIN_NUMBER: &str = "ASKHAVA_MAIN_NUMBER";
 const STRIPE_PUBLISHABLE_KEY: &str = "ASKHAVA_STRIPE_PUBLISHABLE_KEY";
 const LAUNCH_DATE: &str = "ASKHAVA_LAUNCH_DATE";
+const SET_ASIDE: &str = "ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -45,6 +46,7 @@ const KEYS: &[&str] = &[
     STRIPE_SECRET_KEY,
     STRIPE_PUBLISHABLE_KEY,
     LAUNCH_DATE,
+    SET_ASIDE,
     ALLOW_LIST_TEST,
     ALLOW_LIST_LIVE,
     // The app's own public origin, the base of every signed webhook URL (T241, SEC-016, D-1216).
@@ -113,6 +115,8 @@ const LIVE_MARKERS: &[&str] = &["sk_live_", "rk_live_", "pk_live_"];
 /// Key prefixes that only a vendor's test mode issues (SEC-002).
 const TEST_MARKERS: &[&str] = &["sk_test_", "rk_test_", "pk_test_"];
 const DEFAULT_POOL_MAX: u32 = 10;
+/// FEE-046's default sales-tax set-aside: 860 basis points, 8.6% (D-3844).
+const DEFAULT_SET_ASIDE_BASIS_POINTS: u16 = 860;
 /// The default whole-request time limit in seconds (D-1870).
 const DEFAULT_REQUEST_TIMEOUT_SECS: u64 = 60;
 
@@ -275,6 +279,7 @@ pub struct Settings {
     main_number: Option<String>,
     stripe_publishable_key: Option<String>,
     launch_date: Option<jiff::Timestamp>,
+    set_aside_basis_points: u16,
 }
 
 impl Settings {
@@ -323,6 +328,7 @@ impl Settings {
             main_number: main_number(raw.remove(MAIN_NUMBER))?,
             stripe_publishable_key: publishable_key(raw.remove(STRIPE_PUBLISHABLE_KEY))?,
             launch_date: launch_date(raw.remove(LAUNCH_DATE))?,
+            set_aside_basis_points: set_aside(raw.remove(SET_ASIDE))?,
         })
     }
 
@@ -459,6 +465,14 @@ impl Settings {
     #[must_use]
     pub fn launch_date(&self) -> Option<jiff::Timestamp> {
         self.launch_date
+    }
+
+    /// FEE-046's sales-tax set-aside in basis points (`ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS`,
+    /// 0 to 10,000, default 860, that is 8.6%), the rate OPS-039's net per paid introduction
+    /// subtracts (D-3844).
+    #[must_use]
+    pub fn sales_tax_set_aside_basis_points(&self) -> u16 {
+        self.set_aside_basis_points
     }
 }
 
@@ -725,4 +739,16 @@ fn launch_date(raw: Option<String>) -> Result<Option<jiff::Timestamp>, SettingsE
             .map_err(|_| SettingsError::Invalid(LAUNCH_DATE))
     })
     .transpose()
+}
+
+/// FEE-046, D-3844: the set-aside is a whole number of basis points from 0 to 10,000, 860 when
+/// unset; a bad value names only the key.
+fn set_aside(raw: Option<String>) -> Result<u16, SettingsError> {
+    let Some(raw) = raw else {
+        return Ok(DEFAULT_SET_ASIDE_BASIS_POINTS);
+    };
+    match raw.trim().parse::<u16>() {
+        Ok(points @ 0..=10_000) => Ok(points),
+        _ => Err(SettingsError::Invalid(SET_ASIDE)),
+    }
 }
