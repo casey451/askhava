@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"sent!\" FROM messaging.email_outbox\n            WHERE status = 'sent' AND sent_at >= $1 AND sent_at < $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sent!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "54e377373cfabf2913e983d3801a45ce7f96f2a1ea5591f5d11e8acc2a21384e"
+}

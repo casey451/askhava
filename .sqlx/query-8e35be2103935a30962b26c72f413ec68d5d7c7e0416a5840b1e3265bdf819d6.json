@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT ARRAY(SELECT town FROM businesses.town WHERE business_id = $1) AS \"towns!\",\n             ARRAY(SELECT DISTINCT category FROM businesses.job_type_choice\n                   WHERE business_id = $1) AS \"trades!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "towns!",
+        "type_info": "TextArray",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "trades!",
+        "type_info": "TextArray",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "8e35be2103935a30962b26c72f413ec68d5d7c7e0416a5840b1e3265bdf819d6"
+}

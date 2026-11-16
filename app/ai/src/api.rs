@@ -12,6 +12,7 @@
 use askhava_privacy::api::ScrubbedText;
 use sqlx::PgConnection;
 
+pub use crate::health_figures::{AiFigures, ai_figures};
 pub use crate::models::{
     AdapterTransport, AiConfig, AiError, BrandedText, DAILY_CAP_KEY, DEFAULT_MODEL, Endpoint,
     Fault, INSTRUCTIONS, INTAKE_READING, Instruction, MODEL_KEY, Reply, TIMEOUT_KEY, Transport,

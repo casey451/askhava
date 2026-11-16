@@ -10561,7 +10561,7 @@
    "id": "T402",
    "slug": "quiet-exempt-producers",
    "title": "intake, picks and server: texts QH-004 lets go at any hour for a fact (an emergency job, a direct reply) are queued with that fact",
-   "goal": "Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/intake/src/job_texts.rs`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -10590,7 +10590,8 @@
     "T328",
     "T446",
     "T449",
-    "T489"
+    "T489",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10628,7 +10629,8 @@
    "decisions": [
     "D-2628",
     "D-3055",
-    "D-3106"
+    "D-3106",
+    "D-3999"
    ],
    "cites": [],
    "budget": {
@@ -19258,7 +19260,8 @@
     "T544",
     "T561",
     "T562",
-    "T563"
+    "T563",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19736,7 +19739,8 @@
     "T559",
     "T561",
     "T562",
-    "T563"
+    "T563",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -33379,8 +33383,8 @@
   {
    "id": "T361",
    "slug": "pick-bound-to-business",
-   "title": "quotes and picks: a quote keeps its number once shown, and a pick resolves to the business it was shown for",
-   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business, so a quote confirmed or edited after a later one, or a withdrawal, shifts the numbers and a pick can land on, notify and charge another business (D-2632 gives the sequence). Plan change D-3497 split this task in two: this task stores the shown number and binds the pick in `quotes` and `picks`; T441 makes the quote page and the review, pick and code forms use them. Today `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering; an AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`. Fix: (1) `migrations/0202_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; the migration backfills existing confirmed rows per job in `(received_at, business_id)` order, adds a unique index on `(job_id, shown_number)` and a `BEFORE INSERT OR UPDATE OF confirmed` trigger on `quotes.quote` (own schema only, no `DO`, as `migrations/0157_quotes_formats.sql:19` to `:28` does) that gives a confirmed row with no `shown_number` the job's highest plus one, so rows inserted by SQL in done tests are numbered; the Rust paths set the number under the job's lock in the same statement, so the trigger only fills a number they left empty; `list_rows` and the text pick order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes that order); `page_quotes` keeps `ORDER BY received_at, business_id` and `page_pick` its position until T441, because `number_quotes` (`app/portals/src/quote_page.rs:77` to `:78`) sorts by arrival itself and `page_pick` resolves a list position (`app/picks/src/service.rs:729` to `:737`); a withdrawn quote keeps its place and number (T384 already keeps it in place, D-2912) and an unconfirmed edit keeps its number while it waits; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches callers only through a new read, defined in `app/quotes/src/models.rs` and re-exported by one line in `quotes::api` (D-3144), and the new business-bound entry point. (2) `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests, D-3144), and a new business-bound entry point beside it, reached through `picks::api`, takes the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret) and answers `Taken` when the number no longer maps to that business; the text pick answers `Taken` the same way; so nothing is stored, notified or charged for another business. The new entry point and the text pick resolve a number by its shown number, never its list position; until T441 merges, the quote page still numbers by position through `number_quotes`, so `page_pick` keeps resolving a number by its position in the list the page shows (still arrival order), and the page and the pick it posts always agree; T441 moves the page to the shown number and the new entry point together (D-3497). (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60) through `quotes::api` and `picks::api`, each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912). Every TD-PICK case passes unchanged. Update the `quotes` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3744: its budget is 550 lines. Plan change D-3883: this task's migration moved up one, to `0202_quotes_shown_number.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history.",
+   "title": "quotes and picks: a quote keeps its number once shown, and a pick re-reads its quote",
+   "goal": "Plan change D-3999 split this task in two (attempt 1's plan gap and its review): this task's share is part (1)'s storage only, `migrations/0202_quotes_shown_number.sql` (the column, the backfill, the unique index and the trigger), the number assigned once under the job's row lock in `submit_quote` and `confirm_quote_at` (`app/quotes/src/intake.rs`), the new shown-number read in `app/quotes/src/models.rs` re-exported by one line in `quotes::api`, and part (3), `new_pick`'s re-read (`app/picks/src/service.rs`); T564, right after it, does everything that reads the number: the LIST and text-pick renumbering, the business-bound entry point, PICK-046's lapse text, PICK-030's opted-out \"<number> YES\" and the waiting-pick comparisons. Nothing reads the shown number after this task alone, so `list_rows`, the text pick, `page_quotes` and `page_pick` keep arrival order and every channel still agrees. Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60's storage cases): a quote shown first gets 1 and keeps it through a later confirm, an AI-read edit and a withdrawal; backfilled and trigger-filled numbers; a withdrawal committed between a caller's check and the move answers `Taken`. The goal below is the original's, for the shared design, which neither piece rebuilds: Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business, so a quote confirmed or edited after a later one, or a withdrawal, shifts the numbers and a pick can land on, notify and charge another business (D-2632 gives the sequence). Plan change D-3497 split this task in two: this task stores the shown number and binds the pick in `quotes` and `picks`; T441 makes the quote page and the review, pick and code forms use them. Today `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering; an AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`. Fix: (1) `migrations/0202_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; the migration backfills existing confirmed rows per job in `(received_at, business_id)` order, adds a unique index on `(job_id, shown_number)` and a `BEFORE INSERT OR UPDATE OF confirmed` trigger on `quotes.quote` (own schema only, no `DO`, as `migrations/0157_quotes_formats.sql:19` to `:28` does) that gives a confirmed row with no `shown_number` the job's highest plus one, so rows inserted by SQL in done tests are numbered; the Rust paths set the number under the job's lock in the same statement, so the trigger only fills a number they left empty; `list_rows` and the text pick order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes that order); `page_quotes` keeps `ORDER BY received_at, business_id` and `page_pick` its position until T441, because `number_quotes` (`app/portals/src/quote_page.rs:77` to `:78`) sorts by arrival itself and `page_pick` resolves a list position (`app/picks/src/service.rs:729` to `:737`); a withdrawn quote keeps its place and number (T384 already keeps it in place, D-2912) and an unconfirmed edit keeps its number while it waits; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches callers only through a new read, defined in `app/quotes/src/models.rs` and re-exported by one line in `quotes::api` (D-3144), and the new business-bound entry point. (2) `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests, D-3144), and a new business-bound entry point beside it, reached through `picks::api`, takes the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret) and answers `Taken` when the number no longer maps to that business; the text pick answers `Taken` the same way; so nothing is stored, notified or charged for another business. The new entry point and the text pick resolve a number by its shown number, never its list position; until T441 merges, the quote page still numbers by position through `number_quotes`, so `page_pick` keeps resolving a number by its position in the list the page shows (still arrival order), and the page and the pick it posts always agree; T441 moves the page to the shown number and the new entry point together (D-3497). (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60) through `quotes::api` and `picks::api`, each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912). Every TD-PICK case passes unchanged. Update the `quotes` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3744: its budget is 550 lines. Plan change D-3883: this task's migration moved up one, to `0202_quotes_shown_number.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -33429,8 +33433,6 @@
    ],
    "requirements": [
     "PICK-008",
-    "PICK-016",
-    "TERMS-016",
     "PRIV-005"
    ],
    "tests": [
@@ -33449,12 +33451,13 @@
     "D-3744",
     "D-3779",
     "D-3878",
-    "D-3883"
+    "D-3883",
+    "D-3999"
    ],
    "cites": [],
    "budget": {
     "files": 6,
-    "lines": 550,
+    "lines": 400,
     "context_pct": 27
    },
    "checks": [
@@ -33463,7 +33466,87 @@
     "Ally"
    ],
    "branch": "claude/task/T361-pick-bound-to-business",
-   "prompt": "kit/prompts/T361.md"
+   "prompt": "kit/prompts/T361.md",
+   "acceptance": "TD-PICK-60's storage cases in `tests/integration/tests/pick_bound_business.rs` pass against PostgreSQL, each failing on `main` before this task (the withdrawal re-read case may already pass, D-2912); every TD-PICK case and every existing quotes and picks test passes unchanged."
+  },
+  {
+   "id": "T564",
+   "slug": "pick-shown-number-readers",
+   "title": "quotes, picks and intake: the LIST, text picks, lapse text and opted-out YES use the kept number, and a pick is bound to its business",
+   "goal": "Plan change D-3999 split T361 in two; this is the second piece, after T361 has stored the shown number and its read. Its share: (a) `list_rows` (`app/quotes/src/models.rs:685`) orders by the shown number and `list_lines` and the LIST texts (`app/quotes/src/notify.rs:462`) number each line by it; the text pick (`app/picks/src/service.rs`, `view` at `:252`) resolves a number by it. (b) Part (2)'s business-bound entry point beside `page_pick`, reached through `picks::api`, and the text pick answering `Taken` when the number no longer maps to the business. (c) PICK-046's lapse text, `lapsed_body` (`app/intake/src/job_texts.rs:459`), numbers the quotes it keeps by page place (`:472`) and keeps the LIST lines with those numbers (`:494`); it pairs each pickable page quote's business with its shown number from T361's read before `lapse_plan` and the LIST filter, so `others` and the lines use one numbering (A AI-read at t0, B by form at t0+5m, B shown #1, A #2: with page places, B's lapse text offers B and leaves out A). (d) PICK-030's opted-out \"<number> YES\", `opted_out_yes` (`app/picks/src/email_code.rs:223`), builds its view from page places (`job_view`, `:198`) and picks by page place (`:241`); its number comes from a LIST or lapse text, so it builds its view as the text pick does and picks through the business-bound entry point with the business the number was shown for (`Taken` answers `OptedOutYes::Nothing`). (e) The waiting pick: `picks.pick.quote_number` stays the page place in every channel until T441: `new_pick` keeps storing the page position of the business the number resolved to (the business-bound entry point and the text pick map their business to its page place first), so T157's `backup_choice.rs` (`backup_changed`, `:211` to `:216`; `ended_pick` to `backup_target`, `:302` to `:318`, `:62`), which compares the stored number with page places, stays right with no edit; T441 moves the stored number with the page. Every comparison in this task's files still goes by `business_id`: wherever a waiting pick is compared with the number being picked (`pick_quote`, `:351`; `JobView.waiting` built in `view` and `job_view`; `pick_on_page`, `:714`; `waiting_quote`, `:657`), compare its `business_id` (`models::waiting_pick` returns it) with the business that number resolves to in that channel's numbering (the shown number for texts, the page place for the page until T441), never the stored `quote_number` (with A picked on the page as place 1 and B shown #1, a text \"1 YES\" would otherwise answer Same and never pick B, and \"2 YES\" would end A's pick and pick A again). `backup_choice.rs` stays on page places until T441: a backup is named only on the page form and `backup_target` also checks the business (`app/picks/src/backup_choice.rs:62` to `:64`). Tests in `tests/integration/tests/pick_bound_business.rs` (after T361's cases), each failing on `main`: TD-PICK-60's pick cases (finish #1 after the reorder, the AI-read edit and the withdrawal, never A's), \"2 YES\" after a reorder picks the business shown as #2, B's lapse text lists A as #2 and never B, an opted-out \"1 YES\" picks B, with A picked on the page a text \"1 YES\" replaces it with B and \"2 YES\" answers Same, and after a text \"1 YES\" for B the stored `quote_number` is B's page place (2). Every T328 `pick_ended.rs` and T095 `email_pick_code.rs` case passes unchanged. This is a harness piece by D-3967's pattern (D-3805). The goal below is the original's, for the shared design, which neither piece rebuilds: Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business, so a quote confirmed or edited after a later one, or a withdrawal, shifts the numbers and a pick can land on, notify and charge another business (D-2632 gives the sequence). Plan change D-3497 split this task in two: this task stores the shown number and binds the pick in `quotes` and `picks`; T441 makes the quote page and the review, pick and code forms use them. Today `page_quotes` (`app/quotes/src/api.rs:155`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:498`) takes `view.quotes[quote-1]`; text picks (\"2 YES\", `quotes` `models::list_rows`, `:644`) share the ordering; an AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:397`) but keeps its first `received_at`. Fix: (1) `migrations/0202_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:624`, `:679`) as one more than the job's highest, never reassigned or cleared; the migration backfills existing confirmed rows per job in `(received_at, business_id)` order, adds a unique index on `(job_id, shown_number)` and a `BEFORE INSERT OR UPDATE OF confirmed` trigger on `quotes.quote` (own schema only, no `DO`, as `migrations/0157_quotes_formats.sql:19` to `:28` does) that gives a confirmed row with no `shown_number` the job's highest plus one, so rows inserted by SQL in done tests are numbered; the Rust paths set the number under the job's lock in the same statement, so the trigger only fills a number they left empty; `list_rows` and the text pick order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes that order); `page_quotes` keeps `ORDER BY received_at, business_id` and `page_pick` its position until T441, because `number_quotes` (`app/portals/src/quote_page.rs:77` to `:78`) sorts by arrival itself and `page_pick` resolves a list position (`app/picks/src/service.rs:729` to `:737`); a withdrawn quote keeps its place and number (T384 already keeps it in place, D-2912) and an unconfirmed edit keeps its number while it waits; `PageQuote` gains no field (built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), so the shown number reaches callers only through a new read, defined in `app/quotes/src/models.rs` and re-exported by one line in `quotes::api` (D-3144), and the new business-bound entry point. (2) `page_pick` keeps its signature (called by `app/picks/src/email_code.rs:241`, `app/picks/src/backup_choice.rs:266`, `app/portals/src/pick_flow.rs:1035`, `app/server/tests/door_matrix.rs:771`, `app/server/tests/release_recovery.rs:280` and done integration tests, D-3144), and a new business-bound entry point beside it, reached through `picks::api`, takes the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret) and answers `Taken` when the number no longer maps to that business; the text pick answers `Taken` the same way; so nothing is stored, notified or charged for another business. The new entry point and the text pick resolve a number by its shown number, never its list position; until T441 merges, the quote page still numbers by position through `number_quotes`, so `page_pick` keeps resolving a number by its position in the list the page shows (still arrival order), and the page and the pick it posts always agree; T441 moves the page to the shown number and the new entry point together (D-3497). (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60) through `quotes::api` and `picks::api`, each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912). Every TD-PICK case passes unchanged. Update the `quotes` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3744: its budget is 550 lines. Plan change D-3883: this task's migration moved up one, to `0202_quotes_shown_number.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T361"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/quotes/src/models.rs",
+    "app/quotes/src/notify.rs",
+    "app/picks/src/service.rs",
+    "app/picks/src/email_code.rs",
+    "app/intake/src/job_texts.rs",
+    "tests/integration/tests/pick_bound_business.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/terms.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/privacy.md"
+   ],
+   "requirements": [
+    "PICK-008",
+    "PICK-016",
+    "TERMS-016",
+    "PRIV-005",
+    "PICK-046",
+    "PICK-030"
+   ],
+   "tests": [
+    "TD-PICK-60"
+   ],
+   "decisions": [
+    "D-2632",
+    "D-2631",
+    "D-084",
+    "D-2912",
+    "D-3144",
+    "D-3262",
+    "D-3263",
+    "D-3497",
+    "D-3722",
+    "D-3744",
+    "D-3779",
+    "D-3878",
+    "D-3883",
+    "D-3999"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 600,
+    "context_pct": 27
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T564-pick-shown-number-readers",
+   "prompt": "kit/prompts/T564.md",
+   "acceptance": "TD-PICK-60's reorder, lapse-text, opted-out and waiting-pick cases in `tests/integration/tests/pick_bound_business.rs` pass against PostgreSQL, each failing on `main` before this task; every TD-PICK case, every T328 `pick_ended.rs` and T095 `email_pick_code.rs` case and every existing quotes, picks and intake test passes unchanged."
   },
   {
    "id": "T407",
@@ -33555,7 +33638,7 @@
    "id": "T441",
    "slug": "pick-forms-carry-business",
    "title": "portals: the quote page shows the kept number, and the pick forms carry the business it was shown for",
-   "goal": "Plan change D-3497 split T361 in two (D-2632; PICK-008, PRIV-005): T361 stores each quote's shown number, orders `page_quotes` and the LIST by it, gives a `quotes::api` read of the shown numbers and a `picks::api` business-bound pick entry point that answers `Taken` when a number no longer maps to the business; this task makes the pages use them. The quote page numbers each quote by its shown number through T361's read and a new numbering function beside `portals`' `number_quotes` (`app/portals/src/quote_page.rs:61`, rendered at `:257`), which keeps its signature for `app/portals/src/tests/prop_arrival_order.rs` (D-3144); a withdrawn quote keeps its place and number, shown as \"Withdrawn by the business\". The review, pick and code forms (`app/portals/templates/quote_page.html`, `pick_review.html`, `pick_code.html`, posted to `app/portals/src/pick_flow.rs`) carry the business the number was shown for, in the form T361's entry point takes, and `pick_flow.rs` calls that entry point and treats `Taken` as it treats any quote that can no longer be picked, so nothing is stored, notified or charged for another business. Tests in `tests/integration/tests/pick_bound_forms.rs` (TD-PICK-64) against real PostgreSQL, fake data only. Every TD-PICK case passes unchanged. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3878: after T361, `page_quotes` still lists in arrival order and `page_pick` still resolves a list position, so this task's numbering function orders by the shown number itself and the pick forms post only through T361's business-bound entry point. Plan change D-3879 (Fable's pre-claim check of stage-5 wave 2, Nov 16, 2026): Done tests post `quote=N` with no business field (`tests/integration/tests/page_pick.rs:131`, `:139`, `pick_contact_choice.rs:124`, `:343`, `tier_pick_pages.rs`, `share_and_cant_take.rs:264` to `:339`, `backup_choice.rs:298`, `:309`, `tests/security/tests/page_pick_privacy.rs`, `quote_token.rs:168`, `auth_matrix.rs:463`), and `PickForm` and `CodeForm` are `deny_unknown_fields` (`app/portals/src/pick_flow.rs:131`, `:840`). The business field is optional on all three forms (`#[serde(default)]`). A post without it resolves the number to its business through T361's shown-number read (a shown number never moves, so the mapping cannot shift) and then calls the business-bound entry point; a post whose field names another business than the number's is `Taken`. The done tests that post `quote=N` alone pass unchanged. The two `number_quotes` calls in `pick_flow.rs` (`:553` for the packages, `:807` for the available numbers) move to the new numbering function, so the page, the packages and the pick all use the shown number.",
+   "goal": "Plan change D-3497 split T361 in two (D-2632; PICK-008, PRIV-005): T361 stores each quote's shown number, orders `page_quotes` and the LIST by it, gives a `quotes::api` read of the shown numbers and a `picks::api` business-bound pick entry point that answers `Taken` when a number no longer maps to the business; this task makes the pages use them. The quote page numbers each quote by its shown number through T361's read and a new numbering function beside `portals`' `number_quotes` (`app/portals/src/quote_page.rs:61`, rendered at `:257`), which keeps its signature for `app/portals/src/tests/prop_arrival_order.rs` (D-3144); a withdrawn quote keeps its place and number, shown as \"Withdrawn by the business\". The review, pick and code forms (`app/portals/templates/quote_page.html`, `pick_review.html`, `pick_code.html`, posted to `app/portals/src/pick_flow.rs`) carry the business the number was shown for, in the form T361's entry point takes, and `pick_flow.rs` calls that entry point and treats `Taken` as it treats any quote that can no longer be picked, so nothing is stored, notified or charged for another business. Tests in `tests/integration/tests/pick_bound_forms.rs` (TD-PICK-64) against real PostgreSQL, fake data only. Every TD-PICK case passes unchanged. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3878: after T361, `page_quotes` still lists in arrival order and `page_pick` still resolves a list position, so this task's numbering function orders by the shown number itself and the pick forms post only through T361's business-bound entry point. Plan change D-3879 (Fable's pre-claim check of stage-5 wave 2, Nov 16, 2026): Done tests post `quote=N` with no business field (`tests/integration/tests/page_pick.rs:131`, `:139`, `pick_contact_choice.rs:124`, `:343`, `tier_pick_pages.rs`, `share_and_cant_take.rs:264` to `:339`, `backup_choice.rs:298`, `:309`, `tests/security/tests/page_pick_privacy.rs`, `quote_token.rs:168`, `auth_matrix.rs:463`), and `PickForm` and `CodeForm` are `deny_unknown_fields` (`app/portals/src/pick_flow.rs:131`, `:840`). The business field is optional on all three forms (`#[serde(default)]`). A post without it resolves the number to its business through T361's shown-number read (a shown number never moves, so the mapping cannot shift) and then calls the business-bound entry point; a post whose field names another business than the number's is `Taken`. The done tests that post `quote=N` alone pass unchanged. The two `number_quotes` calls in `pick_flow.rs` (`:553` for the packages, `:807` for the available numbers) move to the new numbering function, so the page, the packages and the pick all use the shown number. Plan change D-3999: T361 was split; the shown-number LIST, the text pick and the business-bound entry point this task uses are T564's, so it follows T564.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -33577,7 +33660,8 @@
     "T388",
     "T308",
     "T384",
-    "T440"
+    "T440",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33621,7 +33705,8 @@
     "D-3263",
     "D-3497",
     "D-3878",
-    "D-3879"
+    "D-3879",
+    "D-3999"
    ],
    "cites": [],
    "budget": {
@@ -33641,7 +33726,7 @@
    "id": "T382",
    "slug": "verify-max-tries-cooldown",
    "title": "picks, businesses and portals: Twilio Verify's \"too many tries\" is a cooldown, never an error page",
-   "goal": "Nov 11 vendor-double review batch 4, F10 (callers' half; D-2769; PICK-013, SEC-004, SEC-008, BIZ-002, TXT-038). A Verify resend within the code's 10-minute life reuses the pending verification and its check attempts, so after the app allows a new code's tries Twilio can answer a check with 60202 (HTTP 429, too many attempts), and a send with 60203; the app counts tries per code row (`CODE_TRIES`, `app/picks/src/rules.rs:13`; `app/portals/src/business_auth.rs:88`) and maps any check error to `PicksError::Verify` (`app/picks/src/service.rs:790`), so the homeowner or business sees an error, not \"try again in 15 minutes\". After T131 (whose adapter returns a typed too-many-tries error) and the queued owners of these files: each caller (`app/picks/src/service.rs` and `app/picks/src/email_code.rs` for the pick code, `app/businesses/src/identity.rs` for the identity code, `app/portals/src/business_auth.rs` for sign-in) maps that error to its own cooldown (`CodeCheck::CoolingDown(at + COOLDOWN)` for the pick code; the existing lock-out of the other two), which outlasts the 10-minute verification so the next send starts a fresh one; any other adapter error keeps today's answer. Tests in `tests/integration/tests/verify_max_tries.rs` against the served stand-in (T131's faithful attempts): three wrong tries, a resend, then two more wrong tries; the third check after the resend (Twilio's sixth attempt on that verification, 60202) answers the cooldown, not an error (fails before the fix), for each of the three flows. Update the `picks`, `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 11 vendor-double review batch 4, F10 (callers' half; D-2769; PICK-013, SEC-004, SEC-008, BIZ-002, TXT-038). A Verify resend within the code's 10-minute life reuses the pending verification and its check attempts, so after the app allows a new code's tries Twilio can answer a check with 60202 (HTTP 429, too many attempts), and a send with 60203; the app counts tries per code row (`CODE_TRIES`, `app/picks/src/rules.rs:13`; `app/portals/src/business_auth.rs:88`) and maps any check error to `PicksError::Verify` (`app/picks/src/service.rs:790`), so the homeowner or business sees an error, not \"try again in 15 minutes\". After T131 (whose adapter returns a typed too-many-tries error) and the queued owners of these files: each caller (`app/picks/src/service.rs` and `app/picks/src/email_code.rs` for the pick code, `app/businesses/src/identity.rs` for the identity code, `app/portals/src/business_auth.rs` for sign-in) maps that error to its own cooldown (`CodeCheck::CoolingDown(at + COOLDOWN)` for the pick code; the existing lock-out of the other two), which outlasts the 10-minute verification so the next send starts a fresh one; any other adapter error keeps today's answer. Tests in `tests/integration/tests/verify_max_tries.rs` against the served stand-in (T131's faithful attempts): three wrong tries, a resend, then two more wrong tries; the third check after the resend (Twilio's sixth attempt on that verification, 60202) answers the cooldown, not an error (fails before the fix), for each of the three flows. Update the `picks`, `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/picks/src/email_code.rs`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -33657,7 +33742,8 @@
     "T268",
     "T269",
     "T272",
-    "T464"
+    "T464",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33695,7 +33781,8 @@
    "decisions": [
     "D-2769",
     "D-2771",
-    "D-3676"
+    "D-3676",
+    "D-3999"
    ],
    "cites": [],
    "budget": {
@@ -36101,14 +36188,15 @@
    "id": "T446",
    "slug": "pick-lapsed-email",
    "title": "intake and messaging: PICK-046's \"couldn't take it\" notice goes by email when she cannot be texted",
-   "goal": "Plan change D-3579 follow-up (PICK-046, CON-028, CON-021, PRIV-004; D-2288): PICK-046 (`docs/spec/quotes-pick.md:50`) says its text \"goes by email when the homeowner can't be texted\", but T328's `pick_lapsed` job text (in `app/intake/src/job_texts.rs`) sends nothing to a number that opted out, has no consent record or fails the area-code check. When that event's text cannot go for one of those reasons and she has an email on file (`messaging::api::homeowner_has_email`), queue one email instead, the way `app/intake/src/opted_out_live.rs` queues CON-028's \"still open\" email: a new `Notice::PickLapsed` in `app/messaging/src/email.rs` (English and Spanish: the business's public name, \"couldn't take it this time\", and her quote page link to see and pick her other quotes; no amount, no other business's contact), `queue_email` keyed on the pick, so a rerun stores nothing more; the email sender's keys reach the step from settings in the shared `app/server/src/lib.rs` as `opted_out_live`'s do, through a postal field of its own on `JobTextKeys` (`app/intake/src/job_texts.rs:112`; `StillOpenSender`'s fields are private, `app/intake/src/opted_out_live.rs:46` to `:50`), and with them missing the step sends nothing and logs why. The email read runs outside any transaction (the vault refuses one). A text that can go still goes as T328 built it; never both. Tests in `tests/integration/tests/pick_lapsed_email.rs` against PostgreSQL, fake data only: opted out with an email gets one email and no text; no email on file gets nothing; a rerun stores one email; a textable homeowner gets the text and no email. Update the `intake` and `messaging` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): PICK-046's no-other-quote case gets the same email: \"<Business> couldn't take it this time. We'll email you when another quote comes in. If it can't wait, it's fine to call a company you know.\" (the text's words, with \"email\" for \"text\", since she cannot be texted), in English and Spanish.",
+   "goal": "Plan change D-3579 follow-up (PICK-046, CON-028, CON-021, PRIV-004; D-2288): PICK-046 (`docs/spec/quotes-pick.md:50`) says its text \"goes by email when the homeowner can't be texted\", but T328's `pick_lapsed` job text (in `app/intake/src/job_texts.rs`) sends nothing to a number that opted out, has no consent record or fails the area-code check. When that event's text cannot go for one of those reasons and she has an email on file (`messaging::api::homeowner_has_email`), queue one email instead, the way `app/intake/src/opted_out_live.rs` queues CON-028's \"still open\" email: a new `Notice::PickLapsed` in `app/messaging/src/email.rs` (English and Spanish: the business's public name, \"couldn't take it this time\", and her quote page link to see and pick her other quotes; no amount, no other business's contact), `queue_email` keyed on the pick, so a rerun stores nothing more; the email sender's keys reach the step from settings in the shared `app/server/src/lib.rs` as `opted_out_live`'s do, through a postal field of its own on `JobTextKeys` (`app/intake/src/job_texts.rs:112`; `StillOpenSender`'s fields are private, `app/intake/src/opted_out_live.rs:46` to `:50`), and with them missing the step sends nothing and logs why. The email read runs outside any transaction (the vault refuses one). A text that can go still goes as T328 built it; never both. Tests in `tests/integration/tests/pick_lapsed_email.rs` against PostgreSQL, fake data only: opted out with an email gets one email and no text; no email on file gets nothing; a rerun stores one email; a textable homeowner gets the text and no email. Update the `intake` and `messaging` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): PICK-046's no-other-quote case gets the same email: \"<Business> couldn't take it this time. We'll email you when another quote comes in. If it can't wait, it's fine to call a company you know.\" (the text's words, with \"email\" for \"text\", since she cannot be texted), in English and Spanish. Plan change D-3999: this task follows T564, which also edits `app/intake/src/job_texts.rs` (`lapsed_body` numbers the quotes it keeps by their shown number); line numbers above are from before it.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "intake",
    "deps": [
     "T328",
-    "T320"
+    "T320",
+    "T564"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -36135,7 +36223,8 @@
    "decisions": [
     "D-3579",
     "D-2288",
-    "D-3880"
+    "D-3880",
+    "D-3999"
    ],
    "cites": [],
    "budget": {

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO ops.delivery_line (audience, recovered_at) VALUES ($1, $2) ON CONFLICT (audience) DO UPDATE SET recovered_at = EXCLUDED.recovered_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c3bd9c7039e3e20179fe45049182238a4735c0d0970223df3db1e6f37823cdf6"
+}

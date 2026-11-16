@@ -6,10 +6,19 @@
 //! The after-hours tick is stored as given; T150 adds the BIZ-007 conditions on it (D-491).
 //! T182 added the self-pause and self-resume and the business's own quiet times (BIZ-010, D-085,
 //! D-968, D-969).
+//! T105 reports coverage to `ops` (OPS-006, D-493): a status move into or out of active, and a
+//! towns or job-type edit on an active business, count the active businesses of each town and
+//! trade it touched (before and after an edit) under `ops`' one coverage lock, taken before the
+//! count, so two changes at once never report a stale count and two reports in one transaction
+//! cannot deadlock on key order ([`report_coverage`]). A license change that drops job types
+//! through `capability.rs` is not reported yet (D-3911).
 
 use std::collections::BTreeSet;
 
-use askhava_ops::api::{Actor, AuditEntry, Change, audit};
+use askhava_ops::api::{
+    Actor, AuditEntry, Change, CoverageCount, CoverageScope, audit, lock_coverage,
+    record_business_counts,
+};
 use jiff::Timestamp;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
@@ -130,7 +139,82 @@ async fn move_status(
     audit(tx, &entry)
         .await
         .map_err(|_| BusinessesError::Audit)?;
+    if from.counts_for_coverage() || to.counts_for_coverage() {
+        let keys = coverage_keys(tx, id).await?;
+        report_coverage(tx, keys, now).await?;
+    }
     Ok(to)
+}
+
+/// The towns and trades (catalog categories) business `id` serves now (OPS-006).
+async fn coverage_keys(
+    tx: &mut PgConnection,
+    id: Uuid,
+) -> Result<(Vec<String>, Vec<String>), BusinessesError> {
+    let row = db(sqlx::query!(
+        r#"SELECT ARRAY(SELECT town FROM businesses.town WHERE business_id = $1) AS "towns!",
+             ARRAY(SELECT DISTINCT category FROM businesses.job_type_choice
+                   WHERE business_id = $1) AS "trades!""#,
+        id
+    )
+    .fetch_one(&mut *tx)
+    .await)?;
+    Ok((row.towns, row.trades))
+}
+
+/// OPS-006, D-493: under `ops`' coverage lock (taken before counting), counts the active
+/// businesses of each town and trade in `keys` and reports them to `ops` at `now`.
+async fn report_coverage(
+    tx: &mut PgConnection,
+    (towns, trades): (Vec<String>, Vec<String>),
+    now: Timestamp,
+) -> Result<(), BusinessesError> {
+    lock_coverage(tx)
+        .await
+        .map_err(|_| BusinessesError::Database)?;
+    let rows = db(sqlx::query!(
+        r#"SELECT k.town AS "town!", k.code AS "code!", (SELECT count(*) FROM businesses.business b
+             WHERE b.status = 'active' AND CASE WHEN k.town
+               THEN EXISTS (SELECT 1 FROM businesses.town t WHERE t.business_id = b.id
+                            AND t.town = k.code)
+               ELSE EXISTS (SELECT 1 FROM businesses.job_type_choice c WHERE c.business_id = b.id
+                            AND c.category = k.code) END) AS "active!"
+           FROM (SELECT true AS town, unnest($1::text[]) AS code
+                 UNION SELECT false, unnest($2::text[])) AS k"#,
+        &towns,
+        &trades
+    )
+    .fetch_all(&mut *tx)
+    .await)?;
+    let counts: Vec<CoverageCount> = rows
+        .into_iter()
+        .map(|r| CoverageCount {
+            scope: if r.town {
+                CoverageScope::Town
+            } else {
+                CoverageScope::Trade
+            },
+            code: r.code,
+            active: u32::try_from(r.active).unwrap_or(u32::MAX),
+        })
+        .collect();
+    record_business_counts(tx, &counts, now)
+        .await
+        .map(|_| ())
+        .map_err(|_| BusinessesError::Database)
+}
+
+/// OPS-006: after an edit of an active business's towns or job types, reports the keys it served
+/// before (`before`) and serves now, so a dropped town or trade is counted too.
+async fn report_edit(
+    tx: &mut PgConnection,
+    id: Uuid,
+    before: (Vec<String>, Vec<String>),
+) -> Result<(), BusinessesError> {
+    let (mut towns, mut trades) = coverage_keys(tx, id).await?;
+    towns.extend(before.0);
+    trades.extend(before.1);
+    report_coverage(tx, (towns, trades), Timestamp::now()).await
 }
 
 /// Replaces a `self` pause reason with a rule's, only if the row still holds the `self` reason,
@@ -355,8 +439,15 @@ pub async fn set_towns(
 ) -> Result<(), BusinessesError> {
     let towns = rules::towns(towns)?;
     let mut tx = db(conn.begin().await)?;
-    models::read(&mut tx, id).await?;
+    let active = models::read(&mut tx, id)
+        .await?
+        .status
+        .counts_for_coverage();
+    let before = coverage_keys(&mut tx, id).await?;
     models::replace_towns(&mut tx, id, &towns).await?;
+    if active {
+        report_edit(&mut tx, id, before).await?;
+    }
     log(
         &mut tx,
         actor,
@@ -383,8 +474,15 @@ pub async fn set_job_types(
 ) -> Result<(), BusinessesError> {
     let chosen = rules::checklist(ticked, allowed)?;
     let mut tx = db(conn.begin().await)?;
-    models::read(&mut tx, id).await?;
+    let active = models::read(&mut tx, id)
+        .await?
+        .status
+        .counts_for_coverage();
+    let before = coverage_keys(&mut tx, id).await?;
     models::replace_job_types(&mut tx, id, &chosen).await?;
+    if active {
+        report_edit(&mut tx, id, before).await?;
+    }
     log(
         &mut tx,
         actor,
