@@ -50,6 +50,7 @@ mod formats;
 mod gate;
 mod handlers;
 mod health_figures;
+mod home_numbers;
 mod intake;
 mod job_page;
 mod job_text;
