@@ -19,10 +19,11 @@
 // URL (so it serves no Twilio webhook). Since T492 (D-3813) it also gets the Stripe stand-in
 // settings: stand-in mode and base URL, an `sk_test_` key the stand-in accepts, a webhook secret, an
 // account, a `pk_test_` publishable key and a fixed launch date, all fake, so it builds the Stripe
-// webhook and serves the Confirm route (SEC-032, D-019). The suite's own web binary and worker never see those values: their
-// environment is made before them, and the keyed values go into this process's environment under
-// `E2E_KEYED_*` names (which `appEnv` passes on but the app never reads) for `keyed.ts` in the test
-// workers, as `controlSecret()` does.
+// webhook and serves the Confirm route (SEC-032, D-019). Since T515 (D-3862) its webhook secret is
+// one of the keyed values, so `keyed.ts` can sign a delivery the binary accepts. The suite's own web
+// binary, worker and stand-ins never see those values: the keyed values go into this process's
+// environment under `E2E_KEYED_*` names, which `appEnv` drops, for `keyed.ts` in the test workers,
+// as `controlSecret()` does.
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -56,11 +57,15 @@ export function keyedPort(): number {
   return webPort() + 19;
 }
 
-/** The keyed binary's per-run fake ID secret and vault keys (`1:` and 32 random bytes in base64). */
+/**
+ * The keyed binary's per-run fake ID secret, vault keys (`1:` and 32 random bytes in base64) and
+ * Stripe webhook secret (`whsec_` and 24 random bytes in hex, D-3862), never printed or logged.
+ */
 export interface KeyedSecrets {
   idSecret: string;
   vaultKey: string;
   vaultIndexKey: string;
+  stripeWebhookSecret: string;
 }
 
 /**
@@ -72,10 +77,12 @@ export function keyedSecrets(): KeyedSecrets {
   process.env.E2E_KEYED_ID_SECRET ??= randomBytes(24).toString("hex");
   process.env.E2E_KEYED_VAULT_KEY ??= key();
   process.env.E2E_KEYED_VAULT_INDEX_KEY ??= key();
+  process.env.E2E_KEYED_STRIPE_WEBHOOK_SECRET ??= `whsec_${randomBytes(24).toString("hex")}`;
   return {
     idSecret: process.env.E2E_KEYED_ID_SECRET,
     vaultKey: process.env.E2E_KEYED_VAULT_KEY,
     vaultIndexKey: process.env.E2E_KEYED_VAULT_INDEX_KEY,
+    stripeWebhookSecret: process.env.E2E_KEYED_STRIPE_WEBHOOK_SECRET,
   };
 }
 
@@ -90,7 +97,9 @@ function requireEnv(name: string): string {
 /** The environment both binaries start with: CI settings, the stand-ins, a shared clock file. */
 function appEnv(scratch: string): NodeJS.ProcessEnv {
   const database = requireEnv("DATABASE_URL");
-  const inherited = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("ASKHAVA_")));
+  const inherited = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !key.startsWith("ASKHAVA_") && !key.startsWith("E2E_KEYED_")),
+  );
   return {
     ...inherited,
     PORT: String(webPort()),
@@ -129,7 +138,7 @@ function keyedEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     ASKHAVA_ADAPTER_MODE_STRIPE: "stand_in",
     ASKHAVA_STRIPE_BASE_URL: `http://127.0.0.1:${String(STAND_IN_PORT)}/stripe`,
     ASKHAVA_STRIPE_SECRET_KEY: `sk_test_${randomBytes(12).toString("hex")}`,
-    ASKHAVA_STRIPE_WEBHOOK_SECRET: `whsec_${randomBytes(24).toString("hex")}`,
+    ASKHAVA_STRIPE_WEBHOOK_SECRET: secrets.stripeWebhookSecret,
     ASKHAVA_STRIPE_ACCOUNT_ID: "acct_e2efake",
     ASKHAVA_STRIPE_PUBLISHABLE_KEY: `pk_test_${randomBytes(12).toString("hex")}`,
     ASKHAVA_LAUNCH_DATE: "2026-01-15T07:00:00Z",

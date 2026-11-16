@@ -95,7 +95,13 @@ class FakeStripe:
     def _event(self, kind: str, obj: dict[str, Any]) -> None:
         self._n += 1
         self.events.append(
-            {"id": fake_id("evt_", self._n, 14), "object": "event", "type": kind, "data": {"object": dict(obj)}}
+            {
+                "id": fake_id("evt_", self._n, 14),
+                "object": "event",
+                "type": kind,
+                "livemode": False,
+                "data": {"object": dict(obj)},
+            }
         )
 
     def _once(self, key: str | None, params: dict[str, Any], make: Any) -> Reply:
@@ -178,6 +184,7 @@ class FakeStripe:
             amount_received=0,
             amount_refunded=0,
             metadata=params.get("metadata", {}),
+            livemode=False,
         )
         pi["client_secret"] = f"{pi['id']}_secret_{fake_id('', self._n, 24)}"
         return pi
