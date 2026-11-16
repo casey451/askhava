@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T02:36:40Z by runner dbeb23369988 (manual).
+Updated 2026-11-16T03:07:02Z by runner dbeb23369988 (actions).
 
-**Building: T517 in progress since 02:01Z; 355 of 516 done; week 88% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T517 in progress since 02:01Z; 355 of 516 done; week 90% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 355 of 516 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T517 claimed 02:01Z, lease until 05:01Z
-- **Week:** 88% used, 36.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:36Z, 0 min before this update
+- **Week:** 90% used, 36.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 03:06Z, 0 min before this update
 - **Keeper:** last ran 02:35Z, next wake 05:03Z
 
 ## Needs attention
@@ -42,38 +42,37 @@ Updated 2026-11-16T02:36:40Z by runner dbeb23369988 (manual).
 | T461 | server: business sign-up's service area, email code and acti | QUEUED | 2 | 93 min | 04:34Z |  |
 | T494 | portals: the Confirm route's $0 free-first-win decision from | done | 1 | 29 min | 04:31Z |  |
 | T492 | e2e (harness): the keyed end-to-end binary gets the Stripe s | done | 1 | 31 min | 04:26Z |  |
-| T261 | portals and server (harness): the served Confirm route under | BLOCKED | 3 | 110 min | 02:57Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 261 of 733 (35.6%) · partial 315 · unstarted 157
+**Requirements verified:** 305 of 733 (41.6%) · partial 271 · unstarted 157
 **Tasks merged (throughput only):** 355 of 516
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 12 | 17 | 6 | 35 |
+| accessibility | 13 | 16 | 6 | 35 |
 | ai | 10 | 14 | 5 | 29 |
 | businesses | 21 | 34 | 3 | 58 |
-| calls | 10 | 14 | 1 | 25 |
-| consent | 11 | 20 | 4 | 35 |
-| fees | 13 | 38 | 1 | 52 |
-| intake | 27 | 13 | 3 | 43 |
-| job-cards | 18 | 6 | 0 | 24 |
-| licensing | 29 | 19 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 22 | 21 | 2 | 45 |
+| calls | 14 | 10 | 1 | 25 |
+| consent | 15 | 16 | 4 | 35 |
+| fees | 22 | 29 | 1 | 52 |
+| intake | 29 | 11 | 3 | 43 |
+| job-cards | 20 | 4 | 0 | 24 |
+| licensing | 34 | 14 | 0 | 48 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 10 | 43 | 54 |
-| privacy | 11 | 18 | 2 | 31 |
+| privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 31 | 24 | 1 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 9 | 41 | 5 | 55 |
+| quotes-pick | 35 | 20 | 1 | 56 |
+| recurring | 8 | 0 | 3 | 11 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
