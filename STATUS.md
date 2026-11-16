@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T21:03:35Z by runner 99fa9c7d5228 (actions).
+Updated 2026-11-16T21:03:56Z by runner 99fa9c7d5228 (actions).
 
 **Building: T111 in progress since 20:22Z; 374 of 540 done; week 1% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 374 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T111 claimed 20:22Z, lease until 23:22Z; lane 2: T481 claimed 19:16Z, lease until 23:34Z; lane 4: T102 claimed 20:17Z, lease until 23:17Z
+- **Lane:** lane 1: T111 claimed 20:22Z, lease until 23:22Z; lane 2: T481 claimed 19:16Z, lease until 23:34Z
 - **Week:** 1% used, 189.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:42Z, 20 min before this update
+- **Last run:** 20:42Z, 21 min before this update
 - **Keeper:** last ran 20:42Z, next wake 23:19Z
 
 ## Needs attention
@@ -19,10 +19,11 @@ Updated 2026-11-16T21:03:35Z by runner 99fa9c7d5228 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T102 | site: home and how-it-works pages with the footer, tagline,  | MERGE_PENDING | 1 | 46 min | 21:03Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, tests/a11y/page_states.ts; a resync merges it in |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | BLOCKED | 1 | 41 min | 20:41Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T361 | quotes and picks: a quote keeps its number once shown, and a | MERGE_PENDING | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
 | T487 | ops and payments: safe mode after 24 hours pauses charges, a | done | 1 | 50 min | 19:47Z |  |
-| T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 30 min | 19:37Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, tests/a11y/page_states.ts; a resync merges it in |
+| T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 30 min | 19:37Z |  |
 | T324 | harness: 95% branch floors for the money and privacy files o | done | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | done | 1 | 29 min | 18:55Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 59 min | 18:42Z |  |
@@ -113,7 +114,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T111 (lease until 2026-11-16T23:22:29Z)
 - lane 2: T481 (lease until 2026-11-16T23:34:48Z)
-- lane 4: T102 (lease until 2026-11-16T23:17:18Z)
 
 ## Last usage reading
-- {"task": "T307", "at": "2026-11-16T20:41:37Z", "input_tokens": 227, "output_tokens": 68141, "cache_read_input_tokens": 15035227, "cache_creation_input_tokens": 237356}
+- {"task": "T102", "at": "2026-11-16T21:03:34Z", "input_tokens": 82, "output_tokens": 15989, "cache_read_input_tokens": 1464823, "cache_creation_input_tokens": 72280}
