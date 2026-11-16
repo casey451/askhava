@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT shown_number AS \"number!\", business_id FROM quotes.quote WHERE job_id = $1 AND shown_number IS NOT NULL ORDER BY shown_number",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "number!",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "shown_number"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "business_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true,
+      false
+    ]
+  },
+  "hash": "82702c632a73960eefab3bd71a7008da4b366a6b3b550bd22200468399624dd9"
+}

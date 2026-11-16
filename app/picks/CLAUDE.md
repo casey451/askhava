@@ -27,6 +27,7 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - FEE-045, D-2331: the fee's facts come from the job's latest `jobs::api::job_facts` row through `payments::api::resolve_fee_facts`, never the defaults; unsettled facts refuse a non-emergency pick and store nothing; an emergency pick proceeds on `JobFeeFacts::EMERGENCY_DEFAULT` with one High `FEE_FACTS_ALERT` naming the pick ID only: `tests/integration/tests/fee_facts_at_pick.rs` (TD-FEE-62).
 - PICK-053: `tier_and_visit_pick`
 - BIZ-025, D-284, D-3790: `pick_numbers` counts one business's own picks, confirms (`status::confirmed`) and lapsed picks by pick month, and lists only its own releases as `(job, connected_at)`: `tests/integration/tests/business_numbers.rs`.
+- PICK-008, PRIV-005, D-2912: `place` ends the waiting pick, then takes the job's row lock (pick row before job row, D-3979), and `new_pick` re-reads the quote; a withdrawn or unavailable one rolls `place`'s savepoint back (page: `Taken`; text: the no-quote reply): `tests/integration/tests/pick_bound_business.rs::td_pick_60_a_withdrawal_committed_after_the_check_is_taken`.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/picks/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/picks/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

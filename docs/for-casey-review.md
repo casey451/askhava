@@ -3103,8 +3103,18 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - These measure lower today, so each is held at its current level less 2 points until its tests grow: `app/picks/src/unreachable_refund.rs` (87%), `app/picks/src/unreachable_steps.rs` (86%), `app/picks/src/release.rs` (81%), `app/picks/src/dispute_steps.rs` (83%), `app/picks/src/auto_confirm.rs` (83%), `app/picks/src/cant_take.rs` (81%), `app/portals/src/confirm_pay.rs` (70%), `app/portals/src/confirm_waiver.rs` (48%), `app/portals/src/data_download.rs` (81%), `app/portals/src/job_release.rs` (51%), `app/portals/src/business_left.rs` (64%), `app/server/src/release_sink.rs` (78%), `app/server/src/business_contacts.rs` (68%), `app/server/src/inbound_text.rs` (25%), `app/server/src/offdb_stream.rs` (21%), `app/adapters/src/signatures.rs` (56%), `app/adapters/src/payments.rs` (84%), `app/adapters/src/sms.rs` (56%), `app/adapters/src/storage.rs` (74%), `app/intake/src/purge.rs` (88%), `app/intake/src/conversation.rs` (84%), `app/businesses/src/complaint_holds.rs` (58%).
 - Nothing needs you now.
 
+## Releases wait in safe mode: a test rule widened by two files (D-4026, November 16)
+
+- The task that makes releases wait while safe mode is on (T408) was stuck: an earlier automatic check said only the charge code may look at safe mode, written before any release code needed to. The spec says safe mode pauses both charges and releases.
+- T408 now also owns that check and lets exactly the two release files look at safe mode, and the check now also fails if either release file stops looking at it, if they pass that look on to other code, or if any texting file touches the release code. Every texting file is still forbidden from looking at safe mode, so safety texts, STOP and HELP keep going.
 ## The homeowner portal's home page reads her details through the portal, not the server (D-4025, November 16)
 
 - The task that serves the homeowner portal stopped because its plan told the web server to read her phone and address straight from the locked vault, which the privacy rules forbid: only the homeowner portal code may read a homeowner's own record, and only with her signed-in session.
 - The fix keeps that rule tight: the portal code gains one small function that reads her last four digits, her address and whether texts are on, and the server just shows the result. No privacy check or test was loosened.
+- Nothing needs you now.
+
+## T523: the owner flags can tell a day-3 "no" from other check-in answers (D-4037, November 16)
+
+- The task that builds the numbers behind the owner-portal flags stopped because the shared reader of the audit log gave back only which record and when, not which answer was logged, so it could not count the day-3 "no" and "other" answers its flag needs.
+- The fix lets that task add the answer's code name (like `day3_no`, never anything personal) to the reader's results. Nothing that already uses the reader changes, and no test or privacy rule was loosened.
 - Nothing needs you now.
