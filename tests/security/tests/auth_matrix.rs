@@ -457,7 +457,7 @@ async fn send(
     };
     let fields = if path.starts_with("/f/") {
         "&body=Fake+words"
-    } else if path.starts_with("/c/") {
+    } else if path.starts_with("/c/") || path.ends_with("/close") {
         ""
     } else {
         "&quote=1"
