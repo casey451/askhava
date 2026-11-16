@@ -19,7 +19,7 @@
 
 use std::sync::Arc;
 
-use askhava_adapters::api::{Delivery, VerifiedWebhook, WebhookVendor, refuse, verify_webhook};
+use askhava_adapters::api::VerifiedWebhook;
 use askhava_calls::api::{
     CallsError, SafetyCall, hangup_twiml, safety_call_status, safety_key_once,
 };
@@ -30,7 +30,7 @@ use axum::http::{HeaderMap, StatusCode, Uri, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 
-use crate::inbound_text::Webhooks;
+use crate::inbound_text::{Webhooks, verified};
 
 /// Where Twilio posts a placed call's progress and detection result: `calls`'
 /// `SAFETY_STATUS_PATH`, written out so the route-table scan reads it (TD-SEC-01).
@@ -97,28 +97,4 @@ async fn key(State(h): State<Arc<Webhooks>>, uri: Uri, head: HeaderMap, body: By
 fn field<'a>(hook: &'a VerifiedWebhook, name: &str) -> Option<&'a str> {
     let found = hook.params().iter().find(|(k, _)| k == name);
     found.map(|(_, value)| value.as_str())
-}
-
-/// The delivery checked against the URL Twilio signed: the public base, path and query (SEC-016).
-fn verified(
-    h: &Webhooks,
-    uri: &Uri,
-    head: &HeaderMap,
-    body: &[u8],
-) -> Result<VerifiedWebhook, StatusCode> {
-    let tail = uri.path_and_query().map_or(uri.path(), |p| p.as_str());
-    let url = format!("{}{tail}", h.public_base);
-    let pairs: Vec<(&str, &str)> = head
-        .iter()
-        .filter_map(|(n, v)| v.to_str().ok().map(|v| (n.as_str(), v)))
-        .collect();
-    let delivery = Delivery {
-        url: &url,
-        body,
-        headers: &pairs,
-    };
-    let now = h.clock.now().as_second();
-    verify_webhook(WebhookVendor::Twilio, &h.auth_token, delivery, now).map_err(|e| {
-        StatusCode::from_u16(refuse(WebhookVendor::Twilio, e)).unwrap_or(StatusCode::FORBIDDEN)
-    })
 }

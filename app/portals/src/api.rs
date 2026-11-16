@@ -102,6 +102,7 @@ pub use crate::confirm_pay::{
     CodeCheck, CodeSent, CodeStep, ConfirmCodes, ConfirmFacts, FEE_FREE_LINE, NoFee, PORTAL_LINK,
     PressReply, REFUND_LINE, check_confirm_code, confirm_code_needed, confirm_page,
     confirm_page_with_code, may_confirm, open_confirm_page, press_reply, send_confirm_code,
+    signed_out,
 };
 pub use crate::confirm_waiver::{
     ConfirmFee, ConfirmWaiverError, ConfirmedPick, decide_at_confirm, join_dates, release_no_fee,

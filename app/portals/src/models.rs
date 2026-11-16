@@ -24,7 +24,8 @@ use sqlx::{PgConnection, PgPool};
 
 use crate::session::PortalsError;
 
-/// A new 256-bit link token as 64 hex characters (SEC-026: at least 128 random bits).
+/// A new 256-bit link token as 64 hex characters (SEC-026: at least 128 random bits); `session`
+/// makes its session tokens with it too (T517).
 pub(crate) fn new_link_token() -> Result<String, PortalsError> {
     let mut bytes = [0u8; 32];
     SysRng

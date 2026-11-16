@@ -20,13 +20,13 @@ use askhava_privacy::api::{HomeownerSessionProof, OwnerSessionProof, SessionMint
 use axum_extra::extract::cookie::{Cookie, CookieJar};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
-use rand::TryRng;
-use rand::rngs::SysRng;
 use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 use subtle::ConstantTimeEq;
 use thiserror::Error;
+
+use crate::models::new_link_token;
 
 /// The signed-in session cookie (SEC-009, D-099).
 pub const SESSION_COOKIE: &str = "__Host-askhava-session";
@@ -118,14 +118,6 @@ impl Session {
     }
 }
 
-fn new_token() -> Result<String, PortalsError> {
-    let mut bytes = [0u8; 32];
-    SysRng
-        .try_fill_bytes(&mut bytes)
-        .map_err(|_| PortalsError::NoRandom)?;
-    Ok(bytes.iter().map(|b| format!("{b:02x}")).collect())
-}
-
 fn sha256(parts: &[&[u8]]) -> [u8; 32] {
     parts
         .iter()
@@ -182,7 +174,7 @@ pub async fn start_session(
         .await
         .map_err(|_| PortalsError::Database)?;
     }
-    let token = new_token()?;
+    let token = new_link_token()?;
     sqlx::query!(
         "INSERT INTO portals.session (token_sha256, realm, actor_id, created_at, expires_at) \
          VALUES ($1, $2, $3, $4, $5)",
@@ -313,7 +305,7 @@ pub fn ensure_pre_session(jar: CookieJar) -> Result<CookieJar, PortalsError> {
     if jar.get(SESSION_COOKIE).is_some() || jar.get(PRE_SESSION_COOKIE).is_some() {
         return Ok(jar);
     }
-    let token = new_token()?;
+    let token = new_link_token()?;
     Ok(jar.add(host_cookie(PRE_SESSION_COOKIE, &token, None)))
 }
 

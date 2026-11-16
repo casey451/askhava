@@ -84,6 +84,7 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 use subtle::ConstantTimeEq;
 
+use crate::business_portal::kind_words;
 use crate::pick_flow::PageLanguage;
 
 /// The sign-up's path on askhava.com; each step posts to a path under it.
@@ -147,16 +148,6 @@ pub fn notice_line(texting_on: bool, language: PageLanguage) -> (String, &'stati
         PageLanguage::En => (en, "en"),
         PageLanguage::Es => (es, "es"),
     }
-}
-
-/// A category code as the form shows it: "plumbing_repair" reads "Plumbing repair". The catalog
-/// has no display names, so the code is the name (D-1709).
-fn category_name(code: &str) -> String {
-    let words = code.replace('_', " ");
-    let mut chars = words.chars();
-    chars.next().map_or_else(String::new, |first| {
-        first.to_uppercase().chain(chars).collect()
-    })
 }
 
 /// BIZ-030, D-173: the fee box's numbers from the fee settings: the three tiers
@@ -807,7 +798,7 @@ fn fill_form<'a>(
     };
     v.categories = categories
         .iter()
-        .map(|(c, l)| (c.clone(), category_name(c), *l))
+        .map(|(c, l)| (c.clone(), kind_words(c), *l))
         .collect();
     v.pest = categories.iter().any(|(c, _)| c == "pest_control");
     v.fee_lines = fee_summary(&parts.fees);

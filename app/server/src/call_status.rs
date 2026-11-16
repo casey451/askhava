@@ -4,7 +4,7 @@
 //! [`routes`] adds one POST route, [`STATUS_PATH`], the URL `calls::api::dial_twiml` names on the
 //! dialed `<Number>` (`statusCallbackEvent="initiated completed"`). A delivery is taken only when
 //! its `X-Twilio-Signature` passed `adapters::api::verify_webhook` over `ASKHAVA_PUBLIC_BASE_URL`
-//! plus the path (`inbound_voice::verified`); any other gets 403 and changes nothing. [`routes`]
+//! plus the path (`inbound_text::verified`); any other gets 403 and changes nothing. [`routes`]
 //! puts the route under `webhook_refusals`' layer itself, so each 403 is a capped signature event
 //! and `build_router` keeps its four `refused(...)` calls (SEC-048, D-3525).
 //!
@@ -40,7 +40,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::inbound_text::Webhooks;
-use crate::inbound_voice::verified;
+use crate::inbound_text::verified;
 use crate::webhook_refusals::{self, RefusalLog};
 
 /// Where Twilio posts the dialed leg's status callbacks: `calls`' `DIALED_STATUS_PATH`, written
