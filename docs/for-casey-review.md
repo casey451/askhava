@@ -3112,3 +3112,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The task that serves the homeowner portal stopped because its plan told the web server to read her phone and address straight from the locked vault, which the privacy rules forbid: only the homeowner portal code may read a homeowner's own record, and only with her signed-in session.
 - The fix keeps that rule tight: the portal code gains one small function that reads her last four digits, her address and whether texts are on, and the server just shows the result. No privacy check or test was loosened.
 - Nothing needs you now.
+
+## T523: the owner flags can tell a day-3 "no" from other check-in answers (D-4037, November 16)
+
+- The task that builds the numbers behind the owner-portal flags stopped because the shared reader of the audit log gave back only which record and when, not which answer was logged, so it could not count the day-3 "no" and "other" answers its flag needs.
+- The fix lets that task add the answer's code name (like `day3_no`, never anything personal) to the reader's results. Nothing that already uses the reader changes, and no test or privacy rule was loosened.
+- Nothing needs you now.
