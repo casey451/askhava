@@ -2991,3 +2991,28 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The business-journey test (T099) found that no page in the app records a business's agreement to be charged for picks. The Confirm page shows the "save my card" box but ignores it, and the app refuses every Confirm, free or paid, until that agreement is on file. So a brand-new business cannot confirm its first pick through the app today.
 - The tests record the agreement directly in the database so the rest of the journey can be checked. The fix belongs to the Confirm page's owner: make the box save the agreement. Claude logged it for that task.
 - Nothing needs you.
+## Fable's third group of pre-start checks for stage 5 (D-3879, November 16)
+- The services page must say "Get quotes from licensed plumbers." with each trade's plural name, but the catalog had no plural names. A small new task adds them, plus a list the coverage page needs of what's on and what's "not yet".
+- In safe mode, an emergency job whose address arrived late could still have passed the homeowner's details to the business. Now that path waits too, and tries again every 15 minutes until safe mode ends.
+- A new task adds the page where a business agrees to texts after sign-up: when it switches to texts later, for each team member's own phone, and again after a phone number changes. Until then those phones get email, which is allowed.
+## Fable's fourth group of pre-start checks for stage 5 (D-3880, November 16)
+- The big alerts-and-digest task was too large for one task, so it is now four: the phone pushes and alert emails; the counts the owner flags need; the weekly digest and the flags; and the hourly vault-read check with the daily database-size check. Nothing was dropped.
+- The automatic phone call for a critical safety alert is placed by the owner-tools task; the alerts task only asks for it.
+- The business page addresses are now fixed: /business, /es/business, /business/help and /es.
+- Open item for you, before launch: the business page's city business-license guide needs three settings filled in: the license cost, how long it takes, and the city's link. Until you set them, each part is left out, and with none set the guide is hidden.
+- Nothing needs you now.
+## Fable's checks of the new tasks and the fifth stage-5 group (D-3881, November 16)
+- The switch that turns business texting on is stored in the app, but three places still hard-code it as off. A small new task makes every place follow the stored switch, and treat any read error as off.
+- Spotting a business that texts the homeowner number ("get on your list") works from a phrase list in phase 1. The AI second opinion on those messages comes in phase 2 with the other AI writing work, since nothing in phase 1 calls the AI to read a message.
+- The weekly digest's HELP lines move from the HELP task to the digest task, so the tasks run in a clean order.
+- Business texting will turn on only when you switch it on, a separate business number is set, and the texting provider's written "yes" (date, reference and the answer) plus the business campaign reference are filed on the owner settings page. A new task adds that filing form and the check.
+## Fable's checks of the newest tasks and the sixth stage-5 group (D-3882, November 16)
+- The weekly digest task was heading past its size limit, so the counts it needs (no-shows, automatic activations and pauses, license-unknown counts, leaving answers and more) are now a small task of their own. Each line of the digest now says where its number comes from.
+- Two addresses are named once each: the owner inbox (not-covered requests and the weekly digest) and the alert address your phone watches (pushed alerts).
+
+## Fable's seventh group of pre-start checks for stage 5 (D-3883, November 16)
+
+- An owner refund needed its own kind of refund record; a small new money task adds it before the refund page is built.
+- The nightly backup export must be locked to a key only you hold offline. That needs one new encryption library (`age`, a common open-source one); the backup task will confirm it passes the security and license checks when it is built.
+- The owner help page and its reply box, and the email-deferral figures on the scorecard, are now small tasks of their own so no task runs over its size limit.
+- Nothing needs you now. Before the first real backup, the export needs a key pair whose private half stays offline, an item for the account checklist.
