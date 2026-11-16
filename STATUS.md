@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T12:17:14Z by runner b7a09cb3f828 (actions).
+Updated 2026-11-16T12:17:37Z by runner b7a09cb3f828 (actions).
 
 **Idle since 08:35Z; 355 of 535 done; week 92% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-16T12:17:14Z by runner b7a09cb3f828 (actions).
 - **Lane:** idle since 08:35Z (no task in progress)
 - **Week:** 92% used, 12.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:17Z, 0 min before this update
-- **Keeper:** last ran 09:34Z, next wake 15:14Z
+- **Keeper:** last ran 12:17Z, next wake 17:57Z
 
 ## Needs attention
 - BLOCKED T100: stage proof missing (the proof waits for: a green nightly-main run containing T515's merge 5b654c54ca2c (last green run: 2b05da2c07fb); a green nightly-main run containing T099's merge de89862a7f0a (last green run: 2b05da2c07fb); a green nightly-main run containing T516's merge 700f12d2e5a4 (last green run: 2b05da2c07fb); a green nightly-main run containing T517's merge 19d98135f0a7 (last green run: 2b05da2c07fb); a green nightly-main run containing T100's merge b7a09cb3f828 (last green run: 2b05da2c07fb); a green nightly-main run containing T261's merge 35177f91e0b2 (last green run: 2b05da2c07fb); a green nightly-main run containing T495's merge 5316a602ce94 (last green run: 2b05da2c07fb); a green nightly-main run containing T462's merge 6cc6fdcbb269 (last green run: 2b05da2c07fb); a green nightly-main run containing T464's merge ef9418c0e6b9 (last green run: 2b05da2c07fb))
