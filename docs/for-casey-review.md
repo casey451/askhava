@@ -3009,3 +3009,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## Fable's checks of the newest tasks and the sixth stage-5 group (D-3882, November 16)
 - The weekly digest task was heading past its size limit, so the counts it needs (no-shows, automatic activations and pauses, license-unknown counts, leaving answers and more) are now a small task of their own. Each line of the digest now says where its number comes from.
 - Two addresses are named once each: the owner inbox (not-covered requests and the weekly digest) and the alert address your phone watches (pushed alerts).
+
+## Fable's seventh group of pre-start checks for stage 5 (D-3883, November 16)
+
+- An owner refund needed its own kind of refund record; a small new money task adds it before the refund page is built.
+- The nightly backup export must be locked to a key only you hold offline. That needs one new encryption library (`age`, a common open-source one); the backup task will confirm it passes the security and license checks when it is built.
+- The owner help page and its reply box, and the email-deferral figures on the scorecard, are now small tasks of their own so no task runs over its size limit.
+- Nothing needs you now. Before the first real backup, the export needs a key pair whose private half stays offline, an item for the account checklist.
