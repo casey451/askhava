@@ -19821,8 +19821,8 @@
    "deps": [
     "T100"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "ops-alerts-safe-mode",
    "type": "build",
    "stage": "5",
@@ -19839,7 +19839,7 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "last_failure": "Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fix round (first round fixed: delivery alert flapping on (6,6), set_towns/set_job_types coverage reporting, concurrent-pause stale count). Remaining:\n1. Trades a license change removes are never reported for coverage (app/businesses/src/capability.rs:644, pause at :671; OPS-006). reapply_license drops job types via models::replace_job_types directly, not set_job_types, so nothing reports; when nothing stays ticked, pause_for_rule -> move_status -> report_counts(.., CoverageKeys::new(), ..) covers only the trades still held (none), so removed trades are missed. D-3913 says \"both edits report\" but omits this path; capability.rs is not T105's file: needs a decision entry naming the gap and follow-up owner, or a plan change.\n2. The \"sorted order\" advisory-lock claim breaks when one transaction reports twice (app/businesses/src/capability.rs:404-405, save_capability calls set_job_types then set_towns in one transaction). town: sorts before trade:, so a newly added town is locked after trade:* keys are held; a concurrent pause of another business serving the same town and trade deadlocks (Postgres 40P01 aborts the save or the pause). Fix in service.rs: lock the union of keys once for the whole outer transaction, or document and retry on deadlock.\nMinor (not a finding): messaging handlers.rs reads delivery counts before record_delivery_counts takes its lock; two callbacks at once can each miss the other's failure (self-corrects next text).\nTests at that head: ops_alert_conditions 12 passed; smoke, prehandin and Ally green; size about 1,300 changed lines outside .sqlx/ against a 600-line budget.",
+   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-16T15:54:34.561710Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":139,\"kind\":\"payments.receipt\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T15:54:34.697618Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":138,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T15:54:34.764217Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":140,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2713  22 tests/e2e/confirm_served.spec.ts:96:1 \u203a TD-FEE-45 FEE-016 TD-TERMS-11: a new card pressed twice charges once and stores one terms row (1.0s)\n{\"timestamp\":\"2026-11-16T15:54:34.880514Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":141,\"kind\":\"messaging.charge_receipt\",\"outcome\":\"Ok(Retry(2026-11-16T15:55:04.777563663Z))\",\"target\":\"askhava_core\n{\"timestamp\":\"2026-11-16T15:54:34.882208Z\",\"level\":\"WARN\",\"message\":\"there is no transaction in progress\",\"target\":\"sqlx::postgres::notice\"}\n  \u2718  23 tests/e2e/confirm_served.spec.ts:111:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once (877ms)\n##[error]  1) tests/e2e/confirm_served.spec.ts:111:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
    "history": [
     {
      "attempt": 1,
@@ -19869,13 +19869,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 239,
      "head_sha": "96944c4fc0bac8a08e056559bc992fb6a78188f5",
-     "pr": null,
-     "checks": null,
+     "pr": 879,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-16T14:07:02Z",
      "ended_at": "2026-11-16T15:51:48Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 14245722,
@@ -66843,7 +66888,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T16:01:03Z",
+ "updated_at": "2026-11-16T16:07:10Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

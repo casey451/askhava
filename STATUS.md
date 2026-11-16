@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T16:01:03Z by runner d995af80b833 (actions).
+Updated 2026-11-16T16:07:10Z by runner d995af80b833 (actions).
 
 **Building: T101 in progress since 15:19Z; 363 of 536 done; week 95% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-16T16:01:03Z by runner d995af80b833 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T101 claimed 15:19Z, lease until 18:19Z; lane 7: T475 claimed 15:08Z, lease until 18:56Z
 - **Week:** 95% used, 1.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:00Z, 0 min before this update
+- **Last run:** 16:01Z, 5 min before this update
 - **Keeper:** last ran 16:01Z, next wake 18:22Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-16T16:01:03Z by runner d995af80b833 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T105 | ops: High and critical alerts with their automatic acknowled | MERGE_PENDING | 2 | 104 min | 15:51Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
+| T105 | ops: High and critical alerts with their automatic acknowled | check_failed | 2 | 104 min | 15:51Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T497 | Stand-ins (harness): sticky vendor faults for the J4 outage  | done | 1 | 75 min | 15:32Z |  |
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T521 | catalog: each category's plural display name and a list read | done | 1 | 34 min | 15:09Z |  |
