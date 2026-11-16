@@ -2985,3 +2985,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The site's page addresses are now fixed: /how-it-works, /es/how-it-works, /services, /help and /request for starting a request.
 - The portal form styles and the emails still used the old colours; a second small task moves them to the new look's colours and makes the email footer text 16 px.
 - Nothing needs you.
+
+## A new business cannot yet save its card on the Confirm page (D-3857, November 16)
+
+- The business-journey test (T099) found that no page in the app records a business's agreement to be charged for picks. The Confirm page shows the "save my card" box but ignores it, and the app refuses every Confirm, free or paid, until that agreement is on file. So a brand-new business cannot confirm its first pick through the app today.
+- The tests record the agreement directly in the database so the rest of the journey can be checked. The fix belongs to the Confirm page's owner: make the box save the agreement. Claude logged it for that task.
+- Nothing needs you.
