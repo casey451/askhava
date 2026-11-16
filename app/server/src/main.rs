@@ -64,7 +64,8 @@ async fn main() -> io::Result<()> {
 }
 
 /// `parts` with the served business sign-in, sign-up, portal vault and Confirm settings from
-/// `settings` and the process environment (T280, T302, T300, T261); each errors as its own
+/// `settings` and the process environment (T280, T302, T300, T261), and the site pages' settings
+/// (T102); each errors as its own
 /// builder does, naming a key, never a value.
 fn business_parts(
     settings: &askhava_core::api::Settings,
@@ -86,7 +87,8 @@ fn business_parts(
         .with_sign_in(signin)
         .with_sign_up(signup)
         .with_vault(vault)
-        .with_confirm_part(confirm))
+        .with_confirm_part(confirm)
+        .with_site_pages(askhava_site::api::SitePages::from_settings(settings)))
 }
 
 /// Applies every pending migration over `ASKHAVA_MIGRATION_DATABASE_URL`, never the app

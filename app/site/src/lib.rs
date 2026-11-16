@@ -5,8 +5,10 @@
 //! every site page extends (it fills the WEB-007 banner block, D-3144), and the stylesheet in the
 //! daylight-and-evergreen look of `docs/design/DESIGN_SPEC.md` (WEB-001, D-3331), compiled into
 //! the binary and served at `/static/site/<name>` ([`assets`], [`routes`], T101). Other crates
-//! reach it only through [`api`]. Autoescaping stays on in every template (SEC-011).
+//! reach it only through [`api`]. The home and how-it-works pages, in English and the latter
+//! in Spanish, and the old directory paths are [`pages`] (T102). Autoescaping stays on in every template (SEC-011).
 
 pub mod api;
 mod assets;
+mod pages;
 mod routes;

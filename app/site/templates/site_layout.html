@@ -2,11 +2,31 @@
 {#- The site layout every public site page extends (T101; WEB-007, D-3144, D-1843). The page's
     handler sets `banner_shown` from `site::api::banner_shown` before it renders; while it is true
     the WEB-007 sentence shows above the header, and by default it is hidden. Portal pages extend
-    base.html directly and never show it. -#}
+    base.html directly and never show it. A site page fills `content`; the footer follows it, written
+    once here (T102, D-3878): the "Homeowners" column (How it works, Services, Get quotes, Help;
+    never a directory, events or /chat link, WEB-003), the tagline (WEB-004) and the
+    not-a-contractor statement (WORD-002). base.html has no block after `main`, so the footer sits
+    at the end of `main` (D-3994). A Spanish page overrides the `footer` block. -#}
 {% block banner %}
 {%- if banner_shown %}
 <section class="site-banner" aria-label="Site status">
 <p>Texting is temporarily unavailable. You can still use the chat on this site and your quote page.</p>
 </section>
 {%- endif %}
+{% endblock %}
+{% block main %}
+{% block content %}{% endblock %}
+<footer class="site-footer">
+{% block footer %}
+<h2>Homeowners</h2>
+<ul>
+<li><a href="/how-it-works">How it works</a></li>
+<li><a href="/services">Services</a></li>
+<li><a href="/request">Get quotes</a></li>
+<li><a href="/help">Help</a></li>
+</ul>
+<p data-fixed="WEB-004">Local quotes. Your choice.</p>
+<p data-fixed="WORD-002">{{ askhava_core::api::brand().display_name() }} is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly.</p>
+{% endblock %}
+</footer>
 {% endblock %}

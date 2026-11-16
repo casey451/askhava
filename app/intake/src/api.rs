@@ -212,6 +212,19 @@ pub async fn open_request_jobs(
     }
 }
 
+/// WEB-028, D-3144: `quotes::api::home_numbers` for `site`, which may not call `quotes`: the home
+/// page's numbers, or `None` below `min_jobs` requests with a card sent.
+///
+/// # Errors
+///
+/// `quotes`' error when the card and quote records cannot be read.
+pub async fn home_numbers(
+    db: &mut sqlx::PgConnection,
+    min_jobs: u32,
+) -> Result<Option<askhava_quotes::api::HomeNumbers>, askhava_quotes::api::QuotesError> {
+    askhava_quotes::api::home_numbers(db, min_jobs).await
+}
+
 #[cfg(test)]
 mod tests {
     //! PRIV-011, PRIV-031 (TD-PRIV-15, D-1939): `jobs_of_contact` names only her own jobs. Fake
