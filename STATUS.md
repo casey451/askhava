@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-16T23:22:21Z by runner f4898b7c0718 (actions).
+Updated 2026-11-16T23:31:51Z by runner aeb3a925ad17 (actions).
 
 **Building: T320 in progress since 23:06Z; 376 of 540 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 376 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T320 claimed 23:06Z, lease until 02:06Z; lane 2: T523 claimed 22:07Z, lease until 01:49Z; lane 3: T111 claimed 23:22Z, lease until 02:22Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 01:41Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
+- **Lane:** lane 1: T320 claimed 23:06Z, lease until 02:06Z; lane 2: T523 claimed 22:07Z, lease until 01:49Z; lane 3: T111 claimed 23:22Z, lease until 02:22Z; lane 4: T481 claimed 22:37Z, lease until 01:37Z; lane 5: T373 claimed 22:41Z, lease until 02:31Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
 - **Week:** 4% used, 180.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:13Z, 9 min before this update
+- **Last run:** 23:22Z, 9 min before this update
 - **Keeper:** last ran 22:44Z, next wake 01:10Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 16 problem(s) on tasks still to run (+136 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 16 problem(s) on tasks still to run (+137 on DONE tasks); first: T201: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -118,7 +118,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T523 (lease until 2026-11-17T01:49:58Z)
 - lane 3: T111 (lease until 2026-11-17T02:22:14Z)
 - lane 4: T481 (lease until 2026-11-17T01:37:17Z)
-- lane 5: T373 (lease until 2026-11-17T01:41:32Z)
+- lane 5: T373 (lease until 2026-11-17T02:31:51Z)
 - lane 7: T221 (lease until 2026-11-17T01:36:07Z)
 
 ## Last usage reading
