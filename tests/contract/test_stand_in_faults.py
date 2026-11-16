@@ -46,9 +46,17 @@ def sent_count(base: str) -> int:
     return len(tw(base, "GET", MSGS)[1]["messages"])
 
 
-def stripe_customer(base: str) -> tuple[int, Any]:
-    status, reply, _ = call(base, "POST", "/stripe/v1/customers", {"email": "fake@example.test"}, **STRIPE)
+def stripe_customer(base: str, email: str = "fake@example.test", **headers: str) -> tuple[int, Any]:
+    status, reply, _ = call(base, "POST", "/stripe/v1/customers", {"email": email}, **STRIPE, **headers)
     return status, reply
+
+
+def assert_key_unused(base: str, key: str) -> None:
+    """The key tried under the fault was never stored: other values under it make a new customer, no conflict."""
+    status, customer = stripe_customer(base, "other@example.test", idempotency_key=key)
+    assert status == 200, customer
+    assert customer["id"].startswith("cus_") and customer["email"] == "other@example.test"
+    assert stripe_customer(base, "other@example.test", idempotency_key=key) == (200, customer)
 
 
 def test_no_fault_by_default_and_unknown_vendor_or_value_changes_nothing(base: str) -> None:
@@ -88,7 +96,7 @@ def test_twilio_suspended_answers_21606_stores_nothing(base: str) -> None:
 
 def test_stripe_unavailable_answers_503_creates_nothing(base: str) -> None:
     faults(base, "POST", {"stripe": "unavailable"})
-    status, reply = stripe_customer(base)
+    status, reply = stripe_customer(base, idempotency_key="fake-key-unavailable")
     assert status == 503
     assert reply["error"]["type"] == "api_error"
     assert call(base, "GET", "/stripe/v1/events", **STRIPE)[0] == 503
@@ -97,6 +105,7 @@ def test_stripe_unavailable_answers_503_creates_nothing(base: str) -> None:
     assert status == 200 and events["data"] == []
     status, customer = stripe_customer(base)
     assert status == 200 and customer["id"].startswith("cus_")
+    assert_key_unused(base, "fake-key-unavailable")
 
 
 def test_stripe_drop_closes_the_connection_with_no_answer(base: str) -> None:
@@ -107,9 +116,16 @@ def test_stripe_drop_closes_the_connection_with_no_answer(base: str) -> None:
     with pytest.raises((http.client.RemoteDisconnected, ConnectionError)):
         conn.getresponse()
     conn.close()
+    conn = http.client.HTTPConnection(host, int(port), timeout=5)
+    form = {**STRIPE, "content-type": "application/x-www-form-urlencoded", "idempotency-key": "fake-key-drop"}
+    conn.request("POST", "/stripe/v1/customers", body="email=fake%40example.test", headers=form)
+    with pytest.raises((http.client.RemoteDisconnected, ConnectionError)):
+        conn.getresponse()
+    conn.close()
     faults(base, "DELETE")
     status, events, _ = call(base, "GET", "/stripe/v1/events", **STRIPE)
     assert status == 200 and events["data"] == []
+    assert_key_unused(base, "fake-key-drop")
 
 
 def test_ai_529_sticky_and_header_faults_unchanged(base: str) -> None:
