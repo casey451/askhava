@@ -1,24 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-16T17:32:00Z by runner 78e747a34ea8 (actions).
+Updated 2026-11-16T17:33:26Z by runner 56aef45f3953 (actions).
 
-**Building: T361 in progress since 16:50Z; 367 of 536 done; week 97% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T361 in progress since 16:50Z; 367 of 539 done; week 97% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 367 of 536 build tasks (owner gates not counted)
+- **Tasks done:** 367 of 539 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T361 claimed 16:50Z, lease until 20:32Z; lane 2: T324 claimed 16:31Z, lease until 20:23Z; lane 3: T105 claimed 17:21Z, lease until 20:21Z; lane 4: T166 claimed 17:24Z, lease until 20:24Z; lane 5: T559 claimed 16:58Z, lease until 20:21Z; lane 6: T303 claimed 16:19Z, lease until 20:04Z
+- **Lane:** lane 1: T361 claimed 16:50Z, lease until 20:32Z; lane 3: T105 claimed 17:21Z, lease until 20:21Z; lane 4: T166 claimed 17:24Z, lease until 20:24Z; lane 5: T559 claimed 16:58Z, lease until 20:21Z; lane 6: T303 claimed 16:19Z, lease until 20:04Z
 - **Week:** 97% used, -5.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:25Z, 6 min before this update
+- **Last run:** 17:32Z, 1 min before this update
 - **Keeper:** last ran 17:16Z, next wake 19:34Z
 
 ## Needs attention
 - BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+124 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+122 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T324 | harness: 95% branch floors for the money and privacy files o | QUEUED | 1 | 61 min | 17:33Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T475 | messaging, quotes, payments and ai: the readers behind the O | MERGE_PENDING | 1 | 114 min | 17:02Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | resync | 3 | 38 min | 16:53Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T473 | Pin backup-runner's Postgres service image by digest | done | 1 | 17 min | 16:46Z |  |
@@ -102,11 +103,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T361 (lease until 2026-11-16T20:32:00Z)
-- lane 2: T324 (lease until 2026-11-16T20:23:14Z)
 - lane 3: T105 (lease until 2026-11-16T20:21:54Z)
 - lane 4: T166 (lease until 2026-11-16T20:24:50Z)
 - lane 5: T559 (lease until 2026-11-16T20:21:27Z)
 - lane 6: T303 (lease until 2026-11-16T20:04:25Z)
 
 ## Last usage reading
-- {"task": "T475", "at": "2026-11-16T17:02:33Z", "input_tokens": 303, "output_tokens": 89526, "cache_read_input_tokens": 9623824, "cache_creation_input_tokens": 354112}
+- {"task": "T324", "at": "2026-11-16T17:33:26Z", "input_tokens": 144, "cache_creation_input_tokens": 175937, "output_tokens": 39221, "cache_read_input_tokens": 3309128}

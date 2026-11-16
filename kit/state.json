@@ -37369,8 +37369,8 @@
    "deps": [
     "T100"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "coverage-floors-per-file",
    "type": "harness",
    "stage": "5",
@@ -37386,7 +37386,33 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "last_failure": "Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far are correct against Ci's llvm-cov run on main 6f399058c (/tmp/coverage.json). Files that fit the goal still have neither a floor nor a reason logged in D-3974:\n1. app/portals/src/confirm_waiver.rs:134-141: release_no_fee calls sink.release (the Confirm route's $0 release, docs/architecture.md:199). 1 of 2 branches (50%), floor 48.\n2. app/picks/src/auto_confirm.rs:271-280: charge_off_session, the auto-confirm charge. 85.714%, floor 83.\n3. app/messaging/src/retention.rs:125-129: cut_bodies sets outbox body = NULL (30-day body delete). 11 of 11 branches, floor 95.\n4. app/server/src/business_contacts.rs:83-94: sweep_business_contacts calls privacy::forget_unused. No branches, 70.0% lines, floor 68; or log why it is out of scope.\n5. app/portals/src/job_release.rs (53.3% branches): shows a released homeowner's contact, like released_view.rs. Floor it or log a reason.\nEach needs a floor (same rule, plus files_measured, D-3974 and the for-casey-review gap list) or a reason in D-3974. Before handing in, sweep every crate outside payments, privacy and licensing for release, charge, refund, delete and purge calls, so no further omissions remain.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 69,
+     "head_sha": "56aef45f39536e6a6cfdd38acafd48d46d05f2c0",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-16T16:31:55Z",
+     "ended_at": "2026-11-16T17:33:26Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 2179886,
+       "turns": 41
+      },
+      "reviewer": {
+       "tokens": 1344544,
+       "turns": 34
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T326",
@@ -63693,12 +63719,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T475",
-   "at": "2026-11-16T17:02:33Z",
-   "input_tokens": 303,
-   "output_tokens": 89526,
-   "cache_read_input_tokens": 9623824,
-   "cache_creation_input_tokens": 354112
+   "task": "T324",
+   "at": "2026-11-16T17:33:26Z",
+   "input_tokens": 144,
+   "cache_creation_input_tokens": 175937,
+   "output_tokens": 39221,
+   "cache_read_input_tokens": 3309128
   },
   "source": "session_reading 2026-11-16T17:16:08Z (week)",
   "by_task": {
@@ -67572,7 +67598,17 @@
    },
    "T324": {
     "estimated_bytes": 323669,
-    "estimated_tokens": 974731
+    "estimated_tokens": 974731,
+    "usage_counting": "message_id",
+    "input_tokens": 144,
+    "cache_creation_input_tokens": 175937,
+    "output_tokens": 39221,
+    "cache_read_input_tokens": 3309128,
+    "worker_tokens": 2179886,
+    "worker_turns": 41,
+    "reviewer_tokens": 1344544,
+    "reviewer_turns": 34,
+    "last_model": "claude-opus-5-5"
    },
    "T361": {
     "estimated_bytes": 520333,
@@ -67590,11 +67626,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-16T13:01:14Z",
-    "tokens": 15193280
+    "tokens": 15739494
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 193825651
+    "tokens": 194371865
    }
   },
   "session_reading": {
@@ -67605,7 +67641,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T17:32:00Z",
+ "updated_at": "2026-11-16T17:33:26Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -67703,7 +67739,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "78e747a34ea86e0ddaed694292c82bbe6f6f7ad5",
+ "runner_sha": "56aef45f39536e6a6cfdd38acafd48d46d05f2c0",
  "starter": "actions",
  "smoke_runs": [
   {
