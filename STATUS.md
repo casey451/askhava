@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T13:59:48Z by runner b7a09cb3f828 (actions).
+Updated 2026-11-16T14:03:04Z by runner 4a375375e4f7 (actions).
 
 **Building: T477 in progress since 12:23Z; 358 of 535 done; week 93% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-16T13:59:48Z by runner b7a09cb3f828 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T477 claimed 12:23Z, lease until 16:32Z; lane 3: T519 claimed 13:17Z, lease until 16:44Z; lane 5: T308 claimed 13:29Z, lease until 16:29Z
 - **Week:** 93% used, 2.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:59Z, 0 min before this update
+- **Last run:** 14:00Z, 2 min before this update
 - **Keeper:** last ran 13:59Z, next wake 16:32Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-16T13:59:48Z by runner b7a09cb3f828 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z | Second fresh-eyes review of fix head dcb6f619b44181ec3d8bc89b16743ea25e02c4c0 returned FINDINGS after the one allowed fi |
-| T529 | payments: an owner refund has its own refund trigger (D-3883 | MERGE_PENDING | 1 | 69 min | 13:32Z |  |
+| T529 | payments: an owner refund has its own refund trigger (D-3883 | check_failed | 1 | 69 min | 13:32Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T101 | site: base layout in the design spec's look, works without J | MERGE_PENDING | 1 | 70 min | 13:31Z |  |
 | T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
 | T409 | server (harness): the door probe's owner actor signs in thro | MERGE_PENDING | 1 | 36 min | 13:05Z |  |
