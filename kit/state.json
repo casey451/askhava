@@ -20727,8 +20727,8 @@
     "T100",
     "T428"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "terms-homeowner-business",
    "type": "docs",
    "stage": "5",
@@ -20746,7 +20746,7 @@
     "alias": "opus"
    },
    "reason": null,
-   "last_failure": "PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains \"subcontract\"; check_legal_docs.py bans \\bsubcontract\\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additions. Observed: \"ERROR business-terms-summary-es.md: WORD-022/WORD-023 wording: 'subcontract'\", Errors: 1. Proposed plan fix: let T111 add REQUIRED[\"business-terms-summary-es.md\"] with the WORD-002 and TERMS-026 tuples business-terms.md already uses (~5 lines). Reviewer confirmed, and noted trace_spec.py:77 also bans \\bsubcontrat\\w*, so the Spanish draft must avoid \"subcontrato\" or get its own exemption. Also noted: TD-TERMS-05 says 4 days (D-223) but TERMS-022 says 2 days (D-371); drafts follow 2 days.\nre-queued after plan fix D-3968: D-3968 (#883) lets T111 add the REQUIRED entry for business-terms-summary-es.md (WORD-002, TERMS-026) to check_legal_docs.py; Opus triage confirmed the plan gap",
+   "last_failure": "Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, scope and the D-3968 script lines were all judged right; the gaps are in tests/docs/test_terms_clauses.py:\n1. :39 and :75 amounts_in drops the cents part, so \"$25.50\" reads as 2500 (an allowed fee); \"A $25.50 setup charge applies.\" in business-terms.md or \"Cargo extra de $25.50\" in the Spanish summary passes. Amounts written without \"$\" (\"59 d\u00f3lares\") are not checked either.\n2. :41 BANNED_ES holds only English words (\"vetted\", \"best\"); \"Los mejores negocios.\" or \"Negocios verificados.\" in the Spanish summary passes. Add Spanish forms (mejor, verificad/examinad, ranking words).\n3. :242-247 FEE-002 catches only the literal \"percentage\"/\"porcentaje\"; \"10 %\", \"10%\", \"10 por ciento\", \"10 percent\" in either business draft passes.\nEarlier fix round (D-3959) already covered: every $ amount must be a code-set figure, the Spanish numbered lines (4 horas, 60 minutos, 180 d\u00edas, 2 d\u00edas, se reembolsa completo), and banned Spanish words comisi/clientes potenciales/prospecto/commission outside the exempt English paragraphs. Worker noted: TD-TERMS-05 says 4 days (D-223) vs TERMS-022 2 days (D-371); drafts follow 2 days (D-3958). Local prehandin --ally showed a J2 keyboard business sign-up timeout (j2_keyboard.spec.ts:149) on the fix head that the first head did not have; the fix touched only a Python test and docs/decisions.md.",
    "history": [
     {
      "attempt": 1,
@@ -20768,6 +20768,29 @@
       "reviewer": {
        "tokens": 148543,
        "turns": 6
+      }
+     }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 143,
+     "head_sha": "d014c9d4313961aa8e702ef758390e00b95fe641",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-16T20:22:29Z",
+     "ended_at": "2026-11-16T21:28:39Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 5852039,
+       "turns": 76
+      },
+      "reviewer": {
+       "tokens": 1311873,
+       "turns": 27
       }
      }
     }
@@ -65296,12 +65319,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T408",
-   "at": "2026-11-16T21:22:20Z",
-   "cache_read_input_tokens": 7633892,
-   "input_tokens": 134,
-   "cache_creation_input_tokens": 198067,
-   "output_tokens": 66835
+   "task": "T111",
+   "at": "2026-11-16T21:28:39Z",
+   "output_tokens": 63501,
+   "cache_read_input_tokens": 6831900,
+   "input_tokens": 196,
+   "cache_creation_input_tokens": 268315
   },
   "source": "session_reading 2026-11-16T21:04:24Z (week)",
   "by_task": {
@@ -69145,14 +69168,14 @@
     "estimated_bytes": 385619,
     "estimated_tokens": 1175473,
     "usage_counting": "message_id",
-    "input_tokens": 62,
-    "cache_read_input_tokens": 1914023,
-    "output_tokens": 18971,
-    "cache_creation_input_tokens": 100858,
-    "worker_tokens": 1885371,
-    "worker_turns": 26,
-    "reviewer_tokens": 148543,
-    "reviewer_turns": 6,
+    "input_tokens": 258,
+    "cache_read_input_tokens": 8745923,
+    "output_tokens": 82472,
+    "cache_creation_input_tokens": 369173,
+    "worker_tokens": 7737410,
+    "worker_turns": 102,
+    "reviewer_tokens": 1460416,
+    "reviewer_turns": 33,
     "last_model": "claude-opus-5-5"
    },
    "T303": {
@@ -69307,11 +69330,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-16T18:02:43Z",
-    "tokens": 10034315
+    "tokens": 11049517
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 208991039
+    "tokens": 210006241
    }
   },
   "session_reading": {
@@ -69322,7 +69345,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T21:28:17Z",
+ "updated_at": "2026-11-16T21:28:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -69420,8 +69443,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6740aabac4ed85915b9f41d0e86ff388760d90c1",
- "starter": "manual",
+ "runner_sha": "d014c9d4313961aa8e702ef758390e00b95fe641",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "f91e570d42ac6e693724e6257d9b71128e89f0af",
