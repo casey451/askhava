@@ -38,6 +38,7 @@ tracing-subscriber
 sentry
 thiserror
 base64
+age
 # Development and checks
 proptest
 trybuild
