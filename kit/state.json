@@ -20700,7 +20700,8 @@
     "T559",
     "T561",
     "T562",
-    "T563"
+    "T563",
+    "T564"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -46562,7 +46563,8 @@
     "T268",
     "T269",
     "T272",
-    "T464"
+    "T464",
+    "T564"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -49522,7 +49524,8 @@
     "T328",
     "T446",
     "T449",
-    "T489"
+    "T489",
+    "T564"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -56090,7 +56093,8 @@
     "T388",
     "T308",
     "T384",
-    "T440"
+    "T440",
+    "T564"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -56725,7 +56729,8 @@
    "id": "T446",
    "deps": [
     "T328",
-    "T320"
+    "T320",
+    "T564"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -63852,7 +63857,8 @@
     "T544",
     "T561",
     "T562",
-    "T563"
+    "T563",
+    "T564"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -64187,6 +64193,17 @@
    "status": "QUEUED",
    "attempts": 0,
    "slug": "homeowner-data-served",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T564",
+   "deps": [
+    "T361"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pick-shown-number-readers",
    "type": "harness",
    "stage": "5"
   }
@@ -68182,7 +68199,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T18:22:54Z",
+ "updated_at": "2026-11-16T18:26:19Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
