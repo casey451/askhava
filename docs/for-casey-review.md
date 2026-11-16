@@ -2977,3 +2977,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - Fable checked the first stage-5 tasks before they start, and the plan now fixes what would have made them fail. Among them: the site's restyle may adjust the one old test that expects the plain header, and the quote page's close button may adjust the one security-test line that sends it an extra field. Both now run on Opus with a security review.
 - Nothing in the app raised the alerts for "Stripe errors over 30 minutes" or "the health check failed twice". A new small task now raises both; UptimeRobot's own check still emails you directly as before.
 - Nothing needs you.
+
+## Fable's second group of pre-start checks for stage 5 (D-3878, November 16)
+
+- Fable checked the next six stage-5 tasks before they start, and the plan now fixes what would have made them fail. The main one: the copy checker would have failed the exact sentences the spec requires (the launch-offer line, the 911 note, the AI wording, the Spanish lines). A small new task teaches it to skip Spanish text and any sentence marked with the requirement that fixes its words; a marked sentence the requirement doesn't hold still fails, so the marker can't hide ordinary copy.
+- The homeowner and business data pages have no draft document, so their words are written into the pages from the spec. The number of days business records are kept is still the blank you fill in before publishing, as in the privacy policy draft.
+- The site's page addresses are now fixed: /how-it-works, /es/how-it-works, /services, /help and /request for starting a request.
+- The portal form styles and the emails still used the old colours; a second small task moves them to the new look's colours and makes the email footer text 16 px.
+- Nothing needs you.
