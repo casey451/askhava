@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-16T17:59:19Z by runner d77b0f992ca9 (actions).
+Updated 2026-11-16T17:59:45Z by runner d77b0f992ca9 (actions).
 
 **Building: T324 in progress since 17:53Z; 367 of 539 done; week 98% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-16T17:59:19Z by runner d77b0f992ca9 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T324 claimed 17:53Z, lease until 20:53Z; lane 2: T102 claimed 17:43Z, lease until 20:43Z; lane 3: T105 claimed 17:21Z, lease until 20:21Z; lane 4: T166 claimed 17:24Z, lease until 20:24Z; lane 5: T559 claimed 16:58Z, lease until 20:21Z
 - **Week:** 98% used, -2.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:57Z, 1 min before this update
-- **Keeper:** last ran 17:54Z, next wake 20:23Z
+- **Last run:** 17:59Z, 0 min before this update
+- **Keeper:** last ran 17:59Z, next wake 20:23Z
 
 ## Needs attention
 - BLOCKED T111: plan gap reported: PLAN GAP: scripts/check_legal_docs.py:403-410 and :458 contradict TERMS-026 (docs/spec/terms.md:29) and D-3877 (kit/prompts/T111.md:9). The Spanish summary must carry the TERMS-026 paragraph in English word for word, which contains "subcontract"; check_legal_docs.py bans \bsubcontract\w* (BANNED :307, trace_spec.py:69) in every DOCUMENTS file and exempts it only through that file's own REQUIRED phrases (check_phrases :393-412, scan in run() :442-464). The new business-terms-summary-es.md has no REQUIRED entry, and the prompt allows no script line beyond the DOCUMENTS/BUSINESS_DOCUMENTS additio; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T111 --plan-fix D-### --reason "..."` (D-2859)
