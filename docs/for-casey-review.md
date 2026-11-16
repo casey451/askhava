@@ -3076,3 +3076,16 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - The terms task (T111) stopped because the legal-docs check bans the word "subcontract", but the required English paragraph in the Spanish summary says "There is no subcontract". The check now skips exactly that required English paragraph, and the not-a-contractor statement, in the Spanish summary only. The ban still applies everywhere else, including the Spanish wording. The terms task gets one more try once this change merges.
 - Nothing needs you now.
+
+## The kept-number task's blocked check (D-3999, November 16)
+
+- The task that keeps each quote's number once shown (T361) stopped because other places still counted quotes the old way. If a later quote was shown first, the "couldn't take it" text could offer the very business whose pick just ran out; a "1 YES" from a homeowner who turned texts off could pick a different business than her text list showed as #1; and a pick already waiting could be mistaken for a different quote.
+- The task is now two: T361 only stores the kept number, and a new task (T564) right after it switches every place that reads the number over at once, with a test for each case, so the numbers always agree. Both now fit their size limits. Four queued tasks that touch the same code now wait for the new one.
+- Nothing needs you now.
+
+## Delivery and coverage alerts (T105, D-3910, D-3911, November 16)
+
+- A texting line alerts you when 6 of its last 50 texts or 11 of its last 200 fail; it clears itself once at most 6 of the last 200 fail, and the digest lists that. Only one such alert is open at a time.
+- A town with fewer than 2 active businesses alerts you; a trade does only when it got a request this month.
+- A trade that got a request but has no business at all alerts you too.
+- Gaps: a license change that drops a business's job types is not counted until the next change touching that trade, and a town no business has ever served does not alert yet (D-3911). The overseer adds one small follow-up task for each. Nothing needs you now.
