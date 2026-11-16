@@ -37,7 +37,7 @@
 mod released_pick;
 
 use std::collections::BTreeSet;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_businesses::api::{
@@ -54,10 +54,11 @@ use askhava_ops::api::{Actor as AuditActor, AuditRow, export_audit};
 use askhava_picks::api::{PagePick, ViewAnswer, page_pick, released_view};
 use askhava_portals::api::{
     ActionKind, ActionTarget, CODE_SEND_ROUTE, CookieJar, EMAIL_CHECK_ROUTE, EMAIL_RESEND_ROUTE,
-    IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NUMBER_OLD_ROUTE, PortalsError, Realm, SERVICE_AREA_ROUTE,
-    SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SIGNUP_FORM_ROUTE, SIGNUP_ROUTE, SignIn, SignInAddress,
-    SignInMail, csrf_token, current_session, ensure_pre_session, mint_action_link,
-    open_action_link, signin_post, signin_request, start_session,
+    IDENTITY_CHECK_ROUTE, LETTER_ROUTE, NUMBER_OLD_ROUTE, OwnerAuth, PortalsError, Realm,
+    SERVICE_AREA_ROUTE, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SIGNUP_FORM_ROUTE, SIGNUP_ROUTE,
+    SecondFactor, SignIn, SignInAddress, SignInMail, bootstrap_owner, csrf_token, current_session,
+    ensure_pre_session, mint_action_link, open_action_link, owner_principal, owner_sign_in,
+    signin_post, signin_request, start_session,
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use askhava_quotes::api::{
@@ -73,10 +74,13 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
+use hmac::{Hmac, KeyInit, Mac};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
+use sha1::Sha1;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
+use totp_rs::Secret;
 use tower::ServiceExt;
 
 /// The fake host every request names, so a same-origin request passes the cross-site refusal.
@@ -99,6 +103,9 @@ const UNREACHABLE: &str = "http://127.0.0.1:9";
 const NAMES: [&str; 2] = ["Dana Testperson", "Robin Fakename"];
 const PHONES: [&str; 2] = ["+19285550190", "+19285550191"];
 const STREETS: [&str; 2] = ["100 Example Way", "200 Sample Road"];
+/// The one owner's fake bootstrap token (32 characters) and fake pass phrase (D-3155).
+const OWNER_TOKEN: &str = "fake-door-probe-token-0123456789";
+const OWNER_PASSWORD: &str = "fake door probe pass phrase 2026";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Actor {
@@ -597,6 +604,7 @@ struct Who {
 struct World {
     app: Router,
     pool: PgPool,
+    owner: OwnerKey,
     who: Vec<Who>,
     fx: Fixtures,
     teams: [Team; 2],
@@ -980,19 +988,66 @@ async fn business_jar(pool: &PgPool, team: Team) -> CookieJar {
     CookieJar::from_headers(&headers)
 }
 
-/// `actor` signed in as `auth_matrix.rs` signs it in (anonymous: only the pre-session cookie;
-/// homeowners on their vault contact; the owner a 12-hour owner session; a business by its link).
-async fn signed_in(pool: &PgPool, actor: Actor, sides: &[Side; 2], now: Timestamp) -> CookieJar {
+/// The bootstrapped owner's authenticator secret, the probe's clock and its sign-ins so far.
+struct OwnerKey {
+    secret: Vec<u8>,
+    now: Timestamp,
+    signins: AtomicI64,
+}
+
+/// The one owner, bootstrapped at `now` through `bootstrap_owner` with a fake token and pass
+/// phrase; its base32 authenticator secret decoded (SEC-005, SEC-044; D-1917, D-3155).
+async fn bootstrapped_owner(pool: &PgPool, now: Timestamp) -> OwnerKey {
+    let mut db = pool.acquire().await.expect("db");
+    let enrolment = bootstrap_owner(&mut db, Some(OWNER_TOKEN), OWNER_PASSWORD, now).await;
+    let base32 = enrolment.expect("bootstrap").totp_secret;
+    let secret = Secret::try_from_base32(base32.expose_secret()).expect("base32");
+    let secret = secret.as_bytes().to_vec();
+    let signins = AtomicI64::new(0);
+    OwnerKey {
+        secret,
+        now,
+        signins,
+    }
+}
+
+/// RFC 6238's 6-digit SHA-1 code for `secret` at `now` (30-second steps), as
+/// `tests/security/tests/owner_auth.rs` computes it.
+fn totp_code(secret: &[u8], now: Timestamp) -> String {
+    let step = u64::try_from(now.as_second() / 30).expect("step");
+    let mut mac = <Hmac<Sha1> as KeyInit>::new_from_slice(secret).expect("key");
+    mac.update(&step.to_be_bytes());
+    let hash = mac.finalize().into_bytes();
+    let offset = usize::from(hash[19] & 0x0f);
+    let word = u32::from_be_bytes(hash[offset..offset + 4].try_into().expect("four bytes"));
+    format!("{:06}", (word & 0x7fff_ffff) % 1_000_000)
+}
+
+/// A real owner session through `owner_sign_in` (SEC-005, SEC-043; D-3155, D-3744): the k-th
+/// sign-in is at the probe's clock plus k times 30 seconds with that step's code, because a
+/// TOTP step at or below the last one used is refused.
+async fn owner_jar(db: &mut PgConnection, key: &OwnerKey) -> CookieJar {
+    let k = key.signins.fetch_add(1, Ordering::SeqCst);
+    let at = key.now + SignedDuration::from_secs(30 * k);
+    let code = totp_code(&key.secret, at);
+    let auth = OwnerAuth::new("askhava.example", "https://askhava.example").expect("party");
+    let factor = (OWNER_PASSWORD, SecondFactor::Totp(&code));
+    let jar = owner_sign_in(db, CookieJar::new(), factor, &auth, at).await;
+    jar.expect("owner signed in")
+}
+
+/// `actor` signed in (anonymous: only the pre-session cookie; homeowners a 12-hour session on
+/// their vault contact; the owner through owner sign-in, [`owner_jar`]; a business by its link).
+async fn signed_in(pool: &PgPool, actor: Actor, sides: &[Side; 2], owner: &OwnerKey) -> CookieJar {
+    let now = owner.now;
     let mut db = pool.acquire().await.expect("db");
     let life = SignedDuration::from_hours(12);
     let jar = match actor {
         Actor::Anonymous => ensure_pre_session(CookieJar::new()).expect("pre-session"),
         Actor::BusinessX | Actor::BusinessY => business_jar(pool, sides[actor.side()].team).await,
-        Actor::HomeownerA | Actor::HomeownerB | Actor::Owner => {
-            let login = match actor {
-                Actor::Owner => (Realm::Owner, Uuid::new_v4()),
-                _ => (Realm::Homeowner, sides[actor.side()].contact),
-            };
+        Actor::Owner => owner_jar(&mut db, owner).await,
+        Actor::HomeownerA | Actor::HomeownerB => {
+            let login = (Realm::Homeowner, sides[actor.side()].contact);
             let jar = start_session(&mut db, CookieJar::new(), login, life, now).await;
             jar.expect("session")
         }
@@ -1016,9 +1071,10 @@ async fn world(pool: &PgPool) -> World {
     load_embedded(&mut db).await.expect("catalog");
     drop(db);
     let sides = [side(pool, 0, now).await, side(pool, 1, now).await];
+    let owner = bootstrapped_owner(pool, now).await;
     let mut who = Vec::new();
     for actor in ACTORS {
-        let jar = signed_in(pool, actor, &sides, now).await;
+        let jar = signed_in(pool, actor, &sides, &owner).await;
         who.push(Who { actor, jar });
     }
     let [a, b] = sides;
@@ -1035,6 +1091,7 @@ async fn world(pool: &PgPool) -> World {
     World {
         app: router(pool.clone()),
         pool: pool.clone(),
+        owner,
         who,
         fx,
         teams: [a.team, b.team],
@@ -1214,13 +1271,28 @@ async fn probe_csrf(w: &World, events: &Events, template: &str, who: &Who) -> Re
     Ok(())
 }
 
-/// Every actor on one row.
+/// The owner signed in again before each row it probes, so a sign-out row it probed ends only
+/// that session (D-3744).
+async fn owner_again(w: &World) -> CookieJar {
+    let mut db = w.pool.acquire().await.expect("db");
+    owner_jar(&mut db, &w.owner).await
+}
+
+/// Every actor on one row (the owner signed in afresh, [`owner_again`]).
 async fn probe_row(
     w: &World,
     events: &Events,
     (method, template, door): &Row,
 ) -> Result<(), String> {
     for who in &w.who {
+        let again = match who.actor {
+            Actor::Owner => Some(Who {
+                actor: who.actor,
+                jar: owner_again(w).await,
+            }),
+            _ => None,
+        };
+        let who = again.as_ref().unwrap_or(who);
         let case = |e: String| format!("{method} {template} as {:?}: {e}", who.actor);
         if *door == Door::ActionLink {
             probe_link(w, (method, template), who).await.map_err(case)?;
@@ -1273,6 +1345,34 @@ async fn td_sec_61_each_released_pick_opens_to_its_own_business_only(pool: PgPoo
         assert_eq!(w.fx.ids_on(RELEASED_PAGE, side).0, w.fx.released[side]);
         assert_eq!(w.fx.ids_on("/b/picks/{pick}/confirm", side), w.fx.ids(side));
     }
+}
+
+/// TD-SEC-61 (SEC-005, SEC-019, D-3155): the fixture's owner session, made through owner sign-in,
+/// is an owner principal, and a plain owner-realm session without its owner-session row is not,
+/// so the fixture is proved before any owner route is served.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_61_the_owner_actor_is_an_owner_principal(pool: PgPool) {
+    let w = world(&pool).await;
+    let now = w.owner.now;
+    let mut db = pool.acquire().await.expect("db");
+    let owner = w
+        .who
+        .iter()
+        .find(|who| who.actor == Actor::Owner)
+        .expect("owner");
+    let principal = owner_principal(&mut db, &owner.jar, now)
+        .await
+        .expect("read");
+    assert!(
+        principal.is_some(),
+        "the fixture's owner session is an owner"
+    );
+    let life = SignedDuration::from_hours(12);
+    let login = (Realm::Owner, Uuid::new_v4());
+    let plain = start_session(&mut db, CookieJar::new(), login, life, now).await;
+    let plain = plain.expect("session");
+    let none = owner_principal(&mut db, &plain, now).await.expect("read");
+    assert!(none.is_none(), "a plain owner-realm session is no owner");
 }
 
 /// TD-SEC-61: the restated door rules give every case of `tests/security/door_cases.txt` its
