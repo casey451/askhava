@@ -11,9 +11,15 @@
 //! together. Every `received_at` is `now`, which the caller takes from its injected `Clock`
 //! (D-863). The contract for the routing task that wires these to Twilio's webhooks (none exists
 //! yet, D-861): answer Twilio 200 whatever the outcome, except on a database error.
+//!
+//! A first final status (delivered, undelivered or failed) also reports its audience line's
+//! failures among the line's last 50 and last 200 texts with a final status to `ops`
+//! ([`report_delivery`], OPS-004, OPS-023, OPS-025, D-493), counted in the same transaction under
+//! one advisory lock taken before the count, so two callbacks at once never miss each other's.
 
 use askhava_adapters::api::{VerifiedWebhook, WebhookVendor};
 use askhava_core::api::EventKey;
+use askhava_ops::api::{Audience, DeliveryCounts, record_delivery_counts};
 use jiff::Timestamp;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
@@ -85,12 +91,66 @@ pub async fn receive_status(
     let mut tx = db.begin().await.map_err(|_| InboxError::Database)?;
     let outcome = if models::first_event(&mut tx, (STATUS_SOURCE, key.as_str()), now).await? {
         models::insert_delivery(&mut tx, sid, (status, error_code), now).await?;
+        if status.is_final() {
+            report_delivery(&mut tx, sid, now).await?;
+        }
         Callback::Recorded(status)
     } else {
         Callback::Repeat
     };
     tx.commit().await.map_err(|_| InboxError::Database)?;
     Ok(outcome)
+}
+
+/// OPS-004, OPS-023, OPS-025, D-163: counts the failed texts (undelivered or failed, by each
+/// text's latest final status) among the last 50 and last 200 final texts of the audience line
+/// `sid` went out on, under the `messaging.delivery_counts` lock, taken in its own statement before the count (so
+/// the count's snapshot sees every callback that held it before), and
+/// reports them to `ops` at `now`. A SID with no outbox row reports nothing.
+async fn report_delivery(
+    tx: &mut PgConnection,
+    sid: &str,
+    now: Timestamp,
+) -> Result<(), InboxError> {
+    sqlx::query_scalar!(
+        r#"SELECT 1 AS "locked!" FROM (SELECT pg_advisory_xact_lock(
+             hashtextextended('messaging.delivery_counts', 21))) AS lock"#
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| InboxError::Database)?;
+    let row = sqlx::query!(
+        r#"WITH line AS (SELECT o.recipient_kind FROM messaging.outbox o
+                  WHERE o.provider_sid = $1 LIMIT 1),
+         last AS (SELECT DISTINCT ON (e.provider_sid) e.id, e.status
+                  FROM messaging.delivery_event e
+                  JOIN messaging.outbox o ON o.provider_sid = e.provider_sid
+                  WHERE o.recipient_kind = (SELECT recipient_kind FROM line)
+                    AND e.status IN ('delivered', 'undelivered', 'failed')
+                  ORDER BY e.provider_sid, e.id DESC),
+         w AS (SELECT status, row_number() OVER (ORDER BY id DESC) AS n FROM last
+               ORDER BY id DESC LIMIT 200)
+         SELECT (SELECT recipient_kind FROM line) AS audience,
+           count(*) FILTER (WHERE n <= 50 AND status <> 'delivered') AS "f50!",
+           count(*) FILTER (WHERE status <> 'delivered') AS "f200!"
+         FROM w"#,
+        sid
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| InboxError::Database)?;
+    let audience = match row.audience.as_deref() {
+        Some("homeowner") => Audience::Homeowner,
+        Some("business") => Audience::Business,
+        _ => return Ok(()),
+    };
+    let fails = |n: i64| u32::try_from(n).map_err(|_| InboxError::Database);
+    let counts = DeliveryCounts::new(audience, fails(row.f50)?, fails(row.f200)?)
+        .ok_or(InboxError::Database)?;
+    record_delivery_counts(tx, counts, now)
+        .await
+        .map(|_| ())
+        .map_err(|_| InboxError::Database)
 }
 
 /// The value of form field `name`, if present.

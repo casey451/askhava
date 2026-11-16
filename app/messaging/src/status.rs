@@ -41,6 +41,16 @@ impl DeliveryStatus {
         })
     }
 
+    /// Whether this is a final status (delivered, undelivered or failed) that counts toward the
+    /// OPS-004 delivery rate (T105, D-3910).
+    #[must_use]
+    pub const fn is_final(self) -> bool {
+        match self {
+            Self::Delivered | Self::Undelivered | Self::Failed => true,
+            Self::Queued | Self::Sending | Self::Sent => false,
+        }
+    }
+
     /// The stored name, one of `messaging.delivery_event.status`'s values.
     #[must_use]
     pub fn as_str(self) -> &'static str {

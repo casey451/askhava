@@ -639,6 +639,7 @@ where
         askhava_jobs::api::CHECK_IN_KIND,
         askhava_jobs::api::run_check_in,
     );
+    register_request_counts(&mut registry, Arc::clone(&clock));
     registry.register(
         askhava_quotes::api::WINDOWS_KIND,
         askhava_quotes::api::run_windows_end,
@@ -688,6 +689,18 @@ fn register_pick_notices(registry: &mut Registry, confirm: askhava_picks::api::C
     registry.register(
         askhava_picks::api::PICK_WITHDRAWN_KIND,
         askhava_picks::api::run_pick_withdrawn,
+    );
+}
+
+/// Registers `jobs`' hourly request count (`jobs.request_counts`) on the worker clock: it reports
+/// each trade's requests this month to `ops` for the coverage alert (OPS-006, T105, D-3844).
+fn register_request_counts(registry: &mut Registry, clock: Arc<dyn Clock>) {
+    registry.register(
+        askhava_jobs::api::REQUEST_COUNTS_KIND,
+        move |pool, _task| {
+            let now = clock.now();
+            async move { askhava_jobs::api::run_request_counts(&pool, now).await }
+        },
     );
 }
 
