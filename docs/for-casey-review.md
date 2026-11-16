@@ -3096,4 +3096,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The home page shows its three numbers (requests sent, typical time to the first quote, average quotes per request) only once 50 requests have had job cards sent. The 50 is a setting.
 - The "Who runs Laftly" block says "this page shows when the owner is away", as the spec words it, but the home page has no away notice yet. Worth a look when the away notice is built.
 - The Spanish wording is marked for native-speaker review.
+
+## Test-coverage floors for money and privacy files outside the three main parts (D-3974, November 16)
+
+- Every file outside payments, privacy and licensing that moves money, hands over or deletes personal details, or checks that a message really came from Stripe or Twilio now has its own test-coverage floor, so its tests cannot quietly shrink. Twelve already meet 95% and are held there.
+- These measure lower today, so each is held at its current level less 2 points until its tests grow: `app/picks/src/unreachable_refund.rs` (87%), `app/picks/src/unreachable_steps.rs` (86%), `app/picks/src/release.rs` (81%), `app/picks/src/dispute_steps.rs` (83%), `app/picks/src/auto_confirm.rs` (83%), `app/picks/src/cant_take.rs` (81%), `app/portals/src/confirm_pay.rs` (70%), `app/portals/src/confirm_waiver.rs` (48%), `app/portals/src/data_download.rs` (81%), `app/portals/src/job_release.rs` (51%), `app/portals/src/business_left.rs` (64%), `app/server/src/release_sink.rs` (78%), `app/server/src/business_contacts.rs` (68%), `app/server/src/inbound_text.rs` (25%), `app/server/src/offdb_stream.rs` (21%), `app/adapters/src/signatures.rs` (56%), `app/adapters/src/payments.rs` (84%), `app/adapters/src/sms.rs` (56%), `app/adapters/src/storage.rs` (74%), `app/intake/src/purge.rs` (88%), `app/intake/src/conversation.rs` (84%), `app/businesses/src/complaint_holds.rs` (58%).
 - Nothing needs you now.
