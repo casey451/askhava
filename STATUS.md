@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T00:02:23Z by runner ff584ab99111 (actions).
+Updated 2026-11-16T00:10:11Z by runner 5b654c54ca2c (actions).
 
-**Idle since 00:01Z; 352 of 502 done; week 70% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 00:08Z; 353 of 502 done; week 70% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 352 of 502 build tasks (owner gates not counted)
+- **Tasks done:** 353 of 502 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 00:01Z (no task in progress)
+- **Lane:** idle since 00:08Z (no task in progress)
 - **Week:** 70% used, 61.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:02Z, 0 min before this update
+- **Last run:** 00:02Z, 7 min before this update
 - **Keeper:** last ran 00:02Z, next wake 00:22Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-16T00:02:23Z by runner ff584ab99111 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 1 | 47 min | 00:01Z | review_missing on d8e9b6a9822f (D-3728): not proven reviewed or worker-made / (b) 927e34944d5f T516: scripts/check_dupli |
-| T515 | End-to-end harness: specs can deliver a validly signed Strip | MERGE_PENDING | 2 | 50 min | 23:47Z | PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemo |
+| T515 | End-to-end harness: specs can deliver a validly signed Strip | done | 2 | 50 min | 23:47Z | PLAN GAP: app/adapters/src/tests/ssrf_guard.rs:488 is owned by T176 and asserts the stand-in PaymentIntent has no livemo |
 | T515 | End-to-end harness: specs can deliver a validly signed Strip | BLOCKED | 1 | 17 min | 22:11Z |  |
 | T099 | Journey J2 (business) and its variants, keyboard-only, with  | BLOCKED | 1 | 58 min | 21:21Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
 | T464 | server and portals: the sign-up capability step is served af | done | 1 | 83 min | 19:56Z |  |
@@ -50,7 +50,7 @@ Updated 2026-11-16T00:02:23Z by runner ff584ab99111 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 310 of 733 (42.3%) · partial 266 · unstarted 157
-**Tasks merged (throughput only):** 352 of 502
+**Tasks merged (throughput only):** 353 of 502
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -85,7 +85,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 232 of 238 done
+- stage 4: 233 of 238 done
 - stage 5: 0 of 110 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
