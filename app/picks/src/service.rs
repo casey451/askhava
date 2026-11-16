@@ -480,9 +480,11 @@ async fn place(
     Ok(pick)
 }
 
-/// [`place`]'s steps inside its savepoint: the job's row lock first (`jobs::api::
-/// lock_for_quote_change`, so a quote withdrawal holding it commits before the pick's re-read,
-/// even with no move; D-2912), then the waiting pick's end, the job's move and the pick.
+/// [`place`]'s steps inside its savepoint: the waiting pick's end first (the pick row before
+/// the job row, as `cant_take_job` and the `backup_choice` callers lock them, so the two orders
+/// never deadlock), then the job's row lock (`jobs::api::lock_for_quote_change`, so a quote
+/// withdrawal holding it commits before the pick's re-read, even with no move; D-2912, D-3979),
+/// the job's move and the pick.
 async fn moved_pick(
     tx: &mut PgConnection,
     (job, waiting): (&JobView, Option<(Uuid, i32, Uuid)>),
@@ -490,14 +492,14 @@ async fn moved_pick(
     (actor, at): (Actor, Timestamp),
     inbox: Option<Uuid>,
 ) -> Result<Option<Uuid>, PicksError> {
-    lock_for_quote_change(tx, job.job)
-        .await
-        .map_err(|_| PicksError::Job)?;
     if let Some((old, _, business)) = waiting
         && !end(tx, (job.job, old, business), "replaced", (actor, at)).await?
     {
         return Err(PicksError::MovedOn);
     }
+    lock_for_quote_change(tx, job.job)
+        .await
+        .map_err(|_| PicksError::Job)?;
     if let Some(arrow) = pick_move(job.stage) {
         let moved = move_to(tx, job.job, arrow, at, actor).await;
         if !matches!(moved, Ok(Guarded::Applied(()))) {
