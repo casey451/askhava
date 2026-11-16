@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T01:42:32Z by runner c4c9c8b47334 (actions).
+Updated 2026-11-16T01:44:24Z by runner c4c9c8b47334 (actions).
 
-**Building: T099 in progress since 00:13Z; 353 of 505 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T099 in progress since 00:13Z; 353 of 505 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 353 of 505 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T099 claimed 00:13Z, lease until 03:13Z
-- **Week:** 73% used, 47.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:39Z, 2 min before this update
+- **Week:** 77% used, 47.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:42Z, 1 min before this update
 - **Keeper:** last ran 01:00Z, next wake 03:15Z
 
 ## Needs attention
