@@ -3016,3 +3016,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The nightly backup export must be locked to a key only you hold offline. That needs one new encryption library (`age`, a common open-source one); the backup task will confirm it passes the security and license checks when it is built.
 - The owner help page and its reply box, and the email-deferral figures on the scorecard, are now small tasks of their own so no task runs over its size limit.
 - Nothing needs you now. Before the first real backup, the export needs a key pair whose private half stays offline, an item for the account checklist.
+
+## Fable's checks of the remaining stage-5 tasks (D-3889, November 16)
+
+- When the homeowner can't be texted, the pick code can now go by email, as planned. Two small new tasks add this: the web chat asks for her email when the service runs in web-and-email mode, and the quote page sends the code there. An email she types only on the quote page never gets a code. An email she sends by text is not picked up yet.
+- The Confirm link in a business email asks for a code by text only. A business person with no phone that gets texts can't use that link yet; they sign in to the portal instead.
+- The owner's "phone linked" email can't be sent when the phone's last 4 digits aren't stored. You approve the phone on the waiting-phones page instead.
+- The full J1 and J2 journeys were too big for one task, so they are now three. A small test-setup task makes the time-jumping journeys (J3 and J4) run last, so they can't break other tests.
+- Nothing needs you now.
