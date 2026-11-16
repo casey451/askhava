@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) FILTER (WHERE (job_id, business_id) IN (SELECT * FROM unnest($4::uuid[], $5::uuid[]))) AS \"part!\", count(*) AS \"whole!\" FROM picks.pick WHERE job_id = ANY($1) AND picked_at >= $2 AND picked_at < $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "part!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "whole!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz",
+        "UuidArray",
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "135c3667d5571a6f1ebd9448f2e0bd4df7601863b40de2b84a2b364911c9a073"
+}
