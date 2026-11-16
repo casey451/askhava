@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-16T07:37:27Z by runner c0fac254a451 (actions).
+Updated 2026-11-16T07:44:32Z by runner a261134fd365 (actions).
 
-**Building: T100 in progress since 07:37Z; 355 of 532 done; week 91% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T100 in progress since 07:37Z; 355 of 535 done; week 91% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 355 of 532 build tasks (owner gates not counted)
+- **Tasks done:** 355 of 535 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T100 claimed 07:37Z, lease until 10:37Z
 - **Week:** 91% used, 12.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:19Z, 18 min before this update
+- **Last run:** 07:37Z, 6 min before this update
 - **Keeper:** last ran 04:42Z, next wake 10:22Z
 
 ## Needs attention
-- BLOCKED T517: stage proof missing (the proof waits for: T100 is QUEUED)
+- BLOCKED T517: stage proof missing (the proof waits for: T100 is IN_PROGRESS)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 10 problem(s) on tasks still to run (+121 on DONE tasks); first: T517: stored context_pct 1% but it measures 5%; regenerate
 
@@ -44,7 +44,7 @@ Updated 2026-11-16T07:37:27Z by runner c0fac254a451 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 302 of 733 (41.2%) · partial 274 · unstarted 157
-**Tasks merged (throughput only):** 355 of 532
+**Tasks merged (throughput only):** 355 of 535
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -80,7 +80,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 235 of 238 done
-- stage 5: 0 of 140 done
+- stage 5: 0 of 143 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
