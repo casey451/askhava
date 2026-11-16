@@ -286,7 +286,9 @@ pub async fn record_business_counts(
 
 /// OPS-006, D-459, D-493: stores each trade's requests this Arizona calendar month (`at`'s month)
 /// and raises one [`COVERAGE_ALERT`] (unless one is open) for each trade with a request whose last
-/// reported count is under 2 active businesses. Returns the new alerts' IDs.
+/// reported count is under 2 active businesses; a requested trade no business has ever reported
+/// gets an `ops.coverage` row with 0 active and alerts (TD-OPS-01, TD-LIC-21). Returns the new
+/// alerts' IDs.
 ///
 /// # Errors
 ///
@@ -304,8 +306,12 @@ pub async fn record_request_counts(
             r#"WITH r AS (INSERT INTO ops.trade_request (trade, month, requests)
                  VALUES ($1, date_trunc('month', $3 AT TIME ZONE 'America/Phoenix')::date, $2)
                  ON CONFLICT (trade, month) DO UPDATE SET requests = EXCLUDED.requests)
-               SELECT id FROM ops.coverage WHERE scope = 'trade' AND code = $1 AND active < 2
-                 AND $2 > 0"#,
+               , c AS (INSERT INTO ops.coverage (scope, code, active, counted_at)
+                 SELECT 'trade', $1, 0, $3 WHERE $2 > 0
+                 ON CONFLICT (scope, code) DO NOTHING RETURNING id)
+               SELECT id AS "id!" FROM c
+               UNION ALL SELECT id FROM ops.coverage WHERE scope = 'trade' AND code = $1
+                 AND active < 2 AND $2 > 0"#,
             trade,
             i32::try_from(*requests).map_err(|_| OpsError::Database)?,
             at.to_sqlx() as _,

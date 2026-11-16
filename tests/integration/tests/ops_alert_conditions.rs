@@ -284,7 +284,8 @@ async fn td_ops_01_a_town_under_2_alerts_and_a_quiet_trade_waits(pool: PgPool) {
 }
 
 /// TD-LIC-21 and TD-OPS-01 (OPS-006, LIC-046, D-459): a launch-open trade with 1 active business
-/// and a request this month alerts, whether the request or the count is reported first.
+/// and a request this month alerts, whether the request or the count is reported first; a
+/// requested trade no business ever chose counts as 0 active and alerts too.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_lic_21_a_requested_trade_with_1_business_alerts(pool: PgPool) {
     let mut db = pool.acquire().await.expect("conn");
@@ -301,9 +302,13 @@ async fn td_lic_21_a_requested_trade_with_1_business_alerts(pool: PgPool) {
     let raised = record_request_counts(&mut db, &later, at(3))
         .await
         .expect("requests");
-    assert!(raised.is_empty());
+    assert_eq!(raised.len(), 1);
+    assert_eq!(coverage_alerts(&pool, "trade").await, 2);
+    let none = "SELECT active::bigint FROM ops.coverage WHERE code = 'water_heater'";
+    assert_eq!(scalar(&pool, none).await, 0);
     active(&mut db, &["water_heater"], 4).await;
     assert_eq!(coverage_alerts(&pool, "trade").await, 2);
+    assert_eq!(scalar(&pool, none).await, 1);
 }
 
 /// OPS-006: one transaction that reports twice (job types, then towns, as `save_capability`

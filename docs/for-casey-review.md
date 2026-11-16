@@ -3064,4 +3064,5 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - A texting line alerts you when 6 of its last 50 texts or 11 of its last 200 fail; it clears itself once at most 6 of the last 200 fail, and the digest lists that. Only one such alert is open at a time.
 - A town with fewer than 2 active businesses alerts you; a trade does only when it got a request this month.
-- Gap: a license change that drops a business's job types is not counted until the next change touching that trade (D-3911). A small follow-up task fixes it. Nothing needs you now.
+- A trade that got a request but has no business at all alerts you too.
+- Gaps: a license change that drops a business's job types is not counted until the next change touching that trade, and a town no business has ever served does not alert yet (D-3911). The overseer adds one small follow-up task for each. Nothing needs you now.
