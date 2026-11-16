@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-16T22:26:41Z by runner 023f304a8802 (manual).
+Updated 2026-11-16T22:29:48Z by runner 023f304a8802 (actions).
 
 **Building: T481 in progress since 21:50Z; 376 of 540 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 376 of 540 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T481 claimed 21:50Z, lease until 00:50Z; lane 2: T523 claimed 22:07Z, lease until 01:07Z; lane 6: T221 claimed 21:31Z, lease until 00:31Z
+- **Lane:** lane 1: T481 claimed 21:50Z, lease until 00:50Z; lane 2: T523 claimed 22:07Z, lease until 01:07Z
 - **Week:** 3% used, 185.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:24Z, 1 min before this update
+- **Last run:** 22:26Z, 2 min before this update
 - **Keeper:** last ran 22:18Z, next wake 00:33Z
 
 ## Needs attention
@@ -77,31 +77,31 @@ Each needs a planted sentence in test_planted_spanish_banned_word_fails; think f
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 307 of 733 (41.9%) · partial 294 · unstarted 132
+**Requirements verified:** 327 of 733 (44.6%) · partial 274 · unstarted 132
 **Tasks merged (throughput only):** 376 of 540
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 21 | 10 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 21 | 34 | 3 | 58 |
-| calls | 12 | 12 | 1 | 25 |
+| businesses | 22 | 33 | 3 | 58 |
+| calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 19 | 32 | 1 | 52 |
+| fees | 24 | 27 | 1 | 52 |
 | intake | 30 | 10 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 39 | 9 | 0 | 48 |
-| lifecycle | 24 | 4 | 0 | 28 |
-| messaging | 22 | 21 | 2 | 45 |
+| lifecycle | 27 | 1 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 10 | 19 | 2 | 31 |
+| privacy | 12 | 17 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| security | 11 | 39 | 5 | 55 |
 | terms | 1 | 2 | 32 | 35 |
 | website | 0 | 14 | 14 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -123,7 +123,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T481 (lease until 2026-11-17T00:50:20Z)
 - lane 2: T523 (lease until 2026-11-17T01:07:25Z)
-- lane 6: T221 (lease until 2026-11-17T00:31:33Z)
 
 ## Last usage reading
 - {"task": "T111", "at": "2026-11-16T22:10:00Z", "cache_read_input_tokens": 5355599, "output_tokens": 59151, "input_tokens": 163, "cache_creation_input_tokens": 252031}
