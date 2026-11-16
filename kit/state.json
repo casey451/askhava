@@ -20199,10 +20199,10 @@
   {
    "id": "T103",
    "deps": [
-    "T202",
     "T255",
     "T317",
-    "T348"
+    "T348",
+    "T100"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -20247,7 +20247,8 @@
    "id": "T104",
    "deps": [
     "T103",
-    "T489"
+    "T489",
+    "T202"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -20638,7 +20639,8 @@
     "T360",
     "T353",
     "T451",
-    "T487"
+    "T487",
+    "T469"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -20662,7 +20664,7 @@
   {
    "id": "T107",
    "deps": [
-    "T204"
+    "T100"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -20925,7 +20927,8 @@
    "id": "T115",
    "deps": [
     "T103",
-    "T489"
+    "T489",
+    "T202"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21125,6 +21128,7 @@
     "T441",
     "T363",
     "T364",
+    "T565",
     "T373",
     "T375",
     "T397",
@@ -61225,8 +61229,7 @@
   {
    "id": "T469",
    "deps": [
-    "T100",
-    "T202"
+    "T100"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -62399,7 +62402,8 @@
   {
    "id": "T489",
    "deps": [
-    "T103"
+    "T103",
+    "T221"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -65295,6 +65299,7 @@
     "T441",
     "T363",
     "T364",
+    "T565",
     "T373",
     "T375",
     "T397",
@@ -65479,7 +65484,7 @@
   {
    "id": "T544",
    "deps": [
-    "T364"
+    "T565"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -65710,6 +65715,17 @@
    "attempts": 0,
    "slug": "pick-shown-number-readers",
    "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T565",
+   "deps": [
+    "T364"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-guarded-changes-served",
+   "type": "build",
    "stage": "5"
   }
  ],
@@ -69796,7 +69812,7 @@
    }
   }
  },
- "updated_at": "2026-11-16T23:37:31Z",
+ "updated_at": "2026-11-16T23:45:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -69894,7 +69910,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "023f304a880214dc1042c87568c3bb92ea3f3d78",
+ "runner_sha": "f4898b7c0718babe4712e00258b8ffeeedcd9acf",
  "starter": "actions",
  "smoke_runs": [
   {
