@@ -7,6 +7,8 @@
 # Decisions: docs/decisions.md D-031 to D-036. Checked by scripts/check_catalog.py.
 #
 # Field meanings (LIC-001):
+#   plural            the plural display name, lower case as it reads after "licensed" (WEB-015,
+#                     D-3879), such as plumbers.
 #   enabled           true | false. A category not listed here, or listed false, is never routed (LIC-003).
 #   license.kind      none (city business-license list only) | roc | state_agency | roc_and_state_agency
 #   license.classes   ROC classes that may receive the card.
@@ -70,6 +72,7 @@ categories:
 
   - id: plumbing_repair
     name: Plumbing repair
+    plural: plumbers
     group: home systems/repair
     enabled: true
     launch_open: true
@@ -91,6 +94,7 @@ categories:
 
   - id: hvac_repair
     name: Heating and cooling repair
+    plural: heating and cooling technicians
     group: home systems/repair
     enabled: true
     launch_open: true
@@ -109,6 +113,7 @@ categories:
 
   - id: hvac_replacement
     name: Heating and cooling replacement
+    plural: heating and cooling contractors
     group: home systems/repair
     enabled: true
     launch_open: true
@@ -127,6 +132,7 @@ categories:
 
   - id: electrical
     name: Electrical
+    plural: electricians
     group: home systems/repair
     enabled: true
     launch_open: true
@@ -145,6 +151,7 @@ categories:
 
   - id: pool_repair
     name: Pool and spa repair
+    plural: pool and spa repair technicians
     group: pool/spa/water
     enabled: true
     launch_open: true
@@ -164,6 +171,7 @@ categories:
 
   - id: handyman
     name: Handyman
+    plural: handymen
     group: home systems/repair
     enabled: true
     launch_open: true
@@ -185,6 +193,7 @@ categories:
 
   - id: pool_cleaning
     name: Weekly pool cleaning
+    plural: pool cleaners
     group: pool/spa/water
     enabled: true
     launch_open: true
@@ -204,6 +213,7 @@ categories:
 
   - id: landscape_maintenance
     name: Yard maintenance
+    plural: yard maintenance businesses
     group: yard/outdoor
     enabled: true
     launch_open: true
@@ -223,6 +233,7 @@ categories:
 
   - id: house_cleaning
     name: House cleaning
+    plural: house cleaners
     group: cleaning/property care
     enabled: true
     launch_open: true
@@ -241,6 +252,7 @@ categories:
 
   - id: pest_control
     name: Pest control
+    plural: pest control businesses
     group: home systems/repair
     enabled: true
     launch_open: true
@@ -261,6 +273,7 @@ categories:
 
   - id: dog_waste_pickup
     name: Dog waste pickup
+    plural: dog waste pickup businesses
     group: pets
     enabled: true
     launch_open: true
@@ -278,6 +291,7 @@ categories:
 
   - id: trash_can_cleaning
     name: Trash-can cleaning
+    plural: trash-can cleaners
     group: cleaning/property care
     enabled: true
     launch_open: true
@@ -295,6 +309,7 @@ categories:
 
   - id: turnover_cleaning
     name: Vacation-rental turnover cleaning
+    plural: vacation-rental turnover cleaners
     group: cleaning/property care
     enabled: true
     launch_open: true
@@ -313,6 +328,7 @@ categories:
 
   - id: junk_removal
     name: Junk removal
+    plural: junk removal businesses
     group: moving/hauling
     enabled: false
     launch_open: false
@@ -331,6 +347,7 @@ categories:
 
   - id: car_detailing
     name: Car, truck and RV detailing
+    plural: "car, truck and RV detailers"
     group: vehicle
     enabled: true
     launch_open: true
@@ -348,6 +365,7 @@ categories:
 
   - id: boat_detailing
     name: Boat detailing
+    plural: boat detailers
     group: boat/lake
     enabled: true
     launch_open: true
@@ -365,6 +383,7 @@ categories:
 
   - id: boat_repair
     name: Boat repair
+    plural: boat repair technicians
     group: boat/lake
     enabled: true
     launch_open: true
@@ -384,6 +403,7 @@ categories:
 
   - id: window_cleaning
     name: Window cleaning
+    plural: window cleaners
     group: cleaning/property care
     enabled: true
     launch_open: true
@@ -401,6 +421,7 @@ categories:
 
   - id: pressure_washing
     name: Pressure washing
+    plural: pressure washing businesses
     group: cleaning/property care
     enabled: true
     launch_open: true
@@ -419,6 +440,7 @@ categories:
 
   - id: solar_screens
     name: Solar screens and window film
+    plural: solar screen and window film installers
     group: interior/remodel
     enabled: true
     launch_open: true
@@ -436,6 +458,7 @@ categories:
 
   - id: roof_repair
     name: Roof repair
+    plural: roofers
     group: home systems/repair
     enabled: true
     launch_open: true
@@ -454,6 +477,7 @@ categories:
 
   - id: painting
     name: Painting
+    plural: painters
     group: interior/remodel
     enabled: true
     launch_open: true
@@ -473,6 +497,7 @@ categories:
 
   - id: local_moving
     name: Local moving (within Arizona)
+    plural: movers
     group: moving/hauling
     enabled: true
     launch_open: true
@@ -491,6 +516,7 @@ categories:
 
   - id: appliance_repair
     name: Freestanding appliance repair
+    plural: appliance repair technicians
     group: home systems/repair
     enabled: true
     launch_open: true
@@ -510,6 +536,7 @@ categories:
 
   - id: garage_doors
     name: Garage doors
+    plural: garage door technicians
     group: home systems/repair
     enabled: false
     launch_open: false
@@ -531,6 +558,7 @@ categories:
 
   - id: dryer_vent_cleaning
     name: Dryer-vent cleaning
+    plural: dryer-vent cleaners
     group: cleaning/property care
     enabled: true
     launch_open: true
@@ -549,6 +577,7 @@ categories:
 
   - id: holiday_lights
     name: Holiday lights (plug-in)
+    plural: holiday light installers
     group: events/tech
     enabled: true
     launch_open: true
@@ -567,6 +596,7 @@ categories:
 
   - id: estate_cleanout
     name: Estate cleanout
+    plural: estate cleanout businesses
     group: moving/hauling
     enabled: true
     launch_open: true
@@ -584,6 +614,7 @@ categories:
 
   - id: donation_pickup
     name: Donation pickup
+    plural: donation pickup businesses
     group: moving/hauling
     enabled: true
     launch_open: true
@@ -601,6 +632,7 @@ categories:
 
   - id: septic_pumping
     name: Septic pumping
+    plural: septic pumpers
     group: home systems/repair
     enabled: true
     launch_open: true
@@ -618,6 +650,7 @@ categories:
 
   - id: alarm_systems
     name: Alarm systems
+    plural: alarm system installers
     group: events/tech
     enabled: true
     launch_open: true
@@ -635,6 +668,7 @@ categories:
 
   - id: security_cameras
     name: Security cameras
+    plural: security camera installers
     group: events/tech
     enabled: true
     launch_open: true
@@ -652,6 +686,7 @@ categories:
 
   - id: home_inspection
     name: Home inspection
+    plural: home inspectors
     group: home systems/repair
     enabled: true
     launch_open: true
@@ -670,6 +705,7 @@ categories:
 
   - id: home_watch
     name: Home watch
+    plural: home watch businesses
     group: cleaning/property care
     enabled: true
     launch_open: true
@@ -691,6 +727,7 @@ categories:
 
   - id: water_treatment
     name: Water softeners, RO and misting
+    plural: "water softener, RO and misting installers"
     group: pool/spa/water
     enabled: true
     launch_open: true
@@ -708,6 +745,7 @@ categories:
 
   - id: gutters
     name: Gutters
+    plural: gutter installers
     group: home systems/repair
     enabled: true
     launch_open: true
@@ -725,6 +763,7 @@ categories:
 
   - id: insulation
     name: Insulation
+    plural: insulation installers
     group: interior/remodel
     enabled: true
     launch_open: true
@@ -742,6 +781,7 @@ categories:
 
   - id: pavers_hardscape
     name: Pavers, hardscape and irrigation
+    plural: "paver, hardscape and irrigation installers"
     group: yard/outdoor
     enabled: true
     launch_open: true
@@ -760,6 +800,7 @@ categories:
 
   - id: epoxy_floors
     name: Epoxy floors
+    plural: epoxy floor installers
     group: interior/remodel
     enabled: true
     launch_open: true
