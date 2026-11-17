@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT o.id FROM messaging.outbox o WHERE o.recipient_id = $1 AND coalesce(o.sent_at, o.created_at) < now() - interval '1827 days' ORDER BY o.id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f6b0fda77ac7ad451019edd911e3a3de29d7bc98c77e6ac7ed15ab6302c3a7c2"
+}
