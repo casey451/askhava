@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T11:31:37Z by runner e2deec93f89c (actions).
+Updated 2026-11-17T11:31:42Z by runner 7a22e40cdfb5 (actions).
 
 **Building: T441 in progress since 10:17Z; 393 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-17T11:31:37Z by runner e2deec93f89c (actions).
 - **Lane:** lane 3: T441 claimed 10:17Z, lease until 13:56Z; lane 5: T572 claimed 10:43Z, lease until 13:43Z
 - **Week:** 19% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:31Z, 0 min before this update
-- **Keeper:** last ran 11:30Z, next wake 13:45Z
+- **Keeper:** last ran 11:31Z, next wake 13:45Z
 
 ## Needs attention
 - PLAN GAP T321 (since 2026-11-17T09:31:01Z, no attempt used; a plan change fixes it): T321: dependency T107 is DONE but its owned file app/messaging/src/consent_alerts.rs is not on main; T321: dependency T107 is DONE but its owned file tests/integration/tests/consent_records_alerts.rs is not on main
