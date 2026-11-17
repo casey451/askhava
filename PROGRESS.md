@@ -6338,3 +6338,4 @@
 - 2026-11-17T09:56:49Z runner e01709a30d98 (actions): {}
 - 2026-11-17T09:57:02Z runner e01709a30d98 (actions): {}
 - 2026-11-17T09:58:40Z runner 05795302ae60 (actions): {"T204": "QUEUED -> IN_PROGRESS"}; T204 estimated 1.6M tokens (calibrated); week has 158.0M left (no five-hour budget, D-3056) (session_reading 2026-11-17T09:56:31Z (week)); running to the limit (model window, D-2225), claimed
+- 2026-11-17T10:02:30Z runner 780be8a3f3ba (actions): {"T446": "QUEUED -> IN_PROGRESS"}; T446 estimated 515k tokens (calibrated); week has 156.4M left (no five-hour budget, D-3056) after 1.6M still running in another lane (session_reading 2026-11-17T09:56:31Z (week)); running to the limit (model window, D-2225), claimed
