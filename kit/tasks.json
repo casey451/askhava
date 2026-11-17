@@ -21056,7 +21056,8 @@
     "T614",
     "T615",
     "T616",
-    "T617"
+    "T617",
+    "T618"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -41340,6 +41341,67 @@
    "branch": "claude/task/T617-site-dm-sans-variable",
    "prompt": "kit/prompts/T617.md",
    "acceptance": "`/static/site/fonts/dm-sans-latin-wght-normal.woff2` answers 200 as `font/woff2` and the site crate's asset tests pass, the byte-identity case included; the stylesheet names no static DM Sans file; `tests/a11y/design_tokens.spec.ts`, the Ally suite, `tests/e2e/site_polish.spec.ts` and `tests/e2e/home_first_screen.spec.ts` pass unchanged; the decision entry records the integrity, the SHA-256 and the measured sizes."
+  },
+  {
+   "id": "T618",
+   "slug": "advisory-watch",
+   "title": "Harness: a 4-hourly advisory watch on main that alerts Casey before a new advisory fails hand-ins",
+   "goal": "Plan change D-4269 (SEC-021; D-4070, D-4141, D-4223, D-693, D-3795): a new RustSec or npm advisory against a locked dependency turns `Ci`'s \"Checks\" red on every hand-in that touches Rust or npm inputs at once, and each time the lock fix came only after attempts were lost (D-4070 pulldown-cmark; D-4141 actix-http, T202/T489/T204 attempts; D-4223 picomatch, 35 tasks). The nightly (`nightly-main.yml`) runs the same audits once a day, and a red nightly blocks claims (T445, D-3795), but nothing alerts. Build a watch that only reports. (1) New workflow `.github/workflows/advisory-watch.yml`: triggers `schedule` (cron `23 */4 * * *`) and `workflow_dispatch` only, never `push`, `pull_request` or `workflow_call`, and nothing calls it, so it is never a required check, never part of the nightly and never writes `kit/nightly.json`; top-level `permissions: contents: read`; workflow-level `concurrency: {group: advisory-watch, cancel-in-progress: false}`. No job is named `Ci`, `Twin`, `Ally` or `Checks` (`runner/verify.py:11`). Job `advisory-scan` (read only, `timeout-minutes: 20`, checkout of `main` with `persist-credentials: false`): installs cargo-audit 0.22.2 and cargo-deny 0.20.2 with exactly `ci.yml`'s step \"Prebuilt tools (cargo-audit, cargo-deny) from pinned musl release tarballs (D-693)\" (same versions, URLs, SHA-256 sums, crates.io fallback and version check; `tests/test_advisory_watch.py` pins the env values equal to `ci.yml`'s so a bump cannot drift), the pinned toolchain `--profile minimal` only because cargo-deny reads `cargo metadata`; no build, no rust-cache, no `npm ci` (`npm audit` reads `package-lock.json`). It runs `cargo audit --json`, `cargo deny --format json check advisories` and `npm audit --json`, each output saved to a file and its exit code kept (a found advisory exits non-zero and is not an error), then `python3 scripts/advisory_watch.py scan --cargo-audit A --cargo-deny D --npm N --out found.json`, uploaded as an artifact. Job `advisory-report` (`needs: advisory-scan`, `if: github.ref == 'refs/heads/main'`, `permissions: contents: write, actions: write`, `concurrency: {group: kit-state-writer, cancel-in-progress: false}` as the nightly `record` job): checks out `claude/kit-state`, downloads `found.json`, runs `python3 <main checkout>/scripts/advisory_watch.py report --found found.json --kit-state .`, commits the new `outbox/advisory-<ID>.md` files as github-actions[bot] and pushes with the `record` job's loop (5 tries, `git fetch` and `git rebase` between, never force; exit 1 after the fifth). Because a push made with `GITHUB_TOKEN` starts no other workflow, `notify.yml` gains `workflow_dispatch:` (its only change) and the report job runs `gh workflow run notify.yml --ref main` whenever an `outbox/advisory-*.md` file is on `claude/kit-state` unsent (new now, or left by a run whose dispatch was lost), so a lost alert heals on the next run. (2) `scripts/advisory_watch.py` (stdlib only, functions under 50 lines, module docstring per `docs/code-docs.md`): `scan` reads the three reports and writes a sorted, deduplicated list of `{id, ecosystem, package, version, title, patched}`. The list is exactly what fails a hand-in, no more: cargo-audit's `vulnerabilities.list[]` (`advisory.id`, `package.name`/`version`, `versions.patched`; its informational warnings do not fail `cargo audit` and are skipped); cargo-deny's error-severity advisory diagnostics (vulnerability, unmaintained, unsound; a yanked crate, which has no advisory id, as `yanked-<crate>-<version>`); both tools apply `.cargo/audit.toml` and `deny.toml` ignores themselves, so an ignored id stays silent (verify the JSON shapes against the pinned versions and record them in the module docstring); npm: `npm_audit.parse_report`, `trace`, `excused_by` and `advisory_id` imported from `scripts/npm_audit.py` (not edited, not copied) with `npm_audit.EXCEPTIONS`, so an excused advisory (D-4223) never alerts; `fixAvailable`/`range` give the fixed version when known. It fails loudly (exit 2, `::error::` line naming the tool) when any report is missing, empty, not JSON or of an unknown shape, or when a tool's exit code says found while its parsed list is empty: a crashed tool never reads as clean. `report` keeps an id only when neither `outbox/advisory-<ID>.md` nor `outbox/sent/advisory-<ID>.md` exists in the kit-state checkout (the outbox id is the dedupe record; no new state file), checks every id against `[A-Za-z0-9._-]+` (`kit/outbox_format.md`) and refuses others, and writes each new one in that format: `id: advisory-<ID>`, `title: Advisory <ID> on <package> <version>`, `kind: info`, a body naming the package, version, advisory id and title, the patched version or \"no patched release yet\", and the line \"Fix the lock (or log an excused exception) before hand-ins fail: see D-4141 and D-4223.\" It prints `new=<n>` and `pending=<n>` (unsent `outbox/advisory-*.md`, which decides the dispatch) and never touches `kit/nightly.json`, `kit/state.json` or any other path. A found advisory exits 0: the watch reports, it never fails because an advisory exists. (3) `tests/test_advisory_watch.py`, planted reports only (fixtures written by the test into `tmp_path`): a cargo-audit report with a new RustSec id writes exactly one outbox file with the fields above; the same id again (in `outbox/` and, separately, in `outbox/sent/`) writes none; a clean report writes none; an npm advisory excused by `npm_audit.EXCEPTIONS` writes none and an unexcused one writes one; a truncated, empty or non-JSON report and a non-zero exit with nothing parsed each exit 2 with nothing written; an id with a `/` is refused; a run leaves `kit/nightly.json` and `kit/state.json` byte-identical; the YAML (via `yaml.safe_load`) has only `schedule` and `workflow_dispatch` triggers, a read-only scan job, the report job in group `kit-state-writer` with `contents: write` and `actions: write` and a `git push` without `--force`, the tool versions and SHA-256 sums equal to `ci.yml`'s, no reference to `kit/nightly.json`, and `notify.yml` with `workflow_dispatch` beside its unchanged `push` trigger. (4) `docs/architecture.md` section 12: one bullet after the T445 claim-gate bullet naming the workflow, its schedule, that it only reports through `outbox/advisory-<ID>.md` and why it is outside the nightly (D-4269).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T345"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    ".github/workflows/advisory-watch.yml",
+    ".github/workflows/notify.yml",
+    "scripts/advisory_watch.py",
+    "tests/test_advisory_watch.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/architecture.md",
+    ".github/workflows/ci.yml",
+    ".github/workflows/nightly-main.yml",
+    "scripts/npm_audit.py",
+    "kit/outbox_format.md",
+    ".cargo/audit.toml",
+    "deny.toml",
+    "tests/test_workflow_shell.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-4269",
+    "D-4223",
+    "D-4141",
+    "D-4070",
+    "D-693",
+    "D-3795"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 280,
+    "context_pct": 28
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T618-advisory-watch",
+   "prompt": "kit/prompts/T618.md",
+   "acceptance": "`python3 -m pytest tests/test_advisory_watch.py tests/test_workflow_shell.py tests/test_ci_workflow.py` passes, the new script's cases failing on `main` (no `scripts/advisory_watch.py` there); `actionlint` on `advisory-watch.yml` and `notify.yml` reports nothing new; the report quotes the cargo-audit 0.22.2 and cargo-deny 0.20.2 JSON shapes the parser reads; nothing in the diff touches `nightly-main.yml`, `ci.yml` or `kit/nightly.json`."
   }
  ]
 }
