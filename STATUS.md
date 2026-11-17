@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T07:30:48Z by runner b41671e9e062 (actions).
+Updated 2026-11-17T07:32:37Z by runner b41671e9e062 (actions).
 
-**Building: T112 in progress since 06:30Z; 387 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 07:32Z; 387 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 387 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T112 claimed 06:30Z, lease until 10:30Z
+- **Lane:** idle since 07:32Z (no task in progress)
 - **Week:** 16% used, 162.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:26Z, 4 min before this update
+- **Last run:** 07:31Z, 1 min before this update
 - **Keeper:** last ran 07:24Z, next wake 09:58Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-17T07:30:48Z by runner b41671e9e062 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z | Fresh-eyes review of the fix-round head b41671e9e0621319f78668d66ed284b6d6f5aa4f ended REVIEW-VERDICT: FINDINGS after th |
 | T201 | site: services and help pages, the ROC complaint page | MERGE_PENDING | 1 | 56 min | 07:22Z |  |
 | T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z | PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes |
 | T564 | quotes, picks and intake: the LIST, text picks, lapse text a | MERGE_PENDING | 1 | 43 min | 06:47Z |  |
@@ -132,7 +133,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T112 (lease until 2026-11-17T10:30:48Z)
 
 ## Last usage reading
-- {"task": "T201", "at": "2026-11-17T07:22:51Z", "input_tokens": 154, "cache_read_input_tokens": 6837914, "cache_creation_input_tokens": 186910, "output_tokens": 48461}
+- {"task": "T112", "at": "2026-11-17T07:32:37Z", "cache_creation_input_tokens": 210385, "cache_read_input_tokens": 4797203, "output_tokens": 52160, "input_tokens": 163}
