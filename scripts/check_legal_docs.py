@@ -53,8 +53,9 @@ DOCUMENTS = (
     "accessibility-statement.md",
     "information-security-program.md",
     "incident-response-plan.md",
+    "business-terms-summary-es.md",
 )
-BUSINESS_DOCUMENTS = frozenset({"business-terms.md", "business-email-notices.md"})
+BUSINESS_DOCUMENTS = frozenset({"business-terms.md", "business-email-notices.md", "business-terms-summary-es.md"})
 # The names the spec's own wording uses; they change only with the spec, whatever the brand file says
 # (D-1940). The spec took the name Laftly on Nov 12, 2026 (D-3347).
 SPEC_TOKENS = {
@@ -304,6 +305,10 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         ("OPS-020", "never by text alone"),  # (D-492)
     ),
 }
+# D-3877, D-3968: the Spanish business-terms summary quotes these two English paragraphs word for word.
+REQUIRED["business-terms-summary-es.md"] = tuple(
+    entry for entry in REQUIRED["business-terms.md"] if entry[0] in ("WORD-002", "TERMS-026")
+)
 BANNED: tuple[tuple[re.Pattern[str], str], ...] = (
     *((pat, "WORD-022/WORD-023 wording") for pat, _ in trace_spec.NOT_A_CONTRACTOR),
     (re.compile(r"\b(?:pre-)?vetted\b", re.IGNORECASE), "banned word"),
@@ -342,8 +347,13 @@ PRICE_LOCK_BANNED: tuple[tuple[re.Pattern[str], str], ...] = tuple(
     (re.compile(p, re.IGNORECASE), "joining early locks in prices (WORD-032)")
     for p in (
         r"\bprice[- ]?locks?\b",
-        r"\block(?:s|ed|ing)?\s+in\s+(?:(?:your|the|their|its|our|a)\s+)?(?:current\s+)?(?:rates?|prices?|pricing|fees?)\b",
+        r"\b(?:rates?|prices?|pricing|fees?)[- ]locks?\b",
+        r"\b(?:rates?|prices?|pricing|fees?)\s+(?:is|are|stays?|will\s+be)\s+locked\b",
+        r"\blocked[- ]in\s+(?:rates?|prices?|pricing|fees?)\b",
+        r"\block(?:s|ed|ing)?\s+(?:in\s+)?(?:your|the|their|its|our|today's|a)\s+(?:current\s+)?(?:rates?|prices?|pricing|fees?)\b",
+        r"\block(?:s|ed|ing)?\s+in\s+(?:current\s+)?(?:rates?|prices?|pricing|fees?)\b",
         r"\bfounding[- ](?:rates?|prices?|pricing|fees?)\b",
+        r"\bfounding[- ](?:members?|business(?:es)?)\s+(?:rates?|prices?|pricing)\b",
         r"\bgrandfathered\s+(?:rates?|prices?|pricing|fees?)\b",
         r"\b(?:rates?|prices?|fees?)\s+(?:will\s+)?never\s+go(?:es)?\s+up\b",
     )

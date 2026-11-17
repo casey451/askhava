@@ -59,7 +59,7 @@ def errors_after(tmp_path: Path, name: str, old: str, new: str) -> list[str]:
 def test_real_drafts_pass(capsys: pytest.CaptureFixture[str]) -> None:
     assert check_legal_docs.main(["--root", str(REPO_ROOT)]) == 0
     out = capsys.readouterr().out
-    assert "Legal documents checked: 9" in out
+    assert "Legal documents checked: 10" in out
     assert "Errors: 0" in out
 
 
@@ -193,6 +193,13 @@ def test_broken_drafts_fail(
         "Pay our founding rate.",
         "You keep grandfathered pricing.",
         "Your rate never goes up.",
+        "Your rate is locked for 12 months.",
+        "Lock your rate today.",
+        "Ask about our rate lock.",
+        "Enjoy locked-in pricing.",
+        "Your fees are locked in.",
+        "Sign up to lock in today's rates.",
+        "Ask for founding member pricing.",
     ],
 )
 @pytest.mark.parametrize("name", ["business-terms.md", "homeowner-terms.md"])
@@ -205,11 +212,19 @@ def test_price_lock_wording_fails(tmp_path: Path, name: str, planted: str) -> No
     assert any("joining early locks in prices (WORD-032)" in e for e in errors), errors
 
 
-def test_the_published_schedule_sentence_passes(tmp_path: Path) -> None:
-    """WORD-032: BIZ-030's "Fees follow the published schedule" is no price lock (TD-WORD-33's passing case)."""
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "Fees follow the published schedule, and a change needs your OK first.",
+        "We may lock your account.",
+    ],
+)
+def test_the_published_schedule_sentence_passes(tmp_path: Path, sentence: str) -> None:
+    """WORD-032: BIZ-030's "Fees follow the published schedule" and an account lock are no price lock
+    (TD-WORD-33's passing case)."""
     root = copy_repo(tmp_path)
     path = root / LEGAL / "business-terms.md"
-    added = "\nFees follow the published schedule, and a change needs your OK first.\n"
+    added = f"\n{sentence}\n"
     path.write_text(path.read_text(encoding="utf-8") + added, encoding="utf-8")
     assert not any("WORD-032" in e for e in check_legal_docs.run(root).errors)
 

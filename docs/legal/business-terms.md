@@ -1,11 +1,28 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.5 (draft, D-492 clauses) · November 13, 2026 · Not yet in effect
+Version 0.6 (draft, D-492 clauses, fee summary) · November 16, 2026 · Not yet in effect
 
 # Laftly Business Terms
 
 These terms are between your business ("you") and Laftly LLC, a Lake Havasu City business ("Laftly", "we", "us"). They apply when your business signs up for job requests from Laftly.
 
 Laftly is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; Laftly doesn't direct, schedule, supervise or pay for the work.
+
+## Summary: how you're charged
+
+You also see this summary at sign-up and on your business page as "How you're charged". The full terms follow it.
+
+- Free to join. Pay only when you confirm a pick: $25 / $75 / $199 by job size. Refund if you can't reach them.
+- Picks must be confirmed within 4 business hours (8 a.m. to 8 p.m., every day), or within 60 minutes for an emergency job. If you check email only once or twice a day, add a backup address for someone who checks more often.
+- It's an introduction fee for a homeowner who chose you.
+- You pay one fixed fee when you confirm a pick: $25, $75 or $199 by job size. It's not a share of the job. If you call twice inside the homeowner's window and can't reach them, the refund rule gives the fee back without you asking.
+- It's a fixed introduction fee, never a share of the job, and it doesn't depend on the work being done or paid for.
+- Laftly is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; Laftly doesn't direct, schedule, supervise or pay for the work.
+- The homeowner sees every quote and picks one business: you. It isn't shared with anyone else.
+- A new fee never applies until you accept it.
+- Repeat picks from the same homeowner are free for 180 days after the job closes.
+- Fees follow the published schedule, and a change needs your OK first.
+- Statements download as CSV.
+- If many picks in your trade end without a hire, the Laftly owner reviews it and may add a credit.
 
 ## 1. What Laftly is
 
@@ -24,13 +41,14 @@ Businesses on Laftly are independent. Laftly never directs, controls, schedules,
 
 ## 3. Job requests and quotes
 
+- Laftly is not an emergency service. A job a homeowner marks as an emergency comes by email like any other, but you have 60 minutes to confirm the pick instead of 4 business hours.
 - Job requests come by email (and by text only if Laftly offers business texting and you choose it). Laftly never places recorded or automated calls to you. The Laftly Business Email Notice Terms explain the emails.
 - Laftly never buys, imports, rents or resells requests from another site or list. Every job card comes from a homeowner who contacted Laftly directly by text or web chat.
 - Each job card is anonymous: no homeowner name, phone, email or street address. Every card says how many businesses got it.
 - You quote once. No bidding rounds, no paid placement.
 - You may quote for 24 hours after your card is sent. A quote must not contain a phone number, a link, an email address or "call me" wording; such a quote bounces back to you.
 - The homeowner sees every eligible quote, numbered in the order received, with your own words as you wrote them. Laftly never edits, rounds or converts your amount, never suggests a price and never passes a counter-offer. Only you can change your quote.
-- Every quote for a job uses that job type's format (a range, a monthly price, up to 3 tiers, a firm price, or a diagnostic visit fee on repairs), so the homeowner can compare quotes side by side. Notes (up to 300 characters) must be about the job; notes with contact details, other channels or off-platform payment offers are sent back to you.
+- Every quote for a job uses that job type's format (a range, a monthly price, up to 3 tiers, a firm price, or a diagnostic visit fee on repairs), so the homeowner can compare them. Notes (up to 300 characters) must be about the job; notes with contact details, other channels or off-platform payment offers are sent back to you.
 - You may edit or withdraw a quote until the homeowner picks.
 - Your Google Business Profile link, Yelp link and license numbers, if you give them, show on every quote.
 - Everything in your quote, your notes, your "About us" line and your quote facts must be true.

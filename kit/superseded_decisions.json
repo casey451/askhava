@@ -73,6 +73,10 @@
   "D-288": {
    "by": "D-1494",
    "cut": "FEE-040's lock for a business waiting on its city-list match starts no earlier than its activation"
+  },
+  "D-248": {
+   "by": "D-1494",
+   "cut": "what happens after the 12-month lock, and "
   }
  }
 }

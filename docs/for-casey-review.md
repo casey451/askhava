@@ -3139,6 +3139,12 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The team page task (T544) now waits for T565; the other tasks that only need the code page still wait only for T364.
 - Nothing needs you now.
 
+## T523: every day-3 "no" is counted once, in the right month (D-4053, November 17)
+
+- The second try at the task that feeds your monthly trade flags failed its review for two reasons, both real. First, when a job is connected, falls through with no answer, and is later connected to another business, the homeowner's later "no" or "other" was also being counted against the first month. Second, when a homeowner whose business contacts her by email texts NO at the day-3 check-in, that answer was not being written down at all, so it never counted.
+- The plan now says exactly which connection an answer belongs to, and lets the task record that texted NO at the moment it arrives, once, even if she texts it twice.
+- Nothing about fees, refunds or no-shows changes. The task is a little larger (one more file).
+
 ## The urgent audit findings are planned (D-4051, November 16)
 
 - No more early-joiner price lock anywhere: old decisions that mentioned a lock now show that part struck when they are pasted into a task's instructions, and the legal-documents check now fails any draft that offers a price lock, a "founding rate" or similar.
