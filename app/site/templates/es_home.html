@@ -17,7 +17,7 @@
 <p>Es gratis para usted. El negocio que usted elija le paga a {{ brand }} una tarifa de presentación fija según el tamaño del trabajo: ${{ fees.small }}, ${{ fees.medium }} o ${{ fees.large }}.</p>
 
 <h2>Cómo cuidamos su privacidad</h2>
-<p>Su número nunca se comparte. Los negocios ven el trabajo, no a usted. Su nombre y su dirección van solo al negocio que usted elija.</p>
+<p>Su número nunca se comparte. Los negocios ven el trabajo, no a usted. Su nombre de pila y su dirección van solo al negocio que usted elija.</p>
 <p>Nadie paga por salir primero. Las cotizaciones aparecen en el orden en que llegaron. {{ brand }} no clasifica ni califica a los negocios.</p>
 
 <h2>Para negocios</h2>
@@ -38,7 +38,7 @@
 {%- endif %}
 <p>Correo de ayuda: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
 <p>El dueño tiene un trabajo de tiempo completo. Las solicitudes de registro normalmente se revisan en 4 días, las preguntas de ayuda y de cobros normalmente en 2 días, y esta página indica cuando el dueño no está.</p>
-<p>{{ brand }} no es un servicio de emergencias. No dependa de {{ brand }} en una emergencia: llame al 911.</p>
+<p data-fixed="WEB-022">{{ brand }} no es un servicio de emergencias y no evalúa qué requiere una respuesta de emergencia. Si su mensaje menciona gas, humo, fuego, una alarma de monóxido de carbono sonando o un cable eléctrico caído, le enviamos un recordatorio automático para que llame al 911. No dependa de {{ brand }} en una emergencia: llame al 911.</p>
 <p lang="en"><a href="/">This page in English</a></p>
 {% endblock %}
 {% block footer %}

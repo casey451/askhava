@@ -59,7 +59,10 @@ STOP = (re.compile(r"\bSTOP\b"), "PARAR")
 HELP = (re.compile(r"\bHELP\b"), "AYUDA")
 PRIVACY = (
     ("Your number is never shared", "Su número nunca se comparte"),
-    ("Your first name and address go only to the business you pick", "solo al negocio que usted elija"),
+    (
+        "Your first name and address go only to the business you pick",
+        "Su nombre de pila y su dirección van solo al negocio que usted elija",
+    ),
 )
 
 

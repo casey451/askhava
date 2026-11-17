@@ -600,7 +600,7 @@ mod tests {
     use super::{
         BusinessFacts, BusinessHelpPage, BusinessPage, CityGuide, CoveragePage, EsBusinessPage,
         EsHomePage, EsHowItWorksPage, Fees, HelpPage, HomePage, HowItWorksPage, RocComplaintPage,
-        SampleCard, ServicesPage, Waiting, WhoRuns, wait_words,
+        SampleCard, ServicesPage, Settings, Waiting, WhoRuns, wait_words,
     };
 
     /// The home page with no numbers and `who`'s facts.
@@ -823,6 +823,34 @@ mod tests {
         assert_eq!(wait_words(SignedDuration::from_mins(-5)), "0 minutes");
     }
 
+    /// WEB-020, D-3880: the three city-license settings fill the guide, trimmed, and an empty
+    /// one counts as unset (fake dev settings).
+    #[test]
+    fn web_020_city_guide_reads_its_three_settings() {
+        let guide = |cost: &str, url: &str| {
+            let pairs = [
+                ("ASKHAVA_APP_ENV", "dev"),
+                ("ASKHAVA_DATABASE_URL", "postgres://fake@localhost/fake"),
+                ("ASKHAVA_STORAGE_BASE_URL", "file:///tmp/fake-t202"),
+                (
+                    "ASKHAVA_ID_SECRET",
+                    "test-only-id-secret-for-t202-not-a-real-key",
+                ),
+                ("ASKHAVA_CITY_LICENSE_COST", cost),
+                ("ASKHAVA_CITY_LICENSE_TIME", ""),
+                ("ASKHAVA_CITY_LICENSE_URL", url),
+            ];
+            let pairs = pairs.map(|(k, v)| (k.to_owned(), v.to_owned()));
+            CityGuide::from_settings(&Settings::from_pairs(pairs).expect("settings"))
+        };
+        let set = guide(" $50 ", "https://fake.example/license");
+        assert_eq!(set.cost.as_deref(), Some("$50"));
+        assert_eq!(set.time, None);
+        assert_eq!(set.url.as_deref(), Some("https://fake.example/license"));
+        assert!(set.shown());
+        assert!(!guide("", "").shown());
+    }
+
     /// Fake business-page facts: a licensed and a no-license card, one waiting trade, `guide`.
     fn facts(guide: CityGuide) -> BusinessFacts {
         let card = |code: &str, guide| SampleCard {
@@ -992,9 +1020,10 @@ mod tests {
         }
     }
 
-    /// TD-WEB-01 TD-WORD-02 (WEB-002, WORD-002, WORD-007, WORD-013): the Spanish home page is in
-    /// Spanish with the fee line, the privacy line and the Spanish footer statement; the business
-    /// help page holds WEB-020's safety tip.
+    /// TD-WEB-01 TD-WEB-07 TD-WORD-02 (WEB-002, WEB-022, WORD-002, WORD-007, WORD-013): the Spanish
+    /// home page is in Spanish with the fee line, the first-name privacy line, WEB-022's whole
+    /// emergency line and the Spanish footer statement; the business help page holds WEB-020's
+    /// safety tip.
     #[test]
     fn td_web_01_spanish_home_and_business_help() {
         let es = EsHomePage {
@@ -1017,7 +1046,15 @@ mod tests {
             "tarifa de presentación fija según el tamaño del trabajo: ${s}, ${m} o ${l}."
         )));
         assert!(es.contains("Su número nunca se comparte."));
-        assert!(es.contains("Su nombre y su dirección van solo al negocio que usted elija."));
+        assert!(
+            es.contains("Su nombre de pila y su dirección van solo al negocio que usted elija.")
+        );
+        assert!(es.contains(&format!(
+            "{name} no es un servicio de emergencias y no evalúa qué requiere una respuesta de \
+             emergencia. Si su mensaje menciona gas, humo, fuego, una alarma de monóxido de \
+             carbono sonando o un cable eléctrico caído, le enviamos un recordatorio automático \
+             para que llame al 911. No dependa de {name} en una emergencia: llame al 911."
+        )));
         assert!(es.contains(&format!(
             "{name} no es contratista y no realiza, cotiza ni supervisa trabajos."
         )));
