@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T22:05:57Z by runner 2c331d907e11 (actions).
+Updated 2026-11-17T22:06:54Z by runner 051904e6de90 (actions).
 
 **Idle since 22:05Z; 411 of 578 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-17T22:05:57Z by runner 2c331d907e11 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 22:05Z (no task in progress)
 - **Week:** 31% used, 133.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:05Z, 0 min before this update
+- **Last run:** 22:06Z, 0 min before this update
 - **Keeper:** last ran 22:05Z, next wake 22:25Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+175 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+176 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -89,8 +89,8 @@ Updated 2026-11-17T22:05:57Z by runner 2c331d907e11 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 733 (0.0%) · partial 671 · unstarted 62
-**Tasks merged (throughput only):** 411 of 570
+**Requirements verified:** 0 of 735 (0.0%) · partial 671 · unstarted 64
+**Tasks merged (throughput only):** 411 of 578
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -112,7 +112,7 @@ Updated 2026-11-17T22:05:57Z by runner 2c331d907e11 (actions).
 | recurring | 0 | 9 | 2 | 11 |
 | security | 0 | 50 | 5 | 55 |
 | terms | 0 | 32 | 3 | 35 |
-| website | 0 | 24 | 4 | 28 |
+| website | 0 | 24 | 6 | 30 |
 | wording | 0 | 23 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
