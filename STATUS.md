@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T22:05:01Z by runner 6669641e12b4 (actions).
+Updated 2026-11-17T22:05:14Z by runner 6669641e12b4 (actions).
 
-**Building: T603 in progress since 21:24Z; 411 of 578 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 22:05Z; 411 of 578 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 411 of 578 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T603 claimed 21:24Z, lease until 01:00Z
+- **Lane:** idle since 22:05Z (no task in progress)
 - **Week:** 31% used, 133.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:02Z, 2 min before this update
 - **Keeper:** last ran 22:02Z, next wake 01:02Z
@@ -18,6 +18,7 @@ Updated 2026-11-17T22:05:01Z by runner 6669641e12b4 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T603 | Perf and twin (harness): the web vitals report records LCP a | MERGE_PENDING | 1 | 40 min | 22:05Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | done | 4 | 44 min | 21:44Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T594 | site: the end-to-end spec of the web chat and request page a | MERGE_PENDING | 2 | 83 min | 21:03Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T106 | ops: /healthz and the web and worker liveness exits | MERGE_PENDING | 1 | 77 min | 20:38Z |  |
@@ -133,7 +134,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T603 (lease until 2026-11-18T01:00:31Z)
 
 ## Last usage reading
-- {"task": "T104", "at": "2026-11-17T21:44:00Z", "cache_creation_input_tokens": 246785, "output_tokens": 68422, "cache_read_input_tokens": 3049943, "input_tokens": 104}
+- {"task": "T603", "at": "2026-11-17T22:05:00Z", "output_tokens": 19486, "cache_read_input_tokens": 2243643, "cache_creation_input_tokens": 82931, "input_tokens": 103}
