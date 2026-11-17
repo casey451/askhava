@@ -20,7 +20,7 @@ use askhava_core::api::Guarded;
 use askhava_jobs::api::{JobStatus, create, current, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
-use askhava_privacy::api::{Vault, set_name_address};
+use askhava_privacy::api::{Vault, purge_contact, set_name_address};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use sqlx::types::Uuid;
@@ -275,14 +275,17 @@ pub async fn record_answer(
 
 /// The INT-038 reply, if the sender stated an age under 18 or said they are in school, and the
 /// request closed (no card ever goes). Under 13, the request and its data are deleted too, except
-/// the consent record. Every job the request opened is cancelled (no card, no timer left). The
-/// vault contact holding a name and address stays: `privacy` has no delete call yet (D-996). The reply goes once: a closed request gets none. An emergency keyword was
-/// handled first by `receive_text` (INT-002), so its 911 text is already queued before this one.
+/// the consent record, and the sender's vault contact (`msg.contact`) is cleared by
+/// `privacy::api::purge_contact` (name, email, address, on-site contact and stated names; the
+/// sealed phone kept for the consent and opt-out records), in this same transaction (PRIV-007,
+/// D-4051, D-4142). Every job the request opened is cancelled (no card, no timer left); a job of an
+/// earlier request is left as it is. The reply goes once: a closed request gets none. The caller
+/// screens for an emergency first (INT-002), so its 911 text is already queued before this one.
 ///
 /// # Errors
 ///
-/// [`IntakeError::Template`], [`IntakeError::Outbox`], [`IntakeError::Audit`] or
-/// [`IntakeError::Database`]; nothing is kept on an error.
+/// [`IntakeError::Template`], [`IntakeError::Outbox`], [`IntakeError::Audit`],
+/// [`IntakeError::Vault`] or [`IntakeError::Database`]; nothing is kept on an error.
 pub async fn stop_if_under_18(
     db: &mut PgConnection,
     secret: &SecretString,
@@ -297,6 +300,7 @@ pub async fn stop_if_under_18(
         return Err(IntakeError::UnknownRequest);
     };
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    models::lock_homeowner(&mut tx, homeowner).await?;
     let jobs = models::request_jobs(&mut tx, conversation).await?;
     if !models::close_request(&mut tx, conversation, msg.received_at).await? {
         return Ok(None);
@@ -316,7 +320,7 @@ pub async fn stop_if_under_18(
     )
     .await?;
     if stop == AgeStop::Under13 {
-        models::purge_request(&mut tx, conversation, homeowner).await?;
+        purge_child(&mut tx, (conversation, homeowner), msg.contact).await?;
     }
     let entry = AuditEntry {
         actor: Actor::System,
@@ -330,6 +334,24 @@ pub async fn stop_if_under_18(
         .map_err(|_| IntakeError::Audit)?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Some((stop, queued)))
+}
+
+/// INT-038, PRIV-007, D-4142: under 13, the request's data (`models::purge_request`), then the
+/// sender's vault contact (`purge_contact`, a savepoint), so a failure of either keeps nothing.
+/// The caller took the homeowner row first, so the contact row comes after it, as in the
+/// retention lock order (D-1839).
+/// The contact is the sender's, not the request's alone: an earlier request's paid pick loses the
+/// name and address too (INT-038 has no paid-pick exception), its job left as it is.
+async fn purge_child(
+    tx: &mut PgConnection,
+    (conversation, homeowner): (Uuid, Uuid),
+    contact: Uuid,
+) -> Result<(), IntakeError> {
+    models::purge_request(tx, conversation, homeowner).await?;
+    purge_contact(tx, contact)
+        .await
+        .map_err(|_| IntakeError::Vault)?;
+    Ok(())
 }
 
 /// Cancels a job of a request that closed for INT-038, unless it already reached a final status.

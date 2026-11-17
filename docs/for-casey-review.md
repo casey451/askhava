@@ -3185,6 +3185,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - Fix round (D-4031): a link in a legal draft that isn't a web, email, phone or on-site link now shows as plain text, so no draft line can become a script link. Follow-ups for other tasks, none needing you: the rules checker should flag the "print as HTML" marker outside the legal pages; the data pages need the AI provider's retention sentence and the switch-on date once the AI module shares them (until then they show the switched-on paragraph without it, never the "switched off" wording while the AI is on); three business-portal pages link `/terms/business`, which doesn't exist, and should link `/terms#business-terms`; the Spanish page footer is copied in three templates and should be one.
 - T107 (D-4059): each Monday the app counts last week's opt-outs (Arizona time) against the people it texted; 3% of homeowners or 5% of businesses raises one alert for that week, listed in the weekly digest, not pushed to your phone. The dashboard (T108) will show the rates. Nothing needs you now.
 
+## The web chat's send button and the 18-or-older line (T595, D-4174, November 17)
+- The test run of the web chat at laftly.com/request found that the page refused every message a person typed: a security check meant to block forged forms read the form the wrong way and blocked real ones too. It never let a forged form through. A small new fix task, T595, corrects it and adds a test that sends a real message through, so this can't slip by again.
+- The same run found the page doesn't say you must be 18 or older, which the consent rules require. T595 adds "You must be 18 or older to use Laftly." just under the consent text.
+- After T595, the web chat's full test (T594) runs again. Nothing needs you now.
+
 ## T202: the Spanish home page and the business pages (D-4126)
 
 - laftly.com/business now shows how fees work, the fee table, a made-up sample job card for each open trade and the "Who runs Laftly" block. /es/business and /es are the Spanish versions, marked as drafts for a native speaker to check. /business/help has a safety tip for people working alone in customers' homes.
