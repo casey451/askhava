@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T01:05:25Z by runner 8fb25c182a02 (actions).
+Updated 2026-11-17T01:12:43Z by runner 67f601a86f97 (actions).
 
 **Building: T103 in progress since 00:02Z; 377 of 541 done; week 9% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 377 of 541 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:45Z; lane 4: T481 claimed 22:37Z, lease until 02:57Z; lane 5: T469 claimed 00:32Z, lease until 04:01Z; lane 6: T320 claimed 23:55Z, lease until 03:46Z; lane 7: T221 claimed 22:36Z, lease until 03:57Z
+- **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:45Z; lane 5: T469 claimed 00:32Z, lease until 04:01Z; lane 6: T320 claimed 23:55Z, lease until 03:46Z; lane 7: T221 claimed 22:36Z, lease until 03:57Z
 - **Week:** 9% used, 171.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:05Z, 0 min before this update
+- **Last run:** 01:05Z, 7 min before this update
 - **Keeper:** last ran 01:05Z, next wake 03:00Z
 
 ## Needs attention
@@ -116,7 +116,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T103 (lease until 2026-11-17T03:45:28Z)
-- lane 4: T481 (lease until 2026-11-17T02:57:38Z)
 - lane 5: T469 (lease until 2026-11-17T04:01:32Z)
 - lane 6: T320 (lease until 2026-11-17T03:46:52Z)
 - lane 7: T221 (lease until 2026-11-17T03:57:44Z)
