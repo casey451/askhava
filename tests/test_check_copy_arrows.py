@@ -62,6 +62,16 @@ def test_site_copy_arrow_fails(tmp_path: Path) -> None:
     problems = plant(tmp_path, "docs/copy/site-copy.md", copy)
     assert problems == ["docs/copy/site-copy.md · Home · hero: arrow in copy: Tell us the job → we text local pros."]
     assert plant(tmp_path, "docs/copy/site-copy.md", copy.replace("→", "&") + "## A · b (homeowner, fixed)\n\n> x -> y\n")
+    assert plant(tmp_path, "docs/copy/site-copy.md", copy.replace("→", "&rarr;"))
+    assert plant(tmp_path, "docs/copy/site-copy.md", copy.replace("→", "-&gt;"))
+
+
+@pytest.mark.parametrize("style", ['<style>a::after{content:"→"}</style>',
+                                   r'<style media="all">a::after{content:"\2192"}</style>'])
+def test_template_style_block_arrow_fails(tmp_path: Path, style: str) -> None:
+    """WEB-029: an arrow or its CSS escape in a content: value inside a template's <style> block fails."""
+    problems = plant(tmp_path, "app/site/templates/a.html", f"<head>{style}</head><p>Hi</p>")
+    assert problems and problems[0].startswith("app/site/templates/a.html: arrow in CSS"), problems
 
 
 @pytest.mark.parametrize("css", ['a::after{content:"→"}', r'a::after { content: "\2192"; }',

@@ -308,7 +308,8 @@ def allowed_arrow(stack: tuple[Element, ...]) -> bool:
 
 
 def template_arrow_problems(root: Path) -> list[str]:
-    """WEB-029, D-4246: arrows in template text or tags (es_*.html included) outside the one allowed place."""
+    """WEB-029, D-4246: arrows in template text, tags or <style> content: values (es_*.html included) outside
+    the one allowed place; <script> is skipped, where JavaScript's => is code, not copy."""
     problems: list[str] = []
     for path in template_paths(root):
         rel, markup = path.relative_to(root).as_posix(), path.read_text(encoding="utf-8")
@@ -321,6 +322,8 @@ def template_arrow_problems(root: Path) -> list[str]:
         for tag in re.findall(r"<[A-Za-z][^>]*>", bare):
             if ARROW.search(html.unescape(tag)):
                 problems.append(f"{rel}: arrow in a tag: {tag[:70]}")
+        for css in re.findall(r"(?is)<style\b[^>]*>(.*?)</style>", markup):
+            problems += css_arrow_problems(rel, css)
     return problems
 
 
@@ -359,7 +362,7 @@ def style_arrow_problems(root: Path) -> list[str]:
 def arrow_problems(root: Path) -> list[str]:
     """WEB-029, D-4246: every arrow in copy, templates and CSS content but the one primary-button arrow."""
     problems = [f"{block.where}: arrow in copy: {block.text[:70]}"
-                for block in site_copy_blocks(root) if ARROW.search(block.text)]
+                for block in site_copy_blocks(root) if ARROW.search(html.unescape(block.text))]
     return problems + template_arrow_problems(root) + style_arrow_problems(root)
 
 
