@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T01:54:12Z by runner dde16ca377f9 (actions).
+Updated 2026-11-17T01:54:31Z by runner dde16ca377f9 (actions).
 
 **Building: T103 in progress since 00:02Z; 377 of 556 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -17,7 +17,7 @@ Updated 2026-11-17T01:54:12Z by runner dde16ca377f9 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T221 | site: the terms, privacy policy, SMS terms, homeowner data a | MERGE_PENDING | 1 | 2 h 47 min | 01:23Z |  |
+| T221 | site: the terms, privacy policy, SMS terms, homeowner data a | check_failed | 1 | 2 h 47 min | 01:23Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   0.13. |
 | T320 | ops: a check that runs on a schedule raises its alert once w | MERGE_PENDING | 2 | 78 min | 01:13Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T373 | businesses: changing a phone's number ends that phone's text | MERGE_PENDING | 2 | 42 min | 01:04Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
 | T111 | Draft homeowner and business terms with every required claus | done | 4 | 34 min | 23:57Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
