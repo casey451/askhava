@@ -20802,8 +20802,8 @@
    "deps": [
     "T100"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "consent-records-alerts",
    "type": "build",
    "stage": "5",
@@ -20826,6 +20826,32 @@
      "session": "actions-43993852568",
      "expires": "2026-11-17T04:22:20Z",
      "lane": "2"
+    }
+   ],
+   "last_failure": "Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findings round of step 4 was used by fix commit dfb993cab, which fixed the first review's cross-key digest join by classifying business opt-outs via the businesses.phone_stopped audit row read through ops::api::audited; that fix was checked and is correct).\nOpen finding: app/messaging/src/consent_alerts.rs:173-176 (optouts_by_audience) counts every opt_out event in the week, but optout.rs record() (around lines 316-327) writes a new opt_out event for each repeat STOP from a number already suppressed, and phone_stopped writes a new audit row per inbox row. Counterexample: a homeowner sends STOP in week N, is listed, gets no texts in week N+1, sends STOP again in week N+1: week N+1 counts her as an opt-out though she is not among that week's texted homeowners, inflating CON-024's rate and possibly raising a false 3% alert in a thin week. Fix: count only events that newly listed the number (no earlier opt_out for that digest without a later start), and add a test for a repeat STOP in the following week.\nAlly: bash scripts/prehandin.sh --ally failed locally on dfb993cab (3 failed / 531 passed; earlier run 2 failed) all in tests/e2e j2_keyboard.spec.ts:149 business sign-up/pay flow (fake Stripe.js calls missing after 5 s at e2e/keyed.ts:210; no h1 \"Where your code goes\" at 1280 px), while the first commit 3fc00a310 passed 534/534. The branch changes no route, template or page asset; reviewers judged it likely local environment (reused askhava_ci DB sign-up rate-limit rows, busy machine), not proven.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 198,
+     "head_sha": "dfb993caba5ddab51d93dc1f24c5403dc513e3e7",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-17T02:20:52Z",
+     "ended_at": "2026-11-17T03:45:59Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 8652557,
+       "turns": 117
+      },
+      "reviewer": {
+       "tokens": 1777894,
+       "turns": 40
+      }
+     }
     }
    ]
   },
@@ -66849,12 +66875,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T584",
-   "at": "2026-11-17T03:23:28Z",
-   "input_tokens": 133,
-   "output_tokens": 41181,
-   "cache_read_input_tokens": 4419415,
-   "cache_creation_input_tokens": 149793
+   "task": "T107",
+   "at": "2026-11-17T03:45:59Z",
+   "cache_creation_input_tokens": 296748,
+   "input_tokens": 307,
+   "cache_read_input_tokens": 10051922,
+   "output_tokens": 81474
   },
   "source": "session_reading 2026-11-17T03:31:14Z (week)",
   "by_task": {
@@ -70928,7 +70954,17 @@
    },
    "T107": {
     "estimated_bytes": 429153,
-    "estimated_tokens": 1311731
+    "estimated_tokens": 1311731,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 296748,
+    "input_tokens": 307,
+    "cache_read_input_tokens": 10051922,
+    "output_tokens": 81474,
+    "worker_tokens": 8652557,
+    "worker_turns": 117,
+    "reviewer_tokens": 1777894,
+    "reviewer_turns": 40,
+    "last_model": "claude-opus-5-5"
    },
    "T586": {
     "estimated_bytes": 370270,
@@ -70956,11 +70992,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-16T23:36:32Z",
-    "tokens": 8360439
+    "tokens": 9744160
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 219772898
+    "tokens": 221156619
    }
   },
   "session_reading": {
@@ -70971,7 +71007,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T03:42:20Z",
+ "updated_at": "2026-11-17T03:46:00Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -71069,7 +71105,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0241d76c6e76a67c54d84095c5de20589a383972",
+ "runner_sha": "dfb993caba5ddab51d93dc1f24c5403dc513e3e7",
  "starter": "actions",
  "smoke_runs": [
   {

@@ -1,22 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-17T03:42:20Z by runner 0241d76c6e76 (actions).
+Updated 2026-11-17T03:46:00Z by runner dfb993caba5d (actions).
 
-**Building: T107 in progress since 02:20Z; 379 of 557 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T103 in progress since 03:40Z; 379 of 557 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 379 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T107 claimed 02:20Z, lease until 06:41Z; lane 2: T103 claimed 03:40Z, lease until 06:40Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T591 claimed 03:16Z, lease until 06:40Z
+- **Lane:** lane 2: T103 claimed 03:40Z, lease until 06:40Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T591 claimed 03:16Z, lease until 06:40Z
 - **Week:** 12% used, 165.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:41Z, 0 min before this update
+- **Last run:** 03:42Z, 3 min before this update
 - **Keeper:** last ran 03:31Z, next wake 06:00Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- Strict plan check red: 2 problem(s) on tasks still to run (+142 on DONE tasks); first: T107: stored context_pct 12% but it measures 16%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T107 | Consent records kept 5 years, no export, opt-out rate alerts | QUEUED | 1 | 85 min | 03:45Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 | T584 | businesses (harness): sign-up activation retried after a con | MERGE_PENDING | 2 | 43 min | 03:23Z | PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to rea |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | MERGE_PENDING | 2 | 79 min | 03:14Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   0.13. |
 | T584 | businesses (harness): sign-up activation retried after a con | BLOCKED | 1 | 3 min | 02:26Z |  |
@@ -73,8 +75,8 @@ Updated 2026-11-17T03:42:20Z by runner 0241d76c6e76 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 305 of 733 (41.6%) · partial 315 · unstarted 113
-**Tasks merged (throughput only):** 379 of 557
+**Requirements verified:** 307 of 733 (41.9%) · partial 313 · unstarted 113
+**Tasks merged (throughput only):** 379 of 556
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -84,9 +86,9 @@ Updated 2026-11-17T03:42:20Z by runner 0241d76c6e76 (actions).
 | calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 27 | 13 | 3 | 43 |
+| intake | 28 | 12 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
-| licensing | 36 | 12 | 0 | 48 |
+| licensing | 37 | 11 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
@@ -117,10 +119,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T107 (lease until 2026-11-17T06:41:27Z)
+- nothing
 - lane 2: T103 (lease until 2026-11-17T06:40:50Z)
 - lane 6: T481 (lease until 2026-11-17T06:42:02Z)
 - lane 7: T591 (lease until 2026-11-17T06:40:34Z)
 
 ## Last usage reading
-- {"task": "T584", "at": "2026-11-17T03:23:28Z", "input_tokens": 133, "output_tokens": 41181, "cache_read_input_tokens": 4419415, "cache_creation_input_tokens": 149793}
+- {"task": "T107", "at": "2026-11-17T03:45:59Z", "cache_creation_input_tokens": 296748, "input_tokens": 307, "cache_read_input_tokens": 10051922, "output_tokens": 81474}
