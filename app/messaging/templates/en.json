@@ -542,6 +542,6 @@
   "business_signup_reply": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "{brand_short}: This number is for homeowners asking for quotes. Want job requests? Sign up at {domain}/b/signup\nReply STOP to opt out, HELP for help."
+    "text": "{brand_short}: This number is for homeowners asking for quotes. To get job requests, sign up at {domain}/b/signup\nReply STOP to opt out, HELP for help."
   }
 }
