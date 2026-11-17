@@ -283,6 +283,28 @@ pub const fn pick_lost(status: JobStatus) -> bool {
     }
 }
 
+/// Whether a waiting pick's job in `status` was returned to Quotes ready without a Confirm, so its
+/// lapse still runs there (PICK-019, PICK-044, PICK-046, PICK-047, D-3750): `jobs`' backstop or an
+/// emergency's 60 minutes came before the window's end or the notice's send. A closed or
+/// cancelled job only expires the pick.
+#[must_use]
+pub const fn returned_unconfirmed(status: JobStatus) -> bool {
+    match status {
+        JobStatus::QuotesReady => true,
+        JobStatus::Intake
+        | JobStatus::Open
+        | JobStatus::NoQuotesYet
+        | JobStatus::AwaitingConfirm
+        | JobStatus::PaymentPending
+        | JobStatus::Connected
+        | JobStatus::Done
+        | JobStatus::Closed
+        | JobStatus::ClosedEarly
+        | JobStatus::NotCovered
+        | JobStatus::Cancelled => false,
+    }
+}
+
 /// `jobs`' Awaiting confirm backstop in business minutes, read from `jobs`' own wait (JOB-013,
 /// D-805, D-1503), so the Confirm window's restart follows any change there; zero if `jobs` ever
 /// stops counting it in business minutes (the restart then starts at the window's end).
