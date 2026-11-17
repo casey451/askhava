@@ -44,6 +44,7 @@ mod cant_take;
 mod confirm;
 mod confirm_reminders;
 mod contact_choice;
+mod digest_counts;
 mod dispute_steps;
 mod email_code;
 mod emergency_emails;
