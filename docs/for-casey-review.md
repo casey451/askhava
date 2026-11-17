@@ -3138,3 +3138,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - As you asked, the task that serves the business "enter your code" page before team and billing changes is split: T364 now builds the code page itself, and the new T565 builds the role change, removal and monthly-limit changes behind it, with their tests. Nothing was dropped.
 - The team page task (T544) now waits for T565; the other tasks that only need the code page still wait only for T364.
 - Nothing needs you now.
+
+## T523: every day-3 "no" is counted once, in the right month (D-4053, November 17)
+
+- The second try at the task that feeds your monthly trade flags failed its review for two reasons, both real. First, when a job is connected, falls through with no answer, and is later connected to another business, the homeowner's later "no" or "other" was also being counted against the first month. Second, when a homeowner whose business contacts her by email texts NO at the day-3 check-in, that answer was not being written down at all, so it never counted.
+- The plan now says exactly which connection an answer belongs to, and lets the task record that texted NO at the moment it arrives, once, even if she texts it twice.
+- Nothing about fees, refunds or no-shows changes. The task is a little larger (one more file).
+- Nothing needs you now.
