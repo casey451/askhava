@@ -43,6 +43,7 @@ pub use crate::conversation::{
     Answer, JobStart, Opened, Recorded, Taken, ask_name_address, begin_job, hear, joining_job,
     record_answer, stop_if_under_18, take_name_address,
 };
+pub use crate::conversation::{BUSINESS_SIGNUP_TEMPLATE, shows_business_intent};
 pub use crate::design::{
     CONCEPT_OFFER_TEMPLATE, CONCEPT_QUESTION, ConceptStep, LOOK_ASK_TEMPLATE,
     LOOK_DESCRIBE_TEMPLATE, concept_step, is_design_category,
@@ -132,6 +133,11 @@ pub use crate::summary_step::{
     CARD_SHOWN_TEMPLATE, CARD_SLOT, CARD_TIMER_KIND, CARDS_APPROVED_KIND, CardReply, CardStep,
     CardTimer, MAX_CARD_SEGMENTS, Preview, RECHECK_AFTER, Shown, answer_card, approved_card,
     card_digest, card_reply, card_timer_step, preview_text, run_card_timer, show_card,
+};
+pub use crate::web_chat::{
+    ChatAnswer, ChatError, ChatIn, ChatSettings, ChatStep, Checked, CodeStep, MAX_CODE_TRIES,
+    chat_message, check_code, request_source, send_code, start_chat, web_chat_consent_text,
+    web_chat_order,
 };
 pub use crate::zip_step::{
     ZIP_AGAIN_TEMPLATE, ZIP_QUESTION_TEMPLATE, ZipPlace, ZipStep, answer_zip, ask_zip, place_zip,

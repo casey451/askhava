@@ -547,3 +547,42 @@ pub(crate) async fn queue_text(
         template,
     })
 }
+
+/// The CON-001 reply to a business owner's message, with the sign-up link (INT-020, D-132).
+pub const BUSINESS_SIGNUP_TEMPLATE: &str = "business_signup_reply";
+
+/// D-132's widened business-intent phrase list, folded (apostrophes dropped, accents plain).
+const BUSINESS_PHRASES: [&str; 22] = [
+    "get on your list",
+    "put me on your list",
+    "add me to your list",
+    "im a contractor",
+    "i am a contractor",
+    "we are a contractor",
+    "send me jobs",
+    "send me leads",
+    "send us jobs",
+    "send us leads",
+    "looking for leads",
+    "looking for more work",
+    "list my business",
+    "add my business",
+    "sign up my business",
+    "join your network",
+    "become a provider",
+    "work for you",
+    "soy contratista",
+    "somos contratistas",
+    "mandame trabajos",
+    "registrar mi negocio",
+];
+
+/// INT-020, CON-001, D-132: whether scrubbed `words` show business intent by the phrase list, as
+/// whole words (the AI second opinion ships with T394, D-3881). "I need a contractor" does not.
+#[must_use]
+pub fn shows_business_intent(words: &str) -> bool {
+    let folded = format!(" {} ", crate::rules::fold(words));
+    BUSINESS_PHRASES
+        .iter()
+        .any(|p| folded.contains(&format!(" {p} ")))
+}
