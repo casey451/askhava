@@ -3144,6 +3144,24 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The second try at the task that feeds your monthly trade flags failed its review for two reasons, both real. First, when a job is connected, falls through with no answer, and is later connected to another business, the homeowner's later "no" or "other" was also being counted against the first month. Second, when a homeowner whose business contacts her by email texts NO at the day-3 check-in, that answer was not being written down at all, so it never counted.
 - The plan now says exactly which connection an answer belongs to, and lets the task record that texted NO at the moment it arrives, once, even if she texts it twice.
 - Nothing about fees, refunds or no-shows changes. The task is a little larger (one more file).
+
+## The urgent audit findings are planned (D-4051, November 16)
+
+- No more early-joiner price lock anywhere: old decisions that mentioned a lock now show that part struck when they are pasted into a task's instructions, and the legal-documents check now fails any draft that offers a price lock, a "founding rate" or similar.
+- Four new fix tasks: texting CLOSE will actually close a job (T570); pressing 9 on the safety call can no longer be lost to a database hiccup, and the safety call cannot be turned on before this fix (T571); a child under 13 who gave a name and address has them erased (T572); texts to businesses will actually be sent, before business texting is switched on (T573).
+- When a child under 13 is stopped, the name and address are also erased from any earlier job from the same phone, even one a business already paid to be introduced to: the rule for children has no exception.
+- Your two remaining questions from the build now say Laftly and laftly.com instead of the old name.
+- Nothing needs you now.
+
+## The outside code audit, batch B: eleven small fix tasks (D-4052, November 17)
+
+- Every remaining real item from the audit you shared was checked against the code. Eleven new tasks (T580 to T590) fix them before the stage-5 cleanup and audit.
+- Money: an old fee-writing function that only tests use is labelled test-only and guarded by a new test so nothing can start using it; the card-security check no longer holds a database connection while it waits on Stripe.
+- Texts: a failed or expired text no longer shows as "sending" for ever; a carrier "slow down" answer no longer uses up a text's retries; your call-back for a failed text is due in 24 hours when her job is urgent; and the "you now have N quotes" update text, which the audit showed was never actually being sent, now gets sent, at most every 3 hours, once after quiet hours, and never after the job closes.
+- Spanish: the who's-calling text, the missed-call text and the pick review page follow her language once Spanish is switched on.
+- Businesses: a refused sign-up keeps everything she typed; a double tap on "Send quote" shows the job page instead of "not found"; account emails stop going to an address that bounced; a license change that drops a trade now updates the coverage alert.
+- One choice made for you: a business confirming an AI-read text quote after its 24 hours is too late, the same as typing one late.
+- Not fixed, on purpose: three small performance items wait for the load test, and one audit item was not a real problem. Session start-up will read only a few fields of the build state instead of the whole file, once the docs-tidying task runs.
 - Nothing needs you now.
 
 ## T221: the legal and data pages (D-4027)

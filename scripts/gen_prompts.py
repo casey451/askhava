@@ -145,6 +145,7 @@ class Sources:
     journeys: dict[str, str] = field(default_factory=dict)
     decisions: dict[str, str] = field(default_factory=dict)
     superseded: dict[str, str] = field(default_factory=dict)
+    partial: dict[str, tuple[str, str]] = field(default_factory=dict)  # old -> (successor, words it struck, D-4051)
     lines: dict[str, list[str] | None] = field(default_factory=dict)
 
 
@@ -169,8 +170,11 @@ def load_sources(root: Path) -> Sources:
             if match:
                 src.decisions[match.group(1)] = match.group(2)
     extra_path = root / SUPERSEDED_FILE
-    extra = json.loads(extra_path.read_text(encoding="utf-8")).get("superseded", {}) if extra_path.is_file() else {}
-    src.superseded = superseded_map(src.decisions, extra)
+    listed = json.loads(extra_path.read_text(encoding="utf-8")) if extra_path.is_file() else {}
+    src.superseded = superseded_map(src.decisions, listed.get("superseded", {}))
+    src.partial = partial_map(src.decisions, listed.get("partial", {}))
+    for old in listed.get("partial", {}):
+        src.superseded.pop(old, None)  # a listed partial entry overrides a whole one (D-4051)
     return src
 
 
@@ -246,7 +250,14 @@ def indent(text: str) -> str:
 
 SUPERSEDED_PATTERNS = (
     re.compile(r"\b(D-\d{3,}) (?:is |was |now )?(?:withdrawn|superseded|replaced|reversed)(?: by (D-\d{3,}))?"),
-    re.compile(r"\b(?:withdraws|supersedes|replaces|reverses) (D-\d{3,})"),
+    # "supersedes D-530's sentence" or "replaces D-4000 (4)" takes only a part: PARTIAL_PATTERNS (D-4051).
+    re.compile(r"\b(?:withdraws|supersedes|replaces|reverses|retires) (D-\d{3,})(?!\d|'s| \(\d)"),
+)
+# A later decision that takes only part of an older one: "retires only D-465's price lock", "drops D-3094's
+# fallback", "amends D-3334's ...", "amends D-4000 (4)". The older one stays live; its prompt mark says so (D-4051).
+PARTIAL_PATTERNS = (
+    re.compile(r"\b(?:withdraws|supersedes|replaces|reverses|retires|drops|amends) (?:only )?(D-\d{3,})(?:'s| \(\d)"),
+    re.compile(r"\bamends (D-\d{3,})(?!\d|'s| \(\d)"),
 )
 
 
@@ -268,22 +279,56 @@ def superseded_map(decisions: dict[str, str], extra: dict[str, str] | None = Non
     return found
 
 
+def partial_map(decisions: dict[str, str], listed: dict[str, dict[str, str]]) -> dict[str, tuple[str, str]]:
+    """old decision -> (the decision that took part of it, the old words it struck, "" when none are listed).
+
+    Read from the decisions' own words (PARTIAL_PATTERNS) and from kit/superseded_decisions.json's "partial"
+    entries, `{"by": "D-1494", "cut": "<the struck words, verbatim>"}`, which win; a listed cut must appear in the
+    old decision's text, so a reworded entry fails here instead of pasting a dead rule as live (D-4051)."""
+    found: dict[str, tuple[str, str]] = {}
+    for new_id, text in decisions.items():
+        for pattern in PARTIAL_PATTERNS:
+            for match in pattern.finditer(text):
+                if match.group(1) != new_id:
+                    found[match.group(1)] = (new_id, "")
+    for old, entry in listed.items():
+        cut = entry.get("cut", "")
+        if cut and cut not in decisions.get(old, ""):
+            raise ValueError(f"{SUPERSEDED_FILE}: the cut listed for {old} is not in its text in {DECISIONS}")
+        found[old] = (entry["by"], cut)
+    return found
+
+
+def successor(src: Sources, did: str) -> str | None:
+    """The decision that superseded `did` wholly or in part, if any."""
+    return src.superseded.get(did) or (src.partial[did][0] if did in src.partial else None)
+
+
+def decision_line(src: Sources, did: str, task_id: str) -> str:
+    """One pasted decision with its mark: superseded (history only), or partly superseded with the struck words
+    replaced by a note, so a dead part is never pasted as a live rule (D-491, D-4051)."""
+    text = src.decisions.get(did, "(not found in docs/decisions.md)")
+    by = src.superseded.get(did)
+    mark = f" **(superseded by {by}; history only, build {by})**" if by else ""
+    if did in src.partial and not by:
+        by, cut = src.partial[did]
+        if cut:
+            text = text.replace(cut, f"[struck: superseded by {by}, never build it]")
+        mark = f" **(partly superseded by {by}; where they differ, build {by})**"
+    return f"- **{did}**{mark} {decision_excerpt(text, task_id)}"
+
+
 def paste_decisions(src: Sources, ids: list[str], task_id: str = "") -> str:
-    """Each decision's excerpt for `task_id`; a superseded one is marked and its successor is pasted too (D-491)."""
+    """Each decision's excerpt for `task_id`; a superseded one is marked and its successor is pasted too, down the
+    chain (D-491, D-4051)."""
     if not ids:
         return NONE_NOTE
-    out = []
     shown = list(ids)
-    for did in ids:
-        by = src.superseded.get(did)
+    for did in shown:
+        by = successor(src, did)
         if by and by not in shown:
             shown.append(by)
-    for did in shown:
-        text = src.decisions.get(did, "(not found in docs/decisions.md)")
-        by = src.superseded.get(did)
-        mark = f" **(superseded by {by}; history only, build {by})**" if by else ""
-        out.append(f"- **{did}**{mark} {decision_excerpt(text, task_id)}")
-    return "\n".join(out)
+    return "\n".join(decision_line(src, did, task_id) for did in shown)
 
 
 def _cut(text: str, limit: int) -> str:
