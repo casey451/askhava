@@ -252,8 +252,13 @@ jobs:
         # within a minute of the job's start, the runner closes every MERGE_PENDING task whose pull request has merged
         # with its checks finished, by the cycle's own rule (DONE only from Ci, Twin and Ally green on the merged head
         # and equal trees; otherwise a red main), and with two or more lanes starts a run for each other lane that
-        # frees. Nothing else: open pull requests, the inbox, the smoke and claims stay the session's. A failure only
-        # leaves the merge to the session's cycle, as before.
+        # frees. When it closed a merge it also pushes the merge line's next update merge (D-4180): the cycle's own
+        # pass over the open pull requests, so the next turn holder is updated now, not after a lane's warm-up and
+        # smoke. RUNNER_PUSH_TOKEN fetches main and the branch and pushes the merge as a fast-forward; the full clone
+        # above holds the history and the runner falls back to its own commit identity. It never turns auto-merge on
+        # (here `gh` may fall back to the job's token, whose merges start no workflow, D-500, D-502). Nothing else: the
+        # inbox, the smoke, claims and auto-merge stay the session's. A failure only leaves the merge and the update
+        # to the session's cycle, as before.
         continue-on-error: true
         timeout-minutes: 5
         env:
