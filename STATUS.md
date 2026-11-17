@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:42:07Z by runner cb724385f661 (actions).
+Updated 2026-11-17T13:42:41Z by runner cb724385f661 (actions).
 
 **Building: T471 in progress since 13:32Z; 396 of 560 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 396 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T471 claimed 13:32Z, lease until 16:32Z; lane 7: T321 claimed 12:53Z, lease until 16:38Z
+- **Lane:** lane 6: T471 claimed 13:32Z, lease until 16:32Z
 - **Week:** 21% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:40Z, 1 min before this update
+- **Last run:** 13:42Z, 0 min before this update
 - **Keeper:** last ran 13:40Z, next wake 16:35Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Evidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T321 | messaging: the consent-purge functions, the inbound-text clo | MERGE_PENDING | 1 | 49 min | 13:42Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 2 | 94 min | 13:39Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T363 | portals: the served pick and its code step apply the per-IP  | MERGE_PENDING | 1 | 62 min | 13:38Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | MERGE_PENDING | 1 | 50 min | 13:19Z |  |
@@ -147,7 +148,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 6: T471 (lease until 2026-11-17T16:32:37Z)
-- lane 7: T321 (lease until 2026-11-17T16:38:26Z)
 
 ## Last usage reading
-- {"task": "T204", "at": "2026-11-17T13:39:11Z", "input_tokens": 143, "cache_creation_input_tokens": 185292, "output_tokens": 28785, "cache_read_input_tokens": 3054410}
+- {"task": "T321", "at": "2026-11-17T13:42:05Z", "output_tokens": 54142, "cache_read_input_tokens": 6206460, "input_tokens": 153, "cache_creation_input_tokens": 182497}
