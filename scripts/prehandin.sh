@@ -10,7 +10,7 @@
 #     the skip guard, then `check_plan_lock.py` and `check_pr_change.py --base <main> --branch <branch>`,
 #     as the `Ci` "Checks" job runs them;
 #   extras (unless --quick): what `Ci` adds when the diff against main touches it, by `Ci`'s own path
-#     rules: eslint and `npm audit --audit-level=low` for the npm tree; cargo-audit and cargo-deny for
+#     rules: eslint and `scripts/npm_audit.py` (D-4223) for the npm tree; cargo-audit and cargo-deny for
 #     Rust when both are on the path (`Ci` installs them; elsewhere it says it skipped); and, when the diff
 #     touches a crate with a floor in tests/coverage_floor.json, `Ci`'s branch coverage of that crate and
 #     every workspace crate that depends on it (their tests carry its coverage: askhava-payments alone
@@ -144,7 +144,7 @@ extras() {
     step "npm tree changed: eslint and npm audit (as Ci)"
     [ -d node_modules ] || run_check "npm ci" npm ci --ignore-scripts
     if [ -f eslint.config.js ]; then run_check "eslint" npx eslint .; fi
-    run_check "npm audit --audit-level=low" npm audit --audit-level=low
+    run_check "npm audit (scripts/npm_audit.py)" python3 scripts/npm_audit.py
   fi
   if [ -f Cargo.lock ] && touches "${RUST_PATHS}"; then
     step "Rust changed: dependency audit (as Ci)"
