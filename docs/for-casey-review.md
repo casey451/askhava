@@ -3176,3 +3176,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - Safety: a text like "never mind, I smell gas" still gets the 911 reply first; it never just closes the job.
 - Licenses: when an ROC license lapses, the card drops the city-license line, but a handyman's card still shows "Not a licensed contractor..." as the rule requires.
 - Two small test changes follow from rules already decided: one test now uses a fixed time inside the 24-hour quote window, and one expects no email to a member whose address is bouncing. Both tasks that make them get the stricter Opus review.
+## T221: the legal and data pages (D-4027)
+
+- laftly.com now has /terms, /privacy, /sms-terms, /your-data and /business-data, with Spanish data pages at /es/your-data and /es/business-data. The legal pages show the drafts as they are, with the "Draft" note and version line; nothing is published until your go.
+- Before publishing you fill in the business retention days in the privacy policy; the business data page shows the same bracket until then, and a test keeps the two the same.
+- The Spanish data pages are drafts for a native speaker to check before Spanish goes on.
+- Nothing needs you now.
+- Fix round (D-4031): a link in a legal draft that isn't a web, email, phone or on-site link now shows as plain text, so no draft line can become a script link. Follow-ups for other tasks, none needing you: the rules checker should flag the "print as HTML" marker outside the legal pages; the data pages need the AI provider's retention sentence and the switch-on date once the AI module shares them (until then they show the switched-on paragraph without it, never the "switched off" wording while the AI is on); three business-portal pages link `/terms/business`, which doesn't exist, and should link `/terms#business-terms`; the Spanish page footer is copied in three templates and should be one.
