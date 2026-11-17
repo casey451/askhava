@@ -55,7 +55,7 @@
   "scripts/check_crates.py": "6191806bd18621eb13b6ead908507c4150859ce587426670dd26d1c55a8666bc",
   "scripts/check_duplicates.py": "241ceeed61d1131e2ab862d451ae7a7f7fa3e92893495d274395331d852ed224",
   "scripts/check_include_paths.py": "243b422ec726b9e6be70f2143db027d6ddb4c8de98715f80a5c56a6da33c5b06",
-  "scripts/check_legal_docs.py": "6879efcbaf97a398a9cdaa1724083ea0c0021777a4510a4f73a81f385e260dc6",
+  "scripts/check_legal_docs.py": "a372dcea9ed4617d6bb002f160d11ba6dd17abc1b3f63e9ed34df302e4080364",
   "scripts/check_plan_lock.py": "01af59601701a42fbb826d0e3f15a685dc8e9a5baa2b7d0e95a36508210c9c23",
   "scripts/check_pr_change.py": "bff82974c36a3b5bbc57f9fdd5bf929b1935e1d0da9ee4bd2b3826e7ccb3cf8d",
   "scripts/check_rust_rules.py": "559029dff80fed3f8a701527b115660bbb19edf05e548b7d4d1caf86d57a573d",
