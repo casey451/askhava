@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T07:35:14Z by runner 335c43f151da (actions).
+Updated 2026-11-17T07:36:00Z by runner eabc0711c109 (manual).
 
 **Building: T107 in progress since 07:34Z; 387 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-17T07:35:14Z by runner 335c43f151da (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z
 - **Week:** 16% used, 162.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:34Z, 1 min before this update
+- **Last run:** 07:35Z, 0 min before this update
 - **Keeper:** last ran 07:33Z, next wake 07:53Z
 
 ## Needs attention
 - BLOCKED T489: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes `sec_048_every_refusal_is_a_security_event` panic at auth_matrix.rs:181:9 ("/request has no door in auth_matrix.rs: add its matrix rule (SEC-019)"). sec_048 (:720-:723) builds its POST list from route_table() and calls door(path, false), ignoring the served-by-site flag that td_sec_01 (:637) and :693 pass; so any site POST outside the listed prefixes panics. POST /request is the first site POST. The file is owned by T348 (harness; also T088, T231, T302, T308); T489 does not ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T489 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 2 problem(s) on tasks still to run (+146 on DONE tasks); first: T115: stored context_pct 13% but it measures 19%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,31 +88,31 @@ Updated 2026-11-17T07:35:14Z by runner 335c43f151da (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 302 of 733 (41.2%) · partial 328 · unstarted 103
+**Requirements verified:** 1 of 733 (0.1%) · partial 629 · unstarted 103
 **Tasks merged (throughput only):** 387 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 19 | 12 | 4 | 35 |
-| ai | 11 | 14 | 4 | 29 |
-| businesses | 21 | 35 | 2 | 58 |
-| calls | 13 | 11 | 1 | 25 |
-| consent | 14 | 18 | 3 | 35 |
-| fees | 24 | 27 | 1 | 52 |
-| intake | 25 | 18 | 0 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
-| licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
-| ops-recovery | 1 | 23 | 30 | 54 |
-| privacy | 12 | 17 | 2 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 33 | 22 | 1 | 56 |
-| recurring | 8 | 0 | 3 | 11 |
-| security | 11 | 39 | 5 | 55 |
-| terms | 1 | 23 | 11 | 35 |
+| accessibility | 1 | 30 | 4 | 35 |
+| ai | 0 | 25 | 4 | 29 |
+| businesses | 0 | 56 | 2 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 32 | 3 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 43 | 2 | 45 |
+| ops-recovery | 0 | 24 | 30 | 54 |
+| privacy | 0 | 29 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 55 | 1 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 0 | 50 | 5 | 55 |
+| terms | 0 | 24 | 11 | 35 |
 | website | 0 | 15 | 13 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 0 | 11 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
