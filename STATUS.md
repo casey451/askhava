@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T11:30:21Z by runner 7a22e40cdfb5 (actions).
+Updated 2026-11-17T11:30:44Z by runner 157d28bc632d (actions).
 
 **Building: T441 in progress since 10:17Z; 393 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -14,7 +14,7 @@ Updated 2026-11-17T11:30:21Z by runner 7a22e40cdfb5 (actions).
 ## Needs attention
 - PLAN GAP T321 (since 2026-11-17T09:31:01Z, no attempt used; a plan change fixes it): T321: dependency T107 is DONE but its owned file app/messaging/src/consent_alerts.rs is not on main; T321: dependency T107 is DONE but its owned file tests/integration/tests/consent_records_alerts.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 5 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+145 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
