@@ -113,7 +113,7 @@ pub const UPDATE_TEXTS: [(&str, Shape); 25] = [
 /// intake), the card review texts (INT-041), and the command replies that are not updates
 /// (CLOSE, LIST-which, the other `text_pick_*` replies, the missed-call note). A template is
 /// in this list or in [`UPDATE_TEXTS`], never both (`src/tests/update_texts.rs`).
-pub const NOT_UPDATE_TEXTS: [&str; 43] = [
+pub const NOT_UPDATE_TEXTS: [&str; 44] = [
     "consent",
     "consent_safety_call",
     "who_is_this",
@@ -157,6 +157,7 @@ pub const NOT_UPDATE_TEXTS: [&str; 43] = [
     "card_shown",
     "card_link",
     "card_edit",
+    "business_signup_reply",
 ];
 
 /// One way a text breaks TXT-040.

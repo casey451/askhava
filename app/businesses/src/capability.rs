@@ -46,7 +46,9 @@ use crate::holding::{Known, holding};
 use crate::license_reapply::{lift_no_cover, shipped};
 use crate::models::{self, BusinessesError, db};
 use crate::rules::JobTypeChoice;
-use crate::service::{Ticks, pause_for_rule, set_job_types, set_ticks, set_towns};
+use crate::service::{
+    Ticks, coverage_keys, pause_for_rule, report_edit, set_job_types, set_ticks, set_towns,
+};
 use crate::status::{AccountStatus, PauseReason};
 
 /// The largest typed amount accepted, in cents ($10,000,000); a larger one does not parse
@@ -618,7 +620,9 @@ fn change_in(
 /// `pause_for_rule` (`NoCoveredJobType`) when a removal leaves nothing ticked and it was taking
 /// cards, and queues one [`LICENSE_CHANGE_KIND`] email when anything was removed or offered (one
 /// per business, class change and list date, D-2596). Nothing is ever ticked here. Only categories
-/// of `catalog` switched on in the stored catalog are offered (LIC-002, D-3101).
+/// of `catalog` switched on in the stored catalog are offered (LIC-002, D-3101). OPS-006, D-4052:
+/// a removal from an active business reports the towns and trades it served before and serves
+/// now through `service::report_edit`, before any pause, so a trade it dropped is counted at once.
 ///
 /// # Errors
 ///
@@ -637,11 +641,19 @@ pub async fn reapply_license(
     let on = |c: &str| stored.contains(c) && catalog.categories.iter().any(|d| d.id == c);
     let mut change = change_in(map, on, &ticks, classes);
     if !change.removed.is_empty() {
+        let active = models::read(&mut tx, id)
+            .await?
+            .status
+            .counts_for_coverage();
+        let before = coverage_keys(&mut tx, id).await?;
         let kept: Vec<JobTypeChoice> = ticks
             .into_iter()
             .filter(|c| !change.removed.contains(c))
             .collect();
         models::replace_job_types(&mut tx, id, &kept).await?;
+        if active {
+            report_edit(&mut tx, id, before).await?;
+        }
         let entry = AuditEntry {
             actor: Actor::System,
             action: "businesses.field_changed",

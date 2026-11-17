@@ -654,5 +654,11 @@
     "draft": true,
     "segments": 2,
     "text": "{brand_short}: Su código para registrarse es {number}. Es válido por 30 minutos. Si usted no se registró, puede ignorar este correo."
+  },
+  "business_signup_reply": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "{brand_short}: Este teléfono es para dueños de casa que piden cotizaciones. Para recibir solicitudes de trabajo, vaya a {domain}/b/signup\nResponda PARAR para salir, AYUDA para ayuda."
   }
 }

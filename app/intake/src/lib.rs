@@ -27,6 +27,7 @@
 
 mod accepted_quote;
 mod address_wait;
+mod ai_on;
 pub mod api;
 mod cards_out;
 mod check_in_replies;
@@ -55,6 +56,7 @@ mod safety_text;
 mod service;
 mod status;
 mod summary_step;
+mod web_chat;
 mod zip_step;
 
 #[cfg(test)]
