@@ -3194,3 +3194,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - laftly.com/business now shows how fees work, the fee table, a made-up sample job card for each open trade and the "Who runs Laftly" block. /es/business and /es are the Spanish versions, marked as drafts for a native speaker to check. /business/help has a safety tip for people working alone in customers' homes.
 - Open item for you: the city business-license guide on the handyman and no-license sample cards stays hidden until you fill in its cost, the time it takes and the city's link (settings `ASKHAVA_CITY_LICENSE_COST`, `ASKHAVA_CITY_LICENSE_TIME`, `ASKHAVA_CITY_LICENSE_URL`). No figure was typed in for you.
+
+## T113: the texting campaign draft (D-4147)
+
+- `docs/legal/twilio-campaign.md` is the text for registering the homeowner texting campaign: the settings, the description, the six sample messages (each copied from the real text it stands for), the Spanish steps and what happens if the campaign is refused. Nothing is submitted; you register it by hand when the account checklist gets there.
+- One thing to know: the description no longer says people opt in by "replying OK", because texting in is the opt-in (D-419). Everything else is the wording from the changes file.

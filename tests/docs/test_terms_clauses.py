@@ -491,7 +491,7 @@ def test_spanish_summary_is_listed_as_a_business_document() -> None:
     assert SUMMARY_ES in check_legal_docs.DOCUMENTS
     assert SUMMARY_ES in check_legal_docs.BUSINESS_DOCUMENTS
     report = check_legal_docs.run(ROOT)
-    assert report.errors == [] and report.checked == len(check_legal_docs.DOCUMENTS) == 10
+    assert report.errors == [] and report.checked == len(check_legal_docs.DOCUMENTS) == 11
 
 
 def test_privacy_policy_holds_the_no_sharing_sentence() -> None:
