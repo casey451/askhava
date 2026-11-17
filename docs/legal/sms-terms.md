@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.4 (draft, consent by texting in) · November 13, 2026 · Not yet in effect
+Version 0.5 (draft, consent by texting in) · November 17, 2026 · Not yet in effect
 
 # Laftly SMS Terms
 
@@ -7,7 +7,7 @@ These terms cover texts between you and Laftly LLC about your own request for qu
 
 ## 1. The program
 
-Laftly is a quote-request service; the business the homeowner chooses pays Laftly a set introduction fee. You text the Laftly number (or start on laftly.com) to ask for quotes on a job at your home. We send automated texts about that request only: confirmation that it was sent, when quotes arrive, a link to your private quote page, confirmation of the business you choose, the name of the business that will call you, check-ins and reminders about that request. We send no marketing texts. Businesses never text you from the Laftly number.
+Laftly is a quote-request service; the business the homeowner chooses pays Laftly a set introduction fee. You text the Laftly number (or start on laftly.com) to ask for quotes on a job at your home. We send automated texts about that request only: confirmation that it was sent, when quotes arrive, a link to your private quote page, confirmation of the business you choose, the name of the business that will call you, check-ins and reminders about that request. We send no marketing texts. Businesses never text you from the Laftly number. Businesses get no texts on this number; they are notified by email. A person who texts asking to join as a business gets one reply with the sign-up link.
 
 ## 2. How you agree
 
@@ -15,7 +15,7 @@ Texting Laftly, or giving us your mobile number in the chat on laftly.com and ty
 
 > Laftly: Got it. Next, a few quick questions. Laftly is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: laftly.com/terms Privacy: laftly.com/privacy
 
-In Spanish (draft for native-speaker review; sent only once Spanish conversations are switched on):
+In Spanish (draft). We won't send this text in Spanish until a native Spanish speaker we pay has checked it:
 
 > Laftly: Recibido. Ahora, unas preguntas. Laftly no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. PARAR para salir, AYUDA para ayuda. Términos: laftly.com/terms Privacidad: laftly.com/privacy
 
