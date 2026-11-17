@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T00:57:44Z by runner bba7c92e5fa7 (actions).
+Updated 2026-11-17T00:59:43Z by runner 3059b1432431 (actions).
 
 **Building: T103 in progress since 00:02Z; 377 of 541 done; week 9% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 377 of 541 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:45Z; lane 3: T373 claimed 00:21Z, lease until 03:21Z; lane 4: T481 claimed 22:37Z, lease until 02:57Z; lane 5: T469 claimed 00:32Z, lease until 03:32Z; lane 6: T320 claimed 23:55Z, lease until 03:46Z; lane 7: T221 claimed 22:36Z, lease until 03:57Z
+- **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:45Z; lane 3: T373 claimed 00:21Z, lease until 03:59Z; lane 4: T481 claimed 22:37Z, lease until 02:57Z; lane 5: T469 claimed 00:32Z, lease until 03:32Z; lane 6: T320 claimed 23:55Z, lease until 03:46Z; lane 7: T221 claimed 22:36Z, lease until 03:57Z
 - **Week:** 9% used, 171.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:54Z, 3 min before this update
+- **Last run:** 00:58Z, 1 min before this update
 - **Keeper:** last ran 00:54Z, next wake 01:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 18 problem(s) on tasks still to run (+136 on DONE tasks); first: T221: stored context_pct 10% but it measures 19%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+138 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -64,7 +64,6 @@ Updated 2026-11-17T00:57:44Z by runner bba7c92e5fa7 (actions).
 | T517 | Stage 4 cleanup, part 1: duplicate functions in server, port | proof_missing | 1 | 84 min | 03:25Z |  |
 | T099 | Journey J2 (business) and its variants, keyboard-only, with  | done | 2 | 92 min | 01:45Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
 | T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | done | 3 | 30 min | 01:42Z | Second review of head 85baf148e5f34e6d4d48b8c0a54b3e8ff92fdbdd found FINDINGS after the one fix round: scripts/check_dup |
-| T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | QUEUED | 2 | 40 min | 00:58Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -72,7 +71,7 @@ Updated 2026-11-17T00:57:44Z by runner bba7c92e5fa7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 328 of 733 (44.7%) · partial 292 · unstarted 113
-**Tasks merged (throughput only):** 377 of 540
+**Tasks merged (throughput only):** 377 of 541
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -116,7 +115,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T103 (lease until 2026-11-17T03:45:28Z)
-- lane 3: T373 (lease until 2026-11-17T03:21:47Z)
+- lane 3: T373 (lease until 2026-11-17T03:59:43Z)
 - lane 4: T481 (lease until 2026-11-17T02:57:38Z)
 - lane 5: T469 (lease until 2026-11-17T03:32:53Z)
 - lane 6: T320 (lease until 2026-11-17T03:46:52Z)
