@@ -1,24 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-17T16:50:59Z by runner 3b1f28c2022d (actions).
+Updated 2026-11-17T16:51:16Z by runner 2f2fa8c6a62f (actions).
 
-**Building: T491 in progress since 15:41Z; 402 of 561 done; week 23% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T491 in progress since 15:41Z; 402 of 569 done; week 23% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 402 of 561 build tasks (owner gates not counted)
+- **Tasks done:** 402 of 569 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T491 claimed 15:41Z, lease until 19:27Z; lane 3: T528 claimed 16:26Z, lease until 19:26Z; lane 4: T104 claimed 16:00Z, lease until 19:50Z
+- **Lane:** lane 1: T491 claimed 15:41Z, lease until 19:27Z; lane 4: T104 claimed 16:00Z, lease until 19:50Z
 - **Week:** 23% used, 146.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:50Z, 0 min before this update
 - **Keeper:** last ran 16:35Z, next wake 19:28Z
 
 ## Needs attention
+- BLOCKED T528: plan gap reported: PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/src/leaving.rs is the only file in app/ naming `leave_reason`; D-3882 puts the BIZ-054 leaving-answers reader in app/businesses/src/digest_counts.rs, which must name the table. No public API returns the answers (leaving.rs's only public reader, reason_asked, returns a bool). Smallest plan change: let T528 add "businesses/src/digest_counts.rs" to the allowed list at business_leaving.rs:465, or give T528 leaving.rs so a crate-private leaving_answers query lives there.
+Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T528 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- Strict plan check red: 10 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+159 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T528 | ops, businesses, intake, picks and licensing: the readers th | BLOCKED | 1 | 24 min | 16:50Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
 | T595 | server and site: a same-site web chat POST passes its CSRF c | MERGE_PENDING | 1 | 45 min | 16:19Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | done | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T113 | Draft the Twilio campaign description from the real template | MERGE_PENDING | 2 | 35 min | 15:39Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
@@ -137,8 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T491 (lease until 2026-11-17T19:27:15Z)
-- lane 3: T528 (lease until 2026-11-17T19:26:29Z)
 - lane 4: T104 (lease until 2026-11-17T19:50:05Z)
 
 ## Last usage reading
-- {"task": "T595", "at": "2026-11-17T16:19:04Z", "cache_creation_input_tokens": 92990, "input_tokens": 65, "output_tokens": 17171, "cache_read_input_tokens": 1440852}
+- {"task": "T528", "at": "2026-11-17T16:50:55Z", "input_tokens": 133, "output_tokens": 44021, "cache_read_input_tokens": 5379305, "cache_creation_input_tokens": 134353}
