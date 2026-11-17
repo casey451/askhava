@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT 1 AS \"one!\" FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL",
+  "query": "SELECT 1 AS \"one!\" FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL FOR SHARE",
   "describe": {
     "columns": [
       {
@@ -20,5 +20,5 @@
       null
     ]
   },
-  "hash": "d3d1f5759708eb3ca21d007a153f1435b5971b8835bc32cb3f90e526897d0e3f"
+  "hash": "46798e9ba22a6ca5e85b3d13a7b1276677ef105ce30ffc4d549f10f734713fc4"
 }
