@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-17T16:20:53Z by runner a44660021dec (actions).
+Updated 2026-11-17T16:24:07Z by runner 324f568ca438 (actions).
 
 **Building: T491 in progress since 15:41Z; 401 of 561 done; week 23% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 401 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T491 claimed 15:41Z, lease until 18:41Z; lane 4: T104 claimed 16:00Z, lease until 19:00Z
+- **Lane:** lane 1: T491 claimed 15:41Z, lease until 19:24Z; lane 4: T104 claimed 16:00Z, lease until 19:00Z
 - **Week:** 23% used, 146.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:20Z, 0 min before this update
+- **Last run:** 16:21Z, 2 min before this update
 - **Keeper:** last ran 16:20Z, next wake 18:43Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- Strict plan check red: 6 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+155 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,7 +88,6 @@ Updated 2026-11-17T16:20:53Z by runner a44660021dec (actions).
 | T105 | ops: High and critical alerts with their automatic acknowled | resync | 3 | 38 min | 16:53Z |  |
 | T473 | Pin backup-runner's Postgres service image by digest | done | 1 | 17 min | 16:46Z |  |
 | T101 | site: base layout in the design spec's look, works without J | done | 3 | 80 min | 16:39Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T111 | Draft homeowner and business terms with every required claus | BLOCKED | 1 | 4 min | 16:21Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -139,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T491 (lease until 2026-11-17T18:41:21Z)
+- T491 (lease until 2026-11-17T19:24:07Z)
 - lane 4: T104 (lease until 2026-11-17T19:00:59Z)
 
 ## Last usage reading
