@@ -18,6 +18,7 @@ use askhava_core::api::{
     install_brand, request_span,
 };
 use askhava_intake::api::JobTextKeys;
+use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_payments::api::{Minter, stripe_webhook_routes};
 use askhava_portals::api::{
     ApprovalSecret, ConfirmRoute, ConfirmSettings, PickCodeKeys, SecretAnswer, confirm_routes,
@@ -40,6 +41,7 @@ pub mod business_signin;
 pub mod business_signup;
 pub mod call_status;
 pub mod catalog_start;
+pub mod chat_codes;
 pub mod checkin;
 pub mod email_provider;
 pub mod inbound_retry;
@@ -107,8 +109,25 @@ pub struct RouterParts {
     limit: RequestTimeout,
     statics: StaticRoot,
     business: BusinessParts,
-    site: askhava_site::api::SitePages,
-    environment: askhava_core::api::Environment,
+    site: SiteParts,
+}
+
+/// The site pages' parts: the home page's settings (T102), the environment the AI switch is read
+/// in (T221, T201, T489) and the web chat's code-step keys (T489).
+struct SiteParts {
+    pages: askhava_site::api::SitePages,
+    environment: Environment,
+    chat: Option<chat_codes::ChatParts>,
+}
+
+impl Default for SiteParts {
+    fn default() -> Self {
+        Self {
+            pages: askhava_site::api::SitePages::default(),
+            environment: Environment::Dev,
+            chat: None,
+        }
+    }
 }
 
 /// The business pages' parts: the served sign-in (T280), sign-up (T302), the portal's vault
@@ -167,7 +186,15 @@ impl RouterParts {
     /// without them the home page uses the default threshold of 50 and leaves those facts out.
     #[must_use]
     pub fn with_site_pages(mut self, pages: askhava_site::api::SitePages) -> Self {
-        self.site = pages;
+        self.site.pages = pages;
+        self
+    }
+
+    /// Adds the web chat's code-step keys (T489, D-3144, [`chat_codes::chat_keys`]); without them
+    /// the chat's code step sends and stores nothing and says codes can't be sent right now.
+    #[must_use]
+    pub fn with_chat_codes(mut self, chat: Option<chat_codes::ChatParts>) -> Self {
+        self.site.chat = chat;
         self
     }
 
@@ -175,7 +202,7 @@ impl RouterParts {
     /// read it as `Dev`.
     #[must_use]
     pub fn with_environment(mut self, environment: askhava_core::api::Environment) -> Self {
-        self.environment = environment;
+        self.site.environment = environment;
         self
     }
 
@@ -196,8 +223,7 @@ impl From<Hooks> for RouterParts {
             limit: RequestTimeout::DEFAULT,
             statics: StaticRoot::default(),
             business: BusinessParts::default(),
-            site: askhava_site::api::SitePages::default(),
-            environment: askhava_core::api::Environment::Dev,
+            site: SiteParts::default(),
         }
     }
 }
@@ -210,8 +236,7 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
             limit,
             statics,
             business: BusinessParts::default(),
-            site: askhava_site::api::SitePages::default(),
-            environment: askhava_core::api::Environment::Dev,
+            site: SiteParts::default(),
         }
     }
 }
@@ -223,8 +248,7 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
             limit,
             statics,
             business: BusinessParts::default(),
-            site: askhava_site::api::SitePages::default(),
-            environment: askhava_core::api::Environment::Dev,
+            site: SiteParts::default(),
         }
     }
 }
@@ -286,12 +310,26 @@ fn business_pages(
 /// The feedback page (T230), the check-in answer page (T231), the email action links (T301), the
 /// built browser files (T362), the site's stylesheet (T101), the site pages with `site`'s
 /// settings (T102), and the legal, data, services, coverage and help pages (T221, T201) with the AI
-/// switch read in `environment`, each over `pool`.
+/// switch read in `environment`, each over `pool`; and the request page and web chat (T489) with
+/// the chat's code-step keys and the intake settings the SMS path uses (`webhooks`'), behind
+/// [`chat_codes::guard`]'s request checks (D-3882).
 fn link_and_site_pages(
     pool: &PgPool,
     statics: &StaticRoot,
-    (site, environment): (askhava_site::api::SitePages, Environment),
+    site: SiteParts,
+    webhooks: Option<&inbound_text::Webhooks>,
 ) -> Router {
+    let intake = webhooks.map_or_else(IntakeSettings::default, |h| h.intake);
+    let SiteParts {
+        pages: site,
+        environment,
+        chat,
+    } = site;
+    let chat = askhava_site::api::chat_routes(
+        pool.clone(),
+        (environment, intake),
+        (chat_codes::scrubbed, chat),
+    );
     feedback_routes(pool.clone(), Arc::new(SystemClock))
         .merge(checkin::routes(pool.clone()))
         .merge(action_links::routes(pool.clone()))
@@ -300,6 +338,7 @@ fn link_and_site_pages(
         .merge(askhava_site::api::page_routes(pool.clone(), site))
         .merge(askhava_site::api::legal_routes(pool.clone(), environment))
         .merge(askhava_site::api::help_routes(pool.clone(), environment))
+        .merge(chat_codes::guard(chat, pool.clone()))
 }
 
 /// The app's router: every module's routes, merged once here (D-481), under
@@ -327,7 +366,9 @@ fn link_and_site_pages(
 /// the home and how-it-works pages and the old directory paths are `site::api::page_routes`, with
 /// the parts' site settings ([`RouterParts::with_site_pages`], T102); the services, coverage, help
 /// and ROC complaint pages are `site::api::help_routes`, with the AI switch read in the parts'
-/// environment (T201).
+/// environment (T201); the request page and web chat at `/request` are `site::api::chat_routes`
+/// behind [`chat_codes::guard`], with the parts' chat keys ([`RouterParts::with_chat_codes`],
+/// T489) and the webhooks' intake settings (default without them).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241) and the placed calls' status and safety-key routes
 /// (`voice_status`, CALL-022, OPS-028, T378); `None` adds none. `voice` ([`voice_hooks`]) adds the
@@ -351,13 +392,12 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         statics,
         business,
         site,
-        environment,
     } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let business = business_pages(business, pool.clone(), (&webhooks, &voice, &stripe));
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
-    let pages = link_and_site_pages(&pool, &statics, (site, environment));
+    let pages = link_and_site_pages(&pool, &statics, site, webhooks.as_deref());
     // Each 403 of these four is a source or signature refusal, recorded as a capped
     // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
     let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));
@@ -440,12 +480,13 @@ const VAULT_INDEX_KEY: &str = "VAULT_INDEX_KEY";
 /// quote-page link key (version 1) and the outbox key, and the vault built from `VAULT_KEY` and
 /// `VAULT_INDEX_KEY` in `pairs` (a blank value counts as unset). With neither vault key it is
 /// `None` in dev and CI (no sender is registered) and an error in the test and live projects;
-/// one key without the other is an error everywhere, never a quiet "no sender".
+/// one key without the other is an error everywhere, never a quiet "no sender". With
+/// `ASKHAVA_POSTAL_ADDRESS` set the keys carry the footer line PICK-046's email needs (T446).
 ///
 /// # Errors
 ///
-/// A weak `ID_SECRET`, a bad vault key, a half-set pair, or no vault keys in the test or live
-/// project; the message names the missing key, never a value.
+/// A weak `ID_SECRET`, a bad vault key, a half-set pair, no vault keys in the test or live
+/// project, or a postal line that is no mailbox; the message names the key, never a value.
 pub fn job_text_keys<I>(
     settings: &Settings,
     id_secret: &SecretString,
@@ -458,7 +499,20 @@ where
         return Ok(None);
     };
     let link = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
-    Ok(Some(JobTextKeys::new(link, id_secret.clone(), vault)))
+    let keys = JobTextKeys::new(link, id_secret.clone(), vault);
+    Ok(Some(match settings.postal_address() {
+        Ok(line) => keys.with_postal(checked_postal(line)?),
+        Err(_) => keys,
+    }))
+}
+
+/// T446 (PICK-046, SEC-028): the footer postal line PICK-046's email needs, a P.O. box or else a
+/// private mailbox, as [`email_parts`] reads it; a line that is neither stops the start.
+fn checked_postal(line: &str) -> io::Result<askhava_messaging::api::PostalAddress> {
+    use askhava_messaging::api::{MailboxKind, PostalAddress};
+    PostalAddress::new(line, MailboxKind::PoBox)
+        .or_else(|_| PostalAddress::new(line, MailboxKind::PrivateMailbox))
+        .map_err(|_| bad_postal())
 }
 
 /// The published homeowner Terms a page pick accepts: the exact text of
