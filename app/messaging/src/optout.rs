@@ -28,6 +28,7 @@ use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
 use askhava_ops::api::{NewAlert, Severity, Switch, is_paused, raise_alert};
 use askhava_privacy::api::{IndexPurpose, Vault, normalize_phone};
 use jiff::Timestamp;
+use jiff_sqlx::ToSqlx;
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
@@ -150,6 +151,7 @@ pub async fn on_inbound_text(
 ) -> Result<Outcome, OutboxError> {
     let digests = digests(vault, msg.phone)?;
     let mut tx = db.begin().await.map_err(|_| OutboxError::Database)?;
+    record_contact(&mut tx, msg, now).await?;
     let listed = models::listing(&mut tx, &digests).await?.is_some();
     let outcome = match rules::classify(msg.text, msg.provider) {
         Classified::OptOut {
@@ -194,6 +196,26 @@ pub async fn on_inbound_text(
     };
     tx.commit().await.map_err(|_| OutboxError::Database)?;
     Ok(outcome)
+}
+
+/// Records which vault contact sent inbound text `msg`, once (a resent delivery adds nothing): the
+/// inbound half of the CON-022 five-year clock, read by `messaging.last_message_at` (D-3155).
+async fn record_contact(
+    tx: &mut PgConnection,
+    msg: &InboundText<'_>,
+    now: Timestamp,
+) -> Result<(), OutboxError> {
+    sqlx::query!(
+        "INSERT INTO messaging.inbox_contact (inbox_id, contact_id, received_at) \
+         VALUES ($1, $2, $3) ON CONFLICT (inbox_id) DO NOTHING",
+        msg.inbox_id,
+        msg.contact,
+        now.to_sqlx() as _
+    )
+    .execute(tx)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    Ok(())
 }
 
 /// The app's part of the one confirmation (CON-009, CON-030): none when the number was listed

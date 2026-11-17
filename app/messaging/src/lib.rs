@@ -22,6 +22,7 @@ pub mod api;
 mod business_notices;
 mod checkin_email;
 mod consent_alerts;
+mod consent_purge;
 mod coverage_email;
 mod email;
 mod email_timing;
