@@ -3,9 +3,10 @@
 //!
 //! [`read_for_readback`] opens the name and the address of one contact under the registered
 //! `(Reader::Calls, Purpose::CallReadback)` grant, audited per field like every vault read, and
-//! cuts them down here, so the full name and the town never leave the vault crate: the first word
-//! of the name and the address's street line (up to its first comma, or with none up to its last
-//! street-type word, else less a trailing ZIP and state, D-4052 B35). `calls` asks only after two bad PINs from a
+//! cuts them down here, so the full name never leaves the vault crate: the first word of the name
+//! and the address's street line (up to its first comma, or with none up to its last street-type
+//! word, else less a trailing ZIP and state, D-4052 B35). The town goes only when a comma follows
+//! the street or a street-type word ends it; otherwise it can remain. `calls` asks only after two bad PINs from a
 //! phone linked to the business holding the job's open line, on an A-attested call (D-026, D-480).
 
 use secrecy::{ExposeSecret, SecretString};
@@ -71,7 +72,8 @@ const STREET_WORDS: [&str; 21] = [
 
 /// The street line of `address`, trimmed (CALL-005, D-4052 B35): the part before its first comma;
 /// with no comma, up to and including the last street-type word ([`STREET_WORDS`], any case),
-/// else the address less a trailing ZIP and state. Never the town when the address names one.
+/// else the address less a trailing ZIP and state. The town is dropped only when a comma follows the
+/// street or a street-type word ends it; with neither (or a comma only before the ZIP) it remains.
 fn street_of(address: &SecretString) -> Option<SecretString> {
     let text = address.expose_secret();
     let street = match text.split_once(',') {
