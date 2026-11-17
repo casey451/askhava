@@ -6427,3 +6427,4 @@
 - 2026-11-17T12:42:39Z runner 7fcfed420d7f (actions): {"T446": "MERGE_PENDING -> DONE"}
 - 2026-11-17T12:44:54Z runner 555722d10a90 (actions): {}
 - 2026-11-17T12:53:20Z runner 7fcfed420d7f (actions): {}
+- 2026-11-17T12:53:43Z runner 7fcfed420d7f (actions): {"T321": "QUEUED -> IN_PROGRESS"}; T321 estimated 1.3M tokens (calibrated); week has 148.8M left (no five-hour budget, D-3056) after 7.2M still running in another lane (session_reading 2026-11-17T12:21:46Z (week)); running to the limit (model window, D-2225), claimed

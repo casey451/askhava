@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-17T12:53:20Z by runner 7fcfed420d7f (actions).
+Updated 2026-11-17T12:53:43Z by runner 7fcfed420d7f (actions).
 
 **Building: T479 in progress since 12:28Z; 396 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 396 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T479 claimed 12:28Z, lease until 15:28Z; lane 2: T202 claimed 12:18Z, lease until 15:18Z; lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 6: T594 claimed 12:36Z, lease until 15:36Z
-- **Week:** 19% used, 150.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T479 claimed 12:28Z, lease until 15:28Z; lane 2: T202 claimed 12:18Z, lease until 15:18Z; lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 6: T594 claimed 12:36Z, lease until 15:36Z; lane 7: T321 claimed 12:53Z, lease until 15:53Z
+- **Week:** 19% used, 148.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:45Z, 8 min before this update
 - **Keeper:** last ran 12:22Z, next wake 15:07Z
 
@@ -129,7 +129,7 @@ Updated 2026-11-17T12:53:20Z by runner 7fcfed420d7f (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T12:21:46Z (week)): week: 44.0M used, 150.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T04:54:39Z.
+- Pacing (session_reading 2026-11-17T12:21:46Z (week)): week: 45.2M used, 148.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T06:37:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -149,6 +149,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T204 (lease until 2026-11-17T15:44:54Z)
 - lane 4: T363 (lease until 2026-11-17T15:35:51Z)
 - lane 6: T594 (lease until 2026-11-17T15:36:45Z)
+- lane 7: T321 (lease until 2026-11-17T15:53:04Z)
 
 ## Last usage reading
 - {"task": "T113", "at": "2026-11-17T12:21:11Z", "output_tokens": 24705, "cache_creation_input_tokens": 108723, "input_tokens": 82, "cache_read_input_tokens": 2514890}
