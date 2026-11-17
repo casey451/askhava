@@ -27,6 +27,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - No number in the message log, no body left at 30 days, log rows kept, opt-out evidence kept: `tests/integration/tests/message_log_retention.rs` (`td_txt_07_*`, `td_con_25_*`). A body is redacted at Twilio once, on or after day 31, never before: `retention_deletes.rs::td_priv_20_bodies_are_deleted_at_the_provider_once_on_day_31`. More: `(never 21)` in NOTES.md.
 - The HELP reply holds the help email, askhava.com/help, the LIST line and the settings' times, and only the roaming line differs for Canada: `tests/integration/tests/help_start.rs`.
 - A mailbox code email's stored row holds `CODE_MARK`, never the code, and a repeat of one send is one email: `tests/integration/tests/signup_mail_paths.rs` (T468).
+- `check_webhook_silence` run again while webhooks stay silent raises no second alert: `tests/integration/tests/alert_dedupe.rs::td_ops_34_webhook_silence_alerts_once_while_silent` (T320).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/messaging/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/messaging/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

@@ -15768,7 +15768,7 @@
    "id": "T570",
    "slug": "close-by-text",
    "title": "intake: a CLOSE text, a \"Close which?\" answer and a cancel-intent text close jobs through answer_close",
-   "goal": "Plan change D-4051 (Casey's outside code audit, item B3, Nov 16, 2026): texting CLOSE does nothing. `answer_close` (`app/intake/src/closing.rs:60`) has no production caller (its doc, `:12`, says it waits for the D-999 dispatcher), and `reply_in` (`app/intake/src/replies.rs:104`) only uses `closes()` (`:150`, which reads `close_reading(words, &[])`, so a lone number answering \"Close which?\" is not even seen) to skip the name-and-address and last-question steps, then hands the text to `receive_text`, which closes nothing. This task wires `answer_close` into `reply_in`: in an open request, and only when the text is not an opt-out or HELP (`answered_elsewhere`), a CLOSE or CERRAR text with a number or ALL, a cancel-intent message, and, while a \"Close which?\" is asked (`close_which` answer `asked`), a lone open request number or ALL go to `answer_close` inside the reply's transaction (its `db.begin()` is then a savepoint), and its texts are the reply's; a mere mention of cancelling gets the JOB-023 line through the same call; anything `answer_close` answers `Nothing` goes on as today. \"cancel\" alone is an opt-out answered by `messaging` and never closes a job (JOB-020, D-005). The result is returned through `Reply` (an existing variant or a new one); `app/server/src/inbound_text.rs` is not changed (its `opened` uses `matches!`, so a new variant needs no arm there), and `closing.rs` is not changed: `answer_close` is called as it is. Tests in the new `tests/integration/tests/close_by_text.rs`, against PostgreSQL through `intake::api::receive_raw_reply`, fake data only: \"CLOSE <n>\" closes that open job (Cancelled, with its audit row) and texts `job_closed`; \"CLOSE ALL\" with two open jobs closes both and texts `jobs_closed`; \"please cancel my request\" with one open job closes it and says so; with two open jobs it asks \"Close which?\" and closes nothing, and a following lone open number closes that one; \"cancel\" alone closes nothing; \"how do I cancel\" gets the JOB-023 line and closes nothing; a CLOSE text never reaches the name-and-address step. Update the `intake` `CLAUDE.md` (the D-999 note on `answer_close`) and `docs/decisions.md`.",
+   "goal": "Plan change D-4051 (Casey's outside code audit, item B3, Nov 16, 2026): texting CLOSE does nothing. `answer_close` (`app/intake/src/closing.rs:60`) has no production caller (its doc, `:12`, says it waits for the D-999 dispatcher), and `reply_in` (`app/intake/src/replies.rs:104`) only uses `closes()` (`:150`, which reads `close_reading(words, &[])`, so a lone number answering \"Close which?\" is not even seen) to skip the name-and-address and last-question steps, then hands the text to `receive_text`, which closes nothing. This task wires `answer_close` into `reply_in`: in an open request, and only when the text is not an opt-out or HELP (`answered_elsewhere`) and its 911 screen is clear (`emergency::check(words, false)` is `Clear`, as `clear` at `replies.rs:186` reads it), a CLOSE or CERRAR text with a number or ALL, a cancel-intent message, and, while a \"Close which?\" is asked (`close_which` answer `asked`), a lone open request number or ALL go to `answer_close` inside the reply's transaction (its `db.begin()` is then a savepoint), and its texts are the reply's. (D-4064, the Opus pre-claim check) A text that is not clear never goes to `answer_close`: `shows_intent` matches any one clause (`app/intake/src/rules.rs:682` to `:693`), so \"never mind, I smell gas\" reads as intent, and `receive_text` (`app/intake/src/service.rs:144`) holds the only 911 screen (INT-002); such a text goes to `receive_text` as today, so its 911 text is queued and no job is closed. Only `Closing::Closed` and `Closing::Which` end the reply; on `Closing::Explained` (a mere mention of cancelling, or a CLOSE number that is not open) the JOB-023 line is added to the reply's texts and the text still goes on to `receive_text` and the last-question step as today, so a mention inside an intake answer is still taken; anything `answer_close` answers `Nothing` goes on as today. \"cancel\" alone is an opt-out answered by `messaging` and never closes a job (JOB-020, D-005). The result is returned through `Reply` (an existing variant or a new one); `app/server/src/inbound_text.rs` is not changed (its `opened` uses `matches!`, so a new variant needs no arm there), and `answer_close` is called as it is: `closing.rs` changes only in its module doc, whose last sentence (`:12`, it waits for the D-999 dispatcher) becomes false (T402, the later owner of `closing.rs`, already depends on this task). Tests in the new `tests/integration/tests/close_by_text.rs`, against PostgreSQL through `intake::api::receive_raw_reply`, fake data only: \"CLOSE <n>\" closes that open job (Cancelled, with its audit row) and texts `job_closed`; \"CLOSE ALL\" with two open jobs closes both and texts `jobs_closed`; \"please cancel my request\" with one open job closes it and says so; with two open jobs it asks \"Close which?\" and closes nothing, and a following lone open number closes that one; \"cancel\" alone closes nothing; \"how do I cancel\" gets the JOB-023 line and closes nothing; a mention inside a longer text gets the JOB-023 line and is still handled by `receive_text` as without it; \"never mind, I smell gas\" with one open job queues the 911 text and closes no job; a CLOSE text never reaches the name-and-address step. `tests/integration/tests/inbound_text_retry.rs:597` (TD-TXT-35, \"never mind, all fixed\" with no open request) must still pass; run it. Edit the D-999 note on `answer_close` in place at `app/intake/NOTES.md:33` (\"no callers until the D-999 dispatcher\"; the `intake` `CLAUDE.md` has no such note) and update `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15786,13 +15786,15 @@
    ],
    "owns": [
     "app/intake/src/replies.rs",
-    "tests/integration/tests/close_by_text.rs"
+    "tests/integration/tests/close_by_text.rs",
+    "app/intake/src/closing.rs"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/lifecycle.md",
-    "docs/spec/consent.md"
+    "docs/spec/consent.md",
+    "docs/spec/intake.md"
    ],
    "requirements": [
     "JOB-018",
@@ -15800,7 +15802,8 @@
     "JOB-020",
     "JOB-021",
     "JOB-022",
-    "JOB-023"
+    "JOB-023",
+    "INT-002"
    ],
    "tests": [
     "TD-JOB-05"
@@ -15810,15 +15813,16 @@
     "D-999",
     "D-1203",
     "D-3703",
-    "D-4051"
+    "D-4051",
+    "D-4064"
    ],
    "cites": [
     "sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:159"
    ],
    "budget": {
-    "files": 2,
-    "lines": 350,
-    "context_pct": 10
+    "files": 3,
+    "lines": 380,
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -15827,13 +15831,13 @@
    ],
    "branch": "claude/task/T570-close-by-text",
    "prompt": "kit/prompts/T570.md",
-   "acceptance": "`tests/integration/tests/close_by_text.rs` passes against PostgreSQL with every listed case, and the CLOSE, \"Close which?\" answer and cancel-intent cases fail on `main` before the change (no job is closed there); every existing `intake` test and TD-JOB-05 case passes unchanged."
+   "acceptance": "`tests/integration/tests/close_by_text.rs` passes against PostgreSQL with every listed case, and the CLOSE, \"Close which?\" answer and cancel-intent cases fail on `main` before the change (no job is closed there), and the \"never mind, I smell gas\" case queues the 911 text and closes no job; every existing `intake` test and TD-JOB-05 case passes unchanged."
   },
   {
    "id": "T571",
    "slug": "safety-key-not-lost",
    "title": "server and calls: a press of 9 on the safety call is never lost to a database error",
-   "goal": "Plan change D-4051 (Casey's outside code audit, item B15, Nov 16, 2026): the safety call's `Gather` action (`app/server/src/voice_status.rs:76` to `:94`) runs `calls::api::safety_key_once` and, when it fails (a pool or database error), only logs the error and still answers 200 with hang-up TwiML, so the homeowner's \"press 9\" opt-out (CON-035: every way she revokes consent feeds the suppression list at once) is lost, and Twilio has nothing to retry. The safety call is off until T407 turns it on, which is why T407 now depends on this task. This task makes the key durable: when the key step fails, the route queues a `calls.safety_key_retry` core task (`askhava_core::api::enqueue`, in the new `app/calls/src/safety_key_retry.rs`, exported by one line in the shared `app/calls/src/api.rs` and registered in the shared `app/server/src/lib.rs` worker registry in `calls`' block) carrying the call's ID and the digits only (no phone, no body, PRIV-016), whose handler re-runs `safety_key_once` (it takes the key once per call, so a repeat changes nothing) until it succeeds, with the core queue's retries, and raises one High `ops` alert (no phone) when it gives up; Before choosing, the worker checks in the Twilio stand-in and the vendor notes what a non-2xx answer to a `Gather` action does (a voice action is not retried like a status callback; Twilio speaks an error or calls a fallback URL) and writes the finding in the module doc. The likeliest failure, a pool acquire that fails, also fails the enqueue, and a non-2xx answer makes Twilio speak an error, not retry; so when both the key step and the enqueue fail, the route answers 200 with a bounded `<Redirect>` back to the same action URL, optionally after a short `<Pause>` of a few seconds before each redirect (method POST, carrying `Digits` and an attempt count in the query, at most 3 attempts), so Twilio posts the key again, and after the last attempt it says \"To stop texts, reply STOP to any message from us.\" before hanging up, with one High `ops` alert if one can be raised; the worker may pick the redirect, the spoken line or both after checking the stand-in, and tests what it picks. Hang-up TwiML is still returned whenever the key was taken or queued. Tests in the new `tests/integration/tests/safety_key_retry.rs`, against PostgreSQL with the stand-in, fake data only: a \"9\" whose first `safety_key_once` fails with a database error is queued (the failure is made in the test only, for example a test-created trigger on the suppression-list insert that raises once for the fake number, dropped at the end, so the step fails while the enqueue succeeds), the queued task lists the number on the suppression list, and a second run changes nothing; a key whose step succeeds queues nothing; when the step and the enqueue both fail (the pool closed in the test) the answer is the redirect (or the spoken line) and the attempt count stops at the bound; no log line or alert holds the phone. `tests/integration/tests/voice_call_plan.rs` (TD-CALL-22) passes unchanged. Update the `calls` and `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4051 (Casey's outside code audit, item B15, Nov 16, 2026): the safety call's `Gather` action (`app/server/src/voice_status.rs:76` to `:94`) runs `calls::api::safety_key_once` and, when it fails (a pool or database error), only logs the error and still answers 200 with hang-up TwiML, so the homeowner's \"press 9\" opt-out (CON-035: every way she revokes consent feeds the suppression list at once) is lost, and Twilio has nothing to retry. The safety call is off until T407 turns it on, which is why T407 now depends on this task. This task makes the key durable: when the key step fails, the route queues a `calls.safety_key_retry` core task (`askhava_core::api::enqueue`, in the new `app/calls/src/safety_key_retry.rs`, exported by one line in the shared `app/calls/src/api.rs` and registered in the shared `app/server/src/lib.rs` inside `register_safety_call` (`:1208`, beside `SAFETY_CALL_KIND`, using `SafetyParts`' vault; `register_handlers` at `:648` has no vault), the kind constant named `*_KIND` and the give-up alert `*_ALERT`, since TD-OPS-36 (`tests/integration/tests/task_registry.rs`) scans every `*_KIND` constant) carrying the whole `SafetyCall` that `safety_key_once` needs (alert, message, contact and arrival: IDs and a timestamp only) and the digits, no phone and no body (PRIV-016), whose handler re-runs `safety_key_once` (it takes the key once per call, so a repeat changes nothing) until it succeeds, with the core queue's retries, and raises one High `ops` alert (no phone) when it gives up (it knows its last attempt from `Claimed.attempts` against the maximum it set, as `alert_if_last` in `app/privacy/src/purge.rs:347` does); Before choosing, the worker checks in the Twilio stand-in and the vendor notes what a non-2xx answer to a `Gather` action does (a voice action is not retried like a status callback; Twilio speaks an error or calls a fallback URL) and writes the finding in the module doc. The likeliest failure, a pool acquire that fails, also fails the enqueue, and a non-2xx answer makes Twilio speak an error, not retry; so when both the key step and the enqueue fail, the route answers 200 with a bounded `<Redirect>` back to the same action URL, optionally after a short `<Pause>` of a few seconds before each redirect (method POST, carrying `Digits` and an attempt count in the query, at most 3 attempts), so Twilio posts the key again, and after the last attempt it says \"To stop texts, reply STOP to any message from us.\" before hanging up, with one High `ops` alert if one can be raised; the worker may pick the redirect, the spoken line or both after checking the stand-in, and tests what it picks. (D-4064, the Opus pre-claim check) `SafetyCall::from_query` (`app/calls/src/voice.rs:297` to `:309`, not owned and not changed) accepts exactly its four fields, and a `<Redirect>` POST carries no `Digits` form field, so `voice_status.rs` strips the redirect's added `attempt` and `Digits` fields from the query before `SafetyCall::from_query` and reads `Digits` from the query when the form has none; the redirect URL's `&` is written `&amp;` in the TwiML. The Twilio stand-in (`stand_ins/twilio.py`) models no `Gather` or `Redirect` (D-2763), so the tests inspect the returned TwiML. `tests/integration/tests/voice_call_plan.rs:46` compiles `voice_status.rs` by `#[path]` with only `inbound_text` beside it and no dead-code allow, so `voice_status.rs` imports only `crate::inbound_text` and crates, and every new item in it is reached from `routes`, or clippy's dead-code lint fails that test crate. Hang-up TwiML is still returned whenever the key was taken or queued. Tests in the new `tests/integration/tests/safety_key_retry.rs`, against PostgreSQL with the stand-in, fake data only: a \"9\" whose first `safety_key_once` fails with a database error is queued (the failure is made in the test only, for example a test-created trigger on the suppression-list insert that raises once for the fake number, dropped at the end, so the step fails while the enqueue succeeds), the queued task lists the number on the suppression list, and a second run changes nothing; a key whose step succeeds queues nothing; a redirected post whose `Digits` is only in the query (with `attempt` added) lists the number; when the step and the enqueue both fail (the pool closed in the test) the answer is the redirect (or the spoken line) and the attempt count stops at the bound; no log line or alert holds the phone. `tests/integration/tests/voice_call_plan.rs` (TD-CALL-22) passes unchanged. Update the `calls` `CLAUDE.md`, `app/server/NOTES.md` (`app/server/CLAUDE.md` is at its 8,192-byte cap, `scripts/check_code_docs.py`) and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15871,12 +15875,13 @@
    ],
    "decisions": [
     "D-2771",
-    "D-4051"
+    "D-4051",
+    "D-4064"
    ],
    "cites": [],
    "budget": {
     "files": 3,
-    "lines": 400,
+    "lines": 420,
     "context_pct": 10
    },
    "checks": [
@@ -15886,13 +15891,13 @@
    ],
    "branch": "claude/task/T571-safety-key-not-lost",
    "prompt": "kit/prompts/T571.md",
-   "acceptance": "`tests/integration/tests/safety_key_retry.rs` passes against PostgreSQL with every listed case (the double-failure case through the chosen redirect or spoken line), the database-error case failing on `main` before the change (the opt-out is lost there); `tests/integration/tests/voice_call_plan.rs` passes unchanged."
+   "acceptance": "`tests/integration/tests/safety_key_retry.rs` passes against PostgreSQL with every listed case (the double-failure case through the chosen redirect or spoken line), the database-error and query-`Digits` redirect cases failing on `main` before the change (the opt-out is lost there); `tests/integration/tests/voice_call_plan.rs` passes unchanged."
   },
   {
    "id": "T572",
    "slug": "under-13-vault-purge",
    "title": "intake: the under-13 stop also clears the vault contact's name and address",
-   "goal": "Plan change D-4051 (Casey's outside code audit, item B27, Nov 16, 2026): INT-038 says that under 13 the request and its data are deleted, except the consent or opt-out record, but `stop_if_under_18` (`app/intake/src/conversation.rs:276` to `:330`) leaves the vault contact holding the name and address she gave, because `privacy` had no delete call (D-996). `privacy::api::purge_contact` (`app/privacy/src/purge.rs:376`, PRIV-007, D-1839) now exists: it clears the contact's name, email, address and on-site contact, its email index and every stated name, keeps the sealed phone and its homeowner-phone index (the consent and opt-out records need them), audits once, and runs as a savepoint inside the caller's transaction. This task calls it on `AgeStop::Under13`, in the stop's own transaction, right after `models::purge_request`, for the sender's contact (`msg.contact`), so a failure keeps nothing; the 13-to-17 stop keeps the contact as today (INT-038 deletes data only under 13). Nothing else changes; the doc comment's D-996 sentence is replaced. `purge_contact` clears the contact, not one request: an earlier request of the same sender (same phone, same contact) whose job is past a paid pick loses the name and address too, and the business that paid for the introduction keeps only what it was already sent; INT-038 deletes a child's data and has no paid-pick exception, so the purge runs anyway, and the stop does not cancel or change that earlier job. T103 (web chat, IN_PROGRESS when this was planned) also owns `conversation.rs`, so this task runs after it (`scripts/validate_tasks.py` orders two owners of one file) and re-reads the lines T103 changed before editing. Tests in the new `tests/integration/tests/under_13_purge.rs`, against PostgreSQL, fake data only: a homeowner who gave a fake name and address and then says \"I'm 11\" ends with the request closed, the contact's name, address and stated names gone (read through `privacy::api`), her phone and consent record kept, and one `contact_purged` audit row; \"I'm 15\" keeps the name and address; a failing purge rolls the whole stop back; a sender with an earlier request whose job is past a paid pick says \"I'm 11\" in a new request, and that contact's name and address are cleared too while the earlier job keeps its status and its paid pick. The `intake` unit tests (`app/intake/src/tests/conversation.rs`) pass unchanged. Update the `intake` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4051 (Casey's outside code audit, item B27, Nov 16, 2026): INT-038 says that under 13 the request and its data are deleted, except the consent or opt-out record, but `stop_if_under_18` (`app/intake/src/conversation.rs:276` to `:330`) leaves the vault contact holding the name and address she gave, because `privacy` had no delete call (D-996). `privacy::api::purge_contact` (`app/privacy/src/purge.rs:376`, PRIV-007, D-1839) now exists: it clears the contact's name, email, address and on-site contact, its email index and every stated name, keeps the sealed phone and its homeowner-phone index (the consent and opt-out records need them), audits once, and runs as a savepoint inside the caller's transaction. This task calls it on `AgeStop::Under13`, in the stop's own transaction, right after `models::purge_request`, for the sender's contact (`msg.contact`), so a failure keeps nothing; the 13-to-17 stop keeps the contact as today (INT-038 deletes data only under 13). The doc comment's D-996 sentence is replaced. (D-4064, privacy and consent, the Opus pre-claim check) `stop_if_under_18` has no production caller on `main` (only its definition, the `app/intake/src/api.rs:43` re-export and the unit tests), so \"I'm 11\" by text closes and purges nothing; this task wires it into `reply_in` (`app/intake/src/replies.rs:104`) in an open request, for a text not answered elsewhere (opt-out or HELP), after the 911 screen as its doc requires (emergency first): a clear text (`clear`, `replies.rs:186`) is stopped before T570's close step and the name-and-address step; a text that is not clear goes through `receive_text` first, so its 911 text is queued first, and is stopped after it; while the name-and-address question is open, `reply_in` returns early through `answer_name_address` (`replies.rs:131` to `:137`), which screens the text itself, so a text that is not clear on that path is stopped after it too, before the reply returns; a first text that opens the request (\"I'm 11, my sink leaks\") is stopped after `receive_text` on the request it opened (`Handled::conversation`). A stop ends the reply with the INT-038 text and asks no last question; the result goes through `Reply` (an existing variant or a new one; `app/server/src/inbound_text.rs`'s `opened` uses `matches!`, so it is not changed). `purge_contact` clears the contact, not one request: an earlier request of the same sender (same phone, same contact) whose job is past a paid pick loses the name and address too, and the business that paid for the introduction keeps only what it was already sent; INT-038 deletes a child's data and has no paid-pick exception, so the purge runs anyway, and the stop does not cancel or change that earlier job. T103 (web chat, IN_PROGRESS when this was planned) also owns `conversation.rs`, and T570 owns `replies.rs`, so this task runs after both (`scripts/validate_tasks.py` orders two owners of one file) and re-reads the lines T103 changed before editing. Tests in the new `tests/integration/tests/under_13_purge.rs`, against PostgreSQL, fake data only, every text delivered through `intake::api::receive_raw_reply` (not a direct call of `stop_if_under_18`); contact fields are read with plain SQL on `privacy.contact` as `tests/integration/tests/retention_purge.rs:148` does (no `privacy::api` reader fits a test), and the paid pick and its job may be inserted with plain SQL: a homeowner who gave a fake name and address and then texts \"I'm 11\" ends with the request closed, the contact's name, address and stated names gone, her phone and consent record kept, and one `contact_purged` audit row; \"I'm 15\" keeps the name and address; a failing purge rolls the whole stop back; a sender with an earlier request whose job is past a paid pick says \"I'm 11\" in a new request, and that contact's name and address are cleared too while the earlier job keeps its status and its paid pick; \"I'm 11 and I smell gas\" queues the 911 text before the INT-038 text, both in an open request and while the name-and-address question is open; a first text \"I'm 11, my sink leaks\" is stopped on the request it opened. The `intake` unit tests (`app/intake/src/tests/conversation.rs`) pass unchanged. Update `app/intake/NOTES.md` (or the `intake` `CLAUDE.md`) and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15903,7 +15908,8 @@
     "T432",
     "T100",
     "T517",
-    "T103"
+    "T103",
+    "T570"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -15913,7 +15919,8 @@
    ],
    "owns": [
     "app/intake/src/conversation.rs",
-    "tests/integration/tests/under_13_purge.rs"
+    "tests/integration/tests/under_13_purge.rs",
+    "app/intake/src/replies.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15923,7 +15930,8 @@
    ],
    "requirements": [
     "INT-038",
-    "PRIV-007"
+    "PRIV-007",
+    "INT-002"
    ],
    "tests": [
     "TD-INT-20"
@@ -15931,13 +15939,14 @@
    "decisions": [
     "D-996",
     "D-1839",
-    "D-4051"
+    "D-4051",
+    "D-4064"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
-    "lines": 250,
-    "context_pct": 10
+    "files": 3,
+    "lines": 380,
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -15946,7 +15955,7 @@
    ],
    "branch": "claude/task/T572-under-13-vault-purge",
    "prompt": "kit/prompts/T572.md",
-   "acceptance": "`tests/integration/tests/under_13_purge.rs` passes against PostgreSQL with every listed case, the under-13 case failing on `main` before the change (the name and address remain there); `app/intake/src/tests/conversation.rs` passes unchanged."
+   "acceptance": "`tests/integration/tests/under_13_purge.rs` passes against PostgreSQL with every listed case through `receive_raw_reply`, the under-13 case failing on `main` before the change (nothing stops the request there, and the name and address remain); `app/intake/src/tests/conversation.rs` passes unchanged."
   },
   {
    "id": "T103",
@@ -19536,9 +19545,9 @@
   {
    "id": "T582",
    "slug": "quote-confirm-window-and-count-event",
-   "title": "quotes and messaging: a late read-back confirm is refused, and each newly shown quote asks for the count update",
-   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B14) `confirm_quote_at` (`app/quotes/src/intake.rs:694` to `:711`) checks only `takes_quotes`, while `submit_quote` refuses a quote after its card's 24 hours (`window_open`, `:46`, used at `:646`). Decision (D-4052): PICK-001's window closes the read-back confirm too, because the every-window-ended check (TXT-042, JOB-025) may already have told her \"all quotes are in\" or closed the job; so `confirm_quote_at` reads the card's `sent_at` (`models::card_sent_at`) and returns `Guarded::MovedOn` when the window has closed, storing nothing; no production route calls it yet (the read-back screen is later), so no page copy changes. (TXT-017, found while checking B21) The quote-count update text is built (`quotes::api::notice`, `notice_for`, `update_text`, `app/quotes/src/notify.rs:99`, `:123`, `:166`) but nothing sends it: no production caller of `update_text` or `notice_for` exists, and D-1198/D-1199 left the sender unowned. This task adds the trigger and the read; T583 adds the sender. In the new `app/quotes/src/count_update.rs`: `COUNT_UPDATE_KIND` (`quotes.count_update`) and a queue call, run in the same transaction as a quote that becomes shown (in `submit_quote` when not AI-read, and in `confirm_quote_at` when applied) on a job that was already Quotes ready (the first quote's text stays `jobs::api::first_quote`'s), one `core.task` per newly shown quote (dedupe key: job and business), payload the job ID only. In the new `app/messaging/src/quote_text_sent.rs`, through the shared `messaging::api`: the last `first_quote` or `quote_update` outbox row to a recipient about a job (`subject_ids` holds the job) and when it was delivered (its Twilio `delivered` event's time, else its `sent_at`, and for a row still queued or sending its queue time, so an unsent text is never invisible), as D-1190 says the sender reads it. Tests in the new `tests/integration/tests/quote_count_event.rs`, fake data only: a confirm after the 24 hours is `MovedOn` and shows nothing, one inside them is applied; a second shown quote queues one count event, the first queues none; the read gives the delivery time, the send time without one, the queue time for an unsent row, and none for another job. Existing quote tests pass unchanged.",
-   "type": "build",
+   "title": "quotes and messaging (harness): a late read-back confirm is refused, and each newly shown quote asks for the count update",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B14) `confirm_quote_at` (`app/quotes/src/intake.rs:694` to `:711`) checks only `takes_quotes`, while `submit_quote` refuses a quote after its card's 24 hours (`window_open`, `:46`, used at `:646`). Decision (D-4052): PICK-001's window closes the read-back confirm too, because the every-window-ended check (TXT-042, JOB-025) may already have told her \"all quotes are in\" or closed the job; so `confirm_quote_at` reads the card's `sent_at` (`models::card_sent_at`) and returns `Guarded::MovedOn` when the window has closed, storing nothing; no production route calls it yet (the read-back screen is later), so no page copy changes. (TXT-017, found while checking B21) The quote-count update text is built (`quotes::api::notice`, `notice_for`, `update_text`, `app/quotes/src/notify.rs:99`, `:123`, `:166`) but nothing sends it: no production caller of `update_text` or `notice_for` exists, and D-1198/D-1199 left the sender unowned. This task adds the trigger and the read; T583 adds the sender. In the new `app/quotes/src/count_update.rs`: `COUNT_UPDATE_KIND` (`quotes.count_update`) and a queue call, run in the same transaction as a quote that becomes shown (in `submit_quote` when not AI-read, and in `confirm_quote_at` when applied) on a job that was already Quotes ready (the first quote's text stays `jobs::api::first_quote`'s), one `core.task` per newly shown quote (dedupe key: job and business), payload the job ID only. Newly shown means its business was not in `shown_quotes` (`intake.rs:732`) before this write, so a re-confirm or a form edit of an already shown quote queues nothing, and the job's status read under its row lock is Quotes ready (`AwaitingConfirm` also takes quotes, `app/jobs/src/status.rs:185` to `:189`, and gets no update: TXT-042, no update follows a pick). `quotes.count_update` has no handler until T583, so D-4064 lists it in `tests/task_kinds_deferred.json` with owner T583, as D-3880 did for `calls.owner_alert_call`. In the new `app/messaging/src/quote_text_sent.rs`, through the shared `messaging::api`: the last `first_quote` or `quote_update` outbox row to a recipient about a job (`subject_ids` holds the job) and when it was delivered (its Twilio `delivered` event's time, else its `sent_at`, and for a row still queued or sending its queue time, so an unsent text is never invisible), as D-1190 says the sender reads it. A `blocked`, `failed` or `expired` row (`migrations/0182_messaging_outbox_not_before.sql:23`) never reached her and is never sent, so the read skips it and returns the last row before it (TXT-017 measures the 3 hours from a delivery); an `unknown` row (the carrier may have taken it, never resent) counts as sent at its `sent_at`, as T580 maps it to Sent. (D-4064, the Opus pre-claim check) TD-PICK-02's confirm at `tests/integration/tests/quote_window.rs:157` calls `confirm_quote`, which uses the wall clock (`intake.rs:683`), on a card sent at `2026-11-03T08:00-07:00` (`:145` to `:146`), so after this change it would return `MovedOn`; that one call becomes `confirm_quote_at(&mut db, (id, a), at(\"03T09:30:00\"))`, inside the card's window, and its `Applied` assertion is kept: a fixed clock in place of the wall clock, forced by PICK-001's window (D-4052), not a weakening; taking over T046's test makes this a harness task with an Opus review (`scripts/validate_tasks.py:596` to `:613`, `BUILD_BRIEF.md:70`). The other confirms (`quote_window.rs:167`, `:293`, `tests/integration/tests/pick_bound_business.rs:161`, `:184`, `tests/integration/tests/first_quote_move.rs:308`, `:315`) are inside their windows or moved on already and are not changed. Tests in the new `tests/integration/tests/quote_count_event.rs`, fake data only: a confirm after the 24 hours is `MovedOn` and shows nothing, one inside them is applied; a second shown quote queues one count event, the first queues none, and a re-confirm or form edit of a shown quote queues none; the read gives the delivery time, the send time without one, the queue time for an unsent row, skips a failed row for the one before it, and gives none for another job. Existing quote tests pass unchanged, except the one `quote_window.rs` call above.",
+   "type": "harness",
    "phase": 1,
    "stage": "5",
    "module": "quotes",
@@ -19550,12 +19559,15 @@
    "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
-   "review_areas": [],
+   "review_areas": [
+    "harness"
+   ],
    "owns": [
     "app/quotes/src/intake.rs",
     "app/quotes/src/count_update.rs",
     "app/messaging/src/quote_text_sent.rs",
-    "tests/integration/tests/quote_count_event.rs"
+    "tests/integration/tests/quote_count_event.rs",
+    "tests/integration/tests/quote_window.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -19574,12 +19586,13 @@
     "D-1198",
     "D-1199",
     "D-149",
-    "D-4052"
+    "D-4052",
+    "D-4064"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 320,
+    "files": 5,
+    "lines": 350,
     "context_pct": 14
    },
    "checks": [
@@ -19589,13 +19602,13 @@
    ],
    "branch": "claude/task/T582-quote-confirm-window-and-count-event",
    "prompt": "kit/prompts/T582.md",
-   "acceptance": "`tests/integration/tests/quote_count_event.rs` passes against PostgreSQL with every listed case, the late-confirm case failing on `main` before the change; the quotes crate tests and `tests/integration/tests/quote_texts.rs` pass unchanged."
+   "acceptance": "`tests/integration/tests/quote_count_event.rs` passes against PostgreSQL with every listed case, the late-confirm case failing on `main` before the change; the quotes crate tests and `tests/integration/tests/quote_texts.rs` pass unchanged, and `quote_window.rs` passes with only line 157's call moved to `confirm_quote_at` inside the window and its import (`quote_window.rs:16`) adjusted; `tests/integration/tests/task_registry.rs` (TD-OPS-36) passes with `quotes.count_update` deferred to T583."
   },
   {
    "id": "T583",
    "slug": "quote-count-update-texts",
    "title": "intake and server: the quote-count update text is sent, at most once per 3 hours, merged after quiet hours and dropped on a closed job",
-   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B21 and TXT-017) The audit found `messaging::rules::plan_release` (`app/messaging/src/rules.rs:340`) with no production caller and said QH-007 and TXT-025 are unbuilt. Checked: QH-007 holds for every held job text already (`jobs::api::text_due` drops a held text whose job moved on, `app/intake/src/job_texts.rs:9` to `:10`, `app/jobs/src/handlers.rs:56`; TD-JOB-03 in `tests/integration/tests/homeowner_job_texts.rs:226`); TXT-025 has nothing to merge because the update texts themselves are never sent (see T582). This task sends them. The new `app/intake/src/quote_updates.rs` handles T582's `quotes::api::COUNT_UPDATE_KIND` (registered in the shared `app/server/src/lib.rs` beside `jobs.homeowner_text`): it finds the job's request, homeowner and language as `job_texts` does (calling its `pub(crate)` helpers, not editing `job_texts.rs`), skips a closed or picked job (QH-007, TXT-042's rule that no update follows a pick), skips a contact with no consent record or an opted-out number (CON-021, CON-028), takes the job's row lock first (`jobs::api::lock_for_quote_change`, as `app/quotes/src/intake.rs:29` to `:35` does) so two events for one job never run side by side, then reads the previous quote text with T582's `messaging` read (sent or still queued) and the count it told (a `first_quote` row counts as having told 1) (kept as one `intake` answer row per job and count, codes only), and asks `quotes::api::notice_for` (`app/quotes/src/notify.rs:123`): `Held { until }` queues the same event again at `until`, its dedupe key naming that release instant as `job_texts::hold` does (`app/intake/src/job_texts.rs:355` to `:373`; `core.task.dedupe_key` is unique for all time, `migrations/0020_core_task_queue.sql:22`, so T582's key cannot be reused); `Update { quoted }` outside 8 a.m. to 8 p.m. (or her zone, QH-001, `messaging::api::send_window`) queues it again for the window's opening instant, the key again naming that instant, (an emergency job's updates go at any hour, QH-004, through `enqueue_exempt` as `job_texts` does); inside it renders `quotes::api::update_text` with her `/q/` link (`jobs::api::quote_token::issue`, SEC-037) and queues one outbox row keyed on template, contact, job and count. TXT-025 follows from reading the count at send time: several held events for one job release one text with the latest count, and the others find nothing new. `plan_release` stays as it is; T126 decides its removal. Tests in the new `tests/integration/tests/quote_update_texts.rs` through the worker with the stand-in Twilio, fake data only: a second quote 10 minutes after the first-quote text is told at 3:00:00 and not at 2:59:59 (TD-TXT-06's sender case, D-1190); two quotes in at 22:00 to a 928 number give one text at 08:00:00 with the latest count (TD-QH-02's merge case); two held events for one job released at 08:00 and run on two connections at once give one text; a job closed overnight sends nothing; a picked job sends nothing; an opted-out number gets nothing. `homeowner_job_texts.rs`, `job_timers.rs` and `quote_texts.rs` pass unchanged.",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B21 and TXT-017) The audit found `messaging::rules::plan_release` (`app/messaging/src/rules.rs:340`) with no production caller and said QH-007 and TXT-025 are unbuilt. Checked: QH-007 holds for every held job text already (`jobs::api::text_due` drops a held text whose job moved on, `app/intake/src/job_texts.rs:9` to `:10`, `app/jobs/src/handlers.rs:56`; TD-JOB-03 in `tests/integration/tests/homeowner_job_texts.rs:226`); TXT-025 has nothing to merge because the update texts themselves are never sent (see T582). This task sends them. The new `app/intake/src/quote_updates.rs` handles T582's `quotes::api::COUNT_UPDATE_KIND` (registered in the shared `app/server/src/lib.rs` beside `jobs.homeowner_text`): it finds the job's request, homeowner and language as `job_texts` does (calling its `pub(crate)` helpers, not editing `job_texts.rs`), skips a closed or picked job (QH-007, TXT-042's rule that no update follows a pick), skips a contact with no consent record or an opted-out number (CON-021, CON-028), takes the job's row lock first (`jobs::api::lock_for_quote_change`, as `app/quotes/src/intake.rs:29` to `:35` does) so two events for one job never run side by side, then reads the previous quote text with T582's `messaging` read (sent or still queued) and the count it told (a `first_quote` row counts as having told 1) (kept as one `intake` answer row per job and count, codes only), and asks `quotes::api::notice_for` (`app/quotes/src/notify.rs:123`): `Held { until }` queues the same event again at `until`, its dedupe key naming that release instant as `job_texts::hold` does (`app/intake/src/job_texts.rs:355` to `:373`; `core.task.dedupe_key` is unique for all time, `migrations/0020_core_task_queue.sql:22`, so T582's key cannot be reused); `Update { quoted }` outside 8 a.m. to 8 p.m. (or her zone, QH-001, `messaging::api::send_window`) queues it again for the window's opening instant, the key again naming that instant, (an emergency job's updates go at any hour, QH-004, through `enqueue_exempt` as `job_texts` does); inside it renders `quotes::api::update_text` with her `/q/` link (`jobs::api::quote_token::issue`, SEC-037) and queues one outbox row keyed on template, contact, job and count. TXT-025 follows from reading the count at send time: several held events for one job release one text with the latest count, and the others find nothing new. `plan_release` stays as it is; T126 decides its removal. Registering the kind makes its `tests/task_kinds_deferred.json` entry (D-4064) stale; TD-OPS-36 prints it and a later plan change removes it. Tests in the new `tests/integration/tests/quote_update_texts.rs` through the worker with the stand-in Twilio, fake data only: a second quote 10 minutes after the first-quote text is told at 3:00:00 and not at 2:59:59 (TD-TXT-06's sender case, D-1190); two quotes in at 22:00 to a 928 number give one text at 08:00:00 with the latest count (TD-QH-02's merge case); two held events for one job released at 08:00 and run on two connections at once give one text; a job closed overnight sends nothing; a picked job sends nothing; an opted-out number gets nothing. `homeowner_job_texts.rs`, `job_timers.rs` and `quote_texts.rs` pass unchanged.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19631,7 +19644,8 @@
     "D-158",
     "D-461",
     "D-1198",
-    "D-4052"
+    "D-4052",
+    "D-4064"
    ],
    "cites": [],
    "budget": {
@@ -19651,9 +19665,9 @@
   {
    "id": "T584",
    "slug": "business-account-email-fixes",
-   "title": "businesses: sign-up activation retried after a confirmed code, account emails skip a returned address, and the deliverability writes stay inside the business",
-   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B9) `email_verification::confirm` (`app/businesses/src/email_verification.rs:375` to `:418`) commits the closed check and only then runs `identity::settle` (`:412` to `:416`); if settle fails the business stays pending, and a retried code finds no open check (`Ok(false)`), so nothing settles it again until a phone, match or email event. Settle runs inside the same transaction (it takes `&mut PgConnection`; a nested `begin` is a savepoint), so the code is taken only when the settle commits with it. (B30) `app/businesses/src/notice_emails.rs:16` to `:17` records a known gap: `emergency_test`, `after_hours_off`, `phone_linked` and `license_change` do not check `may_get_notices` on the main address (BIZ-040, BIZ-055), so a hard-bounced or complained address keeps getting mail (deliverability: the one sender's reputation). Each of the four skips a main address that may not get notices, as `returned` does (`:405` to `:425`); a kind sent to the owner's account address goes instead to the owner's other addresses that may get notices, and with none it sends nothing (the returned-address banner and digest line already tell the owner); the module doc's gap note is removed. (B31, privacy hardening) `record_inbox_answer`, `record_ok_reply` and `record_pick_alert` (`app/businesses/src/deliverability_check.rs:191`, `:214`, `:294`) insert or update by `member_id` with no check that the member belongs to the given business; today `Acting` is built from the session (`app/server/src/business_portal.rs:1019`), so no cross-business write was found, but nothing in the function stops one. Each insert selects from `businesses.team_member` where the ID and business match and the member is current (as `offer_sample_pick` does, `:78` to `:88`), and each `ON CONFLICT` update also requires the stored `business_id` to match; a mismatch writes nothing. Tests in the new `tests/integration/tests/business_account_email_fixes.rs`, fake data only: a settle failure made in the test (for example a test-created trigger that raises once, dropped after) leaves the code open so the retry activates; each of the four kinds sends nothing to a returned main address and reaches the owner's other verified address where the kind allows; a deliverability write with another business's member ID changes no row. Existing `businesses` and `notice_emails` tests pass unchanged. T133, the later owner of `email_verification.rs`, now depends on this task.",
-   "type": "build",
+   "title": "businesses (harness): sign-up activation retried after a confirmed code, account emails skip a returned address, and the deliverability writes stay inside the business",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B9) `email_verification::confirm` (`app/businesses/src/email_verification.rs:375` to `:418`) commits the closed check and only then runs `identity::settle` (`:412` to `:416`); if settle fails the business stays pending, and a retried code finds no open check (`Ok(false)`), so nothing settles it again until a phone, match or email event. Settle runs inside the same transaction (it takes `&mut PgConnection`; a nested `begin` is a savepoint), so the code is taken only when the settle commits with it. (B30) `app/businesses/src/notice_emails.rs:16` to `:17` records a known gap: `emergency_test`, `after_hours_off`, `phone_linked` and `license_change` do not check `may_get_notices` on the main address (BIZ-040, BIZ-055), so a hard-bounced or complained address keeps getting mail (deliverability: the one sender's reputation). Each of the four skips a main address that may not get notices, as `returned` does (`:405` to `:425`); a kind sent to the owner's account address goes instead to the owner's other addresses that may get notices, and with none it sends nothing (the returned-address banner and digest line already tell the owner); `emergency_test` goes only to the member's own main address (`notice_emails.rs:323` to `:329`), so a member whose main address may not get notices gets nothing, with no fallback (BIZ-040 marks a returned address unverified, `docs/spec/businesses.md:44`; BIZ-043's backup does not get this email, `:47`); the module doc's gap note is removed. (D-4064, the Opus pre-claim check) TD-BIZ-45's `queue_all` marks the member's mailbox returned (`tests/integration/tests/business_event_emails.rs:265`) and then queues that member's `emergency_test` (`:286` to `:292`), and `expected()` expects it at the member's address (`:317`); that one expectation becomes no recipient (`vec![]`, so `check` asserts none was sent), the change BIZ-040 forces, named in the test's doc line; every other expectation and test in the file is kept. Taking over T329's test makes this a harness task with an Opus review (`scripts/validate_tasks.py:596` to `:613`, `BUILD_BRIEF.md:70`). (B31, privacy hardening) `record_inbox_answer`, `record_ok_reply` and `record_pick_alert` (`app/businesses/src/deliverability_check.rs:191`, `:214`, `:294`) insert or update by `member_id` with no check that the member belongs to the given business; today `Acting` is built from the session (`app/server/src/business_portal.rs:1019`), so no cross-business write was found, but nothing in the function stops one. Each insert selects from `businesses.team_member` where the ID and business match and `removed_at IS NULL` (the member is current), and not `confirm_and_billing`, which `offer_sample_pick`'s select also requires (`:257` to `:266`): the inbox answer is any current member's (`app/server/src/business_signup.rs:1534`), and each `ON CONFLICT` update also requires the stored `business_id` to match; a mismatch writes nothing. Tests in the new `tests/integration/tests/business_account_email_fixes.rs`, fake data only: a settle failure made in the test (for example a test-created trigger that raises once, dropped after) leaves the code open so the retry activates; each of the four kinds sends nothing to a returned main address and reaches the owner's other verified address where the kind allows (`emergency_test` to a member with a returned main address sends nothing at all); a deliverability write with another business's member ID changes no row. Existing `businesses` and `notice_emails` tests pass unchanged, except the one TD-BIZ-45 expectation above. T133, the later owner of `email_verification.rs`, now depends on this task.",
+   "type": "harness",
    "phase": 1,
    "stage": "5",
    "module": "businesses",
@@ -19665,13 +19679,15 @@
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
-    "privacy"
+    "privacy",
+    "harness"
    ],
    "owns": [
     "app/businesses/src/email_verification.rs",
     "app/businesses/src/notice_emails.rs",
     "app/businesses/src/deliverability_check.rs",
-    "tests/integration/tests/business_account_email_fixes.rs"
+    "tests/integration/tests/business_account_email_fixes.rs",
+    "tests/integration/tests/business_event_emails.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -19690,11 +19706,12 @@
     "D-1847",
     "D-3682",
     "D-3687",
-    "D-4052"
+    "D-4052",
+    "D-4064"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 340,
     "context_pct": 18
    },
@@ -19705,13 +19722,13 @@
    ],
    "branch": "claude/task/T584-business-account-email-fixes",
    "prompt": "kit/prompts/T584.md",
-   "acceptance": "`tests/integration/tests/business_account_email_fixes.rs` passes against PostgreSQL with every listed case, each failing on `main` before the change; the `businesses` crate tests and the existing notice-email and email-verification integration tests pass unchanged."
+   "acceptance": "`tests/integration/tests/business_account_email_fixes.rs` passes against PostgreSQL with every listed case, each failing on `main` before the change; the `businesses` crate tests and the existing notice-email and email-verification integration tests pass unchanged, except TD-BIZ-45's `emergency_test` expectation in `business_event_emails.rs`, which becomes no email to a member's returned main address (BIZ-040)."
   },
   {
    "id": "T585",
    "slug": "license-change-coverage-and-card",
    "title": "businesses and licensing: a license change that drops job types reports coverage, and a lapsed ROC license never shows city-list lines",
-   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B28, D-3911's first follow-up, never scheduled) `reapply_license` (`app/businesses/src/capability.rs:626` to `:661`) drops job types through `models::replace_job_types` with no coverage report, so a trade a license change leaves with no active business does not alert until another change touches it (OPS-006; the gap is stated at `app/businesses/src/service.rs:13` to `:14`). It reports as `set_job_types` does: `service::report_edit` (`:209`, made `pub(crate)`) with the before and after keys, in the same transaction, only when the business is active (a pause already reports through `apply`); the `service.rs` gap line is removed. (B10) `card_facts` (`app/licensing/src/card_facts.rs:67` to `:95`) keeps the ROC row only when its latest check showed Active (`roc_facts`, `:97`), and when none is current it falls through to `NoLicense`, so a quote card on an ROC or state-agency category whose license lapsed after the card went out shows the no-license city-list lines (LIC-038's lines are for work that needs no license). For a licensed kind with no current license `card_facts` returns `Ok(None)`, which `portals::quote_cards` (`app/portals/src/quote_cards.rs:118` to `:122`) already shows as no license lines; the doc says why (no false claim either way; PICK-041 shows only checked facts). Tests in the new `tests/integration/tests/license_change_coverage.rs`, fake data only: a class change that leaves a town's trade with no active business records 0 active for it and alerts (TD-OPS-01's shape); one that keeps another business changes no alert; an ROC category whose latest check is not Active gives no card facts, and a no-license category still gives its city line. `capability` and `card_facts` tests pass unchanged. The second D-3911 follow-up (a town no business has served) stays unowned and is listed in D-4052.",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B28, D-3911's first follow-up, never scheduled) `reapply_license` (`app/businesses/src/capability.rs:626` to `:661`) drops job types through `models::replace_job_types` with no coverage report, so a trade a license change leaves with no active business does not alert until another change touches it (OPS-006; the gap is stated at `app/businesses/src/service.rs:13` to `:14`). It reports as `set_job_types` does: `service::report_edit` (`:209`) and `coverage_keys` (`:150`, for the before keys) made `pub(crate)`, with the before and after keys, in the same transaction, only when the business is active (a pause already reports through `apply`); the `service.rs` gap line is removed. (B10) `card_facts` (`app/licensing/src/card_facts.rs:67` to `:95`) keeps the ROC row only when its latest check showed Active (`roc_facts`, `:97`), and when none is current it falls through to `NoLicense`, so a quote card on an ROC or state-agency category whose license lapsed after the card went out shows the no-license city-list lines (LIC-038's lines are for work that needs no license). (D-4064, licensing, the Opus pre-claim check, narrowing D-4052) Only a real lapse changes: when the business's latest `licensing.license_check` row exists and is not Active, `card_facts` on an ROC kind returns `CardFacts::NoLicense` with `city_listed: false` and `city_since_year: None`, so `portals::quote_cards` drops the city line (`app/portals/src/quote_cards.rs:137`) and a handyman still shows LIC-024's line (`docs/spec/licensing.md:28`); a business with no ROC check row keeps today's path, since handyman and city-listed businesses quote ROC kinds that allow handymen (`plumbing_repair`, `docs/catalog/categories.yaml:73` to `:80`) and TD-PICK-62 expects their lines (`tests/integration/tests/quote_page_cards.rs:259` to `:270`). Returning `Ok(None)` for every licensed kind with no current license, as first planned, would drop LIC-024 from handyman cards; state-agency kinds keep today's path. The doc says why (no false claim either way; PICK-041 shows only checked facts). Tests in the new `tests/integration/tests/license_change_coverage.rs`, fake data only: a class change that leaves a trade with no active business records 0 active for it and alerts (TD-OPS-01's shape; the case seeds an `ops.trade_request` row for the current month, since a trade alerts only with one, `app/ops/src/alerts.rs:263` to `:272`, and `report_edit` counts at `Timestamp::now()`); one that leaves at least 2 active businesses in that trade and in each of the business's towns raises no alert (OPS-006 alerts below 2, and `report_edit` reports the towns too, `service.rs:209` to `:217`); an ROC category whose latest check is not Active gives no-license facts with no city line, a handyman with such a check still gets LIC-024's line, a business with no check row keeps today's facts, and a no-license category still gives its city line. `capability` and `card_facts` tests pass unchanged. The second D-3911 follow-up (a town no business has served) stays unowned and is listed in D-4052.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19744,19 +19761,21 @@
     "OPS-006",
     "LIC-026",
     "LIC-038",
-    "PICK-041"
+    "PICK-041",
+    "LIC-024"
    ],
    "tests": [],
    "decisions": [
     "D-3911",
     "D-3646",
     "D-493",
-    "D-4052"
+    "D-4052",
+    "D-4064"
    ],
    "cites": [],
    "budget": {
     "files": 4,
-    "lines": 260,
+    "lines": 300,
     "context_pct": 17
    },
    "checks": [
@@ -19766,7 +19785,7 @@
    ],
    "branch": "claude/task/T585-license-change-coverage-and-card",
    "prompt": "kit/prompts/T585.md",
-   "acceptance": "`tests/integration/tests/license_change_coverage.rs` passes against PostgreSQL with every listed case, the coverage and lapsed-license cases failing on `main` before the change; existing `capability`, `card_facts` and coverage tests pass unchanged."
+   "acceptance": "`tests/integration/tests/license_change_coverage.rs` passes against PostgreSQL with every listed case, the coverage and lapsed-license cases failing on `main` before the change; existing `capability`, `card_facts`, coverage and `tests/integration/tests/quote_page_cards.rs` (TD-PICK-62) tests pass unchanged."
   },
   {
    "id": "T586",
@@ -19834,7 +19853,7 @@
    "id": "T587",
    "slug": "payments-fee-writer-and-3ds-connection",
    "title": "payments and picks: the old Confirm fee writer is marked test-only with a guard, and the 3-D Secure read holds no connection across Stripe",
-   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): Money. (B11) `record_fee_at_confirm` (`app/payments/src/service.rs:409`) is `pub` and re-exported (`app/payments/src/api.rs:194`); its own doc says it is not the production writer (D-2623) and only done tests call it, but `api.rs:20`, `app/payments/src/pick_fee.rs:10`, `service.rs:15` to `:19` and `:335`, `app/payments/src/free_wins.rs:194`, the shared `app/payments/CLAUDE.md:17` and `app/payments/NOTES.md:76`, `:128`, `:262`, `:308` still name it the ledger writer, and its key (`CONFIRM_FEE_ACTION`, job and business) differs from `charge_key(pick)`, so a new caller would book a second entry (no live double-book today: reconcile uses `charge_key`, `app/payments/src/reconcile.rs:548`). It cannot become `pub(crate)` or feature-gated: four done integration test files call it (`tests/integration/tests/fee_at_pick.rs`, `fee_facts_at_pick.rs`, `fee_fixed_at_pick.rs`, `fee_mode_switch.rs`) and `askhava-core`'s `test-control` is the one allowed feature (SEC-035, `app/core/Cargo.toml:27`). So it gets `#[doc(hidden)]`, its doc and every line above say \"test-only; the production writers are `book_success` and `waive_at_confirm`\" (the NOTES lines edited in place, D-3474's union-merge kept), and the new `tests/security/tests/fee_writer_callers.rs` fails when any non-test source under `app/` other than its definition and the `api.rs` re-export names `record_fee_at_confirm` (a source scan that first drops comments and string literals as `code_only` in `tests/security/tests/vault_readers.rs:30` does, and skips `src/tests/` and `#[cfg(test)]` modules, so the corrected doc lines that name it pass; proved by a planted source string that calls it and must be flagged). (B25) `record_three_ds` (`app/payments/src/three_ds.rs:40` to `:71`) reads, awaits Stripe and writes on one `&mut PgConnection`, and its caller `run_dispute_opened` (`app/picks/src/dispute_steps.rs:76` to `:80`) holds a pooled connection across that network call (rust brain R11; T242 only audits this in stage 6). `three_ds.rs` adds a `pool` form (read on one acquired connection, release it, ask Stripe, write on a fresh one, the write still `ON CONFLICT DO NOTHING`), `run_dispute_opened` calls it before it acquires its own connection, and `record_three_ds` keeps its signature for `tests/integration/tests/three_ds_record.rs`, documented as for a caller holding no other work on that connection. Tests: the new security test, and in the new `tests/integration/tests/three_ds_pool.rs` a pool of `max_connections(1)` with a fake `ThreeDsStripe` whose call acquires a connection, driving `run_dispute_opened` under `tokio::time::timeout` so it fails rather than hangs on `main`: the pool form finishes, the row is stored once, a second run asks Stripe nothing. The fee and 3-D Secure integration tests pass unchanged; payments branch coverage stays at or above 95%.",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): Money. (B11) `record_fee_at_confirm` (`app/payments/src/service.rs:409`) is `pub` and re-exported (`app/payments/src/api.rs:194`); its own doc says it is not the production writer (D-2623) and only done tests call it, but `api.rs:20`, `app/payments/src/pick_fee.rs:10`, `service.rs:15` to `:19` and `:335`, the shared `app/payments/CLAUDE.md:17` and `app/payments/NOTES.md:76`, `:79`, `:86`, `:128`, `:262`, `:308` still name it the ledger writer (`:86` says a fee-free pick's $0 entry is its; in production `waive_at_confirm` writes it through `fee_free_entry`, `free_wins.rs:148`, `:210`), and its key (`CONFIRM_FEE_ACTION`, job and business) differs from `charge_key(pick)`, so a new caller would book a second entry (no live double-book today: reconcile uses `charge_key`, `app/payments/src/reconcile.rs:548`). It cannot become `pub(crate)` or feature-gated: five done integration test files call it (`tests/integration/tests/fee_at_pick.rs`, `fee_facts_at_pick.rs`, `fee_fixed_at_pick.rs`, `fee_mode_switch.rs`, `ledger_1000_jobs.rs`) and `askhava-core`'s `test-control` is the one allowed feature (SEC-035, `app/core/Cargo.toml:27`). So it gets `#[doc(hidden)]`, its doc and every line above say \"test-only; the production writers are `book_success` and `waive_at_confirm`\" (the NOTES lines edited in place, D-3474's union-merge kept); the comment at `free_wins.rs:194` is true (`fee_free_entry` keys with `CONFIRM_FEE_ACTION`, `free_wins.rs:37`, `:326`, `service.rs:436`) and is reworded to name that key, which the test-only `record_fee_at_confirm` shares, not to call `fee_free_entry` test-only, and the new `tests/security/tests/fee_writer_callers.rs` fails when any non-test source under `app/` other than its definition and the `api.rs` re-export names `record_fee_at_confirm` (a source scan that first drops comments and string literals as `code_only` in `tests/security/tests/vault_readers.rs:30` does, and skips `src/tests/` and `#[cfg(test)]` modules, so the corrected doc lines that name it pass; proved by a planted source string that calls it and must be flagged). (B25) `record_three_ds` (`app/payments/src/three_ds.rs:40` to `:71`) reads, awaits Stripe and writes on one `&mut PgConnection`, and its caller `run_dispute_opened` (`app/picks/src/dispute_steps.rs:76` to `:80`) holds a pooled connection across that network call (rust brain R11; T242 only audits this in stage 6). `three_ds.rs` adds a `pool` form (read on one acquired connection, release it, ask Stripe, write on a fresh one, the write still `ON CONFLICT DO NOTHING`) that reuses `record_three_ds`'s read and store steps as private helpers, so the error branches `tests/integration/tests/three_ds_record.rs` covers stay covered (`tests/coverage_floor.json`, `app/payments/` at 95%), `run_dispute_opened` calls it before it acquires its own connection, and `record_three_ds` keeps its signature for `tests/integration/tests/three_ds_record.rs`, documented as for a caller holding no other work on that connection. Tests: the new security test, and in the new `tests/integration/tests/three_ds_pool.rs` a pool of `max_connections(1)` with a fake `ThreeDsStripe` whose call acquires a connection, driving `run_dispute_opened` under `tokio::time::timeout` so it fails rather than hangs on `main`: the pool form finishes, the row is stored once, a second run asks Stripe nothing. The fee and 3-D Secure integration tests pass unchanged; payments branch coverage stays at or above 95%.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19876,12 +19895,13 @@
     "D-3118",
     "D-1417",
     "D-3474",
-    "D-4052"
+    "D-4052",
+    "D-4064"
    ],
    "cites": [],
    "budget": {
     "files": 7,
-    "lines": 300,
+    "lines": 380,
     "context_pct": 17
    },
    "checks": [
@@ -20069,6 +20089,60 @@
    "branch": "claude/task/T590-call-texts-in-her-language",
    "prompt": "kit/prompts/T590.md",
    "acceptance": "`tests/integration/tests/call_texts_language.rs` passes with every listed case, the Spanish cases failing on `main` before the change; `whos_calling.rs` and `unreachable_steps.rs` integration tests pass unchanged."
+  },
+  {
+   "id": "T591",
+   "slug": "runner-disk-smoke-cap",
+   "title": "Runner (harness): free the backup job's disk and cap the smoke build cache",
+   "goal": "Plan change D-4071 (8 `backup` jobs lost their VM mid-session from Nov 16 19:06Z on a full root disk; evidence in D-4071): keep `.github/workflows/backup-runner.yml`'s `backup` job off a full `/dev/root`. Only that job and `runner/cache.py` change; nothing the smoke or a task worker runs changes. (1) Free the disk: a new step `Free the runner disk (D-4071)` (`continue-on-error: true`, `timeout-minutes: 10`) right after `Close merged tasks before the smoke (D-3141)` and right before `Rust build cache (D-514)`, so every cache restore lands on the freed disk and the merge resolution still runs within a minute of the start. It prints `df -h / | sed 's/^/disk before: /'`, removes `/usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/share/swift` with `sudo rm -rf` (one background job per path, then `wait`; a missing path is no error) and prints `df -h / | sed 's/^/disk after: /'`. First grep `.github/workflows/backup-runner.yml`, `scripts/` and `runner/` for each path's tools (android, dotnet, ghc, ghcup, cabal, stack, swift, codeql) and leave out any path the job uses; the report gives each grep's result. Node, Python (`setup-python`'s `/opt/hostedtoolcache/Python`), Go (gitleaks' fallback `go install`), rustup and cargo, Docker and its images (the Postgres service), the Playwright browsers and the claude-code-action runtime stay. (2) Cap the smoke entry, in `runner/cache.py` (stdlib only, functions under 50 lines, `key=value` lines alone on standard output): `bound(smoke, cap)` deletes the profile-level `incremental` folders (`smoke/*/incremental` and `smoke/<triple>/*/incremental`; the smoke runs with `CARGO_INCREMENTAL=0`, `runner/github_env.py:230`, so this rarely frees anything and the cap does the work), then sums the tree's apparent size (`github_env._tree_size`) and prints `save=yes` when it is at most `cap`, else `save=no` plus a `::warning::` line on standard error naming the size and the cap; a tree it cannot measure also gives `save=no`. Standard error gets one line with the bytes before and after. `SMOKE_CAP` is 24 GiB; the CLI is `python3 -m runner.cache bound --smoke <dir> [--cap-gib N]`. Nothing else under `target/smoke` is deleted. Workflow: a step `Bound the smoke build entry (D-4071)` (id `smoke-bound`, the same `if` as `smoke-drop`, `continue-on-error: true`, run as `cd \"$RUNNER_TEMP/keeper\" && python3 -m runner.cache bound --smoke \"$GITHUB_WORKSPACE/target/smoke\" | tee -a \"$GITHUB_OUTPUT\"`) right after `Stop a background smoke before the cache save (D-2560)` and right before `Drop the superseded smoke build entries (D-3143)`; the save's `if` gains ` && steps.smoke-bound.outputs.save == 'yes'` right after ` && steps.smoke-drop.outputs.save != 'no'` and before the final ` && steps.bg-smoke.outputs.stopped != 'stopped'` (which `tests/test_runner_smoke_reuse.py:508`, not owned here, pins as the ending). It fails closed: a step that crashed (bash `-e` without pipefail, so `tee` hides the exit) writes no output and the tree is not saved; the bound step runs under the drop's `if`, so an empty output can only mean the tree was not measured. The drop step's `if` is unchanged, so an entry over the cap is still dropped and nothing replaces it: the next job builds the smoke cold and saves a fresh, small entry. The cap heals itself that way, at the cost of one cold smoke build each time the entry outgrows it. Why 24 GiB: the entry held 4,970 MB compressed (about 23 GB on disk) through Nov 16 07:39 with no loss, and the observed ratio is about 4.7 to 1 (46 GB on disk for 9.4 to 9.7 GB), so the cap is about 5.1 GB compressed, inside D-3143's 10 GB repository budget beside `Ci`'s entries; with the worker's `target/debug` (26 GB seen), `target/tests` (1.7 GB) and llvm-cov (about 6 GB) it leaves over 25 GB free on the 145 GB disk (60 GB used by the image) even if step (1) frees nothing. (3) Disk lines: `df -h / | sed 's/^/disk at session start: /' || true` at the end of `Pick the session's model (D-2225)` (the last step before the session) and `df -h / | sed 's/^/disk at hand-in: /' || true` right after `set -u` in `Hand in for a session that stopped without handing in (D-503)` (`backup-runner.yml:624`); neither writes to `$GITHUB_OUTPUT`. (4) Tests in `tests/test_runner_cache.py`, on fake trees only: `bound` deletes profile-level `incremental` folders and keeps everything else, answers `save=yes` at or under a small cap and `save=no` with the warning over it, and `save=no` when the tree cannot be measured; `bound` joins `test_standard_output_holds_only_key_value_lines`. The workflow tests pin the two new steps' names, ids, conditions and order (the free-disk step after `Close merged tasks` and before the first `actions/cache/restore`; bound right after the background-smoke stop and right before the drop, the drop still directly before the save) and the two disk lines; `test_the_smoke_entry_is_saved_only_from_main_alone_after_its_older_entries_are_dropped` pins the save's new `if` exactly as `save[\"if\"] == drop[\"if\"].replace(\" && steps.bg-smoke\", \" && steps.smoke-drop.outputs.save != 'no' && steps.smoke-bound.outputs.save == 'yes' && steps.bg-smoke\")` (stricter, not looser); `tests/test_runner_smoke_reuse.py` passes unchanged; nothing else in an existing test changes. Update `docs/architecture.md`'s build-caches line (D-3143) with the cap and the free-disk step.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T100",
+    "T473"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    ".github/workflows/backup-runner.yml",
+    "runner/cache.py",
+    "tests/test_runner_cache.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/architecture.md",
+    "runner/github_env.py",
+    "tests/test_workflow_shell.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-4071",
+    "D-3143",
+    "D-1890",
+    "D-1911",
+    "D-2560"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 150,
+    "context_pct": 40
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T591-runner-disk-smoke-cap",
+   "prompt": "kit/prompts/T591.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_cache.py tests/test_workflow_shell.py` passes with the new cases, the `bound` cases failing on `main` (no `bound` there); every other `tests/test_runner_*.py` and `tests/test_safety_hand_in_release.py` passes unchanged; the report holds the greps of step (1); `actionlint` on `backup-runner.yml` reports nothing new."
   },
   {
    "id": "T549",
@@ -20710,7 +20784,8 @@
     "T587",
     "T588",
     "T589",
-    "T590"
+    "T590",
+    "T591"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -39275,7 +39350,8 @@
    "module": null,
    "deps": [
     "T151",
-    "T570"
+    "T570",
+    "T572"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -39315,7 +39391,8 @@
     "D-3744",
     "D-3753",
     "D-3844",
-    "D-3882"
+    "D-3882",
+    "D-4064"
    ],
    "cites": [],
    "budget": {

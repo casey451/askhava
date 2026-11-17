@@ -5,7 +5,9 @@
 //! Ask Hava never places recorded or automated calls; [`record_consent`] stores one row per
 //! channel with the wording version and time (a text row also names the phone), and refuses an
 //! unticked box. A phone gets texts only after a current member ticked the text box for that
-//! phone ([`may_text`]); no call consent exists. On
+//! phone's current number ([`may_text`]; a number change raises the phone's number version, so an
+//! earlier box no longer counts and [`record_consent_for`] refuses a box shown for an earlier
+//! number, D-2707); no call consent exists. On
 //! activation [`request_welcome`] queues the welcome email once (its lines end with
 //! [`welcome_card_line`], the link to the portal's contact-card download, T199); [`welcome_sent`] marks it gone and
 //! [`may_get_cards`] stays false until then. [`phone_stopped`] handles an opt-out from a business
@@ -100,6 +102,10 @@ pub enum ConsentError {
     /// A text box names no phone, or a phone not linked to that business.
     #[error("unknown phone")]
     UnknownPhone,
+    /// The phone's number changed after the text box was shown, so the tick is not for the
+    /// number the phone now has (CON-019, D-2707).
+    #[error("the phone number changed after the box was shown")]
+    NumberChanged,
     /// A recruiting email's subject is empty or looks like a reply or a notice.
     #[error("the recruiting subject is not honest")]
     Subject,
@@ -148,10 +154,12 @@ pub fn consent_box(channels: &[ConsentChannel]) -> ConsentBox {
     }
 }
 
-/// CON-019, D-191: stores the ticked box of `member` of `business`, one row per channel with
-/// [`CONSENT_VERSION`] and `now` (the text row naming `phone`, a linked `businesses.staff_phone` of
-/// that business), and one audit row, in one transaction. A box already stored for the same
-/// member, channel, phone and version adds no row.
+/// CON-019, D-191, D-2707: stores the ticked box of `member` of `business`, one row per channel
+/// with [`CONSENT_VERSION`] and `now` (the text row naming `phone`, a linked `businesses.staff_phone`
+/// of that business, and the phone's current number version), and one audit row, in one
+/// transaction. A box already stored for the same member, channel, phone, number and version adds
+/// no row. A page that shows the text box uses [`record_consent_for`] instead, so a number changed
+/// while the page was open is refused.
 ///
 /// # Errors
 /// [`ConsentError::NotTicked`] (also for no channel), `UnknownMember`, `UnknownPhone` (a text box
@@ -163,19 +171,57 @@ pub async fn record_consent(
     ticked: bool,
     now: Timestamp,
 ) -> Result<(), ConsentError> {
+    let ids = (business, member, phone);
+    record(conn, (ids, None), channels, ticked, now).await
+}
+
+/// CON-019, BIZ-036, D-2707: as [`record_consent`] for the text box shown for number version
+/// `shown` of `phone` (read by [`phone_version`] when the page was drawn); a text box is refused
+/// when the phone's number changed since, so a tick never counts for a number it was not shown
+/// for.
+///
+/// # Errors
+/// As [`record_consent`], and [`ConsentError::NumberChanged`] when `shown` is not the phone's
+/// current number version.
+pub async fn record_consent_for(
+    conn: &mut PgConnection,
+    (business, member): (Uuid, Uuid),
+    (phone, shown): (Uuid, i32),
+    channels: &[ConsentChannel],
+    ticked: bool,
+    now: Timestamp,
+) -> Result<(), ConsentError> {
+    let ids = (business, member, Some(phone));
+    record(conn, (ids, Some(shown)), channels, ticked, now).await
+}
+
+/// The shared body of both record forms: locks the member (`FOR SHARE`, before the phone, in the
+/// order `team::change_phone_at` takes them) and the phone (`FOR UPDATE`), checks the shown
+/// version if given, and inserts the rows.
+async fn record(
+    conn: &mut PgConnection,
+    ((business, member, phone), shown): ((Uuid, Uuid, Option<Uuid>), Option<i32>),
+    channels: &[ConsentChannel],
+    ticked: bool,
+    now: Timestamp,
+) -> Result<(), ConsentError> {
     if !ticked || channels.is_empty() {
         return Err(ConsentError::NotTicked);
     }
     let mut tx = db(conn.begin().await)?;
     let current = sqlx::query_scalar!(
         "SELECT 1 AS \"one!\" FROM businesses.team_member \
-         WHERE id = $1 AND business_id = $2 AND removed_at IS NULL",
+         WHERE id = $1 AND business_id = $2 AND removed_at IS NULL FOR SHARE",
         member,
         business
     );
     db(current.fetch_optional(&mut *tx).await)?.ok_or(ConsentError::UnknownMember)?;
     let text_phone = if channels.contains(&ConsentChannel::Text) {
-        Some(linked_phone(&mut tx, business, phone).await?)
+        let (line, version) = linked_phone(&mut tx, business, phone).await?;
+        if shown.is_some_and(|s| s != version) {
+            return Err(ConsentError::NumberChanged);
+        }
+        Some((line, version))
     } else {
         None
     };
@@ -198,45 +244,68 @@ pub async fn record_consent(
     db(tx.commit().await)
 }
 
+/// Locks linked phone `phone` of `business` (`FOR UPDATE`, so a number change waits or goes
+/// first, D-2707) and returns it with its current number version.
 async fn linked_phone(
     tx: &mut PgConnection,
     business: Uuid,
     phone: Option<Uuid>,
-) -> Result<Uuid, ConsentError> {
+) -> Result<(Uuid, i32), ConsentError> {
     let phone = phone.ok_or(ConsentError::UnknownPhone)?;
     let q = sqlx::query_scalar!(
-        "SELECT 1 AS \"one!\" FROM businesses.staff_phone WHERE id = $1 AND business_id = $2",
+        "SELECT number_version FROM businesses.staff_phone WHERE id = $1 AND business_id = $2 \
+         FOR UPDATE",
         phone,
         business
     );
-    db(q.fetch_optional(tx).await)?.ok_or(ConsentError::UnknownPhone)?;
-    Ok(phone)
+    let version = db(q.fetch_optional(tx).await)?.ok_or(ConsentError::UnknownPhone)?;
+    Ok((phone, version))
 }
 
 async fn insert_consent(
     tx: &mut PgConnection,
-    (business, member, phone): (Uuid, Uuid, Option<Uuid>),
+    (business, member, phone): (Uuid, Uuid, Option<(Uuid, i32)>),
     channel: ConsentChannel,
     now: Timestamp,
 ) -> Result<u64, ConsentError> {
     let q = sqlx::query!(
         "INSERT INTO businesses.esign_consent \
-         (business_id, member_id, channel, line_id, wording_version, consented_at) \
-         VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING",
+         (business_id, member_id, channel, line_id, number_version, wording_version, \
+         consented_at) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING",
         business,
         member,
         channel.as_str(),
-        phone,
+        phone.map(|(line, _)| line),
+        phone.map(|(_, version)| version),
         CONSENT_VERSION,
         now.to_sqlx() as _
     );
     Ok(db(q.execute(tx).await)?.rows_affected())
 }
 
-/// CON-019, BIZ-048, D-191: whether `phone`, a linked phone of `business`, has a text box ticked
-/// for it by a current member; no text of any kind goes to a business phone without it, and a
-/// relinked phone (a new ID) needs a new box. The suppression list still applies after a STOP
-/// (CON-013).
+/// CON-019, D-2707: the current number version of `phone`, a linked phone of `business`; a page
+/// that shows the text box passes it back to [`record_consent_for`].
+///
+/// # Errors
+/// [`ConsentError::UnknownPhone`] or `Database`.
+pub async fn phone_version(
+    conn: &mut PgConnection,
+    business: Uuid,
+    phone: Uuid,
+) -> Result<i32, ConsentError> {
+    let q = sqlx::query_scalar!(
+        "SELECT number_version FROM businesses.staff_phone WHERE id = $1 AND business_id = $2",
+        phone,
+        business
+    );
+    db(q.fetch_optional(conn).await)?.ok_or(ConsentError::UnknownPhone)
+}
+
+/// CON-019, BIZ-036, BIZ-048, D-191, D-2707: whether `phone`, a linked phone of `business`, has a
+/// text box ticked by a current member for the number it has now; no text of any kind goes to a
+/// business phone without it, a relinked phone (a new ID) needs a new box, and so does a changed
+/// number (a box for an earlier number version does not count). The suppression list still
+/// applies after a STOP (CON-013).
 ///
 /// # Errors
 /// [`ConsentError::Database`].
@@ -249,6 +318,7 @@ pub async fn may_text(
         "SELECT EXISTS (SELECT 1 FROM businesses.esign_consent c \
          JOIN businesses.team_member m ON m.id = c.member_id AND m.business_id = c.business_id \
          JOIN businesses.staff_phone p ON p.id = c.line_id AND p.business_id = c.business_id \
+         AND p.number_version = c.number_version \
          WHERE c.business_id = $1 AND c.line_id = $2 AND c.channel = 'text' \
          AND m.removed_at IS NULL) AS \"yes!\"",
         business,

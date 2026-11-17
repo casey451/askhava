@@ -616,7 +616,9 @@ pub async fn change_phone(
 /// held number of the phone is dropped first; the owner's change is approved and in the sender
 /// directory at once (D-491), any other member's waits, held out of it, until the owner approves
 /// it, whether the phone was waiting, approved or linked by the owner. The time, the member and
-/// the number's last 4 digits are stored.
+/// the number's last 4 digits are stored. The line keeps its ID but gets a new number version
+/// under its row lock, so the phone gets no text until a member ticks the text box for the new
+/// number (`consent::may_text`, CON-019, BIZ-036, D-2707).
 ///
 /// # Errors
 ///
@@ -650,7 +652,8 @@ pub async fn change_phone_at(
 }
 
 /// Records who set phone `line`'s number at `now`, its last 4 digits, and its approval: `now` when
-/// `m` is the owner, none otherwise (BIZ-033, D-3081).
+/// `m` is the owner, none otherwise (BIZ-033, D-3081). It raises the line's number version, so the
+/// text consent given for the old number no longer counts (CON-019, BIZ-036, D-2707).
 async fn set_number(
     tx: &mut PgConnection,
     (business, line): (Uuid, Uuid),
@@ -661,7 +664,8 @@ async fn set_number(
     let approved = m.owner.then(|| now.to_sqlx());
     db(sqlx::query!(
         "UPDATE businesses.staff_phone SET approved_at = $3, number_set_at = $4, \
-         number_set_by = $5, number_end = $6 WHERE id = $1 AND business_id = $2",
+         number_set_by = $5, number_end = $6, number_version = number_version + 1 \
+         WHERE id = $1 AND business_id = $2",
         line,
         business,
         approved as _,
