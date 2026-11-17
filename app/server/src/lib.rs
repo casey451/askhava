@@ -952,11 +952,16 @@ fn register_alert_emails(
         .iter()
         .find(|(k, v)| k == ALERT_EMAIL && !v.trim().is_empty())
         .map(|(_, v)| SecretString::from(v.trim().to_owned()));
+    let daily = pairs
+        .iter()
+        .find(|(k, _)| k == "ASKHAVA_EMAIL_DAILY_LIMIT")
+        .and_then(|(_, v)| v.trim().parse::<u32>().ok())
+        .unwrap_or(100);
     let provider = email_provider::email_provider(settings, pairs)?;
     let sender = match (provider, address) {
         (Some(p), Some(address)) => {
-            let limits = EmailLimits::new(p.daily_limit().per_day(), p.monthly_limit())
-                .ok_or_else(|| io::Error::other("invalid ASKHAVA_EMAIL_MONTHLY_LIMIT"))?;
+            let limits = EmailLimits::new(daily, p.monthly_limit())
+                .ok_or_else(|| io::Error::other("invalid ASKHAVA_EMAIL_DAILY_LIMIT"))?;
             let built = AlertEmailSender::new(
                 (p.secret().clone(), p.client().clone()),
                 p.postal(),

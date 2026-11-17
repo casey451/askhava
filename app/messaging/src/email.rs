@@ -404,12 +404,6 @@ impl DailyLimit {
         })
     }
 
-    /// The emails a day the plan allows (OPS-004, OPS-038).
-    #[must_use]
-    pub fn per_day(self) -> u32 {
-        self.per_day
-    }
-
     /// Whether, with `sent_today` sent, a bulk email waits: more than the share went (OPS-038).
     #[must_use]
     pub fn holds_bulk(self, sent_today: i64) -> bool {
