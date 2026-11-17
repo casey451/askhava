@@ -25,12 +25,7 @@
    "lane": "4"
   },
   "5": null,
-  "6": {
-   "task": "T594",
-   "session": "actions-44082864441",
-   "expires": "2026-11-17T16:10:58Z",
-   "lane": "6"
-  },
+  "6": null,
   "7": {
    "task": "T321",
    "session": "actions-44085433757",
@@ -39,7 +34,7 @@
   },
   "fix": null
  },
- "seq": 6387,
- "runner_sha": "d63448b288ecabe46790937a511b3a784515e5fa",
+ "seq": 6388,
+ "runner_sha": "0f98e4d165ddfa10a7098f1dbfd35ef57d412549",
  "starter": "actions"
 }
