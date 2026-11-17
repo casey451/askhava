@@ -10650,7 +10650,7 @@
    "id": "T403",
    "slug": "quiet-exempt-call-texts",
    "title": "calls and picks: the who's-calling and missed-call texts of an emergency job are queued with that fact",
-   "goal": "Plan change D-3106, review round (QH-004, QH-001; D-2628, D-3055): split from T402. After T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go, and an emergency job's texts are exempt only through `messaging::api::enqueue_exempt`. Two producers queue such texts with plain `enqueue`: the who's-calling text TXT-027 (`app/calls/src/whos_calling.rs`, T318's) and the missed-call text TXT-030 (`caller_missed`, `app/picks/src/unreachable_refund.rs:214`, T355's; `rules::Kind::PickStep`, `app/messaging/src/rules.rs:168`). Each passes the job's emergency choice through `enqueue_exempt`, read where the producer already has it (the job row), so on an emergency job either text goes at any hour and on a regular job it waits for the window; nothing else in either file changes. Tests in `tests/integration/tests/quiet_exempt_call_texts.rs` (TD-QH-08). Every TD-QH, TD-TXT, TD-CALL and TD-FEE case passes unchanged. Update the `calls` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Plan change D-3106, review round (QH-004, QH-001; D-2628, D-3055): split from T402. After T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go, and an emergency job's texts are exempt only through `messaging::api::enqueue_exempt`. Two producers queue such texts with plain `enqueue`: the who's-calling text TXT-027 (`app/calls/src/whos_calling.rs`, T318's) and the missed-call text TXT-030 (`caller_missed`, `app/picks/src/unreachable_refund.rs:214`, T355's; `rules::Kind::PickStep`, `app/messaging/src/rules.rs:168`). Each passes the job's emergency choice through `enqueue_exempt`, read where the producer already has it (the job row), so on an emergency job either text goes at any hour and on a regular job it waits for the window; nothing else in either file changes. Tests in `tests/integration/tests/quiet_exempt_call_texts.rs` (TD-QH-08). Every TD-QH, TD-TXT, TD-CALL and TD-FEE case passes unchanged. Update the `calls` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-4052: T590 (the who's-calling and missed-call texts in her language) runs first and also edits `app/calls/src/whos_calling.rs` and `app/picks/src/unreachable_steps.rs`; keep its language source when adding the exemption.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -10659,7 +10659,8 @@
     "T356",
     "T318",
     "T355",
-    "T402"
+    "T402",
+    "T590"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10691,7 +10692,8 @@
    "decisions": [
     "D-2628",
     "D-3055",
-    "D-3106"
+    "D-3106",
+    "D-4052"
    ],
    "cites": [],
    "budget": {
@@ -19420,6 +19422,655 @@
    "acceptance": "`docs/owner-guide.md` exists and has a plain-words section for each of: how everything works; Casey's daily checks; his weekly checks; the alert address that notifies his phone and letting the Laftly number through Do Not Disturb (OPS-035, D-314); and where each owner tool lives, named by its `/owner/...` path in `docs/architecture.md` section 13. Stage exit evidence and `PROGRESS.md` (on `claude/kit-state`) are the runner's, not this guide's (D-3844)."
   },
   {
+   "id": "T580",
+   "slug": "outbox-end-states-and-429",
+   "title": "messaging: a failed, blocked or expired text reads as failed, and a carrier 429 never uses up a retry",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B4) `messaging::api::delivery_status` (`app/messaging/src/service.rs:332` to `:351`) returns `Sending` for every outbox status other than `queued` and `sent` with a SID, so a row that ended `blocked`, `failed` or `expired` (`migrations/0182_messaging_outbox_not_before.sql:23`) reads as still sending, and the card timer (`app/intake/src/summary_step.rs:309`, `card_text_watch` in `app/intake/src/status.rs:13` to `:19`) looks again every few minutes for ever (INT-041, TXT-013). The function maps `blocked`, `failed` and `expired` to `DeliveryStatus::Failed` and `unknown` (the carrier may hold it; never resent) to `Sent`, so the card timer starts its wait; `queued` stays `Queued` and `sending` stays `Sending`; the doc comment says so. (B20) `refused` (`service.rs:316` to `:322`) counts every 4xx as a definite refusal, so a 429 rate limit goes to `retries::record_failure` (`app/messaging/src/outbox_sender.rs:294`, `:303` to `:324`) and three of them give the text up (TXT-014, TXT-015). A 429 (and Twilio code 20429 on any status; `OutboxError` and `Carrier` live in `app/messaging/src/models.rs:20`, which this task owns for that variant only) is still proof nothing was sent (TXT-011), so the row is released as now, but a new `OutboxError` variant (or a field on `Carrier`) tells the sender to hold the row for one minute (a `const`, doubling on each 429 in a row up to 15 minutes, derived from the row's current hold; no migration) without calling `record_failure`; the adapter does not surface `Retry-After`, so none is read. (Doc) `app/messaging/CLAUDE.md:7` (shared) still says every text begins \"Ask Hava:\"; it becomes \"Every text begins `<short_name>:` from the brand file (today `Laftly:`)\", keeping the test name as it is (D-3347 (4)). Tests in the new `tests/integration/tests/outbox_end_states.rs`, against PostgreSQL with the stand-in Twilio and fake data only: each of `blocked`, `failed`, `expired` reads `Failed` and `unknown` reads `Sent`; a card timer on a failed summary text stops (no new timer queued); a 429 from the stand-in holds the row, leaves its failure count unchanged, and the text goes on the next try; three 429s then a send still send once; a 400 is still a counted failure. `tests/integration/tests/outbox_sender.rs` and `outbox.rs` pass unchanged. Ordered after T526, which owns `outbox_sender.rs` now (and, once D-4051 merges, after T573, which owns `service.rs`).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "messaging",
+   "deps": [
+    "T526"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "app/messaging/src/service.rs",
+    "app/messaging/src/outbox_sender.rs",
+    "app/messaging/src/models.rs",
+    "tests/integration/tests/outbox_end_states.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/intake.md"
+   ],
+   "requirements": [
+    "TXT-013",
+    "TXT-011",
+    "TXT-014",
+    "INT-041"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1278",
+    "D-558",
+    "D-3347",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T580-outbox-end-states-and-429",
+   "prompt": "kit/prompts/T580.md",
+   "acceptance": "`tests/integration/tests/outbox_end_states.rs` passes against PostgreSQL with every listed case, the end-state and 429 cases failing on `main` before the change; `outbox_sender.rs`, `outbox.rs` and the `messaging` unit tests pass unchanged; `app/messaging/CLAUDE.md` no longer says \"Ask Hava:\"."
+  },
+  {
+   "id": "T581",
+   "slug": "failed-text-call-back-urgency",
+   "title": "messaging, intake and server: a failed text's call-back is due in 24 hours when her job is urgent",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B5) When a homeowner's text is given up with no email on file, `refused` in `app/messaging/src/outbox_sender.rs` (`:312` to `:321`) always passes `Urgency::NoRush`, so `retries::call_back` (`app/messaging/src/retries.rs:251` to `:270`) makes Casey's call-back due in the no-rush time and at Normal severity even for a job marked \"Today, it's urgent\" or emergency, which INT-023 and TXT-015 make due within 24 hours and High (OPS-032 push). `messaging` cannot read `intake` (`kit/layers.json`). This task adds an urgency source the composition passes in, as `NoticeParts` is for `businesses` (`app/businesses/src/notice_emails.rs:19`): a `messaging` trait (in `outbox_sender.rs`) answering, for the row's vault contact, `Urgent` or `NoRush`, set on `OutboxSender` by a builder method (`new` keeps its signature: `tests/integration/tests/outbox.rs:216` calls it), and with none set it is `NoRush` as today; the new `app/intake/src/text_failed_urgency.rs` gives `intake::api::contact_urgent(db, contact)` (re-exported by one line in the shared `app/intake/src/api.rs`): true when the contact's open request, or her latest one within the call-back window, counts as urgent by the rule `queue_call_back` already uses (`request_urgent`, `app/intake/src/handlers.rs:563`, which this task makes `pub(crate)` and calls, its only change to `handlers.rs`, so no copy of its body exists for `check_duplicates --strict` to flag; `counts_urgent`); a read error is an error and the sender holds the row for its retry (no guess); the shared `app/server/src/lib.rs` (`OutboxSender::new` at `:1331`) sets the source to it. Nothing about who is texted or when changes. Tests in the new `tests/integration/tests/text_failed_urgency.rs`, fake data only: an emergency job's and a \"Today\" job's given-up text with no email raise one High `messaging.call_back` alert due 24 hours after; a regular job's is Normal and due after the setting; with no source set it is NoRush (today's behaviour); a failing urgency read holds the row. `tests/integration/tests/outbox_sender.rs` passes unchanged. Ordered after T580 (same file).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "messaging",
+   "deps": [
+    "T580"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "app/messaging/src/outbox_sender.rs",
+    "app/intake/src/text_failed_urgency.rs",
+    "app/intake/src/handlers.rs",
+    "tests/integration/tests/text_failed_urgency.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/intake.md",
+    "docs/spec/ops-recovery.md"
+   ],
+   "requirements": [
+    "INT-023",
+    "TXT-015",
+    "OPS-032"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-226",
+    "D-277",
+    "D-1199",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 16
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T581-failed-text-call-back-urgency",
+   "prompt": "kit/prompts/T581.md",
+   "acceptance": "`tests/integration/tests/text_failed_urgency.rs` passes against PostgreSQL with every listed case, the urgent cases failing on `main` before the change; `outbox_sender.rs` and `outbox.rs` pass unchanged."
+  },
+  {
+   "id": "T582",
+   "slug": "quote-confirm-window-and-count-event",
+   "title": "quotes and messaging: a late read-back confirm is refused, and each newly shown quote asks for the count update",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B14) `confirm_quote_at` (`app/quotes/src/intake.rs:694` to `:711`) checks only `takes_quotes`, while `submit_quote` refuses a quote after its card's 24 hours (`window_open`, `:46`, used at `:646`). Decision (D-4052): PICK-001's window closes the read-back confirm too, because the every-window-ended check (TXT-042, JOB-025) may already have told her \"all quotes are in\" or closed the job; so `confirm_quote_at` reads the card's `sent_at` (`models::card_sent_at`) and returns `Guarded::MovedOn` when the window has closed, storing nothing; no production route calls it yet (the read-back screen is later), so no page copy changes. (TXT-017, found while checking B21) The quote-count update text is built (`quotes::api::notice`, `notice_for`, `update_text`, `app/quotes/src/notify.rs:99`, `:123`, `:166`) but nothing sends it: no production caller of `update_text` or `notice_for` exists, and D-1198/D-1199 left the sender unowned. This task adds the trigger and the read; T583 adds the sender. In the new `app/quotes/src/count_update.rs`: `COUNT_UPDATE_KIND` (`quotes.count_update`) and a queue call, run in the same transaction as a quote that becomes shown (in `submit_quote` when not AI-read, and in `confirm_quote_at` when applied) on a job that was already Quotes ready (the first quote's text stays `jobs::api::first_quote`'s), one `core.task` per newly shown quote (dedupe key: job and business), payload the job ID only. In the new `app/messaging/src/quote_text_sent.rs`, through the shared `messaging::api`: the last `first_quote` or `quote_update` outbox row to a recipient about a job (`subject_ids` holds the job) and when it was delivered (its Twilio `delivered` event's time, else its `sent_at`, and for a row still queued or sending its queue time, so an unsent text is never invisible), as D-1190 says the sender reads it. Tests in the new `tests/integration/tests/quote_count_event.rs`, fake data only: a confirm after the 24 hours is `MovedOn` and shows nothing, one inside them is applied; a second shown quote queues one count event, the first queues none; the read gives the delivery time, the send time without one, the queue time for an unsent row, and none for another job. Existing quote tests pass unchanged.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "quotes",
+   "deps": [
+    "T100",
+    "T517",
+    "T361"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "app/quotes/src/intake.rs",
+    "app/quotes/src/count_update.rs",
+    "app/messaging/src/quote_text_sent.rs",
+    "tests/integration/tests/quote_count_event.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "PICK-001",
+    "PICK-006",
+    "TXT-017"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1190",
+    "D-1198",
+    "D-1199",
+    "D-149",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 320,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T582-quote-confirm-window-and-count-event",
+   "prompt": "kit/prompts/T582.md",
+   "acceptance": "`tests/integration/tests/quote_count_event.rs` passes against PostgreSQL with every listed case, the late-confirm case failing on `main` before the change; the quotes crate tests and `tests/integration/tests/quote_texts.rs` pass unchanged."
+  },
+  {
+   "id": "T583",
+   "slug": "quote-count-update-texts",
+   "title": "intake and server: the quote-count update text is sent, at most once per 3 hours, merged after quiet hours and dropped on a closed job",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B21 and TXT-017) The audit found `messaging::rules::plan_release` (`app/messaging/src/rules.rs:340`) with no production caller and said QH-007 and TXT-025 are unbuilt. Checked: QH-007 holds for every held job text already (`jobs::api::text_due` drops a held text whose job moved on, `app/intake/src/job_texts.rs:9` to `:10`, `app/jobs/src/handlers.rs:56`; TD-JOB-03 in `tests/integration/tests/homeowner_job_texts.rs:226`); TXT-025 has nothing to merge because the update texts themselves are never sent (see T582). This task sends them. The new `app/intake/src/quote_updates.rs` handles T582's `quotes::api::COUNT_UPDATE_KIND` (registered in the shared `app/server/src/lib.rs` beside `jobs.homeowner_text`): it finds the job's request, homeowner and language as `job_texts` does (calling its `pub(crate)` helpers, not editing `job_texts.rs`), skips a closed or picked job (QH-007, TXT-042's rule that no update follows a pick), skips a contact with no consent record or an opted-out number (CON-021, CON-028), takes the job's row lock first (`jobs::api::lock_for_quote_change`, as `app/quotes/src/intake.rs:29` to `:35` does) so two events for one job never run side by side, then reads the previous quote text with T582's `messaging` read (sent or still queued) and the count it told (a `first_quote` row counts as having told 1) (kept as one `intake` answer row per job and count, codes only), and asks `quotes::api::notice_for` (`app/quotes/src/notify.rs:123`): `Held { until }` queues the same event again at `until`, its dedupe key naming that release instant as `job_texts::hold` does (`app/intake/src/job_texts.rs:355` to `:373`; `core.task.dedupe_key` is unique for all time, `migrations/0020_core_task_queue.sql:22`, so T582's key cannot be reused); `Update { quoted }` outside 8 a.m. to 8 p.m. (or her zone, QH-001, `messaging::api::send_window`) queues it again for the window's opening instant, the key again naming that instant, (an emergency job's updates go at any hour, QH-004, through `enqueue_exempt` as `job_texts` does); inside it renders `quotes::api::update_text` with her `/q/` link (`jobs::api::quote_token::issue`, SEC-037) and queues one outbox row keyed on template, contact, job and count. TXT-025 follows from reading the count at send time: several held events for one job release one text with the latest count, and the others find nothing new. `plan_release` stays as it is; T126 decides its removal. Tests in the new `tests/integration/tests/quote_update_texts.rs` through the worker with the stand-in Twilio, fake data only: a second quote 10 minutes after the first-quote text is told at 3:00:00 and not at 2:59:59 (TD-TXT-06's sender case, D-1190); two quotes in at 22:00 to a 928 number give one text at 08:00:00 with the latest count (TD-QH-02's merge case); two held events for one job released at 08:00 and run on two connections at once give one text; a job closed overnight sends nothing; a picked job sends nothing; an opted-out number gets nothing. `homeowner_job_texts.rs`, `job_timers.rs` and `quote_texts.rs` pass unchanged.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T582"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "app/intake/src/quote_updates.rs",
+    "tests/integration/tests/quote_update_texts.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "TXT-017",
+    "TXT-025",
+    "QH-007",
+    "QH-001"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1190",
+    "D-012",
+    "D-158",
+    "D-461",
+    "D-1198",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 380,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T583-quote-count-update-texts",
+   "prompt": "kit/prompts/T583.md",
+   "acceptance": "`tests/integration/tests/quote_update_texts.rs` passes against PostgreSQL through the worker with every listed case; `homeowner_job_texts.rs`, `job_timers.rs`, `quote_texts.rs` and the `messaging` quiet-hours unit tests pass unchanged."
+  },
+  {
+   "id": "T584",
+   "slug": "business-account-email-fixes",
+   "title": "businesses: sign-up activation retried after a confirmed code, account emails skip a returned address, and the deliverability writes stay inside the business",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B9) `email_verification::confirm` (`app/businesses/src/email_verification.rs:375` to `:418`) commits the closed check and only then runs `identity::settle` (`:412` to `:416`); if settle fails the business stays pending, and a retried code finds no open check (`Ok(false)`), so nothing settles it again until a phone, match or email event. Settle runs inside the same transaction (it takes `&mut PgConnection`; a nested `begin` is a savepoint), so the code is taken only when the settle commits with it. (B30) `app/businesses/src/notice_emails.rs:16` to `:17` records a known gap: `emergency_test`, `after_hours_off`, `phone_linked` and `license_change` do not check `may_get_notices` on the main address (BIZ-040, BIZ-055), so a hard-bounced or complained address keeps getting mail (deliverability: the one sender's reputation). Each of the four skips a main address that may not get notices, as `returned` does (`:405` to `:425`); a kind sent to the owner's account address goes instead to the owner's other addresses that may get notices, and with none it sends nothing (the returned-address banner and digest line already tell the owner); the module doc's gap note is removed. (B31, privacy hardening) `record_inbox_answer`, `record_ok_reply` and `record_pick_alert` (`app/businesses/src/deliverability_check.rs:191`, `:214`, `:294`) insert or update by `member_id` with no check that the member belongs to the given business; today `Acting` is built from the session (`app/server/src/business_portal.rs:1019`), so no cross-business write was found, but nothing in the function stops one. Each insert selects from `businesses.team_member` where the ID and business match and the member is current (as `offer_sample_pick` does, `:78` to `:88`), and each `ON CONFLICT` update also requires the stored `business_id` to match; a mismatch writes nothing. Tests in the new `tests/integration/tests/business_account_email_fixes.rs`, fake data only: a settle failure made in the test (for example a test-created trigger that raises once, dropped after) leaves the code open so the retry activates; each of the four kinds sends nothing to a returned main address and reaches the owner's other verified address where the kind allows; a deliverability write with another business's member ID changes no row. Existing `businesses` and `notice_emails` tests pass unchanged. T133, the later owner of `email_verification.rs`, now depends on this task.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "businesses",
+   "deps": [
+    "T100",
+    "T517"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/businesses/src/email_verification.rs",
+    "app/businesses/src/notice_emails.rs",
+    "app/businesses/src/deliverability_check.rs",
+    "tests/integration/tests/business_account_email_fixes.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "BIZ-040",
+    "BIZ-055",
+    "BIZ-002"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1846",
+    "D-1847",
+    "D-3682",
+    "D-3687",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 340,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T584-business-account-email-fixes",
+   "prompt": "kit/prompts/T584.md",
+   "acceptance": "`tests/integration/tests/business_account_email_fixes.rs` passes against PostgreSQL with every listed case, each failing on `main` before the change; the `businesses` crate tests and the existing notice-email and email-verification integration tests pass unchanged."
+  },
+  {
+   "id": "T585",
+   "slug": "license-change-coverage-and-card",
+   "title": "businesses and licensing: a license change that drops job types reports coverage, and a lapsed ROC license never shows city-list lines",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B28, D-3911's first follow-up, never scheduled) `reapply_license` (`app/businesses/src/capability.rs:626` to `:661`) drops job types through `models::replace_job_types` with no coverage report, so a trade a license change leaves with no active business does not alert until another change touches it (OPS-006; the gap is stated at `app/businesses/src/service.rs:13` to `:14`). It reports as `set_job_types` does: `service::report_edit` (`:209`, made `pub(crate)`) with the before and after keys, in the same transaction, only when the business is active (a pause already reports through `apply`); the `service.rs` gap line is removed. (B10) `card_facts` (`app/licensing/src/card_facts.rs:67` to `:95`) keeps the ROC row only when its latest check showed Active (`roc_facts`, `:97`), and when none is current it falls through to `NoLicense`, so a quote card on an ROC or state-agency category whose license lapsed after the card went out shows the no-license city-list lines (LIC-038's lines are for work that needs no license). For a licensed kind with no current license `card_facts` returns `Ok(None)`, which `portals::quote_cards` (`app/portals/src/quote_cards.rs:118` to `:122`) already shows as no license lines; the doc says why (no false claim either way; PICK-041 shows only checked facts). Tests in the new `tests/integration/tests/license_change_coverage.rs`, fake data only: a class change that leaves a town's trade with no active business records 0 active for it and alerts (TD-OPS-01's shape); one that keeps another business changes no alert; an ROC category whose latest check is not Active gives no card facts, and a no-license category still gives its city line. `capability` and `card_facts` tests pass unchanged. The second D-3911 follow-up (a town no business has served) stays unowned and is listed in D-4052.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "businesses",
+   "deps": [
+    "T100",
+    "T517",
+    "T105"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing"
+   ],
+   "owns": [
+    "app/businesses/src/capability.rs",
+    "app/businesses/src/service.rs",
+    "app/licensing/src/card_facts.rs",
+    "tests/integration/tests/license_change_coverage.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/licensing.md",
+    "docs/spec/quotes-pick.md"
+   ],
+   "requirements": [
+    "OPS-006",
+    "LIC-026",
+    "LIC-038",
+    "PICK-041"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-3911",
+    "D-3646",
+    "D-493",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 260,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T585-license-change-coverage-and-card",
+   "prompt": "kit/prompts/T585.md",
+   "acceptance": "`tests/integration/tests/license_change_coverage.rs` passes against PostgreSQL with every listed case, the coverage and lapsed-license cases failing on `main` before the change; existing `capability`, `card_facts` and coverage tests pass unchanged."
+  },
+  {
+   "id": "T586",
+   "slug": "calls-hardening",
+   "title": "calls and privacy: TwiML text is escaped, a full number pool raises one open alert, and the read-back says only the street",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B19) `app/calls/src/voice.rs:147`, `:250`, `:691` and `app/calls/src/lifecycle.rs:324` put brand words, spoken lines and action URLs into TwiML unescaped, while `routing.rs` already has `xml_escape` (`app/calls/src/routing.rs:322`). Today every input is config or app-built, so this is hardening: `xml_escape` moves to one `pub(crate)` helper the four sites and `routing.rs` use, every interpolated value is escaped, and the TwiML for today's brand is byte for byte unchanged. (B23) `refuse_line` (`app/calls/src/service.rs:164` to `:175`) raises a new High `calls.pool_exhausted` alert on every refused call while the pool is full, so a busy evening gives Casey a pile of the same alert; it uses `ops::api::raise_alert_once` (`app/ops/src/api.rs:351`, subject a fixed pool subject), so one stays open until acknowledged. (B35) the read-back's `street_of` (`app/privacy/src/readback_reader.rs:47` to `:50`) cuts at the first comma; intake keeps the address as typed (`split_name_address`, `app/intake/src/rules.rs:498`), so a street line with no comma before the town, state and ZIP is read back whole, town and ZIP included, where CALL-005 says first name and street. With no comma it cuts after the last street-type word (St, Street, Ave, Rd, Dr, Ln, Blvd, Way, Ct, Pl, Cir, Hwy and their full forms, any case), else drops a trailing ZIP and state; the business on that line already holds the job address (CALL-005 runs only for a paid or $0-decided pick), so this is CALL-005's letter, not a leak. Tests, fake data only: the street cuts in `readback_reader.rs`'s own `#[cfg(test)]` module (a comma address, a no-comma address with town, state and ZIP, one with no street word); escaping (a `&`, `<` and a quote) in the new `app/calls/src/tests/twiml_escape.rs` (one `mod` line in the shared `app/calls/src/tests/mod.rs`) with the TwiML for today's brand unchanged; and in the new `tests/integration/tests/pool_alert_once.rs` two refused calls with a full pool raise one open alert. `voice_call_plan.rs`, `number_pool.rs` and the read-back tests pass unchanged.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "calls",
+   "deps": [
+    "T100",
+    "T517"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/calls/src/voice.rs",
+    "app/calls/src/lifecycle.rs",
+    "app/calls/src/routing.rs",
+    "app/calls/src/service.rs",
+    "app/privacy/src/readback_reader.rs",
+    "app/calls/src/tests/twiml_escape.rs",
+    "tests/integration/tests/pool_alert_once.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/spec/ops-recovery.md"
+   ],
+   "requirements": [
+    "CALL-005",
+    "CALL-017",
+    "OPS-004"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-077",
+    "D-231",
+    "D-2285",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 280,
+    "context_pct": 19
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T586-calls-hardening",
+   "prompt": "kit/prompts/T586.md",
+   "acceptance": "`tests/integration/tests/pool_alert_once.rs`, `app/calls/src/tests/twiml_escape.rs` and the new read-back unit tests pass, the alert and street cases failing on `main` before the change; every existing `calls` TwiML test passes byte for byte unchanged."
+  },
+  {
+   "id": "T587",
+   "slug": "payments-fee-writer-and-3ds-connection",
+   "title": "payments and picks: the old Confirm fee writer is marked test-only with a guard, and the 3-D Secure read holds no connection across Stripe",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): Money. (B11) `record_fee_at_confirm` (`app/payments/src/service.rs:409`) is `pub` and re-exported (`app/payments/src/api.rs:194`); its own doc says it is not the production writer (D-2623) and only done tests call it, but `api.rs:20`, `app/payments/src/pick_fee.rs:10`, `service.rs:15` to `:19` and `:335`, `app/payments/src/free_wins.rs:194`, the shared `app/payments/CLAUDE.md:17` and `app/payments/NOTES.md:76`, `:128`, `:262`, `:308` still name it the ledger writer, and its key (`CONFIRM_FEE_ACTION`, job and business) differs from `charge_key(pick)`, so a new caller would book a second entry (no live double-book today: reconcile uses `charge_key`, `app/payments/src/reconcile.rs:548`). It cannot become `pub(crate)` or feature-gated: four done integration test files call it (`tests/integration/tests/fee_at_pick.rs`, `fee_facts_at_pick.rs`, `fee_fixed_at_pick.rs`, `fee_mode_switch.rs`) and `askhava-core`'s `test-control` is the one allowed feature (SEC-035, `app/core/Cargo.toml:27`). So it gets `#[doc(hidden)]`, its doc and every line above say \"test-only; the production writers are `book_success` and `waive_at_confirm`\" (the NOTES lines edited in place, D-3474's union-merge kept), and the new `tests/security/tests/fee_writer_callers.rs` fails when any non-test source under `app/` other than its definition and the `api.rs` re-export names `record_fee_at_confirm` (a source scan that first drops comments and string literals as `code_only` in `tests/security/tests/vault_readers.rs:30` does, and skips `src/tests/` and `#[cfg(test)]` modules, so the corrected doc lines that name it pass; proved by a planted source string that calls it and must be flagged). (B25) `record_three_ds` (`app/payments/src/three_ds.rs:40` to `:71`) reads, awaits Stripe and writes on one `&mut PgConnection`, and its caller `run_dispute_opened` (`app/picks/src/dispute_steps.rs:76` to `:80`) holds a pooled connection across that network call (rust brain R11; T242 only audits this in stage 6). `three_ds.rs` adds a `pool` form (read on one acquired connection, release it, ask Stripe, write on a fresh one, the write still `ON CONFLICT DO NOTHING`), `run_dispute_opened` calls it before it acquires its own connection, and `record_three_ds` keeps its signature for `tests/integration/tests/three_ds_record.rs`, documented as for a caller holding no other work on that connection. Tests: the new security test, and in the new `tests/integration/tests/three_ds_pool.rs` a pool of `max_connections(1)` with a fake `ThreeDsStripe` whose call acquires a connection, driving `run_dispute_opened` under `tokio::time::timeout` so it fails rather than hangs on `main`: the pool form finishes, the row is stored once, a second run asks Stripe nothing. The fee and 3-D Secure integration tests pass unchanged; payments branch coverage stays at or above 95%.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "payments",
+   "deps": [
+    "T100",
+    "T517"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy"
+   ],
+   "owns": [
+    "app/payments/src/service.rs",
+    "app/payments/src/pick_fee.rs",
+    "app/payments/src/free_wins.rs",
+    "app/payments/src/three_ds.rs",
+    "app/picks/src/dispute_steps.rs",
+    "tests/security/tests/fee_writer_callers.rs",
+    "tests/integration/tests/three_ds_pool.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "FEE-006",
+    "FEE-050",
+    "FEE-027"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-2623",
+    "D-3118",
+    "D-1417",
+    "D-3474",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 300,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T587-payments-fee-writer-and-3ds-connection",
+   "prompt": "kit/prompts/T587.md",
+   "acceptance": "`tests/security/tests/fee_writer_callers.rs` and `tests/integration/tests/three_ds_pool.rs` pass (the pool case times out and fails on `main` before the change); every fee and 3-D Secure integration test passes unchanged; no doc line under `app/payments/` calls `record_fee_at_confirm` the ledger writer."
+  },
+  {
+   "id": "T588",
+   "slug": "business-forms-keep-entries",
+   "title": "portals and server: a refused business sign-up keeps every field she entered, and a double-tapped quote shows its job page, not a 404",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B13, A11Y-012, WCAG 2.2 3.3.7) A refused sign-up re-renders through `Entered` (`app/portals/src/business_signup.rs:383` to `:405`, filled at `app/server/src/business_signup.rs:602` and `:700`), which keeps the names, license numbers and review links but not the email, the phone, the ticked categories or the attestation, so she types them again. `Entered` gains them and the sealed re-render shows them; the attestation and the text-consent box are shown ticked again only when she ticked them in that same post (they stay her own act, CON-019; never pre-ticked by the app), and a field the server refused is shown with its reason as today. No value is logged or kept beyond the re-render (`no-store` stays). (B39, SEC-026) A second `POST` of a used Quote link (a double tap on \"Send quote\") waits on the first one's row lock, finds the link used and answers the bare 404 (`app/server/src/action_links.rs:20` to `:21`, D-3673). D-3673's smallest fix: a `portals::api` read in `app/portals/src/action_links.rs` (beside the crate-private `action_link_business`, `:307`) that names the business and job of a Quote link used within its window, so `server::action_links` shows that job's page again (`job_details_page`) with the quote as stored; any other used or unknown link stays the 404. Tests in the new `app/server/tests/business_forms_keep_entries.rs`, fake data only: a sign-up refused for a bad license number comes back with the email, phone, categories and both boxes as posted; a refusal for an unticked attestation keeps the rest; a second Quote `POST` with the same used link answers 200 with the job page and stores one quote; a used link of another kind is still 404. `business_signup_route.rs`, `es_business_signup_route.rs`, `action_links_route.rs` and `tests/e2e/business_signup_served.spec.ts` pass unchanged; no axe-core violation on the re-rendered form.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T121"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility",
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/business_signup.rs",
+    "app/server/src/business_signup.rs",
+    "app/portals/src/action_links.rs",
+    "app/server/src/action_links.rs",
+    "app/server/tests/business_forms_keep_entries.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/accessibility.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md"
+   ],
+   "requirements": [
+    "A11Y-012",
+    "SEC-026",
+    "BIZ-022"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-3673",
+    "D-2943",
+    "D-2954",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 360,
+    "context_pct": 32
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T588-business-forms-keep-entries",
+   "prompt": "kit/prompts/T588.md",
+   "acceptance": "`app/server/tests/business_forms_keep_entries.rs` passes with every listed case, each failing on `main` before the change; `business_signup_route.rs`, `es_business_signup_route.rs`, `action_links_route.rs` and `tests/e2e/business_signup_served.spec.ts` (with axe-core) pass unchanged."
+  },
+  {
+   "id": "T589",
+   "slug": "pick-review-language-and-name",
+   "title": "intake and portals: the pick review page is shown in her request's language and names the business",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B42) The pick review step is always English and never names the business: `ReviewView::review` sets `PageLanguage::En` (`app/portals/src/pick_flow.rs:185` to `:201`), and `in_language` and `for_business` (`:241` to `:258`) are `#[cfg(test)]`, \"only tests call it until the page reads the request's language (D-1236 item 5, D-1249)\" and business names (D-3032). The new `app/intake/src/job_language.rs` gives `intake::api::job_language(db, job)` (one line in the shared `app/intake/src/api.rs`): the language of the request that holds the job (`request_language`, `app/intake/src/service.rs:748`, with the job-to-request lookup `job_texts` uses) and whether Spanish conversations are on (T480's `messaging::api::spanish_switch`), Spanish only when both say so (TXT-039, CON-026), English when the read finds no request. `pick_flow.rs` reads it and the business's public name (`businesses::api::public_names`, `app/businesses/src/public_name.rs:41`) for each review view (`:277`, `:413`, `:448`, `:596`), and `in_language` and `for_business` lose `#[cfg(test)]`; a failed read shows the English page with the generic wording (never an error page). T590 uses `job_language` for the texts. Tests: in the new `tests/integration/tests/pick_review_language.rs`, fake data only: a Spanish request with the switch on gets the Spanish review page with PICK-016's Spanish Terms line and the business named in the PICK-049 box; with the switch off it is English; an English request is English. `pick_flow`'s unit tests and `pick_bound_forms.rs` pass unchanged; no axe-core violation.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T480",
+    "T363"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/intake/src/job_language.rs",
+    "app/portals/src/pick_flow.rs",
+    "tests/integration/tests/pick_review_language.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/messaging.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "PICK-016",
+    "PICK-049",
+    "TXT-039",
+    "CON-026"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1236",
+    "D-1249",
+    "D-3032",
+    "D-427",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 280,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T589-pick-review-language-and-name",
+   "prompt": "kit/prompts/T589.md",
+   "acceptance": "`tests/integration/tests/pick_review_language.rs` passes with every listed case, the Spanish case failing on `main` before the change; `pick_flow`'s unit tests and `pick_bound_forms.rs` pass unchanged."
+  },
+  {
+   "id": "T590",
+   "slug": "call-texts-in-her-language",
+   "title": "calls, picks and server: the who's-calling and missed-call texts go in her language",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B22) The who's-calling text is always English: `let language = (Language::En, false)` (`app/calls/src/whos_calling.rs:176`); so is the missed-call text and its email copy, whose `ReleasedPick.language` is filled `(Language::En, false)` (`app/picks/src/unreachable_steps.rs:193` to `:203`, \"`picks` cannot read her request's language (D-3489)\", and `:545` to `:549`). Neither `calls` nor `picks` may call `intake` (`kit/layers.json`), so the composition passes a language source in: a small trait or boxed function in each crate answering `(Language, spanish_on)` for a job, set by a builder or a new `run_*` entry point registered in the shared `app/server/src/lib.rs` (`register_whos_calling` at `:1185`, `register_unreachable` at `:1036`) over T589's `intake::api::job_language`; `run_whos_calling`'s signature and `StepParts`'s fields stay (`tests/integration/tests/whos_calling.rs:131`, `unreachable_steps.rs` and `dispute_submit.rs` build them), and with no source set the text is English as today. A failed language read sends English rather than holding a time-critical call text. The generic name follows the language (`generic_name`, `:116`). Tests in the new `tests/integration/tests/call_texts_language.rs`, fake data only: with the switch on, a Spanish request's who's-calling text and missed-call text (and its email copy) are the Spanish templates; with it off, English; no source set, English. `whos_calling.rs`, `unreachable_steps.rs` and `quiet_exempt_call_texts.rs` (once T403 lands) pass unchanged. T403, the later owner of `whos_calling.rs`, now depends on this task.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "calls",
+   "deps": [
+    "T589"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/calls/src/whos_calling.rs",
+    "app/picks/src/unreachable_steps.rs",
+    "tests/integration/tests/call_texts_language.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "TXT-027",
+    "TXT-030",
+    "TXT-039"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-3489",
+    "D-2206",
+    "D-427",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 280,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T590-call-texts-in-her-language",
+   "prompt": "kit/prompts/T590.md",
+   "acceptance": "`tests/integration/tests/call_texts_language.rs` passes with every listed case, the Spanish cases failing on `main` before the change; `whos_calling.rs` and `unreachable_steps.rs` integration tests pass unchanged."
+  },
+  {
    "id": "T549",
    "slug": "phase1-audit-money",
    "title": "Fresh Opus audit, part 1 of 3: payments, picks, quotes, jobs, catalog, licensing (D-3891)",
@@ -19550,7 +20201,18 @@
     "T570",
     "T571",
     "T572",
-    "T573"
+    "T573",
+    "T580",
+    "T581",
+    "T582",
+    "T583",
+    "T584",
+    "T585",
+    "T586",
+    "T587",
+    "T588",
+    "T589",
+    "T590"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19572,7 +20234,8 @@
    "decisions": [
     "D-473",
     "D-3891",
-    "D-3892"
+    "D-3892",
+    "D-4052"
    ],
    "cites": [
     "sources/02_build_plan/Build_Plan.md:236"
@@ -19907,7 +20570,7 @@
    "id": "T126",
    "slug": "cleanup-stage5",
    "title": "Stage 5 cleanup: dead code, duplicates, docs up to date (end of Phase 1)",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), the duplicate-function scan `python3 scripts/check_duplicates.py --strict` (T516, D-3870), `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7, 8, 9, 11 and 12 (and section 10 holding no build note: `python3 scripts/split_arch_notes.py --check` prints 0, D-3870) and the build notes in `app/*/NOTES.md` and `docs/build-notes.md` (found by grep, never loaded whole; D-3620) brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is not recorded here: the task report gives each exit-test clause's evidence, and the runner records the proof (D-479, D-3870). `tests/task_kinds_deferred.json` (T327) must hold, at this stage's end, only kinds whose owner task is still queued, each with its reason; any other entry is reported in the task report for the next plan change to remove or justify (D-2290). Plan change D-3891 (Fable's pre-claim check), as T100 (D-3870): for each duplicate group one copy stays and the others call it where `kit/layers.json` allows; behaviour is unchanged and every existing test passes unchanged; a group is merged only when every name its bodies use (constants, types, functions, imports) resolves to the same item in each copy; otherwise it goes on the keep-list (`KEEP`, `scripts/check_duplicates.py:28`) with its reason, and a keep-list edit rewrites `kit/plan.lock` (`python3 scripts/check_plan_lock.py --write`) in the same commit. For a security group (sign-in, session, link-token or CSRF code), the report names the existing tests that cover each remaining caller. Findings under `tests/` (which `check_rust_rules.py`, `check_code_docs.py` and `check_crates.py` also scan) are reported in the task report, not fixed. Stage 5's proof is hand-recorded (`runner/proof.py:108`): the task report gives each clause of row 5 (`docs/build-readiness.md:42`) its evidence, and the task never runs `--record-proof`. This is not stage 5's last task: the documentation pass (T498 to T514, T551 to T555) depends on it and starts only after the overseer records the stage-5 proof.",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), the duplicate-function scan `python3 scripts/check_duplicates.py --strict` (T516, D-3870), `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7, 8, 9, 11 and 12 (and section 10 holding no build note: `python3 scripts/split_arch_notes.py --check` prints 0, D-3870) and the build notes in `app/*/NOTES.md` and `docs/build-notes.md` (found by grep, never loaded whole; D-3620) brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is not recorded here: the task report gives each exit-test clause's evidence, and the runner records the proof (D-479, D-3870). `tests/task_kinds_deferred.json` (T327) must hold, at this stage's end, only kinds whose owner task is still queued, each with its reason; any other entry is reported in the task report for the next plan change to remove or justify (D-2290). Plan change D-3891 (Fable's pre-claim check), as T100 (D-3870): for each duplicate group one copy stays and the others call it where `kit/layers.json` allows; behaviour is unchanged and every existing test passes unchanged; a group is merged only when every name its bodies use (constants, types, functions, imports) resolves to the same item in each copy; otherwise it goes on the keep-list (`KEEP`, `scripts/check_duplicates.py:28`) with its reason, and a keep-list edit rewrites `kit/plan.lock` (`python3 scripts/check_plan_lock.py --write`) in the same commit. For a security group (sign-in, session, link-token or CSRF code), the report names the existing tests that cover each remaining caller. Findings under `tests/` (which `check_rust_rules.py`, `check_code_docs.py` and `check_crates.py` also scan) are reported in the task report, not fixed. Stage 5's proof is hand-recorded (`runner/proof.py:108`): the task report gives each clause of row 5 (`docs/build-readiness.md:42`) its evidence, and the task never runs `--record-proof`. This is not stage 5's last task: the documentation pass (T498 to T514, T551 to T555) depends on it and starts only after the overseer records the stage-5 proof. Plan change D-4052 (audit batch B, items B29 and B21): one known leftover for this pass, removed only if the scans and a grep confirm no production caller: `businesses::api::night_count` (`app/businesses/src/api.rs:132`, `service::night_count`, the un-narrowed count beside `covered_night_count`, D-2010). `messaging::rules::plan_release` (`app/messaging/src/rules.rs:340`) is not removed in this pass: T583's sender does its job by reading the count at send time, but its unit tests are TD-QH-02's U-level cases (`app/messaging/src/tests/quiet_hours.rs`), so it stays until a decision names TD-QH-02 unit coverage that remains without it.",
    "type": "cleanup",
    "phase": 1,
    "stage": "5",
@@ -20036,7 +20699,18 @@
     "T570",
     "T571",
     "T572",
-    "T573"
+    "T573",
+    "T580",
+    "T581",
+    "T582",
+    "T583",
+    "T584",
+    "T585",
+    "T586",
+    "T587",
+    "T588",
+    "T589",
+    "T590"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -20078,7 +20752,8 @@
     "D-3844",
     "D-3870",
     "D-3877",
-    "D-3891"
+    "D-3891",
+    "D-4052"
    ],
    "cites": [
     "BUILD_BRIEF.md:488",
@@ -21109,7 +21784,7 @@
    "id": "T512",
    "slug": "guides-compact",
    "title": "Architecture notes, build notes, operating manual and owner guide compacted (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). After the crate notes, these lose what a crate `NOTES.md` or another of them already says (link to it instead), superseded statements and wordiness: `docs/architecture.md` sections 7 to 12 (shared; locked sections 3 to 6 unchanged), `docs/build-notes.md`, `docs/ai-operating-manual.md` and `docs/owner-guide.md` (Casey's; plain words kept). Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --map `docs/reviews/doc-maps/T512.json`` passes (the map records its base SHA), so every removed or rewritten line maps to a line range that now holds its content, every fact token kept inside that range; lines not worth changing stay byte-identical. No backticked `path:N` cited outside `docs/decisions.md` changes its text at line N. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is only appended to. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. Plan change D-3891 (Fable's pre-claim check): in `docs/architecture.md` no line is added or removed between the start of section 7 and the last line cited outside `docs/decisions.md` (computed at claim time; `:397` on Nov 16, cited from `docs/compliance/`); shorten in place there and cut freely after it. Section numbers stay; section 12's first bullet stays the design-fact list (`kit/prompts/TEMPLATE.md:82`); the two `**Build notes** (D-3620)` stub paragraphs stay byte-identical (`scripts/split_arch_notes.py:66`, `:157`); line 1 of `docs/build-notes.md` stays. The manual's pointer to the digest is T514's.",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). After the crate notes, these lose what a crate `NOTES.md` or another of them already says (link to it instead), superseded statements and wordiness: `docs/architecture.md` sections 7 to 12 (shared; locked sections 3 to 6 unchanged), `docs/build-notes.md`, `docs/ai-operating-manual.md` and `docs/owner-guide.md` (Casey's; plain words kept). Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --map `docs/reviews/doc-maps/T512.json`` passes (the map records its base SHA), so every removed or rewritten line maps to a line range that now holds its content, every fact token kept inside that range; lines not worth changing stay byte-identical. No backticked `path:N` cited outside `docs/decisions.md` changes its text at line N. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is only appended to. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. Plan change D-3891 (Fable's pre-claim check): in `docs/architecture.md` no line is added or removed between the start of section 7 and the last line cited outside `docs/decisions.md` (computed at claim time; `:397` on Nov 16, cited from `docs/compliance/`); shorten in place there and cut freely after it. Section numbers stay; section 12's first bullet stays the design-fact list (`kit/prompts/TEMPLATE.md:82`); the two `**Build notes** (D-3620)` stub paragraphs stay byte-identical (`scripts/split_arch_notes.py:66`, `:157`); line 1 of `docs/build-notes.md` stays. The manual's pointer to the digest is T514's. Plan change D-4052 (audit item C1; corrected in its review round 1): the manual's section 2 (start routine), step 4, tells every session to read all of `kit/state.json`, about 1.8 MB (some 450,000 tokens, almost all `tasks`). Replace it, keeping its fact tokens, with: run `git show origin/claude/kit-state:kit/state.json | python3 -c \"import json,sys;s=json.load(sys.stdin);print(json.dumps({k:s.get(k) for k in ('current','main_red','build_hold','lease','owner_waits')}))\"` and read the last 30 lines of `PROGRESS.md` from `claude/kit-state` (read only); note `current`, `main_red`, `build_hold`, any lease and any `owner_waits`; never read the whole file. Section 2, step 6, likewise prints only the named task, keeping its tokens (\"If not, stop and report\"): `git show origin/claude/kit-state:kit/state.json | python3 -c \"import json,sys;s=json.load(sys.stdin);t={x['id']:x for x in s['tasks']};me=t[sys.argv[1]];print(me['status'],me['attempts'],[(d,t[d]['status']) for d in me['deps']])\" T###`. The `kit/state.json` row of section 3 points to the same one-liners. In the map each old line is an ordinary removed-line entry targeting its new line, with its fact tokens kept.",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -21142,7 +21817,8 @@
     "D-3474",
     "D-3620",
     "D-3805",
-    "D-3891"
+    "D-3891",
+    "D-4052"
    ],
    "cites": [],
    "budget": {
@@ -21760,14 +22436,15 @@
    "id": "T133",
    "slug": "sandbox-resend-lob",
    "title": "Resend and Lob test mode behind the adapters",
-   "goal": "The Resend and Lob test-mode clients sit behind their adapters with signed webhooks (Svix for Resend) and the signed inbound-email route into `privacy`, and the identity chain's email and letter steps and the email fallback for failed texts pass against them (BIZ-001 to BIZ-003, BIZ-016, TXT-014, TXT-015, SEC-039, PRIV-026). The fake Resend gains the suppression-list endpoints (list, and delete for one address), routed with this task's controls in `stand_ins/server.py`'s `ROUTES` table (owned here, after T131 and before T134, which also add routes there, D-2821), and the BIZ-056 re-verification calls the adapter's suppression removal (T176's) before writing its audit row; BIZ-056 moved here from T149 because the fake endpoint must exist first and T149 runs before this task (TD-BIZ-36, D-492). The call is added to `app/businesses/src/email_verification.rs` (T196's, extended here) and tested in `tests/integration/tests/email_reverify.rs` (D-493). Nov 11 vendor-double review batch 4, F6 and the Lob note (D-2765, D-2770): (1) the fake Resend keeps a team-wide suppression list (`stand_ins/resend.py:110` has none): a send to a listed address is accepted (an ID returned) and emits `email.suppressed`, never `email.delivered`; a hard bounce lists the address; a control lists one; and a control makes a send emit `email.failed`; (2) in sandbox mode `tests/contract/test_sandbox_t133.py` records whether Resend's API offers removing one suppressed address, which BIZ-056's `DELETE /suppressions/{address}` (`app/adapters/src/email.rs:197`) assumes; if it does not, the adapter's removal returns a typed unsupported error, BIZ-056's re-verification raises one High alert asking Casey to remove the address in Resend's dashboard and writes no removal audit row it did not make, and the gap goes to `docs/for-casey-review.md`; (3) it records the unit of Lob's `Lob-Signature-Timestamp` (`app/adapters/src/signatures.rs` reads unix seconds) and, if Lob sends another unit, fixes the reader and the fake Lob together with a test that fails before the fix. T379 counts suppressed and failed emails as not reached. Plan change D-3155: its inbound-email route hands each email `privacy` has read to T151's help-request and opt-out entry point (CON-035's detector, `RevokeChannel::Email` or `EmailReply`, confirmed by email).",
+   "goal": "The Resend and Lob test-mode clients sit behind their adapters with signed webhooks (Svix for Resend) and the signed inbound-email route into `privacy`, and the identity chain's email and letter steps and the email fallback for failed texts pass against them (BIZ-001 to BIZ-003, BIZ-016, TXT-014, TXT-015, SEC-039, PRIV-026). The fake Resend gains the suppression-list endpoints (list, and delete for one address), routed with this task's controls in `stand_ins/server.py`'s `ROUTES` table (owned here, after T131 and before T134, which also add routes there, D-2821), and the BIZ-056 re-verification calls the adapter's suppression removal (T176's) before writing its audit row; BIZ-056 moved here from T149 because the fake endpoint must exist first and T149 runs before this task (TD-BIZ-36, D-492). The call is added to `app/businesses/src/email_verification.rs` (T196's, extended here) and tested in `tests/integration/tests/email_reverify.rs` (D-493). Nov 11 vendor-double review batch 4, F6 and the Lob note (D-2765, D-2770): (1) the fake Resend keeps a team-wide suppression list (`stand_ins/resend.py:110` has none): a send to a listed address is accepted (an ID returned) and emits `email.suppressed`, never `email.delivered`; a hard bounce lists the address; a control lists one; and a control makes a send emit `email.failed`; (2) in sandbox mode `tests/contract/test_sandbox_t133.py` records whether Resend's API offers removing one suppressed address, which BIZ-056's `DELETE /suppressions/{address}` (`app/adapters/src/email.rs:197`) assumes; if it does not, the adapter's removal returns a typed unsupported error, BIZ-056's re-verification raises one High alert asking Casey to remove the address in Resend's dashboard and writes no removal audit row it did not make, and the gap goes to `docs/for-casey-review.md`; (3) it records the unit of Lob's `Lob-Signature-Timestamp` (`app/adapters/src/signatures.rs` reads unix seconds) and, if Lob sends another unit, fixes the reader and the fake Lob together with a test that fails before the fix. T379 counts suppressed and failed emails as not reached. Plan change D-3155: its inbound-email route hands each email `privacy` has read to T151's help-request and opt-out entry point (CON-035's detector, `RevokeChannel::Email` or `EmailReply`, confirmed by email). Plan change D-4052: T584 runs first and changes `email_verification::confirm` so the sign-up settle runs inside the code's transaction; keep that.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
    "module": "adapters",
    "deps": [
     "T131",
-    "T293"
+    "T293",
+    "T584"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -21828,7 +22505,8 @@
     "D-1933",
     "D-2765",
     "D-2770",
-    "D-3155"
+    "D-3155",
+    "D-4052"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
