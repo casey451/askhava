@@ -390,6 +390,7 @@ const SITE_PAGE_STATES: readonly PageState[] = [
   ["/coverage", "what we cover now", "may charge roaming fees.", "Para propietarios"],
   ["/help", "help page", "Messages are not watched around the clock.", "Para propietarios"],
   ["/help/roc-complaint", "ROC complaint page", "File a complaint on the ROC website", "Para propietarios"],
+  ["/request", "request page and web chat, first question", "What job do you need done?", "Your chat with"],
 ].map(([route = "", name = "", shows = "", hides = ""]) => ({ route, name, shows, hides, sql: "", statusRegions: [] }));
 const OWNER_SIGNIN_ROUTE = "/owner/sign-in";
 const OWNER_STEP_UP_ROUTE = "/owner/step-up";
@@ -446,6 +447,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: "/coverage", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/coverage") },
   { route: "/help", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/help") },
   { route: "/help/roc-complaint", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/help/roc-complaint") },
+  { route: "/request", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/request") },
   { route: OWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: OWNER_SIGNIN_STATES },
   { route: OWNER_STEP_UP_ROUTE, seed: portalSeed(false), states: OWNER_STEP_UP_STATES },
 ];
