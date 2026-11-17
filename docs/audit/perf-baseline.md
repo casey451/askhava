@@ -16,7 +16,32 @@ Lab numbers on one build machine (4 CPUs, x86_64 Linux, PostgreSQL 16.15 on the 
 | Pick review step | 1 / 10 / 50 | 3.9 / 9.5 / 47.6 | 5.4 / 14.7 / 58.4 | 6.7 / 16.9 / 60.3 | 7.3 | 1,000 / 5,000; 5,000 / 5,000; 50,000 / 50,000 | 2,056 | 0% |
 | Final Pick (code send to the Verify stand-in) | 1 / 10 / 50 | 13.0 / 60.3 / 276.4 | 27.4 / 69.3 / 315.1 | 38.7 / 73.8 / 320.1 | 33.7 | 1,000 / 5,000; 5,000 / 10,000; 250,000 / 250,000 | 2,418 | 0% |
 
-Not exposed on `main`, so not measured: home (`GET /` answers 404), ZIP lookup (no HTTP route), matching (no results step; it runs in the worker), Confirm (not served, D-1480, so no paying request was made) and the business dashboard (`GET /b` answers 404). `perf_zip_scale` (41,000 made-up ZIPs over 29,000 towns, debug build): p95 0.3 us for the first ZIP, 805 us for the middle, 1,991 us for the last and 1,980 us for an unknown ZIP.
+Not exposed on `main` at `bc343d81`, so not measured then: home (`GET /` answered 404), ZIP lookup (no HTTP route), matching (no results step; it runs in the worker), Confirm (not served, D-1480, so no paying request was made) and the business dashboard (`GET /b` answered 404). Home and `/b` are served now (`app/site/src/pages.rs:45`); their figures are in the next section. `perf_zip_scale` (41,000 made-up ZIPs over 29,000 towns, debug build): p95 0.3 us for the first ZIP, 805 us for the middle, 1,991 us for the last and 1,980 us for an unknown ZIP.
+
+## Ci quick run and lab Core Web Vitals (T603, November 17, 2026)
+
+The Ci "Performance report" step's commands, run in the task's session at commit `2c331d90` on the same kind of machine (4 CPUs, x86_64 Linux, PostgreSQL 16.15): `python3 -m perf.bench --quick --out <bench>`, `npx playwright test --config tests/perf/playwright.config.ts` (PERF_VITALS_OUT set) and `python3 perf/compare.py --bench <bench> --vitals <vitals> --write-baseline docs/audit/perf-baseline-ci.json`, which wrote that file. Before T603 the vitals spec stopped at its first page (D-4196): a `pointerout` Event Timing entry (32 ms, at 379 ms) delivered during load stopped the LCP observer before the first LCP entry (416 ms).
+
+| Route (quick) | p95 ms at 1 / 10 users | Queries at 1 user | Errors at 1 / 10 users |
+|---|---|---|---|
+| Home | 4.54 / 27.26 | 3.98 | 0% / 0% |
+| Business dashboard (`/b`, signed out) | 1.36 / 6.18 | 1.9 | 0% / 0% |
+| Intake acknowledgement | 22.89 / 206.43 | 31.07 | 0% / 0% |
+| Quote page | 8.43 / 39.97 | 10.9 | 0% / 0% |
+| Quote page polling refresh | 7.18 / 33.32 | 10.88 | 0% / 0% |
+| Pick review step | 11.3 / 29.82 | 10.1 | 0% / 0% |
+| Final Pick | 37.21 / 5,067.75 | 31.95 | 0% / 10% |
+
+The Final Pick at 10 users took about 5 s per request with 10% errors, and compare.py warned that the error-rate goal was missed; this run does not show why, and no fix is made or claimed here.
+
+| Page (lab, not field) | LCP ms | INP stand-in ms | CLS |
+|---|---|---|---|
+| Home | 420 | 48 | 0.015 |
+| ZIP result | 416 | 40 | 0.015 |
+| Intake first step | 412 | 32 | 0.026 |
+| Quote page | 420 | 32 | 0.028 |
+
+Not measured: Confirm (`GET` answers 404, not served, D-1480) and the business dashboard page (`GET /b` answers 401 signed out). Every measured figure meets its goal and its aspirational figure.
 
 ## D-3292 goals (met or missed, never a failure)
 
