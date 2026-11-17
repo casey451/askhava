@@ -61,6 +61,14 @@
 //! quote, which the final Pick and the code step read (their templates carry no package). No
 //! package or a stale one sends the card back with the choices and an error (`?choose=<n>`);
 //! [`store`] calls `picks::api::page_pick_tier`, whose [`TierPick::Choose`] rolls back too.
+//!
+//! T441 (PICK-008, PRIV-005, D-2632, D-3878, D-3879): the page, its packages and the forms number
+//! quotes by their kept shown number (`quote_page::shown_page`), and the review, pick and code
+//! forms carry `business`, the business that number was shown for (optional: a post without it
+//! resolves the number). A number that no longer maps to that business is a quote that can't be
+//! picked: back to the card, or rolled back. [`store`] picks through `picks::api::bound_pick`;
+//! a package pick goes through `page_pick_tier` at the business's list place and is re-checked in
+//! its transaction ([`still_bound`]). The backup, share and waiting-pick calls take the list place.
 
 use std::sync::Arc;
 
@@ -78,11 +86,10 @@ use askhava_ops::api::Actor;
 use askhava_picks::api::rules::{CodeVia, SendAsk, SendRefused, Stage, parse_code, stage};
 use askhava_picks::api::{
     Browser, ChosenTier, CodeCheck, CodeSent, ContactChoice, PageCodeKeys, PagePick, TierPick,
-    backup_changed, bind_backup, bind_share, check_page_code, choose_backup, page_pick,
+    backup_changed, bind_backup, bind_share, bound_pick, check_page_code, choose_backup,
     page_pick_tier, record_contact_choice, send_page_code, share_ticked, tick_share, waiting_quote,
 };
 use askhava_privacy::api::{Vault, store_shared_email};
-use askhava_quotes::api::page_quotes;
 use axum::Router;
 use axum::extract::{FromRef, Path, State};
 use axum::http::{HeaderName, HeaderValue, StatusCode};
@@ -95,7 +102,7 @@ use sha2::{Digest, Sha256};
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 
-use crate::quote_page::{QUOTE_PAGE_ROUTE, number_quotes, quote_packages, token_expired};
+use crate::quote_page::{Numbered, QUOTE_PAGE_ROUTE, quote_packages, shown_page, token_expired};
 use crate::security::{CsrfField, CsrfForm, WebSecurity, no_store, refuse_cross_site};
 use crate::session::csrf_token;
 
@@ -126,7 +133,8 @@ impl PageLanguage {
 
 /// The posted Pick form: the CSRF token, the quote's number on the page (PICK-008), the
 /// backup's number, empty for "No backup" (PICK-047), the share box, `yes` when ticked
-/// (PICK-049), and a tiers quote's package as [`tier_value`] writes it (PICK-053).
+/// (PICK-049), a tiers quote's package as [`tier_value`] writes it (PICK-053), and the business
+/// the number was shown for, optional so a post without it resolves the number (D-3879).
 #[derive(Debug, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 struct PickForm {
@@ -139,6 +147,8 @@ struct PickForm {
     share: String,
     #[serde(default)]
     tier: String,
+    #[serde(default)]
+    business: String,
 }
 
 impl CsrfField for PickForm {
@@ -178,6 +188,8 @@ pub(crate) struct ReviewView {
     language: PageLanguage,
     /// The picked business's name for the share box; `None` names it by its quote number.
     business: Option<String>,
+    /// The business quote `quote` was shown for, carried by the final form (PICK-008, D-2632).
+    pub(crate) bound: String,
 }
 
 impl ReviewView {
@@ -198,6 +210,7 @@ impl ReviewView {
             share_error: false,
             language: PageLanguage::En,
             business: None,
+            bound: String::new(),
         }
     }
 
@@ -394,12 +407,13 @@ async fn review<V>(
     jar: CookieJar,
     CsrfForm(form): CsrfForm<PickForm>,
 ) -> Response {
-    let (job, request, others) = match pickable(&flow, &raw, form.quote).await {
+    let (job, request, bound, others) = match pickable(&flow, &raw, &form).await {
         Ok(Pickable::Open {
             job,
             request,
-            others,
-        }) => (job, request, others),
+            bound,
+            backups,
+        }) => (job, request, bound, numbers(&backups)),
         Ok(Pickable::Confirmed { .. } | Pickable::No) => return back(&raw, form.quote),
         Err(status) => return status.into_response(),
     };
@@ -412,6 +426,7 @@ async fn review<V>(
     let cookie = tier.map(|t| tier_cookie(&raw, form.quote, &t));
     let mut view = ReviewView::review(request, form.quote, raw, csrf);
     view.others = others;
+    view.bound = bound.business.to_string();
     match cookie {
         Some(cookie) => (jar.add(cookie), render(view)).into_response(),
         None => render(view),
@@ -432,29 +447,38 @@ where
     V: VerifyAdapter + Send + Sync,
 {
     let csrf = csrf_token(&jar).unwrap_or_default();
-    let found = pickable(&flow, &raw, form.quote).await;
+    let found = pickable(&flow, &raw, &form).await;
     if let (
         Ok(Pickable::Open {
-            request, others, ..
+            request,
+            bound,
+            backups,
+            ..
         }),
         false,
     ) = (&found, form.share == "yes")
     {
-        return render(refused(*request, &form, others.clone(), (raw, csrf)));
+        return render(refused((*request, bound), &form, backups, (raw, csrf)));
     }
     let Some(keys) = flow.keys.clone() else {
         return match found {
-            Ok(Pickable::Open { request, .. }) => {
+            Ok(Pickable::Open { request, bound, .. }) => {
                 let mut view = ReviewView::review(request, form.quote, raw, csrf);
                 view.not_open = true;
+                view.bound = bound.business.to_string();
                 render(view)
             }
             Ok(Pickable::Confirmed { .. } | Pickable::No) => back(&raw, form.quote),
             Err(status) => status.into_response(),
         };
     };
-    let (job, request) = match found {
-        Ok(Pickable::Open { job, request, .. }) => (job, request),
+    let (job, request, bound, backups) = match found {
+        Ok(Pickable::Open {
+            job,
+            request,
+            bound,
+            backups,
+        }) => (job, request, bound, backups),
         Ok(Pickable::Confirmed { request }) => {
             return render(CodeView::line_only(request, form.quote, raw, CONFIRMED));
         }
@@ -462,25 +486,28 @@ where
         Err(status) => return status.into_response(),
     };
     let given = cookie_tier(&jar, &raw, form.quote);
-    let tiered = match prepare(&flow, &csrf, (job, &form), given).await {
+    let backup = backup_place(&form.backup, &backups);
+    let tiered = match prepare(&flow, &csrf, (job, bound, backup), given).await {
         Ok(tier) => tier.is_some(),
         Err(no) => return no.answer(&raw, form.quote),
     };
-    let view = CodeView::arrival(request, form.quote, raw, csrf);
-    started(&flow, &keys, (job, form.quote, tiered), view).await
+    let mut view = CodeView::arrival(request, form.quote, raw, csrf);
+    view.bound = bound.business.to_string();
+    started(&flow, &keys, (job, bound, tiered), view).await
 }
 
 /// The final Pick's checks before a code: the package she chose, when the quote has packages
 /// (PICK-053, D-2332: none or a stale one is the card again), then her backup and share tick
-/// ([`keep_backup`]). The package it answers is `None` for any other quote.
+/// ([`keep_backup`], `backup` the backup's list place). The package it answers is `None` for any
+/// other quote.
 async fn prepare<V>(
     flow: &PickFlow<V>,
     csrf: &str,
-    (job, form): (Uuid, &PickForm),
+    (job, bound, backup): (Uuid, Bound, Option<usize>),
     given: Option<ChosenTier>,
 ) -> Result<Option<ChosenTier>, NoTier> {
-    let tier = tier_or_again(flow, (job, form.quote), given).await?;
-    keep_backup(flow, (job, form.quote), &form.backup, &browser(csrf))
+    let tier = tier_or_again(flow, (job, bound.number), given).await?;
+    keep_backup(flow, (job, bound.place), backup, &browser(csrf))
         .await
         .map_err(NoTier::Failed)?;
     Ok(tier)
@@ -547,10 +574,8 @@ async fn tier_or_again<V>(
 ) -> Result<Option<ChosenTier>, NoTier> {
     let busy = |step| NoTier::Failed(failed(step));
     let mut db = flow.pool.acquire().await.map_err(|_| busy("pool"))?;
-    let quotes = page_quotes(&mut db, job)
-        .await
-        .map_err(|_| busy("quotes"))?;
-    let packages = quote_packages(&mut db, job, &number_quotes(quotes))
+    let quotes = shown_page(&mut db, job).await.map_err(|_| busy("quotes"))?;
+    let packages = quote_packages(&mut db, job, &quotes)
         .await
         .map_err(|_| busy("packages"))?;
     let Some((_, tiers)) = packages.into_iter().find(|(n, _)| *n == quote) else {
@@ -588,12 +613,13 @@ impl NoTier {
 /// PICK-049, A11Y-011, A11Y-012, D-3032: the review shown again after a final Pick with the share
 /// box unticked: nothing sent or stored, the posted backup kept, the box unticked with its error.
 fn refused(
-    request: i64,
+    (request, bound): (i64, &Bound),
     form: &PickForm,
-    others: Vec<usize>,
+    backups: &[(usize, usize)],
     link: (String, String),
 ) -> ReviewView {
     let mut view = ReviewView::review(request, form.quote, link.0, link.1);
+    let others = numbers(backups);
     view.backup = form
         .backup
         .trim()
@@ -601,6 +627,7 @@ fn refused(
         .ok()
         .filter(|n| others.contains(n));
     view.others = others;
+    view.bound = bound.business.to_string();
     view.share_error = true;
     view
 }
@@ -610,19 +637,18 @@ fn browser(csrf: &str) -> Browser {
     Sha256::digest(csrf.as_bytes()).into()
 }
 
-/// PICK-047, PICK-049, D-400, D-2661, D-3032: stores the backup posted with the final Pick of
-/// `quote` on `job` from `browser` (empty or unreadable is "No backup"; `choose_backup` keeps only
-/// another available quote) and logs the ticked share box; both count only once bound after her
-/// code. A failed write is a bare 500,
+/// PICK-047, PICK-049, D-400, D-2661, D-3032: stores the backup posted with the final Pick of the
+/// quote at list place `quote` on `job` from `browser` (`None` is "No backup"; `choose_backup`
+/// keeps only another available quote) and logs the ticked share box; both count only once bound
+/// after her code. `picks` still keys both by list place (D-3878). A failed write is a bare 500,
 /// logged once with no value.
 async fn keep_backup<V>(
     flow: &PickFlow<V>,
     (job, quote): (Uuid, usize),
-    backup: &str,
+    named: Option<usize>,
     browser: &Browser,
 ) -> Result<(), StatusCode> {
     let mut db = flow.pool.acquire().await.map_err(|_| failed("pool"))?;
-    let named = backup.trim().parse::<usize>().ok();
     choose_backup(&mut db, (job, quote), (named, browser), flow.clock.now())
         .await
         .map_err(|_| failed("backup"))?;
@@ -636,15 +662,15 @@ async fn keep_backup<V>(
 async fn started<V>(
     flow: &PickFlow<V>,
     keys: &PickCodeKeys<V>,
-    (job, quote, tiered): (Uuid, usize, bool),
+    (job, bound, tiered): (Uuid, Bound, bool),
     mut view: CodeView,
 ) -> Response
 where
     V: VerifyAdapter + Send + Sync,
 {
     let browser = browser(&view.csrf);
-    match start_code(flow, keys, (job, quote, tiered), &browser).await {
-        Ok(Start::Same) => done(view.request, quote, view.token),
+    match start_code(flow, keys, (job, bound.place, tiered), &browser).await {
+        Ok(Start::Same) => done(view.request, bound.number, view.token),
         Ok(Start::Line(line, form)) => {
             view.line = Some(line);
             view.form = form;
@@ -662,7 +688,7 @@ enum Start {
     Line(PageLine, bool),
 }
 
-/// Sends the page code for `quote` of `job`, unless that quote already waits with the backup
+/// Sends the page code for the quote at list place `quote` of `job`, unless that quote already waits with the backup
 /// `browser` last asked for (no code; a different backup needs one, D-2661; a package choice,
 /// `tiered`, always needs one, as the waiting pick may hold another package, D-3626), the
 /// homeowner paused the job (CON-029) or her number can't be texted (`send_window`): then a
@@ -765,8 +791,10 @@ enum Pickable {
         job: Uuid,
         /// Its request number.
         request: i64,
-        /// The other available quotes' numbers in arrival order (PICK-047's choices).
-        others: Vec<usize>,
+        /// The quote's number, business and list place.
+        bound: Bound,
+        /// The other available quotes' `(number, list place)`, by number (PICK-047's choices).
+        backups: Vec<(usize, usize)>,
     },
     /// The business already confirmed a pick (Payment pending on, before a final status).
     Confirmed {
@@ -777,11 +805,16 @@ enum Pickable {
     No,
 }
 
-/// Whether quote `quote` behind token `raw` can be picked now: the link opens (SEC-037,
-/// PICK-011), the job takes a pick ([`takes_pick`]: PICK-012, PICK-032) and the quote is on the
-/// page and available (PICK-008); a confirmed job is [`Pickable::Confirmed`]. `Err(404)` for a
-/// bad link, `Err(500)` on a failed read (logged once, with no value).
-async fn pickable<V>(flow: &PickFlow<V>, raw: &str, quote: usize) -> Result<Pickable, StatusCode> {
+/// Whether the posted quote behind token `raw` can be picked now: the link opens (SEC-037,
+/// PICK-011), the job takes a pick ([`takes_pick`]: PICK-012, PICK-032) and the shown number is on
+/// the page, available and, when the form names one, shown for that business (PICK-008, PRIV-005,
+/// D-2632, D-3879); a confirmed job is [`Pickable::Confirmed`]. `Err(404)` for a bad link,
+/// `Err(500)` on a failed read (logged once, with no value).
+async fn pickable<V>(
+    flow: &PickFlow<V>,
+    raw: &str,
+    form: &impl Posted,
+) -> Result<Pickable, StatusCode> {
     let token = LinkToken::parse(raw).map_err(|_| StatusCode::NOT_FOUND)?;
     let mut db = flow.pool.acquire().await.map_err(|_| failed("pool"))?;
     let job = resolve(&mut db, &token)
@@ -801,26 +834,99 @@ async fn pickable<V>(flow: &PickFlow<V>, raw: &str, quote: usize) -> Result<Pick
     if !takes_pick(row.status) {
         return Ok(Pickable::No);
     }
-    let quotes = page_quotes(&mut db, job)
+    let quotes = shown_page(&mut db, job)
         .await
         .map_err(|_| failed("quotes"))?;
-    let available: Vec<usize> = number_quotes(quotes)
-        .iter()
-        .filter(|q| !q.quote.unavailable)
-        .map(|q| q.number)
-        .collect();
-    if !available.contains(&quote) {
+    let (quote, posted) = form.posted();
+    let Some(bound) = bound_in(&quotes, quote, posted).filter(|b| b.open) else {
         return Ok(Pickable::No);
-    }
+    };
     let request = job_number(&mut db, job)
         .await
         .map_err(|_| failed("number"))?;
-    let others = available.into_iter().filter(|&n| n != quote).collect();
+    let backups = quotes
+        .iter()
+        .filter(|q| q.number != quote)
+        .filter_map(|q| bound_in(&quotes, q.number, "").filter(|b| b.open))
+        .map(|b| (b.number, b.place))
+        .collect();
     Ok(Pickable::Open {
         job,
         request,
-        others,
+        bound,
+        backups,
     })
+}
+
+/// PICK-008, PRIV-005, D-2632, D-3878: shown number `number` among `quotes`, the business it was
+/// shown for and that business's list place in arrival order (the place `picks`' page calls still
+/// resolve); `None` when no quote has that number or `posted`, when not empty, names another
+/// business, which is `Taken`: nothing is stored, notified or charged for another business.
+fn bound_in(quotes: &[Numbered], number: usize, posted: &str) -> Option<Bound> {
+    let quote = &quotes.iter().find(|q| q.number == number)?.quote;
+    let posted = posted.trim();
+    if !posted.is_empty() && posted.parse::<Uuid>().ok() != Some(quote.business) {
+        return None;
+    }
+    let mut arrival: Vec<_> = quotes
+        .iter()
+        .map(|q| (q.quote.received_at, q.quote.business))
+        .collect();
+    arrival.sort_unstable();
+    let place = arrival.iter().position(|&(_, b)| b == quote.business)? + 1;
+    Some(Bound {
+        number,
+        business: quote.business,
+        place,
+        open: !quote.unavailable,
+    })
+}
+
+/// A quote as a pick form names it (PICK-008, D-2632): its shown number, the business it was
+/// shown for and that business's list place in arrival order.
+#[derive(Debug, Clone, Copy)]
+struct Bound {
+    /// The shown number, never changed (D-084).
+    number: usize,
+    /// The business the number was shown for.
+    business: Uuid,
+    /// Its list place, what `picks`' page calls other than `bound_pick` still take (D-3878).
+    place: usize,
+    /// It can be picked: not withdrawn or unavailable.
+    open: bool,
+}
+
+/// A posted pick form: its shown number and the business it carries, empty when none (D-3879).
+trait Posted {
+    /// `(quote, business)` as posted.
+    fn posted(&self) -> (usize, &str);
+}
+
+impl Posted for PickForm {
+    fn posted(&self) -> (usize, &str) {
+        (self.quote, &self.business)
+    }
+}
+
+impl Posted for CodeForm {
+    fn posted(&self) -> (usize, &str) {
+        (self.quote, &self.business)
+    }
+}
+
+/// The backup choices' shown numbers (PICK-047).
+fn numbers(backups: &[(usize, usize)]) -> Vec<usize> {
+    backups.iter().map(|&(n, _)| n).collect()
+}
+
+/// The list place of the backup posted as shown number `backup` among `backups`; `None` ("No
+/// backup") for an empty, unreadable or unavailable one (PICK-047).
+fn backup_place(backup: &str, backups: &[(usize, usize)]) -> Option<usize> {
+    let n = backup.trim().parse::<usize>().ok()?;
+    backups
+        .iter()
+        .find(|&&(b, _)| b == n)
+        .map(|&(_, place)| place)
 }
 
 /// Back to quote `quote`'s card on the quote page (a 303, so a reload never re-posts).
@@ -858,6 +964,9 @@ struct CodeForm {
     /// (PICK-049, D-3032).
     #[serde(default, rename = "share")]
     _share: String,
+    /// The business the number was shown for; optional, as on [`PickForm`] (D-3879).
+    #[serde(default)]
+    business: String,
 }
 
 impl CsrfField for CodeForm {
@@ -942,6 +1051,8 @@ struct CodeView {
     line: Option<PageLine>,
     /// Whether the form shows (not after a line saying no code can come).
     form: bool,
+    /// The business the quote was shown for, carried by the form (PICK-008, D-2632).
+    bound: String,
 }
 
 impl CodeView {
@@ -956,6 +1067,7 @@ impl CodeView {
             send: String::new(),
             _backup: String::new(),
             _share: String::new(),
+            business: String::new(),
         };
         Self::checked(request, token, csrf, form)
     }
@@ -985,6 +1097,7 @@ impl CodeView {
             failed: false,
             line: None,
             form: true,
+            bound: form.business,
         };
         match form.send.as_str() {
             "new" => view.code.clear(),
@@ -1080,8 +1193,16 @@ where
 {
     let csrf = csrf_token(&jar).unwrap_or_default();
     let quote = form.quote;
-    let (job, request) = match (pickable(&flow, &raw, quote).await, flow.keys.is_some()) {
-        (Ok(Pickable::Open { job, request, .. }), _) => (job, request),
+    let (job, request, bound) = match (pickable(&flow, &raw, &form).await, flow.keys.is_some()) {
+        (
+            Ok(Pickable::Open {
+                job,
+                request,
+                bound,
+                ..
+            }),
+            _,
+        ) => (job, request, bound),
         (Ok(Pickable::Confirmed { request }), true) => {
             return render(CodeView::line_only(request, quote, raw, CONFIRMED));
         }
@@ -1091,6 +1212,7 @@ where
     let send = form.send.clone();
     let given = cookie_tier(&jar, &raw, quote);
     let mut view = CodeView::checked(request, raw, csrf, form);
+    view.bound = bound.business.to_string();
     let Some(keys) = flow.keys.clone() else {
         if !view.failed {
             view.line = Some(NOT_OPEN);
@@ -1099,9 +1221,9 @@ where
     };
     let tiered = given.is_some();
     match send.as_str() {
-        "new" => started(&flow, &keys, (job, quote, tiered), view).await,
+        "new" => started(&flow, &keys, (job, bound, tiered), view).await,
         "pick" if !view.failed => match tier_or_again(&flow, (job, quote), given).await {
-            Ok(tier) => finish(&flow, &keys, (job, tier), view).await,
+            Ok(tier) => finish(&flow, &keys, (job, bound, tier), view).await,
             Err(no) => no.answer(&view.token, quote),
         },
         _ => render(view),
@@ -1114,7 +1236,7 @@ where
 async fn finish<V>(
     flow: &PickFlow<V>,
     keys: &PickCodeKeys<V>,
-    (job, tier): (Uuid, Option<ChosenTier>),
+    (job, bound, tier): (Uuid, Bound, Option<ChosenTier>),
     view: CodeView,
 ) -> Response
 where
@@ -1148,7 +1270,7 @@ where
         browser: browser(&view.csrf),
         email: (view.reach == "email").then(|| SecretString::from(view.email.trim().to_owned())),
     };
-    match store(flow, keys, (job, quote, tier.as_ref()), (owner, &asked)).await {
+    match store(flow, keys, (job, bound, tier.as_ref()), (owner, &asked)).await {
         Ok(Stored::Done) => done(request, quote, view.token),
         Ok(Stored::Taken) => render(CodeView::line_only(request, quote, view.token, TAKEN)),
         Ok(Stored::Again) => again(&view.token, quote),
@@ -1170,8 +1292,10 @@ enum Stored {
 /// seen: CON-029, D-1602): the pause re-checked, the page pick, then the terms acceptance with
 /// channel `quote_page`, the line shown beside the final Pick and the published Terms (PICK-016,
 /// TERMS-016, D-1516). [`Stored::Taken`] when nothing could be picked (rolled back: the job moved,
-/// was paused or the quote went, or this browser never ticked the share box for the quote:
-/// PICK-049); with `tier` the pick is `picks::api::page_pick_tier`'s, and a package the quote no
+/// was paused or the quote went, the shown number no longer maps to the bound business, or this
+/// browser never ticked the share box for the quote: PICK-049, PICK-008, PRIV-005, D-2632); without
+/// `tier` the pick is `picks::api::bound_pick`'s; with it `picks::api::page_pick_tier`'s at the
+/// list place, then [`still_bound`] re-checked, and a package the quote no
 /// longer has is [`Stored::Again`], rolled back (PICK-053, D-2332);
 /// a failed acceptance insert rolls the pick back too. The backup and the share tick the browser
 /// sent and her contact choice are bound to the pick, new or kept, in the same transaction
@@ -1179,12 +1303,12 @@ enum Stored {
 async fn store<V>(
     flow: &PickFlow<V>,
     keys: &PickCodeKeys<V>,
-    (job, quote, tier): (Uuid, usize, Option<&ChosenTier>),
+    (job, bound, tier): (Uuid, Bound, Option<&ChosenTier>),
     (owner, asked): (JobHomeowner, &Asked),
 ) -> Result<Stored, StatusCode> {
     let now = flow.clock.now();
     let mut tx = flow.pool.begin().await.map_err(|_| failed("begin"))?;
-    if !share_ticked(&mut tx, (job, quote), &asked.browser)
+    if !share_ticked(&mut tx, (job, bound.place), &asked.browser)
         .await
         .map_err(|_| failed("share"))?
     {
@@ -1195,10 +1319,24 @@ async fn store<V>(
         .map_err(|_| failed("pause"))?;
     let actor = Actor::Homeowner(owner.contact);
     let picked = match tier {
-        Some(t) => page_pick_tier(&mut tx, (job, paused), (quote, t), actor, now).await,
-        None => page_pick(&mut tx, (job, paused), quote, actor, now)
-            .await
-            .map(TierPick::Page),
+        Some(t) => page_pick_tier(&mut tx, (job, paused), (bound.place, t), actor, now).await,
+        None => bound_pick(
+            &mut tx,
+            (job, paused),
+            (bound.number, bound.business),
+            actor,
+            now,
+        )
+        .await
+        .map(TierPick::Page),
+    };
+    let picked = match picked {
+        Ok(TierPick::Page(PagePick::Picked(_) | PagePick::Same(_)))
+            if tier.is_some() && !still_bound(&mut tx, job, bound).await? =>
+        {
+            Ok(TierPick::Page(PagePick::Taken))
+        }
+        other => other,
     };
     let (pick, new) = match picked {
         Ok(TierPick::Page(PagePick::Picked(pick))) => (pick, true),
@@ -1210,12 +1348,29 @@ async fn store<V>(
         Err(_) => return Err(failed("pick")),
     };
     let kept = (asked, owner.contact, &keys.vault);
-    bind(&mut tx, ((job, quote), pick), kept, now).await?;
+    bind(&mut tx, ((job, bound.place), pick), kept, now).await?;
     if new {
         accept_terms(&mut tx, keys, (owner.conversation, pick), now).await?;
     }
     tx.commit().await.map_err(|_| failed("commit"))?;
     Ok(Stored::Done)
+}
+
+/// PICK-008, PRIV-005, D-2632: after a package pick at `bound`'s list place, inside its
+/// transaction (the job's row lock held), whether shown number `bound.number` still maps to
+/// `bound.business` and the waiting pick is that business's; `false` rolls the pick back.
+async fn still_bound(
+    tx: &mut sqlx::PgConnection,
+    job: Uuid,
+    bound: Bound,
+) -> Result<bool, StatusCode> {
+    let quotes = shown_page(tx, job).await.map_err(|_| failed("quotes"))?;
+    let business = bound.business.to_string();
+    let Some(now) = bound_in(&quotes, bound.number, &business) else {
+        return Ok(false);
+    };
+    let waiting = waiting_quote(tx, job).await.map_err(|_| failed("pick"))?;
+    Ok(waiting == Some(now.place))
 }
 
 /// The terms acceptance stored with a new page pick: channel `quote_page`, the line shown beside

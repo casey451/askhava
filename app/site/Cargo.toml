@@ -16,6 +16,9 @@ askama = { workspace = true }
 axum = { workspace = true }
 jiff = { workspace = true }
 pulldown-cmark = { workspace = true }
+rand = { workspace = true }
+secrecy = { workspace = true }
+serde = { workspace = true }
 sqlx = { workspace = true }
 tracing = { workspace = true }
 
