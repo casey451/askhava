@@ -1,20 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-17T06:19:15Z by runner e631c126320a (actions).
+Updated 2026-11-17T06:20:28Z by runner f5c064328691 (actions).
 
-**Building: T564 in progress since 06:04Z; 384 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T564 in progress since 06:04Z; 385 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 384 of 559 build tasks (owner gates not counted)
+- **Tasks done:** 385 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T564 claimed 06:04Z, lease until 09:04Z; lane 4: T204 claimed 04:22Z, lease until 09:18Z
 - **Week:** 15% used, 161.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:19Z, 0 min before this update
+- **Last run:** 06:19Z, 1 min before this update
 - **Keeper:** last ran 06:18Z, next wake 09:00Z
 
 ## Needs attention
 - PLAN GAP T201 (since 2026-11-17T06:03:54Z, no attempt used; a plan change fixes it): T201: dependency T221 is DONE but its owned file app/site/templates/legal.html is not on main; T201: dependency T221 is DONE but its owned file app/site/templates/your_data.html is not on main; T201: dependency T221 is DONE but its owned file app/site/templates/business_data.html is not on main; T201: dependency T221 is DONE but its owned file app/site/src/legal_pages.rs is not on main; T201: dependency T221 is DONE but its owned file tests/e2e/legal_pages.spec.ts is not on main; T201: dependency T221 is DONE but its owned file tests/docs/test_legal_pages.py is not on main; T201: dependency T221 is DONE but its owned file docs/legal/published/versions.json is not on main; T201: dependency T221 is DONE but its owned file tests/docs/test_published_versions.py is not on main; T201: dependency T221 is DONE but its owned file app/intake/src/ai_on.rs is not on main
 - PLAN GAP T112 (since 2026-11-17T06:03:54Z, no attempt used; a plan change fixes it): T112: dependency T221 is DONE but its owned file app/site/templates/legal.html is not on main; T112: dependency T221 is DONE but its owned file app/site/templates/your_data.html is not on main; T112: dependency T221 is DONE but its owned file app/site/templates/business_data.html is not on main; T112: dependency T221 is DONE but its owned file app/site/src/legal_pages.rs is not on main; T112: dependency T221 is DONE but its owned file tests/e2e/legal_pages.spec.ts is not on main; T112: dependency T221 is DONE but its owned file tests/docs/test_legal_pages.py is not on main; T112: dependency T221 is DONE but its owned file docs/legal/published/versions.json is not on main; T112: dependency T221 is DONE but its owned file tests/docs/test_published_versions.py is not on main; T112: dependency T221 is DONE but its owned file app/intake/src/ai_on.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- Strict plan check red: 2 problem(s) on tasks still to run (+145 on DONE tasks); first: T115: stored context_pct 13% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +23,7 @@ Updated 2026-11-17T06:19:15Z by runner e631c126320a (actions).
 | T586 | calls and privacy: TwiML text is escaped, a full number pool | MERGE_PENDING | 1 | 88 min | 06:17Z |  |
 | T481 | messaging and payments: mark a replayed text sent from the c | MERGE_PENDING | 1 | 114 min | 05:36Z |  |
 | T103 | intake: the web-chat conversation, where typing a verified m | MERGE_PENDING | 1 | 106 min | 05:27Z |  |
-| T585 | businesses and licensing: a license change that drops job ty | MERGE_PENDING | 1 | 43 min | 05:10Z |  |
+| T585 | businesses and licensing: a license change that drops job ty | done | 1 | 43 min | 05:10Z |  |
 | T571 | server and calls: a press of 9 on the safety call is never l | done | 1 | 45 min | 05:08Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | done | 2 | 29 min | 04:41Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T591 | Runner (harness): free the backup job's disk and cap the smo | done | 1 | 67 min | 04:23Z |  |
@@ -83,18 +84,18 @@ Updated 2026-11-17T06:19:15Z by runner e631c126320a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 305 of 733 (41.6%) · partial 320 · unstarted 108
-**Tasks merged (throughput only):** 384 of 557
+**Requirements verified:** 302 of 733 (41.2%) · partial 323 · unstarted 108
+**Tasks merged (throughput only):** 385 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 20 | 11 | 4 | 35 |
+| accessibility | 19 | 12 | 4 | 35 |
 | ai | 11 | 14 | 4 | 29 |
 | businesses | 21 | 35 | 2 | 58 |
 | calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 27 | 13 | 3 | 43 |
+| intake | 25 | 15 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
@@ -120,7 +121,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 27 of 167 done
+- stage 5: 28 of 167 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
