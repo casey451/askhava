@@ -242,6 +242,26 @@ async fn texts(db: &mut PgConnection) -> i64 {
         .expect("texts")
 }
 
+/// `body` with each quote-page token (`/q/` and 64 hex characters, `link_token`) cut down to
+/// `/q/`, and the number cut, so PICK-046's no-amount check never trips on the random token
+/// (D-4196).
+fn without_link_tokens(body: &str) -> (String, usize) {
+    let (mut out, mut cuts, mut rest) = (String::new(), 0, body);
+    while let Some(at) = rest.find("/q/") {
+        let (head, tail) = rest.split_at(at + 3);
+        out.push_str(head);
+        rest = match tail.get(..64) {
+            Some(token) if token.bytes().all(|b| b.is_ascii_hexdigit()) => {
+                cuts += 1;
+                &tail[64..]
+            }
+            _ => tail,
+        };
+    }
+    out.push_str(rest);
+    (out, cuts)
+}
+
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn pick_046_opted_out_with_an_email_gets_one_email_and_no_text(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
@@ -270,7 +290,9 @@ async fn pick_046_opted_out_with_an_email_gets_one_email_and_no_text(pool: PgPoo
     for other in &NAMES[1..] {
         assert!(!plain.contains(other), "no other business: {plain}");
     }
-    assert!(!plain.contains("190") && !plain.contains('$'), "no amount");
+    let (words, cuts) = without_link_tokens(plain);
+    assert_eq!(cuts, 1, "one quote-page token: {plain}");
+    assert!(!words.contains("190") && !words.contains('$'), "no amount");
     assert!(
         !plain.contains(PHONE) && !plain.contains(EMAIL),
         "no contact"
