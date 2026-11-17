@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T02:12:48Z by runner 08bbf6a75b00 (actions).
+Updated 2026-11-17T02:12:56Z by runner 08bbf6a75b00 (actions).
 
 **Building: T103 in progress since 02:12Z; 377 of 556 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 377 of 556 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T103 claimed 02:12Z, lease until 05:12Z; lane 4: T221 claimed 01:54Z, lease until 04:54Z; lane 5: T469 claimed 00:32Z, lease until 05:09Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
+- **Lane:** lane 2: T103 claimed 02:12Z, lease until 05:12Z; lane 4: T221 claimed 01:54Z, lease until 04:54Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
 - **Week:** 11% used, 169.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:12Z, 0 min before this update
 - **Keeper:** last ran 02:05Z, next wake 04:04Z
@@ -18,6 +18,7 @@ Updated 2026-11-17T02:12:48Z by runner 08bbf6a75b00 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T469 | server (harness): the Resend email client from settings and  | MERGE_PENDING | 1 | 99 min | 02:12Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | check_failed | 1 | 2 h 47 min | 01:23Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   0.13. |
 | T320 | ops: a check that runs on a schedule raises its alert once w | MERGE_PENDING | 2 | 78 min | 01:13Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T373 | businesses: changing a phone's number ends that phone's text | MERGE_PENDING | 2 | 42 min | 01:04Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
@@ -118,8 +119,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T103 (lease until 2026-11-17T05:12:02Z)
 - lane 4: T221 (lease until 2026-11-17T04:54:09Z)
-- lane 5: T469 (lease until 2026-11-17T05:09:53Z)
 - lane 7: T586 (lease until 2026-11-17T05:01:43Z)
 
 ## Last usage reading
-- {"task": "T221", "at": "2026-11-17T01:23:31Z", "input_tokens": 420, "output_tokens": 130553, "cache_creation_input_tokens": 428679, "cache_read_input_tokens": 18351949}
+- {"task": "T469", "at": "2026-11-17T02:12:32Z", "cache_creation_input_tokens": 191170, "output_tokens": 39204, "input_tokens": 117, "cache_read_input_tokens": 4165548}
