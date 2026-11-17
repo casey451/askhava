@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T04:28:17Z by runner e169ad925feb (actions).
+Updated 2026-11-17T04:28:50Z by runner 78bc4c55419e (manual).
 
 **Building: T221 in progress since 04:11Z; 381 of 557 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,11 @@ Updated 2026-11-17T04:28:17Z by runner e169ad925feb (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T221 claimed 04:11Z, lease until 07:11Z; lane 2: T103 claimed 03:40Z, lease until 07:28Z; lane 3: T585 claimed 04:27Z, lease until 07:27Z; lane 4: T204 claimed 04:22Z, lease until 07:22Z; lane 5: T571 claimed 04:23Z, lease until 07:23Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z
 - **Week:** 13% used, 161.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:27Z, 0 min before this update
+- **Last run:** 04:28Z, 0 min before this update
 - **Keeper:** last ran 04:25Z, next wake 06:43Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 1 problem(s) on tasks still to run (+138 on DONE tasks); first: T103: stored context_pct 25% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -76,31 +75,31 @@ Updated 2026-11-17T04:28:17Z by runner e169ad925feb (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 305 of 733 (41.6%) · partial 315 · unstarted 113
+**Requirements verified:** 2 of 733 (0.3%) · partial 618 · unstarted 113
 **Tasks merged (throughput only):** 381 of 557
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 20 | 11 | 4 | 35 |
-| ai | 11 | 13 | 5 | 29 |
-| businesses | 21 | 35 | 2 | 58 |
-| calls | 13 | 11 | 1 | 25 |
-| consent | 14 | 17 | 4 | 35 |
-| fees | 24 | 27 | 1 | 52 |
-| intake | 27 | 13 | 3 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
-| licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
-| ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 12 | 17 | 2 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 33 | 22 | 1 | 56 |
-| recurring | 8 | 0 | 3 | 11 |
-| security | 11 | 39 | 5 | 55 |
-| terms | 1 | 20 | 14 | 35 |
+| accessibility | 2 | 29 | 4 | 35 |
+| ai | 0 | 24 | 5 | 29 |
+| businesses | 0 | 56 | 2 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 31 | 4 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 0 | 40 | 3 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 43 | 2 | 45 |
+| ops-recovery | 0 | 23 | 31 | 54 |
+| privacy | 0 | 29 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 55 | 1 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 0 | 50 | 5 | 55 |
+| terms | 0 | 21 | 14 | 35 |
 | website | 0 | 14 | 14 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 0 | 11 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
