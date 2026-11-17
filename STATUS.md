@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T18:46:10Z by runner 339f0a35397d (actions).
+Updated 2026-11-17T18:58:57Z by runner 805fa0d42eef (actions).
 
-**Building: T605 in progress since 18:29Z; 405 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T605 in progress since 18:29Z; 406 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 405 of 570 build tasks (owner gates not counted)
+- **Tasks done:** 406 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T605 claimed 18:29Z, lease until 21:29Z; lane 3: T528 claimed 18:27Z, lease until 21:27Z; lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 7: T104 claimed 18:38Z, lease until 21:38Z
 - **Week:** 25% used, 141.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:39Z, 7 min before this update
+- **Last run:** 18:46Z, 12 min before this update
 - **Keeper:** last ran 18:27Z, next wake 18:47Z
 
 ## Needs attention
@@ -26,7 +26,7 @@ Updated 2026-11-17T18:46:10Z by runner 339f0a35397d (actions).
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 2 | 42 min | 17:35Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 1 | 51 min | 16:52Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | BLOCKED | 1 | 24 min | 16:50Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
-| T595 | server and site: a same-site web chat POST passes its CSRF c | MERGE_PENDING | 1 | 45 min | 16:19Z |  |
+| T595 | server and site: a same-site web chat POST passes its CSRF c | done | 1 | 45 min | 16:19Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | done | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T113 | Draft the Twilio campaign description from the real template | done | 2 | 35 min | 15:39Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
 | T471 | picks and intake: her "backup has your pick" text on every p | done | 1 | 47 min | 14:20Z |  |
@@ -83,38 +83,37 @@ Updated 2026-11-17T18:46:10Z by runner 339f0a35397d (actions).
 | T487 | ops and payments: safe mode after 24 hours pauses charges, a | done | 1 | 50 min | 19:47Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 30 min | 19:37Z |  |
 | T324 | harness: 95% branch floors for the money and privacy files o | done | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
-| T303 | server and portals: owner sign-in, sign-out and step-up are  | done | 1 | 29 min | 18:55Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 337 of 733 (46.0%) · partial 326 · unstarted 70
-**Tasks merged (throughput only):** 405 of 570
+**Requirements verified:** 0 of 733 (0.0%) · partial 663 · unstarted 70
+**Tasks merged (throughput only):** 406 of 570
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 19 | 13 | 3 | 35 |
-| ai | 12 | 14 | 3 | 29 |
-| businesses | 23 | 33 | 2 | 58 |
-| calls | 14 | 10 | 1 | 25 |
-| consent | 15 | 19 | 1 | 35 |
-| fees | 24 | 27 | 1 | 52 |
-| intake | 26 | 17 | 0 | 43 |
-| job-cards | 18 | 6 | 0 | 24 |
-| licensing | 40 | 8 | 0 | 48 |
-| lifecycle | 27 | 1 | 0 | 28 |
-| messaging | 25 | 19 | 1 | 45 |
-| ops-recovery | 1 | 27 | 26 | 54 |
-| privacy | 14 | 15 | 2 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 37 | 19 | 0 | 56 |
-| recurring | 8 | 1 | 2 | 11 |
-| security | 12 | 38 | 5 | 55 |
-| terms | 12 | 20 | 3 | 35 |
-| website | 1 | 23 | 4 | 28 |
-| wording | 3 | 13 | 16 | 32 |
+| accessibility | 0 | 32 | 3 | 35 |
+| ai | 0 | 26 | 3 | 29 |
+| businesses | 0 | 56 | 2 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 34 | 1 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 44 | 1 | 45 |
+| ops-recovery | 0 | 28 | 26 | 54 |
+| privacy | 0 | 29 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 0 | 9 | 2 | 11 |
+| security | 0 | 50 | 5 | 55 |
+| terms | 0 | 32 | 3 | 35 |
+| website | 0 | 24 | 4 | 28 |
+| wording | 0 | 16 | 16 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -127,7 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 48 of 178 done
+- stage 5: 49 of 178 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
