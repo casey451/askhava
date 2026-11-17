@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T23:00:53Z by runner 2a27c184336a (actions).
+Updated 2026-11-17T23:05:21Z by runner 2a27c184336a (actions).
 
-**Building: T606 in progress since 22:20Z; 412 of 582 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T606 in progress since 22:20Z; 413 of 582 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 412 of 582 build tasks (owner gates not counted)
+- **Tasks done:** 413 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T606 claimed 22:20Z, lease until 01:20Z
 - **Week:** 32% used, 131.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:00Z, 0 min before this update
+- **Last run:** 23:00Z, 4 min before this update
 - **Keeper:** last ran 23:00Z, next wake 01:22Z
 
 ## Needs attention
@@ -28,7 +28,7 @@ Updated 2026-11-17T23:00:53Z by runner 2a27c184336a (actions).
 | T582 | quotes and messaging (harness): a late read-back confirm is  | MERGE_PENDING | 1 | 36 min | 20:13Z |  |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | BLOCKED | 2 | 68 min | 19:54Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | BLOCKED | 3 | 46 min | 19:24Z |  |
-| T605 | businesses, intake and picks: the leaving answers, not-cover | MERGE_PENDING | 1 | 46 min | 19:15Z |  |
+| T605 | businesses, intake and picks: the leaving answers, not-cover | done | 1 | 46 min | 19:15Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | done | 2 | 37 min | 19:05Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | QUEUED | 1 | 58 min | 18:25Z |  |
 | T596 | Runner (harness): an ancestor's running smoke finishes and c | done | 1 | 41 min | 17:49Z |  |
@@ -90,7 +90,7 @@ Updated 2026-11-17T23:00:53Z by runner 2a27c184336a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 671 · unstarted 64
-**Tasks merged (throughput only):** 412 of 582
+**Tasks merged (throughput only):** 413 of 582
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -126,7 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 55 of 190 done
+- stage 5: 56 of 190 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
