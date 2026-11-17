@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T17:37:00Z by runner c761a31611b4 (actions).
+Updated 2026-11-17T17:37:08Z by runner c761a31611b4 (actions).
 
 **Building: T491 in progress since 15:41Z; 403 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 403 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T491 claimed 15:41Z, lease until 20:16Z; lane 3: T599 claimed 17:04Z, lease until 20:04Z; lane 4: T596 claimed 17:07Z, lease until 20:07Z; lane 7: T115 claimed 17:27Z, lease until 20:27Z
+- **Lane:** lane 1: T491 claimed 15:41Z, lease until 20:16Z; lane 4: T596 claimed 17:07Z, lease until 20:07Z; lane 7: T115 claimed 17:27Z, lease until 20:27Z
 - **Week:** 25% used, 142.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:36Z, 0 min before this update
 - **Keeper:** last ran 17:36Z, next wake 20:06Z
@@ -19,6 +19,7 @@ Updated 2026-11-17T17:37:00Z by runner c761a31611b4 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T599 | Tests (harness): the PICK-046 email's no-amount check ignore | MERGE_PENDING | 1 | 32 min | 17:36Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 2 | 42 min | 17:35Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 1 | 51 min | 16:52Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | BLOCKED | 1 | 24 min | 16:50Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
@@ -137,9 +138,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T491 (lease until 2026-11-17T20:16:04Z)
-- lane 3: T599 (lease until 2026-11-17T20:04:24Z)
 - lane 4: T596 (lease until 2026-11-17T20:07:46Z)
 - lane 7: T115 (lease until 2026-11-17T20:27:20Z)
 
 ## Last usage reading
-- {"task": "T104", "at": "2026-11-17T17:35:19Z", "cache_read_input_tokens": 5091436, "cache_creation_input_tokens": 214763, "output_tokens": 67656, "input_tokens": 147}
+- {"task": "T599", "at": "2026-11-17T17:36:40Z", "output_tokens": 9919, "input_tokens": 48, "cache_creation_input_tokens": 51228, "cache_read_input_tokens": 792071}
