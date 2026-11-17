@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-17T21:04:07Z by runner 805fa0d42eef (actions).
+Updated 2026-11-17T21:12:07Z by runner 2c331d907e11 (actions).
 
-**Building: T104 in progress since 20:59Z; 409 of 570 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T104 in progress since 20:59Z; 410 of 570 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 409 of 570 build tasks (owner gates not counted)
+- **Tasks done:** 410 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T104 claimed 20:59Z, lease until 23:59Z
 - **Week:** 30% used, 134.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:03Z, 0 min before this update
+- **Last run:** 21:04Z, 7 min before this update
 - **Keeper:** last ran 21:04Z, next wake 00:02Z
 
 ## Needs attention
 - BLOCKED T115: plan gap reported: PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing in `package.json`/`package-lock.json` can fix it; the smallest plan change is a harness task that adds a reviewed audit exception for this advisory to `scripts/prehandin.sh` and Ci's audit step.
 Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=4.0.7, latest published is 4.0.7, no patched version, so no override works. Path: typescript-eslint@8.71.2 -> @typescript-eslint/typescript-estree@8.71.2 -> tinyglobby@0.2.17 -> picomatch@4.0.7 (also via f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T115 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 11 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+175 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -28,7 +28,7 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | BLOCKED | 2 | 68 min | 19:54Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | BLOCKED | 3 | 46 min | 19:24Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T605 | businesses, intake and picks: the leaving answers, not-cover | MERGE_PENDING | 1 | 46 min | 19:15Z |  |
-| T528 | ops: the alert, audit-row and digest-row readers and writers | MERGE_PENDING | 2 | 37 min | 19:05Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
+| T528 | ops: the alert, audit-row and digest-row readers and writers | done | 2 | 37 min | 19:05Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | QUEUED | 1 | 58 min | 18:25Z |  |
 | T596 | Runner (harness): an ancestor's running smoke finishes and c | done | 1 | 41 min | 17:49Z |  |
 | T491 | picks: the Confirm window's end, every way it comes, runs th | done | 1 | 2 h 2 min | 17:44Z |  |
@@ -93,8 +93,8 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 733 (0.0%) · partial 663 · unstarted 70
-**Tasks merged (throughput only):** 409 of 570
+**Requirements verified:** 0 of 733 (0.0%) · partial 664 · unstarted 69
+**Tasks merged (throughput only):** 410 of 570
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -109,7 +109,7 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 | licensing | 0 | 48 | 0 | 48 |
 | lifecycle | 0 | 28 | 0 | 28 |
 | messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 0 | 28 | 26 | 54 |
+| ops-recovery | 0 | 29 | 25 | 54 |
 | privacy | 0 | 29 | 2 | 31 |
 | quiet-hours | 0 | 9 | 0 | 9 |
 | quotes-pick | 0 | 56 | 0 | 56 |
@@ -130,7 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 52 of 178 done
+- stage 5: 53 of 178 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
