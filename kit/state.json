@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T104",
+ "current": "T115",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -22900,13 +22900,13 @@
     "T489",
     "T202"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 1,
    "slug": "a11y-docs-statement",
    "type": "build",
    "stage": "5",
-   "attempt_started_at": "2026-11-17T17:27:20Z",
-   "lane": "7",
+   "attempt_started_at": "2026-11-17T18:45:57Z",
+   "lane": "5",
    "decision_ids": [
     4213,
     4214,
@@ -76283,7 +76283,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T18:38:50Z",
+ "updated_at": "2026-11-17T18:46:10Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -76381,17 +76381,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c57d89a4648d9e55697cb87872ac582b72c5dd8b",
+ "runner_sha": "339f0a35397da56329a69d9112ddcfe69b645f2f",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "33f876050cc0477409a021238f08103a6a1f5a69",
-   "ok": true,
-   "at": "2026-11-17T12:18:10Z",
-   "why": "start routine (ancestry reuse of 4fc6998df41d, 2026-11-17T12:04:32Z)",
-   "reused": "2026-11-17T12:04:32Z",
-   "base": "4fc6998df41d75651856c93fe183ad88082a9eb5"
-  },
   {
    "sha": "33f876050cc0477409a021238f08103a6a1f5a69",
    "ok": true,
@@ -76537,24 +76529,32 @@
    "why": "start routine (ancestry reuse of c57d89a4648d, 2026-11-17T18:29:26Z)",
    "reused": "2026-11-17T18:29:26Z",
    "base": "c57d89a4648d9e55697cb87872ac582b72c5dd8b"
+  },
+  {
+   "sha": "339f0a35397da56329a69d9112ddcfe69b645f2f",
+   "ok": true,
+   "at": "2026-11-17T18:45:57Z",
+   "why": "start routine (ancestry reuse of c57d89a4648d, 2026-11-17T18:29:26Z)",
+   "reused": "2026-11-17T18:29:26Z",
+   "base": "c57d89a4648d9e55697cb87872ac582b72c5dd8b"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T104 estimated 601k tokens (calibrated); week has 141.9M left (no five-hour budget, D-3056) after 2.1M still running in another lane (session_reading 2026-11-17T18:26:30Z (week)); running to the limit (model window, D-2225), claimed",
-  "at": "2026-11-17T18:38:19Z",
+  "last": "T115 estimated 449k tokens (calibrated); week has 141.3M left (no five-hour budget, D-3056) after 2.7M still running in another lane (session_reading 2026-11-17T18:26:30Z (week)); running to the limit (model window, D-2225), claimed",
+  "at": "2026-11-17T18:45:57Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 52071631,
+    "used": 52673003,
     "budget": 194000000,
-    "left": 141928369,
+    "left": 141326997,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 320480817,
-  "projected_finish": "2026-11-29T08:10:06Z"
+  "remaining_estimate": 320480895,
+  "projected_finish": "2026-11-29T08:17:45Z"
  },
  "main_red_history": [
   {

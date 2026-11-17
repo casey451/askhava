@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T18:38:50Z by runner c57d89a4648d (actions).
+Updated 2026-11-17T18:46:10Z by runner 339f0a35397d (actions).
 
 **Building: T605 in progress since 18:29Z; 405 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 405 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T605 claimed 18:29Z, lease until 21:29Z; lane 3: T528 claimed 18:27Z, lease until 21:27Z; lane 7: T104 claimed 18:38Z, lease until 21:38Z
-- **Week:** 25% used, 141.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:35Z, 3 min before this update
+- **Lane:** lane 2: T605 claimed 18:29Z, lease until 21:29Z; lane 3: T528 claimed 18:27Z, lease until 21:27Z; lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 7: T104 claimed 18:38Z, lease until 21:38Z
+- **Week:** 25% used, 141.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 18:39Z, 7 min before this update
 - **Keeper:** last ran 18:27Z, next wake 18:47Z
 
 ## Needs attention
@@ -84,7 +84,6 @@ Updated 2026-11-17T18:38:50Z by runner c57d89a4648d (actions).
 | T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 30 min | 19:37Z |  |
 | T324 | harness: 95% branch floors for the money and privacy files o | done | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | done | 1 | 29 min | 18:55Z |  |
-| T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 59 min | 18:42Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -120,7 +119,7 @@ Updated 2026-11-17T18:38:50Z by runner c57d89a4648d (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T18:26:30Z (week)): week: 52.1M used, 141.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T08:10:06Z.
+- Pacing (session_reading 2026-11-17T18:26:30Z (week)): week: 52.7M used, 141.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T08:17:45Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -138,6 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T605 (lease until 2026-11-17T21:29:26Z)
 - lane 3: T528 (lease until 2026-11-17T21:27:47Z)
+- lane 5: T115 (lease until 2026-11-17T21:45:57Z)
 - lane 7: T104 (lease until 2026-11-17T21:38:19Z)
 
 ## Last usage reading
