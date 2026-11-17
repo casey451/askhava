@@ -88,8 +88,10 @@ impl LegalDoc {
             Some(titled) => titled.split_once('\n').unwrap_or((titled, "")),
             None => ("", rest),
         };
-        let events =
-            Parser::new_ext(text, Options::ENABLE_TABLES).map(|event| shifted(event, shift));
+        let mut tables = TableAsList::default();
+        let events = Parser::new_ext(text, Options::ENABLE_TABLES)
+            .map(|event| shifted(event, shift))
+            .flat_map(|event| tables.map(event));
         let mut body = String::new();
         html::push_html(&mut body, events);
         Self {
@@ -122,6 +124,76 @@ fn shifted(event: Event<'_>, shift: usize) -> Event<'_> {
         Event::End(TagEnd::Heading(level)) => Event::End(TagEnd::Heading(down(level))),
         Event::Html(raw) | Event::InlineHtml(raw) => Event::Text(CowStr::from(raw.into_string())),
         other => other,
+    }
+}
+
+/// A11Y-008, A11Y-009: a Markdown table turned into a list, one item per row, each cell a paragraph
+/// led by its column heading in bold, so a wide table never makes a 320 px page scroll sideways.
+#[derive(Default)]
+struct TableAsList {
+    /// The column headings, read from the table's head.
+    headings: Vec<String>,
+    /// True inside the table's head, whose cells only fill `headings`.
+    in_head: bool,
+    /// The column of the body cell being read.
+    column: usize,
+}
+
+impl TableAsList {
+    /// The events that replace `event`: none in the head, list events for rows and cells.
+    fn map<'a>(&mut self, event: Event<'a>) -> Vec<Event<'a>> {
+        match event {
+            Event::Start(Tag::Table(_)) => {
+                self.headings.clear();
+                vec![Event::Start(Tag::List(None))]
+            }
+            Event::End(TagEnd::Table) => vec![Event::End(TagEnd::List(false))],
+            Event::Start(Tag::TableHead) => {
+                self.in_head = true;
+                Vec::new()
+            }
+            Event::End(TagEnd::TableHead) => {
+                self.in_head = false;
+                Vec::new()
+            }
+            Event::Start(Tag::TableCell) if self.in_head => {
+                self.headings.push(String::new());
+                Vec::new()
+            }
+            Event::Text(text) | Event::Code(text) if self.in_head => {
+                if let Some(heading) = self.headings.last_mut() {
+                    heading.push_str(&text);
+                }
+                Vec::new()
+            }
+            _ if self.in_head => Vec::new(),
+            Event::Start(Tag::TableRow) => {
+                self.column = 0;
+                vec![Event::Start(Tag::Item)]
+            }
+            Event::End(TagEnd::TableRow) => vec![Event::End(TagEnd::Item)],
+            Event::Start(Tag::TableCell) => self.cell_start(),
+            Event::End(TagEnd::TableCell) => {
+                self.column += 1;
+                vec![Event::End(TagEnd::Paragraph)]
+            }
+            other => vec![other],
+        }
+    }
+
+    /// A body cell opens a paragraph led by its column heading in bold.
+    fn cell_start<'a>(&self) -> Vec<Event<'a>> {
+        let heading = self.headings.get(self.column).cloned().unwrap_or_default();
+        let mut events = vec![Event::Start(Tag::Paragraph)];
+        if !heading.trim().is_empty() {
+            events.extend([
+                Event::Start(Tag::Strong),
+                Event::Text(CowStr::from(format!("{}:", heading.trim()))),
+                Event::End(TagEnd::Strong),
+                Event::Text(CowStr::from(" ")),
+            ]);
+        }
+        events
     }
 }
 
@@ -414,7 +486,13 @@ mod tests {
             assert!(html.contains("<h2>1. "));
         }
         assert_eq!(docs.privacy().0, "Laftly Privacy Policy");
-        assert!(docs.privacy.body.as_str().contains("<table>"));
+        assert!(!docs.privacy.body.as_str().contains("<table"));
+        assert!(
+            docs.privacy
+                .body
+                .as_str()
+                .contains("<li>\n<p><strong>Who:</strong> ")
+        );
         assert!(docs.privacy.body.as_str().contains(AI_OFF));
     }
 
@@ -423,12 +501,15 @@ mod tests {
     fn raw_html_is_text_and_the_statement_renders() {
         let doc = LegalDoc::render(
             "x",
-            "Draft\nVersion 1\n\n# Title\n\n## Part\n\n<script>x</script>\n",
+            "Draft\nVersion 1\n\n# Title\n\n## Part\n\n<script>x</script>\n\n| A | <b> |\n|---|---|\n| 1 | 2 |\n",
             1,
         );
         assert_eq!(doc.title, "Title");
         assert!(doc.body.as_str().contains("<h3>Part</h3>"));
         assert!(!doc.body.as_str().contains("<script>"));
+        assert!(doc.body.as_str().contains(
+            "<ul>\n<li>\n<p><strong>A:</strong> 1</p>\n<p><strong>&lt;b&gt;:</strong> 2</p>\n</li>\n</ul>"
+        ), "{}", doc.body);
         let statement = accessibility_statement();
         assert!(statement.title.ends_with("Accessibility Statement"));
         assert!(statement.version.starts_with("Version "));
