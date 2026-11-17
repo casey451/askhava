@@ -31,12 +31,11 @@ const SAFETY_TEXT = (JSON.parse(readFileSync("app/messaging/templates/en.json", 
 const JOB = "The kitchen faucet drips all night and the cabinet under it is damp.";
 
 /**
- * A fresh fake 928-555-01xx number, typed in the E.164 form the vault and Verify use. The chat hands
- * Verify the number as typed, so a dashed one gets no code yet (D-4162, a defect for the chat's owners).
+ * A fresh fake 928-555-01xx number in the E.164 form the vault and Verify use. The chat hands Verify
+ * the number as typed, so a dashed one gets no code (D-4162, a known failure of the served chat).
  */
-function fakeNumber(): { typed: string; e164: string } {
-  const last = String(100 + Math.floor(Math.random() * 100)).padStart(4, "0");
-  return { typed: `+1928555${last}`, e164: `+1928555${last}` };
+function fakeNumber(): string {
+  return `+1928555${String(100 + Math.floor(Math.random() * 100)).padStart(4, "0")}`;
 }
 
 /** The database's clock now, so later reads see only this case's rows. */
@@ -145,10 +144,10 @@ test("TD-CON-10 TD-INT-09 TD-INT-30 TD-A11Y-02 CON-025 A11Y-035: one question pe
   // Starting the chat and sending the job records no consent and queues nothing (D-470).
   await expect(page.locator("main ol")).toContainText(JOB);
   expect(consentsSince(from)).toEqual([]);
-  await toCode(page, her.typed);
+  await toCode(page, her);
   await expect(page.locator("main ol")).toContainText(JOB);
-  const contact = contactOf(her.e164);
-  const code = await codeFor(her.e164);
+  const contact = contactOf(her);
+  const code = await codeFor(her);
   expect(code).toMatch(/^\d{4,10}$/);
   expect([textsTo(contact, from), consentsSince(from, contact)]).toEqual([[], []]);
 
@@ -180,26 +179,36 @@ test("TD-CON-10 TD-INT-30 CON-025: a wrong code alone, then no code, sends nothi
   const from = since();
   const her = fakeNumber();
   await toNumber(page);
-  await toCode(page, her.typed);
-  const contact = contactOf(her.e164);
-  const code = await codeFor(her.e164);
+  await toCode(page, her);
+  const contact = contactOf(her);
+  const code = await codeFor(her);
   await sendCode(page, code === "222222" ? "333333" : "222222");
   await sendCode(page, "");
   await oneQuestion(page, "The code we texted you");
   expect([textsTo(contact, from), consentsSince(from, contact)]).toEqual([[], []]);
-  expect(await codeFor(her.e164)).toBe(code);
+  expect(await codeFor(her)).toBe(code);
 });
 
-test("TD-CON-10 SEC-042: a cross-site POST to the web chat is refused and records nothing", async ({ request }) => {
+test("TD-CON-10 SEC-042: a valid chat form posted cross-site is refused and records nothing; the same form same-origin is taken", async ({ page }) => {
   const from = since();
-  const form = { step: "message", message: "00000000-0000-4000-8000-000000000001", words: JOB, csrf: "", chat: "", g: "", said: "" };
-  const reply = await request.post(`${keyedUrl()}/request`, {
-    form,
-    headers: { origin: "https://elsewhere.example", "sec-fetch-site": "cross-site" },
-    maxRedirects: 0,
-  });
-  expect(reply.status()).toBe(403);
-  expect(await reply.text()).not.toContain(JOB);
+  await page.goto(`${keyedUrl()}/request`);
+  const form: Record<string, string> = { step: "message", words: JOB };
+  for (const name of ["csrf", "chat", "message", "g", "said"]) {
+    form[name] = (await page.locator(`main form input[name="${name}"]`).getAttribute("value")) ?? "";
+  }
+  expect(form.csrf).not.toBe("");
+  const url = `${keyedUrl()}/request`;
+  const post = (origin: string, site: string) =>
+    page.request.post(url, { form, headers: { origin, "sec-fetch-site": site }, maxRedirects: 0 });
+  // The pre-session cookie and token are valid, so only the cross-site check can refuse this one.
+  const refused = await post("https://elsewhere.example", "cross-site");
+  expect(refused.status()).toBe(403);
+  expect(await refused.text()).not.toContain(JOB);
+  expect(consentsSince(from)).toEqual([]);
+  // The same form from the page's own origin passes both checks: the token was valid (D-1250).
+  const taken = await post(`https://${new URL(url).host}`, "same-origin");
+  expect(taken.status()).toBe(200);
+  expect(await taken.text()).toContain(JOB);
   expect(consentsSince(from)).toEqual([]);
 });
 
