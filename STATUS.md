@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-17T16:14:08Z by runner 2f2fa8c6a62f (actions).
+Updated 2026-11-17T16:14:48Z by runner c678b0651090 (actions).
 
 **Building: T491 in progress since 15:41Z; 401 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 401 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T491 claimed 15:41Z, lease until 18:41Z; lane 2: T479 claimed 15:29Z, lease until 18:29Z; lane 4: T104 claimed 16:00Z, lease until 19:00Z; lane 6: T595 claimed 15:33Z, lease until 18:33Z
+- **Lane:** lane 1: T491 claimed 15:41Z, lease until 18:41Z; lane 2: T479 claimed 15:29Z, lease until 19:14Z; lane 4: T104 claimed 16:00Z, lease until 19:00Z; lane 6: T595 claimed 15:33Z, lease until 18:33Z
 - **Week:** 22% used, 146.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:13Z, 1 min before this update
+- **Last run:** 16:14Z, 0 min before this update
 - **Keeper:** last ran 15:55Z, next wake 18:32Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- Strict plan check red: 8 problem(s) on tasks still to run (+159 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+158 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -138,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T491 (lease until 2026-11-17T18:41:21Z)
-- lane 2: T479 (lease until 2026-11-17T18:29:29Z)
+- lane 2: T479 (lease until 2026-11-17T19:14:48Z)
 - lane 4: T104 (lease until 2026-11-17T19:00:59Z)
 - lane 6: T595 (lease until 2026-11-17T18:33:15Z)
 
