@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT max(m.at) < now() - interval '1827 days' AS \"due\" FROM (\n             SELECT c.received_at AS at FROM messaging.inbox_contact c WHERE c.contact_id = $1\n             UNION ALL\n             SELECT coalesce(o.sent_at, o.created_at) FROM messaging.outbox o\n             WHERE o.recipient_id = $1\n           ) AS m",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "due",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d21e732d8d28ba92ab457a4e6b5e73c2d88cf6c18473f6107f628de286aab390"
+}

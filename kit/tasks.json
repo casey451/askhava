@@ -17274,8 +17274,8 @@
   {
    "id": "T528",
    "slug": "digest-readers",
-   "title": "ops, businesses, intake, picks and licensing: the readers the weekly digest needs (D-3882)",
-   "goal": "Plan change D-3882 (Fable's pre-claim checks, Nov 16, 2026): Split from T524 so it stays within budget: the weekly digest (OPS-030, OPS-041, BIZ-054) needs readers no `api` gives. Each is defined in its own module, re-exported by one line in the shared `api.rs`, and returns counts and IDs only, never a contact detail: (1) `app/ops/src/digest_rows.rs`: alerts of given kinds raised or resolved in a window (ID, kind, subject, `raised_at`, `resolved_at`, self-acknowledged or not), the active-business counts per trade T105 records (`app/ops/src/api.rs:314` reads one subject only), the digest's last-opened time and reminder mark from T204's table, and the three writers (`digest_sent`, `digest_opened`, `digest_reminded`), each one statement; and the status-change audit rows of one subject kind by the system actor in a window (subject ID, `from_status`, `to_status`, `at`); (2) `app/businesses/src/digest_counts.rs`: the BIZ-054 leaving answers in a window (business ID, answer code, `record_reason`'s rows, `app/businesses/src/leaving.rs:156`), (the automatic activations, `to_status = 'active'`, and automatic pauses, `to_status = 'paused'`, are read through reader (1) with subject kind `businesses.business`, `app/businesses/src/service.rs:21`, never from `ops.audit_log` by name; a rule's pause that replaces a self-pause is a `field` row, `service.rs:183` to `:191`, and is counted too), and the businesses now paused with reason `license` (`app/businesses/src/status.rs:105`, `:131`) whose `status_changed_at` is in the window; (3) `app/intake/src/not_covered_counts.rs`: not-covered requests per trade per week (OPS-041; `month_count`, `app/intake/src/routing.rs:531`, is private and monthly); (4) `app/picks/src/digest_counts.rs`: no-shows (`picks.pick.status = 'no_show'`) in a window with job numbers; (5) License-unknown counts: the `licensing.list_failing` and `licensing.list_still_failing` alerts (`app/licensing/src/handlers.rs:31`, `:35`) through reader (1), and the `license`-paused businesses of reader (2); no `licensing` file is added. Job numbers come from `jobs::api::job_number` (`app/jobs/src/service.rs:99`). Budget 550 lines. Tests in `tests/integration/tests/digest_rows.rs` against real PostgreSQL, fake data only: each reader on planted rows and its window edges, and no contact field in any result. Update each module's `NOTES.md` and `docs/decisions.md`. Plan change D-4044 (the Opus pre-claim scouts a, b and c, Nov 16, 2026, each finding checked on `main` f4898b7): Reader (4)'s no-shows are windowed by `picks.pick.ended_at` (`migrations/0079_picks_code.sql:29`), and reader (1)'s \"self-acknowledged\" is an `ops.alert_ack` row with `acknowledged_by = 'system'` (T204's kind-taking acknowledgement writes one, D-4044). Cites now: `SUBJECT` is `app/businesses/src/service.rs:30` (was `:21`); a rule's pause that replaces a self-pause is written by `replace_self_pause` and `pause_for_rule` (`service.rs:222`, `:275`; the field row at `:242`), not `:183` to `:191`; `License` and `\"license\"` are `app/businesses/src/status.rs:118` to `:119` and `:141` (was `:105`, `:131`); the licensing alerts are `app/licensing/src/handlers.rs:30`, `:34` (was `:31`, `:35`); the one-subject reader is `ops::api::alert_open`, `app/ops/src/api.rs:325` (was `:314`).",
+   "title": "ops: the alert, audit-row and digest-row readers and writers the weekly digest needs (D-3882, D-4202)",
+   "goal": "Plan change D-3882 (Fable's pre-claim checks, Nov 16, 2026): Split from T524 so it stays within budget: the weekly digest (OPS-030, OPS-041, BIZ-054) needs readers no `api` gives. Each is defined in its own module, re-exported by one line in the shared `api.rs`, and returns counts and IDs only, never a contact detail: (1) `app/ops/src/digest_rows.rs`: alerts of given kinds raised or resolved in a window (ID, kind, subject, `raised_at`, `resolved_at`, self-acknowledged or not), the active-business counts per trade T105 records (`app/ops/src/api.rs:314` reads one subject only), the digest's last-opened time and reminder mark from T204's table, and the three writers (`digest_sent`, `digest_opened`, `digest_reminded`), each one statement; and the status-change audit rows of one subject kind by the system actor in a window (subject ID, `from_status`, `to_status`, `at`); (2) `app/businesses/src/digest_counts.rs`: the BIZ-054 leaving answers in a window (business ID, answer code, `record_reason`'s rows, `app/businesses/src/leaving.rs:156`), (the automatic activations, `to_status = 'active'`, and automatic pauses, `to_status = 'paused'`, are read through reader (1) with subject kind `businesses.business`, `app/businesses/src/service.rs:21`, never from `ops.audit_log` by name; a rule's pause that replaces a self-pause is a `field` row, `service.rs:183` to `:191`, and is counted too), and the businesses now paused with reason `license` (`app/businesses/src/status.rs:105`, `:131`) whose `status_changed_at` is in the window; (3) `app/intake/src/not_covered_counts.rs`: not-covered requests per trade per week (OPS-041; `month_count`, `app/intake/src/routing.rs:531`, is private and monthly); (4) `app/picks/src/digest_counts.rs`: no-shows (`picks.pick.status = 'no_show'`) in a window with job numbers; (5) License-unknown counts: the `licensing.list_failing` and `licensing.list_still_failing` alerts (`app/licensing/src/handlers.rs:31`, `:35`) through reader (1), and the `license`-paused businesses of reader (2); no `licensing` file is added. Job numbers come from `jobs::api::job_number` (`app/jobs/src/service.rs:99`). Budget 550 lines. Tests in `tests/integration/tests/digest_rows.rs` against real PostgreSQL, fake data only: each reader on planted rows and its window edges, and no contact field in any result. Update each module's `NOTES.md` and `docs/decisions.md`. Plan change D-4044 (the Opus pre-claim scouts a, b and c, Nov 16, 2026, each finding checked on `main` f4898b7): Reader (4)'s no-shows are windowed by `picks.pick.ended_at` (`migrations/0079_picks_code.sql:29`), and reader (1)'s \"self-acknowledged\" is an `ops.alert_ack` row with `acknowledged_by = 'system'` (T204's kind-taking acknowledgement writes one, D-4044). Cites now: `SUBJECT` is `app/businesses/src/service.rs:30` (was `:21`); a rule's pause that replaces a self-pause is written by `replace_self_pause` and `pause_for_rule` (`service.rs:222`, `:275`; the field row at `:242`), not `:183` to `:191`; `License` and `\"license\"` are `app/businesses/src/status.rs:118` to `:119` and `:141` (was `:105`, `:131`); the licensing alerts are `app/licensing/src/handlers.rs:30`, `:34` (was `:31`, `:35`); the one-subject reader is `ops::api::alert_open`, `app/ops/src/api.rs:325` (was `:314`). Plan change D-4202 (attempt 1 blocked with a reviewer-confirmed PLAN GAP, Nov 17, 2026): T528 now builds reader (1) only, `app/ops/src/digest_rows.rs` (the alerts by kind in a window with the self-acknowledged flag, the active-business counts per trade, the digest row's last-opened time and reminder mark and its three writers, and the system actor's status-change audit rows of one subject kind), with its tests in `tests/integration/tests/digest_rows.rs`. Readers (2), (3) and (4) and the `license`-paused businesses of (5) moved to the new task T605 (`app/businesses/src/digest_counts.rs`, `app/intake/src/not_covered_counts.rs`, `app/picks/src/digest_counts.rs`, its own test file), so this task adds no `businesses`, `intake` or `picks` file and its tests plant no leaving answer, not-covered request or no-show. Attempt 1 built all five readers in about 826 lines (the largest file, about 246 lines, was by inference the ops reader, which holds most of the readers; the logged counts do not name the files); reader (1) with its share of the tests is about 450 lines. Budget 2 files and 550 lines; shared paths (`api.rs`, `lib.rs`, `NOTES.md`, `CLAUDE.md`, `docs/decisions.md`) are not counted, and any overrun is recorded in this task's own `docs/decisions.md` entry, as D-843 and D-848 do, not a plan gap.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17292,10 +17292,66 @@
    ],
    "owns": [
     "app/ops/src/digest_rows.rs",
+    "tests/integration/tests/digest_rows.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/brains/postgres-operations.md"
+   ],
+   "requirements": [
+    "OPS-030"
+   ],
+   "tests": [
+    "TD-OPS-09"
+   ],
+   "decisions": [
+    "D-219",
+    "D-3882",
+    "D-3883",
+    "D-4044",
+    "D-4202"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 550,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T528-digest-readers",
+   "prompt": "kit/prompts/T528.md"
+  },
+  {
+   "id": "T605",
+   "slug": "digest-counts",
+   "title": "businesses, intake and picks: the leaving answers, not-covered counts and no-shows the weekly digest needs (D-4202)",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "businesses",
+   "deps": [
+    "T204",
+    "T105",
+    "T228"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/businesses/src/leaving.rs",
     "app/businesses/src/digest_counts.rs",
     "app/intake/src/not_covered_counts.rs",
     "app/picks/src/digest_counts.rs",
-    "tests/integration/tests/digest_rows.rs"
+    "tests/integration/tests/digest_counts.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -17317,12 +17373,13 @@
     "D-463",
     "D-3882",
     "D-3883",
-    "D-4044"
+    "D-4044",
+    "D-4202"
    ],
    "cites": [],
    "budget": {
     "files": 5,
-    "lines": 550,
+    "lines": 450,
     "context_pct": 11
    },
    "checks": [
@@ -17330,14 +17387,15 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T528-digest-readers",
-   "prompt": "kit/prompts/T528.md"
+   "branch": "claude/task/T605-digest-counts",
+   "prompt": "kit/prompts/T605.md",
+   "goal": "Plan change D-4202 (split from T528, whose attempt 1 was blocked with a reviewer-confirmed PLAN GAP, Nov 17, 2026): the weekly digest (OPS-030, OPS-041, BIZ-054) needs three readers no `api` gives, each defined in its own module, re-exported by one line in the shared `api.rs`, returning counts and IDs only, never a contact detail and never the \"Something else\" box's words. (1) `app/businesses/src/digest_counts.rs`: the BIZ-054 leaving answers in a window (business ID, who asked, `left` or `paused`, and the answer code, `None` when skipped), windowed by the answer's time; and the businesses now paused with reason `license` (`License` and `\"license\"`, `app/businesses/src/status.rs:118` to `:119` and `:141`) whose `status_changed_at` is in the window (OPS-030's license-unknown counts; the `licensing.list_failing` and `licensing.list_still_failing` alerts, `app/licensing/src/handlers.rs:30`, `:34`, are read through T528's `ops` reader, and no `licensing` file is added). The leaving answers live in a table that `tests/integration/tests/business_leaving.rs:463` to `:467` (T228's TD-BIZ-32, unchanged) requires only `app/businesses/src/leaving.rs` to name in all of `app/`, so the answer can never reach routing or fee code: this task adds one crate-private (`pub(crate)`) reader of the answers in a window to `leaving.rs` (beside `record_reason`, `:156`, one statement, no other change to that file), and `digest_counts.rs` calls it. The test matches the text `leave_reason` anywhere in any `.rs` file under `app/`, so no file but `leaving.rs` may contain that text: not in a function, type, field, variable or module name (so no `leave_reasons_in_window`; use e.g. `leaving_answers`), not in `api.rs`'s `pub use` line, and not in a comment or doc line. That test must still pass unchanged (`cargo test -p askhava-integration --test business_leaving`). (2) `app/intake/src/not_covered_counts.rs`: not-covered requests per trade per week (OPS-041; `month_count`, `app/intake/src/routing.rs:531`, is private and monthly). (3) `app/picks/src/digest_counts.rs`: no-shows (`picks.pick.status = 'no_show'`) windowed by `picks.pick.ended_at` (`migrations/0079_picks_code.sql:29`, D-4044), with job numbers from `jobs::api::job_number` (`app/jobs/src/service.rs:99`). The automatic activations and pauses are read by T524 through T528's `ops` reader with subject kind `businesses.business`, not here. Tests in the new `tests/integration/tests/digest_counts.rs` against real PostgreSQL, fake data only: each reader on planted rows and its window edges (an answer, a `license` pause and a no-show just inside and just outside), a skipped answer, a non-`license` pause and a non-no-show pick not counted, and no contact field or box words in any result. Update each module's `NOTES.md` and `docs/decisions.md`. Budget 5 files and 450 lines (attempt 1 of T528 built these three readers in about 190 lines plus their share of its tests); shared paths are not counted, and any overrun is recorded in this task's own `docs/decisions.md` entry, as D-843 and D-848 do, not a plan gap."
   },
   {
    "id": "T524",
    "slug": "ops-digest-and-flags",
    "title": "portals and server: the weekly digest and the owner-portal flags (D-3880)",
-   "goal": "Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): Split from T204. The weekly digest email and the owner-portal flags carry counts and job or business numbers only, never a homeowner contact detail (OPS-027, OPS-030, OPS-031, OPS-033, OPS-034, OPS-041, BIZ-054). `app/portals/src/digest_flags.rs` builds both and computes no input itself: it reads T523's readers (quotes per win is T523's confirmed-quote count divided by its wins), T105's `ops` business counts, T107's weekly opt-out rates (OPS-030's opt-out line), and the `ops` alert and audit rows named here (automatic activations and self-acknowledged alerts: acknowledged `ops.alert` rows; complaints and PROBLEM replies: the complaint and `jobs.problem` alerts; disputes: `payments` dispute alerts; unknown charges refunded and unreadable business texts: their alert kinds; CON-016: the `messaging.optout_wrote_again` audit rows, D-2629; not-covered requests by trade, OPS-041; the BIZ-054 leaving answers; the open HELP requests with their due dates, from T151's `ops::api`, moved here from T151 by D-3881; the database-volume alerts, T525's); an input with no reader is reported, never queried by naming another module's table. A PROBLEM reply's words come from `privacy::api::problem_words`, which takes an `OwnerSessionProof` (`app/privacy/src/message_body.rs:86` to `:90`), so they appear only on the owner-portal digest view, never in the worker's email, which shows the count and job numbers. The flags' numbers (5 businesses, median 4 quotes, 30% for 2 months, 3 lapsed picks in 30 days, 3 requests in 30 days with no pick) are settings in the shared `app/core/src/settings.rs`; a flag changes nothing. OPS-033: the owner portal lists what falls due in the next 4 days, and an unopened digest is re-sent once after 4 days (the last-opened time is T204's table). The weekly email is a worker task in the new `app/server/src/digest_email.rs`, registered in `worker_registry` and first queued from `schedule_start` under a dedupe key, sending through `messaging::api`'s owner email. Tests in `tests/integration/tests/digest_flags.rs` (TD-OPS-08's flag and digest cases, TD-OPS-09's digest cases, TD-OPS-11's digest line for open HELP requests and the crowding flag TD-OPS-07 points to), fake data only, including that the email holds no vault field and no problem words. Build notes go to the end of `app/portals/NOTES.md` and `app/server/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-3882 (Fable's pre-claim checks, Nov 16, 2026): (1) Each OPS-030 item's source: automatic activations, automatic pauses and the BIZ-054 leaving answers from T528's `businesses` reader; self-acknowledged alerts, dispute filings, unknown charges refunded, unreadable business texts and the database-volume alerts from T528's `ops` alert reader by kind; no-shows from T528's `picks` reader; license-unknown counts from T528's `licensing.list_failing` and `licensing.list_still_failing` alerts and its `license`-paused businesses; opt-out rates from T107; complaints and PROBLEM replies with any business reply from the complaint and `jobs.problem` alerts; call-backs due from open `intake.call_back`, `intake.call_back_urgent` (`app/intake/src/handlers.rs:484`, `:486`) and `messaging.call_back_due` (`app/messaging/src/retries.rs:50`) alerts; help requests with their due dates from T151's `ops::api`; HELP messages answered automatically from the `help.auto_answered` audit rows T482 writes; the test-restore result from T109's newest restore audit entry through `ops::api::latest_audit` (moved here from T109); not-covered requests from T528's `intake` reader; the last-opened time from T528's `ops` reader. (2) The weekly email goes to the owner inbox through `messaging::api::queue_account_email` with `OWNER_INBOX` (`app/messaging/src/api.rs:172`, `app/messaging/src/coverage_email.rs:29`), its address the `ASKHAVA_OWNER_INBOX_EMAIL` key T490 adds; the flag settings join `KEYS` in the shared `app/core/src/settings.rs`. Budget 600 lines. Plan change D-4053 (note only): T523's day-3 NO-or-OTHER count ties each `jobs.check_in_answer` row (stamped by the database's `now()`) to a connection in `jobs.status_history` (stamped by the application clock), so it assumes the two clocks agree; no test here, and no e2e or twin check of the OPS-031 count, may rely on advancing the test-control clock (`app/core/src/test_control.rs:12`); plant the moves in the past.",
+   "goal": "Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): Split from T204. The weekly digest email and the owner-portal flags carry counts and job or business numbers only, never a homeowner contact detail (OPS-027, OPS-030, OPS-031, OPS-033, OPS-034, OPS-041, BIZ-054). `app/portals/src/digest_flags.rs` builds both and computes no input itself: it reads T523's readers (quotes per win is T523's confirmed-quote count divided by its wins), T105's `ops` business counts, T107's weekly opt-out rates (OPS-030's opt-out line), and the `ops` alert and audit rows named here (automatic activations and self-acknowledged alerts: acknowledged `ops.alert` rows; complaints and PROBLEM replies: the complaint and `jobs.problem` alerts; disputes: `payments` dispute alerts; unknown charges refunded and unreadable business texts: their alert kinds; CON-016: the `messaging.optout_wrote_again` audit rows, D-2629; not-covered requests by trade, OPS-041; the BIZ-054 leaving answers; the open HELP requests with their due dates, from T151's `ops::api`, moved here from T151 by D-3881; the database-volume alerts, T525's); an input with no reader is reported, never queried by naming another module's table. A PROBLEM reply's words come from `privacy::api::problem_words`, which takes an `OwnerSessionProof` (`app/privacy/src/message_body.rs:86` to `:90`), so they appear only on the owner-portal digest view, never in the worker's email, which shows the count and job numbers. The flags' numbers (5 businesses, median 4 quotes, 30% for 2 months, 3 lapsed picks in 30 days, 3 requests in 30 days with no pick) are settings in the shared `app/core/src/settings.rs`; a flag changes nothing. OPS-033: the owner portal lists what falls due in the next 4 days, and an unopened digest is re-sent once after 4 days (the last-opened time is T204's table). The weekly email is a worker task in the new `app/server/src/digest_email.rs`, registered in `worker_registry` and first queued from `schedule_start` under a dedupe key, sending through `messaging::api`'s owner email. Tests in `tests/integration/tests/digest_flags.rs` (TD-OPS-08's flag and digest cases, TD-OPS-09's digest cases, TD-OPS-11's digest line for open HELP requests and the crowding flag TD-OPS-07 points to), fake data only, including that the email holds no vault field and no problem words. Build notes go to the end of `app/portals/NOTES.md` and `app/server/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-3882 (Fable's pre-claim checks, Nov 16, 2026): (1) Each OPS-030 item's source: automatic activations, automatic pauses and the BIZ-054 leaving answers from T528's `businesses` reader; self-acknowledged alerts, dispute filings, unknown charges refunded, unreadable business texts and the database-volume alerts from T528's `ops` alert reader by kind; no-shows from T528's `picks` reader; license-unknown counts from T528's `licensing.list_failing` and `licensing.list_still_failing` alerts and its `license`-paused businesses; opt-out rates from T107; complaints and PROBLEM replies with any business reply from the complaint and `jobs.problem` alerts; call-backs due from open `intake.call_back`, `intake.call_back_urgent` (`app/intake/src/handlers.rs:484`, `:486`) and `messaging.call_back_due` (`app/messaging/src/retries.rs:50`) alerts; help requests with their due dates from T151's `ops::api`; HELP messages answered automatically from the `help.auto_answered` audit rows T482 writes; the test-restore result from T109's newest restore audit entry through `ops::api::latest_audit` (moved here from T109); not-covered requests from T528's `intake` reader; the last-opened time from T528's `ops` reader. (2) The weekly email goes to the owner inbox through `messaging::api::queue_account_email` with `OWNER_INBOX` (`app/messaging/src/api.rs:172`, `app/messaging/src/coverage_email.rs:29`), its address the `ASKHAVA_OWNER_INBOX_EMAIL` key T490 adds; the flag settings join `KEYS` in the shared `app/core/src/settings.rs`. Budget 600 lines. Plan change D-4053 (note only): T523's day-3 NO-or-OTHER count ties each `jobs.check_in_answer` row (stamped by the database's `now()`) to a connection in `jobs.status_history` (stamped by the application clock), so it assumes the two clocks agree; no test here, and no e2e or twin check of the OPS-031 count, may rely on advancing the test-control clock (`app/core/src/test_control.rs:12`); plant the moves in the past. Plan change D-4202: T528's `businesses`, `intake` and `picks` readers (the leaving answers, the `license`-paused businesses, the not-covered requests by trade and the no-shows) are now T605's, in the same files; T528 keeps only its `ops` reader (alerts by kind, the system actor's status-change audit rows, the digest row's last-opened time, reminder mark and writers). T605's reader names do not contain `leave_reason`, and no file this task writes may contain that text, not even in a variable name or comment (TD-BIZ-32's text scan, `tests/integration/tests/business_leaving.rs:462`).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17355,6 +17413,7 @@
     "T525",
     "T151",
     "T528",
+    "T605",
     "T490",
     "T482",
     "T109"
@@ -17405,7 +17464,8 @@
     "D-3881",
     "D-3882",
     "D-3883",
-    "D-4053"
+    "D-4053",
+    "D-4202"
    ],
    "cites": [],
    "budget": {
@@ -20270,6 +20330,7 @@
     "T526",
     "T527",
     "T528",
+    "T605",
     "T530",
     "T531",
     "T529",
@@ -20927,6 +20988,7 @@
     "T526",
     "T527",
     "T528",
+    "T605",
     "T530",
     "T531",
     "T529",
@@ -24219,7 +24281,7 @@
    "id": "T305",
    "slug": "owner-reports-served",
    "title": "server and portals: the scorecard, the intake report, the money view and the owner help page are served",
-   "goal": "T158, T210 and T434 build the owner's scorecard, intake report and money view (with its expense-entry `POST`), and T200 the owner help page with its reply box, as portals pages no route serves (D-2128); the business Get help form is T309's. (1) `app/server/src/owner_reports.rs` builds them behind T303's owner session (none or another realm gets a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_reports_route.rs` (TD-SEC-48) and `tests/e2e/owner_reports_served.spec.ts`, which takes the browser half of TD-OPS-15 (T158's row), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) The owner help page, its reply box and TD-OPS-23 are T530's since D-3883 (`app/portals/src/owner_help.rs`), not T200's: every mention of T200's owner help page above means T530's, which is a dependency; one request is addressed by a query or form field, not a path parameter (`app/server/tests/door_matrix.rs:89` fills no `{request}`). (2) The pages need `Settings` values and `build_router` gets none (`app/server/src/lib.rs:292`): `main` passes the set-aside basis points (T477's `ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS`, which `owner_money_view` takes from its caller) and T158's scorecard settings through a new `RouterParts` builder; a caller that passes none gets the defaults, so `route_wiring.rs` and `door_matrix.rs` are unchanged. (3) Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. (4) If T434's CSV download (`money_view_csv`) is served, it gets its section 13 row and a reasoned `NOT_PAGES` line in `tests/a11y/fixtures.ts`; its month travels as a query value, not a path parameter.",
+   "goal": "T158, T210 and T434 build the owner's scorecard, intake report and money view (with its expense-entry `POST`), and T200 the owner help page with its reply box, as portals pages no route serves (D-2128); the business Get help form is T309's. (1) `app/server/src/owner_reports.rs` builds them behind T303's owner session (none or another realm gets a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_reports_route.rs` (TD-SEC-48) and `tests/e2e/owner_reports_served.spec.ts`, which takes the browser half of TD-OPS-15 (T158's row), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) The owner help page, its reply box and TD-OPS-23 are T530's since D-3883 (`app/portals/src/owner_help.rs`), not T200's: every mention of T200's owner help page above means T530's, which is a dependency; one request is addressed by a query or form field, not a path parameter (`app/server/tests/door_matrix.rs:89` fills no `{request}`). (2) The pages need `Settings` values and `build_router` gets none (`app/server/src/lib.rs:292`): `main` passes the set-aside basis points (T477's `ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS`, which `owner_money_view` takes from its caller) and T158's scorecard settings through a new `RouterParts` builder; a caller that passes none gets the defaults, so `route_wiring.rs` and `door_matrix.rs` are unchanged. (3) Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. (4) If T434's CSV download (`money_view_csv`) is served, it gets its section 13 row and a reasoned `NOT_PAGES` line in `tests/a11y/fixtures.ts`; its month travels as a query value, not a path parameter. Plan change D-4202: OPS-039's leave and pause reasons (BIZ-054) come from T605's `businesses` reader through T478; no file this task writes may contain the text `leave_reason`, not even in a field, variable or function name or a comment (TD-BIZ-32's text scan, `tests/integration/tests/business_leaving.rs:462`).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -24270,7 +24332,8 @@
     "D-3467",
     "D-3744",
     "D-3883",
-    "D-3890"
+    "D-3890",
+    "D-4202"
    ],
    "cites": [],
    "budget": {
@@ -27076,7 +27139,7 @@
    "id": "T478",
    "slug": "scorecard-inputs-requests",
    "title": "jobs, intake, calls, messaging and businesses: the scorecard's request, call, email and sign-up inputs, and the deferral alert",
-   "goal": "Plan change D-3753: the rest of the pilot scorecard's inputs (OPS-039, OPS-046, CALL-024), read-only, per trade and in total over a window, counts and durations only, each exported through its crate's shared `api.rs`: (1) `app/jobs/src/scorecard_inputs.rs`: requests started per week, routable requests, and the job count and job IDs per trade (`jobs.job_facts.category`); (2) `app/intake/src/scorecard_inputs.rs`: requests by source (INT-047: a `g` code, \"web\" or \"text\"), intake completion with the step where unfinished ones stopped, the share of cards approved without an edit; (3) `app/calls/src/scorecard_inputs.rs`: the share of masked calls a person answered (CALL-024, from `calls.call_log`); (4) `app/businesses/src/scorecard_inputs.rs`: sign-ups by source (BIZ-053), the share sent to a mailed letter or a review (`businesses.signup.identity_step`, `review_since`), and homeowner complaints in the window for the job IDs passed (`businesses.complaint.job_id = ANY($n)`; T158 divides per 20 jobs); \"active within 15 minutes\" is not stored, so it is approximated by `status_changed_at` minus the sign-up's start and reported as an approximation; leave and pause reasons reuse T528's `businesses` reader, not a second one; (5) OPS-046's email readers and the deferral check are T531's (D-3883). No source reaches a card or routing (D-457). An input whose data is not stored is reported in the task report, never invented. Tests in `tests/integration/tests/scorecard_inputs_requests.rs` against PostgreSQL with fake data: each input from planted rows, a `?g=oo` sign-up and a `?g=cp` web chat counted by source, a text request counted as \"text\". Update each crate's `NOTES.md` and `docs/decisions.md`. Plan change D-3883 (Fable's pre-claim checks, Nov 16, 2026): A reader whose schema stores no trade takes the job IDs of one trade (or all) as an argument (`job_id = ANY($n)`), as D-3877 (c) does; `calls` joins `call_log.line_id` to `number_pool.job_id`; the photo share moved to T477's `quotes` reader. 5 files.",
+   "goal": "Plan change D-3753: the rest of the pilot scorecard's inputs (OPS-039, OPS-046, CALL-024), read-only, per trade and in total over a window, counts and durations only, each exported through its crate's shared `api.rs`: (1) `app/jobs/src/scorecard_inputs.rs`: requests started per week, routable requests, and the job count and job IDs per trade (`jobs.job_facts.category`); (2) `app/intake/src/scorecard_inputs.rs`: requests by source (INT-047: a `g` code, \"web\" or \"text\"), intake completion with the step where unfinished ones stopped, the share of cards approved without an edit; (3) `app/calls/src/scorecard_inputs.rs`: the share of masked calls a person answered (CALL-024, from `calls.call_log`); (4) `app/businesses/src/scorecard_inputs.rs`: sign-ups by source (BIZ-053), the share sent to a mailed letter or a review (`businesses.signup.identity_step`, `review_since`), and homeowner complaints in the window for the job IDs passed (`businesses.complaint.job_id = ANY($n)`; T158 divides per 20 jobs); \"active within 15 minutes\" is not stored, so it is approximated by `status_changed_at` minus the sign-up's start and reported as an approximation; leave and pause reasons reuse T528's `businesses` reader, not a second one; (5) OPS-046's email readers and the deferral check are T531's (D-3883). No source reaches a card or routing (D-457). An input whose data is not stored is reported in the task report, never invented. Tests in `tests/integration/tests/scorecard_inputs_requests.rs` against PostgreSQL with fake data: each input from planted rows, a `?g=oo` sign-up and a `?g=cp` web chat counted by source, a text request counted as \"text\". Update each crate's `NOTES.md` and `docs/decisions.md`. Plan change D-3883 (Fable's pre-claim checks, Nov 16, 2026): A reader whose schema stores no trade takes the job IDs of one trade (or all) as an argument (`job_id = ANY($n)`), as D-3877 (c) does; `calls` joins `call_log.line_id` to `number_pool.job_id`; the photo share moved to T477's `quotes` reader. 5 files. Plan change D-4202: T528's `businesses`, `intake` and `picks` readers (the leaving answers, the `license`-paused businesses, the not-covered requests by trade and the no-shows) are now T605's, in the same files; T528 keeps only its `ops` reader (alerts by kind, the system actor's status-change audit rows, the digest row's last-opened time, reminder mark and writers). T605's reader names do not contain `leave_reason`, and no file this task writes may contain that text, not even in a variable name or comment (TD-BIZ-32's text scan, `tests/integration/tests/business_leaving.rs:462`).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -27085,7 +27148,8 @@
     "T100",
     "T103",
     "T489",
-    "T528"
+    "T528",
+    "T605"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -27123,7 +27187,8 @@
     "D-490",
     "D-3744",
     "D-3753",
-    "D-3883"
+    "D-3883",
+    "D-4202"
    ],
    "cites": [],
    "budget": {
@@ -27277,7 +27342,7 @@
    "id": "T158",
    "slug": "owner-scorecard-money",
    "title": "portals: the owner's pilot scorecard page with go and stop lines, the email panel and the masked-call answered share",
-   "goal": "The owner's scorecard shows every OPS-039 measure per trade and in total, for the current week and the pilot to date, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); it also shows OPS-046's first-six-weeks email panel with its deferral alert and OPS-047's figures: the median minutes a business spends on a quote, quotes per pick per business, the count of \"not a fit\" cards by reason and refund requests with reasons (D-492). Plan change D-3753: `app/portals/src/scorecard.rs` computes no input itself: it reads T477's (`payments::api`, `picks::api`, `quotes::api`), T478's (`jobs::api`, `intake::api`, `calls::api`, `businesses::api`, `messaging::api`) and T479's (`ops::api`: the not-a-fit counts and the weekly minutes entry, which the page's form writes through `ops::api`) readers, and only combines them (per-introduction ratios, the ladder of 15, 50 and 115 paid introductions a month, settings) and colors them; an input with no reader is reported, never queried here. The \"Not a fit for us\" choice and its `ops` tables are T479's. T305 serves the scorecard (D-2128): the page function and route constant only, no `.route` in `server`; the browser half of TD-OPS-15 runs in T305's spec, and `tests/e2e/scorecard.spec.ts` checks what an unserved page allows. Tests in `tests/integration/tests/scorecard.rs` (TD-OPS-15, TD-CALL-10's scorecard half, TD-OPS-21's panel and scorecard halves), fake data only. Plan change D-3744: `scorecard.html`, if it draws a native checkbox or radio, links `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/business_signup.html:23` does (D-3700, A11Y-007, A11Y-009; the route is `FORMS_CSS_ROUTE`, `app/portals/src/feedback.rs:57`; corrected by D-3844, `feedback.html:10` links `feedback.css`). Update the `portals` `CLAUDE.md` or `NOTES.md` and `docs/decisions.md`. Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): The per-trade split: no `payments` or `picks` table stores a trade, so this page gets the window's job IDs per trade from T477's `quotes` reader (`quotes.shown_card.category`) and passes them to each `payments` and `picks` reader (`job_id = ANY($n)`); quotes per pick and per win divide T477's per-business quote counts by the pick and win counts. PICK-052's notes-returned count fills once T458 wires the served path, after this task. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): The go and stop lines and the 15, 50 and 115 ladder are settings this task adds to the shared `app/core/src/settings.rs` (each joins `KEYS`), with the defaults of `docs/PREBUILD.md:304` to `:322`; the route constant is a fixed path under `/owner/` with no path parameter; `tests/e2e/scorecard.spec.ts` asserts a status of 400 or more and no figure, as `tests/e2e/homeowner_portal.spec.ts:17` to `:25` does, not a 404, so T305's serving does not break it.",
+   "goal": "The owner's scorecard shows every OPS-039 measure per trade and in total, for the current week and the pilot to date, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); it also shows OPS-046's first-six-weeks email panel with its deferral alert and OPS-047's figures: the median minutes a business spends on a quote, quotes per pick per business, the count of \"not a fit\" cards by reason and refund requests with reasons (D-492). Plan change D-3753: `app/portals/src/scorecard.rs` computes no input itself: it reads T477's (`payments::api`, `picks::api`, `quotes::api`), T478's (`jobs::api`, `intake::api`, `calls::api`, `businesses::api`, `messaging::api`) and T479's (`ops::api`: the not-a-fit counts and the weekly minutes entry, which the page's form writes through `ops::api`) readers, and only combines them (per-introduction ratios, the ladder of 15, 50 and 115 paid introductions a month, settings) and colors them; an input with no reader is reported, never queried here. The \"Not a fit for us\" choice and its `ops` tables are T479's. T305 serves the scorecard (D-2128): the page function and route constant only, no `.route` in `server`; the browser half of TD-OPS-15 runs in T305's spec, and `tests/e2e/scorecard.spec.ts` checks what an unserved page allows. Tests in `tests/integration/tests/scorecard.rs` (TD-OPS-15, TD-CALL-10's scorecard half, TD-OPS-21's panel and scorecard halves), fake data only. Plan change D-3744: `scorecard.html`, if it draws a native checkbox or radio, links `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/business_signup.html:23` does (D-3700, A11Y-007, A11Y-009; the route is `FORMS_CSS_ROUTE`, `app/portals/src/feedback.rs:57`; corrected by D-3844, `feedback.html:10` links `feedback.css`). Update the `portals` `CLAUDE.md` or `NOTES.md` and `docs/decisions.md`. Plan change D-3877 (Fable's pre-claim check of stage-5 wave 0, Nov 15, 2026): The per-trade split: no `payments` or `picks` table stores a trade, so this page gets the window's job IDs per trade from T477's `quotes` reader (`quotes.shown_card.category`) and passes them to each `payments` and `picks` reader (`job_id = ANY($n)`); quotes per pick and per win divide T477's per-business quote counts by the pick and win counts. PICK-052's notes-returned count fills once T458 wires the served path, after this task. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): The go and stop lines and the 15, 50 and 115 ladder are settings this task adds to the shared `app/core/src/settings.rs` (each joins `KEYS`), with the defaults of `docs/PREBUILD.md:304` to `:322`; the route constant is a fixed path under `/owner/` with no path parameter; `tests/e2e/scorecard.spec.ts` asserts a status of 400 or more and no figure, as `tests/e2e/homeowner_portal.spec.ts:17` to `:25` does, not a 404, so T305's serving does not break it. Plan change D-4202: OPS-039's leave and pause reasons (BIZ-054) come from T605's `businesses` reader through T478; no file this task writes may contain the text `leave_reason`, not even in a field, variable or function name or a comment (TD-BIZ-32's text scan, `tests/integration/tests/business_leaving.rs:462`).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -27346,7 +27411,8 @@
     "D-3844",
     "D-3877",
     "D-3883",
-    "D-3890"
+    "D-3890",
+    "D-4202"
    ],
    "cites": [],
    "budget": {
