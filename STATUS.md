@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-17T22:09:32Z by runner 051904e6de90 (actions).
+Updated 2026-11-17T22:20:39Z by runner 9dd9cd236f2f (actions).
 
-**Building: T115 in progress since 22:09Z; 411 of 578 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T115 in progress since 22:09Z; 412 of 578 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 411 of 578 build tasks (owner gates not counted)
+- **Tasks done:** 412 of 578 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T115 claimed 22:09Z, lease until 01:09Z
 - **Week:** 31% used, 132.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:07Z, 2 min before this update
+- **Last run:** 22:09Z, 11 min before this update
 - **Keeper:** last ran 22:07Z, next wake 22:27Z
 
 ## Needs attention
 - PLAN GAP T203 (since 2026-11-17T22:09:12Z, no attempt used; a plan change fixes it): T203: dependency T104 is DONE but its owned file tests/docs/test_wording_scan.py is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 11 problem(s) on tasks still to run (+176 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+177 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T603 | Perf and twin (harness): the web vitals report records LCP a | MERGE_PENDING | 1 | 40 min | 22:05Z |  |
+| T603 | Perf and twin (harness): the web vitals report records LCP a | done | 1 | 40 min | 22:05Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | done | 4 | 44 min | 21:44Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T594 | site: the end-to-end spec of the web chat and request page a | MERGE_PENDING | 2 | 83 min | 21:03Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T106 | ops: /healthz and the web and worker liveness exits | MERGE_PENDING | 1 | 77 min | 20:38Z |  |
@@ -83,7 +83,6 @@ Updated 2026-11-17T22:09:32Z by runner 051904e6de90 (actions).
 | T111 | Draft homeowner and business terms with every required claus | done | 4 | 34 min | 23:57Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
 | T373 | businesses: changing a phone's number ends that phone's text | check_failed | 1 | 74 min | 23:55Z |  |
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | QUEUED | 2 | 89 min | 23:36Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
-| T111 | Draft homeowner and business terms with every required claus | BLOCKED | 3 | 37 min | 22:10Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -91,7 +90,7 @@ Updated 2026-11-17T22:09:32Z by runner 051904e6de90 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 671 · unstarted 64
-**Tasks merged (throughput only):** 411 of 578
+**Tasks merged (throughput only):** 412 of 578
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -127,7 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 54 of 186 done
+- stage 5: 55 of 186 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
