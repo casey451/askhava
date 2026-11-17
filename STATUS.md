@@ -1,18 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-17T07:56:02Z by runner 24cdb307a1ca (actions).
+Updated 2026-11-17T08:07:36Z by runner 678dce1e44fa (manual).
 
-**Building: T107 in progress since 07:34Z; 388 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T107 in progress since 07:34Z; 388 of 560 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 388 of 559 build tasks (owner gates not counted)
+- **Tasks done:** 388 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z; lane 3: T570 claimed 07:46Z, lease until 10:46Z; lane 5: T202 claimed 07:55Z, lease until 10:55Z; lane 6: T112 claimed 07:36Z, lease until 10:36Z
 - **Week:** 16% used, 158.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:47Z, 8 min before this update
+- **Last run:** 07:56Z, 11 min before this update
 - **Keeper:** last ran 07:40Z, next wake 10:37Z
 
 ## Needs attention
-- BLOCKED T489: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes `sec_048_every_refusal_is_a_security_event` panic at auth_matrix.rs:181:9 ("/request has no door in auth_matrix.rs: add its matrix rule (SEC-019)"). sec_048 (:720-:723) builds its POST list from route_table() and calls door(path, false), ignoring the served-by-site flag that td_sec_01 (:637) and :693 pass; so any site POST outside the listed prefixes panics. POST /request is the first site POST. The file is owned by T348 (harness; also T088, T231, T302, T308); T489 does not ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T489 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 3 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
@@ -88,31 +87,31 @@ Updated 2026-11-17T07:56:02Z by runner 24cdb307a1ca (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 302 of 733 (41.2%) · partial 331 · unstarted 100
-**Tasks merged (throughput only):** 388 of 559
+**Requirements verified:** 1 of 733 (0.1%) · partial 632 · unstarted 100
+**Tasks merged (throughput only):** 388 of 560
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 19 | 12 | 4 | 35 |
-| ai | 11 | 14 | 4 | 29 |
-| businesses | 21 | 35 | 2 | 58 |
-| calls | 13 | 11 | 1 | 25 |
-| consent | 14 | 18 | 3 | 35 |
-| fees | 24 | 27 | 1 | 52 |
-| intake | 25 | 18 | 0 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
-| licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
-| ops-recovery | 1 | 23 | 30 | 54 |
-| privacy | 12 | 17 | 2 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 33 | 22 | 1 | 56 |
-| recurring | 8 | 0 | 3 | 11 |
-| security | 11 | 39 | 5 | 55 |
-| terms | 1 | 23 | 11 | 35 |
+| accessibility | 1 | 30 | 4 | 35 |
+| ai | 0 | 25 | 4 | 29 |
+| businesses | 0 | 56 | 2 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 32 | 3 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 43 | 2 | 45 |
+| ops-recovery | 0 | 24 | 30 | 54 |
+| privacy | 0 | 29 | 2 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 55 | 1 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 0 | 50 | 5 | 55 |
+| terms | 0 | 24 | 11 | 35 |
 | website | 0 | 17 | 11 | 28 |
-| wording | 2 | 10 | 20 | 32 |
+| wording | 0 | 12 | 20 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
