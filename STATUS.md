@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T19:25:42Z by runner c57d89a4648d (actions).
+Updated 2026-11-17T19:27:48Z by runner 805fa0d42eef (actions).
 
-**Building: T115 in progress since 18:45Z; 406 of 570 done; week 26% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T115 in progress since 18:45Z; 407 of 570 done; week 26% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 406 of 570 build tasks (owner gates not counted)
+- **Tasks done:** 407 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 6: T106 claimed 19:20Z, lease until 22:20Z
 - **Week:** 26% used, 143.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:25Z, 0 min before this update
+- **Last run:** 19:25Z, 2 min before this update
 - **Keeper:** last ran 19:25Z, next wake 21:48Z
 
 ## Needs attention
@@ -28,7 +28,7 @@ A retry should start from this attempt's design (pushed branch, if kept) and app
 | T528 | ops: the alert, audit-row and digest-row readers and writers | MERGE_PENDING | 2 | 37 min | 19:05Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | QUEUED | 1 | 58 min | 18:25Z | T115 attempt not handed in (heads 575b42f0c, fix round 6fd736270). / 1) prehandin red at `npm audit --audit-level=low` o |
 | T596 | Runner (harness): an ancestor's running smoke finishes and c | MERGE_PENDING | 1 | 41 min | 17:49Z |  |
-| T491 | picks: the Confirm window's end, every way it comes, runs th | MERGE_PENDING | 1 | 2 h 2 min | 17:44Z |  |
+| T491 | picks: the Confirm window's end, every way it comes, runs th | done | 1 | 2 h 2 min | 17:44Z |  |
 | T599 | Tests (harness): the PICK-046 email's no-amount check ignore | done | 1 | 32 min | 17:36Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 2 | 42 min | 17:35Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 1 | 51 min | 16:52Z |  |
@@ -96,7 +96,7 @@ A retry should start from this attempt's design (pushed branch, if kept) and app
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 663 · unstarted 70
-**Tasks merged (throughput only):** 406 of 570
+**Tasks merged (throughput only):** 407 of 570
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -132,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 49 of 178 done
+- stage 5: 50 of 178 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
