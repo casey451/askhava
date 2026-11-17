@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-17T07:36:15Z by runner eabc0711c109 (manual).
+Updated 2026-11-17T07:36:49Z by runner eabc0711c109 (actions).
 
 **Building: T107 in progress since 07:34Z; 387 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 387 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z
-- **Week:** 16% used, 162.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z; lane 6: T112 claimed 07:36Z, lease until 10:36Z
+- **Week:** 16% used, 160.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:36Z, 0 min before this update
 - **Keeper:** last ran 07:33Z, next wake 07:53Z
 
@@ -88,36 +88,36 @@ Updated 2026-11-17T07:36:15Z by runner eabc0711c109 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 1 of 733 (0.1%) · partial 629 · unstarted 103
+**Requirements verified:** 302 of 733 (41.2%) · partial 328 · unstarted 103
 **Tasks merged (throughput only):** 387 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 1 | 30 | 4 | 35 |
-| ai | 0 | 25 | 4 | 29 |
-| businesses | 0 | 56 | 2 | 58 |
-| calls | 0 | 24 | 1 | 25 |
-| consent | 0 | 32 | 3 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 43 | 2 | 45 |
-| ops-recovery | 0 | 24 | 30 | 54 |
-| privacy | 0 | 29 | 2 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 55 | 1 | 56 |
-| recurring | 0 | 8 | 3 | 11 |
-| security | 0 | 50 | 5 | 55 |
-| terms | 0 | 24 | 11 | 35 |
+| accessibility | 19 | 12 | 4 | 35 |
+| ai | 11 | 14 | 4 | 29 |
+| businesses | 21 | 35 | 2 | 58 |
+| calls | 13 | 11 | 1 | 25 |
+| consent | 14 | 18 | 3 | 35 |
+| fees | 24 | 27 | 1 | 52 |
+| intake | 25 | 18 | 0 | 43 |
+| job-cards | 20 | 4 | 0 | 24 |
+| licensing | 36 | 12 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 24 | 19 | 2 | 45 |
+| ops-recovery | 1 | 23 | 30 | 54 |
+| privacy | 12 | 17 | 2 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 33 | 22 | 1 | 56 |
+| recurring | 8 | 0 | 3 | 11 |
+| security | 11 | 39 | 5 | 55 |
+| terms | 1 | 23 | 11 | 35 |
 | website | 0 | 15 | 13 | 28 |
-| wording | 0 | 11 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T07:33:16Z (week)): week: 32.0M used, 162.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T05:49:40Z.
+- Pacing (session_reading 2026-11-17T07:33:16Z (week)): week: 33.3M used, 160.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T06:24:12Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -134,6 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T107 (lease until 2026-11-17T10:34:41Z)
+- lane 6: T112 (lease until 2026-11-17T10:36:38Z)
 
 ## Last usage reading
 - {"task": "T112", "at": "2026-11-17T07:32:37Z", "cache_creation_input_tokens": 210385, "cache_read_input_tokens": 4797203, "output_tokens": 52160, "input_tokens": 163}
