@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T08:07:36Z by runner 678dce1e44fa (manual).
+Updated 2026-11-17T08:13:50Z by runner 5eda38328127 (actions).
 
 **Building: T107 in progress since 07:34Z; 388 of 560 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 388 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z; lane 3: T570 claimed 07:46Z, lease until 10:46Z; lane 5: T202 claimed 07:55Z, lease until 10:55Z; lane 6: T112 claimed 07:36Z, lease until 10:36Z
+- **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z; lane 3: T570 claimed 07:46Z, lease until 10:46Z; lane 5: T202 claimed 07:55Z, lease until 10:55Z; lane 6: T112 claimed 07:36Z, lease until 11:13Z
 - **Week:** 16% used, 158.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:56Z, 11 min before this update
+- **Last run:** 08:07Z, 6 min before this update
 - **Keeper:** last ran 07:40Z, next wake 10:37Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 3 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -87,31 +87,31 @@ Updated 2026-11-17T08:07:36Z by runner 678dce1e44fa (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 1 of 733 (0.1%) · partial 632 · unstarted 100
-**Tasks merged (throughput only):** 388 of 560
+**Requirements verified:** 302 of 733 (41.2%) · partial 331 · unstarted 100
+**Tasks merged (throughput only):** 388 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 1 | 30 | 4 | 35 |
-| ai | 0 | 25 | 4 | 29 |
-| businesses | 0 | 56 | 2 | 58 |
-| calls | 0 | 24 | 1 | 25 |
-| consent | 0 | 32 | 3 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 43 | 2 | 45 |
-| ops-recovery | 0 | 24 | 30 | 54 |
-| privacy | 0 | 29 | 2 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 55 | 1 | 56 |
-| recurring | 0 | 8 | 3 | 11 |
-| security | 0 | 50 | 5 | 55 |
-| terms | 0 | 24 | 11 | 35 |
+| accessibility | 19 | 12 | 4 | 35 |
+| ai | 11 | 14 | 4 | 29 |
+| businesses | 21 | 35 | 2 | 58 |
+| calls | 13 | 11 | 1 | 25 |
+| consent | 14 | 18 | 3 | 35 |
+| fees | 24 | 27 | 1 | 52 |
+| intake | 25 | 18 | 0 | 43 |
+| job-cards | 20 | 4 | 0 | 24 |
+| licensing | 36 | 12 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 24 | 19 | 2 | 45 |
+| ops-recovery | 1 | 23 | 30 | 54 |
+| privacy | 12 | 17 | 2 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 33 | 22 | 1 | 56 |
+| recurring | 8 | 0 | 3 | 11 |
+| security | 11 | 39 | 5 | 55 |
+| terms | 1 | 23 | 11 | 35 |
 | website | 0 | 17 | 11 | 28 |
-| wording | 0 | 12 | 20 | 32 |
+| wording | 2 | 10 | 20 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -135,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T107 (lease until 2026-11-17T10:34:41Z)
 - lane 3: T570 (lease until 2026-11-17T10:46:34Z)
 - lane 5: T202 (lease until 2026-11-17T10:55:47Z)
-- lane 6: T112 (lease until 2026-11-17T10:36:38Z)
+- lane 6: T112 (lease until 2026-11-17T11:13:50Z)
 
 ## Last usage reading
 - {"task": "T112", "at": "2026-11-17T07:32:37Z", "cache_creation_input_tokens": 210385, "cache_read_input_tokens": 4797203, "output_tokens": 52160, "input_tokens": 163}
