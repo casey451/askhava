@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T19:01:46Z by runner 9a2f7e35c30c (actions).
+Updated 2026-11-17T19:05:07Z by runner 9a2f7e35c30c (actions).
 
 **Building: T605 in progress since 18:29Z; 406 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-17T19:01:46Z by runner 9a2f7e35c30c (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T605 claimed 18:29Z, lease until 21:29Z; lane 3: T528 claimed 18:27Z, lease until 22:01Z; lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 7: T104 claimed 18:38Z, lease until 21:38Z
 - **Week:** 25% used, 141.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:59Z, 2 min before this update
+- **Last run:** 19:01Z, 3 min before this update
 - **Keeper:** last ran 18:27Z, next wake 18:47Z
 
 ## Needs attention
@@ -82,7 +82,6 @@ Updated 2026-11-17T19:01:46Z by runner 9a2f7e35c30c (actions).
 | T361 | quotes and picks: a quote keeps its number once shown, and a | done | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
 | T487 | ops and payments: safe mode after 24 hours pauses charges, a | done | 1 | 50 min | 19:47Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 30 min | 19:37Z |  |
-| T324 | harness: 95% branch floors for the money and privacy files o | done | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 
 ### Plan and harness merges on main
 - none
