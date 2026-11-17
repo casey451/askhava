@@ -313,7 +313,7 @@ jobs:
             npm ci --ignore-scripts
             npx tsc --noEmit
             if [ -f eslint.config.js ]; then npx eslint .; fi
-            npm audit --audit-level=low
+            python3 scripts/npm_audit.py
           else
             echo "npm checks skipped: no package-lock.json yet"
           fi
