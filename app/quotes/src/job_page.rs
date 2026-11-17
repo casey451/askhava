@@ -15,6 +15,8 @@
 //! and every answer and later detail passes the same final gate as the card (CARD-008, CARD-010),
 //! so a phone or address she typed is cut before a business sees it. Her contact reaches only the
 //! business she picks, through `picks` and `portals` after the PICK-022 share, never this page.
+//! T479: [`job_trade`] gives the trade a card holder's "Not a fit for us" answer is counted under
+//! (PICK-057); the answer itself is stored by `ops` and changes nothing here.
 
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
@@ -169,6 +171,29 @@ pub async fn job_page(
         project_file: None,
         concept: card_concept(&parts.card),
     }))
+}
+
+/// PICK-057, OPS-039, D-3920: the trade of `job` (its first sent card's category, as
+/// `scorecard_inputs::jobs_by_trade` counts it) for `business`'s "Not a fit for us" answer, or
+/// none when the business holds no card for the job, so only a business sent the card can answer.
+///
+/// # Errors
+///
+/// [`QuotesError::Database`].
+pub async fn job_trade(
+    db: &mut PgConnection,
+    (job, business): (Uuid, Uuid),
+) -> Result<Option<String>, QuotesError> {
+    sqlx::query_scalar!(
+        "SELECT category FROM quotes.shown_card s WHERE s.job_id = $1 AND s.sent_at IS NOT NULL \
+         AND EXISTS (SELECT 1 FROM quotes.job_card c WHERE c.job_id = $1 AND c.business_id = $2) \
+         ORDER BY s.sent_at, s.id LIMIT 1",
+        job,
+        business
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| QuotesError::Database)
 }
 
 /// INT-046, D-2874: the card's concept image, read from the card itself: when the card's last

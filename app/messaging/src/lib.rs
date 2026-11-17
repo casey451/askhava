@@ -18,10 +18,12 @@
 //! daily task cuts any body still kept 30 days on (`retention`, TXT-019, TXT-020).
 
 mod accepted_quote_email;
+mod alert_emails;
 pub mod api;
 mod business_notices;
 mod checkin_email;
 mod consent_alerts;
+mod consent_purge;
 mod coverage_email;
 mod email;
 mod email_timing;

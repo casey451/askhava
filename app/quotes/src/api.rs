@@ -97,7 +97,7 @@ pub use crate::intake::{
     confirm_quote, confirm_quote_at, mark_unavailable, parse_quote, shown_quotes, submit_quote,
     window_open,
 };
-pub use crate::job_page::{JobPage, PageParts, job_page};
+pub use crate::job_page::{JobPage, PageParts, job_page, job_trade};
 pub use crate::job_text::{
     CardFacts, JobDescription, KeptCard, StoredCard, card_digest, description, forget_requests,
     keep_card, keep_description, mark_card_sent, purge_job_text, run_text_purge, sent_card,

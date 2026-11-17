@@ -14,8 +14,8 @@ use askhava_adapters::api::{
     TwilioVerify, twilio_clients,
 };
 use askhava_core::api::{
-    Brand, Clock, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging,
-    install_brand, request_span,
+    Brand, ClientIpPolicy, Clock, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock,
+    init_logging, install_brand, request_span,
 };
 use askhava_intake::api::JobTextKeys;
 use askhava_intake::api::rules::Settings as IntakeSettings;
@@ -534,7 +534,8 @@ pub(crate) fn terms_version() -> String {
 /// The page pick's keys (T246, D-1516), built from `settings` and `pairs` as [`job_text_keys`]
 /// builds the sender's (D-1302): with both vault keys, the Verify client from
 /// `adapters::api::twilio_clients`, the vault, a strong `ASKHAVA_ID_SECRET` and the compiled-in
-/// homeowner Terms; with neither, `None` in dev and CI (the page sends nothing and says so) and an
+/// homeowner Terms, and the client-IP policy (`ASKHAVA_CLIENT_IP_HEADER`, `ASKHAVA_PROXIED_HOSTS`)
+/// the per-IP code limits read (SEC-014, SEC-040, D-3144); with neither, `None` in dev and CI (the page sends nothing and says so) and an
 /// error in the test and live projects; one key without the other is an error everywhere.
 ///
 /// # Errors
@@ -557,10 +558,12 @@ where
         .map(|(_, v)| SecretString::from(v.trim().to_owned()))
         .ok_or_else(|| io::Error::other("missing ASKHAVA_ID_SECRET"))?;
     IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
+    let client_ip = ClientIpPolicy::from_pairs(pairs.clone()).map_err(io::Error::other)?;
     let twilio = TwilioConfig::from_settings(settings, pairs).map_err(io::Error::other)?;
     let (_, _, verify) = twilio_clients(&twilio).map_err(io::Error::other)?;
     let terms = (terms_version(), HOMEOWNER_TERMS);
-    Ok(Some(PickCodeKeys::new(verify, vault, id_secret, terms)))
+    let keys = PickCodeKeys::new(verify, vault, id_secret, terms);
+    Ok(Some(keys.with_client_ip(client_ip)))
 }
 
 /// The vault from `VAULT_KEY` and `VAULT_INDEX_KEY` in `pairs` (D-1302, D-1306): with neither,
@@ -929,6 +932,7 @@ where
     I: IntoIterator<Item = (String, String)>,
 {
     let clock = Arc::clone(&stream.clock);
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
     let (photos, id_secret) = (Arc::new(stream.storage.clone()), stream.id_secret.clone());
     let senders = notice_senders(settings, &id_secret)?;
     let mut registry = register_handlers(Arc::new(stream), texts, confirm);
@@ -942,11 +946,11 @@ where
         id_secret.clone(),
         photo_clock,
     );
+    register_alert_emails(&mut registry, settings, &clock, pairs.clone())?;
     register_paused_safety(&mut registry);
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
     register_timer_backstop(&mut registry, Arc::clone(&clock));
     register_license_reapply(&mut registry, Arc::clone(&clock));
-    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
     register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
@@ -1001,6 +1005,52 @@ fn register_twilio_handlers(
     askhava_messaging::api::register_body_deletes(registry, sms, id_secret, scan_clock);
     let masked = (twilio.pool().clone(), clock);
     register_masked(registry, settings, masked, pairs)?;
+    Ok(())
+}
+
+/// The OPS-035 alert address key, a secret never logged (T204, D-3882).
+const ALERT_EMAIL: &str = "ASKHAVA_ALERT_EMAIL";
+
+/// OPS-029, OPS-032, OPS-035, SEC-051 (T204, D-2207, D-3144, D-4044): `messaging`'s every-minute
+/// alert push and hourly checks, always registered. The sender is built from T469's
+/// [`email_provider::email_provider`] and [`ALERT_EMAIL`], sending as `EmailTo::Business` to that
+/// address; with no provider or no address in dev and Ci it is `None` and sends nothing, and a
+/// missing address in test and live is an error naming the key, never its value.
+fn register_alert_emails(
+    registry: &mut Registry,
+    settings: &Settings,
+    clock: &Arc<dyn Clock>,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    use askhava_messaging::api::{AlertEmailSender, EmailLimits, register_alert_emails};
+    let address = pairs
+        .iter()
+        .find(|(k, v)| k == ALERT_EMAIL && !v.trim().is_empty())
+        .map(|(_, v)| SecretString::from(v.trim().to_owned()));
+    let daily = pairs
+        .iter()
+        .find(|(k, _)| k == "ASKHAVA_EMAIL_DAILY_LIMIT")
+        .and_then(|(_, v)| v.trim().parse::<u32>().ok())
+        .unwrap_or(100);
+    let provider = email_provider::email_provider(settings, pairs)?;
+    let sender = match (provider, address) {
+        (Some(p), Some(address)) => {
+            let limits = EmailLimits::new(daily, p.monthly_limit())
+                .ok_or_else(|| io::Error::other("invalid ASKHAVA_EMAIL_DAILY_LIMIT"))?;
+            let built = AlertEmailSender::new(
+                (p.secret().clone(), p.client().clone()),
+                p.postal(),
+                p.daily_limit(),
+                (address, limits),
+            );
+            Some(Arc::new(built.map_err(|_| bad_postal())?))
+        }
+        (_, None) if !matches!(settings.environment(), Environment::Dev | Environment::Ci) => {
+            return Err(io::Error::other(format!("missing {ALERT_EMAIL}")));
+        }
+        _ => None,
+    };
+    register_alert_emails(registry, sender, clock);
     Ok(())
 }
 
