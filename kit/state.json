@@ -22937,8 +22937,8 @@
     "T489",
     "T202"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "BLOCKED",
+   "attempts": 2,
    "slug": "a11y-docs-statement",
    "type": "build",
    "stage": "5",
@@ -22955,7 +22955,7 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "last_failure": "T115 attempt not handed in (heads 575b42f0c, fix round 6fd736270).\n1) prehandin red at `npm audit --audit-level=low` only: new upstream high advisory GHSA-fc5q-39xc-vjpf (picomatch ReDoS, all versions incl. latest 4.0.7) via typescript-eslint -> @typescript-eslint/typescript-estree -> tinyglobby/fdir in main's unchanged package-lock.json. Any branch touching tests/a11y/ (npm tree) hits it; needs a harness/plan fix (override or audit exception), outside T115's files.\n2) Second fresh-eyes review (head 6fd736270144bbb0266e58f02878cc353a282c14) FINDINGS after the one allowed fix round: TD-WEB-08 \"call\" check in tests/a11y/statement.spec.ts:26-29 (and the Rust `gone` list in app/site/src/pages.rs) still passes \"Call or text us.\", \"Reach us by phone.\", \"Phone the Laftly number.\", \"You can call anytime.\", \"Feel free to call.\", \"Calling us is fine.\". Suggested: add \\bcall or text\\b, \\btext or call\\b, \\bby (?:phone|calling)\\b, \\bphone (?:the|our|us|BRAND)\\b, \\b(?:can|may|free to) call\\b, \\bcalling us\\b with planted cases; real statement still passes them. Also refresh D-4213 part (2) to the final phrases.\n3) Local prehandin --ally: first run 812 passed; after the fix round 2-3 failures in tests/a11y/j2_keyboard.spec.ts:149 (business sign-up by keyboard), code this diff does not touch; likely the reused local Ally database. Reviewer found nothing in the diff that could affect J2.\nOtherwise green: smoke.sh green (first head), fmt/clippy clean, cargo test -p askhava-site 31 passed, test_email_accessibility.py 17 passed, statement.spec.ts 6 passed.",
+   "last_failure": "PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing in `package.json`/`package-lock.json` can fix it; the smallest plan change is a harness task that adds a reviewed audit exception for this advisory to `scripts/prehandin.sh` and Ci's audit step.\nEvidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=4.0.7, latest published is 4.0.7, no patched version, so no override works. Path: typescript-eslint@8.71.2 -> @typescript-eslint/typescript-estree@8.71.2 -> tinyglobby@0.2.17 -> picomatch@4.0.7 (also via fdir); newest typescript-estree 8.73.0 still needs tinyglobby, newest tinyglobby needs picomatch ^4.0.4. npm's suggested typescript-eslint@8.47.0 needs eslint ^8.57||^9 and typescript <6, repo pins eslint 10.12.0 and TS 6.0.3. origin/main's unchanged lockfile fails the same way (9 high). scripts/prehandin.sh:143-147 and .github/workflows/ci.yml:309-316 run the audit whenever an npm path changes (tests/a11y/*.ts), so any task touching TypeScript is blocked; only protected harness paths can fix it.\nWork on branch (heads 970e88f79, fix 5cde1fda2, not pushed): fix round's prehandin red only at npm audit; fmt/clippy clean, cargo test -p askhava-site 31 passed, home_numbers 3 passed, test_email_accessibility.py 22 passed, statement.spec.ts 6 passed, tsc/eslint 0. prehandin --ally: 2-3 failures in tests/a11y/j2_keyboard.spec.ts:149 on reused local DB (reviewer: nothing in the diff can affect J2).\nRemaining review findings for the retry (second review FINDINGS after the one fix round): (1) tests/a11y/statement.spec.ts:26-27 CALL_WORD matches whole words only; misses \"Request a callback.\", \"Talking to us is easy.\", \"Speaking with us by voice works.\", \"Telephoning us works too.\", \"Contact us by text, email or voice.\", \"Leave us a voice message.\", \"Use 711 to reach us.\", \"Use TTY to reach us.\", \"Video relay users can reach our number directly.\", \"Caller ID shows our number; reply anytime.\" Fix: prefix matches (call\\w*, phon\\w*, telephon\\w*, talk\\w*, speak\\w*, voice\\w*) plus 711, TTY, VRS, video relay, planted cases; safe sentences stay allow-listed. (2) tests/docs/test_email_accessibility.py:44 provider Email text is &'a str (app/adapters/src/email.rs:22), so compiling forms `text: &String::new()`, `&String::default()`, `&\"\".to_string()` slip through; planted cases use non-compiling forms and `html,` without colon which the real filter skips. (3) :100 Rendered empty-plain check misses String::default(). Owned-file size ~482 changed lines vs 400 budget.",
    "history": [
     {
      "attempt": 1,
@@ -22979,8 +22979,32 @@
        "turns": 32
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 159,
+     "head_sha": "5cde1fda261f3e84aa24028dcc7df1ef37ade1fd",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-17T18:45:57Z",
+     "ended_at": "2026-11-17T19:54:30Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 7380738,
+       "turns": 94
+      },
+      "reviewer": {
+       "tokens": 1574634,
+       "turns": 34
+      }
+     }
     }
-   ]
+   ],
+   "reason": "plan gap reported: PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing in `package.json`/`package-lock.json` can fix it; the smallest plan change is a harness task that adds a reviewed audit exception for this advisory to `scripts/prehandin.sh` and Ci's audit step.\nEvidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=4.0.7, latest published is 4.0.7, no patched version, so no override works. Path: typescript-eslint@8.71.2 -> @typescript-eslint/typescript-estree@8.71.2 -> tinyglobby@0.2.17 -> picomatch@4.0.7 (also via f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T115 --plan-fix D-### --reason \"...\"` (D-2859)"
   },
   {
    "id": "T116",
@@ -72121,12 +72145,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T104",
-   "at": "2026-11-17T19:24:57Z",
-   "output_tokens": 129566,
-   "input_tokens": 209,
-   "cache_creation_input_tokens": 310798,
-   "cache_read_input_tokens": 10805120
+   "task": "T115",
+   "at": "2026-11-17T19:54:30Z",
+   "cache_read_input_tokens": 8618608,
+   "input_tokens": 245,
+   "cache_creation_input_tokens": 264443,
+   "output_tokens": 72076
   },
   "source": "session_reading 2026-11-17T19:28:29Z (week)",
   "by_task": {
@@ -76614,14 +76638,14 @@
     "estimated_bytes": 411568,
     "estimated_tokens": 448587,
     "usage_counting": "message_id",
-    "cache_read_input_tokens": 6648134,
-    "cache_creation_input_tokens": 231725,
-    "output_tokens": 56659,
-    "input_tokens": 228,
-    "worker_tokens": 5447369,
-    "worker_turns": 86,
-    "reviewer_tokens": 1489377,
-    "reviewer_turns": 32,
+    "cache_read_input_tokens": 15266742,
+    "cache_creation_input_tokens": 496168,
+    "output_tokens": 128735,
+    "input_tokens": 473,
+    "worker_tokens": 12828107,
+    "worker_turns": 180,
+    "reviewer_tokens": 3064011,
+    "reviewer_turns": 66,
     "last_model": "claude-opus-5-5"
    },
    "T605": {
@@ -76650,11 +76674,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-17T15:39:33Z",
-    "tokens": 8388042
+    "tokens": 9586666
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 256548114
+    "tokens": 257746738
    }
   },
   "session_reading": {
@@ -76665,7 +76689,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T19:52:53Z",
+ "updated_at": "2026-11-17T19:54:30Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -76763,7 +76787,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a649ef16432bdcbf61a51fd6d438cefcf1855209",
+ "runner_sha": "5cde1fda261f3e84aa24028dcc7df1ef37ade1fd",
  "starter": "actions",
  "smoke_runs": [
   {

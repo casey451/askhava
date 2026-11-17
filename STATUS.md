@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T19:52:53Z by runner a649ef16432b (actions).
+Updated 2026-11-17T19:54:30Z by runner 5cde1fda261f (actions).
 
 **Building: T582 in progress since 19:37Z; 408 of 570 done; week 27% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 408 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T582 claimed 19:37Z, lease until 22:37Z; lane 5: T115 claimed 18:45Z, lease until 22:31Z; lane 6: T106 claimed 19:20Z, lease until 22:52Z; lane 7: T594 claimed 19:39Z, lease until 22:39Z
+- **Lane:** lane 1: T582 claimed 19:37Z, lease until 22:37Z; lane 6: T106 claimed 19:20Z, lease until 22:52Z; lane 7: T594 claimed 19:39Z, lease until 22:39Z
 - **Week:** 27% used, 139.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:52Z, 0 min before this update
+- **Last run:** 19:53Z, 1 min before this update
 - **Keeper:** last ran 19:50Z, next wake 22:23Z
 
 ## Needs attention
@@ -17,16 +17,19 @@ Updated 2026-11-17T19:52:53Z by runner a649ef16432b (actions).
 2. tests/docs/test_wording_scan.py:79/:81-82 (WORD-003): Spanish "shown/listed by price" missed: "Las cotizaciones se muestran por precio." / "Mostramos las cotizaciones por precio." Fix: widen `orden\w* (?:\w+ ){0,3}por (...)` to `(?:orden|muestr|mostr|list|present)\w* (?:\w+ ){0,3}por (?:precio|calidad|calificaci)`; add both to FAILS.
 Optional (not counted): "We collect your phone number and let the business see it." / "Su número de teléfono lo recibe el negocio que elija." / "Your phone number? We share it with the pro you pick." ("?" ends the sentence) / "Los precios más bajos van primero."; "We text your phone number a code; type it in." is wrongly flagged (already so on 2a14626dd).
 A retry should start from this attempt's design (pushed branch, if kept) and apply these two fixes; each rule should be checked against both missed phrasings and plausible legitimate consent-flow copy before hand-in.
+- BLOCKED T115: plan gap reported: PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing in `package.json`/`package-lock.json` can fix it; the smallest plan change is a harness task that adds a reviewed audit exception for this advisory to `scripts/prehandin.sh` and Ci's audit step.
+Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=4.0.7, latest published is 4.0.7, no patched version, so no override works. Path: typescript-eslint@8.71.2 -> @typescript-eslint/typescript-estree@8.71.2 -> tinyglobby@0.2.17 -> picomatch@4.0.7 (also via f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T115 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 13 problem(s) on tasks still to run (+174 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | BLOCKED | 2 | 68 min | 19:54Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | BLOCKED | 3 | 46 min | 19:24Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T605 | businesses, intake and picks: the leaving answers, not-cover | MERGE_PENDING | 1 | 46 min | 19:15Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | MERGE_PENDING | 2 | 37 min | 19:05Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
-| T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | QUEUED | 1 | 58 min | 18:25Z | T115 attempt not handed in (heads 575b42f0c, fix round 6fd736270). / 1) prehandin red at `npm audit --audit-level=low` o |
+| T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | QUEUED | 1 | 58 min | 18:25Z |  |
 | T596 | Runner (harness): an ancestor's running smoke finishes and c | done | 1 | 41 min | 17:49Z |  |
 | T491 | picks: the Confirm window's end, every way it comes, runs th | done | 1 | 2 h 2 min | 17:44Z |  |
 | T599 | Tests (harness): the PICK-046 email's no-amount check ignore | done | 1 | 32 min | 17:36Z |  |
@@ -138,9 +141,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T582 (lease until 2026-11-17T22:37:10Z)
-- lane 5: T115 (lease until 2026-11-17T22:31:55Z)
 - lane 6: T106 (lease until 2026-11-17T22:52:53Z)
 - lane 7: T594 (lease until 2026-11-17T22:39:43Z)
 
 ## Last usage reading
-- {"task": "T104", "at": "2026-11-17T19:24:57Z", "output_tokens": 129566, "input_tokens": 209, "cache_creation_input_tokens": 310798, "cache_read_input_tokens": 10805120}
+- {"task": "T115", "at": "2026-11-17T19:54:30Z", "cache_read_input_tokens": 8618608, "input_tokens": 245, "cache_creation_input_tokens": 264443, "output_tokens": 72076}
