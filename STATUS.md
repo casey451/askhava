@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T00:14:03Z by runner 8fb25c182a02 (actions).
+Updated 2026-11-17T00:21:54Z by runner 8fb25c182a02 (actions).
 
 **Building: T103 in progress since 00:02Z; 377 of 541 done; week 7% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-17T00:14:03Z by runner 8fb25c182a02 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:02Z; lane 2: T469 claimed 23:44Z, lease until 02:44Z; lane 4: T481 claimed 22:37Z, lease until 02:57Z; lane 6: T320 claimed 23:55Z, lease until 02:55Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
 - **Week:** 7% used, 177.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:06Z, 7 min before this update
+- **Last run:** 00:14Z, 7 min before this update
 - **Keeper:** last ran 00:06Z, next wake 01:38Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-17T00:14:03Z by runner 8fb25c182a02 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T111 | Draft homeowner and business terms with every required claus | done | 4 | 34 min | 23:57Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
-| T373 | businesses: changing a phone's number ends that phone's text | MERGE_PENDING | 1 | 74 min | 23:55Z |  |
+| T373 | businesses: changing a phone's number ends that phone's text | check_failed | 1 | 74 min | 23:55Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | QUEUED | 2 | 89 min | 23:36Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 3 | 37 min | 22:10Z |  |
 | T320 | ops: a check that runs on a schedule raises its alert once w | check_failed | 1 | 39 min | 21:46Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
