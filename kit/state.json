@@ -20646,7 +20646,7 @@
     "T302",
     "T464"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "site-spanish-business-lines",
    "type": "build",
@@ -20732,6 +20732,29 @@
        "turns": 56
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 43,
+     "head_sha": "e2f1e523625f0c14e7afb1ec297ad6d7c0f85267",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-17T10:29:48Z",
+     "ended_at": "2026-11-17T11:26:23Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 1187377,
+       "turns": 25
+      },
+      "reviewer": {
+       "tokens": 1502492,
+       "turns": 26
+      }
+     }
     }
    ],
    "reviewed_sha": "a0107ea1925d85c32f5e07099ab99c40f6a8f4e9",
@@ -20744,14 +20767,13 @@
    "branch": "claude/task/T202-site-spanish-business-lines",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #944 (gh pr merge)",
-    "head": "090b419c4a21366a051bedc42b96c2c4f945c6e1"
+    "why": "auto-merge on #951 (gh pr merge)",
+    "head": "a0107ea1925d85c32f5e07099ab99c40f6a8f4e9"
    },
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nVersion:   3.20.3\nTitle:     Partial requests on keep-alive connections can bypass the request header timeout\nDate:      2026-11-16\nID:        RUSTSEC-2026-0554\nURL:       https://github.com/actix/actix-web/releases/tag/actix-http-v3.21.2\nSeverity:  6.9 (medium)\nSolution:  Upgrade to >=3.21.2\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     944
    ],
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "e2f1e523625f0c14e7afb1ec297ad6d7c0f85267",
@@ -69302,12 +69324,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T112",
-   "at": "2026-11-17T11:10:44Z",
-   "output_tokens": 54670,
-   "input_tokens": 125,
-   "cache_read_input_tokens": 3828109,
-   "cache_creation_input_tokens": 182447
+   "task": "T202",
+   "at": "2026-11-17T11:26:23Z",
+   "input_tokens": 98,
+   "cache_creation_input_tokens": 122665,
+   "cache_read_input_tokens": 2547922,
+   "output_tokens": 19184
   },
   "source": "session_reading 2026-11-17T10:34:49Z (week)",
   "by_task": {
@@ -73571,14 +73593,14 @@
     "estimated_bytes": 509551,
     "estimated_tokens": 1534516,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 325477,
-    "cache_read_input_tokens": 11155061,
-    "input_tokens": 271,
-    "output_tokens": 89453,
-    "worker_tokens": 8306405,
-    "worker_turns": 85,
-    "reviewer_tokens": 3263857,
-    "reviewer_turns": 56,
+    "cache_creation_input_tokens": 448142,
+    "cache_read_input_tokens": 13702983,
+    "input_tokens": 369,
+    "output_tokens": 108637,
+    "worker_tokens": 9493782,
+    "worker_turns": 110,
+    "reviewer_tokens": 4766349,
+    "reviewer_turns": 82,
     "last_model": "claude-opus-5-5"
    },
    "T446": {
@@ -73597,11 +73619,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-17T09:54:43Z",
-    "tokens": 2995381
+    "tokens": 3392120
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 240439340
+    "tokens": 240836079
    }
   },
   "session_reading": {
@@ -73612,7 +73634,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T11:26:25Z",
+ "updated_at": "2026-11-17T11:26:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
