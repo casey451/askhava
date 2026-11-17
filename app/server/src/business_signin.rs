@@ -15,8 +15,10 @@
 //! vault's blind index (`privacy::api::mailboxes_of`) and `businesses::api::businesses_of_mailbox`;
 //! the link's address is opened with `read_business_mailbox` under `BusinessPurpose::SignInLink`
 //! on the bare connection (D-3262) and the link goes through `messaging`'s [`SignInLinkSender`],
-//! never logged and never stored (SEC-026). With no vault or no sender (no Resend client is built
-//! yet, D-3186) it finds no one, so nobody learns whether an address is on file.
+//! never logged and never stored (SEC-026). The sender is built from `crate::email_provider`'s
+//! one Resend client and shared daily limit (T469, SEC-025, OPS-038, D-3750); with no vault or no
+//! provider (dev and CI without the Resend key or postal line) it finds no one, so nobody learns
+//! whether an address is on file.
 //! [`MemberCodeAddress`] sends a member's code to that member's own first texting line
 //! (`businesses::api::sign_in_lines`, `read_staff_phone`), else to that member's own address
 //! (`read_business_mailbox`), both under `SignInCode`, and to no one for a removed member.
@@ -99,13 +101,14 @@ impl ServedSignIn {
         Self(state.into_router(routes))
     }
 
-    /// The part `main` passes to `build_router`: `ASKHAVA_ID_SECRET`, the Verify client and the
-    /// vault from `pairs` (D-3055, D-3216).
+    /// The part `main` passes to `build_router`: `ASKHAVA_ID_SECRET`, the Verify client, the
+    /// vault and the email provider from `pairs` (D-3055, D-3216; SEC-025, D-3750).
     ///
     /// # Errors
     ///
     /// A missing or weak `ASKHAVA_ID_SECRET`; missing or bad Twilio settings in the test or live
-    /// project; a bad or half-set vault key pair, or none in test or live. Never a value.
+    /// project; a bad or half-set vault key pair, or none in test or live; an email provider
+    /// `email_provider` refuses. Never a value.
     pub fn from_settings<I>(settings: &Settings, pool: PgPool, pairs: I) -> io::Result<Self>
     where
         I: IntoIterator<Item = (String, String)>,
@@ -120,7 +123,7 @@ impl ServedSignIn {
         let vault = crate::vault_from(settings, pairs.clone())?.map(Arc::new);
         let clock: Arc<dyn Clock> = Arc::new(SystemClock);
         let to = MemberCodeAddress::new(pool.clone(), Arc::clone(&clock), vault.clone());
-        let codes = match TwilioConfig::from_settings(settings, pairs) {
+        let codes = match TwilioConfig::from_settings(settings, pairs.clone()) {
             Ok(config) => {
                 let (_, _, verify) = twilio_clients(&config).map_err(io::Error::other)?;
                 DeviceCodes::new(verify, to, secret)
@@ -130,7 +133,9 @@ impl ServedSignIn {
                 Environment::Test | Environment::Live => return Err(io::Error::other(error)),
             },
         };
-        let mail = SignInMailer::<ResendEmail>::new((pool.clone(), clock), vault, None);
+        let sender = crate::email_provider::email_provider(settings, pairs.clone())?;
+        let sender = sender.map(|p| p.sign_in_sender()).transpose()?;
+        let mail = SignInMailer::<ResendEmail>::new((pool.clone(), clock), vault, sender);
         Ok(Self::new(pool, mail, codes, notice))
     }
 
