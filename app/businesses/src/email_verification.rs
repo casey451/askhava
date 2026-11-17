@@ -368,7 +368,8 @@ pub async fn request_change(
 /// a change the member's address moves (only while the member is current and still has the old
 /// mailbox, else the check closes unverified and this returns false), the change is audit-logged
 /// and one [`CHANGED_KIND`] task tells the old address, in one transaction; for the sign-up email
-/// the sign-up settles (activation). Returns whether the code was taken.
+/// the sign-up settles (activation) in the same transaction, so a failed settle leaves the code
+/// open for a retry (D-4052 B9). Returns whether the code was taken.
 ///
 /// # Errors
 /// [`EmailCheckError::Database`].
@@ -408,12 +409,12 @@ pub async fn confirm(
         None => true,
     };
     close(&mut tx, row.id, taken, now).await?;
-    db(tx.commit().await)?;
     if taken && row.member_id.is_none() && row.change_for.is_none() {
-        crate::identity::settle(conn, business, now)
+        crate::identity::settle(&mut tx, business, now)
             .await
             .map_err(|_| EmailCheckError::Database)?;
     }
+    db(tx.commit().await)?;
     Ok(taken)
 }
 
