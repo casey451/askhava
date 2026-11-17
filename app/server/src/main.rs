@@ -88,7 +88,8 @@ fn business_parts(
         .with_sign_up(signup)
         .with_vault(vault)
         .with_confirm_part(confirm)
-        .with_site_pages(askhava_site::api::SitePages::from_settings(settings)))
+        .with_site_pages(askhava_site::api::SitePages::from_settings(settings))
+        .with_environment(settings.environment()))
 }
 
 /// Applies every pending migration over `ASKHAVA_MIGRATION_DATABASE_URL`, never the app

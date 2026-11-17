@@ -200,6 +200,7 @@ wargames/            the Phase 2 war games (Python, standard library): personas,
 - Text templates: `app/messaging/templates/en.json` and `es.json` are the registry of every fixed text (TXT-001, TXT-004), one key per template ID with both languages and a recorded `segments` count; each task adds only its own keys (D-759, D-491).
 - Confirm's $0 decision and release (T494, D-3824; FEE-010, FEE-012, PICK-022): `portals::confirm_waiver` is the one place the Confirm route judges a free first win: `join_dates` builds `payments::api::JoinDates` from `businesses::api::join_facts`, `catalog::api::trades_opened` (a new `portals` to `catalog` call) and the launch-date setting the caller passes (no sign-up row, or no launch setting, is `Timestamp::MAX`: no win); `decide_at_confirm` runs `waive_at_confirm` on the caller's Confirm transaction; after it commits, `release_no_fee` takes `no_fee_release` for the pick's own business and job and hands it to the `payments::api::ReleaseSink` (`server`'s `PickReleaser`, which releases once).
 - Pilot scorecard money, pick and quote inputs (T477, D-3920 to D-3922; OPS-039, OPS-047, PICK-052, FEE-046): read-only readers in `payments::scorecard_inputs`, `picks::scorecard_inputs` and `quotes::scorecard_inputs`, each taking job IDs and a window; `quotes::api::jobs_by_trade(to)` gives every job carded before `to` per trade (first sent card's category), request-level quote inputs are windowed on the job's first card and count quotes received before `to`, and `picks` takes its qualifying job IDs from `quotes` readers. PICK-052's returned notes are `quotes.note_returned` audit rows (`quotes::api::record_note_returned`, field = the reason's code name, never the note), read back through `ops::api::audit_subjects`. FEE-046's set-aside rate is `ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS` (default 860), passed to `LedgerTotals::net_per_introduction_cents`.
+- Safety key kept (T571, D-4051, D-4088; CON-035): `server::voice_status`'s key route, when `calls::api::safety_key_once` fails, queues the core task `calls.safety_key_retry` (`calls::safety_key_retry`, IDs, arrival and key only; up to 8 claims, then one High `calls.safety_key_lost` alert about the safety alert); when the queue fails too it answers 200 with a 2-second `<Pause>` and a POST `<Redirect>` to itself carrying `Digits` and `attempt` (at most 3), then the spoken STOP line and the same alert if it can. Registered in `register_safety_call` with the safety parts' vault.
 
 ## 3. Modules, what each owns, and its tables
 
@@ -421,7 +422,7 @@ Written as they happen to the `storage` adapter (OPS-010, OPS-011; `sources/01_s
 | tokio (`macros`, `rt-multi-thread`, `signal`, `net`, `time`, `sync`) | 1.53.3 (2026-10-13) | MIT | Async runtime; `sync` is named because the worker's semaphore and watch need it and sqlx only happens to enable it (D-491); 1.54.1 is past the cutoff |
 | tower / tower-http (`set-header`, `limit`, `fs`, `trace`, `request-id`, `timeout`, `catch-panic`, `sensitive-headers`) | 0.5.3 / 0.7.1 | MIT | Middleware: headers, body limits, static files, tracing, request IDs, timeouts, panic capture (D-481) |
 | askama | 0.16.1 (2026-09-04) | MIT OR Apache-2.0 | Compile-time HTML templates, autoescaped |
-| pulldown-cmark | 0.13.6 (2026-10-30) | MIT | Renders the legal documents once at start-up from `include_str!` of each file (`app/site/src/legal_pages.rs`, T221, D-491, D-3878, D-4070) |
+| pulldown-cmark | 0.13.6 (2026-10-30) | MIT | Renders the legal documents once at start-up from `include_str!` of each file (`app/site/src/legal_pages.rs`, T221, D-491, D-3878, D-4070); 0.13.6 for RUSTSEC-2026-0414 and RUSTSEC-2026-0433 (D-4031) |
 | serde / serde_json | 1.0.229 / 1.0.154 | MIT OR Apache-2.0 | Parsing with `deny_unknown_fields` |
 | serde-saphyr | 2.0.0 (2026-10-13) | MIT OR Apache-2.0 | Reading the catalog YAML (`serde_yaml` is unmaintained) |
 | sqlx (`default-features = false`; `postgres`, `runtime-tokio`, `tls-rustls-aws-lc-rs`, `macros`, `migrate`, `uuid`, `json`, `sqlx-toml`) | 0.9.0 (2026-05-21) | MIT OR Apache-2.0 | Postgres pool, compile-checked queries, migrations; the aws-lc-rs provider so sqlx and reqwest share one rustls provider, installed as the process default first thing in both binaries (D-481) |
@@ -596,11 +597,13 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /h/my-data | portals | T561 |
 | POST | /h/my-data/request | portals | T561 |
 | POST | /h/my-data/code | portals | T561 |
-| GET | /terms | site | T221 |
-| GET | /privacy | site | T221 |
-| GET | /sms-terms | site | T221 |
-| GET | /your-data | site | T221 |
-| GET | /business-data | site | T221 |
+| GET | /terms | site | yes |
+| GET | /privacy | site | yes |
+| GET | /sms-terms | site | yes |
+| GET | /your-data | site | yes |
+| GET | /business-data | site | yes |
+| GET | /es/your-data | site | yes |
+| GET | /es/business-data | site | yes |
 | GET | /help | site | T201 |
 | GET | /accessibility | site | T115 |
 | GET | /help/roc-complaint | site | T201 |
