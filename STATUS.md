@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T00:33:24Z by runner 51d984c4c568 (actions).
+Updated 2026-11-17T00:45:28Z by runner 60ed087ea2ba (actions).
 
 **Building: T103 in progress since 00:02Z; 377 of 541 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 377 of 541 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:02Z; lane 3: T373 claimed 00:21Z, lease until 03:21Z; lane 4: T481 claimed 22:37Z, lease until 02:57Z; lane 5: T469 claimed 00:32Z, lease until 03:32Z; lane 6: T320 claimed 23:55Z, lease until 02:55Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
+- **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:45Z; lane 3: T373 claimed 00:21Z, lease until 03:21Z; lane 4: T481 claimed 22:37Z, lease until 02:57Z; lane 5: T469 claimed 00:32Z, lease until 03:32Z; lane 6: T320 claimed 23:55Z, lease until 02:55Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
 - **Week:** 8% used, 171.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:27Z, 5 min before this update
+- **Last run:** 00:33Z, 11 min before this update
 - **Keeper:** last ran 00:27Z, next wake 01:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 15 problem(s) on tasks still to run (+137 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 17 problem(s) on tasks still to run (+138 on DONE tasks); first: T103: stored context_pct 25% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -115,7 +115,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T103 (lease until 2026-11-17T03:02:28Z)
+- T103 (lease until 2026-11-17T03:45:28Z)
 - lane 3: T373 (lease until 2026-11-17T03:21:47Z)
 - lane 4: T481 (lease until 2026-11-17T02:57:38Z)
 - lane 5: T469 (lease until 2026-11-17T03:32:53Z)
