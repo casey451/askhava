@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T10:33:57Z by runner 5dca684b4246 (actions).
+Updated 2026-11-17T10:34:18Z by runner 5dca684b4246 (actions).
 
 **Building: T489 in progress since 10:15Z; 392 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 392 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T489 claimed 10:15Z, lease until 13:15Z; lane 2: T204 claimed 09:58Z, lease until 12:58Z; lane 3: T441 claimed 10:17Z, lease until 13:17Z; lane 4: T112 claimed 10:03Z, lease until 13:03Z; lane 6: T202 claimed 10:29Z, lease until 13:29Z; lane 7: T446 claimed 10:02Z, lease until 13:02Z
+- **Lane:** lane 1: T489 claimed 10:15Z, lease until 13:15Z; lane 3: T441 claimed 10:17Z, lease until 13:17Z; lane 4: T112 claimed 10:03Z, lease until 13:03Z; lane 6: T202 claimed 10:29Z, lease until 13:29Z; lane 7: T446 claimed 10:02Z, lease until 13:02Z
 - **Week:** 18% used, 151.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:30Z, 3 min before this update
 - **Keeper:** last ran 10:09Z, next wake 13:00Z
@@ -19,6 +19,7 @@ Updated 2026-11-17T10:33:57Z by runner 5dca684b4246 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 1 | 35 min | 10:33Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
 | T489 | site and server: the web chat and request pages with the con | check_failed | 2 | 73 min | 09:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T202 | site: Spanish pages, the business page blocks and the requir | check_failed | 1 | 88 min | 09:23Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T107 | Consent records kept 5 years, no export, opt-out rate alerts | done | 2 | 85 min | 09:00Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
@@ -28,7 +29,7 @@ Updated 2026-11-17T10:33:57Z by runner 5dca684b4246 (actions).
 | T201 | site: services and help pages, the ROC complaint page | done | 1 | 56 min | 07:22Z |  |
 | T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z |  |
 | T564 | quotes, picks and intake: the LIST, text picks, lapse text a | done | 1 | 43 min | 06:47Z |  |
-| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | resync | 1 | 2 h 21 min | 06:44Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
+| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | resync | 1 | 2 h 21 min | 06:44Z |  |
 | T586 | calls and privacy: TwiML text is escaped, a full number pool | done | 1 | 88 min | 06:17Z |  |
 | T481 | messaging and payments: mark a replayed text sent from the c | done | 1 | 114 min | 05:36Z |  |
 | T103 | intake: the web-chat conversation, where typing a verified m | done | 1 | 106 min | 05:27Z |  |
@@ -137,11 +138,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T489 (lease until 2026-11-17T13:15:39Z)
-- lane 2: T204 (lease until 2026-11-17T12:58:14Z)
 - lane 3: T441 (lease until 2026-11-17T13:17:37Z)
 - lane 4: T112 (lease until 2026-11-17T13:03:48Z)
 - lane 6: T202 (lease until 2026-11-17T13:29:48Z)
 - lane 7: T446 (lease until 2026-11-17T13:02:21Z)
 
 ## Last usage reading
-- {"task": "T489", "at": "2026-11-17T09:54:43Z", "input_tokens": 236, "cache_creation_input_tokens": 262709, "output_tokens": 91537, "cache_read_input_tokens": 14659043}
+- {"task": "T204", "at": "2026-11-17T10:33:55Z", "cache_creation_input_tokens": 61924, "cache_read_input_tokens": 1004729, "output_tokens": 9958, "input_tokens": 67}
