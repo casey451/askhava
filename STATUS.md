@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T06:17:39Z by runner 7a1d4577cb67 (actions).
+Updated 2026-11-17T06:18:03Z by runner 7a1d4577cb67 (actions).
 
 **Building: T564 in progress since 06:04Z; 384 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 384 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T564 claimed 06:04Z, lease until 09:04Z; lane 4: T204 claimed 04:22Z, lease until 08:58Z; lane 7: T586 claimed 04:49Z, lease until 08:52Z
+- **Lane:** lane 1: T564 claimed 06:04Z, lease until 09:04Z; lane 4: T204 claimed 04:22Z, lease until 08:58Z
 - **Week:** 15% used, 161.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:15Z, 1 min before this update
+- **Last run:** 06:17Z, 0 min before this update
 - **Keeper:** last ran 06:15Z, next wake 08:55Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-17T06:17:39Z by runner 7a1d4577cb67 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T586 | calls and privacy: TwiML text is escaped, a full number pool | MERGE_PENDING | 1 | 88 min | 06:17Z |  |
 | T481 | messaging and payments: mark a replayed text sent from the c | MERGE_PENDING | 1 | 114 min | 05:36Z |  |
 | T103 | intake: the web-chat conversation, where typing a verified m | MERGE_PENDING | 1 | 106 min | 05:27Z |  |
 | T585 | businesses and licensing: a license change that drops job ty | MERGE_PENDING | 1 | 43 min | 05:10Z |  |
@@ -128,7 +129,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T564 (lease until 2026-11-17T09:04:06Z)
 - lane 4: T204 (lease until 2026-11-17T08:58:09Z)
-- lane 7: T586 (lease until 2026-11-17T08:52:51Z)
 
 ## Last usage reading
-- {"task": "T481", "at": "2026-11-17T05:36:46Z", "input_tokens": 257, "output_tokens": 88722, "cache_creation_input_tokens": 241521, "cache_read_input_tokens": 14313344}
+- {"task": "T586", "at": "2026-11-17T06:17:36Z", "output_tokens": 45555, "input_tokens": 170, "cache_read_input_tokens": 4390425, "cache_creation_input_tokens": 211855}
