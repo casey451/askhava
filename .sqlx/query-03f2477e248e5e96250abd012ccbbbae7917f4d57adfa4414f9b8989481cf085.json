@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH retry AS (DELETE FROM messaging.text_retry t WHERE t.outbox_id = ANY ($1)), notice AS (DELETE FROM messaging.portal_notice n WHERE n.outbox_id = ANY ($1)) DELETE FROM messaging.delivery_event e USING messaging.outbox o WHERE o.id = ANY ($1) AND e.provider_sid = o.provider_sid",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "03f2477e248e5e96250abd012ccbbbae7917f4d57adfa4414f9b8989481cf085"
+}
