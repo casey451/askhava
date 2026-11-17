@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T05:29:16Z by runner 0241d76c6e76 (actions).
+Updated 2026-11-17T05:29:33Z by runner 6fd433f79813 (actions).
 
 **Building: T204 in progress since 04:22Z; 383 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -79,18 +79,18 @@ Updated 2026-11-17T05:29:16Z by runner 0241d76c6e76 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 305 of 733 (41.6%) · partial 315 · unstarted 113
-**Tasks merged (throughput only):** 383 of 557
+**Requirements verified:** 302 of 733 (41.2%) · partial 318 · unstarted 113
+**Tasks merged (throughput only):** 383 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 20 | 11 | 4 | 35 |
+| accessibility | 19 | 12 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 21 | 35 | 2 | 58 |
 | calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 27 | 13 | 3 | 43 |
+| intake | 25 | 15 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
