@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T20:10:51Z by runner fddc567f6d7a (actions).
+Updated 2026-11-17T20:13:56Z by runner fddc567f6d7a (actions).
 
 **Building: T582 in progress since 19:37Z; 408 of 570 done; week 27% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-17T20:10:51Z by runner fddc567f6d7a (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T582 claimed 19:37Z, lease until 23:10Z; lane 4: T597 claimed 20:01Z, lease until 23:01Z; lane 5: T602 claimed 20:07Z, lease until 23:07Z; lane 6: T106 claimed 19:20Z, lease until 22:52Z; lane 7: T594 claimed 19:39Z, lease until 22:39Z
 - **Week:** 27% used, 135.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:07Z, 2 min before this update
+- **Last run:** 20:10Z, 3 min before this update
 - **Keeper:** last ran 19:55Z, next wake 22:39Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 | T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 1 | 14 min | 21:22Z | PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `paymen |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | done | 1 | 46 min | 21:03Z |  |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | BLOCKED | 1 | 41 min | 20:41Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
-| T361 | quotes and picks: a quote keeps its number once shown, and a | done | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
 
 ### Plan and harness merges on main
 - none
