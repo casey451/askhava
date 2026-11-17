@@ -412,8 +412,9 @@ pub fn list_texts_from(
     numbered_texts(reader, job, &lines)
 }
 
-/// TXT-031, PICK-002, PICK-051, D-084: the LIST texts for the job's confirmed quotes in arrival
-/// order, each line numbered by the quote's place on the quote page (the number "<n> YES" picks):
+/// TXT-031, PICK-002, PICK-051, PICK-008, D-084, D-2632: the LIST texts for the job's confirmed
+/// quotes in shown-number order, each line numbered by the quote's shown number, which never
+/// changes (the number "<n> YES" picks, T564):
 /// a quote marked unavailable is left out with its number skipped, a withdrawn one keeps its line
 /// as "Withdrawn by the business" with no name or price, and each pickable one is named from
 /// `names` (a withdrawn one needs no name). A text whose lines are all withdrawn is not sent, so no
@@ -431,7 +432,7 @@ pub async fn list_texts(
 ) -> Result<Vec<String>, QuotesError> {
     let rows = models::list_rows(db, job_id).await?;
     let mut lines = Vec::new();
-    for (i, row) in rows.into_iter().enumerate() {
+    for (number, row) in rows {
         let line = match row {
             ListRow::Unavailable => continue,
             ListRow::Withdrawn => Line::Withdrawn,
@@ -444,13 +445,15 @@ pub async fn list_texts(
                 })
             }
         };
-        lines.push((i + 1, line));
+        let number = usize::try_from(number).map_err(|_| QuotesError::Database)?;
+        lines.push((number, line));
     }
     numbered_texts(reader, job, &lines)
 }
 
-/// TXT-031, PICK-035, PICK-046, D-3579: the job's pickable quotes as `(number, line)` pairs in
-/// arrival order, the number the quote-page place "<n> YES" picks (as in [`list_texts`]) and the
+/// TXT-031, PICK-035, PICK-046, PICK-008, D-3579, D-2632: the job's pickable quotes as
+/// `(number, line)` pairs in shown-number order, the shown number "<n> YES" picks (as in
+/// [`list_texts`], T564) and the
 /// line the TXT-031 line alone in `language`, with no heading, "2 YES" line or footer; an
 /// unavailable or withdrawn quote gives no pair. `intake`'s PICK-046 text keeps the numbers
 /// `picks::api::lapse_plan` leaves her, so the lapsed business's own line never shows.
@@ -467,7 +470,7 @@ pub async fn list_lines(
 ) -> Result<Vec<(u32, String)>, QuotesError> {
     let rows = models::list_rows(db, job_id).await?;
     let mut lines = Vec::new();
-    for (i, row) in rows.into_iter().enumerate() {
+    for (number, row) in rows {
         let ListRow::Pickable(p) = row else {
             continue;
         };
@@ -477,8 +480,8 @@ pub async fn list_lines(
             price: p.price,
             earliest_visit: p.earliest_visit,
         };
-        let number = u32::try_from(i + 1).map_err(|_| QuotesError::Database)?;
-        lines.push((number, list_line(i + 1, &item, language == Language::Es)));
+        let n = usize::try_from(number).map_err(|_| QuotesError::Database)?;
+        lines.push((number, list_line(n, &item, language == Language::Es)));
     }
     Ok(lines)
 }
