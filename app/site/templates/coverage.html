@@ -1,0 +1,32 @@
+{% extends "site_layout.html" %}
+{#- The "What we cover now" page, /coverage (T201; WEB-023, LIC-012, D-402, D-3879): the switched-on
+    categories, then the switched-off and not-offered ones as "not yet", read from
+    catalog::api::category_list; pest control is listed like any other trade. -#}
+{% block title %}What we cover now{% endblock %}
+{% block content %}
+<h1>What we cover now</h1>
+<h2>Open now</h2>
+{%- if open.is_empty() %}
+<p>No trades are open yet.</p>
+{%- else %}
+<ul>
+{%- for name in open %}
+<li>{{ name }}</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+<p><a href="/request">Get quotes</a></p>
+<h2>Not yet</h2>
+{%- if not_yet.is_empty() %}
+<p>Every trade we plan to cover is open.</p>
+{%- else %}
+<p>We can't take jobs for these yet.</p>
+<ul>
+{%- for name in not_yet %}
+<li>{{ name }}</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+<h2>Texting from Canada</h2>
+<p>Canadian numbers work. Your phone company may charge roaming fees.</p>
+{% endblock %}
