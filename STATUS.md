@@ -1,19 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-17T17:28:06Z by runner 27418b9da17c (actions).
+Updated 2026-11-17T17:28:28Z by runner db201a48b809 (manual).
 
-**Building: T491 in progress since 15:41Z; 403 of 569 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T491 in progress since 15:41Z; 403 of 570 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 403 of 569 build tasks (owner gates not counted)
+- **Tasks done:** 403 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T491 claimed 15:41Z, lease until 20:16Z; lane 2: T104 claimed 16:53Z, lease until 19:53Z; lane 3: T599 claimed 17:04Z, lease until 20:04Z; lane 4: T596 claimed 17:07Z, lease until 20:07Z; lane 7: T115 claimed 17:27Z, lease until 20:27Z
 - **Week:** 24% used, 142.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:17Z, 11 min before this update
+- **Last run:** 17:28Z, 0 min before this update
 - **Keeper:** last ran 16:53Z, next wake 19:29Z
 
 ## Needs attention
-- BLOCKED T528: plan gap reported: PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/src/leaving.rs is the only file in app/ naming `leave_reason`; D-3882 puts the BIZ-054 leaving-answers reader in app/businesses/src/digest_counts.rs, which must name the table. No public API returns the answers (leaving.rs's only public reader, reason_asked, returns a bool). Smallest plan change: let T528 add "businesses/src/digest_counts.rs" to the allowed list at business_leaving.rs:465, or give T528 leaving.rs so a crate-private leaving_answers query lives there.
-Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T528 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
 - Strict plan check red: 11 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
@@ -22,7 +20,7 @@ Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decisio
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 1 | 51 min | 16:52Z | Review not approved after the one fix round (head 4a1b93c4f0752f54caff26156143741f7b4d9659; tests/docs/test_wording_scan |
-| T528 | ops, businesses, intake, picks and licensing: the readers th | BLOCKED | 1 | 24 min | 16:50Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
+| T528 | ops: the alert, audit-row and digest-row readers and writers | BLOCKED | 1 | 24 min | 16:50Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
 | T595 | server and site: a same-site web chat POST passes its CSRF c | MERGE_PENDING | 1 | 45 min | 16:19Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | done | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T113 | Draft the Twilio campaign description from the real template | MERGE_PENDING | 2 | 35 min | 15:39Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
@@ -94,31 +92,31 @@ Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decisio
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 336 of 733 (45.8%) · partial 323 · unstarted 74
-**Tasks merged (throughput only):** 403 of 569
+**Requirements verified:** 309 of 733 (42.2%) · partial 350 · unstarted 74
+**Tasks merged (throughput only):** 403 of 570
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 19 | 13 | 3 | 35 |
+| accessibility | 14 | 18 | 3 | 35 |
 | ai | 12 | 14 | 3 | 29 |
 | businesses | 23 | 33 | 2 | 58 |
-| calls | 14 | 10 | 1 | 25 |
+| calls | 12 | 12 | 1 | 25 |
 | consent | 15 | 19 | 1 | 35 |
-| fees | 24 | 27 | 1 | 52 |
+| fees | 18 | 33 | 1 | 52 |
 | intake | 26 | 17 | 0 | 43 |
 | job-cards | 18 | 6 | 0 | 24 |
-| licensing | 40 | 8 | 0 | 48 |
-| lifecycle | 27 | 1 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
+| licensing | 39 | 9 | 0 | 48 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 20 | 23 | 2 | 45 |
 | ops-recovery | 1 | 27 | 26 | 54 |
-| privacy | 14 | 15 | 2 | 31 |
+| privacy | 12 | 17 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 37 | 19 | 0 | 56 |
 | recurring | 8 | 1 | 2 | 11 |
-| security | 12 | 38 | 5 | 55 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 12 | 17 | 6 | 35 |
-| website | 1 | 23 | 4 | 28 |
-| wording | 3 | 13 | 16 | 32 |
+| website | 0 | 24 | 4 | 28 |
+| wording | 2 | 14 | 16 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 

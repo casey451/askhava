@@ -68566,7 +68566,7 @@
     "T204",
     "T105"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "digest-readers",
    "type": "build",
@@ -68584,8 +68584,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/src/leaving.rs is the only file in app/ naming `leave_reason`; D-3882 puts the BIZ-054 leaving-answers reader in app/businesses/src/digest_counts.rs, which must name the table. No public API returns the answers (leaving.rs's only public reader, reason_asked, returns a bool). Smallest plan change: let T528 add \"businesses/src/digest_counts.rs\" to the allowed list at business_leaving.rs:465, or give T528 leaving.rs so a crate-private leaving_answers query lives there.\nEvidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T528 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/src/leaving.rs is the only file in app/ naming `leave_reason`; D-3882 puts the BIZ-054 leaving-answers reader in app/businesses/src/digest_counts.rs, which must name the table. No public API returns the answers (leaving.rs's only public reader, reason_asked, returns a bool). Smallest plan change: let T528 add \"businesses/src/digest_counts.rs\" to the allowed list at business_leaving.rs:465, or give T528 leaving.rs so a crate-private leaving_answers query lives there.\nEvidence: cargo test -p askhava-integration --test business_leaving -> exit 101; td_biz_32_a_long_pause_asks_once_and_changes_nothing panicked at business_leaving.rs:463:5 \"no routing or fee code reads it\", left [\"businesses/src/leaving.rs\", \"businesses/src/digest_counts.rs\"], right [\"businesses/src/leaving.rs\"]. Reviewer reproduced it and confirmed the ownership and that no API exposes the answers.\nAlso: the built work is about 826 lines (5 new files: 246+82+49+60+372 test) against the 550-line budget; a re-plan should split or raise the budget. digest_rows tests passed (7/7) and clippy was clean in the worker's run; nothing was committed.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/src/leaving.rs is the only file in app/ naming `leave_reason`; D-3882 puts the BIZ-054 leaving-answers reader in app/businesses/src/digest_counts.rs, which must name the table. No public API returns the answers (leaving.rs's only public reader, reason_asked, returns a bool). Smallest plan change: let T528 add \"businesses/src/digest_counts.rs\" to the allowed list at business_leaving.rs:465, or give T528 leaving.rs so a crate-private leaving_answers query lives there.\nEvidence: cargo test -p askhava-integration --test business_leaving -> exit 101; td_biz_32_a_long_pause_asks_once_and_changes_nothing panicked at business_leaving.rs:463:5 \"no routing or fee code reads it\", left [\"businesses/src/leaving.rs\", \"businesses/src/digest_counts.rs\"], right [\"businesses/src/leaving.rs\"]. Reviewer reproduced it and confirmed the ownership and that no API exposes the answers.\nAlso: the built work is about 826 lines (5 new files: 246+82+49+60+372 test) against the 550-line budget; a re-plan should split or raise the budget. digest_rows tests passed (7/7) and clippy was clean in the worker's run; nothing was committed.\nre-queued after plan fix D-4202: D-4202 merged (#972): new T605 owns leaving.rs and the digest counts; T528 keeps the ops reader",
    "history": [
     {
      "attempt": 1,
@@ -68609,6 +68609,21 @@
        "turns": 5
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-17T17:28:28Z",
+     "reason": "D-4202 merged (#972): new T605 owns leaving.rs and the digest counts; T528 keeps the ops reader",
+     "by": "manual-21f8f4210fd6",
+     "was": "plan gap reported: PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/src/leaving.rs is the only file in app/ naming `leave_reason`; D-3882 puts the BIZ-054 leaving-answers reader in app/businesses/src/digest_counts.rs, which must name the table. No public API returns the answers (leaving.rs's only public reader, reason_asked, returns a bool). Smallest plan change: let T528 add \"businesses/src/digest_counts.rs\" to the allowed list at business_leaving.rs:465, or give T528 leaving.rs so a crate-private leaving_answers query lives there.\nEvidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T528 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4202",
+     "plan_since": "2026-11-17T16:26:29Z",
+     "plan_base": "2f2fa8c6a62f8f3cadbb2d3f8d64c999ef47c536",
+     "plan_head": "db201a48b80932499273435bb66aa4e1ffcce767",
+     "plan_then": "295f08d752c1a84a3d82c8ebbbb877ea2041e9292b2ba89b9f98a6352d3ad311",
+     "plan_now": "b528c6c1e6a348fb95422b7fe2f31fb54e8b64074f52454e897a5ada0c0d6c7f"
     }
    ]
   },
@@ -75832,7 +75847,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T17:28:06Z",
+ "updated_at": "2026-11-17T17:28:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -75930,8 +75945,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "27418b9da17c9ccceefdb76e2c88470f4baa5a38",
- "starter": "actions",
+ "runner_sha": "db201a48b80932499273435bb66aa4e1ffcce767",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "894d21959a1b445b4f3513a458ae8ebe4dbe88b4",
