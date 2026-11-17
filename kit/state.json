@@ -20646,8 +20646,8 @@
     "T302",
     "T464"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "site-spanish-business-lines",
    "type": "build",
    "stage": "5",
@@ -20670,13 +20670,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 150,
      "head_sha": "a853d5fad24864c6eb90852353ca465cec69eec0",
-     "pr": null,
-     "checks": null,
+     "pr": 944,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-17T07:55:47Z",
      "ended_at": "2026-11-17T09:23:51Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 8306405,
@@ -20725,7 +20770,8 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-17T10:08:35Z"
+   "merge_turn_since": "2026-11-17T10:08:35Z",
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nVersion:   3.20.3\nTitle:     Partial requests on keep-alive connections can bypass the request header timeout\nDate:      2026-11-16\nID:        RUSTSEC-2026-0554\nURL:       https://github.com/actix/actix-web/releases/tag/actix-http-v3.21.2\nSeverity:  6.9 (medium)\nSolution:  Upgrade to >=3.21.2\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T103",
@@ -73436,7 +73482,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T10:17:47Z",
+ "updated_at": "2026-11-17T10:29:53Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -74820,6 +74866,15 @@
     {
      "at": "2026-11-16T14:27:23Z",
      "why": "T101 check_failed: Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-16T14:08:19.722671Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":180,\"kind\":\"ops.offdb_s"
+    }
+   ]
+  },
+  "5": {
+   "count": 1,
+   "last": [
+    {
+     "at": "2026-11-17T10:29:48Z",
+     "why": "T202 check_failed: Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nVersion:   3.20.3\nTitle:     Partial requests on keep-alive connections can bypass the request heade"
     }
    ]
   }

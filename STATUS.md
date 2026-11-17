@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T10:17:47Z by runner 894d21959a1b (actions).
+Updated 2026-11-17T10:29:53Z by runner 894d21959a1b (actions).
 
 **Building: T489 in progress since 10:15Z; 392 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-17T10:17:47Z by runner 894d21959a1b (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T489 claimed 10:15Z, lease until 13:15Z; lane 2: T204 claimed 09:58Z, lease until 12:58Z; lane 3: T441 claimed 10:17Z, lease until 13:17Z; lane 4: T112 claimed 10:03Z, lease until 13:03Z; lane 7: T446 claimed 10:02Z, lease until 13:02Z
 - **Week:** 18% used, 153.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:16Z, 1 min before this update
+- **Last run:** 10:18Z, 11 min before this update
 - **Keeper:** last ran 10:09Z, next wake 13:00Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-17T10:17:47Z by runner 894d21959a1b (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T489 | site and server: the web chat and request pages with the con | check_failed | 2 | 73 min | 09:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
-| T202 | site: Spanish pages, the business page blocks and the requir | MERGE_PENDING | 1 | 88 min | 09:23Z |  |
+| T202 | site: Spanish pages, the business page blocks and the requir | check_failed | 1 | 88 min | 09:23Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T107 | Consent records kept 5 years, no export, opt-out rate alerts | done | 2 | 85 min | 09:00Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 2 | 52 min | 08:28Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
 | T570 | intake: a CLOSE text, a "Close which?" answer and a cancel-i | done | 1 | 39 min | 08:26Z |  |
