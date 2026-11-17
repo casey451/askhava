@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T11:31:42Z by runner 7a22e40cdfb5 (actions).
+Updated 2026-11-17T11:32:02Z by runner e2deec93f89c (actions).
 
 **Building: T441 in progress since 10:17Z; 393 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 393 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T441 claimed 10:17Z, lease until 13:56Z; lane 5: T572 claimed 10:43Z, lease until 13:43Z
+- **Lane:** lane 3: T441 claimed 10:17Z, lease until 13:56Z
 - **Week:** 19% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:31Z, 0 min before this update
 - **Keeper:** last ran 11:31Z, next wake 13:45Z
@@ -19,6 +19,7 @@ Updated 2026-11-17T11:31:42Z by runner 7a22e40cdfb5 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T572 | intake: the under-13 stop also clears the vault contact's na | MERGE_PENDING | 1 | 48 min | 11:31Z |  |
 | T446 | intake and messaging: PICK-046's "couldn't take it" notice g | MERGE_PENDING | 1 | 87 min | 11:29Z |  |
 | T202 | site: Spanish pages, the business page blocks and the requir | MERGE_PENDING | 2 | 56 min | 11:26Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T112 | Draft the privacy policy and SMS terms | done | 3 | 66 min | 11:10Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
@@ -143,7 +144,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T441 (lease until 2026-11-17T13:56:21Z)
-- lane 5: T572 (lease until 2026-11-17T13:43:03Z)
 
 ## Last usage reading
-- {"task": "T446", "at": "2026-11-17T11:29:22Z", "cache_read_input_tokens": 5339675, "output_tokens": 55465, "input_tokens": 189, "cache_creation_input_tokens": 230899}
+- {"task": "T572", "at": "2026-11-17T11:31:17Z", "input_tokens": 119, "output_tokens": 41633, "cache_read_input_tokens": 3813250, "cache_creation_input_tokens": 136611}
