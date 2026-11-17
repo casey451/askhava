@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE intake.web_chat_session SET wrong_tries = wrong_tries + 1 WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "57f8d52d40412fb0faa8c937214e3a8e6c3b9e63c369c5d87e40e019131ba38e"
+}
