@@ -85,6 +85,15 @@ const KEYS: &[&str] = &[
     "ASKHAVA_TWILIO_VERIFY_SERVICE_SID",
     "ASKHAVA_MASKED_POOL_SIZE",
     "ASKHAVA_MASKED_NUMBERS",
+    // Parsed by `askhava_adapters::api::ResendConfig` (T469, SEC-001, SEC-002, SEC-032, D-3750).
+    "ASKHAVA_ADAPTER_MODE_RESEND",
+    "ASKHAVA_RESEND_BASE_URL",
+    "ASKHAVA_RESEND_API_KEY",
+    // The email provider's daily and monthly limits and the bulk-hold share, parsed by
+    // `askhava_server::email_provider` (T469, SEC-025, OPS-038, D-3750, D-3890).
+    "ASKHAVA_EMAIL_DAILY_LIMIT",
+    "ASKHAVA_EMAIL_MONTHLY_LIMIT",
+    "ASKHAVA_EMAIL_BULK_HOLD_PERCENT",
     // The homeowner line's one configured number, parsed by `askhava_server` for `messaging`'s
     // outbox sender (T356, TXT-022, D-2628).
     "ASKHAVA_HOMEOWNER_NUMBER",
