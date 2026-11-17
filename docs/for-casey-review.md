@@ -3163,3 +3163,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - One choice made for you: a business confirming an AI-read text quote after its 24 hours is too late, the same as typing one late.
 - Not fixed, on purpose: three small performance items wait for the load test, and one audit item was not a real problem. Session start-up will read only a few fields of the build state instead of the whole file, once the docs-tidying task runs.
 - Nothing needs you now.
+
+## A changed business phone number needs its texting box ticked again (T373, D-4039, November 16)
+
+- When a business changes a phone's number, the texting agreement given for the old number no longer counts. Job cards and notices for a business that chose text only go by email until someone ticks the texting box for the new number.
+- A box shown for the old number and sent after the change is turned down, so a tick never counts for a number the person did not see.
+- One leftover for a later task: the list of phones that may get a sign-in code still counts the old agreement after a member's own extra phone changes number. It sends nothing extra today beyond the sign-in code that member asked for, but it should follow the same rule.
+- Nothing needs you now.
