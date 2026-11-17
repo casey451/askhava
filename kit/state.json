@@ -21392,7 +21392,18 @@
     "T570",
     "T571",
     "T572",
-    "T573"
+    "T573",
+    "T580",
+    "T581",
+    "T582",
+    "T583",
+    "T584",
+    "T585",
+    "T586",
+    "T587",
+    "T588",
+    "T589",
+    "T590"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21504,7 +21515,8 @@
    "id": "T133",
    "deps": [
     "T131",
-    "T293"
+    "T293",
+    "T584"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -51083,7 +51095,8 @@
     "T356",
     "T318",
     "T355",
-    "T402"
+    "T402",
+    "T590"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -65747,7 +65760,18 @@
     "T570",
     "T571",
     "T572",
-    "T573"
+    "T573",
+    "T580",
+    "T581",
+    "T582",
+    "T583",
+    "T584",
+    "T585",
+    "T586",
+    "T587",
+    "T588",
+    "T589",
+    "T590"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -66160,6 +66184,135 @@
    "attempts": 0,
    "slug": "business-outbox-rows-sent",
    "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T580",
+   "deps": [
+    "T526"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "outbox-end-states-and-429",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T581",
+   "deps": [
+    "T580"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "failed-text-call-back-urgency",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T582",
+   "deps": [
+    "T100",
+    "T517",
+    "T361"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quote-confirm-window-and-count-event",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T583",
+   "deps": [
+    "T582"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quote-count-update-texts",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T584",
+   "deps": [
+    "T100",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-account-email-fixes",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T585",
+   "deps": [
+    "T100",
+    "T517",
+    "T105"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "license-change-coverage-and-card",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T586",
+   "deps": [
+    "T100",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "calls-hardening",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T587",
+   "deps": [
+    "T100",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-fee-writer-and-3ds-connection",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T588",
+   "deps": [
+    "T121"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-forms-keep-entries",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T589",
+   "deps": [
+    "T480",
+    "T363"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pick-review-language-and-name",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T590",
+   "deps": [
+    "T589"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "call-texts-in-her-language",
+   "type": "build",
    "stage": "5"
   }
  ],
@@ -70278,7 +70431,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T01:45:56Z",
+ "updated_at": "2026-11-17T01:54:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -70377,7 +70530,7 @@
   ]
  },
  "runner_sha": "dde16ca377f9475f94e670ca684f823520f2eeaa",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "2ee325840f90de96533a4a324523c2319ad2a383",
