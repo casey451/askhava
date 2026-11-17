@@ -6142,3 +6142,4 @@
 - 2026-11-17T03:14:25Z runner 6920534c28d3 (actions): {"T221": "IN_PROGRESS -> MERGE_PENDING"}
 - 2026-11-17T03:14:52Z runner 6920534c28d3 (actions): {}
 - 2026-11-17T03:15:14Z runner dde16ca377f9 (actions): {}
+- 2026-11-17T03:16:16Z runner 794f81de7ef2 (actions): {"T591": "QUEUED -> IN_PROGRESS"}; T591 estimated 1.5M tokens (calibrated); week has 165.7M left (no five-hour budget, D-3056) after 4.3M still running in another lane (session_reading 2026-11-17T03:14:52Z (week)); running to the limit (model window, D-2225), claimed

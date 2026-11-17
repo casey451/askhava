@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-17T03:15:14Z by runner dde16ca377f9 (actions).
+Updated 2026-11-17T03:16:16Z by runner 794f81de7ef2 (actions).
 
 **Building: T107 in progress since 02:20Z; 378 of 557 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 378 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:57Z; lane 2: T103 claimed 02:12Z, lease until 06:13Z; lane 3: T584 claimed 02:40Z, lease until 05:40Z
-- **Week:** 12% used, 165.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:57Z; lane 2: T103 claimed 02:12Z, lease until 06:13Z; lane 3: T584 claimed 02:40Z, lease until 05:40Z; lane 7: T591 claimed 03:16Z, lease until 06:16Z
+- **Week:** 12% used, 165.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:15Z, 0 min before this update
 - **Keeper:** last ran 03:15Z, next wake 05:43Z
 
@@ -73,8 +73,8 @@ Updated 2026-11-17T03:15:14Z by runner dde16ca377f9 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 307 of 733 (41.9%) · partial 313 · unstarted 113
-**Tasks merged (throughput only):** 378 of 556
+**Requirements verified:** 305 of 733 (41.6%) · partial 315 · unstarted 113
+**Tasks merged (throughput only):** 378 of 557
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -84,9 +84,9 @@ Updated 2026-11-17T03:15:14Z by runner dde16ca377f9 (actions).
 | calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 28 | 12 | 3 | 43 |
+| intake | 27 | 13 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
-| licensing | 37 | 11 | 0 | 48 |
+| licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
@@ -102,7 +102,7 @@ Updated 2026-11-17T03:15:14Z by runner dde16ca377f9 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T02:28:30Z (week)): week: 28.7M used, 165.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T05:14:16Z.
+- Pacing (session_reading 2026-11-17T03:14:52Z (week)): week: 28.3M used, 165.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T07:11:12Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -120,6 +120,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T107 (lease until 2026-11-17T05:57:37Z)
 - lane 2: T103 (lease until 2026-11-17T06:13:14Z)
 - lane 3: T584 (lease until 2026-11-17T05:40:25Z)
+- lane 7: T591 (lease until 2026-11-17T06:16:00Z)
 
 ## Last usage reading
 - {"task": "T221", "at": "2026-11-17T03:14:05Z", "cache_creation_input_tokens": 194461, "output_tokens": 31949, "cache_read_input_tokens": 3404485, "input_tokens": 188}
