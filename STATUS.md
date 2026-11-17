@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T07:40:25Z by runner eabc0711c109 (actions).
+Updated 2026-11-17T07:46:44Z by runner eabc0711c109 (actions).
 
-**Building: T107 in progress since 07:34Z; 387 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T107 in progress since 07:34Z; 388 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 387 of 559 build tasks (owner gates not counted)
+- **Tasks done:** 388 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z; lane 6: T112 claimed 07:36Z, lease until 10:36Z
 - **Week:** 16% used, 160.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:40Z, 0 min before this update
+- **Last run:** 07:40Z, 6 min before this update
 - **Keeper:** last ran 07:40Z, next wake 10:37Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-17T07:40:25Z by runner eabc0711c109 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z | Fresh-eyes review of the fix-round head b41671e9e0621319f78668d66ed284b6d6f5aa4f ended REVIEW-VERDICT: FINDINGS after th |
-| T201 | site: services and help pages, the ROC complaint page | MERGE_PENDING | 1 | 56 min | 07:22Z |  |
+| T201 | site: services and help pages, the ROC complaint page | done | 1 | 56 min | 07:22Z |  |
 | T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z | PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes |
 | T564 | quotes, picks and intake: the LIST, text picks, lapse text a | MERGE_PENDING | 1 | 43 min | 06:47Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 1 | 2 h 21 min | 06:44Z |  |
@@ -88,8 +88,8 @@ Updated 2026-11-17T07:40:25Z by runner eabc0711c109 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 302 of 733 (41.2%) · partial 328 · unstarted 103
-**Tasks merged (throughput only):** 387 of 559
+**Requirements verified:** 302 of 733 (41.2%) · partial 331 · unstarted 100
+**Tasks merged (throughput only):** 388 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -111,8 +111,8 @@ Updated 2026-11-17T07:40:25Z by runner eabc0711c109 (actions).
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 1 | 23 | 11 | 35 |
-| website | 0 | 15 | 13 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| website | 0 | 17 | 11 | 28 |
+| wording | 2 | 10 | 20 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -125,7 +125,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 30 of 167 done
+- stage 5: 31 of 167 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
