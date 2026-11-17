@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T08:27:11Z by runner eabc0711c109 (actions).
+Updated 2026-11-17T08:28:46Z by runner 037ad56a05f5 (actions).
 
 **Building: T107 in progress since 07:34Z; 388 of 560 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 388 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T107 claimed 07:34Z, lease until 11:22Z; lane 5: T202 claimed 07:55Z, lease until 10:55Z; lane 6: T112 claimed 07:36Z, lease until 11:13Z
+- **Lane:** lane 2: T107 claimed 07:34Z, lease until 11:22Z; lane 5: T202 claimed 07:55Z, lease until 10:55Z
 - **Week:** 17% used, 158.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:27Z, 0 min before this update
+- **Last run:** 08:27Z, 1 min before this update
 - **Keeper:** last ran 08:27Z, next wake 10:58Z
 
 ## Needs attention
@@ -18,8 +18,9 @@ Updated 2026-11-17T08:27:11Z by runner eabc0711c109 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T112 | Draft the privacy policy and SMS terms | QUEUED | 2 | 52 min | 08:28Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
 | T570 | intake: a CLOSE text, a "Close which?" answer and a cancel-i | MERGE_PENDING | 1 | 39 min | 08:26Z |  |
-| T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z | Fresh-eyes review of the fix-round head b41671e9e0621319f78668d66ed284b6d6f5aa4f ended REVIEW-VERDICT: FINDINGS after th |
+| T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z |  |
 | T201 | site: services and help pages, the ROC complaint page | done | 1 | 56 min | 07:22Z |  |
 | T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z | PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes |
 | T564 | quotes, picks and intake: the LIST, text picks, lapse text a | MERGE_PENDING | 1 | 43 min | 06:47Z |  |
@@ -134,7 +135,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T107 (lease until 2026-11-17T11:22:26Z)
 - lane 5: T202 (lease until 2026-11-17T10:55:47Z)
-- lane 6: T112 (lease until 2026-11-17T11:13:50Z)
 
 ## Last usage reading
-- {"task": "T570", "at": "2026-11-17T08:26:01Z", "cache_creation_input_tokens": 129934, "output_tokens": 31724, "input_tokens": 113, "cache_read_input_tokens": 3357064}
+- {"task": "T112", "at": "2026-11-17T08:28:46Z", "cache_creation_input_tokens": 192445, "input_tokens": 120, "output_tokens": 58041, "cache_read_input_tokens": 3589464}

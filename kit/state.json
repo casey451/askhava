@@ -21742,8 +21742,8 @@
     "T221",
     "T428"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "privacy-sms-docs",
    "type": "docs",
    "stage": "5",
@@ -21760,7 +21760,7 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "last_failure": "Fresh-eyes review of the fix-round head b41671e9e0621319f78668d66ed284b6d6f5aa4f ended REVIEW-VERDICT: FINDINGS after the one allowed findings round (BUILD_BRIEF.md \u00a77 step 4), so the head was never approved. The four first-round findings are fixed. One finding is still open (TERMS-010, elevated risk): the sharing-claim scan in tests/docs/test_privacy_policy.py:39-46 (SHARING, HANDOVER, RECEIVING) and claims_sharing at line 86 still misses realistic claims. Each of these returned no claim from unshared_claims:\n\"Your number is made available to contractors.\"\n\"Contractors can see your phone number.\"\n\"Your phone number is shown to the business you pick.\"\n\"Your phone number is visible to businesses.\"\n\"Third parties can access your phone number.\"\n\"Businesses you pick will have your phone number.\"\n\"Partners may use your phone number for marketing.\"\n\"We may trade opt-in data with affiliates.\"\n\"We do not sell phone numbers; we license them to marketers.\"\nFix: count these only when a third party is in the same clause, with the same negation rule: made available, available to, shown/show(s), visible, see(s)/saw/seen, access(es|ed), have/has, use(s). Add these to SHARING on their own: trad(e|es|ed|ing), licens(e|es|ed|ing), exchang(e|es|ed|ing). Add each sentence above to the planted must-fail list. Add true sentences to the must-pass list (e.g. \"The AI never sees your contact details\" and the TERMS-031 sentence) so the real drafts still pass. Log the change in D-4110 or a new D-entry.\nState of the branch: claude/task/T112-privacy-sms-docs head b41671e9e has smoke green, prehandin green and prehandin --ally green (646 passed), and the four test files pass.",
+   "last_failure": "Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after the one allowed findings round (BUILD_BRIEF.md \u00a77 step 4), so the head was never approved. First-round findings (F1: 11 missed TERMS-010 claims incl. negation-then-exception, service providers/pros, used/goes to/released/revealed/told; F2: false positive on \"Businesses see your first name, never your phone number.\") are fixed and verified. Still open (TERMS-010, elevated risk), tests/docs/test_privacy_policy.py EXCEPTION/negated and HANDOVER:\n1. A negation followed by \"until\"/\"before\"/\"till\" still clears the verb, so these pass the scan: \"Businesses don't see your phone number until you pick one.\" / \"Your phone number is not shown to a business until it pays its introduction fee.\" / \"Your phone number is never shared with businesses before you pick one.\" Fix: add until|before|till to EXCEPTION, plus planted claims.\n2. Plain \"pass ... to\" is not a hand-over verb: \"After you pick, we pass your phone number to that business.\" passes (HANDOVER only matches \"pass on\"/\"pass along\"). Fix: allow pass(?:es|ed|ing)? when a third party is in the clause, plus a planted claim.\nMinor (non-blocking): cross-sentence pronoun (\"We don't sell your phone number. We share it with the business you pick.\") passes; \"Businesses see your first name, not your email, and your phone number.\" passes; \"only\" after a negation gives false positives (\"Businesses never see your phone number, only your first name.\").\nState of branch claude/task/T112-privacy-sms-docs head 037ad56a0: pytest tests/docs 869 passed, check_code_docs/check_ai_smell clean, cargo fmt ok, prehandin green; prehandin --ally failed in j2_keyboard.spec.ts:149 (/b/signup/start h1 timeout, different widths per run; reviewer judged it a timing flake unrelated to this docs-only diff). First worker's head 5eda38328 had smoke green and prehandin --ally green (646 passed).",
    "history": [
     {
      "attempt": 1,
@@ -21782,6 +21782,29 @@
       "reviewer": {
        "tokens": 1003831,
        "turns": 26
+      }
+     }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 86,
+     "head_sha": "037ad56a05f50b76c38506da3786bdde73a2be4d",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-17T07:36:38Z",
+     "ended_at": "2026-11-17T08:28:46Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 3343481,
+       "turns": 47
+      },
+      "reviewer": {
+       "tokens": 496589,
+       "turns": 16
       }
      }
     }
@@ -68485,12 +68508,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T570",
-   "at": "2026-11-17T08:26:01Z",
-   "cache_creation_input_tokens": 129934,
-   "output_tokens": 31724,
-   "input_tokens": 113,
-   "cache_read_input_tokens": 3357064
+   "task": "T112",
+   "at": "2026-11-17T08:28:46Z",
+   "cache_creation_input_tokens": 192445,
+   "input_tokens": 120,
+   "output_tokens": 58041,
+   "cache_read_input_tokens": 3589464
   },
   "source": "session_reading 2026-11-17T07:39:56Z (week)",
   "by_task": {
@@ -72712,14 +72735,14 @@
     "estimated_bytes": 314998,
     "estimated_tokens": 960201,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 210385,
-    "cache_read_input_tokens": 4797203,
-    "output_tokens": 52160,
-    "input_tokens": 163,
-    "worker_tokens": 4056080,
-    "worker_turns": 60,
-    "reviewer_tokens": 1003831,
-    "reviewer_turns": 26,
+    "cache_creation_input_tokens": 402830,
+    "cache_read_input_tokens": 8386667,
+    "output_tokens": 110201,
+    "input_tokens": 283,
+    "worker_tokens": 7399561,
+    "worker_turns": 107,
+    "reviewer_tokens": 1500420,
+    "reviewer_turns": 42,
     "last_model": "claude-opus-5-5"
    },
    "T489": {
@@ -72758,11 +72781,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-17T04:41:03Z",
-    "tokens": 12779040
+    "tokens": 13388592
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 234276275
+    "tokens": 234885827
    }
   },
   "session_reading": {
@@ -72773,7 +72796,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T08:27:11Z",
+ "updated_at": "2026-11-17T08:28:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -72871,7 +72894,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "eabc0711c1098221698650b38b0a41e586152c73",
+ "runner_sha": "037ad56a05f50b76c38506da3786bdde73a2be4d",
  "starter": "actions",
  "smoke_runs": [
   {
