@@ -38,6 +38,7 @@ mod optout_email;
 mod outbox_sender;
 mod purge;
 mod receipt_email;
+mod replay_sent;
 mod retention;
 mod retries;
 mod rules;
