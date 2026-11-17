@@ -49,6 +49,7 @@
 pub mod api;
 mod card_list;
 mod charge;
+mod charge_rebuild;
 mod dispute_http;
 mod disputes;
 mod fee_facts;

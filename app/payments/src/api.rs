@@ -106,6 +106,7 @@ pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, CHARGE_FEE_MISMATCH_ALERT, IN_FLIGHT, INTENT_ACTION,
     IntentStripe, confirm_and_pay, open_intent, set_fee_limit,
 };
+pub use crate::charge_rebuild::{Rebuilt, rebuild_charge};
 pub use crate::disputes::DISPUTE_OPENED_KIND;
 pub use crate::disputes::{
     DISPUTE_ACTION, DISPUTE_FEE_CENTS, DisputeStripe, EVIDENCE_ACTION, SUBMIT_BEFORE, SUBMIT_KIND,
