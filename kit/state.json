@@ -65253,11 +65253,12 @@
      }
     }
    ],
-   "reviewed_sha": "24c71325d688d59fd9e93649cf9719d15744aff9",
+   "reviewed_sha": "e5c11644040b9de36bd09ad6810d5314ee78a740",
    "review_lease": {
     "task": "T479",
-    "session": "actions-44081418104",
-    "expires": "2026-11-17T16:15:51Z"
+    "session": "actions-44107684609",
+    "expires": "2026-11-17T19:14:48Z",
+    "lane": "2"
    },
    "branch": "claude/task/T479-not-a-fit-and-scorecard-entries",
    "auto_merge": {
@@ -65265,35 +65266,23 @@
     "why": "auto-merge on #960 (gh pr merge)",
     "head": "de645c2c3021ac5c0a48c0a4f6cd18c6f692c6c5"
    },
-   "update_merges": [
-    {
-     "from": "d63448b288ecabe46790937a511b3a784515e5fa",
-     "to": "de645c2c3021ac5c0a48c0a4f6cd18c6f692c6c5",
-     "main": "e9821f027c6b4e4cb8d948cf0431020058fdbc48",
-     "how": "hand-in",
-     "at": "2026-11-17T13:19:57Z"
-    },
-    {
-     "from": "de645c2c3021ac5c0a48c0a4f6cd18c6f692c6c5",
-     "to": "24c71325d688d59fd9e93649cf9719d15744aff9",
-     "main": "774d33861a6afdd380d7fdfc54c4fba5efe77562",
-     "how": "runner",
-     "checks": {
-      "Ci": "success",
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-17T15:13:25Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-17T15:13:25Z",
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest pick_046_opted_out_with_an_email_gets_one_email_and_no_text ... FAILED\ntest pick_046_no_consent_record_with_an_email_gets_one_email_and_no_text ... ok\ntest pick_046_no_email_on_file_gets_nothing ... ok\ntest pick_046_with_no_other_quote_the_email_says_we_will_email_you ... ok\ntest pick_046_without_the_postal_line_sends_nothing_and_the_step_ends ... ok\nfailures:\n---- pick_046_opted_out_with_an_email_gets_one_email_and_no_text stdout ----\nthread 'pick_046_opted_out_with_an_email_gets_one_email_and_no_text' (29930) panicked at tests/integration/tests/pick_lapsed_email.rs:273:5:\nno amount\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    pick_046_opted_out_with_an_email_gets_one_email_and_no_text\ntest result: FAILED. 8 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.92s\nerror: test failed, to rerun pass `-p askhava-integration --test pick_lapsed_email`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "lane": "2",
    "runner_closed_prs": [
     960
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "c678b06510908460ab2eac98121750ced469ae64",
+     "to": "e5c11644040b9de36bd09ad6810d5314ee78a740",
+     "main": "2f2fa8c6a62f8f3cadbb2d3f8d64c999ef47c536",
+     "how": "hand-in",
+     "at": "2026-11-17T16:17:17Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T480",
@@ -75296,7 +75285,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T16:15:30Z",
+ "updated_at": "2026-11-17T16:17:17Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -75394,7 +75383,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "226e7f3c08eacfce71009ef73fe84419e91607e9",
+ "runner_sha": "c678b06510908460ab2eac98121750ced469ae64",
  "starter": "actions",
  "smoke_runs": [
   {
