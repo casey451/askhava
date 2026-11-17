@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-17T07:13:30Z by runner 94c519d97f7d (actions).
+Updated 2026-11-17T07:15:48Z by runner 335c43f151da (actions).
 
-**Building: T489 in progress since 07:02Z; 386 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T112 in progress since 06:30Z; 386 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 386 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T489 claimed 07:02Z, lease until 10:02Z; lane 3: T112 claimed 06:30Z, lease until 09:56Z; lane 5: T201 claimed 06:26Z, lease until 10:13Z
+- **Lane:** lane 3: T112 claimed 06:30Z, lease until 09:56Z; lane 5: T201 claimed 06:26Z, lease until 10:13Z
 - **Week:** 15% used, 162.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:08Z, 5 min before this update
+- **Last run:** 07:13Z, 2 min before this update
 - **Keeper:** last ran 07:07Z, next wake 09:28Z
 
 ## Needs attention
+- BLOCKED T489: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes `sec_048_every_refusal_is_a_security_event` panic at auth_matrix.rs:181:9 ("/request has no door in auth_matrix.rs: add its matrix rule (SEC-019)"). sec_048 (:720-:723) builds its POST list from route_table() and calls door(path, false), ignoring the served-by-site flag that td_sec_01 (:637) and :693 pass; so any site POST outside the listed prefixes panics. POST /request is the first site POST. The file is owned by T348 (harness; also T088, T231, T302, T308); T489 does not ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T489 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 3 problem(s) on tasks still to run (+145 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 4 problem(s) on tasks still to run (+146 on DONE tasks); first: T489: stored context_pct 14% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z | PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes |
 | T564 | quotes, picks and intake: the LIST, text picks, lapse text a | MERGE_PENDING | 1 | 43 min | 06:47Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 1 | 2 h 21 min | 06:44Z |  |
 | T586 | calls and privacy: TwiML text is escaped, a full number pool | MERGE_PENDING | 1 | 88 min | 06:17Z |  |
@@ -129,9 +131,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T489 (lease until 2026-11-17T10:02:53Z)
 - lane 3: T112 (lease until 2026-11-17T09:56:03Z)
 - lane 5: T201 (lease until 2026-11-17T10:13:30Z)
 
 ## Last usage reading
-- {"task": "T564", "at": "2026-11-17T06:47:38Z", "input_tokens": 176, "cache_read_input_tokens": 8891660, "output_tokens": 59546, "cache_creation_input_tokens": 207151}
+- {"task": "T489", "at": "2026-11-17T07:15:47Z", "cache_creation_input_tokens": 180017, "cache_read_input_tokens": 8157653, "output_tokens": 55478, "input_tokens": 145}
