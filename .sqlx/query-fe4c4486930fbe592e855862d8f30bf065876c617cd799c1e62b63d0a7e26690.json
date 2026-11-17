@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO messaging.inbox_contact (inbox_id, contact_id, received_at) VALUES ($1, $2, $3) ON CONFLICT (inbox_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fe4c4486930fbe592e855862d8f30bf065876c617cd799c1e62b63d0a7e26690"
+}

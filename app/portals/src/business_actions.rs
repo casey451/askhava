@@ -37,10 +37,14 @@
 //! T249: [`service_area_settings_page`] and [`change_service_area`] let the owner or a "Confirm
 //! and billing" member change the base ZIP and radius (BIZ-010, BIZ-058, CARD-024) with sign-up's
 //! checks and messages; the save is audited by field name only. The route is T306's.
+//! T479: every job page shows the WORD-002 business statement under the job card (CARD-020), and
+//! [`job_details_page_choice`] adds "Not a fit for us" with its four one-tap reasons (PICK-057,
+//! `not_a_fit`); the route that serves it is T306's.
 
 use askama::Template;
 use askhava_businesses::api::{
-    Acting, LargestJob, ServiceArea, ServiceAreaProblem, offer_sample_pick, save_service_area,
+    Acting, LargestJob, ServiceArea, ServiceAreaProblem, business_statement, offer_sample_pick,
+    save_service_area,
 };
 use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_intake::api::paused_by_homeowner;
@@ -72,6 +76,7 @@ use crate::business_portal::{SensitiveChange, StepUpError, require_step_up};
 use crate::business_signup::{area_field, area_message};
 use crate::confirm_pay::{FEE_FREE_LINE, money};
 use crate::email_check::{MailApp, sample_pick_page};
+use crate::not_a_fit::NotAFitChoice;
 use crate::session::PortalsError;
 
 /// The `core.task` kind "Ask about a charge" raises; T151's handler opens the help request.
@@ -188,6 +193,8 @@ struct JobView<'a> {
     sent: u32,
     quoted: u32,
     controls: Option<QuoteControls<'a>>,
+    statement: String,
+    not_a_fit: Option<NotAFitChoice<'a>>,
 }
 
 /// The links a job page needs beside its data: each photo's `/photos/<token>` path, in
@@ -213,7 +220,7 @@ pub struct JobPageLinks<'a> {
 /// # Errors
 /// The template's render error.
 pub fn job_details_page(page: &JobPage, links: &JobPageLinks<'_>) -> Result<String, askama::Error> {
-    render_job(page, links, None)
+    render_job(page, links, None, None)
 }
 
 /// PICK-051 (T164): [`job_details_page`] with the business's own quote controls: "Change your
@@ -227,14 +234,30 @@ pub fn job_details_page_with_quote(
     links: &JobPageLinks<'_>,
     controls: QuoteControls<'_>,
 ) -> Result<String, askama::Error> {
-    render_job(page, links, Some(controls))
+    render_job(page, links, Some(controls), None)
 }
 
-/// Renders the job page with or without the quote controls.
+/// PICK-057, CARD-020, D-3753, D-3889 (T479): the job page with "Not a fit for us" and its four
+/// one-tap reasons ([`NotAFitChoice`], posting to `NOT_A_FIT_ROUTE`), and the quote controls when
+/// given. Every job page shows the WORD-002 business statement under the job card.
+///
+/// # Errors
+/// The template's render error.
+pub fn job_details_page_choice(
+    page: &JobPage,
+    links: &JobPageLinks<'_>,
+    controls: Option<QuoteControls<'_>>,
+    choice: NotAFitChoice<'_>,
+) -> Result<String, askama::Error> {
+    render_job(page, links, controls, Some(choice))
+}
+
+/// Renders the job page with or without the quote controls and the not-a-fit choice.
 fn render_job(
     page: &JobPage,
     links: &JobPageLinks<'_>,
     controls: Option<QuoteControls<'_>>,
+    not_a_fit: Option<NotAFitChoice<'_>>,
 ) -> Result<String, askama::Error> {
     let concept = page
         .concept()
@@ -254,6 +277,8 @@ fn render_job(
         sent: page.sent(),
         quoted: page.quoted(),
         controls,
+        statement: business_statement(),
+        not_a_fit,
     };
     ActionsView {
         action: None,

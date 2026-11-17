@@ -59,7 +59,7 @@ def errors_after(tmp_path: Path, name: str, old: str, new: str) -> list[str]:
 def test_real_drafts_pass(capsys: pytest.CaptureFixture[str]) -> None:
     assert check_legal_docs.main(["--root", str(REPO_ROOT)]) == 0
     out = capsys.readouterr().out
-    assert "Legal documents checked: 10" in out
+    assert "Legal documents checked: 11" in out
     assert "Errors: 0" in out
 
 
