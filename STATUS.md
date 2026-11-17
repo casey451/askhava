@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T04:23:57Z by runner b8f7a3f7e6ea (actions).
+Updated 2026-11-17T04:24:15Z by runner b8f7a3f7e6ea (actions).
 
 **Building: T221 in progress since 04:11Z; 381 of 557 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 381 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T221 claimed 04:11Z, lease until 07:11Z; lane 2: T103 claimed 03:40Z, lease until 06:40Z; lane 4: T204 claimed 04:22Z, lease until 07:22Z; lane 5: T571 claimed 04:23Z, lease until 07:23Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T591 claimed 03:16Z, lease until 07:01Z
+- **Lane:** lane 1: T221 claimed 04:11Z, lease until 07:11Z; lane 2: T103 claimed 03:40Z, lease until 06:40Z; lane 4: T204 claimed 04:22Z, lease until 07:22Z; lane 5: T571 claimed 04:23Z, lease until 07:23Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z
 - **Week:** 13% used, 161.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:23Z, 0 min before this update
 - **Keeper:** last ran 03:47Z, next wake 06:43Z
@@ -17,6 +17,7 @@ Updated 2026-11-17T04:23:57Z by runner b8f7a3f7e6ea (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T591 | Runner (harness): free the backup job's disk and cap the smo | MERGE_PENDING | 1 | 67 min | 04:23Z |  |
 | T107 | Consent records kept 5 years, no export, opt-out rate alerts | QUEUED | 1 | 85 min | 03:45Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 | T584 | businesses (harness): sign-up activation retried after a con | done | 2 | 43 min | 03:23Z | PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to rea |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | resync | 2 | 79 min | 03:14Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
@@ -123,7 +124,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T204 (lease until 2026-11-17T07:22:48Z)
 - lane 5: T571 (lease until 2026-11-17T07:23:29Z)
 - lane 6: T481 (lease until 2026-11-17T06:42:02Z)
-- lane 7: T591 (lease until 2026-11-17T07:01:30Z)
 
 ## Last usage reading
-- {"task": "T107", "at": "2026-11-17T03:45:59Z", "cache_creation_input_tokens": 296748, "input_tokens": 307, "cache_read_input_tokens": 10051922, "output_tokens": 81474}
+- {"task": "T591", "at": "2026-11-17T04:23:39Z", "cache_creation_input_tokens": 107384, "cache_read_input_tokens": 2069034, "output_tokens": 26237, "input_tokens": 92}
