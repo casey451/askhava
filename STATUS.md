@@ -1,19 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-17T03:41:40Z by runner dfb993caba5d (actions).
+Updated 2026-11-17T03:42:20Z by runner 0241d76c6e76 (actions).
 
 **Building: T107 in progress since 02:20Z; 379 of 557 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 379 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T107 claimed 02:20Z, lease until 06:41Z; lane 2: T103 claimed 03:40Z, lease until 06:40Z; lane 7: T591 claimed 03:16Z, lease until 06:40Z
-- **Week:** 12% used, 167.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T107 claimed 02:20Z, lease until 06:41Z; lane 2: T103 claimed 03:40Z, lease until 06:40Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T591 claimed 03:16Z, lease until 06:40Z
+- **Week:** 12% used, 165.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:41Z, 0 min before this update
 - **Keeper:** last ran 03:31Z, next wake 06:00Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 2 problem(s) on tasks still to run (+142 on DONE tasks); first: T107: stored context_pct 12% but it measures 16%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -74,8 +73,8 @@ Updated 2026-11-17T03:41:40Z by runner dfb993caba5d (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 307 of 733 (41.9%) · partial 313 · unstarted 113
-**Tasks merged (throughput only):** 379 of 556
+**Requirements verified:** 305 of 733 (41.6%) · partial 315 · unstarted 113
+**Tasks merged (throughput only):** 379 of 557
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -85,9 +84,9 @@ Updated 2026-11-17T03:41:40Z by runner dfb993caba5d (actions).
 | calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 28 | 12 | 3 | 43 |
+| intake | 27 | 13 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
-| licensing | 37 | 11 | 0 | 48 |
+| licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
@@ -103,7 +102,7 @@ Updated 2026-11-17T03:41:40Z by runner dfb993caba5d (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T03:31:14Z (week)): week: 26.8M used, 167.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T06:18:22Z.
+- Pacing (session_reading 2026-11-17T03:31:14Z (week)): week: 28.6M used, 165.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T06:19:33Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -120,6 +119,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T107 (lease until 2026-11-17T06:41:27Z)
 - lane 2: T103 (lease until 2026-11-17T06:40:50Z)
+- lane 6: T481 (lease until 2026-11-17T06:42:02Z)
 - lane 7: T591 (lease until 2026-11-17T06:40:34Z)
 
 ## Last usage reading
