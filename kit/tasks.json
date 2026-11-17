@@ -20287,7 +20287,9 @@
     "T587",
     "T588",
     "T589",
-    "T590"
+    "T590",
+    "T592",
+    "T593"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -20642,6 +20644,162 @@
    "prompt": "kit/prompts/T527.md"
   },
   {
+   "id": "T592",
+   "slug": "home-numbers-bulk-read",
+   "title": "jobs, quotes and site: the home page's numbers read every job's trade in one statement and are kept for 60 seconds",
+   "goal": "Plan change D-4098 (Casey's outside code audit, finding F-03, verified on `main` 78bc4c55 on Nov 17, 2026 and re-checked before planning): every anonymous `GET /` (and the old `/categories` and `/events` paths, which answer with the home page, WEB-012) reads WEB-028's numbers through `intake::api::home_numbers` and `quotes::api::home_numbers` (`app/quotes/src/home_numbers.rs:42`), which loads every job that ever had a card sent and, once 50 have (`ASKHAVA_HOME_NUMBERS_MIN_JOBS`), runs one `jobs::api::job_facts` query per job to count the trades (`:63` to `:69`): 1 + N statements, N growing with every job. `home_html` (`app/site/src/pages.rs:173` to `:181`) also takes one pooled connection for the banner and then another for the numbers. Site pages have no rate limit and the pool holds 10 connections per process (`ASKHAVA_DB_POOL_MAX`). (1) `jobs`: a new `categories_of(conn, &[Uuid]) -> Result<BTreeSet<String>, FactsError>` in `app/jobs/src/job_facts.rs`, re-exported by one line in the shared `app/jobs/src/api.rs`: one statement reading each listed job's latest facts row (`SELECT DISTINCT ON (job_id) category FROM jobs.job_facts WHERE job_id = ANY($1) ORDER BY job_id, seq DESC`); a job with no row adds nothing, as `job_facts`' `None` does today. (2) `quotes`: `home_numbers` calls it once in place of the loop, so it makes 2 statements however many jobs exist (1 below the threshold, as today); `HomeNumbers`, its rounding and its errors are unchanged. (3) `site`: the shown numbers (public aggregates only, no business or homeowner detail) are kept for 60 seconds, a named constant whose comment gives the reason (it is not a spec value, so not a setting), in a cache held in the page router's state, never a process-wide static, so routers built for separate tests or pools never share figures. Within the window a `GET /` makes no numbers statement; a `None` (below the threshold) is kept like a value; a failed read is not kept (the page shows no numbers, as today, and the next request reads again). The cache holds the numbers only, never rendered HTML, since a page may carry a per-visitor token. `home_html` keeps its signature and reads uncached, so T102's `tests/integration/tests/home_numbers.rs` passes unchanged; the served route goes through the cache. A request reads the banner and, on a miss, the numbers on one pooled connection (one acquire, not two): `app/site/src/routes.rs` gains a connection form of `banner_shown` with the same fail-closed rule (R5; F-04 stays as decided: WEB-007's banner announces a texting outage, not a database one). WEB-028 holds unchanged: no hand-typed number, nothing below the threshold. Tests in the new `tests/integration/tests/home_numbers_queries.rs`, fake data only, on PostgreSQL: (a) `categories_of` returns each job's latest category when a job has several facts rows (the highest `seq` wins), skips a job with none and answers an empty set for an empty list; (b) for 60 fake jobs across 3 trades with mixed confirmed and unconfirmed quotes, `home_numbers` equals the figures the test computes the old way (one `job_facts` read per job for the trade count); (c) with the threshold at 1, `home_numbers` makes exactly 2 statements for 1 job and for 2,000 jobs, counted with T416's `DbMetrics` statement counter installed as `tests/integration/tests/db_metrics.rs` installs it (`app_pool`, `log_subscriber`); (d) through the page router, a cold `GET /` makes at most 3 statements and a second `GET /` inside the window only the banner's, and after the window (shortened through the cache's constructor in the test) the numbers are read again.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "quotes",
+   "deps": [
+    "T102",
+    "T416",
+    "T526"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "app/jobs/src/job_facts.rs",
+    "app/quotes/src/home_numbers.rs",
+    "app/site/src/pages.rs",
+    "app/site/src/routes.rs",
+    "tests/integration/tests/home_numbers_queries.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/website.md",
+    "docs/spec/intake.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "WEB-028",
+    "INT-018",
+    "WEB-007"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-466",
+    "D-468",
+    "D-3144",
+    "D-3292",
+    "D-4098"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 380,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T592-home-numbers-bulk-read",
+   "prompt": "kit/prompts/T592.md",
+   "acceptance": "`tests/integration/tests/home_numbers_queries.rs` passes against PostgreSQL with every listed case, the 2,000-job statement count and the warm-page case failing on `main` before the change; T102's `tests/integration/tests/home_numbers.rs` (TD-JOB-04's WEB-028 cases), `tests/integration/tests/job_facts.rs` and `tests/e2e/site_pages.spec.ts` pass unchanged."
+  },
+  {
+   "id": "T593",
+   "slug": "home-hero-request-box",
+   "title": "site and server: the home hero in D-3331's wording with the kicker from the market data, and the request box that carries her words into the chat without storing them",
+   "goal": "Plan change D-4098 (Casey's outside code audit, findings F-07 and F-09, verified on `main` 78bc4c55 on Nov 17, 2026; Casey confirmed that night that the October 28 home copy has been replaced, and the only replacement on `main` is D-3331, his V5 guide; Opus review round 1 of the plan change applied): the home page still renders the October 28 draft of `docs/copy/site-copy.md` (status line `:5`, \"Waiting for Casey's OK\"; kicker \"For homes in Lake Havasu City\", headline \"Get quotes from Havasu businesses without giving out your number.\"; `app/site/templates/home.html:6` to `:13`, `:19`, `:24`), with \"Havasu\" typed into the template against D-1515 (market values from data, `docs/code-docs.md:42`); and the hero has a \"Get quotes\" link (`home.html:11`) where DESIGN_SPEC section 5 (`docs/design/DESIGN_SPEC.md:104`, D-3331) requires the request box, which no task builds (T216 places only the photo and the mark; T489 builds the chat and request page). (1) Market data. `docs/catalog/markets.yaml` gains two reviewed fields per market, `short_name` (the name in running text: `Havasu` for `lake-havasu-city`) and `state_name` (the state spelled out: `Arizona`), and `MarketDef` (`app/catalog/src/markets.rs:73`, `deny_unknown_fields`) reads both as `#[serde(default)] Option<String>`, so the catalog's fixture files in `app/catalog/src/tests/markets.rs`, which this task does not own, still parse unchanged; the file's header comment names both fields. A data change (INT-048: another market is data, not code); `docs/catalog/markets.yaml` is locked (`kit/plan.lock`, D-3114), so the markets data change rewrites `kit/plan.lock` and the task's own D-### entry names it. (2) Copy. `docs/copy/site-copy.md` stays the wording source (WORD-029, D-474, DESIGN_SPEC line 3). Its home blocks are rewritten to D-3331's wording as `docs/design/reference/home.html:38` to `:48`, `:59` to `:60`, `:67` and `:69` to `:72` give it: the kicker (\"<name>, <state_name>\", \"Lake Havasu City, Arizona\" today), the headline \"Get local quotes without giving out your number.\", the lede (\"Tell us what needs doing. We'll ask <short_name> businesses that do that work and show you their quotes on one page.\"), the request box (label \"What needs doing?\", hint \"For example: the AC runs but blows warm air.\", button \"Get quotes\", then the fixed CON-003 cost line), \"See how it works\", the coverage line (its \"See the full list\" linking to T201's `/coverage`), the how-it-works start line \"Start in the chat on this site. You don't need to know which trade to ask for.\", step 2 (\"<short_name> businesses quote.\" and its line) and step 3 (\"You pick one, or none.\" with \"Check their license and reviews, then choose. You hire the business directly.\"). The page title and the numbers heading keep their words with `short_name` in place of the typed \"Havasu\" (\"Local quotes for <short_name> homes\", \"<short_name> requests so far\"), so today's page reads exactly as D-3331 and the old draft do; the copy file shows each block as today's market renders it, with a note that the names come from `markets.yaml` (D-1515, INT-048). The \"Who runs Laftly\" lines (WEB-021, WEB-022: \"a Lake Havasu City business\", \"Its owner lives in Havasu\", the day-job line), the 911 note, every `fixed` block and every `data-fixed` line stay word for word; blocks D-3331 does not reword (fair, business, launch offer) are not touched. The Spanish home (`es_home.html`, T202's) is not changed: D-3331's copy is English. The status line becomes \"home page per D-3331 (Casey's V5 guide, November 12, 2026), confirmed by Casey as the replacement of the October 28 draft (D-4098)\". The rewrite goes through the copy panel (`docs/copy/copy-panel.md`) and `scripts/check_copy.py` like any copy change. If Casey points to replacement copy other than D-3331, this step is re-pointed by a plan fix before the task is claimed. (3) Page. `home.html` renders those blocks in D-3331's order (kicker, `h1`, lede, the request box, the cost line, \"See how it works\"; the coverage line; how it works) around T216's photo, styled in `app/site/static/site.css` as DESIGN_SPEC section 5 sets the request box (no card, textarea 84 px on phones and 104 px from 768 up, the full-width 56 px primary button). The market values come from `catalog::api::markets()` (`site` may call `catalog`), never a literal; the page reads the one market the file lists, and a unit test fails when the file lists more than one, naming D-1515 and T242's inventory, so a second market forces the copy question instead of a guess, and also asserts that every listed market has `short_name` and `state_name`, so a missing field fails `Ci` instead of showing as a 500 on the live page; a `markets()` error or a market missing `short_name` or `state_name` answers the bare R4 500 with one warning and no values. No placeholder (A11Y-029), a visible `<label for>`, the hint tied by `aria-describedby`, and no texting number before Gate C (WEB-017). `home_html(&PgPool, &SitePages)` keeps its signature and renders an empty token, so T102's `tests/integration/tests/home_numbers.rs` passes unchanged. (4) Request box. The form is `<form method=\"post\" action=\"/request\">`, so her words never go in a URL, the history or a referrer, with a textarea and a hidden `csrf` field: SEC-042 binds a form used without a session to a pre-session cookie, so the `server` layer that guards `POST /request` (T489's, `app/server/src/chat_codes.rs`, D-3882 (1)) also runs on all three home paths, `GET /`, `GET /categories` and `GET /events` (WEB-012), setting the pre-session cookie and handing the token to the home handler through the request-extension type `chat.rs` defines (as T309's layer does for `GET /help`, D-3890), merged in the shared `app/server/src/lib.rs`; without the layer the field is empty and the post is refused as any token-less post is. A `POST /request` carrying the hero's field and no chat message key renders T489's CON-025 start screen (the consent text above the chat box, the 18-or-older line, AI-026's line when on) with her text in the chat box, HTML-escaped and cut to one named maximum-length constant in `chat.rs`, which is also the chat box's `maxlength`, for her to send. That post writes no row, queues no task, makes no AI call, sends nothing and sets no cookie beyond the pre-session one (AI-021, A11Y-035: nothing is stored until she starts the chat). Her text appears in no log line, tracing field, error, audit row or `csrf_rejected` event. The answer to the hero post and the three home paths carry `Cache-Control: no-store` (each page holds a per-visitor token; T592's numbers cache is unaffected). A cross-site or token-less hero post is refused as T489's posts are (403 and one `csrf_rejected` event). It works the same without JavaScript; the keyboard order is textarea, button, then the chat box with her text. (5) Checks. `tests/e2e/home_first_screen.spec.ts` (T216's; this is a harness task so that it may change earlier tasks' tests) also asserts at 390 by 844 and 320 by 740 that the photo, the whole textarea and the whole \"Get quotes\" button are inside the first viewport, and runs axe-core on the home page and on the pre-filled start screen with 0 violations. `tests/e2e/site_pages.spec.ts` (T102's) changes in two places, driven by the copy, not weakened: its old-paths test (`:51`) asserts that `/categories` and `/events` show the same `h1` as `/` instead of pinning the old headline, and its home test's `main a[href='/request']` \"Get quotes\" check (`:32`) becomes the equal-or-stronger WEB-009 check that `main form[method=post][action='/request']` holds a button named \"Get quotes\" and a textarea with a visible label. `tests/a11y/page_states.ts`' home entry (shared) must still tell its state apart; if a changed line breaks its `shows`, this task updates the entry in the same change and runs `bash scripts/prehandin.sh --ally`. The new `app/server/tests/home_request_box.rs`, fake data only, through `build_router`: the rows of every table in the `intake`, `privacy`, `ai`, `messaging` and `jobs` schemas and `core`'s task table are counted before and after a hero `POST /request` with fake text and are unchanged, and the answer holds the text inside the chat box, escaped (a planted `<script>` comes back as text); text one character over the maximum comes back cut to it; a token-less and a cross-site hero post are refused; a hero post from `/categories` lands on the start screen like one from `/`; under a captured tracing subscriber (as `tests/integration/tests/db_metrics.rs:105` to `:113` installs one), a fake marker text posted through the hero form, through a token-less post and through a cross-site post appears in no captured line; `Cache-Control: no-store` is on the hero post's answer and on `/`, `/categories` and `/events`; `GET /` holds every non-fixed home block of `site-copy.md` verbatim as today's market renders it, the kicker reads \"Lake Havasu City, Arizona\" from the data, and neither \"For homes in Lake Havasu City\" nor the old headline appears.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "site",
+   "deps": [
+    "T592",
+    "T216",
+    "T489",
+    "T429",
+    "T248"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility",
+    "privacy",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "docs/catalog/markets.yaml",
+    "app/catalog/src/markets.rs",
+    "docs/copy/site-copy.md",
+    "app/site/templates/home.html",
+    "app/site/static/site.css",
+    "app/site/src/pages.rs",
+    "app/site/src/chat.rs",
+    "app/site/templates/request.html",
+    "app/server/src/chat_codes.rs",
+    "tests/e2e/home_first_screen.spec.ts",
+    "tests/e2e/site_pages.spec.ts",
+    "app/server/tests/home_request_box.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/design/reference/home.html",
+    "docs/copy/copy-panel.md",
+    "docs/voice.md",
+    "docs/spec/website.md",
+    "docs/spec/consent.md",
+    "docs/spec/accessibility.md",
+    "docs/spec/security.md",
+    "docs/spec/ai.md",
+    "docs/spec/intake.md",
+    "docs/spec/wording.md",
+    "docs/brains/accessibility-forms.md"
+   ],
+   "requirements": [
+    "WEB-027",
+    "WEB-009",
+    "WEB-017",
+    "A11Y-029",
+    "A11Y-035",
+    "AI-021",
+    "CON-025",
+    "CON-003",
+    "SEC-042",
+    "INT-048",
+    "WORD-029",
+    "WEB-012"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-3331",
+    "D-1515",
+    "D-474",
+    "D-3844",
+    "D-3882",
+    "D-3890",
+    "D-4098",
+    "D-3144"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 12,
+    "lines": 780,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T593-home-hero-request-box",
+   "prompt": "kit/prompts/T593.md",
+   "acceptance": "`app/server/tests/home_request_box.rs` passes against PostgreSQL with every listed case, the row-count, log, no-store and copy cases failing on `main` before the change; `tests/e2e/home_first_screen.spec.ts` passes at both sizes with 0 axe-core violations on both pages; `tests/e2e/site_pages.spec.ts` passes with only the two copy-driven changes; `Ally` reports 0 violations; `scripts/check_copy.py` and `scripts/check_ai_smell.py` report 0 problems and the copy panel finds nothing open; the catalog's markets tests, `tests/e2e/web_chat.spec.ts`, `tests/e2e/site_no_js.spec.ts`, `tests/integration/tests/home_numbers.rs` and `app/server/tests/door_matrix.rs` pass unchanged.",
+   "copy": true
+  },
+  {
    "id": "T126",
    "slug": "cleanup-stage5",
    "title": "Stage 5 cleanup: dead code, duplicates, docs up to date (end of Phase 1)",
@@ -20786,7 +20944,9 @@
     "T588",
     "T589",
     "T590",
-    "T591"
+    "T591",
+    "T592",
+    "T593"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -23467,7 +23627,8 @@
     "T391",
     "T435",
     "T432",
-    "T449"
+    "T449",
+    "T593"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
