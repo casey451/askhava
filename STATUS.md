@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T18:11:48Z by runner db201a48b809 (actions).
+Updated 2026-11-17T18:25:32Z by runner 6fd736270144 (actions).
 
-**Building: T115 in progress since 17:27Z; 404 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 18:25Z; 404 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 404 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 7: T115 claimed 17:27Z, lease until 21:08Z
+- **Lane:** idle since 18:25Z (no task in progress)
 - **Week:** 25% used, 142.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:11Z, 0 min before this update
+- **Last run:** 18:25Z, 0 min before this update
 - **Keeper:** last ran 18:11Z, next wake 21:11Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-17T18:11:48Z by runner db201a48b809 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | QUEUED | 1 | 58 min | 18:25Z | T115 attempt not handed in (heads 575b42f0c, fix round 6fd736270). / 1) prehandin red at `npm audit --audit-level=low` o |
 | T596 | Runner (harness): an ancestor's running smoke finishes and c | MERGE_PENDING | 1 | 41 min | 17:49Z |  |
 | T491 | picks: the Confirm window's end, every way it comes, runs th | MERGE_PENDING | 1 | 2 h 2 min | 17:44Z |  |
 | T599 | Tests (harness): the PICK-046 email's no-amount check ignore | done | 1 | 32 min | 17:36Z |  |
@@ -84,8 +85,6 @@ Updated 2026-11-17T18:11:48Z by runner db201a48b809 (actions).
 | T324 | harness: 95% branch floors for the money and privacy files o | done | 2 | 69 min | 19:02Z | Review found the per-file floor list still incomplete after one fix round (head 56aef45f3). All 16 floors added so far a |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | done | 1 | 29 min | 18:55Z |  |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 59 min | 18:42Z |  |
-| T166 | site: self-hosted Gelasio and DM Sans fonts and the design-t | done | 1 | 52 min | 18:17Z |  |
-| T105 | ops: High and critical alerts with their automatic acknowled | done | 3 | 51 min | 18:12Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - none
@@ -137,7 +136,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 7: T115 (lease until 2026-11-17T21:08:47Z)
 
 ## Last usage reading
-- {"task": "T596", "at": "2026-11-17T17:49:19Z", "output_tokens": 47905, "input_tokens": 88, "cache_read_input_tokens": 2836773, "cache_creation_input_tokens": 160807}
+- {"task": "T115", "at": "2026-11-17T18:25:31Z", "cache_read_input_tokens": 6648134, "cache_creation_input_tokens": 231725, "output_tokens": 56659, "input_tokens": 228}
