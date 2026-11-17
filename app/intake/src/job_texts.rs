@@ -31,6 +31,15 @@
 //! held, and an emergency job's (read from the job now, never from the event) goes at once through
 //! `messaging::api::enqueue_exempt` with `Exemption::EmergencyJob`. `server` registers
 //! [`run_job_text_at`] on the worker's clock.
+//!
+//! T446 (PICK-046, CON-028, CON-021, PRIV-004; D-3579, D-3880): when that text cannot go (no
+//! consent record, opted out, not textable) and she has an email on file
+//! (`messaging::api::homeowner_has_email`, read outside any transaction: the vault refuses one),
+//! [`lapsed_by_email`] queues one [`PICK_LAPSED_EMAIL`] (`messaging`'s `Notice::PickLapsed`: the
+//! business's public name and, while other quotes remain, her `/q/` link) keyed on the job and the
+//! pick, so a rerun stores nothing more. The footer postal line reaches it through
+//! [`JobTextKeys::with_postal`]; without it the step sends nothing and logs why. A text that can
+//! go goes as above, never both.
 
 use std::sync::Arc;
 
@@ -43,7 +52,9 @@ use askhava_jobs::api::{
     CHECK_IN_DAY3, CHECK_IN_DAY14, FEEDBACK_REQUEST, PROBLEM_REPLY, TEXT_KIND, current, text_due,
 };
 use askhava_messaging::api::{
-    Exemption, Language, NewText, Relation, SendWindow, enqueue_exempt, render, send_window,
+    Audience, EmailClass, Exemption, Language, NewEmail, NewText, Notice, OnDomain, PostalAddress,
+    Recipient, Relation, SendWindow, enqueue_exempt, homeowner_has_email, queue_email, render,
+    send_window,
 };
 use askhava_picks::api::{PICK_LAPSED_TEMPLATE, ended_businesses, lapse_plan, lapse_text};
 use askhava_privacy::api::Vault;
@@ -104,15 +115,23 @@ fn page_link(page: &str, token: &str) -> String {
     format!("https://{}/{page}/{token}", brand().domain())
 }
 
+/// PICK-046's email when she can't be texted (T446, D-3579); with the contact and the subject IDs
+/// (the job and the pick) it makes the email's key.
+pub const PICK_LAPSED_EMAIL: &str = "pick_lapsed_email";
+/// Her portal page, the email's "Manage email notices" link.
+const MANAGE: OnDomain = OnDomain("/h");
+
 const BAD_PAYLOAD: &str = "bad jobs homeowner-text payload";
 const FAILED: &str = "the jobs homeowner-text step failed";
 
 /// What the sender needs and never logs: the `ID_SECRET` as the link-token key and as the outbox
-/// key, and the vault `messaging` reads her number from (SEC-037, SEC-018, PRIV-004).
+/// and email key, the vault `messaging` reads her number and email from (SEC-037, SEC-018,
+/// PRIV-004), and the footer postal line PICK-046's email needs (SEC-028; `None` sends no email).
 pub struct JobTextKeys {
     link: IdSecret,
     outbox: SecretString,
     vault: Vault,
+    postal: Option<PostalAddress>,
 }
 
 impl JobTextKeys {
@@ -124,6 +143,17 @@ impl JobTextKeys {
             link,
             outbox,
             vault,
+            postal: None,
+        }
+    }
+
+    /// The same keys with the footer's checked postal line, so PICK-046's email can go when she
+    /// can't be texted (T446, SEC-028).
+    #[must_use]
+    pub fn with_postal(self, postal: PostalAddress) -> Self {
+        Self {
+            postal: Some(postal),
+            ..self
         }
     }
 }
@@ -239,6 +269,7 @@ pub async fn job_text_step(
         return Ok(JobTextStep::Skipped(JobTextSkip::NoRequest));
     };
     if !may_text(db, contact).await? {
+        lapsed_by_email(db, keys, text, (contact, &language), now).await?;
         return Ok(JobTextStep::Skipped(JobTextSkip::NoConsent));
     }
     let window = send_window(db, &keys.vault, contact, now)
@@ -254,7 +285,96 @@ pub async fn job_text_step(
         SendWindow::OptedOut => JobTextSkip::OptedOut,
         SendWindow::NotTextable => JobTextSkip::NotTextable,
     };
+    lapsed_by_email(db, keys, text, (contact, &language), now).await?;
     Ok(JobTextStep::Skipped(skip))
+}
+
+/// PICK-046, CON-028, CON-021, PRIV-004, D-3579, D-3880: PICK-046's text could not go, so with
+/// the postal line set and an email on file (read before the transaction: the vault refuses one)
+/// one [`PICK_LAPSED_EMAIL`] keyed on the job and the pick, in one transaction with its link
+/// token; an email already stored rolls the new token back. Any other template sends nothing.
+async fn lapsed_by_email(
+    db: &mut PgConnection,
+    keys: &JobTextKeys,
+    text: &JobText,
+    (contact, language): (Uuid, &str),
+    now: Timestamp,
+) -> Result<(), IntakeError> {
+    let Some(postal) = email_postal(db, keys, text, contact).await? else {
+        return Ok(());
+    };
+    let pick = id_value(&text.values, "pick").ok_or(IntakeError::Template)?;
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    if !due(&mut tx, text).await? {
+        return Ok(());
+    }
+    let language = language_from_code(language);
+    let (name, lines) = lapsed_parts(&mut tx, text, language, now).await?;
+    let link = if lines.is_empty() {
+        None
+    } else {
+        Some(quote_link(&mut tx, keys, text.job, now).await?)
+    };
+    let manage = MANAGE.to_string();
+    let to = Recipient {
+        id: contact,
+        audience: Audience::Homeowner,
+        language,
+        manage_url: &manage,
+    };
+    let notice = Notice::PickLapsed {
+        business: &name,
+        quotes_link: link.as_deref(),
+    };
+    let subject = [text.job, pick];
+    let email = NewEmail {
+        template_id: PICK_LAPSED_EMAIL,
+        subject: &subject,
+        class: EmailClass::Notice,
+        notice,
+    };
+    let (_, created) = queue_email(&mut tx, (&keys.outbox, postal), &to, &email, now)
+        .await
+        .map_err(|_| IntakeError::Outbox)?;
+    if created {
+        tx.commit().await.map_err(|_| IntakeError::Database)?;
+    }
+    Ok(())
+}
+
+/// The footer postal line when PICK-046's email may go: the event is `pick_lapsed`, the line is
+/// set (else a warn log naming only the job) and she has an email on file (PRIV-004; the vault
+/// read, outside any transaction).
+async fn email_postal<'k>(
+    db: &mut PgConnection,
+    keys: &'k JobTextKeys,
+    text: &JobText,
+    contact: Uuid,
+) -> Result<Option<&'k PostalAddress>, IntakeError> {
+    if text.template != PICK_LAPSED_TEMPLATE {
+        return Ok(None);
+    }
+    let Some(postal) = keys.postal.as_ref() else {
+        tracing::warn!(job = %text.job, "intake: PICK-046's email not sent, no footer postal line set");
+        return Ok(None);
+    };
+    let has = homeowner_has_email(db, &keys.vault, contact)
+        .await
+        .map_err(|_| IntakeError::Outbox)?;
+    Ok(has.then_some(postal))
+}
+
+/// Her quote page `/q/<token>` with a token issued in `tx` (PICK-010, SEC-037).
+async fn quote_link(
+    tx: &mut PgConnection,
+    keys: &JobTextKeys,
+    job: Uuid,
+    now: Timestamp,
+) -> Result<String, IntakeError> {
+    let token = issue(&mut *tx, &keys.link, job, now)
+        .await
+        .map_err(|_| IntakeError::Job)?;
+    Ok(page_link("q", token.as_str()))
 }
 
 /// QH-004, D-3579: PICK-046's text of a job the homeowner chose as an emergency may go outside
@@ -464,6 +584,18 @@ async fn lapsed_body(
     language: Language,
     (link, now): (&str, Timestamp),
 ) -> Result<String, IntakeError> {
+    let (name, lines) = lapsed_parts(tx, text, language, now).await?;
+    Ok(lapse_text(&name, &lines, link, language))
+}
+
+/// PICK-046, PICK-035, PICK-008, D-3999: the ended business's public name and the TXT-031 lines
+/// of the quotes left to her, as [`lapsed_body`] describes; the email uses only whether any is left.
+async fn lapsed_parts(
+    tx: &mut PgConnection,
+    text: &JobText,
+    language: Language,
+    now: Timestamp,
+) -> Result<(String, Vec<String>), IntakeError> {
     let business = id_value(&text.values, "business").ok_or(IntakeError::Template)?;
     let page = page_quotes(&mut *tx, text.job)
         .await
@@ -498,7 +630,7 @@ async fn lapsed_body(
         .filter(|(n, _)| others.contains(n))
         .map(|(_, line)| line)
         .collect();
-    Ok(lapse_text(&name, &lines, link, language))
+    Ok((name, lines))
 }
 
 /// The text of `text` in `language` (Spanish only for a Spanish request): `{job}` from the

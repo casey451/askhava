@@ -145,7 +145,8 @@ pub enum EmailClass {
     Bulk,
 }
 
-/// What an email says; each has an English and a draft Spanish line (TXT-014, CON-028, TD-CON-28).
+/// What an email says; each has an English and a draft Spanish line (TXT-014, CON-028, TD-CON-28,
+/// PICK-046).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Notice<'a> {
     /// An important text that failed 3 retries, its body as sent (TXT-014).
@@ -154,6 +155,15 @@ pub enum Notice<'a> {
     OptedOut,
     /// After an opt-out from a number with a live job, request `n` is still open (CON-028).
     StillOpen(i64),
+    /// PICK-046's notice by email when she can't be texted (D-3579, D-3880): the lapsed business's
+    /// public name and, while other quotes remain, her quote-page link; with none, the "we'll
+    /// email you" line. No amount and no other business's contact.
+    PickLapsed {
+        /// The lapsed business's public name.
+        business: &'a str,
+        /// Her quote page, only when another pickable quote remains.
+        quotes_link: Option<&'a str>,
+    },
 }
 
 /// Who an email goes to: the opaque ID (a vault contact or a business address), the audience the
@@ -263,7 +273,43 @@ fn notice_lines(notice: Notice<'_>, to: &Recipient<'_>) -> Result<(String, Strin
             format!("{short}: Request {n} is still open"),
             format!("Your request {n} is still open. Close it on your quote page."),
         ),
+        Notice::PickLapsed {
+            business,
+            quotes_link,
+        } => pick_lapsed_lines(business, quotes_link, to.language),
     })
+}
+
+/// PICK-046, D-3880: the subject and message of the lapsed-pick email, PICK-046's text with
+/// "email" for "text": her quote-page link while other quotes remain, else the wait-or-call line.
+fn pick_lapsed_lines(business: &str, link: Option<&str>, language: Language) -> (String, String) {
+    let short = short_name(language);
+    match (language, link) {
+        (Language::En, Some(link)) => (
+            format!("{short}: {business} couldn't take it this time"),
+            format!(
+                "{business} couldn't take it this time. You still have other quotes. You can pick another one on your quote page: {link}"
+            ),
+        ),
+        (Language::En, None) => (
+            format!("{short}: {business} couldn't take it this time"),
+            format!(
+                "{business} couldn't take it this time. We'll email you when another quote comes in. If it can't wait, it's fine to call a company you know."
+            ),
+        ),
+        (Language::Es, Some(link)) => (
+            format!("{short}: {business} no pudo tomarlo esta vez"),
+            format!(
+                "{business} no pudo tomarlo esta vez. Todavía tiene otras cotizaciones. Puede elegir otra en su página de cotizaciones: {link}"
+            ),
+        ),
+        (Language::Es, None) => (
+            format!("{short}: {business} no pudo tomarlo esta vez"),
+            format!(
+                "{business} no pudo tomarlo esta vez. Le avisaremos por correo cuando llegue otra cotización. Si no puede esperar, puede llamar a una compañía que conozca."
+            ),
+        ),
+    }
 }
 
 /// The subject and message of a failed important text sent by email, pointing to where the
