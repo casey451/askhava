@@ -184,7 +184,8 @@ pub async fn send_sample_card(
     db(q.execute(conn).await).map(|_| ())
 }
 
-/// BIZ-042: stores `by`'s answer to "Did it arrive in your inbox?".
+/// BIZ-042: stores `by`'s answer to "Did it arrive in your inbox?" while `by` is a current member
+/// of its business; any other pair writes nothing (D-4052 B31).
 ///
 /// # Errors
 /// [`EmailCheckError::Database`].
@@ -196,8 +197,9 @@ pub async fn record_inbox_answer(
 ) -> Result<(), EmailCheckError> {
     let q = sqlx::query!(
         "INSERT INTO businesses.email_check (member_id, business_id, answer, answered_at) \
-         VALUES ($1, $2, $3, $4) ON CONFLICT (member_id) DO UPDATE SET answer = $3, \
-         answered_at = $4",
+         SELECT id, business_id, $3, $4 FROM businesses.team_member WHERE id = $1 \
+         AND business_id = $2 AND removed_at IS NULL ON CONFLICT (member_id) DO UPDATE \
+         SET answer = $3, answered_at = $4 WHERE businesses.email_check.business_id = $2",
         by.member,
         by.business,
         answer.code(),
@@ -207,7 +209,8 @@ pub async fn record_inbox_answer(
 }
 
 /// BIZ-042, BIZ-038, D-352: an email reply of OK to `by`'s sample card. It only records the time
-/// ("Reply received"); it runs no command and opens no help request.
+/// ("Reply received"); it runs no command and opens no help request. Only for a current member
+/// of `by.business` (D-4052 B31).
 ///
 /// # Errors
 /// [`EmailCheckError::Database`].
@@ -218,7 +221,9 @@ pub async fn record_ok_reply(
 ) -> Result<(), EmailCheckError> {
     let q = sqlx::query!(
         "INSERT INTO businesses.email_check (member_id, business_id, ok_reply_at) \
-         VALUES ($1, $2, $3) ON CONFLICT (member_id) DO UPDATE SET ok_reply_at = $3",
+         SELECT id, business_id, $3 FROM businesses.team_member WHERE id = $1 \
+         AND business_id = $2 AND removed_at IS NULL ON CONFLICT (member_id) DO UPDATE \
+         SET ok_reply_at = $3 WHERE businesses.email_check.business_id = $2",
         by.member,
         by.business,
         now.to_sqlx() as _
@@ -287,7 +292,7 @@ pub async fn send_sample_pick(
 }
 
 /// BIZ-042: stores the answer to "Did your phone alert you?"; a No clears an earlier Yes so the
-/// steps show again.
+/// steps show again. Only for a current member of `by.business` (D-4052 B31).
 ///
 /// # Errors
 /// [`EmailCheckError::Database`].
@@ -300,7 +305,9 @@ pub async fn record_pick_alert(
     let at = yes.then_some(now.to_sqlx());
     let q = sqlx::query!(
         "INSERT INTO businesses.email_check (member_id, business_id, pick_alert_yes_at) \
-         VALUES ($1, $2, $3) ON CONFLICT (member_id) DO UPDATE SET pick_alert_yes_at = $3",
+         SELECT id, business_id, $3 FROM businesses.team_member WHERE id = $1 \
+         AND business_id = $2 AND removed_at IS NULL ON CONFLICT (member_id) DO UPDATE \
+         SET pick_alert_yes_at = $3 WHERE businesses.email_check.business_id = $2",
         by.member,
         by.business,
         at as _
