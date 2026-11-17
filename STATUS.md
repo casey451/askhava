@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T23:38:38Z by runner 7296f77b5c76 (actions).
+Updated 2026-11-17T23:38:54Z by runner 7296f77b5c76 (actions).
 
 **Building: T587 in progress since 23:37Z; 414 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-17T23:38:38Z by runner 7296f77b5c76 (actions).
 - **Lane:** lane 1: T587 claimed 23:37Z, lease until 02:37Z; lane 2: T478 claimed 23:24Z, lease until 02:24Z
 - **Week:** 33% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:38Z, 0 min before this update
-- **Keeper:** last ran 23:35Z, next wake 02:27Z
+- **Keeper:** last ran 23:38Z, next wake 02:26Z
 
 ## Needs attention
 - BLOCKED T203: plan gap reported: PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be "at the top of the quote page". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/pr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason "..."` (D-2859)
