@@ -68,7 +68,8 @@ async fn main() -> io::Result<()> {
 }
 
 /// `messaging`'s daily tasks at start: the body cut, the day-31 body scan, the outbox sender's
-/// first run, OPS-046's deferral check (T531, D-3883), and the alert push and hourly checks (T204).
+/// first run, OPS-046's deferral check (T531, D-3883), the alert push and hourly checks (T204), and the
+/// weekly opt-out rate check.
 async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp) -> io::Result<()> {
     askhava_messaging::api::schedule_cut(conn, now)
         .await
@@ -87,13 +88,16 @@ async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp)
         .map_err(io::Error::other)?;
     askhava_messaging::api::schedule_hourly_checks(conn, now)
         .await
+        .map_err(io::Error::other)?;
+    askhava_messaging::api::schedule_optout_rate_check(conn, now)
+        .await
         .map_err(io::Error::other)
 }
 
 /// Queues the daily tasks at start (the chain check, the retention sweep, the body cut, the
 /// photo orphan sweep, the day-31 body scan, this hour's dead-letter check, the job timer
 /// backstop, the hourly request count (T105), the safe-mode check (T487), the session sweep and rate-limit prune (T436), the license-map re-apply, each daily license list (T371), the outbox sender's
-/// first run, the deferral check ([`schedule_messaging`]) and the first nightly Stripe reconcile
+/// first run, the deferral check, the weekly opt-out rate check ([`schedule_messaging`]) and the first nightly Stripe reconcile
 /// (T433)) and runs the intake golden set once.
 async fn schedule_start(
     pool: &sqlx::PgPool,

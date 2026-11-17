@@ -590,8 +590,7 @@ pub(crate) struct Pickable {
     pub earliest_visit: Option<(jiff::civil::Date, DayPart)>,
 }
 
-/// One confirmed quote in the LIST's arrival order, so its place is its quote-page number
-/// (TXT-031, PICK-051, D-084).
+/// One confirmed quote of the LIST, listed with its shown number (TXT-031, PICK-051, D-2632).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum ListRow {
     /// It can be picked.
@@ -604,6 +603,7 @@ pub(crate) enum ListRow {
 
 /// The columns [`list_rows`] reads of one confirmed quote.
 struct ListColumns {
+    shown_number: i32,
     business_id: Uuid,
     withdrawn: bool,
     unavailable: bool,
@@ -626,12 +626,13 @@ struct ListColumns {
 impl ListColumns {
     /// PICK-051, D-084: a withdrawn quote is `Withdrawn` (even when also marked unavailable), a
     /// marked one `Unavailable`; only a pickable one's price is read back.
-    fn row(self) -> Result<ListRow, QuotesError> {
+    fn row(self) -> Result<(u32, ListRow), QuotesError> {
+        let number = u32::try_from(self.shown_number).map_err(|_| QuotesError::Database)?;
         if self.withdrawn {
-            return Ok(ListRow::Withdrawn);
+            return Ok((number, ListRow::Withdrawn));
         }
         if self.unavailable {
-            return Ok(ListRow::Unavailable);
+            return Ok((number, ListRow::Unavailable));
         }
         let format = Format::from_code(&self.format).ok_or(QuotesError::Database)?;
         let price = price_of(PriceColumns {
@@ -648,11 +649,12 @@ impl ListColumns {
         .ok_or(QuotesError::Database)?;
         let part = self.visit_part.as_deref().and_then(DayPart::from_code);
         let date = self.visit.and_then(|d| d.parse::<jiff::civil::Date>().ok());
-        Ok(ListRow::Pickable(Pickable {
+        let pickable = Pickable {
             business: self.business_id,
             price,
             earliest_visit: date.zip(part),
-        }))
+        };
+        Ok((number, ListRow::Pickable(pickable)))
     }
 }
 
@@ -716,19 +718,20 @@ fn price_of(c: PriceColumns) -> Option<Price> {
     }
 }
 
-/// TXT-031, PICK-002, PICK-051, D-084: the job's confirmed quotes in the quote page's arrival
-/// order (time received, then business ID), withdrawn and unavailable ones kept in their place.
+/// TXT-031, PICK-002, PICK-051, PICK-008, D-084, D-2632: the job's confirmed quotes as
+/// `(shown number, row)`, lowest number first (the number "<n> YES" picks, T564), withdrawn and
+/// unavailable ones kept with their number. A confirmed row always has its number (migration 0202).
 pub(crate) async fn list_rows(
     db: &mut PgConnection,
     job: Uuid,
-) -> Result<Vec<ListRow>, QuotesError> {
+) -> Result<Vec<(u32, ListRow)>, QuotesError> {
     let rows = sqlx::query_as!(
         ListColumns,
-        "SELECT business_id, withdrawn_at IS NOT NULL AS \"withdrawn!\", \
+        "SELECT shown_number AS \"shown_number!\", business_id, withdrawn_at IS NOT NULL AS \"withdrawn!\", \
          unavailable_at IS NOT NULL AS \"unavailable!\", format, amount_cents, low_cents, \
          high_cents, tier_names, tier_cents, period, setup_cents, hourly_rate_cents, hours_low, \
          hours_high, confirm_on_site, earliest_visit::text AS visit, visit_part FROM quotes.quote \
-         WHERE job_id = $1 AND confirmed ORDER BY received_at, business_id",
+         WHERE job_id = $1 AND confirmed ORDER BY shown_number",
         job
     )
     .fetch_all(db)
