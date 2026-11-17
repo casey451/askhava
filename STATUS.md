@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T20:37:48Z by runner a24dd0985474 (actions).
+Updated 2026-11-17T20:38:01Z by runner a24dd0985474 (actions).
 
-**Building: T602 in progress since 20:07Z; 408 of 570 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T106 in progress since 19:20Z; 408 of 570 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 408 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T602 claimed 20:07Z, lease until 23:07Z; lane 6: T106 claimed 19:20Z, lease until 23:20Z; lane 7: T594 claimed 19:39Z, lease until 23:30Z
+- **Lane:** lane 6: T106 claimed 19:20Z, lease until 23:20Z; lane 7: T594 claimed 19:39Z, lease until 23:30Z
 - **Week:** 29% used, 135.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:30Z, 7 min before this update
 - **Keeper:** last ran 20:28Z, next wake 22:41Z
@@ -20,6 +20,7 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T602 | privacy: the inbound email signature check refuses an out-of | MERGE_PENDING | 1 | 30 min | 20:37Z |  |
 | T597 | Runner (harness): the early merge-close step also pushes the | MERGE_PENDING | 1 | 26 min | 20:28Z |  |
 | T582 | quotes and messaging (harness): a late read-back confirm is  | MERGE_PENDING | 1 | 36 min | 20:13Z |  |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | BLOCKED | 2 | 68 min | 19:54Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
@@ -137,9 +138,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T602 (lease until 2026-11-17T23:07:35Z)
 - lane 6: T106 (lease until 2026-11-17T23:20:00Z)
 - lane 7: T594 (lease until 2026-11-17T23:30:32Z)
 
 ## Last usage reading
-- {"task": "T597", "at": "2026-11-17T20:28:00Z", "input_tokens": 109, "output_tokens": 32355, "cache_creation_input_tokens": 149227, "cache_read_input_tokens": 3624599}
+- {"task": "T602", "at": "2026-11-17T20:37:46Z", "cache_read_input_tokens": 622980, "output_tokens": 9964, "input_tokens": 42, "cache_creation_input_tokens": 52848}
