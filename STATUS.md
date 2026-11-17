@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T23:24:25Z by runner 9dd9cd236f2f (actions).
+Updated 2026-11-17T23:24:45Z by runner b1fe64c6fb5a (actions).
 
-**Idle since 23:23Z; 413 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 23:24Z; 414 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 413 of 582 build tasks (owner gates not counted)
+- **Tasks done:** 414 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 23:23Z (no task in progress)
+- **Lane:** idle since 23:24Z (no task in progress)
 - **Week:** 33% used, 129.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:24Z, 0 min before this update
 - **Keeper:** last ran 23:24Z, next wake 23:44Z
@@ -15,7 +15,7 @@ Updated 2026-11-17T23:24:25Z by runner 9dd9cd236f2f (actions).
 - BLOCKED T203: plan gap reported: PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be "at the top of the quote page". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/pr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T478 (since 2026-11-17T23:05:09Z, no attempt used; a plan change fixes it): T478: dependency T605 is DONE but its owned file app/businesses/src/digest_counts.rs is not on main; T478: dependency T605 is DONE but its owned file app/intake/src/not_covered_counts.rs is not on main; T478: dependency T605 is DONE but its owned file app/picks/src/digest_counts.rs is not on main; T478: dependency T605 is DONE but its owned file tests/integration/tests/digest_counts.rs is not on main
-- Strict plan check red: 11 problem(s) on tasks still to run (+177 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 18 problem(s) on tasks still to run (+183 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -29,7 +29,7 @@ Updated 2026-11-17T23:24:25Z by runner 9dd9cd236f2f (actions).
 | T106 | ops: /healthz and the web and worker liveness exits | MERGE_PENDING | 1 | 77 min | 20:38Z |  |
 | T602 | privacy: the inbound email signature check refuses an out-of | MERGE_PENDING | 1 | 30 min | 20:37Z |  |
 | T597 | Runner (harness): the early merge-close step also pushes the | done | 1 | 26 min | 20:28Z |  |
-| T582 | quotes and messaging (harness): a late read-back confirm is  | MERGE_PENDING | 1 | 36 min | 20:13Z |  |
+| T582 | quotes and messaging (harness): a late read-back confirm is  | done | 1 | 36 min | 20:13Z |  |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | BLOCKED | 2 | 68 min | 19:54Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | BLOCKED | 3 | 46 min | 19:24Z |  |
 | T605 | businesses, intake and picks: the leaving answers, not-cover | done | 1 | 46 min | 19:15Z |  |
@@ -94,7 +94,7 @@ Updated 2026-11-17T23:24:25Z by runner 9dd9cd236f2f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 671 · unstarted 64
-**Tasks merged (throughput only):** 413 of 578
+**Tasks merged (throughput only):** 414 of 582
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -130,7 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 56 of 190 done
+- stage 5: 57 of 190 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
