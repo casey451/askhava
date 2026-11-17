@@ -101,12 +101,12 @@ async fn a_confirm_after_the_cards_24_hours_is_moved_on(mut db: Db) {
     assert_eq!(late, Ok(Guarded::MovedOn));
     assert_eq!(shown_quotes(&mut db, id).await, Ok(vec![]));
     let status = current(&mut db, id).await.expect("status").status;
-    assert_eq!(status, JobStatus::Open);
+    assert_eq!(status.code(), "open");
     let inside = confirm_quote_at(&mut db, (id, a), at("04T07:59:59")).await;
     assert_eq!(inside, Ok(Guarded::Applied(())));
     assert_eq!(shown_quotes(&mut db, id).await, Ok(vec![a]));
     let status = current(&mut db, id).await.expect("status").status;
-    assert_eq!(status, JobStatus::QuotesReady);
+    assert_eq!(status.code(), "quotes_ready");
 }
 
 /// TXT-016, TXT-017, D-4052: the first quote queues no count event, a second shown quote (a form
