@@ -759,7 +759,7 @@ where
         let now = ended_clock.now();
         askhava_picks::api::run_pick_ended(pool, task, now)
     });
-    register_pick_notices(&mut registry, confirm);
+    register_pick_notices(&mut registry, confirm, Arc::clone(&clock));
     let pause_clock = Arc::clone(&clock);
     registry.register(askhava_payments::api::PAUSE_KIND, move |pool, _task| {
         let now = pause_clock.now();
@@ -779,15 +779,20 @@ where
 }
 
 /// `picks`' notices to the business: the pick notice with the worker's Confirm window and its end
-/// (PICK-019, PICK-037, T063) and the withdrawn-pick notice (PICK-032, CON-029, T330).
-fn register_pick_notices(registry: &mut Registry, confirm: askhava_picks::api::ConfirmSettings) {
+/// (PICK-019, PICK-037, T063), the window's end and its lapse on the worker clock (PICK-046,
+/// PICK-047, T491, D-3882) and the withdrawn-pick notice (PICK-032, CON-029, T330).
+fn register_pick_notices(
+    registry: &mut Registry,
+    confirm: askhava_picks::api::ConfirmSettings,
+    clock: Arc<dyn Clock>,
+) {
     registry.register(askhava_picks::api::PICK_MADE_KIND, move |pool, task| {
         askhava_picks::api::run_pick_notice(pool, confirm, task)
     });
-    registry.register(
-        askhava_picks::api::CONFIRM_ENDS_KIND,
-        askhava_picks::api::run_confirm_ends,
-    );
+    registry.register(askhava_picks::api::CONFIRM_ENDS_KIND, move |pool, task| {
+        let now = clock.now();
+        askhava_picks::api::run_confirm_ends_at(pool, task, now)
+    });
     registry.register(
         askhava_picks::api::PICK_WITHDRAWN_KIND,
         askhava_picks::api::run_pick_withdrawn,
