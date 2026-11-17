@@ -1,19 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-17T10:15:44Z by runner e49b0267f860 (actions).
+Updated 2026-11-17T10:16:03Z by runner e49b0267f860 (actions).
 
-**Building: T204 in progress since 09:58Z; 392 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T489 in progress since 10:15Z; 392 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 392 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T204 claimed 09:58Z, lease until 12:58Z; lane 4: T112 claimed 10:03Z, lease until 13:03Z; lane 7: T446 claimed 10:02Z, lease until 13:02Z
-- **Week:** 18% used, 155.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:09Z, 5 min before this update
+- **Lane:** lane 1: T489 claimed 10:15Z, lease until 13:15Z; lane 2: T204 claimed 09:58Z, lease until 12:58Z; lane 4: T112 claimed 10:03Z, lease until 13:03Z; lane 7: T446 claimed 10:02Z, lease until 13:02Z
+- **Week:** 18% used, 154.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 10:09Z, 6 min before this update
 - **Keeper:** last ran 10:09Z, next wake 13:00Z
 
 ## Needs attention
 - PLAN GAP T321 (since 2026-11-17T09:31:01Z, no attempt used; a plan change fixes it): T321: dependency T107 is DONE but its owned file app/messaging/src/consent_alerts.rs is not on main; T321: dependency T107 is DONE but its owned file tests/integration/tests/consent_records_alerts.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T572 (since 2026-11-17T10:15:39Z, no attempt used; a plan change fixes it): T572: dependency T570 is DONE but its owned file tests/integration/tests/close_by_text.rs is not on main
 - Strict plan check red: 5 problem(s) on tasks still to run (+145 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
 ## Last 24 hours
@@ -121,7 +122,7 @@ Updated 2026-11-17T10:15:44Z by runner e49b0267f860 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T09:56:31Z (week)): week: 38.1M used, 155.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T05:21:19Z.
+- Pacing (session_reading 2026-11-17T10:09:14Z (week)): week: 39.1M used, 154.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T03:12:37Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -136,7 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T489 (lease until 2026-11-17T13:15:39Z)
 - lane 2: T204 (lease until 2026-11-17T12:58:14Z)
 - lane 4: T112 (lease until 2026-11-17T13:03:48Z)
 - lane 7: T446 (lease until 2026-11-17T13:02:21Z)
