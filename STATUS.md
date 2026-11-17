@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T01:40:43Z by runner fdfeb78d6a6e (actions).
+Updated 2026-11-17T01:45:56Z by runner dde16ca377f9 (manual).
 
 **Building: T103 in progress since 00:02Z; 377 of 556 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,11 @@ Updated 2026-11-17T01:40:43Z by runner fdfeb78d6a6e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T103 claimed 00:02Z, lease until 04:40Z; lane 2: T107 claimed 01:22Z, lease until 04:22Z; lane 5: T469 claimed 00:32Z, lease until 04:01Z
 - **Week:** 10% used, 172.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:36Z, 4 min before this update
+- **Last run:** 01:40Z, 4 min before this update
 - **Keeper:** last ran 01:36Z, next wake 03:48Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 17 problem(s) on tasks still to run (+138 on DONE tasks); first: T103: stored context_pct 25% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -65,39 +64,37 @@ Updated 2026-11-17T01:40:43Z by runner fdfeb78d6a6e (actions).
 | T531 | messaging and server: OPS-046's first-six-weeks email figure | done | 1 | 36 min | 13:01Z |  |
 | T100 | Stage 4 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 39 min | 08:16Z |  |
 | T517 | Stage 4 cleanup, part 1: duplicate functions in server, port | proof_missing | 1 | 84 min | 03:25Z |  |
-| T099 | Journey J2 (business) and its variants, keyboard-only, with  | done | 2 | 92 min | 01:45Z | PLAN GAP: tests/e2e/webserver.ts:132 (T492/T227 file, forbidden to T099 by prompt line 126) gives the keyed binary a ran |
-| T516 | Tooling (harness): scripts/check_duplicates.py, the duplicat | done | 3 | 30 min | 01:42Z | Second review of head 85baf148e5f34e6d4d48b8c0a54b3e8ff92fdbdd found FINDINGS after the one fix round: scripts/check_dup |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 328 of 733 (44.7%) · partial 292 · unstarted 113
-**Tasks merged (throughput only):** 377 of 541
+**Requirements verified:** 288 of 733 (39.3%) · partial 332 · unstarted 113
+**Tasks merged (throughput only):** 377 of 556
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 21 | 10 | 4 | 35 |
+| accessibility | 20 | 11 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 23 | 33 | 2 | 58 |
-| calls | 14 | 10 | 1 | 25 |
-| consent | 15 | 16 | 4 | 35 |
-| fees | 24 | 27 | 1 | 52 |
-| intake | 30 | 10 | 3 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
-| licensing | 39 | 9 | 0 | 48 |
-| lifecycle | 27 | 1 | 0 | 28 |
-| messaging | 26 | 17 | 2 | 45 |
+| businesses | 21 | 35 | 2 | 58 |
+| calls | 11 | 13 | 1 | 25 |
+| consent | 14 | 17 | 4 | 35 |
+| fees | 19 | 32 | 1 | 52 |
+| intake | 28 | 12 | 3 | 43 |
+| job-cards | 19 | 5 | 0 | 24 |
+| licensing | 37 | 11 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 20 | 23 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 12 | 17 | 2 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 36 | 19 | 1 | 56 |
+| privacy | 10 | 19 | 2 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 33 | 22 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 11 | 39 | 5 | 55 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 1 | 20 | 14 | 35 |
 | website | 0 | 14 | 14 | 28 |
-| wording | 2 | 9 | 21 | 32 |
+| wording | 1 | 10 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
