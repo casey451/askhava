@@ -40,7 +40,7 @@ use askhava_payments::api::{
 };
 use askhava_privacy::api::{Vault, read_for_pick_code};
 use askhava_quotes::api::{
-    Period, Price, VisitSchedule, page_quotes, quoted_prices, visit_schedule_of,
+    Period, Price, VisitSchedule, page_quotes, quoted_prices, shown_numbers, visit_schedule_of,
 };
 use jiff::Timestamp;
 use jiff::tz::{TimeZone, offset};
@@ -248,25 +248,94 @@ fn version(template: &str, language: Language, body: &str) -> String {
     format!("{template}:{code}:{hash}")
 }
 
-/// One job as the plan sees it: stage, number, page quotes, waiting pick and Terms line.
-async fn view(tx: &mut PgConnection, job: Uuid, paused: bool) -> Result<JobView, PicksError> {
+/// One channel's numbering of a job's quotes: at index `n - 1`, the business shown as number `n`
+/// and whether it can be picked now; `None` for a number no quote holds.
+type Numbering = Vec<Option<(Uuid, bool)>>;
+
+/// The quote page's numbering until T441: its place in `quotes::api::page_quotes`' arrival order
+/// (PICK-008, D-084, D-3999).
+async fn page_numbering(tx: &mut PgConnection, job: Uuid) -> Result<Numbering, PicksError> {
+    let quotes = page_quotes(tx, job).await.map_err(|_| PicksError::Quotes)?;
+    Ok(quotes
+        .iter()
+        .map(|q| Some((q.business, !q.unavailable)))
+        .collect())
+}
+
+/// PICK-008, PICK-016, D-2632, D-3999: the texts' numbering, the shown number every LIST and lapse
+/// text gives a quote (`quotes::api::shown_numbers`), which never changes; a number is pickable
+/// while its quote is on the page and available (confirmed, not withdrawn, not marked).
+async fn shown_numbering(tx: &mut PgConnection, job: Uuid) -> Result<Numbering, PicksError> {
+    let shown = shown_numbers(tx, job)
+        .await
+        .map_err(|_| PicksError::Quotes)?;
+    let page = page_numbering(tx, job).await?;
+    let mut out: Numbering = Vec::new();
+    for (number, business) in shown {
+        let at = usize::try_from(number).ok().and_then(|n| n.checked_sub(1));
+        let at = at.ok_or(PicksError::Quotes)?;
+        if out.len() <= at {
+            out.resize(at + 1, None);
+        }
+        let open = page.contains(&Some((business, true)));
+        out[at] = Some((business, open));
+    }
+    Ok(out)
+}
+
+/// The business `numbering` gives number `quote`, if any.
+fn business_at(numbering: &[Option<(Uuid, bool)>], quote: usize) -> Option<Uuid> {
+    let at = quote.checked_sub(1)?;
+    numbering.get(at).copied().flatten().map(|(b, _)| b)
+}
+
+/// PICK-008, D-2632: the business a text's "<quote> YES" names on `job`, by its shown number.
+pub(crate) async fn shown_business(
+    tx: &mut PgConnection,
+    job: Uuid,
+    quote: usize,
+) -> Result<Option<Uuid>, PicksError> {
+    Ok(business_at(&shown_numbering(tx, job).await?, quote))
+}
+
+/// One job as a text pick's plan sees it, numbered by shown number (D-2632, T564).
+pub(crate) async fn view(
+    tx: &mut PgConnection,
+    job: Uuid,
+    paused: bool,
+) -> Result<JobView, PicksError> {
+    let numbering = shown_numbering(tx, job).await?;
+    view_in(tx, (job, paused), &numbering).await
+}
+
+/// One job as the plan sees it in `numbering`: stage, number, quotes, waiting pick and Terms line.
+/// The waiting pick's number is its business's number in `numbering`, never the stored
+/// `quote_number` (a page place until T441, D-3999).
+async fn view_in(
+    tx: &mut PgConnection,
+    (job, paused): (Uuid, bool),
+    numbering: &[Option<(Uuid, bool)>],
+) -> Result<JobView, PicksError> {
     let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
     let number = job_number(tx, job).await.map_err(|_| PicksError::Job)?;
-    let quotes = page_quotes(tx, job)
-        .await
-        .map_err(|_| PicksError::Quotes)?
-        .iter()
-        .map(|q| !q.unavailable)
-        .collect();
     let waiting = models::waiting_pick(tx, job).await?;
+    let waiting = waiting.and_then(|(_, _, business)| {
+        let at = numbering
+            .iter()
+            .position(|q| q.is_some_and(|(b, _)| b == business))?;
+        Some(at + 1)
+    });
     Ok(JobView {
         job,
         number,
         stage: stage(status),
         paused,
         terms_sent: models::terms_sent(tx, job).await?,
-        quotes,
-        waiting: waiting.and_then(|w| usize::try_from(w.1).ok()),
+        quotes: numbering
+            .iter()
+            .map(|q| q.is_some_and(|(_, open)| open))
+            .collect(),
+        waiting,
     })
 }
 
@@ -336,7 +405,9 @@ async fn terms_first(
     Ok(None)
 }
 
-/// Picks quote `quote` of `job` by text (PICK-015, PICK-031, PICK-032): the same quote again only
+/// Picks quote `quote` of `job` by text (PICK-015, PICK-031, PICK-032), `quote` its shown number
+/// (PICK-008, D-2632): a waiting pick of the business that number names (compared by business,
+/// never by stored number, D-3999) is the same quote; the same quote again only
 /// repeats the reply; another quote is [`place`]d, but a tiers quote, whose package a text cannot
 /// name, stores nothing and gets [`package_reply`] (PICK-053, D-2332). A waiting pick that is no
 /// longer waiting when it is ended (the business confirmed it meanwhile) is
@@ -348,12 +419,15 @@ async fn pick_quote(
     quote: usize,
 ) -> Result<Option<Uuid>, PicksError> {
     let input = out.input;
+    let Some(business) = shown_business(tx, job.job, quote).await? else {
+        return no_quote(tx, out, job, quote).await;
+    };
     let waiting = models::waiting_pick(tx, job.job).await?;
     let pick = match waiting {
-        Some((id, q, _)) if usize::try_from(q).ok() == Some(quote) => id,
+        Some((id, _, b)) if b == business => id,
         _ if matches!(
-            quote_price(tx, job.job, quote).await?,
-            Some((_, Price::Tiers(_)))
+            quote_price(tx, job.job, business).await?,
+            Some(Price::Tiers(_))
         ) =>
         {
             package_reply(tx, out, job, quote).await?;
@@ -361,7 +435,8 @@ async fn pick_quote(
         }
         _ => {
             let by = (input.actor, input.at);
-            let placed = place(tx, (job, waiting), (quote, None), by, Some(input.inbox)).await?;
+            let chosen = (business, None);
+            let placed = place(tx, (job, waiting), chosen, by, Some(input.inbox)).await?;
             let Some(pick) = placed else {
                 return no_quote(tx, out, job, quote).await;
             };
@@ -429,35 +504,26 @@ async fn package_reply(
     ended.map_err(|_| PicksError::Database)
 }
 
-/// The business and stored price of quote `quote` (1-based, in page order) on `job`; none when
-/// the page has no such quote or its unwithdrawn price does not read back.
+/// The stored price of `business`'s quote on `job`; none when it is withdrawn or its price does
+/// not read back.
 async fn quote_price(
     tx: &mut PgConnection,
     job: Uuid,
-    quote: usize,
-) -> Result<Option<(Uuid, Price)>, PicksError> {
-    let quotes = page_quotes(tx, job).await.map_err(|_| PicksError::Quotes)?;
-    let Some(business) = quote
-        .checked_sub(1)
-        .and_then(|i| quotes.get(i))
-        .map(|q| q.business)
-    else {
-        return Ok(None);
-    };
+    business: Uuid,
+) -> Result<Option<Price>, PicksError> {
     let prices = quoted_prices(tx, job)
         .await
         .map_err(|_| PicksError::Quotes)?;
     Ok(prices
         .into_iter()
         .find(|q| q.business == business && !q.withdrawn)
-        .and_then(|q| q.price)
-        .map(|price| (business, price)))
+        .and_then(|q| q.price))
 }
 
 /// The pick core both channels use (PICK-015, PICK-032, PICK-045, D-1516): ends the `waiting`
 /// pick of `job` as `replaced` with its business's withdrawal notice, moves the job from Quotes
 /// ready to Awaiting confirm (a job already there stays, so the Confirm window does not restart),
-/// and stores the new pick of `quote` with its audit row and pick notice; `inbox` is the text
+/// and stores the new pick of `business`'s quote with its audit row and pick notice; `inbox` is the text
 /// pick's inbound text, `None` on the page (channel `page`); `tier` is the package chosen on a
 /// tiers quote (D-2332). The fee is fixed with the pick (`new_pick`, D-1871); no free win or
 /// release here. All of it runs in a savepoint: when `new_pick` finds the quote withdrawn or
@@ -465,7 +531,7 @@ async fn quote_price(
 async fn place(
     tx: &mut PgConnection,
     view: (&JobView, Option<(Uuid, i32, Uuid)>),
-    quote: (usize, Option<&ChosenTier>),
+    quote: (Uuid, Option<&ChosenTier>),
     by: (Actor, Timestamp),
     inbox: Option<Uuid>,
 ) -> Result<Option<Uuid>, PicksError> {
@@ -488,7 +554,7 @@ async fn place(
 async fn moved_pick(
     tx: &mut PgConnection,
     (job, waiting): (&JobView, Option<(Uuid, i32, Uuid)>),
-    quote: (usize, Option<&ChosenTier>),
+    quote: (Uuid, Option<&ChosenTier>),
     (actor, at): (Actor, Timestamp),
     inbox: Option<Uuid>,
 ) -> Result<Option<Uuid>, PicksError> {
@@ -517,20 +583,25 @@ async fn moved_pick(
 /// emergency pick on default facts raises one [`FEE_FACTS_ALERT`]. PICK-008, PRIV-005, D-2912:
 /// under the job's row lock ([`moved_pick`] takes it) it re-reads the quote after the move, so a
 /// withdrawal committed after the caller's check is seen; a quote now withdrawn or unavailable
-/// stores nothing and is `None`.
+/// stores nothing and is `None`. The pick is bound to `business`, never to a list place (D-2632):
+/// it stores the page place that business holds now as `quote_number` (T441 moves it, D-3999),
+/// and a business no longer on the page stores nothing.
 async fn new_pick(
     tx: &mut PgConnection,
-    (job, (quote, tier), inbox): (Uuid, (usize, Option<&ChosenTier>), Option<Uuid>),
+    (job, (business, tier), inbox): (Uuid, (Uuid, Option<&ChosenTier>), Option<Uuid>),
     (actor, at): (Actor, Timestamp),
 ) -> Result<Option<Uuid>, PicksError> {
-    let quotes = page_quotes(tx, job).await.map_err(|_| PicksError::Quotes)?;
-    let shown = quote.checked_sub(1).and_then(|i| quotes.get(i));
-    let shown = shown.ok_or(PicksError::Quotes)?;
-    if shown.unavailable {
+    let page = page_numbering(tx, job).await?;
+    let Some(place) = page
+        .iter()
+        .position(|q| q.is_some_and(|(b, _)| b == business))
+    else {
+        return Ok(None);
+    };
+    if page[place] != Some((business, true)) {
         return Ok(None);
     }
-    let business = shown.business;
-    let number = i32::try_from(quote).map_err(|_| PicksError::Quotes)?;
+    let number = i32::try_from(place + 1).map_err(|_| PicksError::Quotes)?;
     let (fee, unsettled) = picked_fee(tx, (job, business), tier).await?;
     let row = (job, business, number, inbox);
     let pick = models::insert_pick(tx, row, at).await?;
@@ -710,15 +781,22 @@ const fn fee_period(period: Period, schedule: Option<VisitSchedule>) -> Option<F
 }
 
 /// The quote number of the pick on `job` waiting for Confirm, if any: the page checks it before
-/// sending a code, so picking that quote again sends none (PICK-032, D-1516).
+/// sending a code, so picking that quote again sends none (PICK-032, D-1516). It is the page place
+/// the waiting pick's business holds now, compared by business (PICK-008, D-3999).
 ///
 /// # Errors
 ///
 /// [`PicksError::Database`].
 pub async fn waiting_quote(db: &mut PgConnection, job: Uuid) -> Result<Option<usize>, PicksError> {
+    let numbering = page_numbering(db, job).await?;
     Ok(models::waiting_pick(db, job)
         .await?
-        .and_then(|(_, quote, _)| usize::try_from(quote).ok()))
+        .and_then(|(_, _, business)| {
+            let at = numbering
+                .iter()
+                .position(|q| q.is_some_and(|(b, _)| b == business))?;
+            Some(at + 1)
+        }))
 }
 
 /// What [`page_pick`] did.
@@ -764,35 +842,80 @@ async fn pick_on_page(
     (quote, tier): (usize, Option<&ChosenTier>),
     (actor, at): (Actor, Timestamp),
 ) -> Result<PagePick, PicksError> {
-    let Some(view) = open_view(tx, (job, paused), quote).await? else {
+    let numbering = page_numbering(tx, job).await?;
+    let Some((view, business)) = open_view(tx, (job, paused), quote, &numbering).await? else {
         return Ok(PagePick::Taken);
     };
-    let waiting = models::waiting_pick(tx, job).await?;
-    if let Some((id, q, _)) = waiting
-        && usize::try_from(q).ok() == Some(quote)
+    bound_place(tx, (&view, business, tier), (actor, at)).await
+}
+
+/// PICK-008, PICK-032, D-2632, D-3999: picks `business`'s quote on `view`'s job. A waiting pick
+/// of the same business (and, when one is named, the same package) is [`PagePick::Same`], compared
+/// by business, never by the stored number; anything else is [`place`]d.
+async fn bound_place(
+    tx: &mut PgConnection,
+    (view, business, tier): (&JobView, Uuid, Option<&ChosenTier>),
+    (actor, at): (Actor, Timestamp),
+) -> Result<PagePick, PicksError> {
+    let waiting = models::waiting_pick(tx, view.job).await?;
+    if let Some((id, _, b)) = waiting
+        && b == business
         && (tier.is_none() || stored_tier(tx, id).await?.as_ref() == tier)
     {
         return Ok(PagePick::Same(id));
     }
-    let placed = place(tx, (&view, waiting), (quote, tier), (actor, at), None).await?;
+    let placed = place(tx, (view, waiting), (business, tier), (actor, at), None).await?;
     Ok(placed.map_or(PagePick::Taken, PagePick::Picked))
 }
 
-/// PICK-012, PICK-045, CON-029: `job`'s view when quote `quote` can be picked on the page now
-/// (not paused, the quote open, the status taking a pick); `None` is [`PagePick::Taken`].
+/// PICK-008, PICK-016, PRIV-005, TERMS-016, D-2632, D-3999: the business-bound pick of shown
+/// number `quote` on `job`, `business` the business that number was shown for (from the LIST or
+/// lapse text, or a form carrying it, T441): [`PagePick::Taken`] when that number no longer maps
+/// to that business or can't be picked now, so nothing is stored, notified or charged for another
+/// business; otherwise as [`page_pick`] (channel `page`, the stored number the business's page
+/// place until T441).
+///
+/// # Errors
+///
+/// As [`page_pick`].
+pub async fn bound_pick(
+    tx: &mut PgConnection,
+    (job, paused): (Uuid, bool),
+    (quote, business): (usize, Uuid),
+    actor: Actor,
+    at: Timestamp,
+) -> Result<PagePick, PicksError> {
+    let numbering = shown_numbering(tx, job).await?;
+    let Some((view, shown)) = open_view(tx, (job, paused), quote, &numbering).await? else {
+        return Ok(PagePick::Taken);
+    };
+    if shown != business {
+        return Ok(PagePick::Taken);
+    }
+    bound_place(tx, (&view, business, None), (actor, at)).await
+}
+
+/// PICK-012, PICK-045, CON-029: `job`'s view in `numbering` and the business of number `quote`
+/// when it can be picked now (not paused, the quote open, the status taking a pick); `None` is
+/// [`PagePick::Taken`].
 async fn open_view(
     tx: &mut PgConnection,
     (job, paused): (Uuid, bool),
     quote: usize,
-) -> Result<Option<JobView>, PicksError> {
+    numbering: &[Option<(Uuid, bool)>],
+) -> Result<Option<(JobView, Uuid)>, PicksError> {
     let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
-    let view = view(tx, job, paused).await?;
     let open = quote
         .checked_sub(1)
-        .and_then(|i| view.quotes.get(i))
-        .copied()
-        .unwrap_or(false);
-    Ok((!paused && open && status.takes_pick()).then_some(view))
+        .and_then(|i| numbering.get(i).copied().flatten());
+    let Some((business, true)) = open else {
+        return Ok(None);
+    };
+    if paused || !status.takes_pick() {
+        return Ok(None);
+    }
+    let view = view_in(tx, (job, paused), numbering).await?;
+    Ok(Some((view, business)))
 }
 
 /// The package stored on `pick`, if any (migration 0179).
@@ -866,16 +989,17 @@ pub async fn page_pick_tier(
     actor: Actor,
     at: Timestamp,
 ) -> Result<TierPick, PicksError> {
-    if open_view(tx, (job, paused), quote).await?.is_none() {
+    let numbering = page_numbering(tx, job).await?;
+    let Some((_, business)) = open_view(tx, (job, paused), quote, &numbering).await? else {
         return Ok(TierPick::Page(PagePick::Taken));
-    }
-    let chosen = match quote_price(tx, job, quote).await? {
-        Some((_, Price::Tiers(tiers))) if tier.price_in(&tiers).is_none() => {
+    };
+    let chosen = match quote_price(tx, job, business).await? {
+        Some(Price::Tiers(tiers)) if tier.price_in(&tiers).is_none() => {
             return Ok(TierPick::Choose(
                 tiers.into_iter().map(|(n, _)| n).collect(),
             ));
         }
-        Some((_, Price::Tiers(_))) => Some(tier),
+        Some(Price::Tiers(_)) => Some(tier),
         _ => None,
     };
     pick_on_page(tx, (job, paused), (quote, chosen), (actor, at))

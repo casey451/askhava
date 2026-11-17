@@ -47,7 +47,7 @@ use askhava_messaging::api::{
 };
 use askhava_picks::api::{PICK_LAPSED_TEMPLATE, ended_businesses, lapse_plan, lapse_text};
 use askhava_privacy::api::Vault;
-use askhava_quotes::api::{list_lines, page_quotes};
+use askhava_quotes::api::{list_lines, page_quotes, shown_numbers};
 use jiff::Timestamp;
 use secrecy::SecretString;
 use serde_json::{Value, json};
@@ -455,7 +455,9 @@ fn id_value(values: &Value, key: &str) -> Option<Uuid> {
 /// business by its public name, with the TXT-031 lines (`quotes::api::list_lines`) of the quotes
 /// `picks::api::lapse_plan` leaves her, never the ended business's own nor any business whose
 /// pick on the job already ended (`picks::api::ended_businesses`), and `link` her quote page;
-/// with none left it is the "we'll text you" text.
+/// with none left it is the "we'll text you" text. PICK-008, D-2632, D-3999: each pickable page
+/// quote is numbered by its business's shown number before `lapse_plan`, so `others` and the
+/// lines use the one numbering a "<number> YES" picks by.
 async fn lapsed_body(
     tx: &mut PgConnection,
     text: &JobText,
@@ -469,10 +471,12 @@ async fn lapsed_body(
     let ended = ended_businesses(&mut *tx, text.job)
         .await
         .map_err(|_| IntakeError::Database)?;
-    let pickable: Vec<(u32, Uuid)> = (1..)
-        .zip(page)
-        .filter(|(_, q)| !q.unavailable)
-        .map(|(n, q)| (n, q.business))
+    let shown = shown_numbers(&mut *tx, text.job)
+        .await
+        .map_err(|_| IntakeError::Quotes)?;
+    let pickable: Vec<(u32, Uuid)> = shown
+        .into_iter()
+        .filter(|(_, b)| page.iter().any(|q| q.business == *b && !q.unavailable))
         .collect();
     let ids: Vec<Uuid> = std::iter::once(business)
         .chain(pickable.iter().map(|(_, b)| *b))
