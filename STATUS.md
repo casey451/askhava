@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T14:20:20Z by runner 12946a3e0e2f (actions).
+Updated 2026-11-17T14:20:43Z by runner 12946a3e0e2f (actions).
 
-**Building: T471 in progress since 13:32Z; 396 of 561 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 14:20Z; 396 of 561 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 396 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T471 claimed 13:32Z, lease until 17:14Z
+- **Lane:** idle since 14:20Z (no task in progress)
 - **Week:** 21% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:15Z, 5 min before this update
 - **Keeper:** last ran 14:08Z, next wake 16:35Z
@@ -18,6 +18,7 @@ Updated 2026-11-17T14:20:20Z by runner 12946a3e0e2f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T471 | picks and intake: her "backup has your pick" text on every p | MERGE_PENDING | 1 | 47 min | 14:20Z |  |
 | T321 | messaging: the consent-purge functions, the inbound-text clo | MERGE_PENDING | 1 | 49 min | 13:42Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 2 | 94 min | 13:39Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T363 | portals: the served pick and its code step apply the per-IP  | MERGE_PENDING | 1 | 62 min | 13:38Z |  |
@@ -142,7 +143,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 6: T471 (lease until 2026-11-17T17:14:57Z)
 
 ## Last usage reading
-- {"task": "T321", "at": "2026-11-17T13:42:05Z", "output_tokens": 54142, "cache_read_input_tokens": 6206460, "input_tokens": 153, "cache_creation_input_tokens": 182497}
+- {"task": "T471", "at": "2026-11-17T14:20:18Z", "output_tokens": 41427, "cache_creation_input_tokens": 174805, "cache_read_input_tokens": 4427205, "input_tokens": 122}
