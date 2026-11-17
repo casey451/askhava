@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T01:23:32Z by runner b54a290f44c9 (actions).
+Updated 2026-11-17T01:23:56Z by runner b54a290f44c9 (actions).
 
 **Building: T103 in progress since 00:02Z; 377 of 541 done; week 9% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 377 of 541 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:45Z; lane 2: T107 claimed 01:22Z, lease until 04:22Z; lane 5: T469 claimed 00:32Z, lease until 04:01Z; lane 7: T221 claimed 22:36Z, lease until 03:57Z
+- **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:45Z; lane 2: T107 claimed 01:22Z, lease until 04:22Z; lane 5: T469 claimed 00:32Z, lease until 04:01Z
 - **Week:** 9% used, 172.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:22Z, 0 min before this update
+- **Last run:** 01:22Z, 1 min before this update
 - **Keeper:** last ran 01:21Z, next wake 03:47Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-17T01:23:32Z by runner b54a290f44c9 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T221 | site: the terms, privacy policy, SMS terms, homeowner data a | MERGE_PENDING | 1 | 2 h 47 min | 01:23Z |  |
 | T320 | ops: a check that runs on a schedule raises its alert once w | MERGE_PENDING | 2 | 78 min | 01:13Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T373 | businesses: changing a phone's number ends that phone's text | MERGE_PENDING | 2 | 42 min | 01:04Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
 | T111 | Draft homeowner and business terms with every required claus | done | 4 | 34 min | 23:57Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
@@ -119,7 +120,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T103 (lease until 2026-11-17T03:45:28Z)
 - lane 2: T107 (lease until 2026-11-17T04:22:20Z)
 - lane 5: T469 (lease until 2026-11-17T04:01:32Z)
-- lane 7: T221 (lease until 2026-11-17T03:57:44Z)
 
 ## Last usage reading
-- {"task": "T320", "at": "2026-11-17T01:13:00Z", "cache_read_input_tokens": 1471939, "output_tokens": 14733, "cache_creation_input_tokens": 109381, "input_tokens": 86}
+- {"task": "T221", "at": "2026-11-17T01:23:31Z", "input_tokens": 420, "output_tokens": 130553, "cache_creation_input_tokens": 428679, "cache_read_input_tokens": 18351949}
