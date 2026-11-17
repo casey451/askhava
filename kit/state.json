@@ -47457,12 +47457,12 @@
      }
     }
    ],
-   "reviewed_sha": "2a0bca4d1f2cfd3911c1d136fac9caf356b099dc",
+   "reviewed_sha": "c40b916dd3cb9615ca3731a0ff61d5dee7647131",
    "review_lease": {
     "task": "T373",
-    "session": "actions-43970446855",
-    "expires": "2026-11-17T02:31:51Z",
-    "lane": "5"
+    "session": "actions-43985704576",
+    "expires": "2026-11-17T03:59:43Z",
+    "lane": "3"
    },
    "branch": "claude/task/T373-phone-change-ends-consent",
    "auto_merge": {
@@ -47470,22 +47470,22 @@
     "why": "auto-merge on #910 (gh pr merge)",
     "head": "2a0bca4d1f2cfd3911c1d136fac9caf356b099dc"
    },
-   "update_merges": [
-    {
-     "from": "aeb3a925ad17ab07eb79ea8bc8534b307abcf820",
-     "to": "2a0bca4d1f2cfd3911c1d136fac9caf356b099dc",
-     "main": "7b601a2f6a07abe315864b077d3541cc305fad2f",
-     "how": "hand-in",
-     "at": "2026-11-16T23:55:46Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-17T00:02:28Z",
    "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.21s\nstand-ins listening on http://127.0.0.1:4010\n{\"timestamp\":\"2026-11-16T23:59:07.387039Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":10,\"kind\":\"ops.no_handler_check\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-16T23:59:07.389056Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":5,\"kind\":\"messaging.send_due\",\"outcome\":\"Ok(Retry(2026-11-16T23:59:37.378305606Z))\",\"target\":\"askhava_core::tasks\"\n{\"timestamp\":\"2026-11-16T23:59:07.392323Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1,\"kind\":\"ops.offdb_verify\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\nRunning 68 tests using 1 worker\n  \u2713   1 tests/e2e/action_links_served.spec.ts:142:1 \u203a TD-SEC-67: the quote form and the Hold page open in a browser and use nothing (404ms)\n  \u2713   2 tests/e2e/action_links_served.spec.ts:156:1 \u203a TD-SEC-67: a quote form POST past admit_quote's per-business limit stores nothing (352ms)\n  \u2718   3 tests/e2e/action_links_served.spec.ts:170:1 \u203a TD-SEC-67: a signed-in owner's Ask about a charge link answers with the charge once and opens one help request (110ms)\n##[error]  1) tests/e2e/action_links_served.spec.ts:170:1 \u203a TD-SEC-67: a signed-in owner's Ask about a charge link answers with the charge once and opens one help request \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     910
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "3059b1432431ef36030c15a785d8253b10a020d0",
+     "to": "c40b916dd3cb9615ca3731a0ff61d5dee7647131",
+     "main": "67f601a86f9723e80e3fa4400ae4f911b4cc4070",
+     "how": "hand-in",
+     "at": "2026-11-17T01:04:12Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T375",
@@ -70085,7 +70085,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T01:01:32Z",
+ "updated_at": "2026-11-17T01:04:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -70183,7 +70183,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "08bbf6a75b00384ca3de8b66270829409ea9d17d",
+ "runner_sha": "3059b1432431ef36030c15a785d8253b10a020d0",
  "starter": "actions",
  "smoke_runs": [
   {
