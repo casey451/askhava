@@ -1180,8 +1180,13 @@ def _start_smoke(state: State, env: Env, now: datetime, ancestry: int = 0) -> tu
     refuses once a result exists) and the green stands. With no own smoke and no same-head green, the last real green
     on an ancestor at most `ancestry` first-parent commits back stands when every commit since is a DONE task's
     squash merge, or a merge whose identical tree passed `Ci`, `Twin` and `Ally` (D-3156), that nothing doubts
-    (`_ancestry_reuse`, D-3058); any doubt or error runs the smoke."""
+    (`_ancestry_reuse`, D-3058); any doubt or error runs the smoke. D-4180: first, this job's own smoke of an
+    ancestor A that would be that base once green (`_keep_ancestor_smoke`) is kept rather than stopped and its
+    verdict recorded on A; a timeout or one still running ends this call there, before `settle_background_smoke`."""
     head = env.main_head()
+    state, verdict = _keep_ancestor_smoke(state, env, now, head, ancestry)
+    if verdict is not None:
+        return state, False, verdict
     settle = getattr(env, "settle_background_smoke", None)
     if callable(settle):
         settle(head)  # a smoke of a head main has left is stopped first, so a reuse may stand (D-2560)
@@ -1202,6 +1207,89 @@ def _start_smoke(state: State, env: Env, now: datetime, ancestry: int = 0) -> tu
     run = {"sha": head, "ok": True, "at": st.iso(now), "why": f"start routine (ancestry reuse of {base[:12]}, {since})",
            "reused": since, "base": base}
     return dict(state, smoke_runs=[*state.get("smoke_runs", [])[-19:], run]), True, head
+
+
+def _keep_ancestor_smoke(state: State, env: Env, now: datetime, head: str, limit: int) -> tuple[State, str | None]:
+    """D-4180: when this job's own smoke is for an ancestor A of `head` (`own_smoke_state`) and `head` has neither
+    a same-head nor an ancestry reuse standing now but A qualifies (`_ancestor_qualifies`), the smoke is kept and
+    collected (`collect_own_smoke`). Still running: (state, A), `smoke_pending`, nothing recorded. Finished: its
+    verdict is recorded as a real run on A (`_record_ancestor_run`); a timeout or a smoke lost without a result
+    gives (state, A) with `smoke_timed_out`; a green or red gives (state, None), so the start routine goes on as
+    before: a green on A makes the ancestry reuse stand, a red on A doubts it and the head is smoked. A red on A
+    never sets `main` red. Anything else, an env without the readers included: (state, None), unchanged."""
+    read, collect = getattr(env, "own_smoke_state", None), getattr(env, "collect_own_smoke", None)
+    if limit < 1 or not callable(read) or not callable(collect):
+        return state, None
+    own = read(head)
+    sha = str(own.get("sha") or "") if isinstance(own, dict) else ""
+    if not sha or sha == head or _reuse_stands(state, env, head, now, limit):
+        return state, None
+    if not _ancestor_qualifies(state, env, head, sha, limit):
+        return state, None
+    ok, _ = collect(own)
+    if _smoke_pending(env):
+        return state, sha
+    state = _record_ancestor_run(state, env, now, head, sha, ok)
+    return state, (sha if not ok and _smoke_timed_out(env) else None)
+
+
+def _reuse_stands(state: State, env: Env, head: str, now: datetime, limit: int) -> bool:
+    """Whether `head` has a same-head reuse (D-2560) or an ancestry reuse (D-3058) standing now."""
+    if st.reusable_smoke(state, head, now) is not None and not _head_doubted(env, head):
+        return True
+    return _ancestry_reuse(state, env, head, now, limit) is not None
+
+
+def _ancestor_qualifies(state: State, env: Env, head: str, sha: str, limit: int) -> bool:
+    """Whether `sha` would be the ancestry reuse's base for `head` once a fresh real green is recorded on it (D-4180):
+    `st.ancestry_pending` over `main_first_parents(head, limit + 1)` with `green_twin_tree` as the proof, and
+    `_head_doubted` holds for no commit from the head to `sha`, both included. Any error is False."""
+    parents, twin = getattr(env, "main_first_parents", None), getattr(env, "green_twin_tree", None)
+    if not callable(parents):
+        return False
+    try:
+        chain = list(parents(head, limit + 1) or [])
+        if not chain or chain[0] != head:
+            return False
+        if not st.ancestry_pending(state, chain, sha, st.done_merges(state), limit, twin if callable(twin) else None):
+            return False
+        return not any(_head_doubted(env, c) for c in chain[: chain.index(sha) + 1])
+    except Exception:  # noqa: BLE001  # reason: an unreadable chain, state or check stops the ancestor's smoke as before (D-4180)
+        return False
+
+
+def _record_ancestor_run(state: State, env: Env, now: datetime, head: str, sha: str, ok: bool) -> State:
+    """`state` with the kept ancestor smoke's verdict as a real run on `sha` (D-4180): `at` the result's own time
+    (`smoke_at`) when it parses, else now; `why` "start routine (<source>, ancestor of <head>)"; `seconds` when
+    known; `timed_out` for a timeout or a smoke lost without a result. Not recorded again when a run on `sha` with
+    the same verdict, no `reused` and no `base`, is already recorded at or after that time."""
+    try:
+        at = st.iso(st.parse(str(getattr(env, "smoke_at", "") or "")))
+    except ValueError:
+        at = st.iso(now)
+    source = str(getattr(env, "smoke_source", "") or "")
+    run: dict[str, Any] = {"sha": sha, "ok": ok, "at": at,
+                           "why": f"start routine ({source + ', ' if source else ''}ancestor of {head[:12]})"}
+    seconds = getattr(env, "smoke_seconds", None)
+    if isinstance(seconds, int) and not isinstance(seconds, bool):
+        run["seconds"] = seconds
+    if _smoke_timed_out(env):
+        run["timed_out"] = True
+    if any(_same_result(r, run) for r in state.get("smoke_runs") or []):
+        return state
+    return dict(state, smoke_runs=[*state.get("smoke_runs", [])[-19:], run])
+
+
+def _same_result(old: Any, run: dict[str, Any]) -> bool:
+    """Whether `old` already records `run`'s result (D-4180): the same SHA and verdict, no reuse, at or after its time."""
+    if not isinstance(old, dict) or old.get("sha") != run["sha"] or old.get("reused") or old.get("base"):
+        return False
+    if old.get("ok") is not run["ok"] or bool(old.get("timed_out")) != bool(run.get("timed_out")):
+        return False
+    try:
+        return st.parse(str(old.get("at") or "")) >= st.parse(run["at"])
+    except ValueError:
+        return False
 
 
 def _yield_own_smoke(env: Env, head: str) -> bool:
