@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T03:00:53Z by runner c392ab48565e (actions).
+Updated 2026-11-17T03:09:16Z by runner 794f81de7ef2 (actions).
 
 **Building: T107 in progress since 02:20Z; 378 of 557 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 378 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:57Z; lane 2: T103 claimed 02:12Z, lease until 05:42Z; lane 3: T584 claimed 02:40Z, lease until 05:40Z; lane 4: T221 claimed 01:54Z, lease until 05:43Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
+- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:57Z; lane 2: T103 claimed 02:12Z, lease until 05:42Z; lane 3: T584 claimed 02:40Z, lease until 05:40Z; lane 4: T221 claimed 01:54Z, lease until 05:43Z
 - **Week:** 12% used, 165.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:00Z, 0 min before this update
+- **Last run:** 03:00Z, 8 min before this update
 - **Keeper:** last ran 03:00Z, next wake 05:04Z
 
 ## Needs attention
@@ -120,7 +120,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T103 (lease until 2026-11-17T05:42:52Z)
 - lane 3: T584 (lease until 2026-11-17T05:40:25Z)
 - lane 4: T221 (lease until 2026-11-17T05:43:34Z)
-- lane 7: T586 (lease until 2026-11-17T05:01:43Z)
 
 ## Last usage reading
 - {"task": "T584", "at": "2026-11-17T02:26:49Z", "input_tokens": 48, "cache_read_input_tokens": 763271, "cache_creation_input_tokens": 73479, "output_tokens": 9080}
