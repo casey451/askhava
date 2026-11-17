@@ -208,11 +208,10 @@ def brand_value(match: re.Match[str]) -> str:
 
 
 def tag_text(match: re.Match[str]) -> str:
-    """A tag becomes a line break (a space if inline) plus its kept attribute values, one per line."""
+    """A tag becomes a line break (a space if inline, rule 1); the same gap sets off each kept value."""
     kept = [a or b for a, b in KEPT.findall(match.group(3))]
-    if kept:
-        return "\n" + "\n".join(kept) + "\n"
-    return " " if match.group(2).lower() in INLINE else "\n"
+    gap = " " if match.group(2).lower() in INLINE else "\n"
+    return gap + gap.join(kept) + gap if kept else gap
 
 
 def lines_of(text: str) -> str:
@@ -498,6 +497,8 @@ HTML_PASSES = (
     '<a href="/best">Quotes in order.</a>', "<p>We never <strong>rank</strong> businesses.</p>",
     "<p>Your number is never shared.</p>\n<p>Only the business you pick gets your first name and address, "
     "after you pick it.</p>",
+    '<p>We don\'t <span aria-label="sort">rank</span> businesses.</p>',
+    '<p>We don\'t <a href="/x" title="sort">rank</a> businesses.</p>',
 )
 HTML_FAILS = (
     '<meta name="description" content="The best plumbers.">', '<input type="submit" value="Best quotes">',
