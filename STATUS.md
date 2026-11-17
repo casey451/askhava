@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T09:00:31Z by runner a30ce542e71a (actions).
+Updated 2026-11-17T09:00:55Z by runner a30ce542e71a (actions).
 
-**Building: T107 in progress since 07:34Z; 389 of 560 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T202 in progress since 07:55Z; 389 of 560 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 389 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T107 claimed 07:34Z, lease until 11:50Z; lane 5: T202 claimed 07:55Z, lease until 11:54Z; lane 6: T489 claimed 08:41Z, lease until 11:41Z
+- **Lane:** lane 5: T202 claimed 07:55Z, lease until 11:54Z; lane 6: T489 claimed 08:41Z, lease until 11:41Z
 - **Week:** 17% used, 157.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:54Z, 5 min before this update
+- **Last run:** 08:54Z, 6 min before this update
 - **Keeper:** last ran 08:40Z, next wake 10:57Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-17T09:00:31Z by runner a30ce542e71a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T107 | Consent records kept 5 years, no export, opt-out rate alerts | MERGE_PENDING | 2 | 85 min | 09:00Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 2 | 52 min | 08:28Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
 | T570 | intake: a CLOSE text, a "Close which?" answer and a cancel-i | MERGE_PENDING | 1 | 39 min | 08:26Z |  |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z |  |
@@ -32,7 +33,7 @@ Updated 2026-11-17T09:00:31Z by runner a30ce542e71a (actions).
 | T571 | server and calls: a press of 9 on the safety call is never l | done | 1 | 45 min | 05:08Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | done | 2 | 29 min | 04:41Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T591 | Runner (harness): free the backup job's disk and cap the smo | done | 1 | 67 min | 04:23Z |  |
-| T107 | Consent records kept 5 years, no export, opt-out rate alerts | QUEUED | 1 | 85 min | 03:45Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
+| T107 | Consent records kept 5 years, no export, opt-out rate alerts | QUEUED | 1 | 85 min | 03:45Z |  |
 | T584 | businesses (harness): sign-up activation retried after a con | done | 2 | 43 min | 03:23Z | PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to rea |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | resync | 2 | 79 min | 03:14Z |  |
 | T584 | businesses (harness): sign-up activation retried after a con | BLOCKED | 1 | 3 min | 02:26Z |  |
@@ -133,9 +134,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T107 (lease until 2026-11-17T11:50:23Z)
 - lane 5: T202 (lease until 2026-11-17T11:54:22Z)
 - lane 6: T489 (lease until 2026-11-17T11:41:17Z)
 
 ## Last usage reading
-- {"task": "T112", "at": "2026-11-17T08:28:46Z", "cache_creation_input_tokens": 192445, "input_tokens": 120, "output_tokens": 58041, "cache_read_input_tokens": 3589464}
+- {"task": "T107", "at": "2026-11-17T09:00:29Z", "output_tokens": 63429, "cache_read_input_tokens": 7176356, "cache_creation_input_tokens": 246156, "input_tokens": 205}
