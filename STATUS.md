@@ -1,18 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-17T04:22:53Z by runner f7aa2cf22f49 (actions).
+Updated 2026-11-17T04:23:10Z by runner f7aa2cf22f49 (actions).
 
 **Building: T221 in progress since 04:11Z; 381 of 557 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 381 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T221 claimed 04:11Z, lease until 07:11Z; lane 2: T103 claimed 03:40Z, lease until 06:40Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T591 claimed 03:16Z, lease until 07:01Z
-- **Week:** 13% used, 163.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T221 claimed 04:11Z, lease until 07:11Z; lane 2: T103 claimed 03:40Z, lease until 06:40Z; lane 4: T204 claimed 04:22Z, lease until 07:22Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T591 claimed 03:16Z, lease until 07:01Z
+- **Week:** 13% used, 163.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:19Z, 3 min before this update
 - **Keeper:** last ran 03:47Z, next wake 06:43Z
 
 ## Needs attention
-- PLAN GAP T204 (since 2026-11-17T04:03:33Z, no attempt used; a plan change fixes it): T204: dependency T469 is DONE but its owned file app/adapters/src/resend_config.rs is not on main; T204: dependency T469 is DONE but its owned file app/server/src/email_provider.rs is not on main; T204: dependency T469 is DONE but its owned file app/server/tests/email_provider_route.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 
 ## Last 24 hours
@@ -104,7 +103,7 @@ Updated 2026-11-17T04:22:53Z by runner f7aa2cf22f49 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T03:46:41Z (week)): week: 30.5M used, 163.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T05:26:27Z.
+- Pacing (session_reading 2026-11-17T03:46:41Z (week)): week: 30.9M used, 163.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T04:51:34Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -121,6 +120,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T221 (lease until 2026-11-17T07:11:21Z)
 - lane 2: T103 (lease until 2026-11-17T06:40:50Z)
+- lane 4: T204 (lease until 2026-11-17T07:22:48Z)
 - lane 6: T481 (lease until 2026-11-17T06:42:02Z)
 - lane 7: T591 (lease until 2026-11-17T07:01:30Z)
 
