@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T05:37:02Z by runner 71e1ff05d467 (actions).
+Updated 2026-11-17T05:37:11Z by runner 71e1ff05d467 (actions).
 
 **Building: T204 in progress since 04:22Z; 383 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 383 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T204 claimed 04:22Z, lease until 08:06Z; lane 6: T481 claimed 03:42Z, lease until 08:31Z; lane 7: T586 claimed 04:49Z, lease until 08:23Z
+- **Lane:** lane 4: T204 claimed 04:22Z, lease until 08:06Z; lane 7: T586 claimed 04:49Z, lease until 08:23Z
 - **Week:** 15% used, 159.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 05:36Z, 0 min before this update
 - **Keeper:** last ran 05:36Z, next wake 08:08Z
@@ -18,6 +18,7 @@ Updated 2026-11-17T05:37:02Z by runner 71e1ff05d467 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T481 | messaging and payments: mark a replayed text sent from the c | MERGE_PENDING | 1 | 114 min | 05:36Z |  |
 | T103 | intake: the web-chat conversation, where typing a verified m | MERGE_PENDING | 1 | 106 min | 05:27Z |  |
 | T585 | businesses and licensing: a license change that drops job ty | MERGE_PENDING | 1 | 43 min | 05:10Z |  |
 | T571 | server and calls: a press of 9 on the safety call is never l | done | 1 | 45 min | 05:08Z |  |
@@ -126,8 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 4: T204 (lease until 2026-11-17T08:06:15Z)
-- lane 6: T481 (lease until 2026-11-17T08:31:54Z)
 - lane 7: T586 (lease until 2026-11-17T08:23:08Z)
 
 ## Last usage reading
-- {"task": "T103", "at": "2026-11-17T05:27:34Z", "cache_creation_input_tokens": 368658, "cache_read_input_tokens": 15439634, "output_tokens": 100729, "input_tokens": 337}
+- {"task": "T481", "at": "2026-11-17T05:36:46Z", "input_tokens": 257, "output_tokens": 88722, "cache_creation_input_tokens": 241521, "cache_read_input_tokens": 14313344}
