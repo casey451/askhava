@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH gone AS ( DELETE FROM messaging.inbox_contact c WHERE c.contact_id = $1 AND c.received_at < now() - interval '1827 days' RETURNING c.inbox_id ), inbox AS ( DELETE FROM messaging.inbox i USING gone g WHERE i.id = g.inbox_id ) SELECT g.inbox_id FROM gone g ORDER BY g.inbox_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.inbox_contact",
+            "name": "inbox_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "74c724379f5e4bd6215c61fbabcc23af31c8b74b0fc04f3f2d20544b193243fd"
+}

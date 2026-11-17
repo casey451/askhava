@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM messaging.outbox o WHERE o.id = ANY ($1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7f8611c0c958d027f06f723ba3bdcf6a501e78aafc4d9d6f0d77ff9261295eda"
+}
