@@ -6347,3 +6347,4 @@
 - 2026-11-17T10:15:44Z runner e49b0267f860 (actions): {"T489": "MERGE_PENDING -> QUEUED"}
 - 2026-11-17T10:16:03Z runner e49b0267f860 (actions): {"T489": "QUEUED -> IN_PROGRESS"}; T489 estimated 1.5M tokens (calibrated); week has 154.9M left (no five-hour budget, D-3056) after 3.1M still running in another lane (session_reading 2026-11-17T10:09:14Z (week)); running to the limit (model window, D-2225), claimed
 - 2026-11-17T10:16:19Z runner e49b0267f860 (actions): {}
+- 2026-11-17T10:17:47Z runner 894d21959a1b (actions): {"T441": "QUEUED -> IN_PROGRESS"}; T441 estimated 1.5M tokens (calibrated); week has 153.3M left (no five-hour budget, D-3056) after 4.7M still running in another lane (session_reading 2026-11-17T10:09:14Z (week)); running to the limit (model window, D-2225), claimed
