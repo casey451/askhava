@@ -69953,8 +69953,8 @@
    "deps": [
     "T489"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "site-web-chat-e2e",
    "type": "build",
    "stage": "5",
@@ -69970,7 +69970,34 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "reason": "plan gap reported: PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change: a T489 fix task that adds `.method(Method::POST)` to the request builder in `posted_csrf` and puts the \"18 or older\" line (CON-025, docs/spec/consent.md:29) on the request page, then re-run T594.\nEvidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/web_chat.spec.ts` exit=1, 5 failed, 2 passed. web_chat.spec.ts:137 (18 or older) fails: Expected pattern /18 or older/i not in main. web_chat.spec.ts:142, :153, :187 fail at line 94 (main form has 0 fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T594 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change: a T489 fix task that adds `.method(Method::POST)` to the request builder in `posted_csrf` and puts the \"18 or older\" line (CON-025, docs/spec/consent.md:29) on the request page, then re-run T594.\nEvidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/web_chat.spec.ts` exit=1, 5 failed, 2 passed. web_chat.spec.ts:137 (18 or older) fails: Expected pattern /18 or older/i not in main. web_chat.spec.ts:142, :153, :187 fail at line 94 (main form has 0 fields: chat POST refused 403, csrf_rejected events) and :219 fails at line 227 (main ol not found). posted_csrf builds Request::builder() with no method -> GET -> axum Form reads the empty query string -> csrf \"\" -> 403 on every same-site chat POST. Reviewer (a90cf301abc6dc1ca) confirmed: both files are T489's in kit/tasks.json; T594 (build) owns only tests/e2e/web_chat.spec.ts; PLAN GAP CONFIRMED.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 98,
+     "head_sha": "0f98e4d165ddfa10a7098f1dbfd35ef57d412549",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-17T12:36:45Z",
+     "ended_at": "2026-11-17T13:18:48Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 4608414,
+       "turns": 57
+      },
+      "reviewer": {
+       "tokens": 1305387,
+       "turns": 30
+      }
+     }
+    }
+   ]
   }
  ],
  "owner_waits": [],
@@ -69998,12 +70025,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T202",
-   "at": "2026-11-17T13:01:40Z",
-   "input_tokens": 81,
-   "cache_creation_input_tokens": 88834,
-   "cache_read_input_tokens": 1352453,
-   "output_tokens": 12466
+   "task": "T594",
+   "at": "2026-11-17T13:18:48Z",
+   "input_tokens": 170,
+   "cache_creation_input_tokens": 237026,
+   "cache_read_input_tokens": 5630145,
+   "output_tokens": 46460
   },
   "source": "session_reading 2026-11-17T12:21:46Z (week)",
   "by_task": {
@@ -74343,7 +74370,17 @@
    },
    "T594": {
     "estimated_bytes": 376767,
-    "estimated_tokens": 1141360
+    "estimated_tokens": 1141360,
+    "usage_counting": "message_id",
+    "input_tokens": 170,
+    "cache_creation_input_tokens": 237026,
+    "cache_read_input_tokens": 5630145,
+    "output_tokens": 46460,
+    "worker_tokens": 4608414,
+    "worker_turns": 57,
+    "reviewer_tokens": 1305387,
+    "reviewer_turns": 30,
+    "last_model": "claude-opus-5-5"
    },
    "T321": {
     "estimated_bytes": 415429,
@@ -74353,11 +74390,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-17T09:54:43Z",
-    "tokens": 6425604
+    "tokens": 7272274
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 243869563
+    "tokens": 244716233
    }
   },
   "session_reading": {
@@ -74368,7 +74405,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T13:15:51Z",
+ "updated_at": "2026-11-17T13:18:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -74466,7 +74503,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d63448b288ecabe46790937a511b3a784515e5fa",
+ "runner_sha": "0f98e4d165ddfa10a7098f1dbfd35ef57d412549",
  "starter": "actions",
  "smoke_runs": [
   {
