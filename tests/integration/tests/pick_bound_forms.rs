@@ -6,7 +6,7 @@
 //! numbers by the shown number and every pick form carries the business that number was shown for;
 //! a form naming another business stores, notifies and charges nothing.
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_core::api::{IdSecret, ManualClock};
@@ -71,10 +71,12 @@ impl VerifyAdapter for FakeVerify {
     }
 }
 
-/// The quote page and the pick routes with keys, behind link `token`.
+/// The quote page and the pick routes with keys, behind link `token`; `tier` is the package
+/// cookie the browser holds.
 struct Page {
     app: Router,
     token: String,
+    tier: Mutex<Option<String>>,
 }
 
 impl Page {
@@ -83,7 +85,11 @@ impl Page {
         let clock = Arc::new(ManualClock::new(ts(DAY)));
         let app = pick_flow_routes(pool.clone(), clock.clone(), Some(keys))
             .merge(quote_page_routes(pool.clone(), clock));
-        Self { app, token }
+        Self {
+            app,
+            token,
+            tier: Mutex::new(None),
+        }
     }
 
     /// Sends `pairs` to `/q/<token><tail>` as the browser would (GET when `pairs` is empty).
@@ -106,7 +112,7 @@ impl Page {
             .header(header::HOST, "askhava.test")
             .header(header::ORIGIN, "https://askhava.test")
             .header("sec-fetch-site", "same-origin")
-            .header(header::COOKIE, format!("{PRE_SESSION_COOKIE}={COOKIE}"))
+            .header(header::COOKIE, self.cookies())
             .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(if pairs.is_empty() {
                 Body::empty()
@@ -115,19 +121,35 @@ impl Page {
             })
             .expect("request");
         let response = self.app.clone().oneshot(request).await.expect("response");
+        let set = response.headers().get(header::SET_COOKIE);
+        if let Some(set) = set.and_then(|v| v.to_str().ok()) {
+            let kept = set.split(';').next().map(str::to_owned);
+            *self.tier.lock().expect("tier") = kept;
+        }
         let status = response.status();
         let bytes = to_bytes(response.into_body(), 1 << 20).await.expect("body");
         (status, String::from_utf8(bytes.to_vec()).expect("utf8"))
     }
 
-    /// The final Pick then "Finish my pick" of shown number `n`, the forms carrying `business`.
-    async fn pick(&self, n: &str, business: &str) -> (StatusCode, String) {
-        let (_, code_step) = self
-            .send(
-                "/pick",
-                &[("quote", n), ("share", "yes"), ("business", business)],
-            )
-            .await;
+    /// The pre-session cookie and the package cookie, if one was set.
+    fn cookies(&self) -> String {
+        let session = format!("{PRE_SESSION_COOKIE}={COOKIE}");
+        match &*self.tier.lock().expect("tier") {
+            Some(tier) => format!("{session}; {tier}"),
+            None => session,
+        }
+    }
+
+    /// The final Pick then "Finish my pick" of shown number `n`, the forms carrying `business`,
+    /// the final Pick also posting `backup` (empty for "No backup").
+    async fn pick(&self, n: &str, business: &str, backup: &str) -> (StatusCode, String) {
+        let final_pick = [
+            ("quote", n),
+            ("share", "yes"),
+            ("business", business),
+            ("backup", backup),
+        ];
+        let (_, code_step) = self.send("/pick", &final_pick).await;
         let form = [
             ("quote", n),
             ("code", CODE),
@@ -299,7 +321,7 @@ async fn td_pick_64_the_forms_carry_the_business_and_pick_it(pool: PgPool) {
     let carried = format!("name=\"business\" value=\"{B}\"");
     let (_, review) = page.send("", &[("quote", "1")]).await;
     assert!(review.contains(&carried), "{review}");
-    let (status, body) = page.pick("1", &B.to_string()).await;
+    let (status, body) = page.pick("1", &B.to_string(), "").await;
     assert_eq!(status, StatusCode::OK);
     assert!(body.contains(&carried), "the code form carries B");
     assert!(body.contains("Done. The business has your pick."), "{body}");
@@ -316,15 +338,84 @@ async fn td_pick_64_a_form_for_another_business_stores_nothing(pool: PgPool) {
     let (job, token) = ready(&mut db).await;
     let page = Page::new(&pool, token);
     for posted in [A.to_string(), "not-a-business".to_owned()] {
-        let (status, _) = page.pick("1", &posted).await;
+        let (status, _) = page.pick("1", &posted, "").await;
         assert_eq!(status, StatusCode::SEE_OTHER, "back to the card");
         assert_eq!(stored(&mut db, job).await, (Vec::new(), 0, 0));
     }
-    let (status, body) = page.pick("1", "").await;
+    let (status, body) = page.pick("1", "", "").await;
     assert_eq!(status, StatusCode::OK);
     assert!(body.contains("Done. The business has your pick."), "{body}");
     assert_eq!(
         stored(&mut db, job).await.0,
         vec![(B, "awaiting_confirm".to_owned())]
     );
+}
+
+/// Makes `business`'s quote on `job` a tiers quote (Basic $100, Plus $800, Premium $2,000).
+async fn tiers(db: &mut PgConnection, job: Uuid, business: Uuid) {
+    sqlx::query(
+        "UPDATE quotes.quote SET format = 'tiers', tier_names = ARRAY['Basic', 'Plus', 'Premium'], \
+         tier_cents = ARRAY[10000, 80000, 200000]::bigint[], amount_cents = NULL \
+         WHERE job_id = $1 AND business_id = $2",
+    )
+    .bind(job)
+    .bind(business)
+    .execute(db)
+    .await
+    .expect("tiers");
+}
+
+/// TD-PICK-64 (PICK-008, PICK-053, PRIV-005, D-4136): B's tiers quote is shown #1 but arrived
+/// second; picking #1 with a package stores B's pick with that package, and a post naming A, after
+/// the same package was chosen, stores, notifies and charges nothing (B's pick fixes its one fee).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_64_a_package_pick_follows_the_shown_number(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let (job, token) = ready(&mut db).await;
+    tiers(&mut db, job, B).await;
+    let page = Page::new(&pool, token);
+    let plus = "1.80000.506c7573";
+    let card = [("quote", "1"), ("tier", plus)];
+    let (status, review) = page.send("", &card).await;
+    assert_eq!(status, StatusCode::OK, "{review}");
+    let (status, _) = page.pick("1", &A.to_string(), "").await;
+    assert_eq!(status, StatusCode::SEE_OTHER, "back to the card");
+    assert_eq!(stored(&mut db, job).await, (Vec::new(), 0, 0));
+    let (status, body) = page.pick("1", &B.to_string(), "").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.contains("Done. The business has your pick."), "{body}");
+    let (picks, notices, fees) = stored(&mut db, job).await;
+    assert_eq!(
+        (picks, notices, fees),
+        (vec![(B, "awaiting_confirm".to_owned())], 1, 1)
+    );
+    let package: (Uuid, Option<i16>, Option<String>, Option<i64>) = sqlx::query_as(
+        "SELECT business_id, tier_index, tier_name, tier_cents FROM picks.pick WHERE job_id = $1",
+    )
+    .bind(job)
+    .fetch_one(&mut *db)
+    .await
+    .expect("pick");
+    assert_eq!(package, (B, Some(1), Some("Plus".to_owned()), Some(80000)));
+}
+
+/// TD-PICK-64 (PICK-008, PICK-047, PRIV-005, D-4136): picking #1 (B, arrival place 2) with backup
+/// #2 (A, arrival place 1) binds A's place as the backup, not B's own place or "No backup".
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_64_the_backup_follows_its_shown_number(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let (job, token) = ready(&mut db).await;
+    let page = Page::new(&pool, token);
+    let (status, body) = page.pick("1", &B.to_string(), "2").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.contains("Done. The business has your pick."), "{body}");
+    let bound: Vec<(i32, Option<i32>)> = sqlx::query_as(
+        "SELECT for_quote, backup_quote FROM picks.backup_choice \
+         WHERE job_id = $1 AND pick_id IS NOT NULL",
+    )
+    .bind(job)
+    .fetch_all(&mut *db)
+    .await
+    .expect("backup");
+    assert_eq!(bound, vec![(2, Some(1))], "B's pick, A's place as backup");
 }
