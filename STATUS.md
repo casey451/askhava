@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:11:24Z by runner e9821f027c6b (manual).
+Updated 2026-11-17T13:12:44Z by runner e9821f027c6b (actions).
 
 **Building: T479 in progress since 12:28Z; 396 of 560 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-17T13:11:24Z by runner e9821f027c6b (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T479 claimed 12:28Z, lease until 15:28Z; lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 6: T594 claimed 12:36Z, lease until 16:10Z; lane 7: T321 claimed 12:53Z, lease until 15:53Z
 - **Week:** 20% used, 148.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:11Z, 0 min before this update
+- **Last run:** 13:11Z, 1 min before this update
 - **Keeper:** last ran 13:03Z, next wake 15:31Z
 
 ## Needs attention
@@ -97,31 +97,31 @@ Updated 2026-11-17T13:11:24Z by runner e9821f027c6b (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 281 of 733 (38.3%) · partial 364 · unstarted 88
+**Requirements verified:** 304 of 733 (41.5%) · partial 341 · unstarted 88
 **Tasks merged (throughput only):** 396 of 560
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 15 | 17 | 3 | 35 |
+| accessibility | 19 | 13 | 3 | 35 |
 | ai | 11 | 15 | 3 | 29 |
 | businesses | 21 | 35 | 2 | 58 |
-| calls | 11 | 13 | 1 | 25 |
+| calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 20 | 1 | 35 |
-| fees | 19 | 32 | 1 | 52 |
+| fees | 24 | 27 | 1 | 52 |
 | intake | 25 | 18 | 0 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 20 | 23 | 2 | 45 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 23 | 30 | 54 |
-| privacy | 12 | 17 | 2 | 31 |
+| privacy | 14 | 15 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 33 | 22 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| security | 11 | 39 | 5 | 55 |
 | terms | 1 | 28 | 6 | 35 |
 | website | 0 | 18 | 10 | 28 |
-| wording | 1 | 13 | 18 | 32 |
+| wording | 2 | 12 | 18 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
