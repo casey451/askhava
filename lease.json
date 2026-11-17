@@ -4,12 +4,7 @@
   "1": null,
   "2": null,
   "3": null,
-  "4": {
-   "task": "T596",
-   "session": "actions-44130905387",
-   "expires": "2026-11-17T20:42:38Z",
-   "lane": "4"
-  },
+  "4": null,
   "5": null,
   "6": null,
   "7": {
@@ -20,7 +15,7 @@
   },
   "fix": null
  },
- "seq": 6529,
+ "seq": 6530,
  "runner_sha": "32cc1abdecdbf738dd68da1b5d94daeec134eef6",
  "starter": "actions"
 }
