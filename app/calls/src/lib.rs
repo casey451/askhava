@@ -24,6 +24,7 @@ mod models;
 mod pins;
 mod routing;
 mod rules;
+mod safety_key_retry;
 mod service;
 #[cfg(test)]
 mod tests;
