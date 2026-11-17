@@ -1,18 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T02:05:16Z by runner dde16ca377f9 (actions).
+Updated 2026-11-17T02:09:53Z by runner 08bbf6a75b00 (actions).
 
 **Building: T103 in progress since 00:02Z; 377 of 556 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 377 of 556 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T103 claimed 00:02Z, lease until 04:55Z; lane 4: T221 claimed 01:54Z, lease until 04:54Z; lane 5: T469 claimed 00:32Z, lease until 04:01Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
+- **Lane:** lane 1: T103 claimed 00:02Z, lease until 04:55Z; lane 4: T221 claimed 01:54Z, lease until 04:54Z; lane 5: T469 claimed 00:32Z, lease until 05:09Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
 - **Week:** 11% used, 167.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:05Z, 0 min before this update
+- **Last run:** 02:05Z, 4 min before this update
 - **Keeper:** last ran 02:05Z, next wake 04:04Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- Strict plan check red: 16 problem(s) on tasks still to run (+137 on DONE tasks); first: T469: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -70,26 +71,26 @@ Updated 2026-11-17T02:05:16Z by runner dde16ca377f9 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 307 of 733 (41.9%) · partial 313 · unstarted 113
-**Tasks merged (throughput only):** 377 of 556
+**Requirements verified:** 328 of 733 (44.7%) · partial 292 · unstarted 113
+**Tasks merged (throughput only):** 377 of 541
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 20 | 11 | 4 | 35 |
+| accessibility | 21 | 10 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 21 | 35 | 2 | 58 |
-| calls | 13 | 11 | 1 | 25 |
-| consent | 14 | 17 | 4 | 35 |
+| businesses | 23 | 33 | 2 | 58 |
+| calls | 14 | 10 | 1 | 25 |
+| consent | 15 | 16 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 28 | 12 | 3 | 43 |
+| intake | 30 | 10 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
-| licensing | 37 | 11 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
+| licensing | 39 | 9 | 0 | 48 |
+| lifecycle | 27 | 1 | 0 | 28 |
+| messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
 | privacy | 12 | 17 | 2 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 33 | 22 | 1 | 56 |
+| quiet-hours | 7 | 2 | 0 | 9 |
+| quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 1 | 20 | 14 | 35 |
@@ -116,7 +117,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T103 (lease until 2026-11-17T04:55:48Z)
 - lane 4: T221 (lease until 2026-11-17T04:54:09Z)
-- lane 5: T469 (lease until 2026-11-17T04:01:32Z)
+- lane 5: T469 (lease until 2026-11-17T05:09:53Z)
 - lane 7: T586 (lease until 2026-11-17T05:01:43Z)
 
 ## Last usage reading
