@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T06:03:58Z by runner 6cc8a2fed8c3 (actions).
+Updated 2026-11-17T06:09:21Z by runner 6cc8a2fed8c3 (actions).
 
-**Building: T204 in progress since 04:22Z; 384 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T564 in progress since 06:04Z; 384 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 384 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T204 claimed 04:22Z, lease until 08:58Z; lane 7: T586 claimed 04:49Z, lease until 08:52Z
-- **Week:** 15% used, 159.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:01Z, 2 min before this update
+- **Lane:** lane 1: T564 claimed 06:04Z, lease until 09:04Z; lane 4: T204 claimed 04:22Z, lease until 08:58Z; lane 7: T586 claimed 04:49Z, lease until 08:52Z
+- **Week:** 15% used, 161.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 06:04Z, 5 min before this update
 - **Keeper:** last ran 06:01Z, next wake 08:55Z
 
 ## Needs attention
@@ -112,7 +112,7 @@ Updated 2026-11-17T06:03:58Z by runner 6cc8a2fed8c3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T04:48:16Z (week)): week: 34.9M used, 159.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T04:12:38Z.
+- Pacing (session_reading 2026-11-17T06:01:08Z (week)): week: 32.8M used, 161.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T06:27:16Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -127,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T564 (lease until 2026-11-17T09:04:06Z)
 - lane 4: T204 (lease until 2026-11-17T08:58:09Z)
 - lane 7: T586 (lease until 2026-11-17T08:52:51Z)
 
