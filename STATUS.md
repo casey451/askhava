@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-17T22:07:12Z by runner 051904e6de90 (actions).
+Updated 2026-11-17T22:09:32Z by runner 051904e6de90 (actions).
 
-**Idle since 22:05Z; 411 of 578 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T115 in progress since 22:09Z; 411 of 578 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 411 of 578 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 22:05Z (no task in progress)
-- **Week:** 31% used, 133.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:06Z, 0 min before this update
+- **Lane:** lane 4: T115 claimed 22:09Z, lease until 01:09Z
+- **Week:** 31% used, 132.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:07Z, 2 min before this update
 - **Keeper:** last ran 22:07Z, next wake 22:27Z
 
 ## Needs attention
+- PLAN GAP T203 (since 2026-11-17T22:09:12Z, no attempt used; a plan change fixes it): T203: dependency T104 is DONE but its owned file tests/docs/test_wording_scan.py is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 11 problem(s) on tasks still to run (+176 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
@@ -118,7 +119,7 @@ Updated 2026-11-17T22:07:12Z by runner 051904e6de90 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T21:15:25Z (week)): week: 60.7M used, 133.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T07:49:40Z.
+- Pacing (session_reading 2026-11-17T22:06:54Z (week)): week: 62.0M used, 132.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T16:04:56Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -134,6 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 4: T115 (lease until 2026-11-18T01:09:12Z)
 
 ## Last usage reading
 - {"task": "T603", "at": "2026-11-17T22:05:00Z", "output_tokens": 19486, "cache_read_input_tokens": 2243643, "cache_creation_input_tokens": 82931, "input_tokens": 103}

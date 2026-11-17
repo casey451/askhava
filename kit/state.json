@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T603",
+ "current": "T115",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -21420,7 +21420,13 @@
    "attempts": 0,
    "slug": "wording-statements-scan",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-17T22:09:12Z",
+    "problems": [
+     "T203: dependency T104 is DONE but its owned file tests/docs/test_wording_scan.py is not on main"
+    ]
+   }
   },
   {
    "id": "T105",
@@ -23111,13 +23117,13 @@
     "T489",
     "T202"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 2,
    "slug": "a11y-docs-statement",
    "type": "build",
    "stage": "5",
-   "attempt_started_at": "2026-11-17T18:45:57Z",
-   "lane": "5",
+   "attempt_started_at": "2026-11-17T22:09:12Z",
+   "lane": "4",
    "decision_ids": [
     4213,
     4214,
@@ -72932,7 +72938,7 @@
    "cache_creation_input_tokens": 82931,
    "input_tokens": 103
   },
-  "source": "session_reading 2026-11-17T21:15:25Z (week)",
+  "source": "session_reading 2026-11-17T22:06:54Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -77415,8 +77421,8 @@
     "last_model": "claude-opus-5-5"
    },
    "T115": {
-    "estimated_bytes": 411568,
-    "estimated_tokens": 448587,
+    "estimated_bytes": 448908,
+    "estimated_tokens": 489286,
     "usage_counting": "message_id",
     "cache_read_input_tokens": 15266742,
     "cache_creation_input_tokens": 496168,
@@ -77531,7 +77537,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T22:07:12Z",
+ "updated_at": "2026-11-17T22:09:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -77632,21 +77638,6 @@
  "runner_sha": "051904e6de906e2f1d0a126e497049f0bba89e5e",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "774d33861a6afdd380d7fdfc54c4fba5efe77562",
-   "ok": true,
-   "at": "2026-11-17T15:29:29Z",
-   "why": "start routine (ancestry reuse of 215d4cc126ab, 2026-11-17T15:04:28Z)",
-   "reused": "2026-11-17T15:04:28Z",
-   "base": "215d4cc126abccb1cece1c228f1f20937d65e194"
-  },
-  {
-   "sha": "774d33861a6afdd380d7fdfc54c4fba5efe77562",
-   "ok": true,
-   "at": "2026-11-17T15:33:15Z",
-   "why": "start routine (background)",
-   "seconds": 1387
-  },
   {
    "sha": "774d33861a6afdd380d7fdfc54c4fba5efe77562",
    "ok": true,
@@ -77786,24 +77777,39 @@
    "why": "start routine (ancestry reuse of 805fa0d42eef, 2026-11-17T19:20:44Z)",
    "reused": "2026-11-17T19:20:44Z",
    "base": "805fa0d42eefe326c773335cb0da43569e094395"
+  },
+  {
+   "sha": "051904e6de906e2f1d0a126e497049f0bba89e5e",
+   "ok": true,
+   "at": "2026-11-17T22:08:32Z",
+   "why": "start routine (pre-session, ancestor of 9dd9cd236f2f)",
+   "seconds": 875
+  },
+  {
+   "sha": "9dd9cd236f2f466f5e6f26d766a37a337e4e0ca4",
+   "ok": true,
+   "at": "2026-11-17T22:09:12Z",
+   "why": "start routine (ancestry reuse of 051904e6de90, 2026-11-17T22:08:32Z)",
+   "reused": "2026-11-17T22:08:32Z",
+   "base": "051904e6de906e2f1d0a126e497049f0bba89e5e"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T603 estimated 409k tokens (calibrated); week has 133.3M left (no five-hour budget, D-3056) after 700k still running in another lane (session_reading 2026-11-17T21:15:25Z (week)); running to the limit (model window, D-2225), claimed",
-  "at": "2026-11-17T21:24:10Z",
+  "last": "T115 estimated 489k tokens (calibrated); week has 132.0M left (no five-hour budget, D-3056) (session_reading 2026-11-17T22:06:54Z (week)); running to the limit (model window, D-2225), claimed",
+  "at": "2026-11-17T22:09:12Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 60699512,
+    "used": 62000000,
     "budget": 194000000,
-    "left": 133300488,
+    "left": 132000000,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 316895504,
-  "projected_finish": "2026-11-29T07:49:40Z"
+  "remaining_estimate": 325560742,
+  "projected_finish": "2026-11-29T16:04:56Z"
  },
  "main_red_history": [
   {
