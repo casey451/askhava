@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T09:15:48Z by runner 780be8a3f3ba (actions).
+Updated 2026-11-17T09:23:29Z by runner 780be8a3f3ba (actions).
 
-**Building: T202 in progress since 07:55Z; 389 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T202 in progress since 07:55Z; 390 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 389 of 560 build tasks (owner gates not counted)
+- **Tasks done:** 390 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T202 claimed 07:55Z, lease until 11:54Z; lane 6: T489 claimed 08:41Z, lease until 11:41Z
 - **Week:** 18% used, 157.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:02Z, 13 min before this update
+- **Last run:** 09:23Z, 0 min before this update
 - **Keeper:** last ran 09:01Z, next wake 11:43Z
 
 ## Needs attention
@@ -18,14 +18,14 @@ Updated 2026-11-17T09:15:48Z by runner 780be8a3f3ba (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T107 | Consent records kept 5 years, no export, opt-out rate alerts | MERGE_PENDING | 2 | 85 min | 09:00Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
+| T107 | Consent records kept 5 years, no export, opt-out rate alerts | done | 2 | 85 min | 09:00Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 2 | 52 min | 08:28Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
 | T570 | intake: a CLOSE text, a "Close which?" answer and a cancel-i | MERGE_PENDING | 1 | 39 min | 08:26Z |  |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z |  |
 | T201 | site: services and help pages, the ROC complaint page | done | 1 | 56 min | 07:22Z |  |
 | T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z | PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes |
 | T564 | quotes, picks and intake: the LIST, text picks, lapse text a | MERGE_PENDING | 1 | 43 min | 06:47Z |  |
-| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 1 | 2 h 21 min | 06:44Z |  |
+| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | resync | 1 | 2 h 21 min | 06:44Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
 | T586 | calls and privacy: TwiML text is escaped, a full number pool | done | 1 | 88 min | 06:17Z |  |
 | T481 | messaging and payments: mark a replayed text sent from the c | done | 1 | 114 min | 05:36Z |  |
 | T103 | intake: the web-chat conversation, where typing a verified m | done | 1 | 106 min | 05:27Z |  |
@@ -89,8 +89,8 @@ Updated 2026-11-17T09:15:48Z by runner 780be8a3f3ba (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 302 of 733 (41.2%) · partial 331 · unstarted 100
-**Tasks merged (throughput only):** 389 of 560
+**Requirements verified:** 302 of 733 (41.2%) · partial 333 · unstarted 98
+**Tasks merged (throughput only):** 390 of 560
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -98,7 +98,7 @@ Updated 2026-11-17T09:15:48Z by runner 780be8a3f3ba (actions).
 | ai | 11 | 14 | 4 | 29 |
 | businesses | 21 | 35 | 2 | 58 |
 | calls | 13 | 11 | 1 | 25 |
-| consent | 14 | 18 | 3 | 35 |
+| consent | 14 | 20 | 1 | 35 |
 | fees | 24 | 27 | 1 | 52 |
 | intake | 25 | 18 | 0 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
@@ -126,7 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 32 of 168 done
+- stage 5: 33 of 168 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
