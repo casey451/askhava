@@ -1,0 +1,47 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT trade, reason, count(*) AS \"count!\" FROM ops.not_a_fit_answer\n           WHERE date_trunc('month', answered_at AT TIME ZONE 'America/Phoenix')\n               = date_trunc('month', $1::timestamptz AT TIME ZONE 'America/Phoenix')\n           GROUP BY trade, reason ORDER BY trade, reason",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "trade",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.not_a_fit_answer",
+            "name": "trade"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "reason",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.not_a_fit_answer",
+            "name": "reason"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "count!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "c742ecf6edc797b1403cd9ed11302d34131514c5e80ea062e605dab08155c9fa"
+}
