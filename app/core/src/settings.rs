@@ -37,6 +37,9 @@ const SET_ASIDE: &str = "ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS";
 const HOME_NUMBERS_MIN_JOBS: &str = "ASKHAVA_HOME_NUMBERS_MIN_JOBS";
 const LLC_RECORD_URL: &str = "ASKHAVA_LLC_RECORD_URL";
 const CITY_LICENSE: &str = "ASKHAVA_CITY_BUSINESS_LICENSE_NUMBER";
+const CITY_LICENSE_COST: &str = "ASKHAVA_CITY_LICENSE_COST";
+const CITY_LICENSE_TIME: &str = "ASKHAVA_CITY_LICENSE_TIME";
+const CITY_LICENSE_URL: &str = "ASKHAVA_CITY_LICENSE_URL";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -73,6 +76,11 @@ const KEYS: &[&str] = &[
     HOME_NUMBERS_MIN_JOBS,
     LLC_RECORD_URL,
     CITY_LICENSE,
+    // The business page's city-license guide: cost, time and link, each optional (T202, WEB-020,
+    // D-3880).
+    CITY_LICENSE_COST,
+    CITY_LICENSE_TIME,
+    CITY_LICENSE_URL,
     "ASKHAVA_TWILIO_ACCOUNT_SID",
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",
@@ -94,6 +102,9 @@ const KEYS: &[&str] = &[
     "ASKHAVA_EMAIL_DAILY_LIMIT",
     "ASKHAVA_EMAIL_MONTHLY_LIMIT",
     "ASKHAVA_EMAIL_BULK_HOLD_PERCENT",
+    // OPS-035's alert address, read as a `SecretString` by `askhava_server`'s alert email sender
+    // and never logged (T204, D-3882, D-4044).
+    "ASKHAVA_ALERT_EMAIL",
     // The homeowner line's one configured number, parsed by `askhava_server` for `messaging`'s
     // outbox sender (T356, TXT-022, D-2628).
     "ASKHAVA_HOMEOWNER_NUMBER",
@@ -305,6 +316,7 @@ pub struct Settings {
     home_numbers_min_jobs: u32,
     llc_record_url: Option<String>,
     city_license: Option<String>,
+    city_guide: [Option<String>; 3],
 }
 
 impl Settings {
@@ -357,6 +369,8 @@ impl Settings {
             home_numbers_min_jobs: min_jobs(raw.remove(HOME_NUMBERS_MIN_JOBS))?,
             llc_record_url: raw.remove(LLC_RECORD_URL).map(|u| u.trim().to_owned()),
             city_license: raw.remove(CITY_LICENSE).map(|n| n.trim().to_owned()),
+            city_guide: [CITY_LICENSE_COST, CITY_LICENSE_TIME, CITY_LICENSE_URL]
+                .map(|key| raw.remove(key).map(|v| v.trim().to_owned())),
         })
     }
 
@@ -524,6 +538,14 @@ impl Settings {
     #[must_use]
     pub fn city_business_license_number(&self) -> Option<&str> {
         self.city_license.as_deref()
+    }
+
+    /// WEB-020, D-3880: the city business-license guide's cost, time and link, in that order
+    /// (`ASKHAVA_CITY_LICENSE_COST`, `ASKHAVA_CITY_LICENSE_TIME`, `ASKHAVA_CITY_LICENSE_URL`,
+    /// trimmed); each `None` while unset, and the business page leaves that part out.
+    #[must_use]
+    pub fn city_license_guide(&self) -> [Option<&str>; 3] {
+        self.city_guide.each_ref().map(Option::as_deref)
     }
 }
 

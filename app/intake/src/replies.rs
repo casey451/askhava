@@ -22,6 +22,11 @@
 //! house number with no 911-list words around the street, D-3705), else as any reply, so a
 //! hazard keeps the 911 path; a SAFE is never her answer. Any other handled reply asks step 11
 //! once the request reached it (`order::ask_last_question`).
+//!
+//! The under-18 stop (INT-038, INT-002, D-4064, D-4142): a clear text stating an age under 18 in
+//! an open request is stopped (`conversation::stop_if_under_18`) before the close and
+//! name-and-address steps; a text that is not clear, or a first text, is stopped after its screen,
+//! so a 911 text goes first. Under 13 the stop also clears her vault contact's name and address.
 
 use askhava_privacy::api::Vault;
 use secrecy::{ExposeSecret, SecretString};
@@ -30,12 +35,14 @@ use sqlx::{Connection, PgConnection};
 
 use crate::check_in_replies::check_in_reply;
 use crate::closing::{Closing, answer_close};
-use crate::conversation::{Taken, ask_name_address, hear, name_address_open, take_name_address};
+use crate::conversation::{
+    Taken, ask_name_address, hear, name_address_open, stop_if_under_18, take_name_address,
+};
 use crate::emergency::{Check, check};
 use crate::handlers::{answer_list, list_ask};
 use crate::models::{self, IntakeError};
 use crate::order::ask_last_question;
-use crate::rules::{CloseReading, Settings, close_reading, split_name_address};
+use crate::rules::{AgeStop, CloseReading, Settings, close_reading, split_name_address};
 use crate::service::{Asked, Handled, Queued, Screened, TextIn, receive_answer, receive_text};
 
 /// What [`receive_reply`] did with one inbound text.
@@ -55,6 +62,11 @@ pub enum Reply {
     /// `answer_close` closed these jobs or asked "Close which?" (JOB-019 to JOB-022, D-4051),
     /// with the text it queued.
     Closed(Closing, Option<Queued>),
+    /// A clear text in an open request stating an age under 18 (INT-038, D-4142): the request
+    /// closed with this INT-038 text, and under 13 its data and her vault contact's name and
+    /// address are gone. A stop after a 911-list match or on a first text is a
+    /// [`Reply::Handled`] whose texts end with the INT-038 text.
+    UnderAge(AgeStop, Queued),
 }
 
 /// The raw text of a reply and the vault its name-and-address answer is written to (INT-027,
@@ -109,7 +121,11 @@ pub async fn receive_raw_reply(
     reply_in(db, secret, (msg, Some(raw)), (settings, names)).await
 }
 
-/// The one body of [`receive_reply`] and [`receive_raw_reply`], in one transaction.
+/// The one body of [`receive_reply`] and [`receive_raw_reply`], in one transaction. A text that
+/// states an age under 18 (INT-038, D-4142) ends the reply with the INT-038 text and no last
+/// question: a clear one in an open request as [`Reply::UnderAge`], before the close and
+/// name-and-address steps; any other (a 911-list match, or a first text) after `receive_text` or
+/// `answer_name_address` screened it, its texts first (INT-002).
 async fn reply_in(
     db: &mut PgConnection,
     secret: &SecretString,
@@ -125,41 +141,86 @@ async fn reply_in(
     let open = models::open_conversation(&mut tx, msg.contact).await?;
     let (mut step_11, mut mention) = (None, None);
     if let Some(conversation) = open.filter(|_| !answered_elsewhere) {
-        if list_ask(msg.inbound.words).is_some() {
-            let spanish_on = settings.spanish_conversations_on;
-            let queued = listed(&mut tx, secret, msg, (conversation, spanish_on), names).await?;
-            if !queued.is_empty() {
-                tx.commit().await.map_err(|_| IntakeError::Database)?;
-                return Ok(Reply::Listed(queued));
-            }
-        }
-        hear(&mut tx, conversation, msg).await?;
-        let (ended, said) = by_text(&mut tx, secret, msg).await?;
-        mention = said;
+        let request = (conversation, settings, names);
+        let (ended, said) = in_request(&mut tx, secret, (msg, raw), request).await?;
         if let Some(reply) = ended {
             tx.commit().await.map_err(|_| IntakeError::Database)?;
             return Ok(reply);
         }
-        if !closes(msg.inbound.words) {
-            if let Some(raw) = raw.filter(|_| list_ask(msg.inbound.words).is_none())
-                && name_address_open(&mut tx, msg.contact).await?
-            {
-                let reply = answer_name_address(&mut tx, secret, (msg, raw), settings).await?;
-                tx.commit().await.map_err(|_| IntakeError::Database)?;
-                return Ok(reply);
-            }
-            step_11 = Some(conversation);
-        }
+        mention = said;
+        step_11 = (!closes(msg.inbound.words)).then_some(conversation);
     }
     let mut handled = receive_text(&mut tx, secret, msg, settings).await?;
     handled.texts.extend(mention);
-    if let Some(conversation) = step_11.filter(|_| moves_on(&handled)) {
-        let spanish_on = settings.spanish_conversations_on;
+    let spanish_on = settings.spanish_conversations_on;
+    let stopped =
+        !answered_elsewhere && stop_after(&mut tx, secret, msg, &mut handled, spanish_on).await?;
+    if let Some(conversation) = step_11.filter(|_| !stopped && moves_on(&handled)) {
         let ask = ask_last_question(&mut tx, secret, (msg, conversation), spanish_on).await?;
         handled.texts.extend(ask);
     }
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Reply::Handled(handled))
+}
+
+/// A text in open request `conversation` that is not an opt-out or HELP (TXT-031, INT-019,
+/// INT-038, JOB-019, INT-027, D-4142): a LIST answered, the wait restarted, a clear under-18
+/// text stopped, a close by text, then the name-and-address answer (a stop after its screen).
+/// The first item ends the reply; the second is the JOB-023 line for a reply that goes on.
+async fn in_request(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    (msg, raw): (&TextIn<'_>, Option<RawReply<'_>>),
+    (conversation, settings, names): (Uuid, Settings, &[(Uuid, String)]),
+) -> Result<(Option<Reply>, Option<Queued>), IntakeError> {
+    let spanish_on = settings.spanish_conversations_on;
+    if list_ask(msg.inbound.words).is_some() {
+        let queued = listed(tx, secret, msg, (conversation, spanish_on), names).await?;
+        if !queued.is_empty() {
+            return Ok((Some(Reply::Listed(queued)), None));
+        }
+    }
+    hear(tx, conversation, msg).await?;
+    if clear(msg.inbound.words)
+        && let Some((stop, queued)) =
+            stop_if_under_18(tx, secret, msg, conversation, spanish_on).await?
+    {
+        return Ok((Some(Reply::UnderAge(stop, queued)), None));
+    }
+    let (ended, said) = by_text(tx, secret, msg).await?;
+    if ended.is_some() {
+        return Ok((ended, None));
+    }
+    if !closes(msg.inbound.words)
+        && let Some(raw) = raw.filter(|_| list_ask(msg.inbound.words).is_none())
+        && name_address_open(tx, msg.contact).await?
+    {
+        let mut reply = answer_name_address(tx, secret, (msg, raw), settings).await?;
+        if let Reply::Handled(handled) = &mut reply {
+            stop_after(tx, secret, msg, handled, spanish_on).await?;
+        }
+        return Ok((Some(reply), None));
+    }
+    Ok((None, said))
+}
+
+/// INT-038 after the 911 screen (INT-002, D-4142): when `handled`'s request, the one the text
+/// opened or went on, is stopped for a stated age under 18, the INT-038 text joins its texts
+/// last; true when it stopped.
+async fn stop_after(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    handled: &mut Handled,
+    spanish_on: bool,
+) -> Result<bool, IntakeError> {
+    let Some(conversation) = handled.conversation else {
+        return Ok(false);
+    };
+    let stop = stop_if_under_18(tx, secret, msg, conversation, spanish_on).await?;
+    let stopped = stop.is_some();
+    handled.texts.extend(stop.map(|(_, queued)| queued));
+    Ok(stopped)
 }
 
 /// A clear text about closing goes to `answer_close` inside the reply's transaction (JOB-019 to
