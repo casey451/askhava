@@ -6078,3 +6078,4 @@
 - 2026-11-17T01:14:37Z runner 7b601a2f6a07 (actions): {}
 - 2026-11-17T01:21:32Z runner 67f601a86f97 (actions): {}
 - 2026-11-17T01:21:59Z runner 67f601a86f97 (actions): {}
+- 2026-11-17T01:22:43Z runner 67f601a86f97 (actions): {"T107": "QUEUED -> IN_PROGRESS"}; T107 estimated 1.3M tokens (calibrated); week has 172.6M left (no five-hour budget, D-3056) after 3.4M still running in another lane (session_reading 2026-11-17T01:21:32Z (week)); running to the limit (model window, D-2225), claimed
