@@ -1183,9 +1183,9 @@ def build(cfg, seed):
                 newc = Contractor(sim, idx, "plumbing", "Lake Havasu City", "responsive")
                 sim.at(t + (ev.get("hour", 10) + 1) * 60, newc.signup)          # a contractor signs up during the lost hours
         elif ev["type"] == "disputes":
-            def dispute_some():
+            def dispute_some(share=ev["share"]):
                 for pi in list(sim.stripe.intents.values()):
-                    if pi["status"] == "succeeded" and sim.rng.random() < ev["share"]:
+                    if pi["status"] == "succeeded" and sim.rng.random() < share:
                         sim.stripe.maybe_dispute(pi["id"])
             sim.at(t, dispute_some)
     return sim

@@ -1,5 +1,90 @@
 {
- "note": "Empty until the first green main run of the E2e job: copy its step summary figures here with perf/compare.py --write-baseline (T418, D-3292). An empty baseline compares nothing.",
- "routes": {},
- "vitals": {}
+ "label": "lab, not field",
+ "routes": {
+  "business_dashboard": {
+   "1": {
+    "mean_queries": 1.9,
+    "p95_ms": 1.36
+   },
+   "10": {
+    "p95_ms": 6.18
+   }
+  },
+  "home": {
+   "1": {
+    "mean_queries": 3.98,
+    "p95_ms": 4.54
+   },
+   "10": {
+    "p95_ms": 27.26
+   }
+  },
+  "intake_ack": {
+   "1": {
+    "mean_queries": 31.07,
+    "p95_ms": 22.89
+   },
+   "10": {
+    "p95_ms": 206.43
+   }
+  },
+  "pick_final": {
+   "1": {
+    "mean_queries": 31.95,
+    "p95_ms": 37.21
+   },
+   "10": {
+    "p95_ms": 5067.75
+   }
+  },
+  "pick_review": {
+   "1": {
+    "mean_queries": 10.1,
+    "p95_ms": 11.3
+   },
+   "10": {
+    "p95_ms": 29.82
+   }
+  },
+  "quote_page": {
+   "1": {
+    "mean_queries": 10.9,
+    "p95_ms": 8.43
+   },
+   "10": {
+    "p95_ms": 39.97
+   }
+  },
+  "quote_poll": {
+   "1": {
+    "mean_queries": 10.88,
+    "p95_ms": 7.18
+   },
+   "10": {
+    "p95_ms": 33.32
+   }
+  }
+ },
+ "vitals": {
+  "home": {
+   "cls": 0.014619886956256309,
+   "inp_ms": 48.0,
+   "lcp_ms": 420.0
+  },
+  "intake_first_step": {
+   "cls": 0.025870339782033142,
+   "inp_ms": 32.0,
+   "lcp_ms": 412.0
+  },
+  "quote_page": {
+   "cls": 0.028383517444087174,
+   "inp_ms": 32.0,
+   "lcp_ms": 420.0
+  },
+  "zip_result": {
+   "cls": 0.014619886956256309,
+   "inp_ms": 40.0,
+   "lcp_ms": 416.0
+  }
+ }
 }
