@@ -62,7 +62,7 @@
   "scripts/check_state.py": "eb0afa5a32a4648d2a0bf24bc972e00ff6d2347c7f0be81aff384b39f9df0393",
   "scripts/coverage_floor.py": "a1c2a7fcfea10a6a873b76111e7b05cf4a8419281b182b3667a46fabb576354b",
   "scripts/gen_prompts.py": "f07bdf464f66e48b1c4aa3a51d10a112a18d3a6e7c2587fa970ce8f7e60197ee",
-  "scripts/npm_audit.py": "7755bf5f56eedf52003e987a376183076e1b63717c24cfe654732b6a6c1c930a",
+  "scripts/npm_audit.py": "1f154c61aaf83f6a54c1daf23464f2e7ecf0746c2fa66bbc100cf742967281d7",
   "scripts/pacing.py": "64fbda8e50778f579a2772f19af510e9b9d9c7336904183675426ac3b81bdf03",
   "scripts/pii_scan.py": "0b65cdf5311ce3923101e91bc60f6a90f36c37dafa58d6622944306f0738d6ab",
   "scripts/plan_health.py": "2448d0d3b1932ac7f1deb43ec9b8142fc299821eb0c53048e023fb6086c7f8f4",

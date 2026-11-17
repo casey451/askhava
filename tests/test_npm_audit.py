@@ -10,6 +10,7 @@ import copy
 import importlib.util
 import json
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,7 @@ _SPEC.loader.exec_module(audit)
 
 EXCUSED = "GHSA-fc5q-39xc-vjpf"
 OTHER = "GHSA-2222-3333-4444"
+TODAY = date(2026, 11, 17)  # every judgement is pinned, so the review date never ages these tests
 
 
 def advisory(name: str, ghsa: str = EXCUSED, severity: str = "high") -> dict[str, Any]:
@@ -62,7 +64,7 @@ def real_chain() -> dict[str, Any]:
 
 
 def test_the_real_nine_package_chain_passes_and_names_the_excused_advisory(capsys: pytest.CaptureFixture[str]) -> None:
-    assert audit.report(report(real_chain())) == 0
+    assert audit.report(report(real_chain()), today=TODAY) == 0
     out = capsys.readouterr().out
     assert f"excused {EXCUSED} on picomatch (D-4223)" in out and out.rstrip().endswith("npm audit: ok")
 
@@ -70,14 +72,14 @@ def test_the_real_nine_package_chain_passes_and_names_the_excused_advisory(capsy
 def test_a_second_unrelated_advisory_fails(capsys: pytest.CaptureFixture[str]) -> None:
     vulns = real_chain()
     vulns["left-pad"] = vuln("left-pad", [advisory("left-pad", OTHER, "low")])
-    assert audit.report(report(vulns)) == 1
+    assert audit.report(report(vulns), today=TODAY) == 1
     assert f"left-pad: {OTHER} on left-pad (low)" in capsys.readouterr().out
 
 
 def test_a_package_whose_via_mixes_the_excused_advisory_and_another_fails(capsys: pytest.CaptureFixture[str]) -> None:
     vulns = real_chain()
     vulns["picomatch"]["via"].append(advisory("picomatch", OTHER))
-    assert audit.report(report(vulns)) == 1
+    assert audit.report(report(vulns), today=TODAY) == 1
     out = capsys.readouterr().out
     assert f"picomatch: {OTHER} on picomatch" in out and f"typescript-eslint: {OTHER} on picomatch" in out
 
@@ -86,23 +88,23 @@ def test_a_string_via_that_reaches_another_advisory_fails() -> None:
     vulns = real_chain()
     vulns["evil"] = vuln("evil", [advisory("evil", OTHER)])
     vulns["fdir"]["via"].append("evil")
-    problems, _ = audit.judge(vulns, audit.EXCEPTIONS)
+    problems, _ = audit.judge(vulns, audit.EXCEPTIONS, TODAY)
     assert "fdir: GHSA-2222-3333-4444 on evil (high): planted advisory on evil" in problems
 
 
 def test_the_excused_advisory_on_a_different_package_fails() -> None:
     vulns = {"micromatch": vuln("micromatch", [advisory("micromatch")])}
-    assert audit.report(report(vulns)) == 1
+    assert audit.report(report(vulns), today=TODAY) == 1
     renamed = {"picomatch": vuln("picomatch", [advisory("micromatch")])}
-    assert audit.report(report(renamed)) == 1, "the advisory's own name must be the excepted package too"
+    assert audit.report(report(renamed), today=TODAY) == 1, "the advisory's own name must be the excepted package too"
 
 
 def test_cycles_terminate_and_a_cycle_with_no_advisory_fails() -> None:
     vulns = real_chain()
     vulns["picomatch"]["via"].append("typescript-eslint")
-    assert audit.judge(vulns, audit.EXCEPTIONS)[0] == []
+    assert audit.judge(vulns, audit.EXCEPTIONS, TODAY)[0] == []
     loop = {"a": vuln("a", ["b"]), "b": vuln("b", ["a"])}
-    problems, _ = audit.judge(loop, audit.EXCEPTIONS)
+    problems, _ = audit.judge(loop, audit.EXCEPTIONS, TODAY)
     assert problems == ["a: reported vulnerable but traces to no advisory",
                         "b: reported vulnerable but traces to no advisory"]
 
@@ -124,11 +126,11 @@ def test_cycles_terminate_and_a_cycle_with_no_advisory_fails() -> None:
     report({"x": vuln("x", [{"name": "x", "url": "https://example.invalid/no-id", "severity": "low"}])}),
 ])
 def test_anything_it_cannot_judge_fails_closed(text: str) -> None:
-    assert audit.report(text) == 1
+    assert audit.report(text, today=TODAY) == 1
 
 
 def test_an_empty_report_passes_and_notes_the_stale_exception(capsys: pytest.CaptureFixture[str]) -> None:
-    assert audit.report(report({})) == 0
+    assert audit.report(report({}), today=TODAY) == 0
     out = capsys.readouterr().out
     assert f"note: {EXCUSED} on picomatch (D-4223) is no longer reported" in out
     assert "npm audit: ok" in out
@@ -138,28 +140,69 @@ def test_an_empty_report_passes_and_notes_the_stale_exception(capsys: pytest.Cap
 def test_an_exception_missing_a_field_fails(field: str) -> None:
     broken = copy.deepcopy(audit.EXCEPTIONS[0])
     broken[field] = " "
-    assert audit.report(report(real_chain()), (broken,)) == 1
+    assert audit.report(report(real_chain()), (broken,), TODAY) == 1
 
 
 def test_an_exception_with_a_malformed_id_or_decision_fails() -> None:
-    for key, value in (("ghsa", "CVE-2026-0001"), ("decision", "soon")):
+    for key, value in (("ghsa", "CVE-2026-0001"), ("decision", "soon"), ("review_by", "next month"),
+                       ("dependents", ("fdir",)), ("dependents", "picomatch")):
         broken = {**audit.EXCEPTIONS[0], key: value}
-        assert audit.report(report(real_chain()), (broken,)) == 1
+        assert audit.report(report(real_chain()), (broken,), TODAY) == 1
 
 
 def test_the_exception_list_is_exactly_the_one_d4223_names() -> None:
-    assert [(e["ghsa"], e["package"], e["decision"]) for e in audit.EXCEPTIONS] == [(EXCUSED, "picomatch", "D-4223")]
+    assert [(e["ghsa"], e["package"], e["decision"], e["review_by"]) for e in audit.EXCEPTIONS] == [
+        (EXCUSED, "picomatch", "D-4223", "2026-12-17")]
+    assert sorted(audit.EXCEPTIONS[0]["dependents"]) == sorted(real_chain()), "exactly today's nine packages"
 
 
 def test_main_reads_a_saved_report_and_fails_on_a_missing_file(tmp_path: Path) -> None:
     saved = tmp_path / "audit.json"
     saved.write_text(report(real_chain()), encoding="utf-8")
-    assert audit.main(["--input", str(saved)]) == 0
-    assert audit.main(["--input", str(tmp_path / "absent.json")]) == 1
+    assert audit.main(["--input", str(saved)], TODAY) == 0
+    assert audit.main(["--input", str(tmp_path / "absent.json")], TODAY) == 1
 
 
 def test_main_fails_when_npm_cannot_run(monkeypatch: pytest.MonkeyPatch) -> None:
     def no_npm(*_args: Any, **_kwargs: Any) -> Any:
         raise FileNotFoundError("npm")
     monkeypatch.setattr(audit.subprocess, "run", no_npm)
-    assert audit.main([]) == 1
+    assert audit.main([], TODAY) == 1
+
+
+def test_the_advisory_must_sit_on_its_own_packages_entry() -> None:
+    """The excused advisory held by fdir's entry (not picomatch's) is not excused, even reached from picomatch."""
+    moved = {"picomatch": vuln("picomatch", ["fdir"]), "fdir": vuln("fdir", [advisory("picomatch")])}
+    assert audit.report(report(moved), today=TODAY) == 1
+
+
+def test_an_error_key_fails_even_on_an_otherwise_valid_report() -> None:
+    valid = json.loads(report(real_chain()))
+    assert audit.report(json.dumps(valid), today=TODAY) == 0
+    assert audit.report(json.dumps({**valid, "error": {"code": "EAUDITPARTIAL"}}), today=TODAY) == 1
+
+
+def test_a_version_one_report_fails_even_with_a_valid_map_and_count() -> None:
+    old = {**json.loads(report(real_chain())), "auditReportVersion": 1}
+    assert audit.report(json.dumps(old), today=TODAY) == 1
+
+
+def test_a_new_package_reaching_the_excused_advisory_fails(capsys: pytest.CaptureFixture[str]) -> None:
+    vulns = real_chain()
+    vulns["globby-next"] = vuln("globby-next", ["picomatch"])
+    assert audit.report(report(vulns), today=TODAY) == 1
+    assert f"globby-next: {EXCUSED} on picomatch" in capsys.readouterr().out
+
+
+def test_only_a_github_advisory_url_ending_in_the_id_counts() -> None:
+    for url in (f"https://example.invalid/{EXCUSED}/{OTHER}", f"https://github.com/advisories/{EXCUSED}/{OTHER}",
+                f"https://github.com/advisories/{OTHER}?see={EXCUSED}", f"https://github.com/advisories/{EXCUSED}x"):
+        vulns = {"picomatch": vuln("picomatch", [{**advisory("picomatch"), "url": url}])}
+        assert audit.report(report(vulns), today=TODAY) == 1, url
+
+
+def test_after_the_review_date_every_run_fails_until_it_is_rechecked(capsys: pytest.CaptureFixture[str]) -> None:
+    assert audit.report(report(real_chain()), today=date(2026, 12, 17)) == 0, "the review date itself still passes"
+    assert audit.report(report(real_chain()), today=date(2026, 12, 18)) == 1
+    assert "passed its review date 2026-12-17: re-check for a patched picomatch" in capsys.readouterr().out
+    assert audit.report(report({}), today=date(2026, 12, 18)) == 1

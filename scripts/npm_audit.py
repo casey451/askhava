@@ -6,11 +6,14 @@ reported vulnerable package, whatever its severity (info and low included), unle
 package traces to is excused by an entry in `EXCEPTIONS` below.
 
 How a package is traced: npm lists, for each vulnerable package, a `via` list. A dict entry is an
-advisory (its GHSA id is read from its `url`); a string entry names another vulnerable package, whose
-own `via` is followed in turn (each package once, so a cycle ends). An advisory is excused only when
-its GHSA id, the package it is reported on and the advisory's own `name` all match one exception. A
-package whose trace reaches no advisory at all, an advisory without a GHSA id, or a string naming a
-package npm did not report, fails.
+advisory (its GHSA id is its `url`'s last path segment, `https://github.com/advisories/GHSA-...`, and
+nothing else); a string entry names another vulnerable package, whose own `via` is followed in turn
+(each package once, so a cycle ends). An advisory is excused only when its GHSA id, the package whose
+entry holds it and the advisory's own `name` all match one exception, and the reported package that
+reaches it is one of that exception's `dependents` (the chain known when the exception was granted).
+A package whose trace reaches no advisory at all, an advisory without a GHSA id, or a string naming a
+package npm did not report, fails. After an exception's `review_by` date every run fails until a plan
+change re-checks for a patched release and either removes the exception or moves the date.
 
 It fails closed: npm missing, output that is not JSON, an `error` key, an `auditReportVersion` other
 than 2, a vulnerability count that disagrees with the list, or an exception entry missing a field.
@@ -32,24 +35,30 @@ import json
 import re
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 GHSA = re.compile(r"GHSA(?:-[23456789cfghjmpqrvwx]{4}){3}")
+ADVISORY_URL = re.compile(r"https://github\.com/advisories/(GHSA(?:-[23456789cfghjmpqrvwx]{4}){3})")
 DECISION = re.compile(r"D-\d+")
 REPORT_VERSION = 2
-EXCEPTION_FIELDS = ("ghsa", "package", "decision", "reason")
+EXCEPTION_FIELDS = ("ghsa", "package", "decision", "reason", "review_by", "dependents")
 
 # Each entry excuses one advisory on one package, nothing else. Remove it by a plan change once a
 # patched release exists (the script prints a note when npm stops reporting it).
-EXCEPTIONS: tuple[dict[str, str], ...] = (
+EXCEPTIONS: tuple[dict[str, Any], ...] = (
     {
         "ghsa": "GHSA-fc5q-39xc-vjpf",
         "package": "picomatch",
         "decision": "D-4223",
-        "reason": "ReDoS in every picomatch release, no patched version; dev-only lint chain "
+        "reason": "ReDoS in every picomatch release (<=4.0.7), no patched version; dev-only lint chain "
         "(typescript-eslint), never in the production image, glob patterns are ours",
+        "review_by": "2026-12-17",
+        "dependents": ("picomatch", "fdir", "tinyglobby", "typescript-eslint", "@typescript-eslint/eslint-plugin",
+                       "@typescript-eslint/parser", "@typescript-eslint/type-utils",
+                       "@typescript-eslint/typescript-estree", "@typescript-eslint/utils"),
     },
 )
 
@@ -58,14 +67,23 @@ class AuditError(Exception):
     """The report cannot be judged: npm failed, the shape is unknown or an exception is malformed."""
 
 
-def check_exceptions(exceptions: tuple[dict[str, str], ...]) -> None:
-    """Raise AuditError unless every exception has every field, a GHSA id and a decision number."""
+def check_exceptions(exceptions: tuple[dict[str, Any], ...]) -> None:
+    """Raise AuditError unless every exception has every field, a GHSA id, a decision, a date and dependents."""
     for entry in exceptions:
-        missing = [f for f in EXCEPTION_FIELDS if not str(entry.get(f, "")).strip()]
+        missing = [f for f in EXCEPTION_FIELDS if not entry.get(f) or (isinstance(entry[f], str)
+                                                                       and not entry[f].strip())]
         if missing:
             raise AuditError(f"exception {entry!r} lacks {', '.join(missing)}")
         if not GHSA.fullmatch(entry["ghsa"]) or not DECISION.fullmatch(entry["decision"]):
             raise AuditError(f"exception {entry!r} needs a GHSA id and a D-#### decision")
+        try:
+            date.fromisoformat(entry["review_by"])
+        except (TypeError, ValueError) as exc:
+            raise AuditError(f"exception {entry!r} needs a review_by date (YYYY-MM-DD)") from exc
+        dependents = entry["dependents"]
+        if (not isinstance(dependents, (list, tuple)) or entry["package"] not in dependents
+                or not all(isinstance(d, str) and d for d in dependents)):
+            raise AuditError(f"exception {entry!r} needs a dependents list naming its package")
 
 
 def parse_report(text: str) -> dict[str, Any]:
@@ -92,9 +110,9 @@ def parse_report(text: str) -> dict[str, Any]:
 
 
 def advisory_id(advisory: dict[str, Any]) -> str:
-    """The GHSA id in an advisory's url, or '' when it has none."""
-    found = GHSA.search(str(advisory.get("url", "")))
-    return found.group(0) if found else ""
+    """The GHSA id that is the advisory url's last path segment, or '' when the url is any other shape."""
+    found = ADVISORY_URL.fullmatch(str(advisory.get("url", "")))
+    return found.group(1) if found else ""
 
 
 def trace(vulns: dict[str, Any], start: str) -> list[tuple[str, dict[str, Any]]]:
@@ -122,26 +140,35 @@ def trace(vulns: dict[str, Any], start: str) -> list[tuple[str, dict[str, Any]]]
     return found
 
 
-def excused_by(package: str, advisory: dict[str, Any], exceptions: tuple[dict[str, str], ...]) -> str:
-    """The decision that excuses this advisory on this package, or '' when none does."""
+def excused_by(root: str, package: str, advisory: dict[str, Any], exceptions: tuple[dict[str, Any], ...]) -> str:
+    """The decision that excuses this advisory, held by `package` and reached from `root`, or ''."""
     ghsa = advisory_id(advisory)
     for entry in exceptions:
-        if ghsa and ghsa == entry["ghsa"] and package == entry["package"] == advisory.get("name"):
+        if (ghsa and ghsa == entry["ghsa"] and package == entry["package"] == advisory.get("name")
+                and root in entry["dependents"]):
             return entry["decision"]
     return ""
 
 
-def judge(vulns: dict[str, Any], exceptions: tuple[dict[str, str], ...]) -> tuple[list[str], set[str]]:
-    """Return (problems, excused GHSA ids) for a vulnerabilities map."""
+def expired(exceptions: tuple[dict[str, Any], ...], today: date) -> list[str]:
+    """One problem per exception whose review_by date has passed."""
+    return [f"exception {e['ghsa']} on {e['package']} ({e['decision']}) passed its review date {e['review_by']}: "
+            f"re-check for a patched {e['package']} and remove the exception, or move the date by a plan change"
+            for e in exceptions if today > date.fromisoformat(e["review_by"])]
+
+
+def judge(vulns: dict[str, Any], exceptions: tuple[dict[str, Any], ...],
+          today: date | None = None) -> tuple[list[str], set[str]]:
+    """Return (problems, excused GHSA ids) for a vulnerabilities map, judged on `today` (default: now)."""
     check_exceptions(exceptions)
-    problems: list[str] = []
+    problems = expired(exceptions, today or date.today())
     excused: set[str] = set()
     for name in sorted(vulns):
         found = trace(vulns, name)
         if not found:
             problems.append(f"{name}: reported vulnerable but traces to no advisory")
         for package, advisory in found:
-            if excused_by(package, advisory, exceptions):
+            if excused_by(name, package, advisory, exceptions):
                 excused.add(advisory_id(advisory))
             else:
                 ident = advisory_id(advisory) or str(advisory.get("url") or advisory.get("source"))
@@ -160,10 +187,10 @@ def run_npm() -> str:
     return done.stdout
 
 
-def report(text: str, exceptions: tuple[dict[str, str], ...] = EXCEPTIONS) -> int:
-    """Judge one report's text, print the outcome and return the exit status."""
+def report(text: str, exceptions: tuple[dict[str, Any], ...] = EXCEPTIONS, today: date | None = None) -> int:
+    """Judge one report's text on `today` (default: now), print the outcome and return the exit status."""
     try:
-        problems, excused = judge(parse_report(text), exceptions)
+        problems, excused = judge(parse_report(text), exceptions, today)
     except AuditError as exc:
         print(f"npm audit: FAILED (cannot judge): {exc}")
         return 1
@@ -180,8 +207,8 @@ def report(text: str, exceptions: tuple[dict[str, str], ...] = EXCEPTIONS) -> in
     return 1 if problems else 0
 
 
-def main(argv: list[str] | None = None) -> int:
-    """Parse the arguments, read or run the audit, and judge it."""
+def main(argv: list[str] | None = None, today: date | None = None) -> int:
+    """Parse the arguments, read or run the audit, and judge it on `today` (default: now)."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--input", type=Path, help="a saved `npm audit --json` report")
     args = parser.parse_args(argv)
@@ -190,7 +217,7 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, AuditError) as exc:
         print(f"npm audit: FAILED (cannot judge): {exc}")
         return 1
-    return report(text)
+    return report(text, today=today)
 
 
 if __name__ == "__main__":
