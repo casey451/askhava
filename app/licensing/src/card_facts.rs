@@ -9,7 +9,12 @@
 //! `holder_for` reads a paused row as reported wrong (the day it was recorded as the check day; a
 //! pest row is self-attested, so `licensed_lines` gives it no check line, LIC-047; D-3646). With
 //! none of these the card is a no-license card: whether the latest city list matches the business
-//! and the year of the matching entry, when it has one (LIC-038, D-3646). Read only: no table,
+//! and the year of the matching entry, when it has one (LIC-038, D-3646). On an ROC category whose
+//! latest check exists and did not show Active (a lapse) the card makes no city-license claim
+//! (`city_listed` false, no year), since LIC-038's lines are for work that needs no license; a
+//! handyman still gets LIC-024's line from `portals`. A business with no ROC check row keeps the
+//! city lookup, as handyman and city-listed businesses quote ROC kinds that allow handymen; no
+//! false claim either way, PICK-041 shows only checked facts (D-4052, D-4064). Read only: no table,
 //! column or writer. Licensing never calls `businesses`, so the handyman tick and the insurance
 //! answer of [`NoLicenseFacts`] are left `false` and `None` for `portals::quote_cards` to fill.
 
@@ -46,9 +51,10 @@ pub enum CardFacts {
     },
 }
 
-/// PICK-041, LIC-026, LIC-034, LIC-038, LIC-047, D-3642: the card facts of `business` on a job of
-/// catalog `category`, or none for a category the catalog does not hold. `city_names` are the
-/// business's own names for the city-list match; `None` matches nothing.
+/// PICK-041, LIC-024, LIC-026, LIC-034, LIC-038, LIC-047, D-3642, D-4064: the card facts of
+/// `business` on a job of catalog `category`, or none for a category the catalog does not hold.
+/// `city_names` are the business's own names for the city-list match; `None` matches nothing. On
+/// an ROC category whose latest check did not show Active the city list is not read.
 ///
 /// # Errors
 ///
@@ -66,8 +72,13 @@ pub async fn card_facts(
         return Ok(None);
     };
     let mut licenses = Vec::new();
+    let mut lapsed = false;
     if matches!(kind, LicenseKind::Roc | LicenseKind::RocAndStateAgency) {
-        licenses.extend(roc_facts(conn, business).await?);
+        match roc_facts(conn, business).await? {
+            Some(Some(roc)) => licenses.push(roc),
+            Some(None) => lapsed = true,
+            None => {}
+        }
     }
     let agency = Agency::for_category(code);
     if let (LicenseKind::StateAgency | LicenseKind::RocAndStateAgency, Some(a)) = (kind, agency) {
@@ -77,8 +88,8 @@ pub async fn card_facts(
         return Ok(Some(CardFacts::Licensed(licenses)));
     }
     let city = match city_names {
-        Some(names) => city_year(conn, names).await?,
-        None => None,
+        Some(names) if !lapsed => city_year(conn, names).await?,
+        _ => None,
     };
     let facts = NoLicenseFacts {
         handyman: false,
@@ -91,13 +102,13 @@ pub async fn card_facts(
     }))
 }
 
-/// LIC-026, LIC-037, D-3646: the business's latest daily check, when it showed the ROC license
-/// Active, with the earliest original-issue year any ROC list gives that number; none without a
-/// check or when the latest one did not show Active.
+/// LIC-026, LIC-037, D-3646, D-4064: the business's latest daily check, when it showed the ROC
+/// license Active, with the earliest original-issue year any ROC list gives that number; `None`
+/// without a check, `Some(None)` when the latest one did not show Active (a lapse).
 async fn roc_facts(
     conn: &mut PgConnection,
     business: Uuid,
-) -> Result<Option<LicenseFacts>, CardFactsError> {
+) -> Result<Option<Option<LicenseFacts>>, CardFactsError> {
     let row = sqlx::query!(
         r#"SELECT c.license_number, c.checked_at AS "checked_at!: jiff_sqlx::Timestamp",
                   (SELECT EXTRACT(YEAR FROM MIN(r.issued_on))::int2 FROM licensing.agency_record r
@@ -110,11 +121,13 @@ async fn roc_facts(
     .fetch_optional(&mut *conn)
     .await
     .map_err(|_| CardFactsError::Database)?;
-    Ok(row.filter(|r| r.active).map(|r| LicenseFacts {
-        issuer: Issuer::Roc,
-        number: r.license_number,
-        checked_on: arizona_time(r.checked_at.to_jiff()).date(),
-        since_year: r.since_year,
+    Ok(row.map(|r| {
+        r.active.then(|| LicenseFacts {
+            issuer: Issuer::Roc,
+            number: r.license_number,
+            checked_on: arizona_time(r.checked_at.to_jiff()).date(),
+            since_year: r.since_year,
+        })
     }))
 }
 

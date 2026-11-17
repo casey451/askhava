@@ -1,0 +1,91 @@
+{% extends "site_layout.html" %}
+{#- The homeowner data page, /your-data, and in Spanish when `es`, /es/your-data (T221; TERMS-023,
+    TERMS-025, WORD-007, WORD-018, PRIV-011, AI-018, D-3844, D-3878). Retention periods are those of
+    docs/legal/privacy-policy.md section 8 (PRIV-007 to PRIV-010). AI-018's switched-off sentence
+    shows while `ai_on` is false. The Spanish text is a draft for native-speaker review (TERMS-018);
+    each Spanish passage carries its own lang (A11Y-004). tests/docs/test_legal_pages.py checks both
+    languages. -#}
+{% block lang %}{% if es %}es{% else %}en{% endif %}{% endblock %}
+{% block title %}{% if es %}Sus datos{% else %}Your data{% endif %}{% endblock %}
+{% block content %}
+{%- let brand = askhava_core::api::brand().display_name() %}
+{%- if es %}
+<h1 lang="es">Sus datos</h1>
+<p lang="es">Esta página explica qué guarda {{ brand }} sobre usted, por cuánto tiempo y quién lo puede ver.</p>
+<h2 lang="es">Qué guardamos y por cuánto tiempo</h2>
+<ul lang="es">
+<li lang="es">Su nombre, correo electrónico y dirección: se borran 180 días después de que se cierra su solicitud, o más tarde solo si hay una queja o disputa abierta.</li>
+<li lang="es">Las fotos: se borran 30 días después de que se cierra su solicitud.</li>
+<li lang="es">La descripción del trabajo, sin sus datos de contacto: se guarda 3 años.</li>
+<li lang="es">Su número de teléfono, bajo llave, con su permiso de mensajes y sus bajas: se guarda 5 años después de nuestro último mensaje a ese número.</li>
+<li lang="es">Los registros de los términos que aceptó: 7 años después de la última elección hecha bajo ellos, sin datos de contacto.</li>
+</ul>
+<p lang="es">Guardamos su número de teléfono, bajo llave, por 5 años solo como prueba de su permiso de mensajes y de su baja.</p>
+<h2 lang="es">Quién ve qué</h2>
+<p lang="es">Cuando usted envía una solicitud, {{ brand }} manda una descripción del trabajo, sin su nombre, número de teléfono, correo electrónico ni dirección, a los negocios locales que hacen ese tipo de trabajo. Si envía fotos, esos negocios también las ven, sin datos de ubicación; le pedimos que solo envíe fotos que no muestren personas ni números de casa, y cuando nuestra revisión de fotos con IA esté activa, también se difuminan caras, números de casa, placas y texto legible. Solo después de que usted elija un negocio, y este confirme (y pague su tarifa de presentación, cuando corresponda), {{ brand }} le da a ese único negocio su nombre de pila y la dirección del trabajo, además de su correo electrónico si decidió compartirlo y sus fotos en tamaño completo, sin datos de ubicación. {{ brand }} nunca le da su número de teléfono a ningún negocio, y nunca vende ni comparte números de teléfono ni permisos de mensajes de texto para mercadeo.</p>
+<p lang="es">Solo el negocio que usted elige recibe su nombre de pila y su dirección, después de que lo elige.</p>
+<p lang="es">{{ brand }} nunca le da su número a ningún negocio. Si un negocio se lo pide en la llamada, es su decisión.</p>
+<h2 lang="es">Lo que nunca preguntamos</h2>
+<p lang="es">Nunca preguntamos por su estatus migratorio. Nunca le pedimos una identificación.</p>
+<h2 lang="es">La policía y la ley</h2>
+<p lang="es">Sus datos van a la policía o a otros solo cuando una ley lo exige, como una citación o una orden judicial.</p>
+<p lang="es">El dueño de {{ brand }} nunca usa los datos de {{ brand }} para ningún otro trabajo o negocio.</p>
+<h2 lang="es">Mensajes automáticos e IA</h2>
+{%- if ai_on %}
+<p lang="es">Para clasificar su solicitud y ayudar a redactar nuestras preguntas, un servicio de IA de Anthropic lee la descripción de su trabajo después de que nuestro programa quita nombres, números de teléfono, correos electrónicos y números de calle. También escribe su tarjeta de trabajo, que usted ve antes de que salga. La IA nunca ve sus datos de contacto, nunca da precios ni diagnósticos, y nunca toma decisiones sobre dinero ni sobre quién recibe sus datos.</p>
+{%- else %}
+<p lang="es">Nuestros mensajes de texto son automáticos. Cuando se active, un servicio de IA ayuda a redactar nuestras preguntas y a escribir su tarjeta de trabajo a partir de su solicitud, después de que nuestro programa quita nombres, números de teléfono, correos electrónicos y números de calle. Usted ve la tarjeta antes de que salga.</p>
+{%- endif %}
+<h2 lang="es">Para ver, cambiar o borrar sus datos</h2>
+<p lang="es">En su <a href="/h/sign-in">página de propietario</a> puede ver y cambiar sus datos, pedir una copia o pedir que los borremos.</p>
+<p lang="es">Los detalles completos están en nuestra <a href="/privacy">política de privacidad</a>, por ahora solo en inglés.</p>
+<p lang="en"><a href="/your-data">Your data, in English</a></p>
+{%- else %}
+<h1>Your data</h1>
+<p>Here's what {{ brand }} keeps about you, how long we keep it, and who sees it.</p>
+<h2>What we keep and for how long</h2>
+<ul>
+<li>Your name, email and address: deleted 180 days after your request closes. An open complaint or dispute can delay this.</li>
+<li>Photos: deleted 30 days after your request closes.</li>
+<li>Job descriptions, with your contact details removed: kept 3 years.</li>
+<li>Your phone number, and your yes or stop to our texts: kept locked for 5 years after our last text.</li>
+<li>The terms you agreed to: kept 7 years after the last pick you made under those terms. We store no contact details with them.</li>
+</ul>
+<p data-fixed="PRIV-011">We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.</p>
+<h2>Who sees what</h2>
+<p data-fixed="TERMS-025">When you send a request, {{ brand }} sends a description of the job, with your name, phone number, email and street address removed, to local businesses that do that kind of work. If you send photos, those businesses also see them, with location data removed; we ask you to send only photos that show no person or house number, and once our AI photo screening is on, any faces, house numbers, license plates or readable text are blurred as well. Only after you pick a business, and it confirms (and pays its introduction fee, when one is due), does {{ brand }} give that one business your first name and the job address, plus your email if you chose to share it and your photos at full size, with location data removed. {{ brand }} never gives your phone number to any business, and never sells or shares phone numbers or texting permission for marketing.</p>
+<p>Only the business you pick gets your first name and address, after you pick it.</p>
+<p data-fixed="WORD-018">{{ brand }} never gives your number to any business. If a business asks for it on the call, that's your choice.</p>
+<h2>What we never ask</h2>
+<p>We never ask about immigration status. We never ask for ID.</p>
+<h2>Police and the law</h2>
+<p>We give your data to police or anyone else only when the law makes us. Examples are a subpoena or a warrant.</p>
+<p>{{ brand }}'s owner never uses {{ brand }}'s data for any other work or business.</p>
+<h2>Automated texts and AI</h2>
+{%- if ai_on %}
+<p data-fixed="AI-018">To sort your request and help word our questions, an AI service from Anthropic reads your job description after our software removes names, phone numbers, emails and street numbers. It also writes your job card, which you see before it goes out. The AI never sees your contact details, never gives prices or diagnoses, and never makes decisions about money or who gets your details.</p>
+{%- else %}
+<p data-fixed="AI-018">Our texts are automated. When it's switched on, an AI service helps word our questions and write your job card from your request, after our software removes names, phone numbers, emails and street numbers. You see the card before it goes.</p>
+{%- endif %}
+<h2>See, change or delete your data</h2>
+<p>On your <a href="/h/sign-in">homeowner page</a> you can see and change your details, get a copy, or ask us to delete them.</p>
+<p>The full details are in our <a href="/privacy">privacy policy</a>.</p>
+<p lang="es"><a href="/es/your-data">Sus datos, en español</a></p>
+{%- endif %}
+{% endblock %}
+{% block footer %}
+{%- if es %}
+{%- let brand = askhava_core::api::brand().display_name() %}
+<h2 lang="es">Para propietarios</h2>
+<ul>
+<li><a href="/es/how-it-works">Cómo funciona</a></li>
+<li><a href="/services">Servicios</a></li>
+<li><a href="/request">Pida cotizaciones</a></li>
+<li><a href="/help">Ayuda</a></li>
+</ul>
+<p lang="es">Cotizaciones locales. Usted elige.</p>
+<p lang="es">{{ brand }} no es contratista y no realiza, cotiza ni supervisa trabajos. Pasamos su solicitud y le mostramos cotizaciones de negocios locales independientes, tal como las escribieron. Usted elige y contrata directamente al negocio.</p>
+{%- else %}
+{{ super() }}
+{%- endif %}
+{% endblock %}

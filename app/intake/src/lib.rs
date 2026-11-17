@@ -27,6 +27,7 @@
 
 mod accepted_quote;
 mod address_wait;
+mod ai_on;
 pub mod api;
 mod cards_out;
 mod check_in_replies;
