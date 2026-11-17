@@ -6633,3 +6633,4 @@
 - 2026-11-17T19:28:46Z runner 805fa0d42eef (actions): {}
 - 2026-11-17T19:31:33Z runner 889565bba82e (manual): {}
 - 2026-11-17T19:31:55Z runner 970e88f791b3 (actions): {}
+- 2026-11-17T19:37:22Z runner 889565bba82e (actions): {"T582": "QUEUED -> IN_PROGRESS"}; T582 estimated 1.1M tokens (calibrated); week has 140.4M left (no five-hour budget, D-3056) after 1.6M still running in another lane (session_reading 2026-11-17T19:28:29Z (week)); running to the limit (model window, D-2225), claimed
