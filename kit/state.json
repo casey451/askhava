@@ -23493,7 +23493,11 @@
     "T610",
     "T611",
     "T612",
-    "T613"
+    "T613",
+    "T614",
+    "T615",
+    "T616",
+    "T617"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -72923,6 +72927,7 @@
    "id": "T608",
    "deps": [
     "T613",
+    "T614",
     "T593",
     "T441"
    ],
@@ -72936,7 +72941,8 @@
    "id": "T609",
    "deps": [
     "T608",
-    "T200"
+    "T200",
+    "T115"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -72987,6 +72993,54 @@
    "status": "QUEUED",
    "attempts": 0,
    "slug": "site-polish-tokens",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T614",
+   "deps": [
+    "T607",
+    "T593",
+    "T617"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-header",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T615",
+   "deps": [
+    "T614",
+    "T613",
+    "T593"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-404-icons",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T616",
+   "deps": [
+    "T615"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-asset-caching",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T617",
+   "deps": [
+    "T613"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "site-dm-sans-variable",
    "type": "build",
    "stage": "5"
   }
@@ -77626,7 +77680,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T22:32:55Z",
+ "updated_at": "2026-11-17T22:38:55Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -77725,7 +77779,7 @@
   ]
  },
  "runner_sha": "2a27c184336a186af0ded678771b02ea1dc63b3d",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "a499065fb6c7995cd7ea0229e1ae5e07fe551376",
