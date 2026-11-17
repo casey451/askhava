@@ -180,7 +180,7 @@ def test_the_gate_parses_runs_the_ci_checks_and_matches_cis_path_rules() -> None
     assert subprocess.run(["bash", "-n", str(GATE)], check=False).returncode == 0
     for needed in ("check_plan_lock", "pii_scan", "check_rust_rules", "check_crates", "check_code_docs", "check_ai_smell",
                    "check_copy", "trace_spec", "validate_tasks", "gen_prompts.py --check",
-                   'check_pr_change.py --base "${BASE}" --branch "${BRANCH}"', "npm audit --audit-level=low",
+                   'check_pr_change.py --base "${BASE}" --branch "${BRANCH}"', "python3 scripts/npm_audit.py",
                    "gitleaks dir . --no-banner --redact --verbose --exit-code 1"):
         assert needed in text, needed
     ci = yaml.safe_load((ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
@@ -189,7 +189,7 @@ def test_the_gate_parses_runs_the_ci_checks_and_matches_cis_path_rules() -> None
     ci_rules = re.findall(r"grep -Eq '([^']+)'", touches)
     gate_rules = [re.search(rf"^{name}='([^']+)'", text, re.MULTILINE).group(1) for name in ("RUST_PATHS", "NPM_PATHS")]  # type: ignore[union-attr]  # reason: asserted present above
     assert gate_rules == ci_rules, "the gate decides 'Rust changed' and 'npm changed' exactly as Ci does"
-    assert "npm audit --audit-level=low" in steps["TypeScript checks and npm audit"]
+    assert "python3 scripts/npm_audit.py" in steps["TypeScript checks and npm audit"]
 
 
 def test_the_include_guard_runs_on_every_push_and_in_the_quick_gate() -> None:

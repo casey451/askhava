@@ -3219,6 +3219,17 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - `docs/legal/twilio-campaign.md` is the text for registering the homeowner texting campaign: the settings, the description, the six sample messages (each copied from the real text it stands for), the Spanish steps and what happens if the campaign is refused. Nothing is submitted; you register it by hand when the account checklist gets there.
 - One thing to know: the description no longer says people opt in by "replying OK", because texting in is the opt-in (D-419). Everything else is the wording from the changes file.
 
+## A lint-tool security warning with no fix yet is excused, narrowly (D-4223, November 17)
+- A new security advisory hit `picomatch`, a small file-matching library that our code-style checker (eslint's TypeScript plugin) uses. Every version of it is affected and no fixed version exists yet, so the automatic security check failed every task that touches the TypeScript tools (T115 already failed on it; 35 more were in line).
+- It cannot reach customers: the checker runs only on the build machines and is never part of the live app, and the only patterns it reads are our own settings. The one "fix" npm offers is an older checker that does not work with our versions.
+- The check now allows exactly this one warning on this one library, reached only through the nine lint packages that reach it today, prints it on every run so it stays visible, and still fails on any other warning. From December 17 every run prints a loud warning to re-check for a fixed version; it never fails on the date alone (that would turn the build red with nothing to undo), and the overseer tracks the re-check. When a fixed version comes out, the check says so and a small follow-up removes the exception. Nothing needs you now.
+
+## The wording check gets a fixed list (D-4229)
+
+- The test that scans every page, text and document for banned wording (T104) failed review three times. The scan itself worked each time; each new reviewer just thought of more ways to say a banned thing ("sorted by price", "we get a cut", "your number goes to the business"), and there was no end to that.
+- The plan now gives the test one fixed list: every banned pattern, with a sentence that must fail and true sentences that must pass, in English and Spanish. It includes every phrasing the three reviewers found. Wording outside the list gets logged for later instead of failing the task. Banned wording that is really on a page still stops the task, list or no list.
+- No requirement and no existing test changed, and all the real pages and documents pass the list today. A few true sentences are let through by name (the state agency "Arizona Corporation Commission", a business's own "shared inbox"), and a few true sentences that sit too close to a banned one must be worded another way. Nothing needs you now.
+
 ## The accessibility statement check and the email check get fixed lists (D-4240)
 
 - The task that builds the accessibility statement page and the email checks (T115) failed twice. One cause was the security warning already handled in D-4223. The other was the same as T104's: each new reviewer thought of more ways to say "call us" ("request a callback", "use 711 to reach us") or more ways a test could miss an email with an empty plain-text part, and there was no end to that.
