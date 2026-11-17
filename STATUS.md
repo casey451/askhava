@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:39:32Z by runner f911c8fdcb55 (manual).
+Updated 2026-11-17T13:39:44Z by runner 700a56e30e5a (actions).
 
-**Building: T204 in progress since 12:04Z; 396 of 560 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T471 in progress since 13:32Z; 396 of 560 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 396 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 6: T471 claimed 13:32Z, lease until 16:32Z; lane 7: T321 claimed 12:53Z, lease until 16:38Z
+- **Lane:** lane 6: T471 claimed 13:32Z, lease until 16:32Z; lane 7: T321 claimed 12:53Z, lease until 16:38Z
 - **Week:** 20% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:39Z, 0 min before this update
 - **Keeper:** last ran 13:35Z, next wake 15:38Z
@@ -15,11 +15,12 @@ Updated 2026-11-17T13:39:32Z by runner f911c8fdcb55 (manual).
 - BLOCKED T594: plan gap reported: PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change: a T489 fix task that adds `.method(Method::POST)` to the request builder in `posted_csrf` and puts the "18 or older" line (CON-025, docs/spec/consent.md:29) on the request page, then re-run T594.
 Evidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/web_chat.spec.ts` exit=1, 5 failed, 2 passed. web_chat.spec.ts:137 (18 or older) fails: Expected pattern /18 or older/i not in main. web_chat.spec.ts:142, :153, :187 fail at line 94 (main form has 0 fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T594 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 7 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+153 on DONE tasks); first: T204: stored context_pct 22% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 2 | 94 min | 13:39Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T363 | portals: the served pick and its code step apply the per-IP  | MERGE_PENDING | 1 | 62 min | 13:38Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | MERGE_PENDING | 1 | 50 min | 13:19Z |  |
 | T594 | site: the end-to-end spec of the web chat and request page a | BLOCKED | 1 | 42 min | 13:18Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
@@ -31,7 +32,7 @@ Evidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e
 | T202 | site: Spanish pages, the business page blocks and the requir | resync | 2 | 56 min | 11:26Z |  |
 | T112 | Draft the privacy policy and SMS terms | done | 3 | 66 min | 11:10Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
 | T489 | site and server: the web chat and request pages with the con | done | 3 | 46 min | 11:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
-| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | check_failed | 1 | 35 min | 10:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
+| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | check_failed | 1 | 35 min | 10:33Z |  |
 | T489 | site and server: the web chat and request pages with the con | check_failed | 2 | 73 min | 09:54Z |  |
 | T202 | site: Spanish pages, the business page blocks and the requir | check_failed | 1 | 88 min | 09:23Z |  |
 | T107 | Consent records kept 5 years, no export, opt-out rate alerts | done | 2 | 85 min | 09:00Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
@@ -100,31 +101,31 @@ Evidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 281 of 733 (38.3%) · partial 364 · unstarted 88
+**Requirements verified:** 304 of 733 (41.5%) · partial 341 · unstarted 88
 **Tasks merged (throughput only):** 396 of 560
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 15 | 17 | 3 | 35 |
+| accessibility | 19 | 13 | 3 | 35 |
 | ai | 11 | 15 | 3 | 29 |
 | businesses | 21 | 35 | 2 | 58 |
-| calls | 11 | 13 | 1 | 25 |
+| calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 20 | 1 | 35 |
-| fees | 19 | 32 | 1 | 52 |
+| fees | 24 | 27 | 1 | 52 |
 | intake | 25 | 18 | 0 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 20 | 23 | 2 | 45 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 23 | 30 | 54 |
-| privacy | 12 | 17 | 2 | 31 |
+| privacy | 14 | 15 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 33 | 22 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| security | 11 | 39 | 5 | 55 |
 | terms | 1 | 28 | 6 | 35 |
 | website | 0 | 18 | 10 | 28 |
-| wording | 1 | 13 | 18 | 32 |
+| wording | 2 | 12 | 18 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -145,9 +146,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T204 (lease until 2026-11-17T15:44:54Z)
 - lane 6: T471 (lease until 2026-11-17T16:32:37Z)
 - lane 7: T321 (lease until 2026-11-17T16:38:26Z)
 
 ## Last usage reading
-- {"task": "T363", "at": "2026-11-17T13:38:25Z", "input_tokens": 103, "output_tokens": 32612, "cache_creation_input_tokens": 146038, "cache_read_input_tokens": 3292131}
+- {"task": "T204", "at": "2026-11-17T13:39:11Z", "input_tokens": 143, "cache_creation_input_tokens": 185292, "output_tokens": 28785, "cache_read_input_tokens": 3054410}
