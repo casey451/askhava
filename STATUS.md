@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T17:16:04Z by runner d0cf057bc933 (actions).
+Updated 2026-11-17T17:16:50Z by runner 27418b9da17c (actions).
 
-**Building: T491 in progress since 15:41Z; 402 of 569 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T491 in progress since 15:41Z; 403 of 569 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 402 of 569 build tasks (owner gates not counted)
+- **Tasks done:** 403 of 569 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T491 claimed 15:41Z, lease until 20:16Z; lane 2: T104 claimed 16:53Z, lease until 19:53Z; lane 3: T599 claimed 17:04Z, lease until 20:04Z; lane 4: T596 claimed 17:07Z, lease until 20:07Z
 - **Week:** 24% used, 143.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:08Z, 7 min before this update
+- **Last run:** 17:16Z, 0 min before this update
 - **Keeper:** last ran 16:53Z, next wake 19:29Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-17T17:16:04Z by runner d0cf057bc933 (actions).
 Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T528 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- Strict plan check red: 9 problem(s) on tasks still to run (+155 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -27,7 +27,7 @@ Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decisio
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | done | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T113 | Draft the Twilio campaign description from the real template | MERGE_PENDING | 2 | 35 min | 15:39Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
 | T471 | picks and intake: her "backup has your pick" text on every p | done | 1 | 47 min | 14:20Z |  |
-| T321 | messaging: the consent-purge functions, the inbound-text clo | MERGE_PENDING | 1 | 49 min | 13:42Z |  |
+| T321 | messaging: the consent-purge functions, the inbound-text clo | done | 1 | 49 min | 13:42Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | done | 2 | 94 min | 13:39Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T363 | portals: the served pick and its code step apply the per-IP  | done | 1 | 62 min | 13:38Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | check_failed | 1 | 50 min | 13:19Z |  |
@@ -94,8 +94,8 @@ Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decisio
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 343 of 733 (46.8%) · partial 316 · unstarted 74
-**Tasks merged (throughput only):** 402 of 561
+**Requirements verified:** 336 of 733 (45.8%) · partial 323 · unstarted 74
+**Tasks merged (throughput only):** 403 of 569
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -104,14 +104,14 @@ Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decisio
 | businesses | 23 | 33 | 2 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 19 | 1 | 35 |
-| fees | 27 | 24 | 1 | 52 |
-| intake | 27 | 16 | 0 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
+| fees | 24 | 27 | 1 | 52 |
+| intake | 26 | 17 | 0 | 43 |
+| job-cards | 18 | 6 | 0 | 24 |
 | licensing | 40 | 8 | 0 | 48 |
 | lifecycle | 27 | 1 | 0 | 28 |
 | messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 27 | 26 | 54 |
-| privacy | 15 | 14 | 2 | 31 |
+| privacy | 14 | 15 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 37 | 19 | 0 | 56 |
 | recurring | 8 | 1 | 2 | 11 |
@@ -131,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 45 of 177 done
+- stage 5: 46 of 177 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
