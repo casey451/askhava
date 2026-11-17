@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO ops.not_a_fit_answer (job_id, business_id, trade, reason, answered_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (business_id, job_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2fe250722f9aac2683d0dab8d8384461fd492d28f6094eb1cc31eaa70d3d57b4"
+}

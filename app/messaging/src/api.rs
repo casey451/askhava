@@ -20,11 +20,18 @@
 //! homeowner her confirmation while texting is off, or how to text again when she writes without
 //! START, else list her for the weekly digest (`optout_email`, CON-030, CON-016); count each Arizona
 //! week's opt-out rate by audience and alert at 3% of homeowners or 5% of businesses
-//! (`consent_alerts`, CON-022 to CON-024).
+//! (`consent_alerts`, CON-022 to CON-024); and find the numbers past CON-022's 5 years and delete
+//! their old opt-out events and message logs for the daily consent sweep (`consent_purge`, CON-022).
 
 pub use crate::accepted_quote_email::{
     ACCEPTED_QUOTE_TEMPLATE, AcceptedQuoteFacts, AcceptedQuoteSender, queue_accepted_quote,
     render_accepted_quote,
+};
+pub use crate::alert_emails::{
+    ALERT_ADDRESS, ALERT_EMAIL_TEMPLATE, ALERT_PUSH_KIND, AlertEmailSender, DAYTIME_EMAIL_TEMPLATE,
+    EmailLimits, HOURLY_CHECKS_KIND, OWNER_ALERT_CALL_KIND, alert_lines, check_email_use,
+    daytime_lines, push_alerts, push_daytime, register_alert_emails, schedule_alert_push,
+    schedule_hourly_checks,
 };
 pub use crate::business_notices::{
     BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, LINK_LIFE, NoticeOutcome, NoticeSender, NoticeWorker,
@@ -42,6 +49,7 @@ pub use crate::consent_alerts::{
     alert_kind, alert_percent, check_optout_rates, register_optout_rate_check,
     schedule_optout_rate_check, weekly_optout_rates,
 };
+pub use crate::consent_purge::{DeletedLog, delete_message_log, due_numbers, purge_optout_events};
 pub use crate::coverage_email::{
     COVERAGE_EMAIL_TEMPLATE, CoverageFacts, OWNER_INBOX, coverage_lines, queue_coverage_email,
     town_words, trade_subject,

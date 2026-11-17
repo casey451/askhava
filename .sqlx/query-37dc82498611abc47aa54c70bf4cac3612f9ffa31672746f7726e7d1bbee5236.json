@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM ops.push_slot WHERE slot = $1) AS \"handled!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "handled!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "37dc82498611abc47aa54c70bf4cac3612f9ffa31672746f7726e7d1bbee5236"
+}

@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT recruiting, other FROM ops.minutes_entry WHERE week = date_trunc('week', $1::timestamptz AT TIME ZONE 'America/Phoenix')::date ORDER BY id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "recruiting",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "ops.minutes_entry",
+            "name": "recruiting"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "other",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "ops.minutes_entry",
+            "name": "other"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "f7ba4ca1e121714eb631817cca7ffbf191c49fa42eeab88d35177ad750543229"
+}
