@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T07:22:52Z by runner 94c519d97f7d (actions).
+Updated 2026-11-17T07:23:16Z by runner 94c519d97f7d (actions).
 
 **Building: T112 in progress since 06:30Z; 386 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 386 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T112 claimed 06:30Z, lease until 09:56Z; lane 5: T201 claimed 06:26Z, lease until 10:13Z
+- **Lane:** lane 3: T112 claimed 06:30Z, lease until 09:56Z
 - **Week:** 16% used, 162.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:16Z, 6 min before this update
 - **Keeper:** last ran 07:16Z, next wake 09:58Z
@@ -19,6 +19,7 @@ Updated 2026-11-17T07:22:52Z by runner 94c519d97f7d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T201 | site: services and help pages, the ROC complaint page | MERGE_PENDING | 1 | 56 min | 07:22Z |  |
 | T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z | PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes |
 | T564 | quotes, picks and intake: the LIST, text picks, lapse text a | MERGE_PENDING | 1 | 43 min | 06:47Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 1 | 2 h 21 min | 06:44Z |  |
@@ -132,7 +133,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T112 (lease until 2026-11-17T09:56:03Z)
-- lane 5: T201 (lease until 2026-11-17T10:13:30Z)
 
 ## Last usage reading
-- {"task": "T489", "at": "2026-11-17T07:15:47Z", "cache_creation_input_tokens": 180017, "cache_read_input_tokens": 8157653, "output_tokens": 55478, "input_tokens": 145}
+- {"task": "T201", "at": "2026-11-17T07:22:51Z", "input_tokens": 154, "cache_read_input_tokens": 6837914, "cache_creation_input_tokens": 186910, "output_tokens": 48461}
