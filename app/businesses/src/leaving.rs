@@ -178,6 +178,41 @@ pub async fn record_reason(
     Ok(row.is_some())
 }
 
+/// BIZ-054, OPS-030: the answers given at or after `from` and before `to`, oldest first, for the
+/// weekly digest only (`digest_counts`): business, who asked and the choice (`None` when
+/// skipped), never the "Something else" box's words.
+///
+/// # Errors
+///
+/// [`BusinessesError::Database`].
+pub(crate) async fn answers_between(
+    conn: &mut PgConnection,
+    (from, to): (Timestamp, Timestamp),
+) -> Result<Vec<(Uuid, AskedBy, Option<LeaveReason>)>, BusinessesError> {
+    let rows = db(sqlx::query!(
+        "SELECT business_id, asked_by, choice FROM businesses.leave_reason \
+         WHERE answered_at >= $1 AND answered_at < $2 ORDER BY answered_at, business_id",
+        from.to_sqlx() as _,
+        to.to_sqlx() as _,
+    )
+    .fetch_all(conn)
+    .await)?;
+    Ok(rows
+        .into_iter()
+        .map(|r| {
+            let by = if r.asked_by == "left" {
+                AskedBy::Left
+            } else {
+                AskedBy::Paused
+            };
+            let choice = LeaveReason::ALL
+                .into_iter()
+                .find(|c| r.choice.as_deref() == Some(c.code()));
+            (r.business_id, by, choice)
+        })
+        .collect())
+}
+
 /// BIZ-054: the pause question is due when the business paused itself (BIZ-010; not Casey or a
 /// rule), has been paused for more than `after_days` days (strictly), and was never asked.
 ///

@@ -116,6 +116,7 @@ pub use crate::confirm_reminders::{
     window_open,
 };
 pub use crate::contact_choice::{ContactChoice, contact_choice, record_contact_choice};
+pub use crate::digest_counts::{NoShow, no_shows};
 pub use crate::dispute_steps::run_dispute_opened;
 pub use crate::email_code::{
     CodeRoute, ConversationEmail, EmailFrom, OptedOutYes, Texting, check_email_code, code_route,
