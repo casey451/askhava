@@ -3210,6 +3210,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - Six new small tasks: T599 fixes a test that failed by chance about 1 run in 65 (it cost one attempt today) and runs first; T600 makes four background jobs use the test clock so time-jump tests are trustworthy; T601 makes job-card sending read every business's service area in one go instead of one at a time; T602 hardens a timestamp check on incoming email; T603 fixes the page-speed report, which has never recorded a number, and a small latent bug in the simulator; T604 removes an unused second encryption library from the build.
 - The README file still says "Ask Hava"; it will be fixed by the next change that touches it. Nothing needs you now.
 
+## The weekly digest's readers split in two (D-4202)
+- The task building the counts for your weekly digest (T528) stopped because an earlier safety test checks that only one file in the app can read why a business left, so the reason can never affect who gets jobs or what fees are. The fix keeps that test exactly as it is: the reading stays in that one file, and the digest asks it for the answers.
+- The work was also too big for one task, so it is now two that can run side by side: T528 (alert and digest-tracking counts) and a new T605 (why businesses left, license-paused businesses, requests we couldn't cover, and no-shows). The digest itself (T524) waits for both. Nothing needs you now.
+
 ## T113: the texting campaign draft (D-4147)
 
 - `docs/legal/twilio-campaign.md` is the text for registering the homeowner texting campaign: the settings, the description, the six sample messages (each copied from the real text it stands for), the Spanish steps and what happens if the campaign is refused. Nothing is submitted; you register it by hand when the account checklist gets there.
