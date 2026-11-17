@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:00:28Z by runner cee9dd8a1b3e (actions).
+Updated 2026-11-17T13:01:42Z by runner cee9dd8a1b3e (actions).
 
 **Building: T479 in progress since 12:28Z; 396 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -92,7 +92,6 @@ Updated 2026-11-17T13:00:28Z by runner cee9dd8a1b3e (actions).
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 1 | 70 min | 13:31Z |  |
 | T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z |  |
 | T409 | server (harness): the door probe's owner actor signs in thro | done | 1 | 36 min | 13:05Z |  |
-| T531 | messaging and server: OPS-046's first-six-weeks email figure | done | 1 | 36 min | 13:01Z |  |
 
 ### Plan and harness merges on main
 - none
