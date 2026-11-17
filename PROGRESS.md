@@ -6297,3 +6297,4 @@
 - 2026-11-17T07:56:02Z runner 24cdb307a1ca (actions): {"T202": "QUEUED -> IN_PROGRESS"}; T202 estimated 1.5M tokens (calibrated); week has 158.6M left (no five-hour budget, D-3056) after 3.4M still running in another lane (session_reading 2026-11-17T07:39:56Z (week)); running to the limit (model window, D-2225), claimed
 - 2026-11-17T08:07:36Z runner 678dce1e44fa (manual): {"T489": "BLOCKED -> QUEUED"}
 - 2026-11-17T08:13:50Z runner 5eda38328127 (actions): {}
+- 2026-11-17T08:17:22Z runner 678dce1e44fa (actions): {"T594": "None -> QUEUED"}

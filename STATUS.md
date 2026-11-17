@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T08:13:50Z by runner 5eda38328127 (actions).
+Updated 2026-11-17T08:17:22Z by runner 678dce1e44fa (actions).
 
 **Building: T107 in progress since 07:34Z; 388 of 560 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-17T08:13:50Z by runner 5eda38328127 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z; lane 3: T570 claimed 07:46Z, lease until 10:46Z; lane 5: T202 claimed 07:55Z, lease until 10:55Z; lane 6: T112 claimed 07:36Z, lease until 11:13Z
 - **Week:** 16% used, 158.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:07Z, 6 min before this update
+- **Last run:** 08:14Z, 3 min before this update
 - **Keeper:** last ran 07:40Z, next wake 10:37Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 2 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 19%; regenerate
+- Strict plan check red: 3 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -80,7 +80,6 @@ Updated 2026-11-17T08:13:50Z by runner 5eda38328127 (actions).
 | T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z |  |
 | T409 | server (harness): the door probe's owner actor signs in thro | done | 1 | 36 min | 13:05Z |  |
 | T531 | messaging and server: OPS-046's first-six-weeks email figure | done | 1 | 36 min | 13:01Z |  |
-| T100 | Stage 4 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 39 min | 08:16Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -88,7 +87,7 @@ Updated 2026-11-17T08:13:50Z by runner 5eda38328127 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 302 of 733 (41.2%) · partial 331 · unstarted 100
-**Tasks merged (throughput only):** 388 of 559
+**Tasks merged (throughput only):** 388 of 560
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -124,7 +123,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 31 of 167 done
+- stage 5: 31 of 168 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
