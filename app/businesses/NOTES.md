@@ -313,3 +313,4 @@
 - [CON-019] (rules) `record_consent` and `record_consent_for` lock the member `FOR SHARE`, then the phone `FOR UPDATE`, the order `change_phone_at` takes them, so a racing change and tick never deadlock and never count the old number's box for the new one (D-4039).
 - [CON-019] (tests) `tests/integration/tests/phone_change_consent.rs` (TD-CON-35): change ends consent, a new box restores it, a stale box is refused, a refused change keeps it, the race in both orders, a text-only card goes by email after the change.
 - [CON-019] (change) Known gap (D-4039): `sign_in_lines.rs` still counts a text consent row by line ID only, without the number version join.
+- [CON-019] (rules) A text `esign_consent` row inserted with no `number_version` (plain SQL, done tests' seeds) gets its line's current version from the `esign_consent_number_version` trigger in `migrations/0204_businesses_consent_per_number.sql`; a given version is kept (D-4040).

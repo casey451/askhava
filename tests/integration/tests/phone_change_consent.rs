@@ -178,6 +178,29 @@ async fn td_con_35_a_number_change_ends_that_numbers_consent(pool: PgPool) {
     );
 }
 
+/// TD-CON-35 (CON-019): a text row inserted by plain SQL with no number version, as done tests'
+/// seeds do, is stored for its line's current number, so it counts for that number only.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_35_a_seeded_text_row_gets_the_current_number(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let dir = directory();
+    let (owner, _) = team(&mut db, 0x356).await;
+    let line = consented_line(&mut db, &dir, owner).await;
+    change(&mut db, &dir, owner, line).await.expect("change");
+    assert!(!may(&mut db, owner, line).await, "no box for the new one");
+    sqlx::query(
+        "INSERT INTO businesses.esign_consent (business_id, member_id, channel, wording_version, \
+         consented_at, line_id) VALUES ($1, $2, 'text', 'con019-v1', now(), $3)",
+    )
+    .bind(owner.business)
+    .bind(owner.member)
+    .bind(line)
+    .execute(&mut *db)
+    .await
+    .expect("seeded row");
+    assert!(may(&mut db, owner, line).await, "seeded for the new number");
+}
+
 /// TD-CON-35 (CON-019): a text box shown for the old number and posted after the change stores
 /// nothing; the current-version form still records for the new number.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
