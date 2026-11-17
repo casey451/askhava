@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO ops.alert_push (alert_id, pushed_at) VALUES ($1, $2) ON CONFLICT (alert_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "eab5f57df1b43b4050da1b5653126fa19fb8724c1c60006d77361c0b6d0ed9ec"
+}

@@ -68,7 +68,8 @@ async fn main() -> io::Result<()> {
 }
 
 /// `messaging`'s daily tasks at start: the body cut, the day-31 body scan, the outbox sender's
-/// first run and OPS-046's deferral check (T531, D-3883).
+/// first run, OPS-046's deferral check (T531, D-3883), the alert push and hourly checks (T204), and the
+/// weekly opt-out rate check.
 async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp) -> io::Result<()> {
     askhava_messaging::api::schedule_cut(conn, now)
         .await
@@ -80,6 +81,12 @@ async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp)
         .await
         .map_err(io::Error::other)?;
     askhava_messaging::api::schedule_deferral_check(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_messaging::api::schedule_alert_push(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_messaging::api::schedule_hourly_checks(conn, now)
         .await
         .map_err(io::Error::other)?;
     askhava_messaging::api::schedule_optout_rate_check(conn, now)

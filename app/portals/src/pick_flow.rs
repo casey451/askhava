@@ -69,14 +69,23 @@
 //! picked: back to the card, or rolled back. [`store`] picks through `picks::api::bound_pick`;
 //! a package pick goes through `page_pick_tier` at the business's list place and is re-checked in
 //! its transaction ([`still_bound`]). The backup, share and waiting-pick calls take the list place.
+//!
+//! T363 (SEC-014, SEC-020, D-2634, D-3144, D-3880): every pick code send (the final Pick and "Send
+//! a new code") first passes `crate::limits::admit_code_send` with no contact (`picks` already
+//! counts the per-number and global caps), and every shaped "Finish my pick" code first passes
+//! `admit_code_try`, both for the client IP [`ClientIp`] reads through the keys' `ClientIpPolicy`
+//! ([`PickCodeKeys::with_client_ip`]). A refusal, or a threshold that does not fit an `i32`, shows
+//! the daily-cap line and Verify is not called.
 
+use std::convert::Infallible;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;
 
 use askama::Template;
 use askhava_adapters::api::VerifyAdapter;
-use askhava_core::api::{Clock, LinkToken};
+use askhava_core::api::{ClientIpPolicy, Clock, LinkToken};
 use askhava_intake::api::{
-    JobHomeowner, TermsAcceptance, TermsChannel, job_homeowner, paused_by_homeowner,
+    Admission, JobHomeowner, TermsAcceptance, TermsChannel, job_homeowner, paused_by_homeowner,
     paused_under_lock, record_terms_acceptance,
 };
 use askhava_jobs::api::quote_token::resolve;
@@ -91,7 +100,8 @@ use askhava_picks::api::{
 };
 use askhava_privacy::api::{Vault, store_shared_email};
 use axum::Router;
-use axum::extract::{FromRef, Path, State};
+use axum::extract::{ConnectInfo, FromRef, FromRequestParts, Path, State};
+use axum::http::request::Parts;
 use axum::http::{HeaderName, HeaderValue, StatusCode};
 use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Redirect, Response};
@@ -102,6 +112,7 @@ use sha2::{Digest, Sha256};
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 
+use crate::limits::{admit_code_send, admit_code_try};
 use crate::quote_page::{Numbered, QUOTE_PAGE_ROUTE, quote_packages, shown_page, token_expired};
 use crate::security::{CsrfField, CsrfForm, WebSecurity, no_store, refuse_cross_site};
 use crate::session::csrf_token;
@@ -299,7 +310,8 @@ pub const VERIFY_DAILY_THRESHOLD: i64 = 500;
 
 /// What the page pick needs beyond the pool (D-1516): the Verify client, the vault `picks` reads
 /// the phone from, the `ID_SECRET` for the send's idempotency key, the published homeowner Terms
-/// a pick accepts (version and exact text, TERMS-016) and the global daily Verify threshold.
+/// a pick accepts (version and exact text, TERMS-016), the global daily Verify threshold and the
+/// client-IP policy the per-IP code limits read (SEC-040; the default one until set).
 /// `server` builds it as it builds the job-text keys (D-1302); no `Debug`, it holds keys.
 pub struct PickCodeKeys<V> {
     verify: V,
@@ -307,6 +319,7 @@ pub struct PickCodeKeys<V> {
     secret: SecretString,
     terms: (String, &'static str),
     threshold: i64,
+    client_ip: Option<ClientIpPolicy>,
 }
 
 impl<V> PickCodeKeys<V> {
@@ -325,6 +338,7 @@ impl<V> PickCodeKeys<V> {
             secret,
             terms,
             threshold: VERIFY_DAILY_THRESHOLD,
+            client_ip: ClientIpPolicy::from_pairs(std::iter::empty()).ok(),
         }
     }
 
@@ -335,12 +349,40 @@ impl<V> PickCodeKeys<V> {
         self
     }
 
+    /// The same keys reading the client IP for the per-IP code limits through `policy` (SEC-014,
+    /// SEC-020, SEC-040, D-3144); `server` sets it from the settings.
+    #[must_use]
+    pub fn with_client_ip(mut self, policy: ClientIpPolicy) -> Self {
+        self.client_ip = Some(policy);
+        self
+    }
+
     fn code_keys(&self) -> PageCodeKeys<'_, V> {
         PageCodeKeys {
             verify: &self.verify,
             vault: &self.vault,
             secret: &self.secret,
         }
+    }
+}
+
+/// The client IP the per-IP code limits count (SEC-014, SEC-020, SEC-040): the keys'
+/// `ClientIpPolicy` over the headers and the socket peer (`0.0.0.0` when served without connect
+/// info, or the peer itself without keys).
+struct ClientIp(IpAddr);
+
+impl<V: Send + Sync> FromRequestParts<PickFlow<V>> for ClientIp {
+    type Rejection = Infallible;
+
+    async fn from_request_parts(parts: &mut Parts, flow: &PickFlow<V>) -> Result<Self, Infallible> {
+        let peer = parts
+            .extensions
+            .get::<ConnectInfo<SocketAddr>>()
+            .map_or(IpAddr::V4(Ipv4Addr::UNSPECIFIED), |info| info.0.ip());
+        let policy = flow.keys.as_ref().and_then(|keys| keys.client_ip.as_ref());
+        Ok(Self(
+            policy.map_or(peer, |p| p.client_ip(&parts.headers, peer)),
+        ))
     }
 }
 
@@ -440,6 +482,7 @@ async fn review<V>(
 async fn final_pick<V>(
     State(flow): State<PickFlow<V>>,
     Path(raw): Path<String>,
+    ClientIp(ip): ClientIp,
     jar: CookieJar,
     CsrfForm(form): CsrfForm<PickForm>,
 ) -> Response
@@ -493,7 +536,7 @@ where
     };
     let mut view = CodeView::arrival(request, form.quote, raw, csrf);
     view.bound = bound.business.to_string();
-    started(&flow, &keys, (job, bound, tiered), view).await
+    started(&flow, (&keys, ip), (job, bound, tiered), view).await
 }
 
 /// The final Pick's checks before a code: the package she chose, when the quote has packages
@@ -661,7 +704,7 @@ async fn keep_backup<V>(
 /// the quote already waiting, else the code step with its line.
 async fn started<V>(
     flow: &PickFlow<V>,
-    keys: &PickCodeKeys<V>,
+    (keys, ip): (&PickCodeKeys<V>, IpAddr),
     (job, bound, tiered): (Uuid, Bound, bool),
     mut view: CodeView,
 ) -> Response
@@ -669,7 +712,7 @@ where
     V: VerifyAdapter + Send + Sync,
 {
     let browser = browser(&view.csrf);
-    match start_code(flow, keys, (job, bound.place, tiered), &browser).await {
+    match start_code(flow, (keys, ip), (job, bound.place, tiered), &browser).await {
         Ok(Start::Same) => done(view.request, bound.number, view.token),
         Ok(Start::Line(line, form)) => {
             view.line = Some(line);
@@ -696,7 +739,7 @@ enum Start {
 /// 500, logged once with no value.
 async fn start_code<V>(
     flow: &PickFlow<V>,
-    keys: &PickCodeKeys<V>,
+    (keys, ip): (&PickCodeKeys<V>, IpAddr),
     (job, quote, tiered): (Uuid, usize, bool),
     browser: &Browser,
 ) -> Result<Start, StatusCode>
@@ -732,14 +775,12 @@ where
     if matches!(window, SendWindow::OptedOut | SendWindow::NotTextable) {
         return Ok(Start::Line(CANT_TEXT, false));
     }
-    let ask = SendAsk {
-        via: CodeVia::Text,
-        own_session: false,
-        local_hour: 0,
-    };
+    if !send_admitted(flow, keys, ip).await? {
+        return Ok(Start::Line(CAPPED, true));
+    }
     let ids = (job, owner.contact);
     let when = (now, keys.threshold);
-    let sent = send_page_code(&mut db, &keys.code_keys(), ids, ask, when).await;
+    let sent = send_page_code(&mut db, &keys.code_keys(), ids, PAGE_ASK, when).await;
     Ok(match sent {
         Ok(CodeSent::Sent) => Start::Line(CODE_SENT, true),
         Ok(CodeSent::Refused(SendRefused::CoolingDown(_))) => Start::Line(COOLING_DOWN, true),
@@ -750,6 +791,40 @@ where
         }
     })
 }
+
+/// SEC-014, PICK-055, D-2634, D-3144, D-3880: whether one pick code send from `ip` passes the
+/// per-IP send limit, with no contact (`picks` counts the per-number and global caps itself). A
+/// threshold that does not fit an `i32` refuses the send; a failed count is a bare 500.
+async fn send_admitted<V>(
+    flow: &PickFlow<V>,
+    keys: &PickCodeKeys<V>,
+    ip: IpAddr,
+) -> Result<bool, StatusCode> {
+    let Ok(threshold) = i32::try_from(keys.threshold) else {
+        return Ok(false);
+    };
+    let when = (flow.clock.now(), threshold);
+    match admit_code_send(&flow.pool, (ip, None), when).await {
+        Ok(admission) => Ok(!matches!(admission, Admission::Refused(_))),
+        Err(_) => Err(failed("send limit")),
+    }
+}
+
+/// SEC-020, D-2634: whether one shaped pick code try from `ip` passes the per-IP try limit; a
+/// failed count is a bare 500.
+async fn try_admitted<V>(flow: &PickFlow<V>, ip: IpAddr) -> Result<bool, StatusCode> {
+    match admit_code_try(&flow.pool, (ip, None), flow.clock.now()).await {
+        Ok(admission) => Ok(!matches!(admission, Admission::Refused(_))),
+        Err(_) => Err(failed("try limit")),
+    }
+}
+
+/// The page code's send: a text, outside any session, no local-hour rule (PICK-013, D-1516).
+const PAGE_ASK: SendAsk = SendAsk {
+    via: CodeVia::Text,
+    own_session: false,
+    local_hour: 0,
+};
 
 /// A bare 500 for a failed `step`, logged once with the step's name only (R5, PRIV-016).
 fn failed(step: &'static str) -> StatusCode {
@@ -1185,6 +1260,7 @@ fn check_message(check: CodeCheck) -> Option<String> {
 async fn code_step<V>(
     State(flow): State<PickFlow<V>>,
     Path(raw): Path<String>,
+    ClientIp(ip): ClientIp,
     jar: CookieJar,
     CsrfForm(form): CsrfForm<CodeForm>,
 ) -> Response
@@ -1221,27 +1297,36 @@ where
     };
     let tiered = given.is_some();
     match send.as_str() {
-        "new" => started(&flow, &keys, (job, bound, tiered), view).await,
+        "new" => started(&flow, (&keys, ip), (job, bound, tiered), view).await,
         "pick" if !view.failed => match tier_or_again(&flow, (job, quote), given).await {
-            Ok(tier) => finish(&flow, &keys, (job, bound, tier), view).await,
+            Ok(tier) => finish(&flow, (&keys, ip), (job, bound, tier), view).await,
             Err(no) => no.answer(&view.token, quote),
         },
         _ => render(view),
     }
 }
 
-/// "Finish my pick" with every field shaped: checks the code against her vaulted phone, then
+/// "Finish my pick" with every field shaped: past the per-IP try limit ([`try_admitted`]; refused,
+/// the daily-cap line and no Verify call), checks the code against her vaulted phone, then
 /// stores the pick, her contact choice and the terms acceptance in one transaction (PICK-013,
 /// PICK-016, PICK-018, TERMS-016, D-1516, D-1761).
 async fn finish<V>(
     flow: &PickFlow<V>,
-    keys: &PickCodeKeys<V>,
+    (keys, ip): (&PickCodeKeys<V>, IpAddr),
     (job, bound, tier): (Uuid, Bound, Option<ChosenTier>),
-    view: CodeView,
+    mut view: CodeView,
 ) -> Response
 where
     V: VerifyAdapter + Send + Sync,
 {
+    match try_admitted(flow, ip).await {
+        Ok(true) => {}
+        Ok(false) => {
+            view.line = Some(CAPPED);
+            return render(view);
+        }
+        Err(status) => return status.into_response(),
+    }
     let Ok(mut db) = flow.pool.acquire().await else {
         return failed("pool").into_response();
     };
