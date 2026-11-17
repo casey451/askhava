@@ -15,11 +15,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
 
-VERSIONS = Path(__file__).resolve().parents[2] / "docs" / "legal" / "published" / "versions.json"
+ROOT = Path(__file__).resolve().parents[2]
+VERSIONS = ROOT / "docs" / "legal" / "published" / "versions.json"
 DOCUMENTS = frozenset({"homeowner-terms", "business-terms", "privacy-policy", "sms-terms"})
 FIELDS = frozenset({"document", "version", "text", "sha256"})
 
@@ -48,6 +51,30 @@ def problems(entries: object) -> list[str]:
     return found
 
 
+def dropped(earlier: list[dict[str, str]], now: list[dict[str, str]]) -> list[str]:
+    """Each earlier published entry that `now` no longer holds byte for byte (TERMS-034)."""
+    return [
+        f"{entry['document']} version {entry['version']} was changed or removed"
+        for entry in earlier
+        if entry not in now
+    ]
+
+
+def _main_entries() -> list[dict[str, str]] | None:
+    """The file as `origin/main` holds it, or None with no git, no `origin/main` or no file there."""
+    git = shutil.which("git")
+    if git is None:
+        return None
+    shown = subprocess.run(
+        [git, "show", "origin/main:docs/legal/published/versions.json"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return json.loads(shown.stdout) if shown.returncode == 0 else None
+
+
 def _entry(text: str, version: str = "1.0") -> dict[str, str]:
     digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
     return {"document": "sms-terms", "version": version, "text": text, "sha256": digest}
@@ -67,13 +94,25 @@ def test_td_terms_09_one_changed_character_fails() -> None:
     assert problems([entry]) == ["entry 0: sms-terms version 1.0 no longer matches its SHA-256"]
 
 
+def test_td_terms_09_published_entries_on_main_are_kept() -> None:
+    """TD-TERMS-09 (TERMS-034): every entry `origin/main` holds is still here, byte for byte."""
+    earlier = _main_entries()
+    if earlier is None:
+        pytest.skip("no git, no origin/main or no published file there")
+    assert dropped(earlier, json.loads(VERSIONS.read_text(encoding="utf-8"))) == []
+
+
 def test_td_terms_09_a_later_edit_is_a_new_version() -> None:
-    """TD-TERMS-09: a later edit is a new entry beside the earlier one, which stays byte for byte."""
+    """TD-TERMS-09: a later edit is a new entry beside the earlier one, which stays byte for byte;
+    an earlier entry edited in place, even with its hash recomputed, or removed, fails."""
     first = _entry("Fake terms text, version one.")
-    kept = dict(first)
     later = _entry("Fake terms text, version two.", "1.1")
     assert problems([first, later]) == []
-    assert first == kept
+    assert dropped([first], [first, later]) == []
+    rehashed = _entry("Fake terms text, version onE.")
+    assert problems([rehashed]) == []
+    assert dropped([first], [rehashed, later]) == ["sms-terms version 1.0 was changed or removed"]
+    assert dropped([first], [later]) == ["sms-terms version 1.0 was changed or removed"]
     assert problems([first, _entry("Changed in place.")]) == [
         "entry 1: sms-terms version 1.0 is kept twice",
     ]

@@ -54,7 +54,8 @@ pub struct LegalDoc {
     pub body: LegalHtml,
 }
 
-/// SEC-011: the HTML of a compiled-in `docs/legal/` draft, its raw HTML already turned into text.
+/// SEC-011: the HTML of a compiled-in `docs/legal/` draft, its raw HTML already turned into text
+/// and every link or image not on [`SAFE_ADDRESSES`] turned into its words.
 /// Only [`LegalDoc::render`] builds one, so Askama prints it as HTML without a `|safe` in any
 /// template, and nothing a homeowner or business typed can reach it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -78,7 +79,7 @@ impl askama::filters::HtmlSafe for LegalHtml {}
 
 impl LegalDoc {
     /// TERMS-028: renders `source` (draft note, version line, `# ` title, then the text), its
-    /// headings moved down `shift` levels, raw HTML shown as text (SEC-011).
+    /// headings moved down `shift` levels, raw HTML and unsafe links shown as text (SEC-011).
     fn render(anchor: &'static str, source: &str, shift: usize) -> Self {
         let mut lines = source.splitn(3, '\n');
         let draft = lines.next().unwrap_or_default().trim().to_owned();
@@ -89,8 +90,10 @@ impl LegalDoc {
             None => ("", rest),
         };
         let mut tables = TableAsList::default();
+        let mut links = SafeLinks::default();
         let events = Parser::new_ext(text, Options::ENABLE_TABLES)
             .map(|event| shifted(event, shift))
+            .filter_map(|event| links.keep(event))
             .flat_map(|event| tables.map(event));
         let mut body = String::new();
         html::push_html(&mut body, events);
@@ -124,6 +127,37 @@ fn shifted(event: Event<'_>, shift: usize) -> Event<'_> {
         Event::End(TagEnd::Heading(level)) => Event::End(TagEnd::Heading(down(level))),
         Event::Html(raw) | Event::InlineHtml(raw) => Event::Text(CowStr::from(raw.into_string())),
         other => other,
+    }
+}
+
+/// The address starts a link or image may keep; any other (`javascript:`, `data:`, ...) is unsafe.
+const SAFE_ADDRESSES: [&str; 6] = ["https:", "http:", "mailto:", "tel:", "/", "#"];
+
+/// SEC-011: drops the start and end of every link or image whose address is not in
+/// [`SAFE_ADDRESSES`], so its words stay as plain text and no script link reaches a legal page.
+#[derive(Default)]
+struct SafeLinks {
+    /// For each open link or image, whether it was kept.
+    open: Vec<bool>,
+}
+
+impl SafeLinks {
+    /// `event`, or `None` for the start or end of an unsafe link or image.
+    fn keep<'a>(&mut self, event: Event<'a>) -> Option<Event<'a>> {
+        match &event {
+            Event::Start(Tag::Link { dest_url, .. } | Tag::Image { dest_url, .. }) => {
+                let address = dest_url.trim_start().to_ascii_lowercase();
+                let safe = SAFE_ADDRESSES
+                    .iter()
+                    .any(|start| address.starts_with(start));
+                self.open.push(safe);
+                safe.then_some(event)
+            }
+            Event::End(TagEnd::Link | TagEnd::Image) => {
+                self.open.pop().unwrap_or(true).then_some(event)
+            }
+            _ => Some(event),
+        }
     }
 }
 
@@ -513,5 +547,26 @@ mod tests {
         let statement = accessibility_statement();
         assert!(statement.title.ends_with("Accessibility Statement"));
         assert!(statement.version.starts_with("Version "));
+    }
+
+    /// SEC-011: a `javascript:` link or autolink in a draft is shown as text, never a live link;
+    /// a safe link stays one.
+    #[test]
+    fn script_links_are_text() {
+        let doc = LegalDoc::render(
+            "x",
+            "Draft\nVersion 1\n\n# Title\n\n[click](javascript:alert(1)) <javascript:alert(2)> \
+             ![pic](JavaScript:alert(3)) [ok](/privacy)\n",
+            1,
+        );
+        let body = doc.body.as_str();
+        let lower = body.to_ascii_lowercase();
+        assert!(!lower.contains("href=\"javascript") && !lower.contains("src=\"javascript"));
+        assert!(!lower.contains("<img"), "{body}");
+        assert!(
+            body.contains("click") && body.contains("javascript:alert(2)"),
+            "{body}"
+        );
+        assert!(body.contains("<a href=\"/privacy\">ok</a>"), "{body}");
     }
 }
