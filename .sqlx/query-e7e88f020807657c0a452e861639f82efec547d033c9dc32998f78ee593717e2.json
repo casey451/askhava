@@ -1,0 +1,97 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT a.id, a.kind, a.subject_kind, a.subject_id, a.raised_at, a.resolved_at,\n             EXISTS (SELECT 1 FROM ops.alert_ack k WHERE k.alert_id = a.id\n               AND k.acknowledged_by = 'system') AS \"self_acknowledged!\"\n           FROM ops.alert a WHERE a.kind = ANY($1)\n             AND ((a.raised_at >= $2 AND a.raised_at < $3)\n               OR (a.resolved_at >= $2 AND a.resolved_at < $3))\n           ORDER BY a.raised_at, a.id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "subject_kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "subject_kind"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "subject_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "subject_id"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "raised_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "raised_at"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "resolved_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "resolved_at"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "self_acknowledged!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      null
+    ]
+  },
+  "hash": "e7e88f020807657c0a452e861639f82efec547d033c9dc32998f78ee593717e2"
+}
