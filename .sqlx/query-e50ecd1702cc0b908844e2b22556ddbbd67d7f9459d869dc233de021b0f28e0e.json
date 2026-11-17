@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE ops.owner_away SET away_until = $1::text::date, set_at = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e50ecd1702cc0b908844e2b22556ddbbd67d7f9459d869dc233de021b0f28e0e"
+}
