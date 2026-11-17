@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T03:47:05Z by runner dde16ca377f9 (actions).
+Updated 2026-11-17T03:56:16Z by runner f7aa2cf22f49 (actions).
 
-**Building: T103 in progress since 03:40Z; 379 of 557 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T103 in progress since 03:40Z; 380 of 557 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 379 of 557 build tasks (owner gates not counted)
+- **Tasks done:** 380 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T103 claimed 03:40Z, lease until 06:40Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T591 claimed 03:16Z, lease until 06:40Z
 - **Week:** 13% used, 165.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:46Z, 0 min before this update
+- **Last run:** 03:47Z, 8 min before this update
 - **Keeper:** last ran 03:47Z, next wake 06:43Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-17T03:47:05Z by runner dde16ca377f9 (actions).
 | T584 | businesses (harness): sign-up activation retried after a con | MERGE_PENDING | 2 | 43 min | 03:23Z | PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to rea |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | MERGE_PENDING | 2 | 79 min | 03:14Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   0.13. |
 | T584 | businesses (harness): sign-up activation retried after a con | BLOCKED | 1 | 3 min | 02:26Z |  |
-| T469 | server (harness): the Resend email client from settings and  | MERGE_PENDING | 1 | 99 min | 02:12Z |  |
+| T469 | server (harness): the Resend email client from settings and  | done | 1 | 99 min | 02:12Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | check_failed | 1 | 2 h 47 min | 01:23Z |  |
 | T320 | ops: a check that runs on a schedule raises its alert once w | done | 2 | 78 min | 01:13Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T373 | businesses: changing a phone's number ends that phone's text | done | 2 | 42 min | 01:04Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
@@ -74,8 +74,8 @@ Updated 2026-11-17T03:47:05Z by runner dde16ca377f9 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 307 of 733 (41.9%) · partial 313 · unstarted 113
-**Tasks merged (throughput only):** 379 of 556
+**Requirements verified:** 305 of 733 (41.6%) · partial 315 · unstarted 113
+**Tasks merged (throughput only):** 380 of 557
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -85,9 +85,9 @@ Updated 2026-11-17T03:47:05Z by runner dde16ca377f9 (actions).
 | calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 28 | 12 | 3 | 43 |
+| intake | 27 | 13 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
-| licensing | 37 | 11 | 0 | 48 |
+| licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
@@ -111,7 +111,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 22 of 165 done
+- stage 5: 23 of 165 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
