@@ -29,6 +29,10 @@ pub use crate::alerts::{
     record_request_counts, set_away_until, vendor_quiet,
 };
 pub use crate::audit_subjects::{AuditSubject, audit_subjects};
+pub use crate::digest_rows::{
+    DigestAlert, DigestRow, StatusChangeRow, TradeActive, digest_alerts, digest_opened,
+    digest_reminded, digest_sent, latest_digest, system_status_changes, trade_active_counts,
+};
 pub use crate::models::{
     Actor, AuditEntry, AuditRow, Change, NewAlert, OpsError, Severity, Switch, is_code_name,
 };

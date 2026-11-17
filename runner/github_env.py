@@ -896,6 +896,7 @@ class GitHubEnv:
         self.smoke_source = ""  # PRE_SESSION when the last smoke_main used the pre-session result, else "" (D-2028)
         self.smoke_seconds: int | None = None  # how long the last smoke_main's smoke.sh ran, wherever it ran (D-2028)
         self.smoke_pending = False  # the last smoke_main left the smoke running in the background (D-2560)
+        self.smoke_at = ""  # the own result's `at` the last collect_own_smoke used, "" when none (D-4180)
         self.smoke_background = os.environ.get(SMOKE_BACKGROUND) == "1"  # run the session's smoke detached (D-2560)
         self.smoke_wait: float = SMOKE_WAIT  # how long one smoke_main waits for the background smoke (D-2560)
         self.monotonic: Callable[[], float] = time.monotonic  # the wait's clock; tests replace it (D-2560)
@@ -1360,6 +1361,42 @@ class GitHubEnv:
         self.log.append(f"the background smoke of {head[:12]} {how}: a green smoke another lane recorded on it stands (D-3058)")
         return True
 
+    def own_smoke_state(self, head: str) -> dict[str, Any] | None:
+        """This job's own smoke whatever its SHA (D-4180), or None when there is none or this job already has a result
+        for `head` itself (`_pre_result`, judged by the start routine as before): {sha, pid, alive, result}. `sha` is
+        its background smoke's (SMOKE_BG, this job's) when recorded, else its pre-session result's; `pid` that
+        background smoke's or None; `alive` whether it still runs (read first, so a smoke that writes and ends
+        between is seen); `result` its finished result (SMOKE_PRE: `_pre_result`'s job check, the SHA check only
+        against `sha`) or None. `cycle._start_smoke` keeps it when its SHA is a qualifying ancestor of `head`."""
+        if self.dry_run or not job_id() or _pre_result(head)[0] is not None:
+            return None
+        bg = _read_json(smoke_target_dir().parent / SMOKE_BG) or {}
+        pid = bg.get("pid") if bg.get("job") == job_id() and isinstance(bg.get("pid"), int) else None
+        alive = pid is not None and self.bg_alive(pid)
+        pre = _read_json(smoke_target_dir().parent / SMOKE_PRE) or {}
+        sha = str(bg.get("sha") or "") if pid is not None else str(pre.get("sha") or "")
+        result = _pre_result(sha)[0] if sha else None
+        if not sha or (pid is None and result is None):
+            return None
+        return {"sha": sha, "pid": pid, "alive": alive, "result": result}
+
+    def collect_own_smoke(self, own: dict[str, Any]) -> tuple[bool, str]:
+        """The verdict of this job's own smoke of an ancestor (`own_smoke_state`, D-4180), with `smoke_main`'s flags:
+        its finished result is used as `_use_pre_smoke` does; one still running is waited for by
+        `_await_background` itself (`smoke_pending` while it runs on past this call's wait); one that ended with no
+        result is `_background_lost`. `smoke_at` is the used result's own `at`, else ""."""
+        sha, pid, result = str(own["sha"]), own.get("pid"), own.get("result")
+        self.smoke_timed_out, self.smoke_source, self.smoke_seconds, self.smoke_pending = False, "", None, False
+        if result is None and isinstance(pid, int) and own.get("alive"):
+            ok, _ = self._await_background(sha, pid)
+            result = None if self.smoke_pending else _pre_result(sha)[0]
+        elif result is not None:
+            ok, _ = self._use_pre_smoke(result, sha)
+        else:
+            ok, _ = self._background_lost(sha)
+        self.smoke_at = str(result.get("at") or "") if result is not None else ""
+        return ok, sha
+
     def main_first_parents(self, head: str, count: int) -> list[str] | None:
         """`main`'s first-parent history from `head`, at most `count` commits, newest first (`git rev-list
         --first-parent`; the commits must be local, as after `main_head`); None when git cannot say (D-3058)."""
@@ -1370,7 +1407,8 @@ class GitHubEnv:
     def settle_background_smoke(self, head: str) -> None:
         """Stop this job's background smoke when it runs for another head than `head` (`bg_stop`), before the start
         routine judges a reuse (D-2560): a green another lane recorded on `head` can then stand, and nothing is
-        ever claimed beside a running smoke, since a smoke for `head` itself still makes `own_smoke_for` true."""
+        ever claimed beside a running smoke, since a smoke for `head` itself still makes `own_smoke_for` true.
+        D-4180: `cycle._start_smoke` keeps a smoke of a qualifying ancestor by returning before it calls this."""
         if self.dry_run or not job_id():
             return
         bg = _read_json(smoke_target_dir().parent / SMOKE_BG) or {}
@@ -1384,7 +1422,8 @@ class GitHubEnv:
         `smoke_wait` for its result. A result is used as a pre-session one is (source BACKGROUND); still running is
         `smoke_pending` (no verdict, nothing recorded, the session calls the runner again); one for an older head
         still running is stopped first (`bg_stop`), never run beside the new one in the one smoke tree and database;
-        one that ended with no result is `smoke_timed_out` (no verdict, as D-1178)."""
+        one that ended with no result is `smoke_timed_out` (no verdict, as D-1178). A smoke of a qualifying ancestor
+        never reaches this stop: `cycle._start_smoke` collects it first (`collect_own_smoke`, D-4180)."""
         bg = _read_json(smoke_target_dir().parent / SMOKE_BG) or {}
         pid = bg.get("pid") if bg.get("job") == job_id() and isinstance(bg.get("pid"), int) else None
         alive = pid is not None and self.bg_alive(pid)

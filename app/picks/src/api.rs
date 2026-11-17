@@ -123,7 +123,9 @@ pub use crate::email_code::{
     opted_out_yes, send_email_code,
 };
 pub use crate::emergency_emails::{EmergencyPick, emergency_pick_plan, emergency_pick_subject};
-pub use crate::handlers::{CONFIRM_ENDS_KIND, notice_sent, run_confirm_ends, run_pick_notice};
+pub use crate::handlers::{
+    CONFIRM_ENDS_KIND, notice_sent, run_confirm_ends, run_confirm_ends_at, run_pick_notice,
+};
 pub use crate::models::PicksError;
 pub use crate::money_notices::{
     BUSINESS_NOTICE_KIND, CARD_APPROVAL_TEMPLATE, CARD_FIX_TEMPLATE, RECEIPT_NO_RECIPIENT_ALERT,
