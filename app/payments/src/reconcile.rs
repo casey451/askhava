@@ -308,6 +308,12 @@ pub async fn reconcile(
     report.open = alert_open(pool, now).await?;
     if !report.matched() {
         alert(&mut *db(pool.acquire().await)?, MISMATCH_ALERT, None).await?;
+    } else {
+        // OPS-023, D-220, D-3877: a matched run clears every open ledger alert; nothing else does.
+        let mut conn = db(pool.acquire().await)?;
+        askhava_ops::api::acknowledge_cleared(&mut conn, MISMATCH_ALERT, now)
+            .await
+            .map_err(|_| MoneyEventError::Database)?;
     }
     finish(pool, now).await?;
     Ok(report)
