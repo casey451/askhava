@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T05:28:23Z by runner 93502530e6e1 (actions).
+Updated 2026-11-17T05:28:41Z by runner 6fd433f79813 (actions).
 
 **Building: T204 in progress since 04:22Z; 382 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -13,7 +13,6 @@ Updated 2026-11-17T05:28:23Z by runner 93502530e6e1 (actions).
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 1 problem(s) on tasks still to run (+138 on DONE tasks); first: T103: stored context_pct 25% but it measures 32%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -80,18 +79,18 @@ Updated 2026-11-17T05:28:23Z by runner 93502530e6e1 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 305 of 733 (41.6%) · partial 315 · unstarted 113
-**Tasks merged (throughput only):** 382 of 557
+**Requirements verified:** 302 of 733 (41.2%) · partial 318 · unstarted 113
+**Tasks merged (throughput only):** 382 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 20 | 11 | 4 | 35 |
+| accessibility | 19 | 12 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 21 | 35 | 2 | 58 |
 | calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 27 | 13 | 3 | 43 |
+| intake | 25 | 15 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
@@ -117,7 +116,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 25 of 165 done
+- stage 5: 25 of 167 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

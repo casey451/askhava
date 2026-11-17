@@ -21687,7 +21687,9 @@
     "T588",
     "T589",
     "T590",
-    "T591"
+    "T591",
+    "T592",
+    "T593"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -35184,7 +35186,8 @@
     "T391",
     "T435",
     "T432",
-    "T449"
+    "T449",
+    "T593"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -66403,7 +66406,9 @@
     "T587",
     "T588",
     "T589",
-    "T590"
+    "T590",
+    "T592",
+    "T593"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -67417,6 +67422,34 @@
     "runner/cache.py",
     "tests/test_runner_cache.py"
    ]
+  },
+  {
+   "id": "T592",
+   "deps": [
+    "T102",
+    "T416",
+    "T526"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "home-numbers-bulk-read",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T593",
+   "deps": [
+    "T592",
+    "T216",
+    "T489",
+    "T429",
+    "T248"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "home-hero-request-box",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -71628,7 +71661,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T05:28:23Z",
+ "updated_at": "2026-11-17T05:28:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -71726,7 +71759,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "93502530e6e1aeccf81d44affced52ea060b4efa",
+ "runner_sha": "6fd433f79813434410a14d1d0cfc5757b0ee9dd3",
  "starter": "actions",
  "smoke_runs": [
   {
