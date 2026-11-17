@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.6 (draft, D-492 changes) · November 13, 2026 · Not yet in effect
+Version 0.7 (draft, D-492 changes, email codes) · November 17, 2026 · Not yet in effect
 
 # Laftly Privacy Policy
 
@@ -47,7 +47,7 @@ Your number is never shared. Your first name and address go only to the business
 
 The business you pick may use your details only for your job and follow-up about it. Our business terms forbid marketing lists and resale.
 
-**Vendors** (under contract, only to run Laftly): texting and calls (Twilio), email (Resend), payments (Stripe), hosting and its 30-day logs (Railway), encrypted backup storage (Backblaze B2), error monitoring (Sentry), letters for business identity checks (Lob), website delivery and security (Cloudflare), and, only once it is switched on, automated text reading (Anthropic; see section 6).
+**Vendors** (under contract, only to run Laftly): texting and calls (Twilio), email (Resend), one-time codes sent by email (Twilio SendGrid, which sees the email address we send each code to), payments (Stripe), hosting and its 30-day logs (Railway), encrypted backup storage (Backblaze B2), error monitoring (Sentry), letters for business identity checks (Lob), website delivery and security (Cloudflare), and, only once it is switched on, automated text reading (Anthropic; see section 6).
 
 **Legal demands.** We'll tell you about a legal demand for your data unless the law forbids it.
 
