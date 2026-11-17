@@ -1,24 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-17T03:24:01Z by runner 794f81de7ef2 (actions).
+Updated 2026-11-17T03:24:08Z by runner e7eb2ef77b65 (actions).
 
 **Building: T107 in progress since 02:20Z; 378 of 557 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 378 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:57Z; lane 2: T103 claimed 02:12Z, lease until 06:13Z; lane 3: T584 claimed 02:40Z, lease until 05:40Z; lane 7: T591 claimed 03:16Z, lease until 06:16Z
+- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:57Z; lane 2: T103 claimed 02:12Z, lease until 06:13Z; lane 7: T591 claimed 03:16Z, lease until 06:16Z
 - **Week:** 12% used, 165.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:23Z, 0 min before this update
+- **Last run:** 03:24Z, 0 min before this update
 - **Keeper:** last ran 03:22Z, next wake 05:42Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- Strict plan check red: 1 problem(s) on tasks still to run (+138 on DONE tasks); first: T584: stored context_pct 18% but it measures 23%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T584 | businesses (harness): sign-up activation retried after a con | MERGE_PENDING | 2 | 43 min | 03:23Z | PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to rea |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | MERGE_PENDING | 2 | 79 min | 03:14Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   0.13. |
-| T584 | businesses (harness): sign-up activation retried after a con | BLOCKED | 1 | 3 min | 02:26Z | PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to rea |
+| T584 | businesses (harness): sign-up activation retried after a con | BLOCKED | 1 | 3 min | 02:26Z |  |
 | T469 | server (harness): the Resend email client from settings and  | MERGE_PENDING | 1 | 99 min | 02:12Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | check_failed | 1 | 2 h 47 min | 01:23Z |  |
 | T320 | ops: a check that runs on a schedule raises its alert once w | MERGE_PENDING | 2 | 78 min | 01:13Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
@@ -74,7 +76,7 @@ Updated 2026-11-17T03:24:01Z by runner 794f81de7ef2 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 305 of 733 (41.6%) · partial 315 · unstarted 113
-**Tasks merged (throughput only):** 378 of 557
+**Tasks merged (throughput only):** 378 of 556
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -119,8 +121,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T107 (lease until 2026-11-17T05:57:37Z)
 - lane 2: T103 (lease until 2026-11-17T06:13:14Z)
-- lane 3: T584 (lease until 2026-11-17T05:40:25Z)
 - lane 7: T591 (lease until 2026-11-17T06:16:00Z)
 
 ## Last usage reading
-- {"task": "T221", "at": "2026-11-17T03:14:05Z", "cache_creation_input_tokens": 194461, "output_tokens": 31949, "cache_read_input_tokens": 3404485, "input_tokens": 188}
+- {"task": "T584", "at": "2026-11-17T03:23:28Z", "input_tokens": 133, "output_tokens": 41181, "cache_read_input_tokens": 4419415, "cache_creation_input_tokens": 149793}
