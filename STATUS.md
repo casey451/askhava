@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T14:22:01Z by runner e9821f027c6b (actions).
+Updated 2026-11-17T14:22:30Z by runner e1c5e4bc416f (actions).
 
-**Idle since 14:20Z; 396 of 561 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 14:20Z; 397 of 561 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 396 of 561 build tasks (owner gates not counted)
+- **Tasks done:** 397 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 14:20Z (no task in progress)
 - **Week:** 21% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:21Z, 0 min before this update
+- **Last run:** 14:22Z, 0 min before this update
 - **Keeper:** last ran 14:21Z, next wake 14:41Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 7 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -27,7 +27,7 @@ Updated 2026-11-17T14:22:01Z by runner e9821f027c6b (actions).
 | T202 | site: Spanish pages, the business page blocks and the requir | MERGE_PENDING | 2 | 43 min | 13:01Z | merging main into the reviewed head conflicts in app/site/src/api.rs, docs/architecture.md, tests/a11y/page_states.ts; a |
 | T113 | Draft the Twilio campaign description from the real template | BLOCKED | 1 | 10 min | 12:21Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
 | T441 | portals: the quote page shows the kept number, and the pick  | done | 1 | 74 min | 11:32Z |  |
-| T572 | intake: the under-13 stop also clears the vault contact's na | MERGE_PENDING | 1 | 48 min | 11:31Z |  |
+| T572 | intake: the under-13 stop also clears the vault contact's na | done | 1 | 48 min | 11:31Z |  |
 | T446 | intake and messaging: PICK-046's "couldn't take it" notice g | done | 1 | 87 min | 11:29Z |  |
 | T202 | site: Spanish pages, the business page blocks and the requir | resync | 2 | 56 min | 11:26Z |  |
 | T112 | Draft the privacy policy and SMS terms | done | 3 | 66 min | 11:10Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
@@ -99,7 +99,7 @@ Updated 2026-11-17T14:22:01Z by runner e9821f027c6b (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 304 of 733 (41.5%) · partial 341 · unstarted 88
-**Tasks merged (throughput only):** 396 of 560
+**Tasks merged (throughput only):** 397 of 561
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -135,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 39 of 169 done
+- stage 5: 40 of 169 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
