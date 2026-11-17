@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-17T20:29:23Z by runner 2e3965ee9584 (manual).
+Updated 2026-11-17T20:30:32Z by runner 1455f0d6ae6f (actions).
 
 **Building: T602 in progress since 20:07Z; 408 of 570 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 408 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T602 claimed 20:07Z, lease until 23:07Z; lane 6: T106 claimed 19:20Z, lease until 23:20Z; lane 7: T594 claimed 19:39Z, lease until 22:39Z
+- **Lane:** lane 5: T602 claimed 20:07Z, lease until 23:07Z; lane 6: T106 claimed 19:20Z, lease until 23:20Z; lane 7: T594 claimed 19:39Z, lease until 23:30Z
 - **Week:** 29% used, 135.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:28Z, 0 min before this update
+- **Last run:** 20:29Z, 1 min before this update
 - **Keeper:** last ran 20:28Z, next wake 22:41Z
 
 ## Needs attention
 - BLOCKED T115: plan gap reported: PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing in `package.json`/`package-lock.json` can fix it; the smallest plan change is a harness task that adds a reviewed audit exception for this advisory to `scripts/prehandin.sh` and Ci's audit step.
 Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=4.0.7, latest published is 4.0.7, no patched version, so no override works. Path: typescript-eslint@8.71.2 -> @typescript-eslint/typescript-estree@8.71.2 -> tinyglobby@0.2.17 -> picomatch@4.0.7 (also via f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T115 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 11 problem(s) on tasks still to run (+168 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+167 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -139,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 5: T602 (lease until 2026-11-17T23:07:35Z)
 - lane 6: T106 (lease until 2026-11-17T23:20:00Z)
-- lane 7: T594 (lease until 2026-11-17T22:39:43Z)
+- lane 7: T594 (lease until 2026-11-17T23:30:32Z)
 
 ## Last usage reading
 - {"task": "T597", "at": "2026-11-17T20:28:00Z", "input_tokens": 109, "output_tokens": 32355, "cache_creation_input_tokens": 149227, "cache_read_input_tokens": 3624599}
