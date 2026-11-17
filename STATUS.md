@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T20:41:09Z by runner 2e3965ee9584 (actions).
+Updated 2026-11-17T20:50:15Z by runner 2e3965ee9584 (actions).
 
-**Building: T594 in progress since 19:39Z; 408 of 570 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T594 in progress since 19:39Z; 409 of 570 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 408 of 570 build tasks (owner gates not counted)
+- **Tasks done:** 409 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 7: T594 claimed 19:39Z, lease until 23:30Z
 - **Week:** 29% used, 135.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:40Z, 0 min before this update
+- **Last run:** 20:41Z, 9 min before this update
 - **Keeper:** last ran 20:41Z, next wake 23:33Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 |---|---|---|---|---|---|---|
 | T106 | ops: /healthz and the web and worker liveness exits | MERGE_PENDING | 1 | 77 min | 20:38Z |  |
 | T602 | privacy: the inbound email signature check refuses an out-of | MERGE_PENDING | 1 | 30 min | 20:37Z |  |
-| T597 | Runner (harness): the early merge-close step also pushes the | MERGE_PENDING | 1 | 26 min | 20:28Z |  |
+| T597 | Runner (harness): the early merge-close step also pushes the | done | 1 | 26 min | 20:28Z |  |
 | T582 | quotes and messaging (harness): a late read-back confirm is  | MERGE_PENDING | 1 | 36 min | 20:13Z |  |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | BLOCKED | 2 | 68 min | 19:54Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | BLOCKED | 3 | 46 min | 19:24Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
@@ -87,7 +87,6 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 | T111 | Draft homeowner and business terms with every required claus | QUEUED | 2 | 66 min | 21:28Z |  |
 | T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 1 | 14 min | 21:22Z | PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `paymen |
 | T102 | site: home and how-it-works pages with the footer, tagline,  | done | 1 | 46 min | 21:03Z |  |
-| T307 | server and portals: the homeowner portal's sign-in, home pag | BLOCKED | 1 | 41 min | 20:41Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 
 ### Plan and harness merges on main
 - none
@@ -95,7 +94,7 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 733 (0.0%) · partial 663 · unstarted 70
-**Tasks merged (throughput only):** 408 of 570
+**Tasks merged (throughput only):** 409 of 570
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -131,7 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 51 of 178 done
+- stage 5: 52 of 178 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
