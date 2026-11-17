@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T11:37:39Z by runner 7b2e31773677 (actions).
+Updated 2026-11-17T11:38:01Z by runner 7b2e31773677 (actions).
 
 **Idle since 11:32Z; 393 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-17T11:37:39Z by runner 7b2e31773677 (actions).
 - **Lane:** idle since 11:32Z (no task in progress)
 - **Week:** 19% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:37Z, 0 min before this update
-- **Keeper:** last ran 11:33Z, next wake 11:53Z
+- **Keeper:** last ran 11:38Z, next wake 11:58Z
 
 ## Needs attention
 - PLAN GAP T321 (since 2026-11-17T09:31:01Z, no attempt used; a plan change fixes it): T321: dependency T107 is DONE but its owned file app/messaging/src/consent_alerts.rs is not on main; T321: dependency T107 is DONE but its owned file tests/integration/tests/consent_records_alerts.rs is not on main
