@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T15:25:14Z by runner a44660021dec (actions).
+Updated 2026-11-17T15:28:34Z by runner 215d4cc126ab (actions).
 
 **Building: T113 in progress since 15:04Z; 399 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-17T15:25:14Z by runner a44660021dec (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T113 claimed 15:04Z, lease until 18:04Z
 - **Week:** 22% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:21Z, 3 min before this update
+- **Last run:** 15:28Z, 0 min before this update
 - **Keeper:** last ran 15:21Z, next wake 18:06Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-17T15:25:14Z by runner a44660021dec (actions).
 - PLAN GAP T115 (since 2026-11-17T15:25:02Z, no attempt used; a plan change fixes it): T115: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T115: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T115: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T115: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T115: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T491 (since 2026-11-17T14:53:18Z, no attempt used; a plan change fixes it): T491: dependency T471 is DONE but its owned file tests/integration/tests/pick_moved_text.rs is not on main
-- Strict plan check red: 6 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+153 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
