@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:57:28Z by runner f911c8fdcb55 (actions).
+Updated 2026-11-17T14:08:03Z by runner e1c5e4bc416f (actions).
 
 **Building: T471 in progress since 13:32Z; 396 of 561 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-17T13:57:28Z by runner f911c8fdcb55 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 6: T471 claimed 13:32Z, lease until 16:32Z
 - **Week:** 21% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:57Z, 0 min before this update
+- **Last run:** 14:07Z, 0 min before this update
 - **Keeper:** last ran 13:57Z, next wake 16:35Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 7 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -91,9 +91,6 @@ Updated 2026-11-17T13:57:28Z by runner f911c8fdcb55 (actions).
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | done | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 | T308 | portals (harness): the quote page's close button (JOB-019) i | done | 1 | 72 min | 14:42Z |  |
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | done | 2 | 28 min | 14:39Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
-| T519 | Copy check (harness): template text a requirement fixes, and | done | 2 | 49 min | 14:07Z | T519 attempt 1: fresh-eyes review found a compliance bypass that remained after the one allowed fix round (head a9dde6a4 |
-| T477 | payments, picks and quotes: the scorecard's money, pick and  | QUEUED | 1 | 101 min | 14:05Z |  |
-| T105 | ops: High and critical alerts with their automatic acknowled | QUEUED | 1 | 96 min | 13:58Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -101,7 +98,7 @@ Updated 2026-11-17T13:57:28Z by runner f911c8fdcb55 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 304 of 733 (41.5%) · partial 341 · unstarted 88
-**Tasks merged (throughput only):** 396 of 560
+**Tasks merged (throughput only):** 396 of 561
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
