@@ -14,10 +14,20 @@
 //! (D-3879), `/help` (WEB-008, WEB-025, WORD-009, AI-018; the AI switch read through
 //! `intake::api::ai_on`, D-3144) and `/help/roc-complaint` (WEB-011). The help form posts to
 //! `POST /help`, which T309 serves (D-2128); its CSRF token comes from [`HelpFormCsrf`] (D-3890).
+//!
+//! [`page_routes`] also serves the Spanish home `/es` (T202, WEB-002, WORD-013), the business page
+//! `/business` and its Spanish twin `/es/business` (WEB-018 to WEB-021, WEB-024, WEB-025, WORD-017,
+//! BIZ-030, REC-009) and the business help page `/business/help` (WEB-020's safety tip). The
+//! business page shows one fake sample card per switched-on trade from `catalog::api::category_list`,
+//! the city-license guide ([`CityGuide`]) on no-license cards, and each switched-off trade's
+//! waitlist count from `businesses::api::trade_count` with the nil business ID (D-4044). Its
+//! WEB-024 line follows `texting_on`, passed as `false` as the served sign-up does until T526 wires
+//! the stored switch (D-3880, D-3881).
 
 use std::sync::Arc;
 
 use askama::Template;
+use askhava_businesses::api::trade_count;
 use askhava_catalog::api::{CategoryListing, category_list};
 use askhava_core::api::{Environment, Settings, arizona_time, brand};
 use askhava_payments::api::Tier;
@@ -27,6 +37,7 @@ use axum::routing::get;
 use axum::{Extension, Router};
 use jiff::SignedDuration;
 use sqlx::PgPool;
+use uuid::Uuid;
 
 use crate::routes::banner_shown;
 
@@ -48,6 +59,14 @@ pub const COVERAGE_PATH: &str = "/coverage";
 pub const HELP_PATH: &str = "/help";
 /// The page that links on to the state's contractor complaint form (WEB-011).
 pub const ROC_COMPLAINT_PATH: &str = "/help/roc-complaint";
+/// The Spanish home page (WEB-002, D-3880).
+pub const ES_HOME_PATH: &str = "/es";
+/// The business page (WEB-018, WEB-020, WEB-021, D-3880).
+pub const BUSINESS_PATH: &str = "/business";
+/// The Spanish business page (WEB-019, D-3880).
+pub const ES_BUSINESS_PATH: &str = "/es/business";
+/// The business help page with the safety tip for people working alone (WEB-020, D-3880).
+pub const BUSINESS_HELP_PATH: &str = "/business/help";
 
 /// D-3890: the help form's CSRF token, which `server`'s layer on `GET /help` puts in the request's
 /// extensions (T309); the page renders it as the hidden `csrf` field, empty when absent. No
@@ -71,10 +90,41 @@ impl WhoRuns {
     #[must_use]
     pub fn from_settings(settings: &Settings) -> Self {
         Self {
-            mailing_address: settings.postal_address().ok().map(str::to_owned),
-            record_url: settings.llc_record_url().map(str::to_owned),
-            city_license: settings.city_business_license_number().map(str::to_owned),
+            mailing_address: set(settings.postal_address().ok()),
+            record_url: set(settings.llc_record_url()),
+            city_license: set(settings.city_business_license_number()),
         }
+    }
+}
+
+/// A setting's value, or `None` while it is unset or empty (WEB-020, WEB-021, D-3890).
+fn set(value: Option<&str>) -> Option<String> {
+    value.filter(|v| !v.is_empty()).map(str::to_owned)
+}
+
+/// WEB-020, D-3880: the city business-license guide's parts, each left out while its setting is
+/// empty; the whole guide is hidden while all three are.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct CityGuide {
+    /// What the license costs (`ASKHAVA_CITY_LICENSE_COST`).
+    pub cost: Option<String>,
+    /// How long it takes to get (`ASKHAVA_CITY_LICENSE_TIME`).
+    pub time: Option<String>,
+    /// The city's page for it (`ASKHAVA_CITY_LICENSE_URL`).
+    pub url: Option<String>,
+}
+
+impl CityGuide {
+    /// WEB-020, D-3880: the guide's parts read from `settings`.
+    #[must_use]
+    pub fn from_settings(settings: &Settings) -> Self {
+        let [cost, time, url] = settings.city_license_guide().map(set);
+        Self { cost, time, url }
+    }
+
+    /// WEB-020: whether any part is set, so the guide shows.
+    fn shown(&self) -> bool {
+        self.cost.is_some() || self.time.is_some() || self.url.is_some()
     }
 }
 
@@ -83,6 +133,7 @@ impl WhoRuns {
 pub struct SitePages {
     min_jobs: u32,
     who: WhoRuns,
+    guide: CityGuide,
 }
 
 impl Default for SitePages {
@@ -91,17 +142,19 @@ impl Default for SitePages {
         Self {
             min_jobs: 50,
             who: WhoRuns::default(),
+            guide: CityGuide::default(),
         }
     }
 }
 
 impl SitePages {
-    /// WEB-021, WEB-028: the pages' settings from `settings` (D-3878, D-3890).
+    /// WEB-020, WEB-021, WEB-028: the pages' settings from `settings` (D-3878, D-3880, D-3890).
     #[must_use]
     pub fn from_settings(settings: &Settings) -> Self {
         Self {
             min_jobs: settings.home_numbers_min_jobs(),
             who: WhoRuns::from_settings(settings),
+            guide: CityGuide::from_settings(settings),
         }
     }
 }
@@ -189,6 +242,63 @@ struct RocComplaintPage {
     banner_shown: bool,
 }
 
+/// WEB-002: the Spanish home page.
+#[derive(Template)]
+#[template(path = "es_home.html")]
+struct EsHomePage {
+    banner_shown: bool,
+    who: WhoRuns,
+    fees: Fees,
+}
+
+/// WEB-020: a switched-on trade's fake sample card; `guide` for a no-license trade.
+struct SampleCard {
+    code: String,
+    name: String,
+    guide: bool,
+}
+
+/// WEB-020: a switched-off trade and how many waitlisted businesses chose it.
+struct Waiting {
+    name: String,
+    waiting: u32,
+}
+
+/// What both business pages show (WEB-018 to WEB-021, WEB-025, BIZ-030, REC-009).
+struct BusinessFacts {
+    cards: Vec<SampleCard>,
+    later: Vec<Waiting>,
+    guide: CityGuide,
+    who: WhoRuns,
+    fees: Fees,
+    old_name: String,
+}
+
+/// WEB-018, WEB-020, WEB-021, WEB-024: the business page.
+#[derive(Template)]
+#[template(path = "business.html")]
+struct BusinessPage {
+    banner_shown: bool,
+    texting_on: bool,
+    facts: BusinessFacts,
+}
+
+/// WEB-019: the Spanish business page.
+#[derive(Template)]
+#[template(path = "es_business.html")]
+struct EsBusinessPage {
+    banner_shown: bool,
+    texting_on: bool,
+    facts: BusinessFacts,
+}
+
+/// WEB-020: the business help page.
+#[derive(Template)]
+#[template(path = "business_help.html")]
+struct BusinessHelpPage {
+    banner_shown: bool,
+}
+
 /// WEB-008, WEB-011, WEB-015, WEB-023: the services, coverage, help and ROC complaint pages over
 /// `pool`; `env` is the environment the AI switch is read in (AI-018).
 pub fn help_routes(pool: PgPool, env: Environment) -> Router {
@@ -229,14 +339,19 @@ async fn help_html(pool: &PgPool, env: Environment, csrf: String) -> Result<Stri
     HelpPage {
         banner_shown: banner_shown(pool).await,
         ai_on,
-        old_name: brand()
-            .forbidden_alone()
-            .first()
-            .cloned()
-            .unwrap_or_default(),
+        old_name: old_name(),
         csrf,
     }
     .render()
+}
+
+/// WEB-025, D-4044: the brand file's `forbidden_alone` word, never typed.
+fn old_name() -> String {
+    brand()
+        .forbidden_alone()
+        .first()
+        .cloned()
+        .unwrap_or_default()
 }
 
 /// WEB-015 (services, when not `coverage`) or WEB-023 (coverage), read from the catalog's list
@@ -281,13 +396,111 @@ pub fn page_routes(pool: PgPool, pages: SitePages) -> Router {
         let pool = state.0.clone();
         move || async move { respond(how_it_works_html(&pool, false).await) }
     };
-    let es = move || async move { respond(how_it_works_html(&state.0, true).await) };
+    let es = {
+        let pool = state.0.clone();
+        move || async move { respond(how_it_works_html(&pool, true).await) }
+    };
     Router::new()
         .route(HOME_PATH, get(home.clone()))
         .route(OLD_CATEGORIES_PATH, get(home.clone()))
         .route(OLD_EVENTS_PATH, get(home))
         .route(HOW_IT_WORKS_PATH, get(how))
         .route(ES_HOW_IT_WORKS_PATH, get(es))
+        .merge(business_routes(&state))
+}
+
+/// WEB-002, WEB-018 to WEB-021, WEB-024: the Spanish home, both business pages and the business
+/// help page over the shared pool and settings.
+fn business_routes(state: &Arc<(PgPool, SitePages)>) -> Router {
+    let page = |spanish: bool| {
+        let state = Arc::clone(state);
+        move || async move { business_page(&state.0, &state.1, spanish).await }
+    };
+    let es_home = {
+        let state = Arc::clone(state);
+        move || async move {
+            let (pool, pages) = (&state.0, &state.1);
+            let (who, fees) = (pages.who.clone(), Fees::from_tiers());
+            let banner_shown = banner_shown(pool).await;
+            respond(
+                EsHomePage {
+                    banner_shown,
+                    who,
+                    fees,
+                }
+                .render(),
+            )
+        }
+    };
+    let help = {
+        let pool = state.0.clone();
+        move || async move {
+            let banner_shown = banner_shown(&pool).await;
+            respond(BusinessHelpPage { banner_shown }.render())
+        }
+    };
+    Router::new()
+        .route(ES_HOME_PATH, get(es_home))
+        .route(BUSINESS_PATH, get(page(false)))
+        .route(ES_BUSINESS_PATH, get(page(true)))
+        .route(BUSINESS_HELP_PATH, get(help))
+}
+
+/// WEB-018 to WEB-021, WEB-024: the business page, in Spanish when `spanish` (WEB-019). Business
+/// texting shows as off, as the served sign-up does, until T526 wires the stored switch (D-3880,
+/// D-3881). A failed read is a bare 500 with one warning and no values (R5), never an empty list.
+async fn business_page(pool: &PgPool, pages: &SitePages, spanish: bool) -> Response {
+    let Some(facts) = business_facts(pool, pages).await else {
+        tracing::warn!("business page reads failed; the page is not shown");
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+    let (banner_shown, texting_on) = (banner_shown(pool).await, false);
+    respond(if spanish {
+        EsBusinessPage {
+            banner_shown,
+            texting_on,
+            facts,
+        }
+        .render()
+    } else {
+        BusinessPage {
+            banner_shown,
+            texting_on,
+            facts,
+        }
+        .render()
+    })
+}
+
+/// WEB-020, D-4044: a sample card per switched-on trade (the guide on no-license ones) and, per
+/// switched-off trade, the waitlisted businesses that chose it; `None` when a read fails.
+async fn business_facts(pool: &PgPool, pages: &SitePages) -> Option<BusinessFacts> {
+    let mut db = pool.acquire().await.ok()?;
+    let list = category_list(&mut db).await.ok()?;
+    let (mut cards, mut later) = (Vec::new(), Vec::new());
+    for trade in list.categories {
+        if trade.enabled {
+            let guide = trade.license_kind == "none";
+            let (code, name) = (trade.code, trade.name);
+            cards.push(SampleCard { code, name, guide });
+        } else {
+            let waiting = trade_count(&mut db, Uuid::nil(), &trade.code, true)
+                .await
+                .ok()?;
+            later.push(Waiting {
+                name: trade.name,
+                waiting,
+            });
+        }
+    }
+    Some(BusinessFacts {
+        cards,
+        later,
+        guide: pages.guide.clone(),
+        who: pages.who.clone(),
+        fees: Fees::from_tiers(),
+        old_name: old_name(),
+    })
 }
 
 /// A rendered page, or a bare 500 that names nothing (R4, R5).
@@ -385,8 +598,9 @@ mod tests {
     use jiff::SignedDuration;
 
     use super::{
-        CoveragePage, EsHowItWorksPage, Fees, HelpPage, HomePage, HowItWorksPage, RocComplaintPage,
-        ServicesPage, WhoRuns, wait_words,
+        BusinessFacts, BusinessHelpPage, BusinessPage, CityGuide, CoveragePage, EsBusinessPage,
+        EsHomePage, EsHowItWorksPage, Fees, HelpPage, HomePage, HowItWorksPage, RocComplaintPage,
+        SampleCard, ServicesPage, Waiting, WhoRuns, wait_words,
     };
 
     /// The home page with no numbers and `who`'s facts.
@@ -607,5 +821,214 @@ mod tests {
         assert_eq!(wait_words(SignedDuration::from_mins(119)), "119 minutes");
         assert_eq!(wait_words(SignedDuration::from_mins(150)), "3 hours");
         assert_eq!(wait_words(SignedDuration::from_mins(-5)), "0 minutes");
+    }
+
+    /// Fake business-page facts: a licensed and a no-license card, one waiting trade, `guide`.
+    fn facts(guide: CityGuide) -> BusinessFacts {
+        let card = |code: &str, guide| SampleCard {
+            code: code.to_owned(),
+            name: format!("Fake {code}"),
+            guide,
+        };
+        BusinessFacts {
+            cards: vec![card("fake_pipes", false), card("fake_mops", true)],
+            later: vec![Waiting {
+                name: "Fake later".to_owned(),
+                waiting: 4,
+            }],
+            guide,
+            who: WhoRuns::default(),
+            fees: Fees::from_tiers(),
+            old_name: brand().forbidden_alone()[0].clone(),
+        }
+    }
+
+    /// The business page in English and Spanish with `texting_on` and `guide`.
+    fn business(texting_on: bool, guide: &CityGuide) -> (String, String) {
+        let en = BusinessPage {
+            banner_shown: false,
+            texting_on,
+            facts: facts(guide.clone()),
+        };
+        let es = EsBusinessPage {
+            banner_shown: false,
+            texting_on,
+            facts: facts(guide.clone()),
+        };
+        (en.render().expect("en"), es.render().expect("es"))
+    }
+
+    /// The part of `html` from `start` to the next section's end.
+    fn section<'a>(html: &'a str, start: &str) -> &'a str {
+        let from = &html[html.find(start).expect("section")..];
+        &from[..from.find("</section>").expect("end")]
+    }
+
+    /// TD-WEB-03 TD-WEB-07 (WEB-018, WEB-019, WEB-020, WEB-021, WORD-017): both WORD-017 lines, a
+    /// fake sample card per open trade, the city guide on the no-license card only, the waiting
+    /// line, the "Who runs" block with "usually" and the day-job line, the Spanish sign-up link, and
+    /// no prototype wording, in English and Spanish.
+    #[test]
+    fn td_web_03_business_page_cards_guide_and_lines() {
+        let guide = CityGuide {
+            cost: Some("Fake cost".to_owned()),
+            time: Some("Fake time".to_owned()),
+            url: Some("https://example.test/city".to_owned()),
+        };
+        let (en, es) = business(false, &guide);
+        assert!(en.contains("You quote once. No bidding rounds, no paid placement."));
+        assert!(en.contains("Every card says how many businesses got it."));
+        assert!(section(&en, "id=\"sample-fake_mops\"").contains("Cost: Fake cost"));
+        assert!(section(&en, "id=\"sample-fake_mops\"").contains("https://example.test/city"));
+        assert!(!section(&en, "id=\"sample-fake_pipes\"").contains("city business license"));
+        assert!(en.contains("Opens when there are enough requests; 4 businesses waiting."));
+        let name = brand().display_name();
+        assert!(en.contains(&format!(
+            "{name} is run by {}, a Lake Havasu City business. Its owner lives in Havasu.",
+            brand().legal_name()
+        )));
+        assert!(en.contains("The owner has a full-time day job. Sign-up reviews are usually answered within 4 days, help and charge questions usually within 2 days, and this page shows when the owner is away."));
+        assert!(en.contains("href=\"/b/signup\"") && en.contains("four months"));
+        for gone in [
+            " lead",
+            "no bidding wars",
+            "Mailing address",
+            "<img",
+            "<script",
+        ] {
+            assert!(!en.contains(gone) && !es.contains(gone), "{gone}");
+        }
+        assert!(es.contains("<html lang=\"es\">") && es.contains("href=\"/b/signup?lang=es\""));
+        assert!(es.contains("Sin rondas de ofertas, sin posiciones pagadas."));
+        assert!(es.contains("Cada tarjeta dice cuántos negocios la recibieron."));
+        assert!(section(&es, "id=\"muestra-fake_mops\"").contains("Costo: Fake cost"));
+        assert!(!section(&es, "id=\"muestra-fake_pipes\"").contains("licencia comercial"));
+        assert!(es.contains("Abre cuando haya suficientes solicitudes; 4 negocios esperando."));
+        assert!(es.contains("normalmente se revisan en 4 días"));
+    }
+
+    /// TD-WEB-03 (WEB-020, D-3880): the city guide is hidden while every part is unset, and a set
+    /// part shows alone.
+    #[test]
+    fn td_web_03_city_guide_shows_only_set_parts() {
+        let (en, es) = business(false, &CityGuide::default());
+        assert!(!en.contains("city business license") && !es.contains("licencia comercial de la"));
+        let link_only = CityGuide {
+            url: Some("https://example.test/city".to_owned()),
+            ..CityGuide::default()
+        };
+        let (en, _) = business(false, &link_only);
+        let mops = section(&en, "id=\"sample-fake_mops\"");
+        assert!(mops.contains("https://example.test/city") && !mops.contains("Cost:"));
+    }
+
+    /// TD-WEB-05 (WEB-024): the switch-off notice line by default and the switch-on line when
+    /// business texting is on, in English and Spanish.
+    #[test]
+    fn td_web_05_notice_line_follows_the_switch() {
+        const OFF: &str = "Job requests and picks come by email. We don't text or call businesses.";
+        const ES_OFF: &str = "No enviamos mensajes de texto ni llamamos a los negocios.";
+        let name = brand().display_name();
+        let on = format!(
+            "Choose how you get job requests and picks: email, text or both. {name} never calls you with a recording."
+        );
+        let (en, es) = business(false, &CityGuide::default());
+        assert!(en.contains(OFF) && !en.contains(&on) && es.contains(ES_OFF));
+        let (en, es) = business(true, &CityGuide::default());
+        assert!(en.contains(&on) && !en.contains(OFF) && !es.contains(ES_OFF));
+        assert!(es.contains(&format!("{name} nunca le llama con una grabación.")));
+    }
+
+    /// TD-WEB-06 (WEB-025): the business page holds the WEB-025 answer in English and Spanish.
+    #[test]
+    fn td_web_06_business_page_answers_the_old_name_question() {
+        let (en, es) = business(false, &CityGuide::default());
+        let (name, old) = (brand().display_name(), &brand().forbidden_alone()[0]);
+        assert!(en.contains(&format!(
+            "{name} isn't connected to any business with \"{old}\" in its name."
+        )));
+        assert!(es.contains(&format!(
+            "{name} no tiene ninguna relación con negocios que lleven \"{old}\" en su nombre."
+        )));
+    }
+
+    /// TD-WEB-03 (BIZ-030, REC-009, WORD-002): "How you're charged" and the fee table take their
+    /// numbers from the fee settings; the $150-a-month pool example sits in the $75 row; ongoing
+    /// services count as four months, capped at the middle fee.
+    #[test]
+    fn td_web_03_charges_and_pricing_match_the_fee_settings() {
+        let (s, m, l) = (
+            dollars(Tier::Small),
+            dollars(Tier::Medium),
+            dollars(Tier::Large),
+        );
+        let (en, es) = business(false, &CityGuide::default());
+        assert!(en.contains(&format!(
+            "Pay only when you confirm a pick: ${s} / ${m} / ${l} by job size."
+        )));
+        assert!(en.contains(&format!(
+            "You pay one fixed fee when you confirm a pick: ${s}, ${m} or ${l} by job size."
+        )));
+        let name = brand().display_name();
+        assert!(en.contains(&format!("{name} is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; {name} doesn't direct, schedule, supervise or pay for the work.")));
+        assert_eq!(Tier::for_basis(150 * 100 * 4), Tier::Medium);
+        assert_eq!(askhava_payments::api::RECURRING_MONTHS, 4);
+        let cap = i32::try_from(m).expect("fits");
+        assert_eq!(
+            askhava_payments::api::RecurringCap::from_dollars(cap),
+            Ok(askhava_payments::api::RecurringCap::DEFAULT)
+        );
+        assert!(en.contains(&format!("counts as $600.</td><td>${m}</td>")));
+        assert!(en.contains(&format!("The fee never goes over ${m}.")));
+        assert!(es.contains(&format!("cuenta como $600.</td><td>${m}</td>")));
+        assert!(es.contains(&format!("${s} / ${m} / ${l} según el tamaño del trabajo")));
+        for (edge, tier) in [
+            (49_999, Tier::Small),
+            (50_000, Tier::Medium),
+            (150_000, Tier::Medium),
+            (150_001, Tier::Large),
+        ] {
+            assert_eq!(Tier::for_basis(edge), tier, "{edge}");
+        }
+    }
+
+    /// TD-WEB-01 TD-WORD-02 (WEB-002, WORD-002, WORD-007, WORD-013): the Spanish home page is in
+    /// Spanish with the fee line, the privacy line and the Spanish footer statement; the business
+    /// help page holds WEB-020's safety tip.
+    #[test]
+    fn td_web_01_spanish_home_and_business_help() {
+        let es = EsHomePage {
+            banner_shown: false,
+            who: WhoRuns::default(),
+            fees: Fees::from_tiers(),
+        }
+        .render()
+        .expect("es");
+        let (name, (s, m, l)) = (
+            brand().display_name(),
+            (
+                dollars(Tier::Small),
+                dollars(Tier::Medium),
+                dollars(Tier::Large),
+            ),
+        );
+        assert!(es.contains("<html lang=\"es\">"));
+        assert!(es.contains(&format!(
+            "tarifa de presentación fija según el tamaño del trabajo: ${s}, ${m} o ${l}."
+        )));
+        assert!(es.contains("Su número nunca se comparte."));
+        assert!(es.contains("Su nombre y su dirección van solo al negocio que usted elija."));
+        assert!(es.contains(&format!(
+            "{name} no es contratista y no realiza, cotiza ni supervisa trabajos."
+        )));
+        assert!(!es.contains("<h2>Homeowners</h2>"));
+        let help = BusinessHelpPage {
+            banner_shown: false,
+        }
+        .render()
+        .expect("help");
+        assert!(help.contains("<h2>Safety when you work alone</h2>"));
+        assert!(help.contains("tell someone where the job is and when you expect to finish"));
+        assert!(help.contains("If anyone is in danger, call 911."));
     }
 }

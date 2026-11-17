@@ -1,0 +1,120 @@
+{% extends "site_layout.html" %}
+{#- The Spanish business page, /es/business (T202; WEB-019, WEB-020, WEB-021, WEB-024, WEB-025,
+    WORD-002, WORD-013, WORD-017, BIZ-030, REC-009, D-180, D-3880, D-4044), the twin of business.html
+    with the same facts. All Spanish here is a draft marked for native-speaker review (WEB-019, D-180).
+    Trade names stay in English (lang="en"). The sign-up link adds lang=es, which T488 serves in
+    Spanish (WEB-019). The footer is the Spanish one. -#}
+{% block lang %}es{% endblock %}
+{% block title %}Para negocios{% endblock %}
+{% block content %}
+{%- let brand = askhava_core::api::brand().es().display_name() %}
+<h1>Reciba solicitudes de trabajo en Havasu. Pague solo cuando un propietario lo elija.</h1>
+<p>Los propietarios de Lake Havasu City nos dicen qué necesitan. Enviamos una tarjeta de trabajo a los negocios locales que hacen ese trabajo. Usted ve la tarjeta completa antes de cotizar.</p>
+<p>Usted cotiza una sola vez. Sin rondas de ofertas, sin posiciones pagadas.</p>
+<p>Cada tarjeta dice cuántos negocios la recibieron.</p>
+<p><a href="/b/signup?lang=es">Regístrese gratis</a></p>
+<p lang="en"><a href="/business">This page in English</a></p>
+
+<h2>Cómo recibe las solicitudes de trabajo</h2>
+{%- if texting_on %}
+<p>Elija cómo recibe las solicitudes de trabajo y los avisos de que lo eligieron: correo electrónico, mensaje de texto o ambos. {{ brand }} nunca le llama con una grabación.</p>
+{%- else %}
+<p>Las solicitudes de trabajo y los avisos de que lo eligieron llegan por correo electrónico. No enviamos mensajes de texto ni llamamos a los negocios.</p>
+{%- endif %}
+
+<h2>Cómo se le cobra</h2>
+<ul>
+<li>Registrarse es gratis. Pague solo cuando confirme que un propietario lo eligió: ${{ facts.fees.small }} / ${{ facts.fees.medium }} / ${{ facts.fees.large }} según el tamaño del trabajo. Reembolso si no logra comunicarse con el propietario.</li>
+<li>Cuando un propietario lo elige, debe confirmarlo dentro de 4 horas hábiles (de 8 a.m. a 8 p.m., todos los días), o dentro de 60 minutos para un trabajo de emergencia. Si revisa su correo solo una o dos veces al día, agregue una dirección de respaldo de alguien que lo revise más seguido.</li>
+<li>Es una tarifa de presentación por un propietario que lo eligió a usted.</li>
+<li>Usted paga una sola tarifa fija cuando confirma que un propietario lo eligió: ${{ facts.fees.small }}, ${{ facts.fees.medium }} o ${{ facts.fees.large }} según el tamaño del trabajo. No es un porcentaje del trabajo. Si llama dos veces dentro del horario del propietario y no logra comunicarse, la regla de reembolso le devuelve la tarifa sin que usted lo pida.</li>
+<li>Es una tarifa de presentación fija, nunca un porcentaje del trabajo, y no depende de que el trabajo se haga o se pague.</li>
+<li>{{ brand }} no es contratista. Hace llegar esta solicitud y la elección del propietario. Si el propietario lo elige a usted, lo contrata directamente; {{ brand }} no dirige, programa, supervisa ni paga el trabajo.</li>
+<li>El propietario ve todas las cotizaciones y elige un negocio: usted. No se comparte con nadie más.</li>
+<li>Una tarifa nueva nunca se aplica hasta que usted la acepte.</li>
+<li>Si el mismo propietario lo vuelve a elegir dentro de 180 días después de que se cierra el trabajo, no paga.</li>
+<li>Las tarifas siguen la lista publicada, y un cambio necesita su aprobación primero.</li>
+<li>Los estados de cuenta se descargan en formato CSV.</li>
+<li>Si en su oficio muchos propietarios lo eligen y luego no lo contratan, el dueño de {{ brand }} lo revisa y puede agregar un crédito.</li>
+</ul>
+
+<h2>Tarifas según el tamaño del trabajo</h2>
+<table>
+<caption>La tarifa de presentación para cada tamaño de trabajo</caption>
+<thead><tr><th scope="col">Su cotización</th><th scope="col">Tarifa de presentación</th></tr></thead>
+<tbody>
+<tr><td>Menos de $500</td><td>${{ facts.fees.small }}</td></tr>
+<tr><td>De $500 a $1,500. Ejemplo: un servicio de piscina de $150 al mes cuenta como $600.</td><td>${{ facts.fees.medium }}</td></tr>
+<tr><td>Más de $1,500</td><td>${{ facts.fees.large }}</td></tr>
+</tbody>
+</table>
+<p>Los servicios continuos cuentan como cuatro meses del precio mensual. Su tarifa tiene un tope de ${{ facts.fees.medium }}.</p>
+<p>Oferta de lanzamiento: su primer trabajo ganado es gratis, de cualquier tamaño, si se registra en los primeros 90 días o dentro de los 90 días después de que abra su oficio.</p>
+
+<h2>Tarjetas de trabajo de muestra</h2>
+<p>Estas tarjetas son inventadas para mostrarle lo que recibe. Hay una para cada oficio abierto.</p>
+{%- for card in facts.cards %}
+<section class="sample-card" aria-labelledby="muestra-{{ card.code }}">
+<h3 id="muestra-{{ card.code }}" lang="en">{{ card.name }}</h3>
+<ul>
+<li>Trabajo: una solicitud de muestra, inventada para esta página</li>
+<li>Zona: Lake Havasu City</li>
+<li>Cuándo: en la próxima semana</li>
+<li>Enviada a 3 negocios</li>
+</ul>
+{%- if card.guide && facts.guide.shown() %}
+<p>¿Trabaja en Lake Havasu City? Revise si necesita una licencia comercial de la ciudad.</p>
+{%- if let Some(cost) = facts.guide.cost %}
+<p>Costo: {{ cost }}</p>
+{%- endif %}
+{%- if let Some(time) = facts.guide.time %}
+<p>Tiempo para obtenerla: {{ time }}</p>
+{%- endif %}
+{%- if let Some(url) = facts.guide.url %}
+<p><a href="{{ url }}">La página de licencias comerciales de la ciudad</a></p>
+{%- endif %}
+{%- endif %}
+</section>
+{%- endfor %}
+{%- if !facts.later.is_empty() %}
+
+<h2>Oficios que abren más adelante</h2>
+<ul>
+{%- for trade in facts.later %}
+<li><span lang="en">{{ trade.name }}</span>: Abre cuando haya suficientes solicitudes; {{ trade.waiting }} negocios esperando.</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+
+<h2>Quién opera {{ brand }}</h2>
+<p>{{ brand }} lo opera {{ askhava_core::api::brand().es().legal_name() }}, un negocio de Lake Havasu City. Su dueño vive en Havasu.</p>
+{%- if let Some(address) = facts.who.mailing_address %}
+<p>Dirección postal: {{ address }}</p>
+{%- endif %}
+{%- if let Some(url) = facts.who.record_url %}
+<p><a href="{{ url }}">{{ askhava_core::api::brand().es().legal_name() }} en el sitio de la Arizona Corporation Commission</a></p>
+{%- endif %}
+{%- if let Some(number) = facts.who.city_license %}
+<p>Licencia comercial de Lake Havasu City: {{ number }}</p>
+{%- endif %}
+<p>Correo de ayuda: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
+<p>El dueño tiene un trabajo de tiempo completo. Las solicitudes de registro normalmente se revisan en 4 días, las preguntas de ayuda y de cobros normalmente en 2 días, y esta página indica cuando el dueño no está.</p>
+
+<h2>¿{{ brand }} es parte de un negocio de aquí con {{ facts.old_name }} en su nombre?</h2>
+<p>{{ brand }} no tiene ninguna relación con negocios que lleven "{{ facts.old_name }}" en su nombre.</p>
+
+<h2>Más para negocios</h2>
+<p lang="en"><a href="/business/help">Help for businesses, in English</a></p>
+<p><a href="/b/signup?lang=es">Regístrese gratis</a></p>
+{% endblock %}
+{% block footer %}
+<h2>Para propietarios</h2>
+<ul>
+<li><a href="/es/how-it-works">Cómo funciona</a></li>
+<li><a href="/services">Servicios</a></li>
+<li><a href="/request">Pida cotizaciones</a></li>
+<li><a href="/help">Ayuda</a></li>
+</ul>
+<p>Cotizaciones locales. Usted elige.</p>
+<p>{{ askhava_core::api::brand().es().display_name() }} no es contratista y no realiza, cotiza ni supervisa trabajos. Pasamos su solicitud y le mostramos cotizaciones de negocios locales independientes, tal como las escribieron. Usted elige y contrata directamente al negocio.</p>
+{% endblock %}

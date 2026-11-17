@@ -3183,3 +3183,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The Spanish data pages are drafts for a native speaker to check before Spanish goes on.
 - Nothing needs you now.
 - Fix round (D-4031): a link in a legal draft that isn't a web, email, phone or on-site link now shows as plain text, so no draft line can become a script link. Follow-ups for other tasks, none needing you: the rules checker should flag the "print as HTML" marker outside the legal pages; the data pages need the AI provider's retention sentence and the switch-on date once the AI module shares them (until then they show the switched-on paragraph without it, never the "switched off" wording while the AI is on); three business-portal pages link `/terms/business`, which doesn't exist, and should link `/terms#business-terms`; the Spanish page footer is copied in three templates and should be one.
+
+## T202: the Spanish home page and the business pages (D-4126)
+
+- laftly.com/business now shows how fees work, the fee table, a made-up sample job card for each open trade and the "Who runs Laftly" block. /es/business and /es are the Spanish versions, marked as drafts for a native speaker to check. /business/help has a safety tip for people working alone in customers' homes.
+- Open item for you: the city business-license guide on the handyman and no-license sample cards stays hidden until you fill in its cost, the time it takes and the city's link (settings `ASKHAVA_CITY_LICENSE_COST`, `ASKHAVA_CITY_LICENSE_TIME`, `ASKHAVA_CITY_LICENSE_URL`). No figure was typed in for you.
