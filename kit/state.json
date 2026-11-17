@@ -20850,7 +20850,15 @@
    "attempts": 0,
    "slug": "ops-pushes-digest-security-alerts",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-17T04:03:33Z",
+    "problems": [
+     "T204: dependency T469 is DONE but its owned file app/adapters/src/resend_config.rs is not on main",
+     "T204: dependency T469 is DONE but its owned file app/server/src/email_provider.rs is not on main",
+     "T204: dependency T469 is DONE but its owned file app/server/tests/email_provider_route.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T106",
@@ -71155,7 +71163,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T04:01:30Z",
+ "updated_at": "2026-11-17T04:03:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -71253,7 +71261,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b8f7a3f7e6ea336915f67bdca48b4293f19adc7b",
+ "runner_sha": "0241d76c6e76a67c54d84095c5de20589a383972",
  "starter": "actions",
  "smoke_runs": [
   {

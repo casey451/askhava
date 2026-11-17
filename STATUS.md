@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T04:01:30Z by runner b8f7a3f7e6ea (actions).
+Updated 2026-11-17T04:03:38Z by runner 0241d76c6e76 (actions).
 
 **Building: T103 in progress since 03:40Z; 380 of 557 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,10 +8,11 @@ Updated 2026-11-17T04:01:30Z by runner b8f7a3f7e6ea (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T103 claimed 03:40Z, lease until 06:40Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T591 claimed 03:16Z, lease until 07:01Z
 - **Week:** 13% used, 165.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:56Z, 5 min before this update
+- **Last run:** 04:01Z, 1 min before this update
 - **Keeper:** last ran 03:47Z, next wake 06:43Z
 
 ## Needs attention
+- PLAN GAP T204 (since 2026-11-17T04:03:33Z, no attempt used; a plan change fixes it): T204: dependency T469 is DONE but its owned file app/adapters/src/resend_config.rs is not on main; T204: dependency T469 is DONE but its owned file app/server/src/email_provider.rs is not on main; T204: dependency T469 is DONE but its owned file app/server/tests/email_provider_route.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 
 ## Last 24 hours
