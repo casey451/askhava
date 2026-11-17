@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T19:25:25Z by runner ec5f136577ad (actions).
+Updated 2026-11-17T19:25:42Z by runner c57d89a4648d (actions).
 
 **Building: T115 in progress since 18:45Z; 406 of 570 done; week 26% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-17T19:25:25Z by runner ec5f136577ad (actions).
 - **Lane:** lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 6: T106 claimed 19:20Z, lease until 22:20Z
 - **Week:** 26% used, 143.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:25Z, 0 min before this update
-- **Keeper:** last ran 19:19Z, next wake 21:48Z
+- **Keeper:** last ran 19:25Z, next wake 21:48Z
 
 ## Needs attention
 - BLOCKED T104: Review not approved after the one fix round (head ec5f136577adfe010b854d7f2d0dec66bf17f238; tests/docs/test_wording_scan.py 349 of 350 lines; pytest 220 passed; prehandin.sh green; smoke.sh green on first head 2a14626dd). First review findings (pronoun hand-over "share it/pass it/give it", Spanish plural "más baratas aparecen primero", "listed/shown by price", "se le da") were fixed and hold; repack dropped nothing. Second reviewer's findings:
@@ -18,7 +18,7 @@ Updated 2026-11-17T19:25:25Z by runner ec5f136577ad (actions).
 Optional (not counted): "We collect your phone number and let the business see it." / "Su número de teléfono lo recibe el negocio que elija." / "Your phone number? We share it with the pro you pick." ("?" ends the sentence) / "Los precios más bajos van primero."; "We text your phone number a code; type it in." is wrongly flagged (already so on 2a14626dd).
 A retry should start from this attempt's design (pushed branch, if kept) and apply these two fixes; each rule should be checked against both missed phrasings and plausible legitimate consent-flow copy before hand-in.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
