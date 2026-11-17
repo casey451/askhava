@@ -1,18 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T05:52:51Z by runner 7a1d4577cb67 (actions).
+Updated 2026-11-17T05:56:25Z by runner 6cc8a2fed8c3 (actions).
 
-**Building: T204 in progress since 04:22Z; 383 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T204 in progress since 04:22Z; 384 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 383 of 559 build tasks (owner gates not counted)
+- **Tasks done:** 384 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T204 claimed 04:22Z, lease until 08:06Z; lane 7: T586 claimed 04:49Z, lease until 08:52Z
 - **Week:** 15% used, 159.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:38Z, 14 min before this update
+- **Last run:** 05:53Z, 3 min before this update
 - **Keeper:** last ran 05:38Z, next wake 08:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- Strict plan check red: 1 problem(s) on tasks still to run (+144 on DONE tasks); first: T235: stored context_pct 6% but it measures 10%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -21,7 +22,7 @@ Updated 2026-11-17T05:52:51Z by runner 7a1d4577cb67 (actions).
 | T103 | intake: the web-chat conversation, where typing a verified m | MERGE_PENDING | 1 | 106 min | 05:27Z |  |
 | T585 | businesses and licensing: a license change that drops job ty | MERGE_PENDING | 1 | 43 min | 05:10Z |  |
 | T571 | server and calls: a press of 9 on the safety call is never l | done | 1 | 45 min | 05:08Z |  |
-| T221 | site: the terms, privacy policy, SMS terms, homeowner data a | MERGE_PENDING | 2 | 29 min | 04:41Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
+| T221 | site: the terms, privacy policy, SMS terms, homeowner data a | done | 2 | 29 min | 04:41Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T591 | Runner (harness): free the backup job's disk and cap the smo | done | 1 | 67 min | 04:23Z |  |
 | T107 | Consent records kept 5 years, no export, opt-out rate alerts | QUEUED | 1 | 85 min | 03:45Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 | T584 | businesses (harness): sign-up activation retried after a con | done | 2 | 43 min | 03:23Z | PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to rea |
@@ -80,18 +81,18 @@ Updated 2026-11-17T05:52:51Z by runner 7a1d4577cb67 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 305 of 733 (41.6%) · partial 315 · unstarted 113
-**Tasks merged (throughput only):** 383 of 557
+**Requirements verified:** 302 of 733 (41.2%) · partial 323 · unstarted 108
+**Tasks merged (throughput only):** 384 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 20 | 11 | 4 | 35 |
-| ai | 11 | 13 | 5 | 29 |
+| accessibility | 19 | 12 | 4 | 35 |
+| ai | 11 | 14 | 4 | 29 |
 | businesses | 21 | 35 | 2 | 58 |
 | calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 27 | 13 | 3 | 43 |
+| intake | 25 | 15 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
@@ -102,8 +103,8 @@ Updated 2026-11-17T05:52:51Z by runner 7a1d4577cb67 (actions).
 | quotes-pick | 33 | 22 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
-| terms | 1 | 20 | 14 | 35 |
-| website | 0 | 14 | 14 | 28 |
+| terms | 1 | 23 | 11 | 35 |
+| website | 0 | 15 | 13 | 28 |
 | wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
@@ -117,7 +118,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 26 of 167 done
+- stage 5: 27 of 167 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
