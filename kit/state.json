@@ -21595,7 +21595,7 @@
     "T487",
     "T469"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "ops-pushes-digest-security-alerts",
    "type": "build",
@@ -21748,13 +21748,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 77,
      "head_sha": "700a56e30e5a9b343cf340967b4896c1ee15dd7b",
-     "pr": null,
-     "checks": null,
+     "pr": 963,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-17T12:04:32Z",
      "ended_at": "2026-11-17T13:39:11Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 1910118,
@@ -21819,7 +21876,39 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-17T15:54:08Z"
+   "merge_turn_since": "2026-11-17T15:54:08Z",
+   "merged_sha": "2f2fa8c6a62f8f3cadbb2d3f8d64c999ef47c536",
+   "merged_at": "2026-11-17T16:11:59Z",
+   "files": [
+    ".sqlx/query-2faa790caf25a4e7f3851629620fe03383853ed454419a0693103189dc724ddd.json",
+    ".sqlx/query-36d91624fe2c133df2c3a2d2a27471db2e9dfb30c9501b2ffd0f5c1052e0e9dc.json",
+    ".sqlx/query-37dc82498611abc47aa54c70bf4cac3612f9ffa31672746f7726e7d1bbee5236.json",
+    ".sqlx/query-519a1b04eb2d471f8fac834d3e3bd492b5028b134cdaaead2559a01bd4c11cd2.json",
+    ".sqlx/query-78a6e265da40f923d1d6aa73410a49a855b65ba621208365a5bb94e14ce483f3.json",
+    ".sqlx/query-cc9793db7524bea61992baf0f2fb537a8d97d3b4a5db50eb7b1b3447c524e0fb.json",
+    ".sqlx/query-dcd019af8c235c4d4271495325375af8aa16df4e5dd5f549f9584f92ed36d36c.json",
+    ".sqlx/query-e50ecd1702cc0b908844e2b22556ddbbd67d7f9459d869dc233de021b0f28e0e.json",
+    ".sqlx/query-eab5f57df1b43b4050da1b5653126fa19fb8724c1c60006d77361c0b6d0ed9ec.json",
+    ".sqlx/query-f2a860095268960159d2ea3f2597f0d3dc8fcea04ee2e21b188a3ffbcd5a47c3.json",
+    ".sqlx/query-f5abcb4b6afacf9dc6de3835efd757d1be8d977f531d653f0a9cda2aa518bd2b.json",
+    "app/core/src/settings.rs",
+    "app/messaging/NOTES.md",
+    "app/messaging/src/alert_emails.rs",
+    "app/messaging/src/api.rs",
+    "app/messaging/src/lib.rs",
+    "app/ops/NOTES.md",
+    "app/ops/src/alerts.rs",
+    "app/ops/src/api.rs",
+    "app/payments/NOTES.md",
+    "app/payments/src/reconcile.rs",
+    "app/server/NOTES.md",
+    "app/server/src/bin/worker.rs",
+    "app/server/src/lib.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "migrations/0193_ops_owner_digest.sql",
+    "tests/integration/tests/alert_routing.rs"
+   ]
   },
   {
    "id": "T106",
@@ -75207,7 +75296,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T16:12:54Z",
+ "updated_at": "2026-11-17T16:14:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -75306,7 +75395,7 @@
   ]
  },
  "runner_sha": "2f2fa8c6a62f8f3cadbb2d3f8d64c999ef47c536",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "e49b0267f860835c52414e1bd1ebf54d05abecd8",
