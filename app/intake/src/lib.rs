@@ -42,6 +42,7 @@ mod job_texts;
 mod limits;
 mod matching;
 mod models;
+mod not_covered_counts;
 mod opted_out_live;
 mod order;
 mod photos;

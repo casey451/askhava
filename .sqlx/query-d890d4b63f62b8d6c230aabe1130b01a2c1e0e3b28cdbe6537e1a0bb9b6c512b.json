@@ -1,0 +1,53 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT business_id, asked_by, choice FROM businesses.leave_reason WHERE answered_at >= $1 AND answered_at < $2 ORDER BY answered_at, business_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.leave_reason",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "asked_by",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.leave_reason",
+            "name": "asked_by"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "choice",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.leave_reason",
+            "name": "choice"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "d890d4b63f62b8d6c230aabe1130b01a2c1e0e3b28cdbe6537e1a0bb9b6c512b"
+}
