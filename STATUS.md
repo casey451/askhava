@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:32:47Z by runner e9821f027c6b (actions).
+Updated 2026-11-17T13:33:18Z by runner e9821f027c6b (actions).
 
 **Building: T204 in progress since 12:04Z; 396 of 560 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 396 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 7: T321 claimed 12:53Z, lease until 15:53Z
-- **Week:** 20% used, 148.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:22Z, 10 min before this update
+- **Lane:** lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 6: T471 claimed 13:32Z, lease until 16:32Z; lane 7: T321 claimed 12:53Z, lease until 15:53Z
+- **Week:** 20% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:22Z, 11 min before this update
 - **Keeper:** last ran 13:21Z, next wake 15:38Z
 
 ## Needs attention
@@ -128,7 +128,7 @@ Evidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T12:21:46Z (week)): week: 45.2M used, 148.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T06:37:00Z.
+- Pacing (session_reading 2026-11-17T13:20:44Z (week)): week: 44.2M used, 149.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T07:18:07Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -146,6 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 3: T204 (lease until 2026-11-17T15:44:54Z)
 - lane 4: T363 (lease until 2026-11-17T15:35:51Z)
+- lane 6: T471 (lease until 2026-11-17T16:32:37Z)
 - lane 7: T321 (lease until 2026-11-17T15:53:04Z)
 
 ## Last usage reading
