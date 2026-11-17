@@ -799,6 +799,7 @@ name = "askhava-site"
 version = "0.1.0"
 dependencies = [
  "askama",
+ "askhava-catalog",
  "askhava-core",
  "askhava-intake",
  "askhava-ops",
