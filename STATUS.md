@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T19:05:47Z by runner 9a2f7e35c30c (actions).
+Updated 2026-11-17T19:06:06Z by runner db201a48b809 (actions).
 
 **Building: T605 in progress since 18:29Z; 406 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,12 +9,12 @@ Updated 2026-11-17T19:05:47Z by runner 9a2f7e35c30c (actions).
 - **Lane:** lane 2: T605 claimed 18:29Z, lease until 21:29Z; lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 7: T104 claimed 18:38Z, lease until 21:38Z
 - **Week:** 25% used, 141.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:05Z, 0 min before this update
-- **Keeper:** last ran 18:27Z, next wake 18:47Z
+- **Keeper:** last ran 19:06Z, next wake 21:32Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- Strict plan check red: 12 problem(s) on tasks still to run (+173 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
