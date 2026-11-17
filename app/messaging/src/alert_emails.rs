@@ -26,7 +26,7 @@ use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
 use serde_json::json;
 use sqlx::types::Uuid;
-use sqlx::{Connection, PgConnection, PgPool};
+use sqlx::{PgConnection, PgPool};
 
 use crate::api::{
     DailyLimit, EmailError, EmailSent, EmailTo, MailboxKind, PostalAddress, check_webhook_silence,
@@ -212,12 +212,14 @@ pub fn daytime_lines(push: &DaytimePush) -> (String, Vec<String>) {
     (format!("{brand}: {count} items still open"), lines)
 }
 
-/// OPS-029, OPS-035: emails each alert that pushes at `now`, then queues a critical one's call
-/// and records the push in one transaction; returns how many were emailed.
+/// OPS-029, OPS-035: for each alert that pushes at `now`, queues a critical one's call first, so
+/// the call never waits on the email, then emails it and records the push. A failed send does not
+/// stop the rest; returns how many were emailed.
 ///
 /// # Errors
 ///
-/// [`EmailError::Database`], or a send error (the next run tries again with the same key).
+/// The first [`EmailError`] met, after every alert was tried (the next run tries the failed ones
+/// again with the same key).
 pub async fn push_alerts<E: EmailAdapter + Send + Sync>(
     db: &mut PgConnection,
     sender: &AlertEmailSender<E>,
@@ -226,42 +228,47 @@ pub async fn push_alerts<E: EmailAdapter + Send + Sync>(
     let due = alerts_to_push(db, now)
         .await
         .map_err(|_| EmailError::Database)?;
+    let (mut sent, mut failed) = (0, None);
     for alert in &due {
-        let percent = if alert.kind == EMAIL_LIMIT_ALERT {
-            let (today, month) = email_use(db, now).await?;
-            sender.limits.alert_percent(today, month)
-        } else {
-            None
-        };
-        let (subject, lines) = alert_lines(alert, percent);
-        let ids = [alert.id];
-        sender
-            .send(db, (ALERT_EMAIL_TEMPLATE, &ids), (&subject, &lines), now)
-            .await?;
-        record_pushed(db, alert, now).await?;
+        match push_one(db, sender, alert, now).await {
+            Ok(()) => sent += 1,
+            Err(e) => failed = failed.or(Some(e)),
+        }
     }
-    Ok(due.len())
+    failed.map_or(Ok(sent), Err)
 }
 
-/// Queues a critical alert's [`OWNER_ALERT_CALL_KIND`] task (alert ID only, once per alert) and
-/// records the push, in one transaction (JOB-005).
-async fn record_pushed(
+/// OPS-035, D-3880: queues a critical alert's [`OWNER_ALERT_CALL_KIND`] task (alert ID only, once
+/// per alert by its dedupe key), then emails the alert and records its push (T487's clock).
+async fn push_one<E: EmailAdapter + Send + Sync>(
     db: &mut PgConnection,
+    sender: &AlertEmailSender<E>,
     alert: &PushAlert,
     now: Timestamp,
 ) -> Result<(), EmailError> {
-    let mut tx = db.begin().await.map_err(|_| EmailError::Database)?;
     if alert.severity == Severity::Critical.as_str() {
         let mut task = NewTask::new(OWNER_ALERT_CALL_KIND, json!({ "alert": alert.id }), now);
         task.dedupe_key = Some(format!("{OWNER_ALERT_CALL_KIND}:{}", alert.id));
-        enqueue(&mut tx, &task)
-            .await
-            .map_err(|_| EmailError::Database)?;
+        enqueue(db, &task).await.map_err(|_| EmailError::Database)?;
     }
-    record_push(&mut tx, alert.id, now)
+    let percent = if alert.kind == EMAIL_LIMIT_ALERT {
+        let (today, month) = email_use(db, now).await?;
+        sender.limits.alert_percent(today, month)
+    } else {
+        None
+    };
+    let (subject, lines) = alert_lines(alert, percent);
+    sender
+        .send(
+            db,
+            (ALERT_EMAIL_TEMPLATE, &[alert.id]),
+            (&subject, &lines),
+            now,
+        )
+        .await?;
+    record_push(db, alert.id, now)
         .await
-        .map_err(|_| EmailError::Database)?;
-    tx.commit().await.map_err(|_| EmailError::Database)
+        .map_err(|_| EmailError::Database)
 }
 
 /// OPS-032, D-277: emails the 9 a.m. or 3 p.m. push when one is due at `now` (none when nothing
@@ -350,7 +357,8 @@ pub fn register_alert_emails<E>(
     });
 }
 
-/// The [`ALERT_PUSH_KIND`] handler: the next run first, then each due alert and the daytime push.
+/// The [`ALERT_PUSH_KIND`] handler: the next run first, then each due alert and the daytime push;
+/// a failed alert email never holds back the daytime push.
 async fn run_alert_push<E: EmailAdapter + Send + Sync>(
     pool: &PgPool,
     sender: Option<&AlertEmailSender<E>>,
@@ -363,13 +371,9 @@ async fn run_alert_push<E: EmailAdapter + Send + Sync>(
     let Some(sender) = sender else {
         return Ok(());
     };
-    push_alerts(&mut conn, sender, now)
-        .await
-        .map_err(|_| FAILED)?;
-    push_daytime(&mut conn, sender, now)
-        .await
-        .map(drop)
-        .map_err(|_| FAILED)
+    let alerts = push_alerts(&mut conn, sender, now).await.map(drop);
+    let daytime = push_daytime(&mut conn, sender, now).await.map(drop);
+    alerts.and(daytime).map_err(|_| FAILED)
 }
 
 /// The [`HOURLY_CHECKS_KIND`] handler: the next run first, then SEC-051's webhook-silence check

@@ -392,6 +392,8 @@ pub const DAYTIME_KINDS: &[&str] = &[
 /// The kinds an OPS-023 clearing acknowledges ([`acknowledge_cleared`]).
 const CLEARING_KINDS: &[&str] = &[VENDOR_ALERT, HEALTH_ALERT, LEDGER_ALERT];
 /// Arizona's fixed offset from UTC (no daylight saving).
+/// OPS-032: how late a 9 a.m. or 3 p.m. push may still go out; a slot older than this is skipped.
+const PUSH_SLOT_GRACE: SignedDuration = SignedDuration::from_hours(1);
 const ARIZONA: SignedDuration = SignedDuration::from_hours(-7);
 
 /// OPS-023, D-220: whether Stripe and webhook errors, last seen at `last_error`, have been clear
@@ -450,7 +452,8 @@ pub struct PushAlert {
 /// OPS-029, OPS-035, D-218: the open alerts not yet pushed that push to Casey's phone at `now`:
 /// every critical safety alert not acknowledged (OPS-028), a [`HEALTH_ALERT`] open
 /// [`HEALTH_PUSH_AFTER`] after it was raised, a [`LEDGER_ALERT`] still there at the next nightly
-/// check (another open one raised a night apart), and each [`PUSH_AT_ONCE`] kind; nothing else
+/// check (the newest open one, raised a night after another open one, and only while no open one
+/// has pushed: one push per difference, D-218), and each [`PUSH_AT_ONCE`] kind; nothing else
 /// pushes, everything else waits for the portal and the digest. Oldest first.
 ///
 /// # Errors
@@ -471,7 +474,10 @@ pub async fn alerts_to_push(
                OR (a.kind = $2 AND a.raised_at <= $3)
                OR (a.kind = $4 AND EXISTS (SELECT 1 FROM ops.alert b WHERE b.kind = $4
                  AND b.resolved_at IS NULL
-                 AND abs(extract(epoch FROM b.raised_at - a.raised_at))::float8 >= $5::float8)))
+                 AND extract(epoch FROM a.raised_at - b.raised_at)::float8 >= $5::float8)
+                 AND NOT EXISTS (SELECT 1 FROM ops.alert c WHERE c.kind = $4
+                   AND c.resolved_at IS NULL AND (c.raised_at > a.raised_at
+                     OR EXISTS (SELECT 1 FROM ops.alert_push q WHERE q.alert_id = c.id)))))
            ORDER BY a.raised_at, a.id"#,
         &kinds,
         HEALTH_ALERT,
@@ -543,7 +549,8 @@ pub struct DaytimePush {
 }
 
 /// OPS-032, D-277, D-492: the push due for `now`'s slot ([`push_slot`]), unless that slot was
-/// handled: every open [`DAYTIME_KINDS`] alert raised at or before the slot and every push item
+/// handled or is over an hour old (a missed 3 p.m. push is never sent at night; the
+/// next slot lists its items): every open [`DAYTIME_KINDS`] alert raised at or before the slot and every push item
 /// not marked done with `show_from` at or before it, so each stays listed until Casey marks it
 /// done and one raised after the slot waits for the next. With nothing open the slot is recorded
 /// as handled and `None` is returned: nothing is sent.
@@ -556,6 +563,9 @@ pub async fn daytime_push_due(
     now: Timestamp,
 ) -> Result<Option<DaytimePush>, OpsError> {
     let slot = push_slot(now);
+    if now.duration_since(slot) > PUSH_SLOT_GRACE {
+        return Ok(None);
+    }
     let handled = sqlx::query_scalar!(
         r#"SELECT EXISTS (SELECT 1 FROM ops.push_slot WHERE slot = $1) AS "handled!""#,
         slot.to_sqlx() as _,

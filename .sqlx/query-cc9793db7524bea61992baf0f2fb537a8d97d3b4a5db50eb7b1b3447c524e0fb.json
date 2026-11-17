@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT a.id, a.kind, a.severity, a.subject_id FROM ops.alert a\n           WHERE a.resolved_at IS NULL\n             AND NOT EXISTS (SELECT 1 FROM ops.alert_push p WHERE p.alert_id = a.id)\n             AND (a.severity = 'critical' OR a.kind = ANY($1)\n               OR (a.kind = $2 AND a.raised_at <= $3)\n               OR (a.kind = $4 AND EXISTS (SELECT 1 FROM ops.alert b WHERE b.kind = $4\n                 AND b.resolved_at IS NULL\n                 AND abs(extract(epoch FROM b.raised_at - a.raised_at))::float8 >= $5::float8)))\n           ORDER BY a.raised_at, a.id",
+  "query": "SELECT a.id, a.kind, a.severity, a.subject_id FROM ops.alert a\n           WHERE a.resolved_at IS NULL\n             AND NOT EXISTS (SELECT 1 FROM ops.alert_push p WHERE p.alert_id = a.id)\n             AND (a.severity = 'critical' OR a.kind = ANY($1)\n               OR (a.kind = $2 AND a.raised_at <= $3)\n               OR (a.kind = $4 AND EXISTS (SELECT 1 FROM ops.alert b WHERE b.kind = $4\n                 AND b.resolved_at IS NULL\n                 AND extract(epoch FROM a.raised_at - b.raised_at)::float8 >= $5::float8)\n                 AND NOT EXISTS (SELECT 1 FROM ops.alert c WHERE c.kind = $4\n                   AND c.resolved_at IS NULL AND (c.raised_at > a.raised_at\n                     OR EXISTS (SELECT 1 FROM ops.alert_push q WHERE q.alert_id = c.id)))))\n           ORDER BY a.raised_at, a.id",
   "describe": {
     "columns": [
       {
@@ -64,5 +64,5 @@
       true
     ]
   },
-  "hash": "ba33d1d4067e76f37656597797fefd68aa695e86cf86f1fa57c1de2c71866f59"
+  "hash": "cc9793db7524bea61992baf0f2fb537a8d97d3b4a5db50eb7b1b3447c524e0fb"
 }

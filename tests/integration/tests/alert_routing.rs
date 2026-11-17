@@ -2,10 +2,11 @@
 //! OPS-032, OPS-035, SEC-051; D-218, D-220, D-277, D-381, D-2207, D-3877, D-3880, D-4044): only
 //! the OPS-029 kinds push; a health alert pushes 10 minutes after it was raised (15 after the first
 //! failed check) unless the check passed again; Stripe, health and ledger alerts clear by kind; a
-//! ledger difference pushes on its second night; the 9 a.m. and 3 p.m. push lists open items until
+//! ledger difference pushes once, on its second night, and only a matched reconcile clears it; the
+//! 9 a.m. and 3 p.m. push lists open items until
 //! done and sends nothing when nothing is open; the email-limit alert pushes once a day with the
 //! upgrade wording; and a raised pushing alert reaches the fake email provider through the worker,
-//! as an email only, with a critical alert's call task queued, while the webhook-silence check runs
+//! as an email only, with a critical alert's call task queued even when the email fails, while the webhook-silence check runs
 //! hourly. The worker cases run `askhava_server::worker_registry`, compiled in place as
 //! `session_sweep.rs` does (D-2853's exception, logged for this file in D-4083), against a local
 //! recording server shaped as the Resend stand-in. The Stripe and health alerts are planted rows,
@@ -14,6 +15,7 @@
 use std::path::Path;
 use std::sync::{Arc, Mutex, PoisonError};
 
+use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_core::api::{Clock, Lease, ManualClock, Registry, Settings, WorkerId, claim};
 use askhava_messaging::api::{
     EmailLimits, HOURLY_CHECKS_KIND, OWNER_ALERT_CALL_KIND, WEBHOOKS_SILENT_ALERT, check_email_use,
@@ -22,13 +24,15 @@ use askhava_messaging::api::{
 use askhava_ops::api::{
     EMAIL_LIMIT_ALERT, HEALTH_ALERT, LEDGER_ALERT, VENDOR_ALERT, VOLUME_HIGH_ALERT,
     acknowledge_cleared, add_push_item, alerts_to_push, away_until, daytime_push_due,
-    mark_push_item_done, push_slot, record_daytime_push, set_away_until, vendor_quiet,
+    mark_push_item_done, push_slot, record_daytime_push, record_push, set_away_until, vendor_quiet,
 };
+use askhava_payments::api::{ReconcileStripe, StripeCharge, reconcile};
 use askhava_picks::api::ConfirmSettings;
 use axum::Router;
 use axum::extract::State;
 use axum::routing::post;
 use jiff::{SignedDuration, Timestamp};
+use secrecy::SecretString;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 
@@ -98,7 +102,7 @@ async fn td_ops_08_only_the_ops_029_kinds_push(pool: PgPool) {
         pushes.push(plant(&pool, kind, severity, now).await);
     }
     pushes.push(plant(&pool, HEALTH_ALERT, "high", now - 10 * MIN).await);
-    pushes.push(plant(&pool, LEDGER_ALERT, "high", now - 24 * HOUR).await);
+    plant(&pool, LEDGER_ALERT, "high", now - 24 * HOUR).await;
     pushes.push(plant(&pool, LEDGER_ALERT, "high", now).await);
     for (kind, severity) in [
         ("ops.delivery_low", "high"),
@@ -203,7 +207,85 @@ async fn td_ops_09_a_ledger_difference_pushes_only_when_still_there_the_next_nig
     );
     let second = plant(&pool, LEDGER_ALERT, "high", night_one + 24 * HOUR).await;
     let due = pushed(&pool, night_one + 24 * HOUR).await;
-    assert_eq!(due, vec![first, second], "night 2: push");
+    assert_eq!(due, vec![second], "night 2: one push, the newest");
+    let mut conn = pool.acquire().await.expect("conn");
+    record_push(&mut conn, second, night_one + 24 * HOUR)
+        .await
+        .expect("push");
+    plant(&pool, LEDGER_ALERT, "high", night_one + 48 * HOUR).await;
+    let open = "SELECT count(*) FROM ops.alert WHERE id = $1 AND resolved_at IS NULL";
+    assert_eq!(count(&pool, open, first).await, 1);
+    assert!(
+        pushed(&pool, night_one + 48 * HOUR).await.is_empty(),
+        "night 3: no second push for the same difference"
+    );
+}
+
+/// Stripe listing the given charges only; nothing else is called.
+struct ListOnly(Vec<StripeCharge>);
+
+impl PaymentsAdapter for ListOnly {
+    async fn create_customer(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+
+    async fn create_payment_intent(
+        &self,
+        _: &IdempotencyKey,
+        _: Charge<'_>,
+    ) -> Result<PaymentIntent, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+
+    async fn fetch_payment_intent(&self, _: &str) -> Result<PaymentIntent, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+
+    async fn create_refund(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+}
+
+impl ReconcileStripe for ListOnly {
+    async fn list_charges(&self, _: Timestamp) -> Result<Vec<StripeCharge>, AdapterError> {
+        Ok(self.0.clone())
+    }
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_08_only_a_matched_reconcile_acknowledges_the_ledger_alert(pool: PgPool) {
+    let ledger = plant(&pool, LEDGER_ALERT, "high", at(NIGHT)).await;
+    let secret = SecretString::from("fake-id-secret-t204".to_owned());
+    let malformed = StripeCharge {
+        id: "bad".to_owned(),
+        payment_intent: "pi_FakeT204".to_owned(),
+        pick: None,
+        amount_cents: 7500,
+        refunded_cents: 0,
+        dispute: None,
+        balance_transaction: "txn_FakeT204".to_owned(),
+        fee_cents: 248,
+    };
+    let night_two = at(NIGHT) + 24 * HOUR;
+    let report = reconcile(&pool, &ListOnly(vec![malformed]), &secret, night_two).await;
+    assert!(!report.expect("run").matched());
+    let ack =
+        "SELECT count(*) FROM ops.alert_ack WHERE alert_id = $1 AND acknowledged_by = 'system'";
+    let open = "SELECT count(*) FROM ops.alert WHERE id = $1 AND resolved_at IS NULL";
+    assert_eq!(
+        count(&pool, ack, ledger).await,
+        0,
+        "a mismatch leaves it open"
+    );
+    assert_eq!(count(&pool, open, ledger).await, 1);
+    let report = reconcile(&pool, &ListOnly(Vec::new()), &secret, night_two + 24 * HOUR).await;
+    assert!(report.expect("run").matched());
+    assert_eq!(
+        count(&pool, ack, ledger).await,
+        1,
+        "a match clears it, by the system"
+    );
+    assert_eq!(count(&pool, open, ledger).await, 0);
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -271,6 +353,15 @@ async fn td_ops_09_the_daytime_push_lists_open_items_until_done(pool: PgPool) {
         .expect("resolve");
     let empty = daytime_push_due(&mut conn, at(NEXT_MORNING) + 24 * HOUR).await;
     assert_eq!(empty.expect("9:00"), None, "nothing open sends nothing");
+    plant(&pool, CALL_BACK, "high", at(NEXT_MORNING) + 25 * HOUR).await;
+    let late = daytime_push_due(&mut conn, at(NEXT_MORNING) + 41 * HOUR).await;
+    assert_eq!(
+        late.expect("02:00"),
+        None,
+        "a missed 15:00 push never goes out at night"
+    );
+    let next = daytime_push_due(&mut conn, at(NEXT_MORNING) + 48 * HOUR).await;
+    assert!(next.expect("9:00").is_some(), "the next slot lists it");
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -340,10 +431,11 @@ fn registry(clock: Arc<dyn Clock>, base: &str, name: &str) -> Registry {
     worker_registry(&settings, stream, (None, ConfirmSettings::default()), pairs).expect("registry")
 }
 
-/// Runs every task due at the clock's now through `registry`, as the worker would, until none is.
-async fn run_due(pool: &PgPool, registry: &Registry, clock: &ManualClock) {
+/// Runs every task due at the clock's now through `registry`, as the worker would, until none is;
+/// with `strict` every task but the call must succeed.
+async fn run_due(pool: &PgPool, registry: &Registry, clock: &ManualClock, strict: bool) {
     let owner = WorkerId::new(pool).await.expect("worker");
-    loop {
+    for _ in 0..10 {
         let tasks = claim(pool, owner, clock.now(), SignedDuration::from_secs(60), 50)
             .await
             .expect("claim");
@@ -353,7 +445,7 @@ async fn run_due(pool: &PgPool, registry: &Registry, clock: &ManualClock) {
         for task in tasks {
             let kind = task.kind.clone();
             let done = registry.run(pool, clock, owner, task, Lease::WORKER).await;
-            if kind != OWNER_ALERT_CALL_KIND {
+            if strict && kind != OWNER_ALERT_CALL_KIND {
                 done.expect("run");
             }
         }
@@ -380,7 +472,7 @@ async fn td_ops_10_a_critical_alert_reaches_the_email_provider_through_the_worke
         .await
         .expect("seed");
     clock.advance(MIN);
-    run_due(&pool, &registry, &clock).await;
+    run_due(&pool, &registry, &clock, true).await;
     let sent = emails(&seen);
     assert_eq!(
         sent.len(),
@@ -402,7 +494,7 @@ async fn td_ops_10_a_critical_alert_reaches_the_email_provider_through_the_worke
     let push_row = "SELECT count(*) FROM ops.alert_push WHERE alert_id = $1";
     assert_eq!(count(&pool, push_row, safety).await, 1);
     clock.advance(MIN);
-    run_due(&pool, &registry, &clock).await;
+    run_due(&pool, &registry, &clock, true).await;
     assert_eq!(emails(&seen).len(), 1, "pushed once");
     let texts: i64 = sqlx::query_scalar("SELECT count(*) FROM messaging.outbox")
         .fetch_one(&pool)
@@ -410,7 +502,7 @@ async fn td_ops_10_a_critical_alert_reaches_the_email_provider_through_the_worke
         .expect("texts");
     assert_eq!(texts, 0, "no alert ever goes by text");
     clock.advance(2 * HOUR);
-    run_due(&pool, &registry, &clock).await;
+    run_due(&pool, &registry, &clock, true).await;
     let silent: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM ops.alert WHERE kind = $1 AND resolved_at IS NULL",
     )
@@ -426,6 +518,34 @@ async fn td_ops_10_a_critical_alert_reaches_the_email_provider_through_the_worke
             .await
             .expect("next");
     assert_eq!(next, 1, "the next hour's check is queued");
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_10_the_call_is_queued_when_the_email_fails(pool: PgPool) {
+    let clock = Arc::new(ManualClock::new(at(NIGHT)));
+    let registry = registry(clock.clone(), "http://127.0.0.1:9/resend", "down");
+    let earlier = plant(&pool, "messaging.number_suspended", "high", at(NIGHT) - MIN).await;
+    let safety = plant(&pool, "jobs.problem_report_safety", "critical", at(NIGHT)).await;
+    let mut conn = pool.acquire().await.expect("conn");
+    schedule_alert_push(&mut conn, clock.now())
+        .await
+        .expect("seed");
+    clock.advance(MIN);
+    run_due(&pool, &registry, &clock, false).await;
+    let call = "SELECT count(*) FROM core.task WHERE kind = 'calls.owner_alert_call' \
+                AND payload->>'alert' = $1::text";
+    assert_eq!(
+        count(&pool, call, safety).await,
+        1,
+        "the call does not wait on the email, nor on an earlier alert"
+    );
+    let push_row = "SELECT count(*) FROM ops.alert_push WHERE alert_id = $1";
+    assert_eq!(
+        count(&pool, push_row, earlier).await,
+        0,
+        "not emailed, not pushed"
+    );
+    assert_eq!(count(&pool, push_row, safety).await, 0);
 }
 
 /// Plants `n` sent emails at `sent` (fake rows, no body).
@@ -471,9 +591,9 @@ async fn td_ops_13_email_use_pushes_once_a_day_with_the_upgrade_wording(pool: Pg
     schedule_hourly_checks(&mut conn, clock.now() - HOUR)
         .await
         .expect("seed");
-    run_due(&pool, &registry, &clock).await;
+    run_due(&pool, &registry, &clock, true).await;
     clock.advance(MIN);
-    run_due(&pool, &registry, &clock).await;
+    run_due(&pool, &registry, &clock, true).await;
     let sent = emails(&seen);
     assert_eq!(sent.len(), 1, "one push");
     assert!(
@@ -493,7 +613,7 @@ async fn td_ops_13_email_use_pushes_once_a_day_with_the_upgrade_wording(pool: Pg
         "a second crossing the same day: none"
     );
     clock.advance(MIN);
-    run_due(&pool, &registry, &clock).await;
+    run_due(&pool, &registry, &clock, true).await;
     assert_eq!(emails(&seen).len(), 1, "no second push");
     let alert: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM ops.alert WHERE kind = $1 AND severity = 'normal'",
