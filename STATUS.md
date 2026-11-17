@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-17T16:35:01Z by runner 2f2fa8c6a62f (actions).
+Updated 2026-11-17T16:37:56Z by runner 3b1f28c2022d (actions).
 
-**Building: T491 in progress since 15:41Z; 401 of 561 done; week 23% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T491 in progress since 15:41Z; 402 of 561 done; week 23% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 401 of 561 build tasks (owner gates not counted)
+- **Tasks done:** 402 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T491 claimed 15:41Z, lease until 19:27Z; lane 3: T528 claimed 16:26Z, lease until 19:26Z; lane 4: T104 claimed 16:00Z, lease until 19:25Z
 - **Week:** 23% used, 146.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:34Z, 0 min before this update
+- **Last run:** 16:35Z, 2 min before this update
 - **Keeper:** last ran 16:35Z, next wake 19:28Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- Strict plan check red: 8 problem(s) on tasks still to run (+159 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T595 | server and site: a same-site web chat POST passes its CSRF c | MERGE_PENDING | 1 | 45 min | 16:19Z |  |
-| T479 | ops and portals: "Not a fit for us" on the job page, and the | MERGE_PENDING | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
+| T479 | ops and portals: "Not a fit for us" on the job page, and the | done | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T113 | Draft the Twilio campaign description from the real template | MERGE_PENDING | 2 | 35 min | 15:39Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
 | T471 | picks and intake: her "backup has your pick" text on every p | done | 1 | 47 min | 14:20Z |  |
 | T321 | messaging: the consent-purge functions, the inbound-text clo | MERGE_PENDING | 1 | 49 min | 13:42Z |  |
@@ -94,8 +94,8 @@ Updated 2026-11-17T16:35:01Z by runner 2f2fa8c6a62f (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 343 of 733 (46.8%) · partial 315 · unstarted 75
-**Tasks merged (throughput only):** 401 of 561
+**Requirements verified:** 343 of 733 (46.8%) · partial 316 · unstarted 74
+**Tasks merged (throughput only):** 402 of 561
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -113,7 +113,7 @@ Updated 2026-11-17T16:35:01Z by runner 2f2fa8c6a62f (actions).
 | ops-recovery | 1 | 27 | 26 | 54 |
 | privacy | 15 | 14 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 37 | 18 | 1 | 56 |
+| quotes-pick | 37 | 19 | 0 | 56 |
 | recurring | 8 | 1 | 2 | 11 |
 | security | 12 | 38 | 5 | 55 |
 | terms | 12 | 17 | 6 | 35 |
@@ -131,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 44 of 169 done
+- stage 5: 45 of 169 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
