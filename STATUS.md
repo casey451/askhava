@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T16:17:17Z by runner c678b0651090 (actions).
+Updated 2026-11-17T16:17:42Z by runner c678b0651090 (actions).
 
 **Building: T491 in progress since 15:41Z; 401 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 401 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T491 claimed 15:41Z, lease until 18:41Z; lane 2: T479 claimed 15:29Z, lease until 19:14Z; lane 4: T104 claimed 16:00Z, lease until 19:00Z; lane 6: T595 claimed 15:33Z, lease until 19:15Z
+- **Lane:** lane 1: T491 claimed 15:41Z, lease until 18:41Z; lane 4: T104 claimed 16:00Z, lease until 19:00Z; lane 6: T595 claimed 15:33Z, lease until 19:15Z
 - **Week:** 22% used, 146.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:15Z, 1 min before this update
 - **Keeper:** last ran 15:55Z, next wake 18:32Z
@@ -19,12 +19,13 @@ Updated 2026-11-17T16:17:17Z by runner c678b0651090 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T479 | ops and portals: "Not a fit for us" on the job page, and the | MERGE_PENDING | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T113 | Draft the Twilio campaign description from the real template | MERGE_PENDING | 2 | 35 min | 15:39Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
 | T471 | picks and intake: her "backup has your pick" text on every p | done | 1 | 47 min | 14:20Z |  |
 | T321 | messaging: the consent-purge functions, the inbound-text clo | MERGE_PENDING | 1 | 49 min | 13:42Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | done | 2 | 94 min | 13:39Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T363 | portals: the served pick and its code step apply the per-IP  | done | 1 | 62 min | 13:38Z |  |
-| T479 | ops and portals: "Not a fit for us" on the job page, and the | check_failed | 1 | 50 min | 13:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
+| T479 | ops and portals: "Not a fit for us" on the job page, and the | check_failed | 1 | 50 min | 13:19Z |  |
 | T594 | site: the end-to-end spec of the web chat and request page a | BLOCKED | 1 | 42 min | 13:18Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T202 | site: Spanish pages, the business page blocks and the requir | done | 2 | 43 min | 13:01Z | merging main into the reviewed head conflicts in app/site/src/api.rs, docs/architecture.md, tests/a11y/page_states.ts; a |
 | T113 | Draft the Twilio campaign description from the real template | BLOCKED | 1 | 10 min | 12:21Z |  |
@@ -138,9 +139,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T491 (lease until 2026-11-17T18:41:21Z)
-- lane 2: T479 (lease until 2026-11-17T19:14:48Z)
 - lane 4: T104 (lease until 2026-11-17T19:00:59Z)
 - lane 6: T595 (lease until 2026-11-17T19:15:30Z)
 
 ## Last usage reading
-- {"task": "T113", "at": "2026-11-17T15:39:33Z", "cache_creation_input_tokens": 132791, "cache_read_input_tokens": 2537513, "output_tokens": 32679, "input_tokens": 82}
+- {"task": "T479", "at": "2026-11-17T16:17:16Z", "cache_read_input_tokens": 1157441, "output_tokens": 11955, "cache_creation_input_tokens": 101227, "input_tokens": 58}
