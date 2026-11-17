@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T11:29:40Z by runner 157d28bc632d (actions).
+Updated 2026-11-17T11:29:49Z by runner 157d28bc632d (actions).
 
 **Building: T441 in progress since 10:17Z; 393 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 393 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T441 claimed 10:17Z, lease until 13:56Z; lane 5: T572 claimed 10:43Z, lease until 13:43Z; lane 7: T446 claimed 10:02Z, lease until 13:50Z
+- **Lane:** lane 3: T441 claimed 10:17Z, lease until 13:56Z; lane 5: T572 claimed 10:43Z, lease until 13:43Z
 - **Week:** 19% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:28Z, 1 min before this update
 - **Keeper:** last ran 11:27Z, next wake 13:45Z
@@ -19,6 +19,7 @@ Updated 2026-11-17T11:29:40Z by runner 157d28bc632d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T446 | intake and messaging: PICK-046's "couldn't take it" notice g | MERGE_PENDING | 1 | 87 min | 11:29Z |  |
 | T202 | site: Spanish pages, the business page blocks and the requir | MERGE_PENDING | 2 | 56 min | 11:26Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T112 | Draft the privacy policy and SMS terms | done | 3 | 66 min | 11:10Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
 | T489 | site and server: the web chat and request pages with the con | MERGE_PENDING | 3 | 46 min | 11:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
@@ -143,7 +144,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 3: T441 (lease until 2026-11-17T13:56:21Z)
 - lane 5: T572 (lease until 2026-11-17T13:43:03Z)
-- lane 7: T446 (lease until 2026-11-17T13:50:34Z)
 
 ## Last usage reading
-- {"task": "T202", "at": "2026-11-17T11:26:23Z", "input_tokens": 98, "cache_creation_input_tokens": 122665, "cache_read_input_tokens": 2547922, "output_tokens": 19184}
+- {"task": "T446", "at": "2026-11-17T11:29:22Z", "cache_read_input_tokens": 5339675, "output_tokens": 55465, "input_tokens": 189, "cache_creation_input_tokens": 230899}
