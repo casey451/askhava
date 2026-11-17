@@ -6557,3 +6557,4 @@
 - 2026-11-17T16:52:16Z runner 4a1b93c4f075 (actions): {"T104": "IN_PROGRESS -> QUEUED"}
 - 2026-11-17T16:52:45Z runner 2f2fa8c6a62f (actions): {}
 - 2026-11-17T16:53:10Z runner 4a1b93c4f075 (actions): {}
+- 2026-11-17T16:53:30Z runner 3b1f28c2022d (actions): {"T104": "QUEUED -> IN_PROGRESS"}; T104 estimated 601k tokens (calibrated); week has 144.7M left (no five-hour budget, D-3056) after 1.3M still running in another lane (session_reading 2026-11-17T16:52:53Z (week)); running to the limit (model window, D-2225), claimed
