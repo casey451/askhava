@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-17T11:47:32Z by runner 7b2e31773677 (actions).
+Updated 2026-11-17T11:55:20Z by runner 7a22e40cdfb5 (actions).
 
-**Idle since 11:32Z; 393 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 11:54Z; 394 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 393 of 560 build tasks (owner gates not counted)
+- **Tasks done:** 394 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 11:32Z (no task in progress)
+- **Lane:** idle since 11:54Z (no task in progress)
 - **Week:** 19% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:46Z, 1 min before this update
+- **Last run:** 11:55Z, 0 min before this update
 - **Keeper:** last ran 11:44Z, next wake 12:04Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 5 problem(s) on tasks still to run (+148 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T441 | portals: the quote page shows the kept number, and the pick  | MERGE_PENDING | 1 | 74 min | 11:32Z |  |
+| T441 | portals: the quote page shows the kept number, and the pick  | done | 1 | 74 min | 11:32Z |  |
 | T572 | intake: the under-13 stop also clears the vault contact's na | MERGE_PENDING | 1 | 48 min | 11:31Z |  |
 | T446 | intake and messaging: PICK-046's "couldn't take it" notice g | MERGE_PENDING | 1 | 87 min | 11:29Z |  |
 | T202 | site: Spanish pages, the business page blocks and the requir | MERGE_PENDING | 2 | 56 min | 11:26Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
@@ -99,7 +99,7 @@ Updated 2026-11-17T11:47:32Z by runner 7b2e31773677 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 304 of 733 (41.5%) · partial 338 · unstarted 91
-**Tasks merged (throughput only):** 393 of 560
+**Tasks merged (throughput only):** 394 of 560
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -135,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 36 of 168 done
+- stage 5: 37 of 168 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
