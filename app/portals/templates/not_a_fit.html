@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{#- The page after a business's "Not a fit for us" answer on a job card page (T479; PICK-057,
+    A11Y-007, A11Y-009, A11Y-030, D-3700, D-3883). It thanks the business and names the reason, says
+    an earlier answer stands, or, for a submit with no known reason, gives an "Error: " title, a
+    focused role="alert" summary and the four reasons again, each one button. Every state says the
+    answer changes no routing or fee and links back to the job page. Works without JavaScript; no
+    name, phone or address. -#}
+{% block title %}{% if choice.is_some() %}Error: {% endif %}Job {{ job_number }} isn't for you{% endblock %}
+{% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
+{% if let Some(reason) = saved %}<h1 id="not-a-fit-done" tabindex="-1" autofocus>Thanks, got it. Job {{ job_number }} isn't for you.</h1>
+<p id="not-a-fit-reason">Your reason: {{ reason }}.</p>
+<p>This doesn't change which jobs we send you or what you pay. You can still quote this job if you change your mind.</p>
+{% else if let Some(c) = choice %}<h1>Why isn't job {{ job_number }} for you?</h1>
+<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<p>There is a problem:</p>
+<ul><li><a href="#not-a-fit-reasons">{{ error }}</a></li></ul>
+</div>
+<form method="post" action="{{ c.action }}" novalidate>
+<input type="hidden" name="csrf" value="{{ c.csrf }}">
+<fieldset id="not-a-fit-reasons" aria-describedby="not-a-fit-error"><legend>Pick a reason</legend>
+<p id="not-a-fit-error" class="field-error">Error: {{ error }}</p>
+<p>{{ c.line() }}</p>
+<ul>{% for (code, label) in c.reasons() %}<li><button type="submit" name="reason" value="{{ code }}">{{ label }}</button></li>{% endfor %}</ul>
+</fieldset>
+</form>
+{% else %}<h1 id="not-a-fit-done" tabindex="-1" autofocus>You already told us job {{ job_number }} isn't a fit.</h1>
+<p>We'll go with what you told us the first time. It doesn't change which jobs we send you or what you pay.</p>
+{% endif %}<p><a id="back-to-job" href="{{ job_link }}">Back to job {{ job_number }}</a></p>
+{% endblock %}

@@ -34,6 +34,7 @@ pub use crate::action_links::{
     OPEN_IN_BROWSER_LINE, UseBy, email_reply, fresh_code_needed, mint_action_link,
     open_action_link, session_may, use_action_link,
 };
+pub use crate::business_actions::job_details_page_choice;
 pub use crate::business_actions::{
     AUTO_CONFIRM_ROUTE, AutoConfirmBox, AutoConfirmBoxError, JobPageLinks, auto_confirm_box,
     job_details_page, quote_form_page_full, set_auto_confirm,
@@ -138,6 +139,11 @@ pub use crate::limits::{
     QUOTES_PER_BUSINESS, QUOTES_PER_IP, SIGNUPS_ALL, SIGNUPS_PER_IP, admit_code_send,
     admit_code_try, admit_owner_password, admit_quote, admit_sign_in_link, admit_sign_up,
     verify_all,
+};
+pub use crate::not_a_fit::{
+    NOT_A_FIT_ERROR, NOT_A_FIT_FIELD, NOT_A_FIT_LINE, NOT_A_FIT_ROUTE, NotAFitChoice, NotAFitError,
+    NotAFitOutcome, NotAFitState, answer_not_a_fit, not_a_fit_action, not_a_fit_page, parse_reason,
+    reason_label, reasons,
 };
 pub use crate::notice_log::{NoticeLogPage, notice_log_page};
 pub use crate::notice_settings::{
