@@ -1,19 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-17T06:26:30Z by runner b693e85fa366 (actions).
+Updated 2026-11-17T06:26:52Z by runner b693e85fa366 (actions).
 
 **Building: T564 in progress since 06:04Z; 385 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 385 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T564 claimed 06:04Z, lease until 09:04Z; lane 4: T204 claimed 04:22Z, lease until 09:18Z
-- **Week:** 15% used, 161.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:20Z, 5 min before this update
+- **Lane:** lane 1: T564 claimed 06:04Z, lease until 09:04Z; lane 4: T204 claimed 04:22Z, lease until 09:18Z; lane 5: T201 claimed 06:26Z, lease until 09:26Z
+- **Week:** 15% used, 160.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 06:20Z, 6 min before this update
 - **Keeper:** last ran 06:18Z, next wake 09:00Z
 
 ## Needs attention
-- PLAN GAP T201 (since 2026-11-17T06:03:54Z, no attempt used; a plan change fixes it): T201: dependency T221 is DONE but its owned file app/site/templates/legal.html is not on main; T201: dependency T221 is DONE but its owned file app/site/templates/your_data.html is not on main; T201: dependency T221 is DONE but its owned file app/site/templates/business_data.html is not on main; T201: dependency T221 is DONE but its owned file app/site/src/legal_pages.rs is not on main; T201: dependency T221 is DONE but its owned file tests/e2e/legal_pages.spec.ts is not on main; T201: dependency T221 is DONE but its owned file tests/docs/test_legal_pages.py is not on main; T201: dependency T221 is DONE but its owned file docs/legal/published/versions.json is not on main; T201: dependency T221 is DONE but its owned file tests/docs/test_published_versions.py is not on main; T201: dependency T221 is DONE but its owned file app/intake/src/ai_on.rs is not on main
-- PLAN GAP T112 (since 2026-11-17T06:03:54Z, no attempt used; a plan change fixes it): T112: dependency T221 is DONE but its owned file app/site/templates/legal.html is not on main; T112: dependency T221 is DONE but its owned file app/site/templates/your_data.html is not on main; T112: dependency T221 is DONE but its owned file app/site/templates/business_data.html is not on main; T112: dependency T221 is DONE but its owned file app/site/src/legal_pages.rs is not on main; T112: dependency T221 is DONE but its owned file tests/e2e/legal_pages.spec.ts is not on main; T112: dependency T221 is DONE but its owned file tests/docs/test_legal_pages.py is not on main; T112: dependency T221 is DONE but its owned file docs/legal/published/versions.json is not on main; T112: dependency T221 is DONE but its owned file tests/docs/test_published_versions.py is not on main; T112: dependency T221 is DONE but its owned file app/intake/src/ai_on.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 2 problem(s) on tasks still to run (+145 on DONE tasks); first: T115: stored context_pct 13% but it measures 19%; regenerate
 
@@ -113,7 +111,7 @@ Updated 2026-11-17T06:26:30Z by runner b693e85fa366 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T06:01:08Z (week)): week: 32.8M used, 161.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T06:27:16Z.
+- Pacing (session_reading 2026-11-17T06:18:33Z (week)): week: 33.3M used, 160.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T04:46:23Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -130,6 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T564 (lease until 2026-11-17T09:04:06Z)
 - lane 4: T204 (lease until 2026-11-17T09:18:59Z)
+- lane 5: T201 (lease until 2026-11-17T09:26:21Z)
 
 ## Last usage reading
 - {"task": "T586", "at": "2026-11-17T06:17:36Z", "output_tokens": 45555, "input_tokens": 170, "cache_read_input_tokens": 4390425, "cache_creation_input_tokens": 211855}
