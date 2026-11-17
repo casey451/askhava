@@ -8,11 +8,12 @@
 //! reach it only through [`api`]. The home and how-it-works pages, in English and the latter
 //! in Spanish, and the old directory paths are [`pages`] (T102), as are the services, coverage,
 //! help and ROC complaint pages (T201). The legal and data pages are
-//! `legal_pages` (T221). Autoescaping stays on in every template; only `legal.html` prints a
+//! `legal_pages` (T221). The request page and its web chat at `/request` are [`chat`] (T489). Autoescaping stays on in every template; only `legal.html` prints a
 //! draft's rendered Markdown, whose raw HTML is shown as text (SEC-011).
 
 pub mod api;
 mod assets;
+mod chat;
 mod legal_pages;
 mod pages;
 mod routes;
