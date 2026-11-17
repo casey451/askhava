@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:38:57Z by runner 6585e448f8e7 (actions).
+Updated 2026-11-17T13:39:24Z by runner 700a56e30e5a (actions).
 
 **Building: T204 in progress since 12:04Z; 396 of 560 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-17T13:38:57Z by runner 6585e448f8e7 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 6: T471 claimed 13:32Z, lease until 16:32Z; lane 7: T321 claimed 12:53Z, lease until 16:38Z
 - **Week:** 20% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:38Z, 0 min before this update
+- **Last run:** 13:39Z, 0 min before this update
 - **Keeper:** last ran 13:35Z, next wake 15:38Z
 
 ## Needs attention
 - BLOCKED T594: plan gap reported: PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change: a T489 fix task that adds `.method(Method::POST)` to the request builder in `posted_csrf` and puts the "18 or older" line (CON-025, docs/spec/consent.md:29) on the request page, then re-run T594.
 Evidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/web_chat.spec.ts` exit=1, 5 failed, 2 passed. web_chat.spec.ts:137 (18 or older) fails: Expected pattern /18 or older/i not in main. web_chat.spec.ts:142, :153, :187 fail at line 94 (main form has 0 fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T594 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 6 problem(s) on tasks still to run (+151 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+153 on DONE tasks); first: T204: stored context_pct 22% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
