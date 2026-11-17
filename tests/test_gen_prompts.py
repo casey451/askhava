@@ -450,6 +450,63 @@ def test_four_digit_decisions_are_read_and_superseded(tmp_path: Path) -> None:
     assert src.superseded == {"D-001": "D-1000"}
 
 
+def write_log(root: Path, entries: str, listed: dict[str, Any] | None = None) -> Any:
+    """A decisions log and, when given, kit/superseded_decisions.json; the loaded sources."""
+    (root / "docs").mkdir(exist_ok=True)
+    (root / "docs" / "decisions.md").write_text(entries, encoding="utf-8")
+    if listed is not None:
+        (root / "kit").mkdir(exist_ok=True)
+        (root / "kit" / "superseded_decisions.json").write_text(json.dumps(listed), encoding="utf-8")
+    return gp.load_sources(root)
+
+
+def test_a_partial_supersession_strikes_the_listed_words_and_pastes_the_successor(tmp_path: Path) -> None:
+    """D-4051: a listed partial entry overrides a whole one, strikes its words, chains and keeps the rest live."""
+    src = write_log(
+        tmp_path,
+        "- **D-100** Choice: (1) a 6-month price lock; (2) a refund rule stays.\n"
+        "- **D-050** Choice: a 12-month lock.\n- **D-200** Choice: no price lock.\n",
+        {
+            "superseded": {"D-100": "D-200", "D-050": "D-100"},
+            "partial": {"D-100": {"by": "D-200", "cut": "a 6-month price lock"}},
+        },
+    )
+    assert src.superseded == {"D-050": "D-100"}
+    assert src.partial == {"D-100": ("D-200", "a 6-month price lock")}
+    pasted = gp.paste_decisions(src, ["D-050"])
+    assert "**D-050** **(superseded by D-100;" in pasted
+    assert "**D-100** **(partly superseded by D-200;" in pasted and "(2) a refund rule stays" in pasted
+    assert "6-month" not in pasted and "[struck: superseded by D-200, never build it]" in pasted
+    assert "**D-200** Choice: no price lock." in pasted  # the chain reaches the last successor
+
+
+def test_a_listed_cut_that_is_not_in_the_decision_fails(tmp_path: Path) -> None:
+    """D-4051: a reworded entry never silently pastes the dead rule as live."""
+    with pytest.raises(ValueError, match="the cut listed for D-100"):
+        write_log(tmp_path, "- **D-100** Choice: x.\n", {"partial": {"D-100": {"by": "D-200", "cut": "gone"}}})
+
+
+@pytest.mark.parametrize(
+    ("text", "whole", "partial"),
+    [
+        ("- **D-900** This supersedes D-530's sentence.\n", {}, {"D-530": ("D-900", "")}),
+        ("- **D-900** It retires only D-465's lock.\n", {}, {"D-465": ("D-900", "")}),
+        ("- **D-900** T368 drops D-3094's fallback.\n", {}, {"D-3094": ("D-900", "")}),
+        ("- **D-900** Choice (amends D-4000 (4)): x.\n", {}, {"D-4000": ("D-900", "")}),
+        ("- **D-900** This amends D-3334.\n", {}, {"D-3334": ("D-900", "")}),
+        ("- **D-900** This retires D-123.\n", {"D-123": "D-900"}, {}),
+        ("- **D-900** This supersedes D-123.\n", {"D-123": "D-900"}, {}),
+    ],
+)
+def test_partial_and_whole_wording_is_read(
+    tmp_path: Path, text: str, whole: dict[str, str], partial: dict[str, tuple[str, str]]
+) -> None:
+    """D-4051: "retires", "drops" and "amends" are read; a possessive or a part number is a partial supersession."""
+    src = write_log(tmp_path, text)
+    assert src.superseded == whole
+    assert src.partial == partial
+
+
 def test_strict_fails_when_the_decisions_log_is_within_a_tenth_of_the_scan_limit(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
