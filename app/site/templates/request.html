@@ -1,7 +1,8 @@
 {% extends "site_layout.html" %}
 {#- The request page and web chat, /request (T489; CON-025, WEB-014, WEB-006, AI-026, A11Y-035,
     D-3878, D-3882, D-4044). The consent texts come from intake::api::web_chat_consent_text; none is
-    typed here. The Spanish draft sits above the English; there is no agree button. AI-026's line
+    typed here. The Spanish draft sits above the English; there is no agree button. CON-025's 18-or-older line
+    follows the English text, plain copy, on every step (T595). AI-026's line
     shows while `ai_on`. One question per page, the chat so far above it. `csrf` is the token
     server's chat layer sets; `message` is this form's PRIV-008 message ID (D-3189). The typed
     number goes back only in the code form's hidden field (D-4044). -#}
@@ -15,6 +16,7 @@
 <p>{{ consent_es }}</p>
 </div>
 <p data-fixed="WEB-014">{{ consent_en }}</p>
+<p>You must be 18 or older to use {{ brand }}.</p>
 {%- if !turn.said.is_empty() %}
 <h2>Your chat with {{ brand }}</h2>
 <ol>

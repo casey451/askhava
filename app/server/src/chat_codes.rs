@@ -182,9 +182,11 @@ async fn check_token(State(pool): State<PgPool>, request: Request, next: Next) -
     (jar, next.run(request).await).into_response()
 }
 
-/// The posted form's `csrf` field, empty when absent or when the body is no form.
+/// The posted form's `csrf` field, empty when absent or when the body is no form. The rebuilt
+/// request is a `POST`: axum's `Form` reads a `GET`'s fields from the query string (SEC-042, T595).
 async fn posted_csrf(bytes: axum::body::Bytes) -> String {
     let form = Request::builder()
+        .method(Method::POST)
         .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
         .body(Body::from(bytes));
     let Ok(form) = form else {
