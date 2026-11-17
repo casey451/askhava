@@ -1,18 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T23:05:21Z by runner 2a27c184336a (actions).
+Updated 2026-11-17T23:05:39Z by runner 2a27c184336a (actions).
 
-**Building: T606 in progress since 22:20Z; 413 of 582 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T203 in progress since 23:05Z; 413 of 582 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 413 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T606 claimed 22:20Z, lease until 01:20Z
-- **Week:** 32% used, 131.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T203 claimed 23:05Z, lease until 02:05Z; lane 3: T606 claimed 22:20Z, lease until 01:20Z
+- **Week:** 32% used, 129.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:00Z, 4 min before this update
 - **Keeper:** last ran 23:00Z, next wake 01:22Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T478 (since 2026-11-17T23:05:09Z, no attempt used; a plan change fixes it): T478: dependency T605 is DONE but its owned file app/businesses/src/digest_counts.rs is not on main; T478: dependency T605 is DONE but its owned file app/intake/src/not_covered_counts.rs is not on main; T478: dependency T605 is DONE but its owned file app/picks/src/digest_counts.rs is not on main; T478: dependency T605 is DONE but its owned file tests/integration/tests/digest_counts.rs is not on main
 - Strict plan check red: 11 problem(s) on tasks still to run (+179 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
@@ -118,7 +119,7 @@ Updated 2026-11-17T23:05:21Z by runner 2a27c184336a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T22:06:54Z (week)): week: 62.5M used, 131.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T15:50:56Z.
+- Pacing (session_reading 2026-11-17T23:00:34Z (week)): week: 64.5M used, 129.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T20:06:12Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -134,6 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T203 (lease until 2026-11-18T02:05:09Z)
 - lane 3: T606 (lease until 2026-11-18T01:20:29Z)
 
 ## Last usage reading
