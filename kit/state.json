@@ -21175,7 +21175,8 @@
     "T489",
     "T490",
     "T472",
-    "T536"
+    "T536",
+    "T600"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23054,7 +23055,15 @@
     "T591",
     "T592",
     "T593",
-    "T594"
+    "T594",
+    "T596",
+    "T597",
+    "T600",
+    "T601",
+    "T602",
+    "T604",
+    "T599",
+    "T603"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27676,7 +27685,8 @@
    "deps": [
     "T139",
     "T243",
-    "T416"
+    "T416",
+    "T600"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -52121,7 +52131,9 @@
     "T141",
     "T392",
     "T139",
-    "T438"
+    "T438",
+    "T596",
+    "T597"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -71065,6 +71077,117 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null
+  },
+  {
+   "id": "T596",
+   "deps": [
+    "T345",
+    "T443",
+    "T445",
+    "T474"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "runner-keep-ancestor-smoke",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T597",
+   "deps": [
+    "T596",
+    "T345",
+    "T473",
+    "T474",
+    "T591"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "runner-early-update-merge",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T599",
+   "deps": [
+    "T446"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "lapsed-email-amount-check",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T600",
+   "deps": [
+    "T526",
+    "T293",
+    "T398",
+    "T276",
+    "T367",
+    "T444",
+    "T092",
+    "T257",
+    "T274",
+    "T083"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "worker-clock-handlers",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T601",
+   "deps": [
+    "T249",
+    "T251",
+    "T248",
+    "T100"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "card-pool-area-batch",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T602",
+   "deps": [
+    "T023",
+    "T100",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "svix-stamp-overflow",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T603",
+   "deps": [
+    "T417",
+    "T418",
+    "T172"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "web-vitals-lcp-twin-dispute",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T604",
+   "deps": [
+    "T009"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "sentry-no-native-tls",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -75562,7 +75685,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T17:03:41Z",
+ "updated_at": "2026-11-17T17:04:25Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -75660,7 +75783,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "73cd87129b4f5e15f6dacbedbd903892536f0a7f",
+ "runner_sha": "ef5618258f959b5b7f7a129ccb9bfa2a9535cc98",
  "starter": "actions",
  "smoke_runs": [
   {
