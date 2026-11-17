@@ -55,6 +55,7 @@ mod safety_text;
 mod service;
 mod status;
 mod summary_step;
+mod web_chat;
 mod zip_step;
 
 #[cfg(test)]

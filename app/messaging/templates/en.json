@@ -538,5 +538,10 @@
     "audience": "business",
     "segments": 2,
     "text": "{brand_short}: Your sign-up code is {number}. It's good for the next 30 minutes. If you didn't sign up, you can ignore this email."
+  },
+  "business_signup_reply": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "{brand_short}: This number is for homeowners asking for quotes. Want job requests? Sign up at {domain}/b/signup\nReply STOP to opt out, HELP for help."
   }
 }
