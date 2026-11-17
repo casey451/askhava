@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T01:04:12Z by runner 3059b1432431 (actions).
+Updated 2026-11-17T01:04:34Z by runner 3059b1432431 (actions).
 
 **Building: T103 in progress since 00:02Z; 377 of 541 done; week 9% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 377 of 541 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:45Z; lane 3: T373 claimed 00:21Z, lease until 03:59Z; lane 4: T481 claimed 22:37Z, lease until 02:57Z; lane 5: T469 claimed 00:32Z, lease until 04:01Z; lane 6: T320 claimed 23:55Z, lease until 03:46Z; lane 7: T221 claimed 22:36Z, lease until 03:57Z
+- **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:45Z; lane 4: T481 claimed 22:37Z, lease until 02:57Z; lane 5: T469 claimed 00:32Z, lease until 04:01Z; lane 6: T320 claimed 23:55Z, lease until 03:46Z; lane 7: T221 claimed 22:36Z, lease until 03:57Z
 - **Week:** 9% used, 171.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:01Z, 2 min before this update
 - **Keeper:** last ran 00:54Z, next wake 01:38Z
@@ -18,8 +18,9 @@ Updated 2026-11-17T01:04:12Z by runner 3059b1432431 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T373 | businesses: changing a phone's number ends that phone's text | MERGE_PENDING | 2 | 42 min | 01:04Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
 | T111 | Draft homeowner and business terms with every required claus | done | 4 | 34 min | 23:57Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
-| T373 | businesses: changing a phone's number ends that phone's text | check_failed | 1 | 74 min | 23:55Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
+| T373 | businesses: changing a phone's number ends that phone's text | check_failed | 1 | 74 min | 23:55Z |  |
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | QUEUED | 2 | 89 min | 23:36Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 3 | 37 min | 22:10Z |  |
 | T320 | ops: a check that runs on a schedule raises its alert once w | check_failed | 1 | 39 min | 21:46Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
@@ -115,11 +116,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T103 (lease until 2026-11-17T03:45:28Z)
-- lane 3: T373 (lease until 2026-11-17T03:59:43Z)
 - lane 4: T481 (lease until 2026-11-17T02:57:38Z)
 - lane 5: T469 (lease until 2026-11-17T04:01:32Z)
 - lane 6: T320 (lease until 2026-11-17T03:46:52Z)
 - lane 7: T221 (lease until 2026-11-17T03:57:44Z)
 
 ## Last usage reading
-- {"task": "T111", "at": "2026-11-16T23:57:12Z", "input_tokens": 114, "cache_creation_input_tokens": 203808, "cache_read_input_tokens": 5549100, "output_tokens": 56880}
+- {"task": "T373", "at": "2026-11-17T01:04:10Z", "input_tokens": 115, "output_tokens": 22071, "cache_read_input_tokens": 3058916, "cache_creation_input_tokens": 122970}
