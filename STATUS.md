@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:38:46Z by runner 6585e448f8e7 (actions).
+Updated 2026-11-17T13:38:57Z by runner 6585e448f8e7 (actions).
 
 **Building: T204 in progress since 12:04Z; 396 of 560 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 396 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 16:35Z; lane 6: T471 claimed 13:32Z, lease until 16:32Z; lane 7: T321 claimed 12:53Z, lease until 16:38Z
+- **Lane:** lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 6: T471 claimed 13:32Z, lease until 16:32Z; lane 7: T321 claimed 12:53Z, lease until 16:38Z
 - **Week:** 20% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:38Z, 0 min before this update
 - **Keeper:** last ran 13:35Z, next wake 15:38Z
@@ -20,6 +20,7 @@ Evidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T363 | portals: the served pick and its code step apply the per-IP  | MERGE_PENDING | 1 | 62 min | 13:38Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | MERGE_PENDING | 1 | 50 min | 13:19Z |  |
 | T594 | site: the end-to-end spec of the web chat and request page a | BLOCKED | 1 | 42 min | 13:18Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T202 | site: Spanish pages, the business page blocks and the requir | MERGE_PENDING | 2 | 43 min | 13:01Z | merging main into the reviewed head conflicts in app/site/src/api.rs, docs/architecture.md, tests/a11y/page_states.ts; a |
@@ -145,9 +146,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T204 (lease until 2026-11-17T15:44:54Z)
-- lane 4: T363 (lease until 2026-11-17T16:35:31Z)
 - lane 6: T471 (lease until 2026-11-17T16:32:37Z)
 - lane 7: T321 (lease until 2026-11-17T16:38:26Z)
 
 ## Last usage reading
-- {"task": "T479", "at": "2026-11-17T13:19:37Z", "cache_read_input_tokens": 6557509, "cache_creation_input_tokens": 190350, "output_tokens": 53447, "input_tokens": 153}
+- {"task": "T363", "at": "2026-11-17T13:38:25Z", "input_tokens": 103, "output_tokens": 32612, "cache_creation_input_tokens": 146038, "cache_read_input_tokens": 3292131}
