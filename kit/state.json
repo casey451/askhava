@@ -65748,7 +65748,13 @@
    "attempts": 0,
    "slug": "confirm-window-lapse",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-17T14:53:18Z",
+    "problems": [
+     "T491: dependency T471 is DONE but its owned file tests/integration/tests/pick_moved_text.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T492",
@@ -74887,7 +74893,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T14:52:27Z",
+ "updated_at": "2026-11-17T15:00:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

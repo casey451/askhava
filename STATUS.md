@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T14:52:27Z by runner a44660021dec (actions).
+Updated 2026-11-17T15:00:45Z by runner a44660021dec (actions).
 
 **Idle since 14:41Z; 398 of 561 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,12 @@ Updated 2026-11-17T14:52:27Z by runner a44660021dec (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 14:41Z (no task in progress)
 - **Week:** 21% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:52Z, 0 min before this update
+- **Last run:** 14:52Z, 7 min before this update
 - **Keeper:** last ran 14:52Z, next wake 15:12Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T491 (since 2026-11-17T14:53:18Z, no attempt used; a plan change fixes it): T491: dependency T471 is DONE but its owned file tests/integration/tests/pick_moved_text.rs is not on main
 - Strict plan check red: 6 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
@@ -89,7 +90,6 @@ Updated 2026-11-17T14:52:27Z by runner a44660021dec (actions).
 | T497 | Stand-ins (harness): sticky vendor faults for the J4 outage  | done | 1 | 75 min | 15:32Z |  |
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z |  |
 | T521 | catalog: each category's plural display name and a list read | done | 1 | 34 min | 15:09Z |  |
-| T477 | payments, picks and quotes: the scorecard's money, pick and  | done | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
 
 ### Plan and harness merges on main
 - none
