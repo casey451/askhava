@@ -20071,6 +20071,60 @@
    "acceptance": "`tests/integration/tests/call_texts_language.rs` passes with every listed case, the Spanish cases failing on `main` before the change; `whos_calling.rs` and `unreachable_steps.rs` integration tests pass unchanged."
   },
   {
+   "id": "T591",
+   "slug": "runner-disk-smoke-cap",
+   "title": "Runner (harness): free the backup job's disk and cap the smoke build cache",
+   "goal": "Plan change D-4071 (8 `backup` jobs lost their VM mid-session from Nov 16 19:06Z on a full root disk; evidence in D-4071): keep `.github/workflows/backup-runner.yml`'s `backup` job off a full `/dev/root`. Only that job and `runner/cache.py` change; nothing the smoke or a task worker runs changes. (1) Free the disk: a new step `Free the runner disk (D-4071)` (`continue-on-error: true`, `timeout-minutes: 10`) right after `Close merged tasks before the smoke (D-3141)` and right before `Rust build cache (D-514)`, so every cache restore lands on the freed disk and the merge resolution still runs within a minute of the start. It prints `df -h / | sed 's/^/disk before: /'`, removes `/usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/share/swift` with `sudo rm -rf` (one background job per path, then `wait`; a missing path is no error) and prints `df -h / | sed 's/^/disk after: /'`. First grep `.github/workflows/backup-runner.yml`, `scripts/` and `runner/` for each path's tools (android, dotnet, ghc, ghcup, cabal, stack, swift, codeql) and leave out any path the job uses; the report gives each grep's result. Node, Python (`setup-python`'s `/opt/hostedtoolcache/Python`), Go (gitleaks' fallback `go install`), rustup and cargo, Docker and its images (the Postgres service), the Playwright browsers and the claude-code-action runtime stay. (2) Bound the smoke entry, in `runner/cache.py` (stdlib only, functions under 50 lines, `key=value` lines alone on standard output): `mark(smoke)` gives every regular file under `<smoke>/*/.fingerprint/` an access time of 1 s after the epoch and keeps its modification time to the nanosecond (`os.utime(p, ns=(1_000_000_000, st.st_mtime_ns))`); it then reads one marked file and re-stats it: when the access time did not move (a `noatime` mount) it says so and writes nothing more; otherwise it puts that file's time back and writes `smoke-marked` beside `smoke` (`target/smoke-marked`, outside the entry, as `target/smoke-ran` is). `bound(smoke, cap)` prunes, then measures. A unit is a `.fingerprint/<name>-<16 hex>` folder (`github_env.ARTIFACT`), live when any file in it was read since the mark (access time above it). Only when `smoke-marked` exists and at least one unit is live, under every profile folder of `smoke` that holds `.fingerprint`, it deletes each `.fingerprint`, `build` and `deps` entry matching `ARTIFACT` whose 16-hex hash is no live unit's hash; it always deletes `incremental` folders there (the smoke runs with `CARGO_INCREMENTAL=0`, `github_env._smoke_env`); names not matching `ARTIFACT`, the profile folder's other files and `smoke-mtimes.json` stay. Cargo treats a unit with a missing fingerprint or output as stale and rebuilds it, so a wrong deletion costs build time, never a wrong build. Then it sums the tree's apparent size (`_tree_size`) and prints `save=yes` when it is at most `cap`, else `save=no` plus a `::warning::` line on standard error naming the size and the cap; an unmeasurable tree also gives `save=no`. Standard error gets one line: units kept and pruned, bytes before and after. `SMOKE_CAP` is 24 GiB (`--cap-gib` overrides). `seed` puts back the access and modification times of every file it copies from the smoke build (`os.utime` after `copy_seed`), so the seed is not a read. Workflow: a step `Mark the restored smoke build (D-4071)` right after `Smoke build cache, restore (D-1890, D-1911)` (`if: steps.smoke-cache.outputs.cache-matched-key != ''`, `continue-on-error: true`) runs `python3 -m runner.cache mark --smoke target/smoke`; a step `Bound the smoke build entry (D-4071)` (id `smoke-bound`, the same `if` as `smoke-drop`, `continue-on-error: true`, run as `cd \"$RUNNER_TEMP/keeper\" && python3 -m runner.cache bound --smoke \"$GITHUB_WORKSPACE/target/smoke\" | tee -a \"$GITHUB_OUTPUT\"`) right after `Stop a background smoke before the cache save (D-2560)` and right before `Drop the superseded smoke build entries (D-3143)`; the save's `if` gains `&& steps.smoke-bound.outputs.save != 'no'`. The drop step's `if` is unchanged, so an entry over the cap is still dropped and the next job builds the smoke cold instead of restoring an oversized entry. Why 24 GiB: the entry held 4,970 MB compressed (about 23 GB on disk) through Nov 16 07:39 with no loss, and the observed ratio is about 4.7 to 1 (46 GB on disk for 9.4 to 9.7 GB), so the cap is about 5.1 GB compressed, inside D-3143's 10 GB repository budget beside `Ci`'s entries; with the worker's `target/debug` (26 GB seen), `target/tests` (1.7 GB) and llvm-cov (about 6 GB) it leaves over 25 GB free on the 145 GB disk (60 GB used by the image) even if step (1) frees nothing. (3) Disk lines: `df -h / | sed 's/^/disk at session start: /' || true` at the end of `Pick the session's model (D-2225)` (the last step before the session) and `df -h / | sed 's/^/disk at hand-in: /' || true` as the first line of `Hand in for a session that stopped without handing in (D-503)`; neither writes to `$GITHUB_OUTPUT`. (4) Tests in `tests/test_runner_cache.py`, on fake trees only: `mark` sets the access time and keeps the modification time; with reads not recorded (the check stubbed) no marker is written; `bound` deletes an unread unit's `.fingerprint`, `build` and `deps` entries (`lib<crate>-<hash>.rlib`, `.rmeta`, `.d`) and `incremental`, keeps a read unit's entries, `smoke-mtimes.json` and unmatched names, deletes nothing without the marker or with no live unit, and answers `save=no` over a small cap; `seed` leaves the smoke files' times as they were; `bound` joins `test_standard_output_holds_only_key_value_lines`. The workflow tests pin the three new steps' names, ids, conditions and order (the free-disk step after `Close merged tasks` and before the first `actions/cache/restore`; mark right after the smoke restore; bound right after the background-smoke stop and right before the drop, the drop still directly before the save) and the two disk lines; `test_the_smoke_entry_is_saved_only_from_main_alone_after_its_older_entries_are_dropped` pins the save's new `if` exactly (stricter, not looser); nothing else in an existing test changes. Before handing in, check the prune on a scratch Cargo workspace outside the repository (two path crates, no registry; `CARGO_TARGET_DIR` a scratch folder): build, `mark`, build again unchanged, `bound` prunes no unit and the next build is fresh (`cargo build -v` shows `Fresh` for every unit); change one crate's features, build, `mark`, build, `bound` prunes the superseded unit and a further build is still fresh. Report the outputs. If a fresh build reads no fingerprint file there, drop the access-time prune (keep `incremental` removal and the cap) and say so in the report and a `docs/decisions.md` entry. Update `docs/architecture.md`'s build-caches line (D-3143) with the cap, the prune and the free-disk step.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T100",
+    "T473"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    ".github/workflows/backup-runner.yml",
+    "runner/cache.py",
+    "tests/test_runner_cache.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/architecture.md",
+    "runner/github_env.py",
+    "tests/test_workflow_shell.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-4071",
+    "D-3143",
+    "D-1890",
+    "D-1911",
+    "D-2560"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 260,
+    "context_pct": 40
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T591-runner-disk-smoke-cap",
+   "prompt": "kit/prompts/T591.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_cache.py tests/test_workflow_shell.py` passes with the new cases, the mark, bound and seed-time cases failing on `main` (no `mark` or `bound` there); every other `tests/test_runner_*.py` and `tests/test_safety_hand_in_release.py` passes unchanged; the report holds the four greps of step (1) and the scratch-workspace outputs of the prune check; `actionlint` on `backup-runner.yml` reports nothing new."
+  },
+  {
    "id": "T549",
    "slug": "phase1-audit-money",
    "title": "Fresh Opus audit, part 1 of 3: payments, picks, quotes, jobs, catalog, licensing (D-3891)",
@@ -20710,7 +20764,8 @@
     "T587",
     "T588",
     "T589",
-    "T590"
+    "T590",
+    "T591"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
