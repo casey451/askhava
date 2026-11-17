@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T11:02:10Z by runner b0a4a4f64d08 (actions).
+Updated 2026-11-17T11:02:34Z by runner b0a4a4f64d08 (actions).
 
-**Building: T489 in progress since 10:15Z; 392 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T441 in progress since 10:17Z; 392 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 392 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T489 claimed 10:15Z, lease until 13:15Z; lane 3: T441 claimed 10:17Z, lease until 13:56Z; lane 4: T112 claimed 10:03Z, lease until 13:37Z; lane 5: T572 claimed 10:43Z, lease until 13:43Z; lane 6: T202 claimed 10:29Z, lease until 13:29Z; lane 7: T446 claimed 10:02Z, lease until 13:50Z
+- **Lane:** lane 3: T441 claimed 10:17Z, lease until 13:56Z; lane 4: T112 claimed 10:03Z, lease until 13:37Z; lane 5: T572 claimed 10:43Z, lease until 13:43Z; lane 6: T202 claimed 10:29Z, lease until 13:29Z; lane 7: T446 claimed 10:02Z, lease until 13:50Z
 - **Week:** 18% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:56Z, 5 min before this update
+- **Last run:** 10:56Z, 6 min before this update
 - **Keeper:** last ran 10:49Z, next wake 13:04Z
 
 ## Needs attention
@@ -19,8 +19,9 @@ Updated 2026-11-17T11:02:10Z by runner b0a4a4f64d08 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T489 | site and server: the web chat and request pages with the con | MERGE_PENDING | 3 | 46 min | 11:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 1 | 35 min | 10:33Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
-| T489 | site and server: the web chat and request pages with the con | check_failed | 2 | 73 min | 09:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
+| T489 | site and server: the web chat and request pages with the con | check_failed | 2 | 73 min | 09:54Z |  |
 | T202 | site: Spanish pages, the business page blocks and the requir | check_failed | 1 | 88 min | 09:23Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T107 | Consent records kept 5 years, no export, opt-out rate alerts | done | 2 | 85 min | 09:00Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 2 | 52 min | 08:28Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
@@ -137,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T489 (lease until 2026-11-17T13:15:39Z)
+- nothing
 - lane 3: T441 (lease until 2026-11-17T13:56:21Z)
 - lane 4: T112 (lease until 2026-11-17T13:37:16Z)
 - lane 5: T572 (lease until 2026-11-17T13:43:03Z)
@@ -145,4 +146,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 7: T446 (lease until 2026-11-17T13:50:34Z)
 
 ## Last usage reading
-- {"task": "T204", "at": "2026-11-17T10:33:55Z", "cache_creation_input_tokens": 61924, "cache_read_input_tokens": 1004729, "output_tokens": 9958, "input_tokens": 67}
+- {"task": "T489", "at": "2026-11-17T11:02:09Z", "output_tokens": 18824, "cache_creation_input_tokens": 115466, "input_tokens": 101, "cache_read_input_tokens": 2481311}
