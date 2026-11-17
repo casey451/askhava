@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T15:41:34Z by runner 774d33861a6a (actions).
+Updated 2026-11-17T15:50:57Z by runner a499065fb6c7 (actions).
 
-**Building: T491 in progress since 15:41Z; 399 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T491 in progress since 15:41Z; 400 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 399 of 561 build tasks (owner gates not counted)
+- **Tasks done:** 400 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T491 claimed 15:41Z, lease until 18:41Z; lane 2: T479 claimed 15:29Z, lease until 18:29Z; lane 6: T595 claimed 15:33Z, lease until 18:33Z
 - **Week:** 22% used, 147.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:41Z, 0 min before this update
+- **Last run:** 15:41Z, 9 min before this update
 - **Keeper:** last ran 15:40Z, next wake 18:31Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Updated 2026-11-17T15:41:34Z by runner 774d33861a6a (actions).
 | T471 | picks and intake: her "backup has your pick" text on every p | done | 1 | 47 min | 14:20Z |  |
 | T321 | messaging: the consent-purge functions, the inbound-text clo | MERGE_PENDING | 1 | 49 min | 13:42Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 2 | 94 min | 13:39Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
-| T363 | portals: the served pick and its code step apply the per-IP  | MERGE_PENDING | 1 | 62 min | 13:38Z |  |
+| T363 | portals: the served pick and its code step apply the per-IP  | done | 1 | 62 min | 13:38Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | check_failed | 1 | 50 min | 13:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T594 | site: the end-to-end spec of the web chat and request page a | BLOCKED | 1 | 42 min | 13:18Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T202 | site: Spanish pages, the business page blocks and the requir | done | 2 | 43 min | 13:01Z | merging main into the reviewed head conflicts in app/site/src/api.rs, docs/architecture.md, tests/a11y/page_states.ts; a |
@@ -94,31 +94,31 @@ Updated 2026-11-17T15:41:34Z by runner 774d33861a6a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 304 of 733 (41.5%) · partial 350 · unstarted 79
-**Tasks merged (throughput only):** 399 of 561
+**Requirements verified:** 343 of 733 (46.8%) · partial 311 · unstarted 79
+**Tasks merged (throughput only):** 400 of 561
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 19 | 13 | 3 | 35 |
-| ai | 11 | 15 | 3 | 29 |
-| businesses | 21 | 35 | 2 | 58 |
-| calls | 13 | 11 | 1 | 25 |
-| consent | 14 | 20 | 1 | 35 |
-| fees | 24 | 27 | 1 | 52 |
-| intake | 25 | 18 | 0 | 43 |
+| ai | 12 | 14 | 3 | 29 |
+| businesses | 23 | 33 | 2 | 58 |
+| calls | 14 | 10 | 1 | 25 |
+| consent | 15 | 19 | 1 | 35 |
+| fees | 27 | 24 | 1 | 52 |
+| intake | 27 | 16 | 0 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
-| licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
+| licensing | 40 | 8 | 0 | 48 |
+| lifecycle | 27 | 1 | 0 | 28 |
 | messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 23 | 30 | 54 |
-| privacy | 14 | 15 | 2 | 31 |
+| privacy | 15 | 14 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 33 | 22 | 1 | 56 |
+| quotes-pick | 37 | 18 | 1 | 56 |
 | recurring | 8 | 1 | 2 | 11 |
-| security | 11 | 39 | 5 | 55 |
-| terms | 1 | 28 | 6 | 35 |
-| website | 0 | 24 | 4 | 28 |
-| wording | 2 | 14 | 16 | 32 |
+| security | 12 | 38 | 5 | 55 |
+| terms | 12 | 17 | 6 | 35 |
+| website | 1 | 23 | 4 | 28 |
+| wording | 3 | 13 | 16 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -131,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 42 of 169 done
+- stage 5: 43 of 169 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

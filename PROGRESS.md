@@ -6522,3 +6522,4 @@
 - 2026-11-17T15:40:23Z runner 0c51aee7db1f (actions): {}
 - 2026-11-17T15:40:50Z runner a44660021dec (actions): {}
 - 2026-11-17T15:41:34Z runner 774d33861a6a (actions): {"T491": "QUEUED -> IN_PROGRESS"}; T491 estimated 1.3M tokens (calibrated); week has 147.3M left (no five-hour budget, D-3056) after 2.7M still running in another lane (session_reading 2026-11-17T15:40:23Z (week)); running to the limit (model window, D-2225), claimed
+- 2026-11-17T15:50:57Z runner a499065fb6c7 (actions): {"T363": "MERGE_PENDING -> DONE"}
