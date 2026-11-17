@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T20:13:56Z by runner fddc567f6d7a (actions).
+Updated 2026-11-17T20:14:09Z by runner fddc567f6d7a (actions).
 
-**Building: T582 in progress since 19:37Z; 408 of 570 done; week 27% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T597 in progress since 20:01Z; 408 of 570 done; week 27% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 408 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T582 claimed 19:37Z, lease until 23:10Z; lane 4: T597 claimed 20:01Z, lease until 23:01Z; lane 5: T602 claimed 20:07Z, lease until 23:07Z; lane 6: T106 claimed 19:20Z, lease until 22:52Z; lane 7: T594 claimed 19:39Z, lease until 22:39Z
+- **Lane:** lane 4: T597 claimed 20:01Z, lease until 23:01Z; lane 5: T602 claimed 20:07Z, lease until 23:07Z; lane 6: T106 claimed 19:20Z, lease until 22:52Z; lane 7: T594 claimed 19:39Z, lease until 22:39Z
 - **Week:** 27% used, 135.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:10Z, 3 min before this update
 - **Keeper:** last ran 19:55Z, next wake 22:39Z
@@ -25,6 +25,7 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T582 | quotes and messaging (harness): a late read-back confirm is  | MERGE_PENDING | 1 | 36 min | 20:13Z |  |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | BLOCKED | 2 | 68 min | 19:54Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | BLOCKED | 3 | 46 min | 19:24Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T605 | businesses, intake and picks: the leaving answers, not-cover | MERGE_PENDING | 1 | 46 min | 19:15Z |  |
@@ -139,11 +140,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T582 (lease until 2026-11-17T23:10:51Z)
+- nothing
 - lane 4: T597 (lease until 2026-11-17T23:01:29Z)
 - lane 5: T602 (lease until 2026-11-17T23:07:35Z)
 - lane 6: T106 (lease until 2026-11-17T22:52:53Z)
 - lane 7: T594 (lease until 2026-11-17T22:39:43Z)
 
 ## Last usage reading
-- {"task": "T115", "at": "2026-11-17T19:54:30Z", "cache_read_input_tokens": 8618608, "input_tokens": 245, "cache_creation_input_tokens": 264443, "output_tokens": 72076}
+- {"task": "T582", "at": "2026-11-17T20:13:55Z", "input_tokens": 118, "cache_read_input_tokens": 3695171, "output_tokens": 32654, "cache_creation_input_tokens": 131994}
