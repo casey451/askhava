@@ -4,8 +4,9 @@
 //! OPS-011, PRIV-028); the off-database stream events, each a `core.task` row enqueued in the
 //! writing transaction for `server`'s writer (OPS-011, PRIV-029, D-734); alerts holding record
 //! IDs only (PRIV-006); the owner pause switches with their append-only history (OPS-003); safe
-//! mode (`safe_mode`, OPS-001, T487); and the WEB-007 site status banner (`status_banner`, TXT-024,
-//! T279).
+//! mode (`safe_mode`, OPS-001, T487); the WEB-007 site status banner (`status_banner`, TXT-024,
+//! T279); and two pilot scorecard inputs, the not-a-fit answers and the weekly minutes entry
+//! (`scorecard_inputs`, OPS-039, PICK-057, T479).
 
 use askhava_core::api::{NewTask, enqueue};
 use jiff::Timestamp;
@@ -29,6 +30,10 @@ pub use crate::models::{
 pub use crate::safe_mode::{
     SAFE_MODE_AFTER, SAFE_MODE_EVERY, SAFE_MODE_KIND, SAFE_MODE_OFF_ACTION, SAFE_MODE_ON_ACTION,
     check_safe_mode, run_safe_mode_check, safe_mode_on, schedule_safe_mode,
+};
+pub use crate::scorecard_inputs::{
+    NotAFit, NotAFitCount, NotAFitReason, WEEK_MINUTES_MAX, WeekMinutes, minutes_for_week,
+    not_a_fit_counts, record_minutes, record_not_a_fit,
 };
 pub use crate::service::{EXPORT_PAGE_MAX, export_audit, is_paused, raise_alert, raise_kind_once};
 pub use crate::status_banner::{BannerBy, banner_shown, clear_banner, show_banner};
