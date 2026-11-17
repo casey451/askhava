@@ -18436,7 +18436,7 @@
    "id": "T113",
    "slug": "twilio-campaign",
    "title": "Draft the Twilio campaign description from the real templates",
-   "goal": "`docs/legal/twilio-campaign.md` drafts the homeowner texting campaign from the real templates (sample messages that are exact templates, the consent text, no business traffic, the toll-free fallback only with the owner's go), and a docs test fails when a sample differs from its template (TERMS-002 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-015, TERMS-018, CON-033). After T111 (through T112), which listed the Spanish summary: this task adds `twilio-campaign.md` to `scripts/check_legal_docs.py`'s `DOCUMENTS` (an unlisted `.md` under `docs/legal/` fails it, `:460`) and moves `tests/test_check_legal_docs.py`'s count from 10 to 11; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) (D-3263). Brand: the brand is Laftly (Laftly LLC, laftly.com, D-3347, T428). Every 'Ask Hava', 'askhava.com' or 'Ask Hava:' text prefix in the decision quotes, research notes and examples of this prompt is historical and is written as 'Laftly', 'laftly.com' and 'Laftly:' (taken from core::api::brand() or app/core/data/brand.json) in every file this task owns; a test or checklist line that names the old brand is read as the Laftly one. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): No template holds CON-001's business-intent reply yet (`app/messaging/templates/en.json` has none); T103, which builds business intent, adds it, so this task runs after T103. The business sign-up reply sample is T103's `business_signup_reply` template; the six samples are `consent`, `first_quote`, `text_pick_done`, `opt_out_confirmation`, `whos_calling` and `business_signup_reply`, each compared with `en.json` after the brand tokens are filled. TD-TERMS-02's registry check is an `audience` check in this task's Python docs test: every template routable to the homeowner number has `audience: homeowner`; `business_signup_reply` is one of them. The campaign text never names the owner (`scripts/check_legal_docs.py:316` bans the name); it says \"the owner\".",
+   "goal": "`docs/legal/twilio-campaign.md` drafts the homeowner texting campaign from the real templates (sample messages that are exact templates, the consent text, no business traffic, the toll-free fallback only with the owner's go), and a docs test fails when a sample differs from its template (TERMS-002 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-015, TERMS-018, CON-033). After T111 (through T112), which listed the Spanish summary: this task adds `twilio-campaign.md` to `scripts/check_legal_docs.py`'s `DOCUMENTS` (an unlisted `.md` under `docs/legal/` fails it, `:460`) and moves `tests/test_check_legal_docs.py`'s count from 10 to 11; no other line of either changes. Plan change D-4167 (T113 attempt 1, PLAN GAP): T111's TD-TERMS-06 test `tests/docs/test_terms_clauses.py:494` (`test_spanish_summary_is_listed_as_a_business_document`) asserts `report.checked == len(check_legal_docs.DOCUMENTS) == 10`, so listing the campaign makes it 11; this task owns that file only to change that literal `10` to `11` on that line (the assertion stays exact, never dropped or loosened); no other line of that file changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) (D-3263). Brand: the brand is Laftly (Laftly LLC, laftly.com, D-3347, T428). Every 'Ask Hava', 'askhava.com' or 'Ask Hava:' text prefix in the decision quotes, research notes and examples of this prompt is historical and is written as 'Laftly', 'laftly.com' and 'Laftly:' (taken from core::api::brand() or app/core/data/brand.json) in every file this task owns; a test or checklist line that names the old brand is read as the Laftly one. Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): No template holds CON-001's business-intent reply yet (`app/messaging/templates/en.json` has none); T103, which builds business intent, adds it, so this task runs after T103. The business sign-up reply sample is T103's `business_signup_reply` template; the six samples are `consent`, `first_quote`, `text_pick_done`, `opt_out_confirmation`, `whos_calling` and `business_signup_reply`, each compared with `en.json` after the brand tokens are filled. TD-TERMS-02's registry check is an `audience` check in this task's Python docs test: every template routable to the homeowner number has `audience: homeowner`; `business_signup_reply` is one of them. The campaign text never names the owner (`scripts/check_legal_docs.py:316` bans the name); it says \"the owner\".",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -18455,7 +18455,8 @@
     "docs/legal/twilio-campaign.md",
     "tests/docs/test_campaign.py",
     "scripts/check_legal_docs.py",
-    "tests/test_check_legal_docs.py"
+    "tests/test_check_legal_docs.py",
+    "tests/docs/test_terms_clauses.py"
    ],
    "reads": [
     "docs/spec/terms.md",
@@ -18505,13 +18506,14 @@
     "D-3263",
     "D-3467",
     "D-3753",
-    "D-3880"
+    "D-3880",
+    "D-4167"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 260,
-    "context_pct": 10
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -18520,7 +18522,7 @@
    ],
    "branch": "claude/task/T113-twilio-campaign",
    "prompt": "kit/prompts/T113.md",
-   "acceptance": "`tests/docs/test_campaign.py` passes and fails on a planted sample that differs from its template; `scripts/check_legal_docs.py` passes and prints 11 documents checked; `tests/test_check_legal_docs.py` passes with only its count changed; the plan lock is rewritten with the decision entry."
+   "acceptance": "`tests/docs/test_campaign.py` passes and fails on a planted sample that differs from its template; `scripts/check_legal_docs.py` passes and prints 11 documents checked; `tests/test_check_legal_docs.py` passes with only its count changed; `tests/docs/test_terms_clauses.py` passes with only line 494's `10` changed to `11`; the plan lock is rewritten with the decision entry."
   },
   {
    "id": "T229",
