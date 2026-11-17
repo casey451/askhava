@@ -6123,3 +6123,4 @@
 - 2026-11-17T02:36:29Z runner 034c4e2a472e (manual): {"T584": "BLOCKED -> QUEUED"}
 - 2026-11-17T02:40:29Z runner 13ee51165f3b (actions): {}
 - 2026-11-17T02:40:50Z runner 13ee51165f3b (actions): {}
+- 2026-11-17T02:41:03Z runner 13ee51165f3b (actions): {"T584": "QUEUED -> IN_PROGRESS"}; T584 estimated 1.3M tokens (calibrated); week has 165.3M left (no five-hour budget, D-3056) after 4.7M still running in another lane (session_reading 2026-11-17T02:28:30Z (week)); running to the limit (model window, D-2225), claimed
