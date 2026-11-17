@@ -559,8 +559,9 @@ mod tests {
         assert_eq!(on.matches("<button").count(), 1, "no agree button");
     }
 
-    /// CON-025, D-3744: without the part the number step sends and stores nothing and says codes
-    /// can't be sent, answering 200; a form with no session key is a 400.
+    /// CON-025, D-3744: without the part the number step sends and stores nothing (the code step,
+    /// which alone puts the number in the vault and sends, is never called: [`NoCalls`] would panic)
+    /// and says codes can't be sent, answering 200; a form with no session key is a 400.
     #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
     async fn number_step_without_the_part_sends_and_stores_nothing(pool: PgPool) {
         let chat = "0123456789abcdef0123456789abcdef";
@@ -578,14 +579,6 @@ mod tests {
         assert_eq!(status, StatusCode::OK);
         assert!(NO_CODES.0.contains("codes right now") && page.contains("codes right now"));
         assert!(!page.contains("928-555-0100"));
-        let stored: i64 = sqlx::query_scalar(
-            "SELECT count(*) FROM intake.web_chat_session \
-             WHERE contact_id IS NOT NULL OR code_sent_at IS NOT NULL",
-        )
-        .fetch_one(&pool)
-        .await
-        .expect("count");
-        assert_eq!(stored, 0);
         let (status, _) = call(&pool, Environment::Dev, post("step=message")).await;
         assert_eq!(status, StatusCode::BAD_REQUEST);
     }
