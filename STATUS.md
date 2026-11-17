@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-17T07:24:17Z by runner b693e85fa366 (actions).
+Updated 2026-11-17T07:26:15Z by runner eabc0711c109 (actions).
 
-**Building: T112 in progress since 06:30Z; 386 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T112 in progress since 06:30Z; 387 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 386 of 559 build tasks (owner gates not counted)
+- **Tasks done:** 387 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T112 claimed 06:30Z, lease until 09:56Z
 - **Week:** 16% used, 162.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:24Z, 0 min before this update
+- **Last run:** 07:24Z, 1 min before this update
 - **Keeper:** last ran 07:24Z, next wake 09:58Z
 
 ## Needs attention
 - BLOCKED T489: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes `sec_048_every_refusal_is_a_security_event` panic at auth_matrix.rs:181:9 ("/request has no door in auth_matrix.rs: add its matrix rule (SEC-019)"). sec_048 (:720-:723) builds its POST list from route_table() and calls door(path, false), ignoring the served-by-site flag that td_sec_01 (:637) and :693 pass; so any site POST outside the listed prefixes panics. POST /request is the first site POST. The file is owned by T348 (harness; also T088, T231, T302, T308); T489 does not ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T489 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 2 problem(s) on tasks still to run (+145 on DONE tasks); first: T115: stored context_pct 13% but it measures 19%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -24,7 +24,7 @@ Updated 2026-11-17T07:24:17Z by runner b693e85fa366 (actions).
 | T564 | quotes, picks and intake: the LIST, text picks, lapse text a | MERGE_PENDING | 1 | 43 min | 06:47Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 1 | 2 h 21 min | 06:44Z |  |
 | T586 | calls and privacy: TwiML text is escaped, a full number pool | MERGE_PENDING | 1 | 88 min | 06:17Z |  |
-| T481 | messaging and payments: mark a replayed text sent from the c | MERGE_PENDING | 1 | 114 min | 05:36Z |  |
+| T481 | messaging and payments: mark a replayed text sent from the c | done | 1 | 114 min | 05:36Z |  |
 | T103 | intake: the web-chat conversation, where typing a verified m | done | 1 | 106 min | 05:27Z |  |
 | T585 | businesses and licensing: a license change that drops job ty | done | 1 | 43 min | 05:10Z |  |
 | T571 | server and calls: a press of 9 on the safety call is never l | done | 1 | 45 min | 05:08Z |  |
@@ -87,8 +87,8 @@ Updated 2026-11-17T07:24:17Z by runner b693e85fa366 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 302 of 733 (41.2%) · partial 327 · unstarted 104
-**Tasks merged (throughput only):** 386 of 559
+**Requirements verified:** 302 of 733 (41.2%) · partial 328 · unstarted 103
+**Tasks merged (throughput only):** 387 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -103,7 +103,7 @@ Updated 2026-11-17T07:24:17Z by runner b693e85fa366 (actions).
 | licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 24 | 19 | 2 | 45 |
-| ops-recovery | 1 | 22 | 31 | 54 |
+| ops-recovery | 1 | 23 | 30 | 54 |
 | privacy | 12 | 17 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 33 | 22 | 1 | 56 |
@@ -124,7 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 29 of 167 done
+- stage 5: 30 of 167 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
