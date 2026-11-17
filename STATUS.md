@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:42:41Z by runner cb724385f661 (actions).
+Updated 2026-11-17T13:42:59Z by runner f911c8fdcb55 (actions).
 
 **Building: T471 in progress since 13:32Z; 396 of 560 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -15,7 +15,7 @@ Updated 2026-11-17T13:42:41Z by runner cb724385f661 (actions).
 - BLOCKED T594: plan gap reported: PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change: a T489 fix task that adds `.method(Method::POST)` to the request builder in `posted_csrf` and puts the "18 or older" line (CON-025, docs/spec/consent.md:29) on the request page, then re-run T594.
 Evidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/web_chat.spec.ts` exit=1, 5 failed, 2 passed. web_chat.spec.ts:137 (18 or older) fails: Expected pattern /18 or older/i not in main. web_chat.spec.ts:142, :153, :187 fail at line 94 (main form has 0 fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T594 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 8 problem(s) on tasks still to run (+153 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
