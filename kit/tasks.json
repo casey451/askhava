@@ -39766,7 +39766,8 @@
    "stage": "5",
    "module": null,
    "deps": [
-    "T489"
+    "T489",
+    "T595"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -39812,13 +39813,14 @@
     "D-3878",
     "D-3882",
     "D-4044",
-    "D-4120"
+    "D-4120",
+    "D-4174"
    ],
    "cites": [],
    "budget": {
     "files": 1,
     "lines": 450,
-    "context_pct": 11
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -39827,7 +39829,73 @@
    ],
    "branch": "claude/task/T594-site-web-chat-e2e",
    "prompt": "kit/prompts/T594.md",
-   "goal": "Plan change D-4120 (the Opus triage of T489's attempt 1, Nov 17, 2026): T489 measured about 805 changed lines before its end-to-end spec, so the spec is split out to this task, which runs after T489 and changes no app code. `tests/e2e/web_chat.spec.ts` (fake data only) covers, against T489's chat and request page at `/request` (D-3878): TD-CON-10 (the consent text above the chat box and the 18-or-older line with no agree button; starting the chat records no consent; a typed number gets only the Verify code until the code is typed into the chat, which records consent (channel \"web chat\") and sends the consent text as its first text; a wrong or missing code sends nothing more and records nothing; a cross-site `POST` is refused; with the texting number suspended a 911-list message gets the INT-004 text in the chat; AI-026's line shown above the chat box), TD-A11Y-02's web-chat case (the chat completes as one question per page with JavaScript off, A11Y-035), TD-WEB-01's web-chat and request-page cases (the WEB-006 Spanish draft above the English consent text, WEB-014), and the end-to-end cases of TD-INT-09 (web chat starts a request) and TD-INT-30 (the web-chat path's steps in the \"Intake order\" table's order). The chat's code step needs the chat-codes part, which only T452's keyed binary gives (D-3744), so the spec runs on the keyed app through `tests/e2e/keyed.ts` and reads each code from the stand-in's `GET /_stand_in/twilio/code` (`stand_ins/server.py:432`). The consent record and the queued texts are read through `keyed.ts`'s `psql` from `intake.consent_record` and `messaging.outbox`, as `tests/e2e/j1_homeowner.spec.ts:10` to `:11` does: after the right code, one `web_chat` consent record and the consent text as the first and only queued text to that number; after a wrong or missing code, no consent record and nothing more queued. The keyed binary runs no worker (`tests/e2e/webserver.ts:16` to `:17`) and the suite's worker has no vault keys, so no text reaches the stand-in's sent log; only the Verify code is read from the stand-in. AI-026's line is checked as shown only: outside Live the AI mode is always `Ai` (`app/ai/src/switch.rs:84` to `:91`; `intake::api::ai_on`, `app/intake/src/ai_on.rs:18` to `:20`; both e2e binaries run with `ASKHAVA_APP_ENV=ci`, `tests/e2e/webserver.ts:106`), so TD-CON-10's off case (the line absent) is proved at unit level by T489's own tests, which its acceptance names, and is neither tested here nor reported as a T489 failure (D-4120). Any other case T489's served pages cannot pass is reported as a failure in T489's files, never worked around in the spec."
+   "goal": "Plan change D-4120 (the Opus triage of T489's attempt 1, Nov 17, 2026): T489 measured about 805 changed lines before its end-to-end spec, so the spec is split out to this task, which runs after T489 and changes no app code. `tests/e2e/web_chat.spec.ts` (fake data only) covers, against T489's chat and request page at `/request` (D-3878): TD-CON-10 (the consent text above the chat box and the 18-or-older line with no agree button; starting the chat records no consent; a typed number gets only the Verify code until the code is typed into the chat, which records consent (channel \"web chat\") and sends the consent text as its first text; a wrong or missing code sends nothing more and records nothing; a cross-site `POST` is refused; with the texting number suspended a 911-list message gets the INT-004 text in the chat; AI-026's line shown above the chat box), TD-A11Y-02's web-chat case (the chat completes as one question per page with JavaScript off, A11Y-035), TD-WEB-01's web-chat and request-page cases (the WEB-006 Spanish draft above the English consent text, WEB-014), and the end-to-end cases of TD-INT-09 (web chat starts a request) and TD-INT-30 (the web-chat path's steps in the \"Intake order\" table's order). The chat's code step needs the chat-codes part, which only T452's keyed binary gives (D-3744), so the spec runs on the keyed app through `tests/e2e/keyed.ts` and reads each code from the stand-in's `GET /_stand_in/twilio/code` (`stand_ins/server.py:432`). The consent record and the queued texts are read through `keyed.ts`'s `psql` from `intake.consent_record` and `messaging.outbox`, as `tests/e2e/j1_homeowner.spec.ts:10` to `:11` does: after the right code, one `web_chat` consent record and the consent text as the first and only queued text to that number; after a wrong or missing code, no consent record and nothing more queued. The keyed binary runs no worker (`tests/e2e/webserver.ts:16` to `:17`) and the suite's worker has no vault keys, so no text reaches the stand-in's sent log; only the Verify code is read from the stand-in. AI-026's line is checked as shown only: outside Live the AI mode is always `Ai` (`app/ai/src/switch.rs:84` to `:91`; `intake::api::ai_on`, `app/intake/src/ai_on.rs:18` to `:20`; both e2e binaries run with `ASKHAVA_APP_ENV=ci`, `tests/e2e/webserver.ts:106`), so TD-CON-10's off case (the line absent) is proved at unit level by T489's own tests, which its acceptance names, and is neither tested here nor reported as a T489 failure (D-4120). Any other case T489's served pages cannot pass is reported as a failure in T489's files, never worked around in the spec. Plan change D-4174 (the Opus triage of attempt 1, Nov 17, 2026): attempt 1 failed 5 of its 7 cases on two faults in T489's files, which the new T595 (a dependency) fixes before this task runs again: every same-site `POST /request` was refused 403 by the chat layer's CSRF check (`posted_csrf` re-read the form as a `GET`), which also left no chat list (`main ol`) after a message, and the page lacked CON-025's 18-or-older line, which T595 adds as \"You must be 18 or older to use Laftly.\" above the chat box. The spec's cases stay as above; none is dropped or loosened."
+  },
+  {
+   "id": "T595",
+   "slug": "web-chat-csrf-and-age-line",
+   "title": "server and site: a same-site web chat POST passes its CSRF check, and the request page says 18 or older (fix of T489)",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "site",
+   "deps": [
+    "T489"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy",
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/server/src/chat_codes.rs",
+    "app/site/templates/request.html",
+    "app/server/tests/web_chat_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/security.md",
+    "app/site/src/chat.rs",
+    "app/portals/src/session.rs",
+    "app/server/tests/owner_signin_route.rs"
+   ],
+   "requirements": [
+    "CON-025",
+    "SEC-042",
+    "SEC-048"
+   ],
+   "tests": [
+    "TD-SEC-72"
+   ],
+   "decisions": [
+    "D-3744",
+    "D-3882",
+    "D-4044",
+    "D-4114",
+    "D-4120",
+    "D-4174"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 250,
+    "context_pct": 19
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T595-web-chat-csrf-and-age-line",
+   "prompt": "kit/prompts/T595.md",
+   "copy": true,
+   "goal": "Plan change D-4174 (the Opus triage of T594's attempt 1, Nov 17, 2026, checked on `main` f911c8f): T489's chat layer refuses every same-site `POST /request`, and the request page lacks CON-025's 18-or-older line, so T594's end-to-end spec cannot pass; this task fixes both in T489's files (T489 is done) and adds the route test that would have caught the first. (1) SEC-042: `posted_csrf` (`app/server/src/chat_codes.rs:186` to `:201`) re-reads the buffered body through `Request::builder()` with no method, so the rebuilt request is a `GET`, axum's `Form` reads a `GET`'s form from the query string (empty: the builder's URI is `/`), the posted `csrf` is always empty, `csrf_matches` (`app/portals/src/session.rs:327` to `:330`) is false and `check_token` (`chat_codes.rs:171` to `:172`) answers 403 with a `csrf_rejected` event to every `POST`, a right token included. The fix is `.method(Method::POST)` on that builder (`Method` is already imported, `:35`), nothing else in the layer: the order of checks (cross-site refusal outermost, then the token, `POST` only, D-4120 trap (a)), the 403 and its one event per refusal (SEC-048), the body limit, `no-store`, the pre-session cookie and the `ChatCsrf` hand-off stay as they are, and the refusal function is still not spelled `refused(` (D-4120 trap (b)). The bug fails closed: the empty string never equals the 64-hex token, so no forged or missing token was ever accepted, and after the fix a missing, empty, wrong or other-cookie token is still refused. (2) CON-025 (`docs/spec/consent.md:29`: \"the start screen says the user must be 18 or older\"; TD-CON-10, `docs/test-design.md:349`): `app/site/templates/request.html` shows the line `You must be 18 or older to use {{ brand }}.` (the `brand` already bound at `:10`) in its own `<p>` right after the English consent text (`:17`) and above the chat box, on every step, outside `lang=\"es\"`; it is plain copy (no `data-fixed`: CON-025 fixes the fact, not the wording), so `scripts/check_copy.py` measures it and reports 0 problems; no Spanish copy is added (WEB-006 covers only the consent draft). Nothing else on the page changes, so the `/request` `PAGE_STATES` entries in `tests/a11y/page_states.ts` stay valid and are not edited, and `Ally` stays at 0 violations. (3) Why T489's tests missed it: `app/site/src/chat.rs`'s unit tests call `chat_routes` directly, without `server`'s guard (`chat.rs:524`); `app/server/tests/door_matrix.rs` only proves refusals (`probe_csrf`, `:1263`, a cross-site and a wrong-token `POST`) and accepts any answer below 500 for a Public `POST` with the actor's own token (`judge`, `:448`), so a 403 passed; `app/server/tests/route_wiring.rs` probes with a bodiless `PROBE` request. So this task adds `app/server/tests/web_chat_route.rs` (TD-SEC-72; fake data only, no real number, the router built with `build_router` and `RouterParts::from((None, None, None, None))` as `app/server/tests/business_signin_route.rs:142` to `:143` does, so no code is sent and the code step answers below 500, D-3744; security events counted from the captured log lines as `app/server/tests/owner_signin_route.rs:290` does): a `GET /request` sets the pre-session cookie, shows the token in the form's `csrf` field and shows the 18-or-older line before the form; a same-origin `POST /request` with that cookie, that token and a job message (step `message`, a fresh 32-hex `chat` key) is not a 403, is `no-store`, records no `csrf_rejected` event and answers below 500 with the posted words in the page's chat list (the `<ol>` T594's spec reads); the same `POST` with no `csrf` field, an empty one, a 64-zero token or the token of another pre-session cookie is a 403 with exactly one `csrf_rejected` event for `/request` and changes nothing; a cross-site `POST` (`Sec-Fetch-Site: cross-site`) with the right token is still a 403 with one event. The test fails on `main` today (the first case) and passes with fix (1). `door_matrix.rs`, `route_wiring.rs`, `tests/security/tests/auth_matrix.rs`, `security_event_cap.rs` and `chat.rs` are not changed and still pass. Then T594 is requeued and runs its spec unchanged in purpose (D-4174). Budget 3 files and 250 lines; the lines of shared docs are not counted against it."
   }
  ]
 }
