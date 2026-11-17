@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T06:26:52Z by runner b693e85fa366 (actions).
+Updated 2026-11-17T06:30:47Z by runner f5c064328691 (actions).
 
 **Building: T564 in progress since 06:04Z; 385 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 385 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T564 claimed 06:04Z, lease until 09:04Z; lane 4: T204 claimed 04:22Z, lease until 09:18Z; lane 5: T201 claimed 06:26Z, lease until 09:26Z
-- **Week:** 15% used, 160.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:20Z, 6 min before this update
+- **Lane:** lane 1: T564 claimed 06:04Z, lease until 09:04Z; lane 3: T112 claimed 06:30Z, lease until 09:30Z; lane 4: T204 claimed 04:22Z, lease until 09:18Z; lane 5: T201 claimed 06:26Z, lease until 09:26Z
+- **Week:** 15% used, 160.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 06:27Z, 3 min before this update
 - **Keeper:** last ran 06:18Z, next wake 09:00Z
 
 ## Needs attention
@@ -111,7 +111,7 @@ Updated 2026-11-17T06:26:52Z by runner b693e85fa366 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T06:18:33Z (week)): week: 33.3M used, 160.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T04:46:23Z.
+- Pacing (session_reading 2026-11-17T06:18:33Z (week)): week: 33.8M used, 160.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T04:56:46Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -127,6 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T564 (lease until 2026-11-17T09:04:06Z)
+- lane 3: T112 (lease until 2026-11-17T09:30:36Z)
 - lane 4: T204 (lease until 2026-11-17T09:18:59Z)
 - lane 5: T201 (lease until 2026-11-17T09:26:21Z)
 
