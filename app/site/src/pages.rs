@@ -8,16 +8,23 @@
 //! first (WEB-007). The home page's numbers come only from `intake::api::home_numbers` (the card
 //! and quote records, WEB-028, D-466) and show nothing below [`SitePages`]' threshold; the fee
 //! amounts come from `payments::api::Tier` (WEB-026). GET only; nothing is written.
+//!
+//! [`help_routes`] (T201) serves `/services` (one `#<category code>` section per switched-on
+//! trade, WEB-015), `/coverage` (WEB-023), both read from `catalog::api::category_list`
+//! (D-3879), `/help` (WEB-008, WEB-025, WORD-009, AI-018; the AI switch read through
+//! `intake::api::ai_on`, D-3144) and `/help/roc-complaint` (WEB-011). The help form posts to
+//! `POST /help`, which T309 serves (D-2128); its CSRF token comes from [`HelpFormCsrf`] (D-3890).
 
 use std::sync::Arc;
 
 use askama::Template;
-use askhava_core::api::{Settings, arizona_time};
+use askhava_catalog::api::{CategoryListing, category_list};
+use askhava_core::api::{Environment, Settings, arizona_time, brand};
 use askhava_payments::api::Tier;
-use axum::Router;
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
+use axum::{Extension, Router};
 use jiff::SignedDuration;
 use sqlx::PgPool;
 
@@ -33,6 +40,20 @@ pub const ES_HOW_IT_WORKS_PATH: &str = "/es/how-it-works";
 pub const OLD_CATEGORIES_PATH: &str = "/categories";
 /// The old directory site's events path, answered with the home page (WEB-012, D-3144).
 pub const OLD_EVENTS_PATH: &str = "/events";
+/// The services page, one section per switched-on trade (WEB-015, D-3878, D-3879).
+pub const SERVICES_PATH: &str = "/services";
+/// The "What we cover now" page (WEB-023, D-3879).
+pub const COVERAGE_PATH: &str = "/coverage";
+/// The help page (WEB-008, D-3878).
+pub const HELP_PATH: &str = "/help";
+/// The page that links on to the state's contractor complaint form (WEB-011).
+pub const ROC_COMPLAINT_PATH: &str = "/help/roc-complaint";
+
+/// D-3890: the help form's CSRF token, which `server`'s layer on `GET /help` puts in the request's
+/// extensions (T309); the page renders it as the hidden `csrf` field, empty when absent. No
+/// `Debug`, so the token cannot reach a log (R6).
+#[derive(Clone)]
+pub struct HelpFormCsrf(pub String);
 
 /// WEB-021, WEB-022, D-3890: the "Who runs" block's optional facts, each left out while unset.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -132,6 +153,121 @@ struct HowItWorksPage {
 struct EsHowItWorksPage {
     banner_shown: bool,
     fees: Fees,
+}
+
+/// WEB-015: the services page's switched-on trades, licensed or not by `license_kind`.
+#[derive(Template)]
+#[template(path = "services.html")]
+struct ServicesPage {
+    banner_shown: bool,
+    trades: Vec<CategoryListing>,
+}
+
+/// WEB-023: the coverage page's open and "not yet" names.
+#[derive(Template)]
+#[template(path = "coverage.html")]
+struct CoveragePage {
+    banner_shown: bool,
+    open: Vec<String>,
+    not_yet: Vec<String>,
+}
+
+/// WEB-008, WEB-025, AI-018: the help page; `old_name` is the brand file's `forbidden_alone` word.
+#[derive(Template)]
+#[template(path = "help.html")]
+struct HelpPage {
+    banner_shown: bool,
+    ai_on: bool,
+    old_name: String,
+    csrf: String,
+}
+
+/// WEB-011: the ROC complaint page.
+#[derive(Template)]
+#[template(path = "roc_complaint.html")]
+struct RocComplaintPage {
+    banner_shown: bool,
+}
+
+/// WEB-008, WEB-011, WEB-015, WEB-023: the services, coverage, help and ROC complaint pages over
+/// `pool`; `env` is the environment the AI switch is read in (AI-018).
+pub fn help_routes(pool: PgPool, env: Environment) -> Router {
+    let help = {
+        let pool = pool.clone();
+        move |csrf: Option<Extension<HelpFormCsrf>>| async move {
+            let csrf = csrf.map(|Extension(HelpFormCsrf(token))| token);
+            respond(help_html(&pool, env, csrf.unwrap_or_default()).await)
+        }
+    };
+    let listed = |coverage: bool| {
+        let pool = pool.clone();
+        move || async move { listed_page(&pool, coverage).await }
+    };
+    let (services, coverage) = (listed(false), listed(true));
+    let roc = move || async move {
+        let banner_shown = banner_shown(&pool).await;
+        respond(RocComplaintPage { banner_shown }.render())
+    };
+    Router::new()
+        .route(SERVICES_PATH, get(services))
+        .route(COVERAGE_PATH, get(coverage))
+        .route(HELP_PATH, get(help))
+        .route(ROC_COMPLAINT_PATH, get(roc))
+}
+
+/// WEB-008, WEB-025, WORD-009, AI-018: the help page with the AI switch read as it renders; a
+/// failed read shows the switched-off wording and logs one warning with no values (R5).
+async fn help_html(pool: &PgPool, env: Environment, csrf: String) -> Result<String, askama::Error> {
+    let read = match pool.acquire().await {
+        Ok(mut db) => askhava_intake::api::ai_on(&mut db, env).await.ok(),
+        Err(_) => None,
+    };
+    let ai_on = read.unwrap_or_else(|| {
+        tracing::warn!("AI switch read failed; the help page shows the switched-off wording");
+        false
+    });
+    HelpPage {
+        banner_shown: banner_shown(pool).await,
+        ai_on,
+        old_name: brand()
+            .forbidden_alone()
+            .first()
+            .cloned()
+            .unwrap_or_default(),
+        csrf,
+    }
+    .render()
+}
+
+/// WEB-015 (services, when not `coverage`) or WEB-023 (coverage), read from the catalog's list
+/// (D-3879); a failed read is a bare 500 with one warning and no values (R5), never an empty list.
+async fn listed_page(pool: &PgPool, coverage: bool) -> Response {
+    let read = match pool.acquire().await {
+        Ok(mut db) => category_list(&mut db).await.ok(),
+        Err(_) => None,
+    };
+    let Some(list) = read else {
+        tracing::warn!("category list read failed; the page is not shown");
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    };
+    let banner_shown = banner_shown(pool).await;
+    let (on, off): (Vec<_>, Vec<_>) = list.categories.into_iter().partition(|c| c.enabled);
+    if !coverage {
+        return respond(
+            ServicesPage {
+                banner_shown,
+                trades: on,
+            }
+            .render(),
+        );
+    }
+    let off = off.into_iter().map(|c| c.name);
+    let page = CoveragePage {
+        banner_shown,
+        open: on.into_iter().map(|c| c.name).collect(),
+        not_yet: off.chain(list.not_offered).collect(),
+    };
+    respond(page.render())
 }
 
 /// WEB-001, WEB-012: the site pages' router over `pool`, with `pages`' settings.
@@ -243,11 +379,15 @@ fn plural(n: u32, word: &str) -> String {
 #[cfg(test)]
 mod tests {
     use askama::Template;
+    use askhava_catalog::api::CategoryListing;
     use askhava_core::api::brand;
     use askhava_payments::api::Tier;
     use jiff::SignedDuration;
 
-    use super::{EsHowItWorksPage, Fees, HomePage, HowItWorksPage, WhoRuns, wait_words};
+    use super::{
+        CoveragePage, EsHowItWorksPage, Fees, HelpPage, HomePage, HowItWorksPage, RocComplaintPage,
+        ServicesPage, WhoRuns, wait_words,
+    };
 
     /// The home page with no numbers and `who`'s facts.
     fn home(who: WhoRuns) -> String {
@@ -362,6 +502,103 @@ mod tests {
         assert!(full.contains("<a href=\"https://example.test/record\">"));
         assert!(full.contains("Lake Havasu City business license: FAKE-0000"));
     }
+
+    /// A switched-on fake category with `kind` of license.
+    fn trade(code: &str, plural: &str, kind: &str) -> CategoryListing {
+        let (code, name, plural) = (code.to_owned(), format!("Fake {code}"), plural.to_owned());
+        let license_kind = kind.to_owned();
+        CategoryListing {
+            code,
+            name,
+            plural,
+            enabled: true,
+            license_kind,
+        }
+    }
+
+    /// TD-WEB-01 (WEB-015): each licensed trade's section opens with "Get quotes from licensed
+    /// <plural>." and the long statement; a trade with no license never says "licensed".
+    #[test]
+    fn td_web_01_services_sections_open_with_the_licensed_line() {
+        let html = ServicesPage {
+            banner_shown: false,
+            trades: vec![
+                trade("fake_pipes", "pipe fixers", "roc"),
+                trade("fake_mops", "moppers", "none"),
+            ],
+        }
+        .render()
+        .expect("renders");
+        let name = brand().display_name();
+        let pipes = &html[html.find("id=\"fake_pipes\"").expect("section")..];
+        let opening = format!(
+            "<p data-fixed=\"WEB-015\">Get quotes from licensed pipe fixers.</p>\n<p data-fixed=\"WEB-015\">{name} is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly.</p>"
+        );
+        assert!(pipes.contains(&opening), "{pipes}");
+        assert!(html.contains("Get quotes from local moppers."));
+        assert!(!html.contains("licensed moppers"));
+    }
+
+    /// TD-WEB-01 TD-WORD-02 TD-WORD-03 TD-WEB-07 TD-WEB-06 TD-TERMS-04 (WEB-008, WEB-025, WORD-009,
+    /// AI-018): the person answer, the reply-time line, the WEB-025 answer in both languages, the
+    /// AI wording that follows the switch, and the CSRF field.
+    #[test]
+    fn td_web_01_help_page_answers() {
+        let page = |ai_on| HelpPage {
+            banner_shown: false,
+            ai_on,
+            old_name: brand().forbidden_alone()[0].clone(),
+            csrf: "fake-token".to_owned(),
+        };
+        let (off, on) = (
+            page(false).render().expect("off"),
+            page(true).render().expect("on"),
+        );
+        let (name, old_name) = (brand().display_name(), &brand().forbidden_alone()[0]);
+        assert!(off.contains(&format!(
+            "{name} is a local service. Our texts are automated."
+        )));
+        assert!(off.contains(&format!("The {name} owner reads HELP messages and flagged messages, usually within 2 days, or within 24 hours if your job is urgent. Messages are not watched around the clock. In an emergency, call 911.")));
+        assert!(!off.contains("a real person reviews anything flagged"));
+        assert!(off.contains(&format!(
+            "{name} isn't connected to any business with \"{old_name}\" in its name."
+        )));
+        assert!(off.contains(&format!("<p lang=\"es\">{name} no tiene ninguna relación con negocios que lleven \"{old_name}\" en su nombre.</p>")));
+        assert!(off.contains(AI_OFF) && !off.contains(AI_ON));
+        assert!(on.contains(AI_ON) && !on.contains(AI_OFF));
+        assert!(off.contains("<input type=\"hidden\" name=\"csrf\" value=\"fake-token\">"));
+        assert!(off.contains(&format!("Send the {name} owner a message")));
+        assert!(!off.contains("AI-powered"));
+    }
+
+    /// TD-WEB-01 (WEB-011, WEB-023): the ROC page links on to the ROC's complaint form; the
+    /// coverage page lists open and "not yet" names and the Canadian-number line.
+    #[test]
+    fn td_web_01_roc_and_coverage_pages() {
+        let roc = RocComplaintPage {
+            banner_shown: false,
+        }
+        .render()
+        .expect("roc");
+        assert!(roc.contains("href=\"https://roc.az.gov/file-complaint\""));
+        let coverage = CoveragePage {
+            banner_shown: false,
+            open: vec!["Fake open".to_owned()],
+            not_yet: vec!["Fake later".to_owned()],
+        }
+        .render()
+        .expect("coverage");
+        let not_yet = coverage.find("<li>Fake later</li>").expect("not yet");
+        assert!(coverage.find("<li>Fake open</li>").expect("open") < not_yet);
+        assert!(
+            coverage.contains("Canadian numbers work. Your phone company may charge roaming fees.")
+        );
+    }
+
+    /// AI-018's switched-off sentence (`docs/spec/ai.md:22`).
+    const AI_OFF: &str = "Our texts are automated. When it's switched on, an AI service helps word our questions and write your job card from your request, after our software removes names, phone numbers, emails and street numbers. You see the card before it goes.";
+    /// The start of AI-018's switched-on paragraph.
+    const AI_ON: &str = "To sort your request and help word our questions, an AI service from Anthropic reads your job description";
 
     /// WEB-028: a wait reads in minutes under two hours, else in rounded hours.
     #[test]
