@@ -9,7 +9,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 from runner import api_death, lanes, model_window, outbox, proof, state as st, verify
 from runner.state import State
@@ -516,7 +516,8 @@ def _close_history(state: State, tid: str, pr: dict[str, Any], result: str) -> S
     return st.with_task(state, tid, history=history)
 
 
-def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime) -> tuple[State, list[tuple[str, str, str]]]:
+def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime,
+                    open_only: bool = False) -> tuple[State, list[tuple[str, str, str]]]:
     """Resolve every MERGE_PENDING task, each on its own lane (D-620); [(task, lane, result)] in state
     order. With one lane there is at most one, exactly as before.
 
@@ -527,12 +528,15 @@ def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime) -> tuple
     leaves the line in its step (a resync, a failed attempt, DONE) passes it on in the same cycle. A
     "late" task (its turn ran out, or a ruleset-only check failed) is taken last and may update only if
     the turn is still free, taking it when it pushes. Every other task skips `_update_step` but still gets auto-merge, so a branch already
-    current with `main` merges without waiting for its turn."""
+    current with `main` merges without waiting for its turn. `open_only` (`resolve_merged`'s pass, D-4180)
+    skips every task whose `_current_pr` is merged or absent: such a task is "out" and never holds the turn."""
     outcomes: dict[str, tuple[str, str, str]] = {}
     turn_free, late = True, []
     for tid in _merge_line(state):
         task = st.entry(state, tid)
         pr = _current_pr(env, task)
+        if open_only and (pr is None or pr.get("merged")):
+            continue  # left to the session's cycle as read (D-3141, D-4180)
         place = _line_place(task, pr, now)
         if place == "late":
             late.append((tid, pr))
@@ -668,19 +672,51 @@ MERGES_RESOLVED = "merges_resolved"  # `--resolve-merges` closed at least one me
 NO_MERGED = "no_merged"  # `--resolve-merges` found nothing merged to close; it writes no log row (D-3141)
 
 
+class _EarlyEnv:
+    """The Env of `resolve_merged`'s merge-line pass (D-4180): every call goes to the real Env, but
+    `_auto_merge` leaves `auto_merge` as read. In the early step `gh pr merge --auto` may fall back to the
+    job's own `github.token` (D-502), and a merge that token turned auto-merge on for starts no workflow
+    (D-500, D-505), so turning auto-merge on stays the session's cycle's."""
+
+    def __init__(self, env: Env) -> None:
+        self._env = env
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._env, name)
+
+
 def resolve_merged(cfg: Config, env: Env, now: datetime) -> str:
     """`python3 -m runner --resolve-merges` (backup-runner.yml, before the smoke warm-up, D-3141).
 
     The run a merge starts used to close that merge only in the session's cycle, after the warm-up and the
     pre-session smoke: T388 merged at 22:53Z on November 11 and stayed MERGE_PENDING, holding its lane and its
-    dependents, until 23:19Z. This closes, in one read and one push, every MERGE_PENDING task whose pull request
-    has merged and whose checks have all finished, by the cycle's own rule (`_resolve_pr`: DONE only from
-    `verify.check_done`, i.e. Ci, Twin and Ally green on the merged head and the squash tree equal to it, and a
-    reviewed head; otherwise BLOCKED and a red main, exactly as in the cycle). An open or absent pull request,
-    checks still running and a merged head git cannot place yet are left to the cycle, as is everything else it
-    does (inbox, smoke, claims). A lost race changes nothing: the session's cycle resolves the merge as before."""
+    dependents, until 23:19Z. This closes every MERGE_PENDING task whose pull request has merged and whose
+    checks have all finished, by the cycle's own rule (`_close_merged`). When it closed one, the cycle's own
+    merge-line pass (`_resolve_merges`, D-3418) then runs on the open pull requests, so the next turn holder
+    gets its update merge now, not a lane's session cycle later (T572 merged 14:16Z, T202's update came at
+    14:29Z, D-4180); that pass never turns auto-merge on (`_EarlyEnv`). The one resulting state is pushed
+    once against the state read. An absent pull request, checks still running, a merged head git cannot
+    place yet, auto-merge and everything else the cycle does (inbox, smoke, claims) are left to the cycle.
+    A lost race changes nothing in the state: the session's cycle resolves the merge as before and adopts
+    an update merge already pushed (`update_merge_of`, D-584)."""
     base = env.read_state()
-    state, final = base, False
+    state, closed = _close_merged(base, env, cfg, now)
+    if not closed:
+        return NO_MERGED
+    state, _ = _resolve_merges(state, cast(Env, _EarlyEnv(env)), cfg, now, open_only=True)
+    _note_fallback(cfg, base, state)
+    if not env.push_state(state, base):
+        _drop_fallback_note(cfg)
+        return "lost_race"
+    return MERGES_RESOLVED
+
+
+def _close_merged(base: State, env: Env, cfg: Config, now: datetime) -> tuple[State, bool]:
+    """`resolve_merged`'s close (D-3141): every MERGE_PENDING task whose pull request merged with all checks
+    finished, by `_resolve_pr` (DONE only from `verify.check_done`, i.e. Ci, Twin and Ally green on the merged
+    head, the squash tree equal to it and a reviewed head; otherwise BLOCKED and a red main, as in the
+    cycle), each outcome through `_lane_outcome`; (state, whether any was closed)."""
+    state, closed = base, False
     for task in [t for t in base["tasks"] if t.get("status") == st.MERGE_PENDING]:
         tid, pr = task["id"], env.pr_for(task["id"])
         if pr is None or not pr.get("merged") or verify.checks_state(pr) == "pending" or _earlier_pr(task, pr, env):
@@ -690,14 +726,8 @@ def resolve_merged(cfg: Config, env: Env, now: datetime) -> str:
         resolved, result = _resolve_pr(state, env, cfg, now, tid, pr)
         if result == "merge_pending":
             continue  # a merged head not placed yet: its wait is the cycle's to start (D-584)
-        state, final = _lane_outcome(resolved, tid, st.task_lane(task), result, now, env.checks_on), True
-    if not final:
-        return NO_MERGED
-    _note_fallback(cfg, base, state)
-    if not env.push_state(state, base):
-        _drop_fallback_note(cfg)
-        return "lost_race"
-    return MERGES_RESOLVED
+        state, closed = _lane_outcome(resolved, tid, st.task_lane(task), result, now, env.checks_on), True
+    return state, closed
 
 
 def _lane_outcome(state: State, tid: str, lane: str, result: str, now: datetime,
@@ -1084,7 +1114,10 @@ def release_proven(state: State) -> State:
 
 
 def _auto_merge(state: State, env: Env, tid: str, head: str) -> State:
-    """Turn on auto-merge only for the reviewed head under the task's lease (D-486); record the outcome."""
+    """Turn on auto-merge only for the reviewed head under the task's lease (D-486); record the outcome.
+    The early step's pass (`_EarlyEnv`, D-4180) leaves it, and the state, to the session's cycle."""
+    if isinstance(env, _EarlyEnv):
+        return state
     task = st.entry(state, tid)
     reason = verify.auto_merge_reason(state, str(task.get("branch", "")), head, st.leases_of(state))
     if reason:
