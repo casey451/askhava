@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T14:08:27Z by runner e1c5e4bc416f (actions).
+Updated 2026-11-17T14:14:57Z by runner 12946a3e0e2f (actions).
 
 **Building: T471 in progress since 13:32Z; 396 of 561 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 396 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T471 claimed 13:32Z, lease until 16:32Z
+- **Lane:** lane 6: T471 claimed 13:32Z, lease until 17:14Z
 - **Week:** 21% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:08Z, 0 min before this update
+- **Last run:** 14:08Z, 6 min before this update
 - **Keeper:** last ran 14:08Z, next wake 16:35Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 6 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -98,7 +98,7 @@ Updated 2026-11-17T14:08:27Z by runner e1c5e4bc416f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 304 of 733 (41.5%) · partial 341 · unstarted 88
-**Tasks merged (throughput only):** 396 of 561
+**Tasks merged (throughput only):** 396 of 560
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -142,7 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 6: T471 (lease until 2026-11-17T16:32:37Z)
+- lane 6: T471 (lease until 2026-11-17T17:14:57Z)
 
 ## Last usage reading
 - {"task": "T321", "at": "2026-11-17T13:42:05Z", "output_tokens": 54142, "cache_read_input_tokens": 6206460, "input_tokens": 153, "cache_creation_input_tokens": 182497}
