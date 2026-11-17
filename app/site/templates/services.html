@@ -1,0 +1,26 @@
+{% extends "site_layout.html" %}
+{#- The services page, /services (T201; WEB-015, D-3878, D-3879): one section per switched-on trade,
+    anchored at #<category code>, with its own h2. A licensed trade's section opens with
+    "Get quotes from licensed <plural>." and the long not-a-contractor statement, the plural read
+    from catalog::api::category_list. -#}
+{% block title %}Jobs you can get quotes for{% endblock %}
+{% block content %}
+{%- let brand = askhava_core::api::brand().display_name() %}
+<h1>Jobs you can get quotes for</h1>
+{%- if trades.is_empty() %}
+<p>No trades are open yet. See what's coming on <a href="/coverage">What we cover now</a>.</p>
+{%- endif %}
+{%- for c in trades %}
+<section id="{{ c.code }}" aria-labelledby="{{ c.code }}-title">
+<h2 id="{{ c.code }}-title">{{ c.name }}</h2>
+{%- if c.license_kind == "none" %}
+<p>Get quotes from local {{ c.plural }}.</p>
+{%- else %}
+<p data-fixed="WEB-015">Get quotes from licensed {{ c.plural }}.</p>
+{%- endif %}
+<p data-fixed="WEB-015">{{ brand }} is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly.</p>
+</section>
+{%- endfor %}
+<p><a href="/request">Get quotes</a></p>
+<p><a href="/coverage">What we cover now</a></p>
+{% endblock %}
