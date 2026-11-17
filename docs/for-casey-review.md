@@ -3213,3 +3213,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## The weekly digest's readers split in two (D-4202)
 - The task building the counts for your weekly digest (T528) stopped because an earlier safety test checks that only one file in the app can read why a business left, so the reason can never affect who gets jobs or what fees are. The fix keeps that test exactly as it is: the reading stays in that one file, and the digest asks it for the answers.
 - The work was also too big for one task, so it is now two that can run side by side: T528 (alert and digest-tracking counts) and a new T605 (why businesses left, license-paused businesses, requests we couldn't cover, and no-shows). The digest itself (T524) waits for both. Nothing needs you now.
+
+## T113: the texting campaign draft (D-4147)
+
+- `docs/legal/twilio-campaign.md` is the text for registering the homeowner texting campaign: the settings, the description, the six sample messages (each copied from the real text it stands for), the Spanish steps and what happens if the campaign is refused. Nothing is submitted; you register it by hand when the account checklist gets there.
+- One thing to know: the description no longer says people opt in by "replying OK", because texting in is the opt-in (D-419). Everything else is the wording from the changes file.

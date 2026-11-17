@@ -54,6 +54,7 @@ DOCUMENTS = (
     "information-security-program.md",
     "incident-response-plan.md",
     "business-terms-summary-es.md",
+    "twilio-campaign.md",
 )
 BUSINESS_DOCUMENTS = frozenset({"business-terms.md", "business-email-notices.md", "business-terms-summary-es.md"})
 # The names the spec's own wording uses; they change only with the spec, whatever the brand file says
