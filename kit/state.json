@@ -77626,7 +77626,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T22:22:08Z",
+ "updated_at": "2026-11-17T22:32:55Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -77724,8 +77724,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9dd9cd236f2f466f5e6f26d766a37a337e4e0ca4",
- "starter": "actions",
+ "runner_sha": "2a27c184336a186af0ded678771b02ea1dc63b3d",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "a499065fb6c7995cd7ea0229e1ae5e07fe551376",
@@ -78017,7 +78017,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 4258,
+ "next_decision": 4259,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -79030,6 +79030,12 @@
    "at": "2026-11-17T21:34:39Z",
    "reason": "fable-ui-review-followups",
    "session": "manual-dc3b76c2e52f"
+  },
+  {
+   "number": 4258,
+   "at": "2026-11-17T22:32:55Z",
+   "reason": "close-open-negative-scans-T203-T218-T121-T114-T229-T587-T116",
+   "session": "manual-73cad0f07e30"
   }
  ],
  "lanes_fallback_history": [
