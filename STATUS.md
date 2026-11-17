@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T15:28:34Z by runner 215d4cc126ab (actions).
+Updated 2026-11-17T15:29:04Z by runner 215d4cc126ab (actions).
 
 **Building: T113 in progress since 15:04Z; 399 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-17T15:28:34Z by runner 215d4cc126ab (actions).
 - **Lane:** lane 5: T113 claimed 15:04Z, lease until 18:04Z
 - **Week:** 22% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:28Z, 0 min before this update
-- **Keeper:** last ran 15:21Z, next wake 18:06Z
+- **Keeper:** last ran 15:29Z, next wake 18:07Z
 
 ## Needs attention
 - PLAN GAP T104 (since 2026-11-17T15:25:02Z, no attempt used; a plan change fixes it): T104: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T104: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T104: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T104: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T104: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
