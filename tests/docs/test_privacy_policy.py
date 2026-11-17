@@ -407,7 +407,7 @@ REQUIRED_LINES: tuple[tuple[str, str, str], ...] = (
         "Businesses get no texts on this number; they are notified by email. A person who texts asking to "
         "join as a business gets one reply with the sign-up link.",
     ),
-    (SMS, "TERMS-018", "We won't text in Spanish until a native Spanish speaker we pay has checked this wording:"),
+    (SMS, "TERMS-018", "We won't send this text in Spanish until a native Spanish speaker we pay has checked it:"),
     ("homeowner-terms.md", "TERMS-004", "**Limit of liability.**"),
     ("business-terms.md", "TERMS-006", "**Non-discrimination.**"),
     ("business-terms.md", "TERMS-007", "## 6. Card and charge authorization"),

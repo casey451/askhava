@@ -15,7 +15,7 @@ Texting Laftly, or giving us your mobile number in the chat on laftly.com and ty
 
 > Laftly: Got it. Next, a few quick questions. Laftly is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: laftly.com/terms Privacy: laftly.com/privacy
 
-In Spanish (draft). We won't text in Spanish until a native Spanish speaker we pay has checked this wording:
+In Spanish (draft). We won't send this text in Spanish until a native Spanish speaker we pay has checked it:
 
 > Laftly: Recibido. Ahora, unas preguntas. Laftly no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. PARAR para salir, AYUDA para ayuda. Términos: laftly.com/terms Privacidad: laftly.com/privacy
 
