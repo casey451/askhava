@@ -21191,7 +21191,7 @@
     "T489",
     "T202"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "wording-scan",
    "type": "build",
@@ -21209,7 +21209,7 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "last_failure": "Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan.py is 320 of the 350-line budget; pytest 154 passed, prehandin.sh green). All earlier rounds' findings (mobile/your number, except/unless carve-outs, disclose/provide, pass/hand/forward, bare \"your phone\", vet, earn/take a cut, share of each job, case-insensitive Stripe description, meta content / input value) are fixed and hold. Second reviewer's findings, all in tests/docs/test_wording_scan.py:\n1. TERMS-010 (:106): the forward VERB...NUM gap allows only bare words (`(?:\\s+[\\w']+){0,5}?`), so a comma stops it. Missed: \"We share your name, address and phone number with the business you pick.\" / \"We share your info, including your phone number, with the business.\" / \"We share your details, including your phone number, with the business.\" The reverse NUM...VERB_PP direction already tolerates commas.\n2. TERMS-010 (:92-:97): no \"goes to\", \"text\", or Spanish \"dar\". Missed: \"Your phone number goes to the business you pick.\" / \"Your number goes to the business you pick.\" / \"We'll text your number to the pro.\" / \"Le damos su n\u00famero de tel\u00e9fono al negocio que elija.\"\n3. WORD-003 / WORD-022 (:99): only the stem \"rank\" counts. Missed: \"Quotes are sorted by price, lowest first.\" / \"The cheapest quote is shown first.\" / \"We rate every business.\" / \"Highly rated local businesses.\" (\"rate\" is in the negatable list at :81 but never flagged alone.)\n4. WORD-004 (:104): cut/share verbs lack get/gets/got. Missed: \"We get a cut of every job.\"\nMinor (not counted): \"Laftly is the top choice.\" passes (\"top\" only fails before \"-rated\").\nSuggested: let the forward pattern skip commas and \"including\" asides; add go(es) to, text, d(a|amos|an); a ranking rule for sort(ed) by, shown first, cheapest, lowest(-priced) first, \\brat(e|es|ed|ing)\\b (keeping negated forms allowed); add get|gets|got; plant each missed sentence in FAILS. Earlier attempts each grew the reviewer's list; a retry should aim the patterns at families of phrasing (any separator between verb and number, any verb of handing over) rather than the listed sentences only.",
+   "last_failure": "Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan.py is 320 of the 350-line budget; pytest 154 passed, prehandin.sh green). All earlier rounds' findings (mobile/your number, except/unless carve-outs, disclose/provide, pass/hand/forward, bare \"your phone\", vet, earn/take a cut, share of each job, case-insensitive Stripe description, meta content / input value) are fixed and hold. Second reviewer's findings, all in tests/docs/test_wording_scan.py:\n1. TERMS-010 (:106): the forward VERB...NUM gap allows only bare words (`(?:\\s+[\\w']+){0,5}?`), so a comma stops it. Missed: \"We share your name, address and phone number with the business you pick.\" / \"We share your info, including your phone number, with the business.\" / \"We share your details, including your phone number, with the business.\" The reverse NUM...VERB_PP direction already tolerates commas.\n2. TERMS-010 (:92-:97): no \"goes to\", \"text\", or Spanish \"dar\". Missed: \"Your phone number goes to the business you pick.\" / \"Your number goes to the business you pick.\" / \"We'll text your number to the pro.\" / \"Le damos su n\u00famero de tel\u00e9fono al negocio que elija.\"\n3. WORD-003 / WORD-022 (:99): only the stem \"rank\" counts. Missed: \"Quotes are sorted by price, lowest first.\" / \"The cheapest quote is shown first.\" / \"We rate every business.\" / \"Highly rated local businesses.\" (\"rate\" is in the negatable list at :81 but never flagged alone.)\n4. WORD-004 (:104): cut/share verbs lack get/gets/got. Missed: \"We get a cut of every job.\"\nMinor (not counted): \"Laftly is the top choice.\" passes (\"top\" only fails before \"-rated\").\nSuggested: let the forward pattern skip commas and \"including\" asides; add go(es) to, text, d(a|amos|an); a ranking rule for sort(ed) by, shown first, cheapest, lowest(-priced) first, \\brat(e|es|ed|ing)\\b (keeping negated forms allowed); add get|gets|got; plant each missed sentence in FAILS. Earlier attempts each grew the reviewer's list; a retry should aim the patterns at families of phrasing (any separator between verb and number, any verb of handing over) rather than the listed sentences only.\nre-queued after plan fix D-4229: D-4229 merged (#978): closed wording-scan lists after three review failures (Fable triage, Opus rounds 1-3)",
    "history": [
     {
      "attempt": 1,
@@ -21281,7 +21281,22 @@
      }
     }
    ],
-   "reason": "Review not approved after the one fix round (head ec5f136577adfe010b854d7f2d0dec66bf17f238; tests/docs/test_wording_scan.py 349 of 350 lines; pytest 220 passed; prehandin.sh green; smoke.sh green on first head 2a14626dd). First review findings (pronoun hand-over \"share it/pass it/give it\", Spanish plural \"m\u00e1s baratas aparecen primero\", \"listed/shown by price\", \"se le da\") were fixed and hold; repack dropped nothing. Second reviewer's findings:\n1. tests/docs/test_wording_scan.py:71 (TERMS-010, false positive introduced by the fix): the pronoun branch `(?:HAND_OVER|give|send|show)\\s+(?:it|them|this)\\b` matches \"this <noun>\" and \"them\" = businesses. Wrongly flagged: \"After you give consent, we share this request with up to five businesses.\" / \"Add your phone number, then we send this request to local businesses.\" / \"Verify your mobile number so we can send this request to pros.\" / \"Once you confirm your phone number, we send them a description of the job.\" / \"Enter your phone number and we will send this code.\" (en.json:195 already says \"We'll send this to the {count} ... businesses\"; it passes only because the number is in another sentence.) Fix: drop \"this\"; count it/them only when followed by sentence end, punctuation, or to|with|along|over|on|out|away, e.g. `\\s+(?:it|them)(?=\\s*(?:$|[.!?;,]|\\s(?:to|with|along|over|on|out|away)\\b))`; add the first and fourth sentences to PASSES.\n2. tests/docs/test_wording_scan.py:79/:81-82 (WORD-003): Spanish \"shown/listed by price\" missed: \"Las cotizaciones se muestran por precio.\" / \"Mostramos las cotizaciones por precio.\" Fix: widen `orden\\w* (?:\\w+ ){0,3}por (...)` to `(?:orden|muestr|mostr|list|present)\\w* (?:\\w+ ){0,3}por (?:precio|calidad|calificaci)`; add both to FAILS.\nOptional (not counted): \"We collect your phone number and let the business see it.\" / \"Su n\u00famero de tel\u00e9fono lo recibe el negocio que elija.\" / \"Your phone number? We share it with the pro you pick.\" (\"?\" ends the sentence) / \"Los precios m\u00e1s bajos van primero.\"; \"We text your phone number a code; type it in.\" is wrongly flagged (already so on 2a14626dd).\nA retry should start from this attempt's design (pushed branch, if kept) and apply these two fixes; each rule should be checked against both missed phrasings and plausible legitimate consent-flow copy before hand-in."
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-17T20:27:45Z",
+     "reason": "D-4229 merged (#978): closed wording-scan lists after three review failures (Fable triage, Opus rounds 1-3)",
+     "by": "manual-290840b00f18",
+     "was": "Review not approved after the one fix round (head ec5f136577adfe010b854d7f2d0dec66bf17f238; tests/docs/test_wording_scan.py 349 of 350 lines; pytest 220 passed; prehandin.sh green; smoke.sh green on first head 2a14626dd). First review findings (pronoun hand-over \"share it/pass it/give it\", Spanish plural \"m\u00e1s baratas aparecen primero\", \"listed/shown by price\", \"se le da\") were fixed and hold; repack dropped nothing. Second reviewer's findings:\n1. tests/docs/test_wording_scan.py:71 (TERMS-010, false positive introduced by the fix): the pronoun branch `(?:HAND_OVER|give|send|show)\\s+(?:it|them|this)\\b` matches \"this <noun>\" and \"them\" = businesses. Wrongly flagged: \"After you give consent, we share this request with up to five businesses.\" / \"Add your phone number, then we send this request to local businesses.\" / \"Verify your mobile number so we can send this request to pros.\" / \"Once you confirm your phone number, we send them a description of the job.\" / \"Enter your phone number and we will send this code.\" (en.json:195 already says \"We'll send this to the {count} ... businesses\"; it passes only because the number is in another sentence.) Fix: drop \"this\"; count it/them only when followed by sentence end, punctuation, or to|with|along|over|on|out|away, e.g. `\\s+(?:it|them)(?=\\s*(?:$|[.!?;,]|\\s(?:to|with|along|over|on|out|away)\\b))`; add the first and fourth sentences to PASSES.\n2. tests/docs/test_wording_scan.py:79/:81-82 (WORD-003): Spanish \"shown/listed by price\" missed: \"Las cotizaciones se muestran por precio.\" / \"Mostramos las cotizaciones por precio.\" Fix: widen `orden\\w* (?:\\w+ ){0,3}por (...)` to `(?:orden|muestr|mostr|list|present)\\w* (?:\\w+ ){0,3}por (?:precio|calidad|calificaci)`; add both to FAILS.\nOptional (not counted): \"We collect your phone number and let the business see it.\" / \"Su n\u00famero de tel\u00e9fono lo recibe el negocio que elija.\" / \"Your phone number? We share it with the pro you pick.\" (\"?\" ends the sentence) / \"Los precios m\u00e1s bajos van primero.\"; \"We text your phone number a code; type it in.\" is wrongly flagged (already so on 2a14626dd).\nA retry should start from this attempt's design (pushed branch, if kept) and apply these two fixes; each rule should be checked against both missed phrasings and plausible legitimate consent-flow copy before hand-in.",
+     "attempts": 3,
+     "plan_fix": "D-4229",
+     "plan_since": "2026-11-17T18:38:19Z",
+     "plan_base": "339f0a35397da56329a69d9112ddcfe69b645f2f",
+     "plan_head": "2e3965ee95843ee6ca080025bab0ff99897d837d",
+     "plan_then": "6c167a9dd41089f82ecf524ff0f71df75fe110c4bd525e34e3c6f927bbe5a830",
+     "plan_now": "1cbcb82d0194ef19187f58926ac99a4792fc18cad196bd481bd6ace96fa0ea03"
+    }
+   ]
   },
   {
    "id": "T203",
@@ -76794,7 +76809,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T20:26:13Z",
+ "updated_at": "2026-11-17T20:27:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -76892,8 +76907,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c6d52c655da58e5526ac9c7998705414d1557b7e",
- "starter": "actions",
+ "runner_sha": "2e3965ee95843ee6ca080025bab0ff99897d837d",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "a44660021decbcb04d6dac8d0822c2d35aae09cd",

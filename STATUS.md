@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T20:26:13Z by runner c6d52c655da5 (actions).
+Updated 2026-11-17T20:27:45Z by runner 2e3965ee9584 (manual).
 
 **Building: T597 in progress since 20:01Z; 408 of 570 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,15 +8,10 @@ Updated 2026-11-17T20:26:13Z by runner c6d52c655da5 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T597 claimed 20:01Z, lease until 23:24Z; lane 5: T602 claimed 20:07Z, lease until 23:07Z; lane 6: T106 claimed 19:20Z, lease until 23:20Z; lane 7: T594 claimed 19:39Z, lease until 22:39Z
 - **Week:** 29% used, 135.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:26Z, 0 min before this update
+- **Last run:** 20:26Z, 1 min before this update
 - **Keeper:** last ran 20:26Z, next wake 22:42Z
 
 ## Needs attention
-- BLOCKED T104: Review not approved after the one fix round (head ec5f136577adfe010b854d7f2d0dec66bf17f238; tests/docs/test_wording_scan.py 349 of 350 lines; pytest 220 passed; prehandin.sh green; smoke.sh green on first head 2a14626dd). First review findings (pronoun hand-over "share it/pass it/give it", Spanish plural "más baratas aparecen primero", "listed/shown by price", "se le da") were fixed and hold; repack dropped nothing. Second reviewer's findings:
-1. tests/docs/test_wording_scan.py:71 (TERMS-010, false positive introduced by the fix): the pronoun branch `(?:HAND_OVER|give|send|show)\s+(?:it|them|this)\b` matches "this <noun>" and "them" = businesses. Wrongly flagged: "After you give consent, we share this request with up to five businesses." / "Add your phone number, then we send this request to local businesses." / "Verify your mobile number so we can send this request to pros." / "Once you confirm your phone number, we send them a description of the job." / "Enter your phone number and we will send this code." (en.json:195 already says "We'll send this to the {count} ... businesses"; it passes only because the number is in another sentence.) Fix: drop "this"; count it/them only when followed by sentence end, punctuation, or to|with|along|over|on|out|away, e.g. `\s+(?:it|them)(?=\s*(?:$|[.!?;,]|\s(?:to|with|along|over|on|out|away)\b))`; add the first and fourth sentences to PASSES.
-2. tests/docs/test_wording_scan.py:79/:81-82 (WORD-003): Spanish "shown/listed by price" missed: "Las cotizaciones se muestran por precio." / "Mostramos las cotizaciones por precio." Fix: widen `orden\w* (?:\w+ ){0,3}por (...)` to `(?:orden|muestr|mostr|list|present)\w* (?:\w+ ){0,3}por (?:precio|calidad|calificaci)`; add both to FAILS.
-Optional (not counted): "We collect your phone number and let the business see it." / "Su número de teléfono lo recibe el negocio que elija." / "Your phone number? We share it with the pro you pick." ("?" ends the sentence) / "Los precios más bajos van primero."; "We text your phone number a code; type it in." is wrongly flagged (already so on 2a14626dd).
-A retry should start from this attempt's design (pushed branch, if kept) and apply these two fixes; each rule should be checked against both missed phrasings and plausible legitimate consent-flow copy before hand-in.
 - BLOCKED T115: plan gap reported: PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing in `package.json`/`package-lock.json` can fix it; the smallest plan change is a harness task that adds a reviewed audit exception for this advisory to `scripts/prehandin.sh` and Ci's audit step.
 Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=4.0.7, latest published is 4.0.7, no patched version, so no override works. Path: typescript-eslint@8.71.2 -> @typescript-eslint/typescript-estree@8.71.2 -> tinyglobby@0.2.17 -> picomatch@4.0.7 (also via f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T115 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
