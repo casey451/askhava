@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T21:03:17Z by runner f358ca5f8d4b (actions).
+Updated 2026-11-17T21:03:27Z by runner f358ca5f8d4b (actions).
 
 **Building: T104 in progress since 20:59Z; 409 of 570 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 409 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T104 claimed 20:59Z, lease until 23:59Z; lane 7: T594 claimed 19:39Z, lease until 23:30Z
+- **Lane:** lane 4: T104 claimed 20:59Z, lease until 23:59Z
 - **Week:** 30% used, 134.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:03Z, 0 min before this update
 - **Keeper:** last ran 21:03Z, next wake 23:33Z
@@ -20,6 +20,7 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T594 | site: the end-to-end spec of the web chat and request page a | MERGE_PENDING | 2 | 83 min | 21:03Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T106 | ops: /healthz and the web and worker liveness exits | MERGE_PENDING | 1 | 77 min | 20:38Z |  |
 | T602 | privacy: the inbound email signature check refuses an out-of | MERGE_PENDING | 1 | 30 min | 20:37Z |  |
 | T597 | Runner (harness): the early merge-close step also pushes the | done | 1 | 26 min | 20:28Z |  |
@@ -43,7 +44,7 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | done | 2 | 94 min | 13:39Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T363 | portals: the served pick and its code step apply the per-IP  | done | 1 | 62 min | 13:38Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | check_failed | 1 | 50 min | 13:19Z |  |
-| T594 | site: the end-to-end spec of the web chat and request page a | BLOCKED | 1 | 42 min | 13:18Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
+| T594 | site: the end-to-end spec of the web chat and request page a | BLOCKED | 1 | 42 min | 13:18Z |  |
 | T202 | site: Spanish pages, the business page blocks and the requir | done | 2 | 43 min | 13:01Z | merging main into the reviewed head conflicts in app/site/src/api.rs, docs/architecture.md, tests/a11y/page_states.ts; a |
 | T113 | Draft the Twilio campaign description from the real template | BLOCKED | 1 | 10 min | 12:21Z |  |
 | T441 | portals: the quote page shows the kept number, and the pick  | done | 1 | 74 min | 11:32Z |  |
@@ -139,7 +140,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 4: T104 (lease until 2026-11-17T23:59:59Z)
-- lane 7: T594 (lease until 2026-11-17T23:30:32Z)
 
 ## Last usage reading
-- {"task": "T106", "at": "2026-11-17T20:38:29Z", "input_tokens": 233, "cache_creation_input_tokens": 268449, "cache_read_input_tokens": 8216903, "output_tokens": 71541}
+- {"task": "T594", "at": "2026-11-17T21:03:09Z", "output_tokens": 50309, "cache_read_input_tokens": 6689370, "cache_creation_input_tokens": 218487, "input_tokens": 208}
