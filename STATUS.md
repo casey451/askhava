@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-17T02:12:04Z by runner dde16ca377f9 (actions).
+Updated 2026-11-17T02:12:22Z by runner dde16ca377f9 (actions).
 
-**Building: T221 in progress since 01:54Z; 377 of 556 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T103 in progress since 02:12Z; 377 of 556 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 377 of 556 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T221 claimed 01:54Z, lease until 04:54Z; lane 5: T469 claimed 00:32Z, lease until 05:09Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
-- **Week:** 11% used, 167.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T103 claimed 02:12Z, lease until 05:12Z; lane 4: T221 claimed 01:54Z, lease until 04:54Z; lane 5: T469 claimed 00:32Z, lease until 05:09Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
+- **Week:** 11% used, 169.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:10Z, 1 min before this update
 - **Keeper:** last ran 02:05Z, next wake 04:04Z
 
@@ -99,7 +99,7 @@ Updated 2026-11-17T02:12:04Z by runner dde16ca377f9 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T02:00:44Z (week)): week: 26.7M used, 167.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T04:45:20Z.
+- Pacing (session_reading 2026-11-17T02:04:50Z (week)): week: 24.8M used, 169.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T04:55:40Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -115,6 +115,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T103 (lease until 2026-11-17T05:12:02Z)
 - lane 4: T221 (lease until 2026-11-17T04:54:09Z)
 - lane 5: T469 (lease until 2026-11-17T05:09:53Z)
 - lane 7: T586 (lease until 2026-11-17T05:01:43Z)
