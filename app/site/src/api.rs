@@ -2,8 +2,9 @@
 //! site page makes before it renders (WEB-001, WEB-007, T101), and the home and how-it-works
 //! pages with their settings (WEB-012, WEB-021, WEB-026, WEB-028, T102), and the legal and data pages (WEB-014, TERMS-021,
 //! TERMS-023, T221), and the services, coverage, help and ROC complaint pages (WEB-008, WEB-011,
-//! WEB-015, WEB-023, T201).
+//! WEB-015, WEB-023, T201), and the request page and web chat (CON-025, WEB-014, AI-026, T489).
 
+pub use crate::chat::{ChatCsrf, ChatKeys, REQUEST_PATH, chat_routes};
 pub use crate::legal_pages::{
     BUSINESS_DATA_PATH, ES_BUSINESS_DATA_PATH, ES_YOUR_DATA_PATH, LegalDoc, PRIVACY_PATH,
     SMS_TERMS_PATH, TERMS_PATH, YOUR_DATA_PATH, accessibility_statement, legal_routes,
