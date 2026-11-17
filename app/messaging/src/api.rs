@@ -92,6 +92,10 @@ pub use crate::receipt_email::{
     RECEIPT_EMAIL_KIND, RECEIPT_TEMPLATE, ReceiptFacts, ReceiptSender, WHY_CHARGED_PREFIX,
     render_receipt, run_receipt_email,
 };
+pub use crate::replay_sent::{
+    CLOCK_SKEW, ListedText, NO_BODY_WINDOW, ReplayError, ReplayMatch, ReplayRefusal, ReplaySent,
+    ReplayWindow, mark_replayed_sent, replay_match, replay_window,
+};
 pub use crate::retention::{
     BODY_KEPT_FOR, CUT_KIND, LogEntry, cut_bodies, message_log, run_cut, run_cut_at, schedule_cut,
 };
