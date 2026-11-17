@@ -1,0 +1,13 @@
+{% extends "site_layout.html" %}
+{#- The accessibility statement, /accessibility (T115; A11Y-020, D-3155). Its text is
+    docs/legal/accessibility-statement.md, rendered once by app/site/src/legal_pages.rs as the
+    legal pages are: the title as the h1, the draft note and version line, then the body. The body's
+    type, `legal_pages::LegalHtml`, is marked HTML-safe for Askama, so no escape filter is needed
+    (SEC-011). tests/docs/test_accessibility_statement.py scans this file's reader text. -#}
+{% block title %}{{ doc.title }}{% endblock %}
+{% block content %}
+<h1>{{ doc.title }}</h1>
+<p class="legal-draft">{{ doc.draft }}</p>
+<p class="legal-version">{{ doc.version }}</p>
+{{ doc.body }}
+{% endblock %}
