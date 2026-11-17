@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-17T23:24:45Z by runner b1fe64c6fb5a (actions).
+Updated 2026-11-17T23:25:02Z by runner b1fe64c6fb5a (actions).
 
-**Idle since 23:24Z; 414 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T478 in progress since 23:24Z; 414 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 414 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 23:24Z (no task in progress)
-- **Week:** 33% used, 129.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T478 claimed 23:24Z, lease until 02:24Z
+- **Week:** 33% used, 128.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:24Z, 0 min before this update
 - **Keeper:** last ran 23:24Z, next wake 23:44Z
 
 ## Needs attention
 - BLOCKED T203: plan gap reported: PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be "at the top of the quote page". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/pr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T478 (since 2026-11-17T23:05:09Z, no attempt used; a plan change fixes it): T478: dependency T605 is DONE but its owned file app/businesses/src/digest_counts.rs is not on main; T478: dependency T605 is DONE but its owned file app/intake/src/not_covered_counts.rs is not on main; T478: dependency T605 is DONE but its owned file app/picks/src/digest_counts.rs is not on main; T478: dependency T605 is DONE but its owned file tests/integration/tests/digest_counts.rs is not on main
+- PLAN GAP T583 (since 2026-11-17T23:24:36Z, no attempt used; a plan change fixes it): T583: dependency T582 is DONE but its owned file app/quotes/src/count_update.rs is not on main; T583: dependency T582 is DONE but its owned file app/messaging/src/quote_text_sent.rs is not on main; T583: dependency T582 is DONE but its owned file tests/integration/tests/quote_count_event.rs is not on main
 - Strict plan check red: 18 problem(s) on tasks still to run (+183 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
@@ -122,7 +122,7 @@ Updated 2026-11-17T23:24:45Z by runner b1fe64c6fb5a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T23:00:34Z (week)): week: 64.5M used, 129.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T20:06:12Z.
+- Pacing (session_reading 2026-11-17T23:24:05Z (week)): week: 66.0M used, 128.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T19:43:10Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -138,6 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T478 (lease until 2026-11-18T02:24:36Z)
 
 ## Last usage reading
 - {"task": "T606", "at": "2026-11-17T23:23:27Z", "input_tokens": 104, "output_tokens": 43016, "cache_read_input_tokens": 1961371, "cache_creation_input_tokens": 156556}
