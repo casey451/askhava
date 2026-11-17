@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T03:14:07Z by runner 6920534c28d3 (actions).
+Updated 2026-11-17T03:14:25Z by runner 6920534c28d3 (actions).
 
 **Building: T107 in progress since 02:20Z; 378 of 557 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 378 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:57Z; lane 2: T103 claimed 02:12Z, lease until 06:13Z; lane 3: T584 claimed 02:40Z, lease until 05:40Z; lane 4: T221 claimed 01:54Z, lease until 05:43Z
+- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:57Z; lane 2: T103 claimed 02:12Z, lease until 06:13Z; lane 3: T584 claimed 02:40Z, lease until 05:40Z
 - **Week:** 12% used, 165.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:13Z, 0 min before this update
 - **Keeper:** last ran 03:10Z, next wake 05:43Z
@@ -18,9 +18,10 @@ Updated 2026-11-17T03:14:07Z by runner 6920534c28d3 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T221 | site: the terms, privacy policy, SMS terms, homeowner data a | MERGE_PENDING | 2 | 79 min | 03:14Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   0.13. |
 | T584 | businesses (harness): sign-up activation retried after a con | BLOCKED | 1 | 3 min | 02:26Z | PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to rea |
 | T469 | server (harness): the Resend email client from settings and  | MERGE_PENDING | 1 | 99 min | 02:12Z |  |
-| T221 | site: the terms, privacy policy, SMS terms, homeowner data a | check_failed | 1 | 2 h 47 min | 01:23Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   0.13. |
+| T221 | site: the terms, privacy policy, SMS terms, homeowner data a | check_failed | 1 | 2 h 47 min | 01:23Z |  |
 | T320 | ops: a check that runs on a schedule raises its alert once w | MERGE_PENDING | 2 | 78 min | 01:13Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 | T373 | businesses: changing a phone's number ends that phone's text | done | 2 | 42 min | 01:04Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
 | T111 | Draft homeowner and business terms with every required claus | done | 4 | 34 min | 23:57Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
@@ -120,7 +121,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T107 (lease until 2026-11-17T05:57:37Z)
 - lane 2: T103 (lease until 2026-11-17T06:13:14Z)
 - lane 3: T584 (lease until 2026-11-17T05:40:25Z)
-- lane 4: T221 (lease until 2026-11-17T05:43:34Z)
 
 ## Last usage reading
-- {"task": "T584", "at": "2026-11-17T02:26:49Z", "input_tokens": 48, "cache_read_input_tokens": 763271, "cache_creation_input_tokens": 73479, "output_tokens": 9080}
+- {"task": "T221", "at": "2026-11-17T03:14:05Z", "cache_creation_input_tokens": 194461, "output_tokens": 31949, "cache_read_input_tokens": 3404485, "input_tokens": 188}
