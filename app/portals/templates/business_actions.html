@@ -9,7 +9,9 @@
     "Auto-confirm and pay if picked" box follows the fee lines only when `auto_box` is given,
     unticked unless the quote's box is ticked now, with its own authorization (T209; PICK-048).
     The job page shows the card, answers, photos, project file and any concept image with its
-    label on the image's alt text and beside it (T212; CARD-023, INT-044 to INT-046). With `price`
+    label on the image's alt text and beside it (T212; CARD-023, INT-044 to INT-046), the WORD-002
+    business statement under the card and, with `p.not_a_fit`, "Not a fit for us" with one button
+    per reason (T479; CARD-020, PICK-057). With `price`
     the quote form shows only the job's one format's price fields beside its plain definition (no
     visit fee on a range job), a per-visit price's required visit schedule and the notes box; with
     `p.controls` the job page shows the business's own quote controls (T164; PICK-051 to PICK-053,
@@ -31,7 +33,15 @@
 <p id="job-counts">Sent to {{ p.sent }} business{% if p.sent != 1 %}es{% endif %}. Quotes so far: {{ p.quoted }}.</p>
 <h2>Job card</h2>
 <ul id="job-card">{% for line in p.card_lines %}<li>{{ line }}</li>{% endfor %}</ul>
-{% if let Some(c) = p.controls %}<h2>Your quote</h2>
+<p id="business-statement">{{ p.statement }}</p>
+{% if let Some(n) = p.not_a_fit %}<form method="post" action="{{ n.action }}" novalidate>
+<input type="hidden" name="csrf" value="{{ n.csrf }}">
+<fieldset id="not-a-fit"><legend>Not a fit for us</legend>
+<p id="not-a-fit-line">{{ n.line() }}</p>
+<ul>{% for (code, label) in n.reasons() %}<li><button type="submit" name="reason" value="{{ code }}">{{ label }}</button></li>{% endfor %}</ul>
+</fieldset>
+</form>
+{% endif %}{% if let Some(c) = p.controls %}<h2>Your quote</h2>
 {% if c.standing() %}<p id="quote-controls-line">You can change or withdraw your quote until the homeowner picks one. Withdrawing takes it off the homeowner's page, and you can send a new one until they pick.</p>
 <p><a id="edit-quote" href="{{ c.edit_link }}">Change your quote</a></p>
 <form method="post" action="{{ c.withdraw_action }}" novalidate>
