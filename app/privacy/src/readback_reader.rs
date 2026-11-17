@@ -4,7 +4,8 @@
 //! [`read_for_readback`] opens the name and the address of one contact under the registered
 //! `(Reader::Calls, Purpose::CallReadback)` grant, audited per field like every vault read, and
 //! cuts them down here, so the full name and the town never leave the vault crate: the first word
-//! of the name and the address up to its first comma. `calls` asks only after two bad PINs from a
+//! of the name and the address's street line (up to its first comma, or with none up to its last
+//! street-type word, else less a trailing ZIP and state, D-4052 B35). `calls` asks only after two bad PINs from a
 //! phone linked to the business holding the job's open line, on an A-attested call (D-026, D-480).
 
 use secrecy::{ExposeSecret, SecretString};
@@ -30,7 +31,7 @@ impl Readback {
         self.first_name.as_ref()
     }
 
-    /// The address up to its first comma: house number and street, never the town (CALL-005).
+    /// The address's street line: house number and street, never the town (CALL-005, D-4052).
     #[must_use]
     pub fn street(&self) -> Option<&SecretString> {
         self.street.as_ref()
@@ -43,10 +44,69 @@ fn first_word(name: &SecretString) -> Option<SecretString> {
     Some(SecretString::from(word.to_owned()))
 }
 
-/// The part of `address` before its first comma, trimmed (CALL-005).
+/// Street-type words, lower case, a trailing period dropped before the match (CALL-005, D-4052).
+const STREET_WORDS: [&str; 21] = [
+    "st",
+    "street",
+    "ave",
+    "avenue",
+    "rd",
+    "road",
+    "dr",
+    "drive",
+    "ln",
+    "lane",
+    "blvd",
+    "boulevard",
+    "way",
+    "ct",
+    "court",
+    "pl",
+    "place",
+    "cir",
+    "circle",
+    "hwy",
+    "highway",
+];
+
+/// The street line of `address`, trimmed (CALL-005, D-4052 B35): the part before its first comma;
+/// with no comma, up to and including the last street-type word ([`STREET_WORDS`], any case),
+/// else the address less a trailing ZIP and state. Never the town when the address names one.
 fn street_of(address: &SecretString) -> Option<SecretString> {
-    let street = address.expose_secret().split(',').next()?.trim();
-    (!street.is_empty()).then(|| SecretString::from(street.to_owned()))
+    let text = address.expose_secret();
+    let street = match text.split_once(',') {
+        Some((head, _)) => head.trim().to_owned(),
+        None => uncommaed_street(text),
+    };
+    (!street.is_empty()).then(|| SecretString::from(street))
+}
+
+/// The street of a one-line address with no comma (CALL-005, D-4052 B35): its words up to the last
+/// street-type word after the house number, else its words less a trailing 5-digit (or ZIP+4)
+/// ZIP and a two-letter state.
+fn uncommaed_street(text: &str) -> String {
+    let words: Vec<&str> = text.split_whitespace().collect();
+    let is_street =
+        |w: &&str| STREET_WORDS.contains(&w.trim_end_matches('.').to_lowercase().as_str());
+    if let Some(last) = words.iter().skip(1).rposition(is_street) {
+        return words[..last + 2].join(" ");
+    }
+    let mut end = words.len();
+    if end > 1 && words[end - 1].split('-').next().is_some_and(is_zip) {
+        end -= 1;
+    }
+    if end > 1
+        && words[end - 1].len() == 2
+        && words[end - 1].bytes().all(|b| b.is_ascii_alphabetic())
+    {
+        end -= 1;
+    }
+    words[..end].join(" ")
+}
+
+/// Whether `word` is a 5-digit ZIP.
+fn is_zip(word: &str) -> bool {
+    word.len() == 5 && word.bytes().all(|b| b.is_ascii_digit())
 }
 
 /// Reads contact `id`'s first name and street for the CALL-005 read-back (CALL-005, PRIV-003,
@@ -96,5 +156,48 @@ mod tests {
             Some("123 Fake St")
         );
         assert_eq!(plain(street_of(&s(" , Town"))), None);
+    }
+
+    fn street(address: &str) -> Option<String> {
+        plain(street_of(&SecretString::from(address.to_owned())))
+    }
+
+    /// D-4052 B35: a comma address keeps only the part before the comma.
+    #[test]
+    fn a_comma_address_is_cut_at_the_comma() {
+        assert_eq!(
+            street("4400 Sample Way Apt 2, Faketown, AZ 00000").as_deref(),
+            Some("4400 Sample Way Apt 2")
+        );
+    }
+
+    /// D-4052 B35: with no comma the town, state and ZIP go; the last street word ends the street.
+    #[test]
+    fn a_no_comma_address_is_cut_after_the_street_word() {
+        assert_eq!(
+            street("123 Fake St Faketown AZ 00000").as_deref(),
+            Some("123 Fake St")
+        );
+        assert_eq!(
+            street("77 north example BLVD. Lake Faketown az 00000-0000").as_deref(),
+            Some("77 north example BLVD.")
+        );
+        assert_eq!(
+            street("9 Example Court Street Faketown AZ 00000").as_deref(),
+            Some("9 Example Court Street")
+        );
+    }
+
+    /// D-4052 B35: with no street word, a trailing ZIP and state go.
+    #[test]
+    fn a_no_street_word_address_drops_the_zip_and_state() {
+        assert_eq!(
+            street("55 Testing Loop Faketown AZ 00000").as_deref(),
+            Some("55 Testing Loop Faketown")
+        );
+        assert_eq!(
+            street("55 Testing Loop").as_deref(),
+            Some("55 Testing Loop")
+        );
     }
 }
