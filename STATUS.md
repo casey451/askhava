@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T09:54:59Z by runner fa2ca136d770 (actions).
+Updated 2026-11-17T09:55:10Z by runner fa2ca136d770 (actions).
 
-**Building: T489 in progress since 08:41Z; 391 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 09:54Z; 391 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 391 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T489 claimed 08:41Z, lease until 12:50Z
+- **Lane:** idle since 09:54Z (no task in progress)
 - **Week:** 18% used, 157.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:54Z, 0 min before this update
 - **Keeper:** last ran 09:25Z, next wake 11:43Z
@@ -19,13 +19,14 @@ Updated 2026-11-17T09:54:59Z by runner fa2ca136d770 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T489 | site and server: the web chat and request pages with the con | MERGE_PENDING | 2 | 73 min | 09:54Z | PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes |
 | T202 | site: Spanish pages, the business page blocks and the requir | MERGE_PENDING | 1 | 88 min | 09:23Z |  |
 | T107 | Consent records kept 5 years, no export, opt-out rate alerts | done | 2 | 85 min | 09:00Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 2 | 52 min | 08:28Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
 | T570 | intake: a CLOSE text, a "Close which?" answer and a cancel-i | MERGE_PENDING | 1 | 39 min | 08:26Z |  |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z |  |
 | T201 | site: services and help pages, the ROC complaint page | done | 1 | 56 min | 07:22Z |  |
-| T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z | PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes |
+| T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z |  |
 | T564 | quotes, picks and intake: the LIST, text picks, lapse text a | done | 1 | 43 min | 06:47Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | resync | 1 | 2 h 21 min | 06:44Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
 | T586 | calls and privacy: TwiML text is escaped, a full number pool | done | 1 | 88 min | 06:17Z |  |
@@ -136,7 +137,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 6: T489 (lease until 2026-11-17T12:50:21Z)
 
 ## Last usage reading
-- {"task": "T202", "at": "2026-11-17T09:23:51Z", "cache_creation_input_tokens": 325477, "cache_read_input_tokens": 11155061, "input_tokens": 271, "output_tokens": 89453}
+- {"task": "T489", "at": "2026-11-17T09:54:43Z", "input_tokens": 236, "cache_creation_input_tokens": 262709, "output_tokens": 91537, "cache_read_input_tokens": 14659043}
