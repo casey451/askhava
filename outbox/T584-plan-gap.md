@@ -1,0 +1,10 @@
+---
+id: T584-plan-gap
+title: T584: plan gap reported, blocked for a plan fix
+kind: blocked
+---
+T584's worker reported that only a plan change can unblock it; the task is BLOCKED and is not retried on its unchanged prompt.
+
+PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to reach MEMBER_ADDRESS, but `queue_all` at :265 hard-marks MEMBER_MAILBOX (the member's only, main mailbox) returned first. D-4052 B30 says `emergency_test` must skip a main address that may not get notices, while T584's acceptance says the existing notice-email tests pass unchanged; both cannot hold. Evidence (worker, reproduced by the reviewer): with only the B30 emergency_test skip in app/businesses/src/notice_emails.rs, `cargo test -p askhava-integration --test business_event_emails` exits 101, 6 passed / 3 failed (td_biz_45_each_kind_is_emailed_once_in_english, _in_spanish, td_biz_45_each_person_gets_their_own_language) at business_event_emails.rs:353 "Laftly: EMERGENCY sample job card (not a real job): [] left: 0 right: 1"; on main unchanged 9 passed. Reviewer confirmed ownership in kit/tasks.json (T584 owns email_verification.rs, notice_emails.rs, deliverability_check.rs, new business_account_email_fixes.rs; business_event_emails.rs is T329's) and that no spec-compliant implementation passes (member has no other mailbox; owner fallback does not apply; check() requires exactly {MEMBER_ADDRESS}). Fix: let T584 own business_event_emails.rs and change queue_all to return a mailbox other than the member's main (or expect no emergency-test email at :318), logged in docs/decisions.md; or drop emergency_test from B30's four kinds. No commits made; B9 (settle before commit in confirm) and B31 are unblocked.
+
+Check the cited file, owner or contradiction. If the plan is wrong, change it (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T584 --plan-fix D-### --reason "..."`. If the report is mistaken, `python3 -m runner --requeue T584 --reason "..."` brings it back with the attempts it has left (D-2859).

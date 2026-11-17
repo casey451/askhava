@@ -1,22 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-17T02:26:26Z by runner 13ee51165f3b (actions).
+Updated 2026-11-17T02:26:49Z by runner 13ee51165f3b (actions).
 
 **Building: T107 in progress since 02:20Z; 378 of 556 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 378 of 556 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:20Z; lane 2: T103 claimed 02:12Z, lease until 05:12Z; lane 3: T584 claimed 02:23Z, lease until 05:23Z; lane 4: T221 claimed 01:54Z, lease until 04:54Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
+- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:20Z; lane 2: T103 claimed 02:12Z, lease until 05:12Z; lane 4: T221 claimed 01:54Z, lease until 04:54Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
 - **Week:** 11% used, 167.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:25Z, 1 min before this update
+- **Last run:** 02:26Z, 0 min before this update
 - **Keeper:** last ran 02:16Z, next wake 04:56Z
 
 ## Needs attention
+- BLOCKED T584: plan gap reported: PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to reach MEMBER_ADDRESS, but `queue_all` at :265 hard-marks MEMBER_MAILBOX (the member's only, main mailbox) returned first. D-4052 B30 says `emergency_test` must skip a main address that may not get notices, while T584's acceptance says the existing notice-email tests pass unchanged; both cannot hold. Evidence (worker, reproduced by the reviewer): with only the B30 emergency_test skip in app/businesses/src/notice_emails.rs, `cargo test -p askhava-integration --test business_event_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T584 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T584 | businesses: sign-up activation retried after a confirmed cod | BLOCKED | 1 | 3 min | 02:26Z | PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to rea |
 | T469 | server (harness): the Resend email client from settings and  | MERGE_PENDING | 1 | 99 min | 02:12Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | check_failed | 1 | 2 h 47 min | 01:23Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   0.13. |
 | T320 | ops: a check that runs on a schedule raises its alert once w | MERGE_PENDING | 2 | 78 min | 01:13Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
@@ -117,9 +119,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T107 (lease until 2026-11-17T05:20:52Z)
 - lane 2: T103 (lease until 2026-11-17T05:12:02Z)
-- lane 3: T584 (lease until 2026-11-17T05:23:35Z)
 - lane 4: T221 (lease until 2026-11-17T04:54:09Z)
 - lane 7: T586 (lease until 2026-11-17T05:01:43Z)
 
 ## Last usage reading
-- {"task": "T469", "at": "2026-11-17T02:12:32Z", "cache_creation_input_tokens": 191170, "output_tokens": 39204, "input_tokens": 117, "cache_read_input_tokens": 4165548}
+- {"task": "T584", "at": "2026-11-17T02:26:49Z", "input_tokens": 48, "cache_read_input_tokens": 763271, "cache_creation_input_tokens": 73479, "output_tokens": 9080}
