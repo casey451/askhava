@@ -21,7 +21,7 @@ use askhava_adapters::api::{
     AdapterError, Email, EmailAdapter, IdempotencyKey, VerifiedWebhook, WebhookVendor,
 };
 use askhava_core::api::brand;
-use askhava_ops::api::{NewAlert, Severity, raise_alert};
+use askhava_ops::api::{NewAlert, Severity, raise_alert, raise_kind_once};
 use askhava_privacy::api::{Field, Purpose, Reader, Vault, read_contact};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
@@ -753,9 +753,11 @@ pub async fn email_status(
 pub const WEBHOOK_GRACE: SignedDuration = SignedDuration::from_hours(1);
 
 /// Raises the [`WEBHOOKS_SILENT_ALERT`] when no provider webhook arrived in the 24 hours before
-/// `now` while emails were sent in them (SEC-051); returns whether it did. Only emails sent at
-/// least [`WEBHOOK_GRACE`] before `now` count, so an email sent minutes ago never raises it. A
-/// scheduled task calls it.
+/// `now` while emails were sent in them (SEC-051, OPS-004); returns whether it raised a new one.
+/// Only emails sent at least [`WEBHOOK_GRACE`] before `now` count, so an email sent minutes ago
+/// never raises it. A scheduled task calls it, so it raises through `ops::api::raise_kind_once`
+/// (D-3144): while webhooks stay silent one alert stays open and a later run raises none; a new
+/// one opens only after that one is resolved.
 ///
 /// # Errors
 ///
@@ -769,13 +771,8 @@ pub async fn check_webhook_silence(
     if sent == 0 || models::email_events_since(db, since).await? > 0 {
         return Ok(false);
     }
-    let alert = NewAlert {
-        kind: WEBHOOKS_SILENT_ALERT,
-        severity: Severity::High,
-        subject: None,
-    };
-    raise_alert(db, &alert)
+    let raised = raise_kind_once(db, WEBHOOKS_SILENT_ALERT, Severity::High)
         .await
         .map_err(|_| EmailError::Database)?;
-    Ok(true)
+    Ok(raised.is_some())
 }

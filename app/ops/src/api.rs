@@ -30,7 +30,7 @@ pub use crate::safe_mode::{
     SAFE_MODE_AFTER, SAFE_MODE_EVERY, SAFE_MODE_KIND, SAFE_MODE_OFF_ACTION, SAFE_MODE_ON_ACTION,
     check_safe_mode, run_safe_mode_check, safe_mode_on, schedule_safe_mode,
 };
-pub use crate::service::{EXPORT_PAGE_MAX, export_audit, is_paused, raise_alert};
+pub use crate::service::{EXPORT_PAGE_MAX, export_audit, is_paused, raise_alert, raise_kind_once};
 pub use crate::status_banner::{BannerBy, banner_shown, clear_banner, show_banner};
 
 /// The `core.task` kind of one off-database stream event; `server` registers its writer
