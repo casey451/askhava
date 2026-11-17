@@ -66,8 +66,9 @@ pub use crate::consent::{
     AUTO_REPLY_TEMPLATE, CONSENT_VERSION, CONTACT_CARD_PATH, ConsentBox, ConsentChannel,
     ConsentError, PHONE_STOPPED_KIND, RecruitingEmail, WELCOME_KIND, advertisement_line,
     auto_reply_due, consent_box, consent_wording, may_get_cards, may_recruit, may_text,
-    no_calls_line, phone_stopped, record_consent, recruiting_email, request_welcome,
-    stop_recruiting, stopped_email_line, welcome_card_line, welcome_lines, welcome_sent,
+    no_calls_line, phone_stopped, phone_version, record_consent, record_consent_for,
+    recruiting_email, request_welcome, stop_recruiting, stopped_email_line, welcome_card_line,
+    welcome_lines, welcome_sent,
 };
 pub use crate::contact_ids::{ContactIds, contact_ids_in_use};
 pub use crate::coverage_notice::{
