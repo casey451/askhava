@@ -12015,7 +12015,7 @@
    "budget": {
     "files": 14,
     "lines": 500,
-    "context_pct": 23
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -15763,6 +15763,190 @@
    "acceptance": "`app/server/tests/es_business_signup_route.rs` passes against PostgreSQL: with `lang=es` every `Screen` step of the served business sign-up renders `es_business_signup.html` in Spanish, marked as a draft for native-speaker review, with the `forms.css` link first in its `main` block; the hidden field carries `lang=es` through each `POST`; the consent box's words equal `businesses::api::consent_box`'s; without `lang=es` each step is unchanged; `tests/docs/test_required_lines.py` passes with `es_business_signup.html` among the Spanish pages it finds; `app/server/tests/business_signup_route.rs`, `tests/integration/tests/signup_screens.rs`, `tests/security/tests/auth_matrix.rs`, `app/server/tests/door_matrix.rs` and the Ally suite pass unchanged."
   },
   {
+   "id": "T570",
+   "slug": "close-by-text",
+   "title": "intake: a CLOSE text, a \"Close which?\" answer and a cancel-intent text close jobs through answer_close",
+   "goal": "Plan change D-4051 (Casey's outside code audit, item B3, Nov 16, 2026): texting CLOSE does nothing. `answer_close` (`app/intake/src/closing.rs:60`) has no production caller (its doc, `:12`, says it waits for the D-999 dispatcher), and `reply_in` (`app/intake/src/replies.rs:104`) only uses `closes()` (`:150`, which reads `close_reading(words, &[])`, so a lone number answering \"Close which?\" is not even seen) to skip the name-and-address and last-question steps, then hands the text to `receive_text`, which closes nothing. This task wires `answer_close` into `reply_in`: in an open request, and only when the text is not an opt-out or HELP (`answered_elsewhere`), a CLOSE or CERRAR text with a number or ALL, a cancel-intent message, and, while a \"Close which?\" is asked (`close_which` answer `asked`), a lone open request number or ALL go to `answer_close` inside the reply's transaction (its `db.begin()` is then a savepoint), and its texts are the reply's; a mere mention of cancelling gets the JOB-023 line through the same call; anything `answer_close` answers `Nothing` goes on as today. \"cancel\" alone is an opt-out answered by `messaging` and never closes a job (JOB-020, D-005). The result is returned through `Reply` (an existing variant or a new one); `app/server/src/inbound_text.rs` is not changed (its `opened` uses `matches!`, so a new variant needs no arm there), and `closing.rs` is not changed: `answer_close` is called as it is. Tests in the new `tests/integration/tests/close_by_text.rs`, against PostgreSQL through `intake::api::receive_raw_reply`, fake data only: \"CLOSE <n>\" closes that open job (Cancelled, with its audit row) and texts `job_closed`; \"CLOSE ALL\" with two open jobs closes both and texts `jobs_closed`; \"please cancel my request\" with one open job closes it and says so; with two open jobs it asks \"Close which?\" and closes nothing, and a following lone open number closes that one; \"cancel\" alone closes nothing; \"how do I cancel\" gets the JOB-023 line and closes nothing; a CLOSE text never reaches the name-and-address step. Update the `intake` `CLAUDE.md` (the D-999 note on `answer_close`) and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T049",
+    "T100",
+    "T517"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/replies.rs",
+    "tests/integration/tests/close_by_text.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "JOB-018",
+    "JOB-019",
+    "JOB-020",
+    "JOB-021",
+    "JOB-022",
+    "JOB-023"
+   ],
+   "tests": [
+    "TD-JOB-05"
+   ],
+   "decisions": [
+    "D-005",
+    "D-999",
+    "D-1203",
+    "D-3703",
+    "D-4051"
+   ],
+   "cites": [
+    "sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:159"
+   ],
+   "budget": {
+    "files": 2,
+    "lines": 350,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T570-close-by-text",
+   "prompt": "kit/prompts/T570.md",
+   "acceptance": "`tests/integration/tests/close_by_text.rs` passes against PostgreSQL with every listed case, and the CLOSE, \"Close which?\" answer and cancel-intent cases fail on `main` before the change (no job is closed there); every existing `intake` test and TD-JOB-05 case passes unchanged."
+  },
+  {
+   "id": "T571",
+   "slug": "safety-key-not-lost",
+   "title": "server and calls: a press of 9 on the safety call is never lost to a database error",
+   "goal": "Plan change D-4051 (Casey's outside code audit, item B15, Nov 16, 2026): the safety call's `Gather` action (`app/server/src/voice_status.rs:76` to `:94`) runs `calls::api::safety_key_once` and, when it fails (a pool or database error), only logs the error and still answers 200 with hang-up TwiML, so the homeowner's \"press 9\" opt-out (CON-035: every way she revokes consent feeds the suppression list at once) is lost, and Twilio has nothing to retry. The safety call is off until T407 turns it on, which is why T407 now depends on this task. This task makes the key durable: when the key step fails, the route queues a `calls.safety_key_retry` core task (`askhava_core::api::enqueue`, in the new `app/calls/src/safety_key_retry.rs`, exported by one line in the shared `app/calls/src/api.rs` and registered in the shared `app/server/src/lib.rs` worker registry in `calls`' block) carrying the call's ID and the digits only (no phone, no body, PRIV-016), whose handler re-runs `safety_key_once` (it takes the key once per call, so a repeat changes nothing) until it succeeds, with the core queue's retries, and raises one High `ops` alert (no phone) when it gives up; Before choosing, the worker checks in the Twilio stand-in and the vendor notes what a non-2xx answer to a `Gather` action does (a voice action is not retried like a status callback; Twilio speaks an error or calls a fallback URL) and writes the finding in the module doc. The likeliest failure, a pool acquire that fails, also fails the enqueue, and a non-2xx answer makes Twilio speak an error, not retry; so when both the key step and the enqueue fail, the route answers 200 with a bounded `<Redirect>` back to the same action URL, optionally after a short `<Pause>` of a few seconds before each redirect (method POST, carrying `Digits` and an attempt count in the query, at most 3 attempts), so Twilio posts the key again, and after the last attempt it says \"To stop texts, reply STOP to any message from us.\" before hanging up, with one High `ops` alert if one can be raised; the worker may pick the redirect, the spoken line or both after checking the stand-in, and tests what it picks. Hang-up TwiML is still returned whenever the key was taken or queued. Tests in the new `tests/integration/tests/safety_key_retry.rs`, against PostgreSQL with the stand-in, fake data only: a \"9\" whose first `safety_key_once` fails with a database error is queued (the failure is made in the test only, for example a test-created trigger on the suppression-list insert that raises once for the fake number, dropped at the end, so the step fails while the enqueue succeeds), the queued task lists the number on the suppression list, and a second run changes nothing; a key whose step succeeds queues nothing; when the step and the enqueue both fail (the pool closed in the test) the answer is the redirect (or the spoken line) and the attempt count stops at the bound; no log line or alert holds the phone. `tests/integration/tests/voice_call_plan.rs` (TD-CALL-22) passes unchanged. Update the `calls` and `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T378",
+    "T100",
+    "T517"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "security"
+   ],
+   "owns": [
+    "app/server/src/voice_status.rs",
+    "app/calls/src/safety_key_retry.rs",
+    "tests/integration/tests/safety_key_retry.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/calls.md",
+    "docs/spec/ops-recovery.md"
+   ],
+   "requirements": [
+    "CON-035",
+    "CALL-019"
+   ],
+   "tests": [
+    "TD-CALL-22"
+   ],
+   "decisions": [
+    "D-2771",
+    "D-4051"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 400,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T571-safety-key-not-lost",
+   "prompt": "kit/prompts/T571.md",
+   "acceptance": "`tests/integration/tests/safety_key_retry.rs` passes against PostgreSQL with every listed case (the double-failure case through the chosen redirect or spoken line), the database-error case failing on `main` before the change (the opt-out is lost there); `tests/integration/tests/voice_call_plan.rs` passes unchanged."
+  },
+  {
+   "id": "T572",
+   "slug": "under-13-vault-purge",
+   "title": "intake: the under-13 stop also clears the vault contact's name and address",
+   "goal": "Plan change D-4051 (Casey's outside code audit, item B27, Nov 16, 2026): INT-038 says that under 13 the request and its data are deleted, except the consent or opt-out record, but `stop_if_under_18` (`app/intake/src/conversation.rs:276` to `:330`) leaves the vault contact holding the name and address she gave, because `privacy` had no delete call (D-996). `privacy::api::purge_contact` (`app/privacy/src/purge.rs:376`, PRIV-007, D-1839) now exists: it clears the contact's name, email, address and on-site contact, its email index and every stated name, keeps the sealed phone and its homeowner-phone index (the consent and opt-out records need them), audits once, and runs as a savepoint inside the caller's transaction. This task calls it on `AgeStop::Under13`, in the stop's own transaction, right after `models::purge_request`, for the sender's contact (`msg.contact`), so a failure keeps nothing; the 13-to-17 stop keeps the contact as today (INT-038 deletes data only under 13). Nothing else changes; the doc comment's D-996 sentence is replaced. `purge_contact` clears the contact, not one request: an earlier request of the same sender (same phone, same contact) whose job is past a paid pick loses the name and address too, and the business that paid for the introduction keeps only what it was already sent; INT-038 deletes a child's data and has no paid-pick exception, so the purge runs anyway, and the stop does not cancel or change that earlier job. T103 (web chat, IN_PROGRESS when this was planned) also owns `conversation.rs`, so this task runs after it (`scripts/validate_tasks.py` orders two owners of one file) and re-reads the lines T103 changed before editing. Tests in the new `tests/integration/tests/under_13_purge.rs`, against PostgreSQL, fake data only: a homeowner who gave a fake name and address and then says \"I'm 11\" ends with the request closed, the contact's name, address and stated names gone (read through `privacy::api`), her phone and consent record kept, and one `contact_purged` audit row; \"I'm 15\" keeps the name and address; a failing purge rolls the whole stop back; a sender with an earlier request whose job is past a paid pick says \"I'm 11\" in a new request, and that contact's name and address are cleared too while the earlier job keeps its status and its paid pick. The `intake` unit tests (`app/intake/src/tests/conversation.rs`) pass unchanged. Update the `intake` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T040",
+    "T255",
+    "T432",
+    "T100",
+    "T517",
+    "T103"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/conversation.rs",
+    "tests/integration/tests/under_13_purge.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/privacy.md"
+   ],
+   "requirements": [
+    "INT-038",
+    "PRIV-007"
+   ],
+   "tests": [
+    "TD-INT-20"
+   ],
+   "decisions": [
+    "D-996",
+    "D-1839",
+    "D-4051"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 250,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T572-under-13-vault-purge",
+   "prompt": "kit/prompts/T572.md",
+   "acceptance": "`tests/integration/tests/under_13_purge.rs` passes against PostgreSQL with every listed case, the under-13 case failing on `main` before the change (the name and address remain there); `app/intake/src/tests/conversation.rs` passes unchanged."
+  },
+  {
    "id": "T103",
    "slug": "site-web-chat",
    "title": "intake: the web-chat conversation, where typing a verified mobile number is the opt-in, with its request source and new-request limit",
@@ -18594,7 +18778,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 8
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -18785,7 +18969,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 6
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -18851,7 +19035,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 6
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -19362,7 +19546,11 @@
     "T561",
     "T562",
     "T563",
-    "T564"
+    "T564",
+    "T570",
+    "T571",
+    "T572",
+    "T573"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19577,7 +19765,7 @@
    "id": "T526",
    "slug": "business-texting-stored-switch",
    "title": "server, intake, businesses and site: business texting follows the stored switch, never a constant (D-3881)",
-   "goal": "Plan change D-3881 (Fable's pre-claim checks, Nov 16, 2026): The business-texting switch is stored (`messaging.mode_state`, `migrations/0169_messaging_mode_state.sql`, read by `messaging::api::load_lines`, `app/messaging/src/mode_state.rs:82`, set by `switch_on`), but three places ignore it: `const TEXTING_ON: bool = false` in `app/server/src/business_portal.rs:64` and `app/server/src/business_signup.rs:133`, and `BUSINESS_TEXTING_ON` in `app/intake/src/cards_out.rs:68`; T202's business pages pass `false` too, because `site` may not call `messaging` (`kit/layers.json`). This task replaces each with the stored switch, failing closed: business texting counts as on only when the stored switch is on and a business sending number is configured (TXT-035's own number: a new optional `ASKHAVA_BUSINESS_NUMBER` in the shared `app/core/src/settings.rs`, passed as `load_lines`' business number); a read error, an unset number or the switch off means off; `server` and `intake` read `load_lines(db, (None, business_number))` and count texting on only when `business.texting_on` and the number is `Some`; the new `app/businesses/src/texting_switch.rs` defines `businesses::api::business_texting_on(db)` (re-exported by one line in the shared `api.rs`; `businesses` may call `messaging`), which `app/site/src/pages.rs` passes to the business pages' `texting_on`. Nothing else in those files changes. Tests in `tests/integration/tests/business_texting_switch.rs`, fake data only: with the switch off the sign-up and notice settings offer email only, card notices go by email and the business page shows the switch-off WEB-024 line; with the switch on and no business number configured, everything stays email only; with both, text is offered, the page shows the switch-on line and a consented phone gets texts; a failing read counts as off. Every TD-BIZ, TD-CON and TD-WEB case passes unchanged. Build notes go to the end of each module's `NOTES.md`; update `docs/decisions.md`. Plan change D-3882 (Fable's pre-claim checks, Nov 16, 2026): (1) The notice worker and the outbox sender also read the switch with no number (`load_lines(&mut tx, (None, None))`, `app/messaging/src/business_notices.rs:551`; `app/messaging/src/outbox_sender.rs:152`), and `Lines::sender` gives no number without one (`app/messaging/src/mode.rs:180` to `:183`), so this task owns both files and passes the configured business number to `load_lines` through a builder on `NoticeSender` and `OutboxSender`; their `new` signatures stay (`tests/integration/tests/business_notices.rs:63`, `tests/integration/tests/outbox.rs:216` call them). (2) The `site` wrapper is `businesses::api::business_texting_on(db, business_number)`, and `ASKHAVA_BUSINESS_NUMBER` joins `KEYS` in the shared `app/core/src/settings.rs`. (3) In `cards_out.rs` (`:417`, inside the card transaction) a failed switch read is an error and the task is retried, not counted as off; `CardsOutKeys::new` (`:85`) keeps its signature and gains a builder for the number. (4) Its tests file an allowed answer with a campaign reference through `messaging::api::file_business_eligibility` before `switch_on(Audience::Business)`, which T527 gates.",
+   "goal": "Plan change D-3881 (Fable's pre-claim checks, Nov 16, 2026): The business-texting switch is stored (`messaging.mode_state`, `migrations/0169_messaging_mode_state.sql`, read by `messaging::api::load_lines`, `app/messaging/src/mode_state.rs:82`, set by `switch_on`), but three places ignore it: `const TEXTING_ON: bool = false` in `app/server/src/business_portal.rs:64` and `app/server/src/business_signup.rs:133`, and `BUSINESS_TEXTING_ON` in `app/intake/src/cards_out.rs:68`; T202's business pages pass `false` too, because `site` may not call `messaging` (`kit/layers.json`). This task replaces each with the stored switch, failing closed: business texting counts as on only when the stored switch is on and a business sending number is configured (TXT-035's own number: a new optional `ASKHAVA_BUSINESS_NUMBER` in the shared `app/core/src/settings.rs`, passed as `load_lines`' business number); a read error, an unset number or the switch off means off; `server` and `intake` read `load_lines(db, (None, business_number))` and count texting on only when `business.texting_on` and the number is `Some`; the new `app/businesses/src/texting_switch.rs` defines `businesses::api::business_texting_on(db)` (re-exported by one line in the shared `api.rs`; `businesses` may call `messaging`), which `app/site/src/pages.rs` passes to the business pages' `texting_on`. Nothing else in those files changes. Tests in `tests/integration/tests/business_texting_switch.rs`, fake data only: with the switch off the sign-up and notice settings offer email only, card notices go by email and the business page shows the switch-off WEB-024 line; with the switch on and no business number configured, everything stays email only; with both, text is offered, the page shows the switch-on line and a consented phone gets texts; a failing read counts as off. Every TD-BIZ, TD-CON and TD-WEB case passes unchanged. Build notes go to the end of each module's `NOTES.md`; update `docs/decisions.md`. Plan change D-3882 (Fable's pre-claim checks, Nov 16, 2026): (1) The notice worker and the outbox sender also read the switch with no number (`load_lines(&mut tx, (None, None))`, `app/messaging/src/business_notices.rs:551`; `app/messaging/src/outbox_sender.rs:152`), and `Lines::sender` gives no number without one (`app/messaging/src/mode.rs:180` to `:183`), so this task owns both files and passes the configured business number to `load_lines` through a builder on `NoticeSender` and `OutboxSender`; their `new` signatures stay (`tests/integration/tests/business_notices.rs:63`, `tests/integration/tests/outbox.rs:216` call them). (2) The `site` wrapper is `businesses::api::business_texting_on(db, business_number)`, and `ASKHAVA_BUSINESS_NUMBER` joins `KEYS` in the shared `app/core/src/settings.rs`. (3) In `cards_out.rs` (`:417`, inside the card transaction) a failed switch read is an error and the task is retried, not counted as off; `CardsOutKeys::new` (`:85`) keeps its signature and gains a builder for the number. (4) Its tests file an allowed answer with a campaign reference through `messaging::api::file_business_eligibility` before `switch_on(Audience::Business)`, which T527 gates. Plan change D-4051 (Casey's outside code audit, item B2): T573 runs first and makes the outbox sender send business rows on the business line (the auto reply addressed to the phone's line ID), so this task's \"a consented phone gets texts\" case rests on it; this task does not change `models::due` or the business-row sending. The `OutboxSender` builder that takes the business number already exists (T573), so for the outbox sender D-3882 (1) shrinks to passing the configured `ASKHAVA_BUSINESS_NUMBER` to that builder in the shared `app/server/src/lib.rs`; `NoticeSender`'s builder is still this task's.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19591,7 +19779,8 @@
     "T490",
     "T520",
     "T527",
-    "T562"
+    "T562",
+    "T573"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -19631,7 +19820,8 @@
     "D-307",
     "D-492",
     "D-3881",
-    "D-3882"
+    "D-3882",
+    "D-4051"
    ],
    "cites": [],
    "budget": {
@@ -19842,7 +20032,11 @@
     "T561",
     "T562",
     "T563",
-    "T564"
+    "T564",
+    "T570",
+    "T571",
+    "T572",
+    "T573"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -20047,7 +20241,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20096,7 +20290,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20145,7 +20339,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20194,7 +20388,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20243,7 +20437,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20292,7 +20486,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20341,7 +20535,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20391,7 +20585,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20441,7 +20635,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20491,7 +20685,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20541,7 +20735,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20591,7 +20785,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -20641,7 +20835,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 1
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -21278,7 +21472,7 @@
     "kind": "stage-0.5-go",
     "waits_on_owner": true,
     "resume": "Casey's 'go' in the owner issue",
-    "outbox": "Go for the askhava.com page?"
+    "outbox": "Go for the laftly.com page?"
    }
   },
   {
@@ -21344,7 +21538,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 10
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -21392,7 +21586,7 @@
     "waits_on_owner": true,
     "conditional": true,
     "resume": "Casey answers 'yes' to that exact question",
-    "outbox": "May Ask Hava text your own phone?"
+    "outbox": "May Laftly text your own phone?"
    }
   },
   {
@@ -21552,7 +21746,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 20
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -21720,7 +21914,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 11
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -21788,7 +21982,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 7
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -22091,7 +22285,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 8
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -22159,7 +22353,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 17
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -22278,7 +22472,7 @@
    "budget": {
     "files": 8,
     "lines": 800,
-    "context_pct": 13
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -23990,7 +24184,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 12
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -24079,7 +24273,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 12
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -26419,7 +26613,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -33643,7 +33837,7 @@
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 27
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -33658,7 +33852,7 @@
    "id": "T407",
    "slug": "safety-call-switch-stored",
    "title": "calls, portals and server: the owner-portal safety voice call switch and its attorney approval are stored and read by the worker and the inbound text route",
-   "goal": "Plan change D-3134 (CALL-019, CALL-022, SEC-043, CON-031, TXT-024; D-275, D-384, D-491). CALL-019 places the safety voice call only while the owner-portal setting \"safety voice call\" is on, which needs Casey's recorded TCPA attorney approval (date and reference); but no table holds the switch or the approval (`SafetySwitch` is in memory only, `app/calls/src/voice.rs:183` to `:206`), the inbound text route passes `intake::api::rules::Settings::default()` (`app/server/src/lib.rs:319`), so `safety_call_on` and CON-031's call sentence are always off, and no owner page offers the switch. T330 registers the handler with a switch read that answers off. (1) `migrations/0203_calls_safety_switch.sql`: `calls.safety_switch`, append-only (each change a new row; the latest is in force): on or off, the approval date and reference (required when on), the owner who changed it and when; app role SELECT and INSERT only. The number is the free 0202 (moved up one by D-3262, one more by D-3263, one more by D-3722 and one more by D-3779): this task depends on T361 (0201) and sits just after it in `kit/tasks.json`, before T373 (0203), so its number rises in the runner's serial order (V9). (2) `app/calls/src/safety_switch.rs`, through `calls::api`: `safety_switch(conn)` gives the stored `SafetySwitch` (off with no row), and the turn-on write stores a row only when `SafetySwitch::turn_on` gives on for the approval and a compiled-in `Conditions` value in `calls` whose items this task sets true only where a test on `main` covers that CALL-022 item (each cited in its doc comment; T378's answered and key routes for `logged`); an item it cannot cite stays false and the switch cannot go on; each change writes an audit row (IDs and code names only). (3) The worker: the switch read T330 left in the shared `app/server/src/lib.rs` now reads `calls::api::safety_switch` on every run, so a change after start is honoured by the next task. (4) `app/server/src/inbound_text.rs` reads the stored switch per message and passes it as `safety_call_on`, so the consent text carries CALL-022's sentence from the moment the switch is on and never before (CON-031), and the safety call is queued only then. (5) The owner settings page (`app/portals/src/owner_portal.rs`, `app/portals/templates/owner_settings.html`, T108's; served by `app/server/src/owner_portal.rs`, T310's) shows the switch, off at launch (D-384): turning it on takes the approval date and reference and a fresh second factor (SEC-043), and a refusal names the CALL-022 items not yet met; turning it off needs the same step-up. Tests in `tests/integration/tests/safety_switch.rs` (TD-CALL-26), fake data and the stand-in Twilio only. Update the `calls`, `portals` and `server` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged (D-2440). Plan change D-3155: it runs after T151, which also owns `app/server/src/inbound_text.rs`. Plan change D-3883: this task's migration moved up one, to `0203_calls_safety_switch.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) TD-CALL-26's \"switched on with no main number set, the task completes with no call\": `run_safety_call` fails the task for a missing main number today (`app/server/src/lib.rs:1099` to `:1101`, documented at `:1081` to `:1086`), so goal item (3) also makes a missing main number complete the task with no call, replacing T330's fail. (2) The turn-on takes `&Conditions` (production passes the compiled-in constant) so TD-CALL-26 can show both a refusal and a turn-on; `Conditions` takes no new field (struct literals in unowned tests). (3) The new owner `POST` adds its section 13 row, Wired `yes`; Every owner route constant is a fixed path under `/owner/` with no path parameter; record IDs (alert, category, sign-up, press) travel in the form body (`app/server/tests/door_matrix.rs:302` to `:322` fills only `{pick}`, `{complaint}`, `{kind}`, `{object}`, `{token}`). (4) The cites `voice.rs:183` to `:206` and `lib.rs:319` above are now `:166` to `:229` and `:534`.",
+   "goal": "Plan change D-3134 (CALL-019, CALL-022, SEC-043, CON-031, TXT-024; D-275, D-384, D-491). CALL-019 places the safety voice call only while the owner-portal setting \"safety voice call\" is on, which needs Casey's recorded TCPA attorney approval (date and reference); but no table holds the switch or the approval (`SafetySwitch` is in memory only, `app/calls/src/voice.rs:183` to `:206`), the inbound text route passes `intake::api::rules::Settings::default()` (`app/server/src/lib.rs:319`), so `safety_call_on` and CON-031's call sentence are always off, and no owner page offers the switch. T330 registers the handler with a switch read that answers off. (1) `migrations/0203_calls_safety_switch.sql`: `calls.safety_switch`, append-only (each change a new row; the latest is in force): on or off, the approval date and reference (required when on), the owner who changed it and when; app role SELECT and INSERT only. The number is the free 0202 (moved up one by D-3262, one more by D-3263, one more by D-3722 and one more by D-3779): this task depends on T361 (0201) and sits just after it in `kit/tasks.json`, before T373 (0203), so its number rises in the runner's serial order (V9). (2) `app/calls/src/safety_switch.rs`, through `calls::api`: `safety_switch(conn)` gives the stored `SafetySwitch` (off with no row), and the turn-on write stores a row only when `SafetySwitch::turn_on` gives on for the approval and a compiled-in `Conditions` value in `calls` whose items this task sets true only where a test on `main` covers that CALL-022 item (each cited in its doc comment; T378's answered and key routes for `logged`); an item it cannot cite stays false and the switch cannot go on; each change writes an audit row (IDs and code names only). (3) The worker: the switch read T330 left in the shared `app/server/src/lib.rs` now reads `calls::api::safety_switch` on every run, so a change after start is honoured by the next task. (4) `app/server/src/inbound_text.rs` reads the stored switch per message and passes it as `safety_call_on`, so the consent text carries CALL-022's sentence from the moment the switch is on and never before (CON-031), and the safety call is queued only then. (5) The owner settings page (`app/portals/src/owner_portal.rs`, `app/portals/templates/owner_settings.html`, T108's; served by `app/server/src/owner_portal.rs`, T310's) shows the switch, off at launch (D-384): turning it on takes the approval date and reference and a fresh second factor (SEC-043), and a refusal names the CALL-022 items not yet met; turning it off needs the same step-up. Tests in `tests/integration/tests/safety_switch.rs` (TD-CALL-26), fake data and the stand-in Twilio only. Update the `calls`, `portals` and `server` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged (D-2440). Plan change D-3155: it runs after T151, which also owns `app/server/src/inbound_text.rs`. Plan change D-3883: this task's migration moved up one, to `0203_calls_safety_switch.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) TD-CALL-26's \"switched on with no main number set, the task completes with no call\": `run_safety_call` fails the task for a missing main number today (`app/server/src/lib.rs:1099` to `:1101`, documented at `:1081` to `:1086`), so goal item (3) also makes a missing main number complete the task with no call, replacing T330's fail. (2) The turn-on takes `&Conditions` (production passes the compiled-in constant) so TD-CALL-26 can show both a refusal and a turn-on; `Conditions` takes no new field (struct literals in unowned tests). (3) The new owner `POST` adds its section 13 row, Wired `yes`; Every owner route constant is a fixed path under `/owner/` with no path parameter; record IDs (alert, category, sign-up, press) travel in the form body (`app/server/tests/door_matrix.rs:302` to `:322` fills only `{pick}`, `{complaint}`, `{kind}`, `{object}`, `{token}`). (4) The cites `voice.rs:183` to `:206` and `lib.rs:319` above are now `:166` to `:229` and `:534`. Plan change D-4051 (Casey's outside code audit, item B15): T571 runs first, so a press of 9 is never lost to a database error once this task turns the safety call on.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -33674,7 +33868,8 @@
     "T151",
     "T432",
     "T449",
-    "T540"
+    "T540",
+    "T571"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33723,13 +33918,14 @@
     "D-3722",
     "D-3779",
     "D-3883",
-    "D-3890"
+    "D-3890",
+    "D-4051"
    ],
    "cites": [],
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 14
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -38400,7 +38596,8 @@
    "stage": "5",
    "module": null,
    "deps": [
-    "T151"
+    "T151",
+    "T570"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38570,6 +38767,71 @@
    "branch": "claude/task/T497-stand-in-sticky-faults",
    "prompt": "kit/prompts/T497.md",
    "acceptance": "`tests/contract/test_stand_in_faults.py` passes against the stand-in server; `tests/contract/test_stand_in_server.py`, `tests/contract/test_stand_in_sent_emails.py` and every other stand-in and end-to-end test pass unchanged; `control.setFaults` and `control.clearFaults` are typed and lint-clean, and every test ends with no fault set."
+  },
+  {
+   "id": "T573",
+   "slug": "business-outbox-rows-sent",
+   "title": "messaging and server: queued business texts are addressed to the phone's line ID and sent (D-2042)",
+   "goal": "Plan change D-4051 (Casey's outside code audit, item B2, Nov 16, 2026): business texts are queued and never sent. The business auto reply (`auto_reply`, `app/server/src/inbound_text.rs:1037`) stores the outbox row's `recipient` as the business ID, because `messaging::api::sender_business` (`app/messaging/src/service.rs:421`) answers only the business, while `businesses::api::may_text(business, phone)` and the notice worker (`app/messaging/src/business_notices.rs` `store_texts`) use the phone's line ID (D-2042 (1)); and `models::due` (`app/messaging/src/models.rs:372`) takes only `recipient_kind = 'homeowner'` rows, so the outbox sender (`app/messaging/src/outbox_sender.rs`, its doc `:18`) never sends a business row (D-3147 (1)). D-2042 said the gap must close before an outbox sender is registered, and one now is. This task closes it, before T526 turns business texting on from the stored switch (T526 depends on it): (1) `sender_business` (or a new `messaging::api` call beside it, exported by one line in the shared `api.rs`) also returns the linked phone's line ID, and `auto_reply` stores that line ID as the recipient; (2) `models::due` also takes queued business rows, and the sender resolves a business row's number from its line's sealed phone in `messaging`, checks `may_text` for that business and phone at send time through a gate (a refused or unlinked phone expires the row with one `messaging.text_expired` audit row, as D-3149 does for a homeowner row that can never be sent), sends it on the business line (`mode::send_on_line`, `Audience::Business`; with the business switch off or no business number the row waits, TXT-022's rule for the homeowner line). `OutboxSender` (`app/messaging/src/outbox_sender.rs:67` to `:98`) has neither a gate nor a business number today (it carries only the homeowner `number`, and `:152` calls `load_lines(.., (number, None))`): this task adds a builder on `OutboxSender` that takes a gate implementing `messaging::api::SendChecks` (`app/messaging/src/business_notices.rs:79`, whose `may_text` is the check; a narrower trait for `may_text` alone is allowed) and an optional business `SendingNumber`, which `load_lines` then gets as its business number; `new` and `register_send_due`'s callers keep their signatures, so `tests/integration/tests/outbox.rs` passes unchanged, and without the builder no business row is sent (it waits); the shared `app/server/src/lib.rs` composition passes `NoticeChecks` (`:1374`) as the gate, and production's business number stays `None` until T526 passes the configured one. This task's tests build the sender with a fake business number under the same quiet-hour, suppression and retry rules as a homeowner row; a row whose recipient is still a business ID (queued before this change) is expired, never guessed. It is a harness task because it changes `tests/integration/tests/inbound_first_contact.rs` (T256's and T317's), whose TD-BIZ-39 case pins the business ID as the recipient (`:294` to `:302`, D-2042 says so): that assertion, and only it, changes to the line ID. Tests in the new `tests/integration/tests/outbox_business_rows.rs`, against PostgreSQL with the Twilio stand-in, fake data only: with the business switch on and the sender built with a fake business number, a business notice row and an auto reply to a consented linked phone are sent once on the business line; a phone without the CON-019 box is not texted and its row expires; with the switch off the rows wait; a homeowner row's behaviour is unchanged (`tests/integration/tests/outbox.rs` passes). Update the `messaging` and `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "messaging",
+   "deps": [
+    "T480",
+    "T470",
+    "T447"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/messaging/src/models.rs",
+    "app/messaging/src/outbox_sender.rs",
+    "app/messaging/src/service.rs",
+    "app/server/src/inbound_text.rs",
+    "tests/integration/tests/inbound_first_contact.rs",
+    "tests/integration/tests/outbox_business_rows.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/businesses.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "BIZ-032",
+    "BIZ-036",
+    "CON-019",
+    "TXT-035"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-2042",
+    "D-3147",
+    "D-3149",
+    "D-4051"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 550,
+    "context_pct": 28
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T573-business-outbox-rows-sent",
+   "prompt": "kit/prompts/T573.md",
+   "acceptance": "`tests/integration/tests/outbox_business_rows.rs` passes against PostgreSQL with every listed case, the send cases failing on `main` before the change (business rows are never sent there); `tests/integration/tests/inbound_first_contact.rs` passes with only the TD-BIZ-39 recipient assertion changed to the line ID; `tests/integration/tests/outbox.rs` and `tests/integration/tests/business_notices.rs` pass unchanged."
   }
  ]
 }
