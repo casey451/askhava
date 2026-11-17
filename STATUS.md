@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T12:22:02Z by runner 4fc6998df41d (actions).
+Updated 2026-11-17T12:22:18Z by runner 7b2e31773677 (actions).
 
 **Building: T202 in progress since 12:18Z; 395 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-17T12:22:02Z by runner 4fc6998df41d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T202 claimed 12:18Z, lease until 15:18Z; lane 3: T204 claimed 12:04Z, lease until 15:04Z
 - **Week:** 19% used, 154.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:21Z, 0 min before this update
-- **Keeper:** last ran 11:58Z, next wake 12:18Z
+- **Last run:** 12:22Z, 0 min before this update
+- **Keeper:** last ran 12:22Z, next wake 15:07Z
 
 ## Needs attention
 - BLOCKED T113: plan gap reported: PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked == len(check_legal_docs.DOCUMENTS) == 10`. T113 must list `twilio-campaign.md` in `DOCUMENTS` (prompt Goal, line 9), which makes the count 11, and T113 does not own that file. Smallest plan change: let T113 own that one line and change `== 10` to `== 11` (or drop the literal). Evidence: bash scripts/smoke.sh red with exactly one failure: tests/docs/test_terms_clauses.py::test_spanish_summary_is_listed_as_a_business_document - AssertionError 11 == 10 (1 failed, 3154 passed, 11 ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T113 --plan-fix D-### --reason "..."` (D-2859)
@@ -17,7 +17,7 @@ Updated 2026-11-17T12:22:02Z by runner 4fc6998df41d (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T479 (since 2026-11-17T12:18:10Z, no attempt used; a plan change fixes it): T479: dependency T489 is DONE but its owned file app/site/src/chat.rs is not on main; T479: dependency T489 is DONE but its owned file app/site/templates/request.html is not on main; T479: dependency T489 is DONE but its owned file app/server/src/chat_codes.rs is not on main
 - PLAN GAP T594 (since 2026-11-17T12:18:10Z, no attempt used; a plan change fixes it): T594: dependency T489 is DONE but its owned file app/site/src/chat.rs is not on main; T594: dependency T489 is DONE but its owned file app/site/templates/request.html is not on main; T594: dependency T489 is DONE but its owned file app/server/src/chat_codes.rs is not on main
-- Strict plan check red: 5 problem(s) on tasks still to run (+150 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+148 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
