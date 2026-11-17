@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:03:21Z by runner 7a22e40cdfb5 (actions).
+Updated 2026-11-17T13:10:58Z by runner 946dc7b40dc4 (actions).
 
 **Building: T479 in progress since 12:28Z; 396 of 560 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 396 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T479 claimed 12:28Z, lease until 15:28Z; lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 6: T594 claimed 12:36Z, lease until 15:36Z; lane 7: T321 claimed 12:53Z, lease until 15:53Z
+- **Lane:** lane 1: T479 claimed 12:28Z, lease until 15:28Z; lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 6: T594 claimed 12:36Z, lease until 16:10Z; lane 7: T321 claimed 12:53Z, lease until 15:53Z
 - **Week:** 20% used, 148.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:03Z, 0 min before this update
+- **Last run:** 13:03Z, 7 min before this update
 - **Keeper:** last ran 13:03Z, next wake 15:31Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 5 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+151 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -92,7 +92,6 @@ Updated 2026-11-17T13:03:21Z by runner 7a22e40cdfb5 (actions).
 | T529 | payments: an owner refund has its own refund trigger (D-3883 | check_failed | 1 | 69 min | 13:32Z |  |
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 1 | 70 min | 13:31Z |  |
 | T519 | Copy check (harness): template text a requirement fixes, and | QUEUED | 1 | 49 min | 13:11Z |  |
-| T409 | server (harness): the door probe's owner actor signs in thro | done | 1 | 36 min | 13:05Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -146,7 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T479 (lease until 2026-11-17T15:28:39Z)
 - lane 3: T204 (lease until 2026-11-17T15:44:54Z)
 - lane 4: T363 (lease until 2026-11-17T15:35:51Z)
-- lane 6: T594 (lease until 2026-11-17T15:36:45Z)
+- lane 6: T594 (lease until 2026-11-17T16:10:58Z)
 - lane 7: T321 (lease until 2026-11-17T15:53:04Z)
 
 ## Last usage reading
