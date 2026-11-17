@@ -1,23 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-17T15:40:50Z by runner a44660021dec (actions).
+Updated 2026-11-17T15:41:34Z by runner 774d33861a6a (actions).
 
-**Building: T479 in progress since 15:29Z; 399 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T491 in progress since 15:41Z; 399 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 399 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T479 claimed 15:29Z, lease until 18:29Z; lane 6: T595 claimed 15:33Z, lease until 18:33Z
-- **Week:** 22% used, 148.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:40Z, 0 min before this update
+- **Lane:** lane 1: T491 claimed 15:41Z, lease until 18:41Z; lane 2: T479 claimed 15:29Z, lease until 18:29Z; lane 6: T595 claimed 15:33Z, lease until 18:33Z
+- **Week:** 22% used, 147.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:41Z, 0 min before this update
 - **Keeper:** last ran 15:40Z, next wake 18:31Z
 
 ## Needs attention
-- PLAN GAP T104 (since 2026-11-17T15:25:02Z, no attempt used; a plan change fixes it): T104: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T104: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T104: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T104: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T104: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- PLAN GAP T115 (since 2026-11-17T15:25:02Z, no attempt used; a plan change fixes it): T115: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T115: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T115: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T115: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T115: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- PLAN GAP T491 (since 2026-11-17T15:33:15Z, no attempt used; a plan change fixes it): T491: dependency T471 is DONE but its owned file tests/integration/tests/pick_moved_text.rs is not on main
-- Strict plan check red: 6 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+155 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -126,7 +123,7 @@ Updated 2026-11-17T15:40:50Z by runner a44660021dec (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T15:28:33Z (week)): week: 45.9M used, 148.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T05:19:41Z.
+- Pacing (session_reading 2026-11-17T15:40:23Z (week)): week: 46.7M used, 147.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T06:24:09Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -141,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T491 (lease until 2026-11-17T18:41:21Z)
 - lane 2: T479 (lease until 2026-11-17T18:29:29Z)
 - lane 6: T595 (lease until 2026-11-17T18:33:15Z)
 
