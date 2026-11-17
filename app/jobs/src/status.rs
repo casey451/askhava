@@ -197,6 +197,14 @@ impl JobStatus {
         matches!(self, Self::Open | Self::NoQuotesYet | Self::QuotesReady)
     }
 
+    /// True for Quotes ready only, the status in which a newly shown quote asks for the
+    /// quote-count update text (TXT-017, D-4052): the first quote's text is TXT-016's, and no
+    /// update follows a pick (Awaiting confirm, TXT-042).
+    #[must_use]
+    pub const fn gets_count_updates(self) -> bool {
+        matches!(self, Self::QuotesReady)
+    }
+
     /// True for Quotes ready and Awaiting confirm, the statuses in which the homeowner may pick or
     /// re-pick a quote, on the page or by text, until the picked business taps Confirm (PICK-012,
     /// PICK-032, PICK-045, D-1516). The quote page's Pick buttons, the review step and the final
