@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T21:03:27Z by runner f358ca5f8d4b (actions).
+Updated 2026-11-17T21:03:50Z by runner f358ca5f8d4b (actions).
 
 **Building: T104 in progress since 20:59Z; 409 of 570 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -87,7 +87,6 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | BLOCKED | 1 | 5 min | 21:38Z |  |
 | T111 | Draft homeowner and business terms with every required claus | QUEUED | 2 | 66 min | 21:28Z |  |
 | T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 1 | 14 min | 21:22Z | PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `paymen |
-| T102 | site: home and how-it-works pages with the footer, tagline,  | done | 1 | 46 min | 21:03Z |  |
 
 ### Plan and harness merges on main
 - none
