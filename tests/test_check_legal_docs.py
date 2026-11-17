@@ -183,6 +183,52 @@ def test_broken_drafts_fail(
     assert any(expected in e for e in errors), errors
 
 
+@pytest.mark.parametrize(
+    "planted",
+    [
+        "Early joiners get a 6-month price lock.",
+        "Your PRICE-LOCK starts at sign-up.",
+        "Sign up now to lock in your rate.",
+        "Join today and lock in the current fees.",
+        "Pay our founding rate.",
+        "You keep grandfathered pricing.",
+        "Your rate never goes up.",
+        "Your rate is locked for 12 months.",
+        "Lock your rate today.",
+        "Ask about our rate lock.",
+        "Enjoy locked-in pricing.",
+        "Your fees are locked in.",
+        "Sign up to lock in today's rates.",
+        "Ask for founding member pricing.",
+    ],
+)
+@pytest.mark.parametrize("name", ["business-terms.md", "homeowner-terms.md"])
+def test_price_lock_wording_fails(tmp_path: Path, name: str, planted: str) -> None:
+    """WORD-032, D-1494, D-4051: no public draft says or implies that joining early locks in prices."""
+    root = copy_repo(tmp_path)
+    path = root / LEGAL / name
+    path.write_text(path.read_text(encoding="utf-8") + f"\n{planted}\n", encoding="utf-8")
+    errors = check_legal_docs.run(root).errors
+    assert any("joining early locks in prices (WORD-032)" in e for e in errors), errors
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "Fees follow the published schedule, and a change needs your OK first.",
+        "We may lock your account.",
+    ],
+)
+def test_the_published_schedule_sentence_passes(tmp_path: Path, sentence: str) -> None:
+    """WORD-032: BIZ-030's "Fees follow the published schedule" and an account lock are no price lock
+    (TD-WORD-33's passing case)."""
+    root = copy_repo(tmp_path)
+    path = root / LEGAL / "business-terms.md"
+    added = f"\n{sentence}\n"
+    path.write_text(path.read_text(encoding="utf-8") + added, encoding="utf-8")
+    assert not any("WORD-032" in e for e in check_legal_docs.run(root).errors)
+
+
 def test_phrase_must_be_the_spec_wording(tmp_path: Path) -> None:
     """A listed phrase that drifts from its spec requirement fails even if the draft matches."""
     root = copy_repo(tmp_path)

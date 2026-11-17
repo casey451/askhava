@@ -11,6 +11,7 @@ Fails (exit 1) unless:
   spec phrases quoted to ban them are allowed;
 - business documents never frame the fee as a license or data access (TERMS-027);
 - homeowner documents never ask for a reply of OK or YES to agree (D-419);
+- no document says or implies that joining early locks in prices (WORD-032, D-1494, D-4051);
 - any arbitration text sits under a heading marked OPTIONAL and OFF.
 
 Every phrase that names the brand is a template over scripts/brand.py's tokens ({brand},
@@ -340,6 +341,23 @@ HOMEOWNER_BANNED: tuple[tuple[re.Pattern[str], str], ...] = (
         "asks for a reply of OK or YES to agree (D-419)",
     ),
 )
+# WORD-032, D-1494: there is no early-joiner price lock, so no draft may say or imply one. Here because
+# T218's phrase scan, which also covers docs/legal, was not built while the business terms were drafted (D-4051).
+PRICE_LOCK_BANNED: tuple[tuple[re.Pattern[str], str], ...] = tuple(
+    (re.compile(p, re.IGNORECASE), "joining early locks in prices (WORD-032)")
+    for p in (
+        r"\bprice[- ]?locks?\b",
+        r"\b(?:rates?|prices?|pricing|fees?)[- ]locks?\b",
+        r"\b(?:rates?|prices?|pricing|fees?)\s+(?:is|are|stays?|will\s+be)\s+locked\b",
+        r"\blocked[- ]in\s+(?:rates?|prices?|pricing|fees?)\b",
+        r"\block(?:s|ed|ing)?\s+(?:in\s+)?(?:your|the|their|its|our|today's|a)\s+(?:current\s+)?(?:rates?|prices?|pricing|fees?)\b",
+        r"\block(?:s|ed|ing)?\s+in\s+(?:current\s+)?(?:rates?|prices?|pricing|fees?)\b",
+        r"\bfounding[- ](?:rates?|prices?|pricing|fees?)\b",
+        r"\bfounding[- ](?:members?|business(?:es)?)\s+(?:rates?|prices?|pricing)\b",
+        r"\bgrandfathered\s+(?:rates?|prices?|pricing|fees?)\b",
+        r"\b(?:rates?|prices?|fees?)\s+(?:will\s+)?never\s+go(?:es)?\s+up\b",
+    )
+)
 ARBITRATION = re.compile(r"arbitrat", re.IGNORECASE)
 HEADING = re.compile(r"^#{1,6} ")
 
@@ -419,6 +437,7 @@ def check_phrases(
 def check_banned(name: str, text: str, alone: tuple[tuple[re.Pattern[str], str], ...] = ()) -> list[str]:
     patterns = (
         BANNED
+        + PRICE_LOCK_BANNED
         + alone
         + (BUSINESS_BANNED if name in BUSINESS_DOCUMENTS else ())
         + (HOMEOWNER_BANNED if name in HOMEOWNER_DOCUMENTS else ())
