@@ -279,9 +279,10 @@ pub fn pin_heard(wait: PinWait, first: Option<u32>, second: Option<u32>) -> PinH
 /// CALL-013, CALL-023, D-385: the PIN prompt's TwiML, the reply to the calling side's own webhook
 /// only, so nothing plays to the other party: the spoken prompt inside a `Gather` that waits
 /// `wait` seconds for 4 digits, the same prompt once more, then [`PIN_GOODBYE`] and a hang-up.
-/// `action` is the app's own path that receives the digits. No `Play`, so no tone-only prompt.
+/// `action` is the app's own path that receives the digits, XML-escaped (D-4052). No `Play`, so no tone-only prompt.
 #[must_use]
 pub fn pin_prompt_twiml(wait: PinWait, action: &str) -> String {
+    let action = xml_escape(action);
     let gather = format!(
         "<Gather input=\"dtmf\" numDigits=\"4\" timeout=\"{}\" action=\"{action}\">\
          <Say>{PIN_PROMPT}</Say></Gather>",
@@ -298,12 +299,13 @@ pub const READBACK_CONFIRM: &str = "If this is the job you are calling about, pr
 
 /// CALL-005, CALL-023, D-026: the read-back's TwiML, the reply to the calling side's own webhook
 /// only: her first name and street, then [`READBACK_CONFIRM`] in a `Gather` for one digit posted
-/// to `action`, then a hang-up. Both values are XML-escaped. `None` when either is missing. The
+/// to `action`, then a hang-up. Both values and `action` are XML-escaped. `None` when either is missing. The
 /// result holds her first name and street: answer it, never log it (PRIV-016).
 #[must_use]
 pub fn readback_twiml(words: &Readback, wait: PinWait, action: &str) -> Option<SecretString> {
     let name = xml_escape(words.first_name()?.expose_secret());
     let street = xml_escape(words.street()?.expose_secret());
+    let action = xml_escape(action);
     Some(SecretString::from(format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather input=\"dtmf\" \
          numDigits=\"1\" timeout=\"{}\" action=\"{action}\"><Say>{name}, {street}. \
@@ -318,8 +320,10 @@ pub fn hangup_twiml() -> String {
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>".to_owned()
 }
 
-/// `text` with the five XML special characters escaped.
-fn xml_escape(text: &str) -> String {
+/// `text` with the five XML special characters escaped: the one helper every TwiML builder in this
+/// crate runs each interpolated word, line and URL through (D-4052 B19). A value with none of the
+/// five comes back unchanged, so today's TwiML stays byte for byte the same.
+pub(crate) fn xml_escape(text: &str) -> String {
     text.chars()
         .map(|c| match c {
             '&' => "&amp;".to_owned(),
