@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T18:29:34Z by runner db201a48b809 (actions).
+Updated 2026-11-17T18:34:41Z by runner 339f0a35397d (actions).
 
-**Building: T605 in progress since 18:29Z; 404 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T605 in progress since 18:29Z; 405 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 404 of 570 build tasks (owner gates not counted)
+- **Tasks done:** 405 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T605 claimed 18:29Z, lease until 21:29Z; lane 3: T528 claimed 18:27Z, lease until 21:27Z
 - **Week:** 25% used, 143.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:28Z, 1 min before this update
+- **Last run:** 18:29Z, 4 min before this update
 - **Keeper:** last ran 18:27Z, next wake 18:47Z
 
 ## Needs attention
@@ -28,7 +28,7 @@ Updated 2026-11-17T18:29:34Z by runner db201a48b809 (actions).
 | T528 | ops: the alert, audit-row and digest-row readers and writers | BLOCKED | 1 | 24 min | 16:50Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
 | T595 | server and site: a same-site web chat POST passes its CSRF c | MERGE_PENDING | 1 | 45 min | 16:19Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | done | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
-| T113 | Draft the Twilio campaign description from the real template | MERGE_PENDING | 2 | 35 min | 15:39Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
+| T113 | Draft the Twilio campaign description from the real template | done | 2 | 35 min | 15:39Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
 | T471 | picks and intake: her "backup has your pick" text on every p | done | 1 | 47 min | 14:20Z |  |
 | T321 | messaging: the consent-purge functions, the inbound-text clo | done | 1 | 49 min | 13:42Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | done | 2 | 94 min | 13:39Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
@@ -91,8 +91,8 @@ Updated 2026-11-17T18:29:34Z by runner db201a48b809 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 336 of 733 (45.8%) · partial 323 · unstarted 74
-**Tasks merged (throughput only):** 404 of 570
+**Requirements verified:** 337 of 733 (46.0%) · partial 326 · unstarted 70
+**Tasks merged (throughput only):** 405 of 570
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -106,14 +106,14 @@ Updated 2026-11-17T18:29:34Z by runner db201a48b809 (actions).
 | job-cards | 18 | 6 | 0 | 24 |
 | licensing | 40 | 8 | 0 | 48 |
 | lifecycle | 27 | 1 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
+| messaging | 25 | 19 | 1 | 45 |
 | ops-recovery | 1 | 27 | 26 | 54 |
 | privacy | 14 | 15 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 37 | 19 | 0 | 56 |
 | recurring | 8 | 1 | 2 | 11 |
 | security | 12 | 38 | 5 | 55 |
-| terms | 12 | 17 | 6 | 35 |
+| terms | 12 | 20 | 3 | 35 |
 | website | 1 | 23 | 4 | 28 |
 | wording | 3 | 13 | 16 | 32 |
 
@@ -128,7 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 47 of 178 done
+- stage 5: 48 of 178 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
