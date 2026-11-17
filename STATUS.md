@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-17T00:06:31Z by runner 7b601a2f6a07 (actions).
+Updated 2026-11-17T00:14:03Z by runner 8fb25c182a02 (actions).
 
-**Building: T103 in progress since 00:02Z; 376 of 541 done; week 7% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T103 in progress since 00:02Z; 377 of 541 done; week 7% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 376 of 541 build tasks (owner gates not counted)
+- **Tasks done:** 377 of 541 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:02Z; lane 2: T469 claimed 23:44Z, lease until 02:44Z; lane 4: T481 claimed 22:37Z, lease until 02:57Z; lane 6: T320 claimed 23:55Z, lease until 02:55Z; lane 7: T221 claimed 22:36Z, lease until 01:36Z
 - **Week:** 7% used, 177.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:06Z, 0 min before this update
+- **Last run:** 00:06Z, 7 min before this update
 - **Keeper:** last ran 00:06Z, next wake 01:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 15 problem(s) on tasks still to run (+136 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+137 on DONE tasks); first: T116: stored context_pct 8% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T111 | Draft homeowner and business terms with every required claus | MERGE_PENDING | 4 | 34 min | 23:57Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
+| T111 | Draft homeowner and business terms with every required claus | done | 4 | 34 min | 23:57Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
 | T373 | businesses: changing a phone's number ends that phone's text | MERGE_PENDING | 1 | 74 min | 23:55Z |  |
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | QUEUED | 2 | 89 min | 23:36Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 3 | 37 min | 22:10Z |  |
@@ -71,14 +71,14 @@ Updated 2026-11-17T00:06:31Z by runner 7b601a2f6a07 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 327 of 733 (44.6%) · partial 274 · unstarted 132
-**Tasks merged (throughput only):** 376 of 541
+**Requirements verified:** 328 of 733 (44.7%) · partial 292 · unstarted 113
+**Tasks merged (throughput only):** 377 of 541
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 21 | 10 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 22 | 33 | 3 | 58 |
+| businesses | 23 | 33 | 2 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
@@ -93,7 +93,7 @@ Updated 2026-11-17T00:06:31Z by runner 7b601a2f6a07 (actions).
 | quotes-pick | 36 | 19 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
 | security | 11 | 39 | 5 | 55 |
-| terms | 1 | 2 | 32 | 35 |
+| terms | 1 | 20 | 14 | 35 |
 | website | 0 | 14 | 14 | 28 |
 | wording | 2 | 9 | 21 | 32 |
 
@@ -108,7 +108,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 19 of 149 done
+- stage 5: 20 of 149 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
