@@ -6693,3 +6693,4 @@
 - 2026-11-17T21:15:25Z runner 932e38ca7258 (actions): {}
 - 2026-11-17T21:15:39Z runner 932e38ca7258 (actions): {}
 - 2026-11-17T21:24:29Z runner 2c331d907e11 (actions): {"T603": "QUEUED -> IN_PROGRESS"}; T603 estimated 409k tokens (calibrated); week has 133.3M left (no five-hour budget, D-3056) after 700k still running in another lane (session_reading 2026-11-17T21:15:25Z (week)); running to the limit (model window, D-2225), claimed
+- 2026-11-17T21:27:47Z runner 051904e6de90 (manual): {"T115": "BLOCKED -> QUEUED"}
