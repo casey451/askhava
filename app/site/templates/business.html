@@ -1,0 +1,112 @@
+{% extends "site_layout.html" %}
+{#- The business page, /business (T202; WEB-018, WEB-020, WEB-021, WEB-024, WEB-025, WORD-002,
+    WORD-017, BIZ-030, REC-009, D-3880, D-4044). Every number comes from the spec: the fees from the
+    fee tiers (`payments::api::Tier`), ongoing services count as four months. One fake sample card per
+    switched-on trade; the city-license guide shows on no-license cards, each part only while its
+    setting is set. A switched-off trade shows its waitlist count. WEB-024's line follows
+    `texting_on`, which the handler passes as false until T526 (D-3881). `facts.old_name` is the brand
+    file's forbidden_alone word, never typed (D-4044). Spanish twin: es_business.html. -#}
+{% block title %}For businesses{% endblock %}
+{% block content %}
+{%- let brand = askhava_core::api::brand().display_name() %}
+<h1>Get Havasu job requests. Pay only when a homeowner picks you.</h1>
+<p>A Havasu homeowner tells us what needs fixing. If it's your kind of work, you get a job card with the details. Read it, then decide if you want to quote.</p>
+<p data-fixed="WORD-017">You quote once. No bidding rounds, no paid placement.</p>
+<p data-fixed="WORD-017">Every card says how many businesses got it.</p>
+<p><a href="/b/signup">Sign up free</a></p>
+<p lang="es"><a href="/es/business">Esta página en español</a></p>
+
+<h2>How you get job requests</h2>
+{%- if texting_on %}
+<p data-fixed="WEB-024">Choose how you get job requests and picks: email, text or both. {{ brand }} never calls you with a recording.</p>
+{%- else %}
+<p data-fixed="WEB-024">Job requests and picks come by email. We don't text or call businesses.</p>
+{%- endif %}
+
+<h2>How you're charged</h2>
+<ul>
+<li data-fixed="BIZ-030">Free to join. Pay only when you confirm a pick: ${{ facts.fees.small }} / ${{ facts.fees.medium }} / ${{ facts.fees.large }} by job size. Refund if you can't reach them.</li>
+<li data-fixed="BIZ-030">Picks must be confirmed within 4 business hours (8 a.m. to 8 p.m., every day), or within 60 minutes for an emergency job. If you check email only once or twice a day, add a backup address for someone who checks more often.</li>
+<li data-fixed="BIZ-030">It's an introduction fee for a homeowner who chose you.</li>
+<li data-fixed="BIZ-030">You pay one fixed fee when you confirm a pick: ${{ facts.fees.small }}, ${{ facts.fees.medium }} or ${{ facts.fees.large }} by job size. It's not a share of the job. If you call twice inside the homeowner's window and can't reach them, the refund rule gives the fee back without you asking.</li>
+<li data-fixed="BIZ-030">It's a fixed introduction fee, never a share of the job, and it doesn't depend on the work being done or paid for.</li>
+<li data-fixed="WORD-002">{{ brand }} is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; {{ brand }} doesn't direct, schedule, supervise or pay for the work.</li>
+<li data-fixed="BIZ-030">The homeowner sees every quote and picks one business: you. It isn't shared with anyone else.</li>
+<li data-fixed="BIZ-030">A new fee never applies until you accept it.</li>
+<li data-fixed="BIZ-030">Repeat picks from the same homeowner are free for 180 days after the job closes.</li>
+<li data-fixed="BIZ-030">Fees follow the published schedule, and a change needs your OK first.</li>
+<li data-fixed="BIZ-030">Statements download as CSV.</li>
+<li data-fixed="BIZ-030">If many picks in your trade end without a hire, the {{ brand }} owner reviews it and may add a credit.</li>
+</ul>
+
+<h2>Fees by job size</h2>
+<div role="region" tabindex="0" aria-label="Fees by job size">
+<table>
+<caption>The introduction fee for each job size</caption>
+<thead><tr><th scope="col">Your quote</th><th scope="col">Introduction fee</th></tr></thead>
+<tbody>
+<tr><td>Under $500</td><td>${{ facts.fees.small }}</td></tr>
+<tr><td>$500 to $1,500. Example: a $150-a-month pool service counts as $600.</td><td>${{ facts.fees.medium }}</td></tr>
+<tr><td>Over $1,500</td><td>${{ facts.fees.large }}</td></tr>
+</tbody>
+</table>
+</div>
+<p>For ongoing work like pool service, we count four months of the monthly price. The fee never goes over ${{ facts.fees.medium }}.</p>
+<p data-fixed="WEB-005">Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens.</p>
+
+<h2>Sample job cards</h2>
+<p>These cards are made up to show what you get. There is one for each open trade.</p>
+{%- for card in facts.cards %}
+<section class="sample-card" aria-labelledby="sample-{{ card.code }}">
+<h3 id="sample-{{ card.code }}">{{ card.name }}</h3>
+<ul>
+<li>Job: a sample request, made up for this page</li>
+<li>Area: Lake Havasu City</li>
+<li>When: in the next week</li>
+<li>Sent to 3 businesses</li>
+</ul>
+{%- if card.guide && facts.guide.shown() %}
+<p>If you work inside Lake Havasu City limits, you may need a city business license.</p>
+{%- if let Some(cost) = facts.guide.cost %}
+<p>Cost: {{ cost }}</p>
+{%- endif %}
+{%- if let Some(time) = facts.guide.time %}
+<p>Time to get it: {{ time }}</p>
+{%- endif %}
+{%- if let Some(url) = facts.guide.url %}
+<p><a href="{{ url }}">The city's business license page</a></p>
+{%- endif %}
+{%- endif %}
+</section>
+{%- endfor %}
+{%- if !facts.later.is_empty() %}
+
+<h2>Trades opening later</h2>
+<ul>
+{%- for trade in facts.later %}
+<li>{{ trade.name }}: <span data-fixed="WEB-020">Opens when there are enough requests; {{ trade.waiting }} businesses waiting.</span></li>
+{%- endfor %}
+</ul>
+{%- endif %}
+
+<h2>Who runs {{ brand }}</h2>
+<p>{{ brand }} is run by {{ askhava_core::api::brand().legal_name() }}, a Lake Havasu City business. Its owner lives in Havasu.</p>
+{%- if let Some(address) = facts.who.mailing_address %}
+<p>Mailing address: {{ address }}</p>
+{%- endif %}
+{%- if let Some(url) = facts.who.record_url %}
+<p><a href="{{ url }}">{{ askhava_core::api::brand().legal_name() }} on the Arizona Corporation Commission site</a></p>
+{%- endif %}
+{%- if let Some(number) = facts.who.city_license %}
+<p>Lake Havasu City business license: {{ number }}</p>
+{%- endif %}
+<p>Help email: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
+<p data-fixed="WEB-021">The owner has a full-time day job. Sign-up reviews are usually answered within 4 days, help and charge questions usually within 2 days, and this page shows when the owner is away.</p>
+
+<h2>Is {{ brand }} part of a local business with {{ facts.old_name }} in its name?</h2>
+<p data-fixed="WEB-025">{{ brand }} isn't connected to any business with "{{ facts.old_name }}" in its name.</p>
+
+<h2>More for businesses</h2>
+<p><a href="/business/help">Help for businesses</a></p>
+<p><a href="/b/signup">Sign up free</a></p>
+{% endblock %}

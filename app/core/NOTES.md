@@ -104,3 +104,4 @@
 - [SEC-044] (task 303) D-3962: `ASKHAVA_OWNER_BOOTSTRAP_TOKEN` is a known settings key (read only by `server bootstrap-owner`), so `start_up()` no longer refuses the bootstrap command's own token.
 - [FEE-046] (task 477) `settings.rs`: `ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS`, optional, default 860, 0 to 10,000, else `Invalid` naming the key; `Settings::sales_tax_set_aside_basis_points` (D-3922).
 - [WEB-021 WEB-028] (task 102) `settings.rs`: `ASKHAVA_HOME_NUMBERS_MIN_JOBS` (whole number above 0, default 50), `ASKHAVA_LLC_RECORD_URL` and `ASKHAVA_CITY_BUSINESS_LICENSE_NUMBER` (optional, trimmed), read by `site::api::SitePages` (D-3995).
+- [WEB-020] (task 202) `settings.rs`: `ASKHAVA_CITY_LICENSE_COST`, `ASKHAVA_CITY_LICENSE_TIME` and `ASKHAVA_CITY_LICENSE_URL` (optional, trimmed), read by `Settings::city_license_guide` in that order for the business page's city-license guide (D-3880).

@@ -7,9 +7,9 @@
 //! `cancelled` with `end_reason` `cant_take` ([`cant_take`]): no fee is charged (nothing was
 //! confirmed), the ended pick is the record, and nothing counts it against the business. The pick
 //! then moves at once to the homeowner's backup (`backup_choice`, PICK-047); with no backup and
-//! no other pick waiting the job goes back to Quotes ready. Her PICK-047 text is the backup
-//! move's; with no backup, and the job not paused, her PICK-046 text event is queued here after
-//! that move, at the job's new version, as `pick_ended` queues it (D-3722).
+//! no other pick waiting the job goes back to Quotes ready. After that move her PICK-047 text
+//! event (a moved pick) or, with the job not paused, her PICK-046 one (no backup) is queued here
+//! at the job's new version, as `pick_ended` queues them (D-3722, D-3750).
 //!
 //! [`end_for_fee_terms`] (T467; D-1871 (3), D-3722) ends a waiting pick the same way with the
 //! reason `fee_terms_changed` when the owner switched the fee mode after the pick: only while the
@@ -26,7 +26,7 @@ use sqlx::types::Uuid;
 
 use crate::backup_choice::{Backup, backup_choice};
 use crate::models::{self, PicksError};
-use crate::pick_ended::queue_lapsed_text;
+use crate::pick_ended::{pick_business, queue_backup_text};
 use crate::status::{PickStatus, awaits_confirm};
 
 /// PICK-050, D-3024: the on-domain address of pick `pick`'s "Can't take it" page: the pick ID
@@ -62,8 +62,8 @@ pub async fn cant_take_job(
 
 /// PICK-050, PICK-047, PICK-046, D-446: inside the caller's transaction, ends waiting pick `pick`
 /// of `job` at once as `cant_take` (no fee, never counted against the business) and moves it to
-/// the backup she named ([`Backup::Moved`]); [`Backup::NoBackup`] also queues her PICK-046 text
-/// event (not on a paused job). With no pick waiting after it, the job returns from Awaiting
+/// the backup she named ([`Backup::Moved`], queuing her PICK-047 text event); [`Backup::NoBackup`]
+/// queues her PICK-046 text event (not on a paused job). With no pick waiting after it, the job returns from Awaiting
 /// confirm to Quotes ready. `paused` is the job's homeowner pause (CON-029). A pick no longer
 /// waiting is [`Backup::Done`].
 ///
@@ -86,7 +86,7 @@ pub async fn cant_take(
 /// only when the job is in Awaiting confirm and the pick's stored fee has another mode than the
 /// terms in force, and `payments` ended the pick's intent because no charge of it may still
 /// succeed, ends the pick as `cancelled` with `fee_terms_changed` (no fee, never `expired`, never
-/// counted against the business), moves it to her backup or queues her PICK-046 text, as
+/// counted against the business), moves it to her backup with her PICK-047 text or queues her PICK-046 text, as
 /// [`cant_take`] does. Every other case changes nothing and is [`Backup::Done`].
 ///
 /// # Errors
@@ -123,9 +123,10 @@ pub async fn end_for_fee_terms(
     end_waiting(tx, (pick, job), "fee_terms_changed", paused, (actor, at)).await
 }
 
-/// PICK-050, PICK-047, PICK-046, D-3722: ends waiting pick `pick` as `cancelled` with `reason`,
-/// moves it to her backup, returns the job to Quotes ready when no pick waits, and only after
-/// that move, with no backup and no pause, queues her PICK-046 text at the job's new version.
+/// PICK-050, PICK-047, PICK-046, D-3722, D-3750: ends waiting pick `pick` as `cancelled` with
+/// `reason`, moves it to her backup, returns the job to Quotes ready when no pick waits, and only
+/// after that move queues her PICK-047 text (moved) or, with no pause, her PICK-046 text (no
+/// backup) at the job's new version.
 async fn end_waiting(
     tx: &mut PgConnection,
     (pick, job): (Uuid, Uuid),
@@ -146,17 +147,7 @@ async fn end_waiting(
             Err(_) => return Err(PicksError::Job),
         }
     }
-    if backup == Backup::NoBackup && !paused {
-        let business = business_of(tx, pick).await?;
-        queue_lapsed_text(tx, (job, pick, business), at).await?;
-    }
+    let business = pick_business(tx, pick).await?;
+    queue_backup_text(tx, (job, pick, business), (backup, paused), at).await?;
     Ok(backup)
-}
-
-/// The business of pick `pick`, read from its own row.
-async fn business_of(tx: &mut PgConnection, pick: Uuid) -> Result<Uuid, PicksError> {
-    sqlx::query_scalar!("SELECT business_id FROM picks.pick WHERE id = $1", pick)
-        .fetch_one(tx)
-        .await
-        .map_err(|_| PicksError::Database)
 }

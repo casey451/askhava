@@ -14,8 +14,8 @@ use askhava_adapters::api::{
     TwilioVerify, twilio_clients,
 };
 use askhava_core::api::{
-    Brand, Clock, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging,
-    install_brand, request_span,
+    Brand, ClientIpPolicy, Clock, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock,
+    init_logging, install_brand, request_span,
 };
 use askhava_intake::api::JobTextKeys;
 use askhava_intake::api::rules::Settings as IntakeSettings;
@@ -534,7 +534,8 @@ pub(crate) fn terms_version() -> String {
 /// The page pick's keys (T246, D-1516), built from `settings` and `pairs` as [`job_text_keys`]
 /// builds the sender's (D-1302): with both vault keys, the Verify client from
 /// `adapters::api::twilio_clients`, the vault, a strong `ASKHAVA_ID_SECRET` and the compiled-in
-/// homeowner Terms; with neither, `None` in dev and CI (the page sends nothing and says so) and an
+/// homeowner Terms, and the client-IP policy (`ASKHAVA_CLIENT_IP_HEADER`, `ASKHAVA_PROXIED_HOSTS`)
+/// the per-IP code limits read (SEC-014, SEC-040, D-3144); with neither, `None` in dev and CI (the page sends nothing and says so) and an
 /// error in the test and live projects; one key without the other is an error everywhere.
 ///
 /// # Errors
@@ -557,10 +558,12 @@ where
         .map(|(_, v)| SecretString::from(v.trim().to_owned()))
         .ok_or_else(|| io::Error::other("missing ASKHAVA_ID_SECRET"))?;
     IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
+    let client_ip = ClientIpPolicy::from_pairs(pairs.clone()).map_err(io::Error::other)?;
     let twilio = TwilioConfig::from_settings(settings, pairs).map_err(io::Error::other)?;
     let (_, _, verify) = twilio_clients(&twilio).map_err(io::Error::other)?;
     let terms = (terms_version(), HOMEOWNER_TERMS);
-    Ok(Some(PickCodeKeys::new(verify, vault, id_secret, terms)))
+    let keys = PickCodeKeys::new(verify, vault, id_secret, terms);
+    Ok(Some(keys.with_client_ip(client_ip)))
 }
 
 /// The vault from `VAULT_KEY` and `VAULT_INDEX_KEY` in `pairs` (D-1302, D-1306): with neither,
