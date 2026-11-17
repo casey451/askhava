@@ -34,9 +34,7 @@
 <input type="hidden" name="chat" value="{{ turn.chat }}">
 <input type="hidden" name="message" value="{{ message }}">
 <input type="hidden" name="g" value="{{ turn.g }}">
-{%- for s in turn.said %}
-<input type="hidden" name="{% if s.ours %}us{% else %}you{% endif %}" value="{{ s.text }}">
-{%- endfor %}
+<input type="hidden" name="said" value="{{ turn.said_field() }}">
 {%- match ask %}
 {%- when Ask::Message %}
 <input type="hidden" name="step" value="message">

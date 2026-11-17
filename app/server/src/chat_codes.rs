@@ -2,8 +2,10 @@
 //! D-3144, D-3744, D-3882, D-4044).
 //!
 //! [`ChatCodes`] implements T103's `intake::api::CodeStep` over `adapters`' Twilio Verify client,
-//! and [`chat_keys`] builds `site`'s `ChatKeys` from the settings for `main` to hand to
-//! `RouterParts::with_chat_codes` (none in dev and `Ci`, so no code goes). [`guard`] puts the
+//! [`ChatParts`] implements `site::api::ChatKeys` with T103's `send_code` and `check_code` over the
+//! vault and [`ChatCodes`] (D-963), [`chat_keys`] builds it from the settings for `main` to hand
+//! to `RouterParts::with_chat_codes` (none in dev and `Ci`, so no code goes), and [`scrubbed`] is
+//! the chat's scrubber (`privacy::api::scrub`, which `site` may not call). [`guard`] puts the
 //! request checks on `site`'s chat router, since `site` may not call `portals` (D-3882): every
 //! response `no-store`; a cross-site `POST` is refused by `portals::api::refuse_cross_site`; a
 //! same-site `POST` whose `csrf` field is not the cookie's token is a 403 and one `csrf_rejected`
@@ -19,12 +21,13 @@ use askhava_adapters::api::{
     CodeChannel, IdempotencyKey, TwilioConfig, TwilioVerify, VerifyAdapter, twilio_clients,
 };
 use askhava_core::api::{IdSecret, Settings, SystemClock};
-use askhava_intake::api::{ChatError, CodeStep};
+use askhava_intake::api::{ChatError, ChatSettings, Checked, CodeStep, check_code, send_code};
 use askhava_portals::api::{
     CookieJar, SecurityEvent, SecurityEventKind, WebSecurity, admit_security_event, csrf_matches,
     csrf_token, ensure_pre_session, no_store, record_security_event, refuse_cross_site,
     security_event_client,
 };
+use askhava_privacy::api::{CommonWords, Known, NameMemory, Vault, scrub};
 use askhava_site::api::{ChatCsrf, ChatKeys, REQUEST_PATH};
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -35,6 +38,7 @@ use axum::response::{IntoResponse, Response};
 use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::PgPool;
+use sqlx::postgres::PgConnection;
 use sqlx::types::Uuid;
 
 /// The largest chat form read (the chat lines carried forward included).
@@ -61,6 +65,55 @@ impl CodeStep for ChatCodes {
     }
 }
 
+/// D-963, D-3144: the chat's code step: T103's calls over the vault and [`ChatCodes`], with
+/// `ASKHAVA_ID_SECRET`. No `Debug` (R6).
+pub struct ChatParts {
+    code: ChatCodes,
+    vault: Vault,
+    secret: SecretString,
+}
+
+impl ChatKeys for ChatParts {
+    fn secret(&self) -> &SecretString {
+        &self.secret
+    }
+
+    async fn send(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        number: &SecretString,
+        now: Timestamp,
+    ) -> Result<bool, ChatError> {
+        send_code(db, (&self.vault, &self.code), key, number, now).await
+    }
+
+    async fn check(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        typed: (&SecretString, &str),
+        at: (ChatSettings, Timestamp),
+    ) -> Result<Checked, ChatError> {
+        let parts = (&self.secret, &self.vault, &self.code);
+        check_code(db, parts, key, typed, at).await
+    }
+}
+
+/// AI-002, PRIV-001: `raw` with names, numbers, emails, links and street numbers removed (no
+/// vault name: the chat has no contact before its code).
+#[must_use]
+pub fn scrubbed(raw: &str) -> String {
+    let common = CommonWords::default();
+    let known = Known {
+        common: &common,
+        vault_name: None,
+    };
+    scrub(raw, &known, &mut NameMemory::default())
+        .as_str()
+        .to_owned()
+}
+
 /// D-3144, D-3744: the chat's code-step keys from `settings` and `pairs`: the vault, the Verify
 /// client and `ASKHAVA_ID_SECRET`; `None` where the vault is not configured (dev and `Ci`), as
 /// [`crate::pick_code_keys`] does.
@@ -68,7 +121,7 @@ impl CodeStep for ChatCodes {
 /// # Errors
 ///
 /// A missing or bad key, named, never a value.
-pub fn chat_keys<I>(settings: &Settings, pairs: I) -> io::Result<Option<ChatKeys<ChatCodes>>>
+pub fn chat_keys<I>(settings: &Settings, pairs: I) -> io::Result<Option<ChatParts>>
 where
     I: IntoIterator<Item = (String, String)>,
 {
@@ -88,7 +141,7 @@ where
         verify,
         secret: secret.clone(),
     };
-    Ok(Some(ChatKeys {
+    Ok(Some(ChatParts {
         code,
         vault,
         secret,

@@ -117,7 +117,7 @@ pub struct RouterParts {
 struct SiteParts {
     pages: askhava_site::api::SitePages,
     environment: Environment,
-    chat: Option<askhava_site::api::ChatKeys<chat_codes::ChatCodes>>,
+    chat: Option<chat_codes::ChatParts>,
 }
 
 impl Default for SiteParts {
@@ -193,10 +193,7 @@ impl RouterParts {
     /// Adds the web chat's code-step keys (T489, D-3144, [`chat_codes::chat_keys`]); without them
     /// the chat's code step sends and stores nothing and says codes can't be sent right now.
     #[must_use]
-    pub fn with_chat_codes(
-        mut self,
-        chat: Option<askhava_site::api::ChatKeys<chat_codes::ChatCodes>>,
-    ) -> Self {
+    pub fn with_chat_codes(mut self, chat: Option<chat_codes::ChatParts>) -> Self {
         self.site.chat = chat;
         self
     }
@@ -328,7 +325,11 @@ fn link_and_site_pages(
         environment,
         chat,
     } = site;
-    let chat = askhava_site::api::chat_routes(pool.clone(), (environment, intake), chat);
+    let chat = askhava_site::api::chat_routes(
+        pool.clone(),
+        (environment, intake),
+        (chat_codes::scrubbed, chat),
+    );
     feedback_routes(pool.clone(), Arc::new(SystemClock))
         .merge(checkin::routes(pool.clone()))
         .merge(action_links::routes(pool.clone()))

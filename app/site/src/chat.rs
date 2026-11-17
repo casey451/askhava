@@ -8,25 +8,26 @@
 //! server-rendered page with the chat so far above it (A11Y-035): the job, then the mobile number,
 //! then the Verify code. Each form carries a fresh message ID that T103's `chat_message` keeps as
 //! the PRIV-008 message ID, so a retried `POST` stores nothing twice (D-3189). The typed words are
-//! scrubbed (`privacy::api::scrub`) before anything reads them. The typed number goes back only in
+//! scrubbed by the composition's [`Scrub`] (`privacy::api::scrub`, which `site` may not call) before
+//! anything reads them. The typed number goes back only in
 //! the code form's hidden field on this `no-store` page; it is never logged, stored here or put in
-//! a URL (D-4044). Without [`ChatKeys`] (dev and `Ci`) the code step sends and stores nothing and
+//! a URL (D-4044). The code step is the composition's [`ChatKeys`] (T103's `send_code` and
+//! `check_code` over the vault and Verify, D-963, D-3144); without it (dev and `Ci`) the code step sends and stores nothing and
 //! says codes can't be sent right now, answering 200 (D-3744). A new request SEC-014's limit
 //! refuses opens nothing and the page says to try again later. The cross-site and CSRF checks are
 //! `server`'s layer, which hands the page its token as [`ChatCsrf`] (D-3882).
 
-use std::net::SocketAddr;
+use std::future::Future;
+use std::net::{IpAddr, SocketAddr};
 use std::sync::Arc;
 
 use askama::Template;
 use askhava_core::api::Environment;
-use askhava_intake::api::rules::Settings as IntakeSettings;
+use askhava_intake::api::rules::{Settings as IntakeSettings, language_from_code};
 use askhava_intake::api::{
-    ChatAnswer, ChatError, ChatIn, ChatSettings, Checked, CodeStep, chat_message, check_code,
-    send_code, start_chat, web_chat_consent_text,
+    ChatAnswer, ChatError, ChatIn, ChatSettings, Checked, chat_message, start_chat,
+    web_chat_consent_text,
 };
-use askhava_messaging::api::Language;
-use askhava_privacy::api::{CommonWords, Known, NameMemory, Vault, scrub};
 use axum::extract::{ConnectInfo, Query, State};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Response};
@@ -36,6 +37,7 @@ use jiff::Timestamp;
 use rand::TryRng;
 use rand::rngs::SysRng;
 use secrecy::SecretString;
+use serde::Deserialize;
 use sqlx::PgPool;
 use sqlx::postgres::PgConnection;
 use sqlx::types::Uuid;
@@ -54,15 +56,30 @@ const MAX_SAID: usize = 20;
 #[derive(Clone)]
 pub struct ChatCsrf(pub String);
 
-/// D-3144, D-3744: what the code step needs, built by `server` from its settings: T103's
-/// [`CodeStep`] over Verify, the vault and `ASKHAVA_ID_SECRET`. No `Debug` (R6).
-pub struct ChatKeys<C> {
-    /// The Verify code step.
-    pub code: C,
-    /// The vault the typed number goes into (PRIV-001).
-    pub vault: Vault,
-    /// `ASKHAVA_ID_SECRET`, for outbox keys (SEC-018).
-    pub secret: SecretString,
+/// AI-002, PRIV-001: the composition's scrubber (`privacy::api::scrub` with no vault name).
+pub type Scrub = fn(&str) -> String;
+
+/// D-963, D-3144, D-3744: the code step, implemented by `server` over T103's `send_code` and
+/// `check_code` with the vault, Verify and `ASKHAVA_ID_SECRET`. A full number is never logged.
+pub trait ChatKeys: Send + Sync + 'static {
+    /// `ASKHAVA_ID_SECRET`, for the text path's outbox keys (SEC-018).
+    fn secret(&self) -> &SecretString;
+    /// T103's `send_code` for the session of `key`: whether a code went.
+    fn send(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        number: &SecretString,
+        now: Timestamp,
+    ) -> impl Future<Output = Result<bool, ChatError>> + Send;
+    /// T103's `check_code` for the session of `key`, the number and the typed code.
+    fn check(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        typed: (&SecretString, &str),
+        at: (ChatSettings, Timestamp),
+    ) -> impl Future<Output = Result<Checked, ChatError>> + Send;
 }
 
 /// The one question a page asks (A11Y-035).
@@ -108,6 +125,28 @@ struct Said {
     text: String,
 }
 
+/// A posted chat form; every field may be absent (SEC-042's token was checked in `server`).
+#[derive(Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+struct Posted {
+    csrf: String,
+    chat: String,
+    message: String,
+    g: String,
+    said: String,
+    step: String,
+    words: String,
+    number: String,
+    code: String,
+}
+
+/// The page's query: the INT-047 `g` code.
+#[derive(Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+struct Link {
+    g: String,
+}
+
 /// The request page (WEB-014, WEB-006, AI-026, A11Y-035).
 #[derive(Template)]
 #[template(path = "request.html")]
@@ -134,25 +173,25 @@ struct Turn {
 
 impl Turn {
     /// The posted turn, or `None` without a session key.
-    fn posted(fields: &[(String, String)], csrf: String) -> Option<Self> {
-        let chat = field(fields, "chat");
+    fn posted(form: &Posted, csrf: String) -> Option<Self> {
+        let chat = form.chat.as_str();
         let hex = chat.bytes().all(|b| b.is_ascii_hexdigit());
         let ok = chat.len() == 32 && hex && chat.bytes().any(|b| b != b'0');
-        let said = fields.iter().filter(|(k, _)| k == "us" || k == "you");
-        let said: Vec<Said> = said
-            .map(|(k, v)| Said {
-                ours: k == "us",
-                text: v.clone(),
-            })
-            .collect();
+        let said: Vec<Said> = form.said.lines().filter_map(said_line).collect();
         let skip = said.len().saturating_sub(MAX_SAID);
         ok.then(|| Self {
             csrf,
             chat: chat.to_owned(),
-            g: field(fields, "g").to_owned(),
+            g: form.g.clone(),
             said: said.into_iter().skip(skip).collect(),
-            number: field(fields, "number").trim().to_owned(),
+            number: form.number.trim().to_owned(),
         })
+    }
+
+    /// The chat so far as the one hidden `said` field: a line each, `us ` or `you ` first.
+    fn said_field(&self) -> String {
+        let line = |s: &Said| format!("{} {}", if s.ours { "us" } else { "you" }, s.text);
+        self.said.iter().map(line).collect::<Vec<_>>().join("\n")
     }
 
     fn key(&self) -> SecretString {
@@ -162,7 +201,7 @@ impl Turn {
     fn add(&mut self, ours: bool, text: &str) {
         self.said.push(Said {
             ours,
-            text: text.to_owned(),
+            text: text.replace(['\r', '\n'], " "),
         });
     }
 }
@@ -173,7 +212,8 @@ struct Chat<C> {
     pool: PgPool,
     env: Environment,
     intake: IntakeSettings,
-    keys: Option<Arc<ChatKeys<C>>>,
+    scrub: Scrub,
+    keys: Option<Arc<C>>,
 }
 
 impl<C> Clone for Chat<C> {
@@ -182,26 +222,26 @@ impl<C> Clone for Chat<C> {
             pool: self.pool.clone(),
             env: self.env,
             intake: self.intake,
+            scrub: self.scrub,
             keys: self.keys.clone(),
         }
     }
 }
 
 /// CON-025, D-3144, D-3878: `GET` and `POST` [`REQUEST_PATH`] over `pool`, the AI switch read in
-/// `env`, `intake` the settings the SMS path uses, and `keys` the code step (none: no code goes).
-pub fn chat_routes<C>(
+/// `env`, `intake` the settings the SMS path uses, `scrub` the scrubber and `keys` the code step
+/// (none: no code goes).
+pub fn chat_routes<C: ChatKeys>(
     pool: PgPool,
     (env, intake): (Environment, IntakeSettings),
-    keys: Option<ChatKeys<C>>,
-) -> Router
-where
-    C: CodeStep + Send + Sync + 'static,
-{
+    (scrub, keys): (Scrub, Option<C>),
+) -> Router {
     let keys = keys.map(Arc::new);
     let chat = Chat {
         pool,
         env,
         intake,
+        scrub,
         keys,
     };
     Router::new()
@@ -209,11 +249,15 @@ where
         .with_state(chat)
 }
 
-fn field<'a>(fields: &'a [(String, String)], name: &str) -> &'a str {
-    fields
-        .iter()
-        .find(|(k, _)| k == name)
-        .map_or("", |(_, v)| v.as_str())
+/// One `said` line: `us <text>` or `you <text>`; anything else is dropped.
+fn said_line(line: &str) -> Option<Said> {
+    let (ours, text) = match line.split_once(' ')? {
+        ("us", text) => (true, text),
+        ("you", text) => (false, text),
+        _ => return None,
+    };
+    let text = text.to_owned();
+    Some(Said { ours, text })
 }
 
 fn token(csrf: Option<Extension<ChatCsrf>>) -> String {
@@ -221,15 +265,15 @@ fn token(csrf: Option<Extension<ChatCsrf>>) -> String {
 }
 
 /// `GET` [`REQUEST_PATH`]: a new chat, its source the `g` query parameter (INT-047, D-4044).
-async fn page<C: CodeStep + Send + Sync + 'static>(
+async fn page<C: ChatKeys>(
     State(chat): State<Chat<C>>,
     csrf: Option<Extension<ChatCsrf>>,
-    Query(query): Query<Vec<(String, String)>>,
+    Query(link): Query<Link>,
 ) -> Response {
     let turn = Turn {
         csrf: token(csrf),
         chat: fresh_id().simple().to_string(),
-        g: field(&query, "g").to_owned(),
+        g: link.g,
         said: Vec::new(),
         number: String::new(),
     };
@@ -238,14 +282,14 @@ async fn page<C: CodeStep + Send + Sync + 'static>(
 
 /// `POST` [`REQUEST_PATH`]: one turn of the chat; a form with no session key or message ID is a
 /// 400 (SEC-042's checks ran in `server`'s layer).
-async fn post<C: CodeStep + Send + Sync + 'static>(
+async fn post<C: ChatKeys>(
     State(chat): State<Chat<C>>,
     csrf: Option<Extension<ChatCsrf>>,
     client: Option<Extension<ConnectInfo<SocketAddr>>>,
-    Form(fields): Form<Vec<(String, String)>>,
+    Form(form): Form<Posted>,
 ) -> Response {
-    let turn = Turn::posted(&fields, token(csrf));
-    let id = Uuid::try_parse(field(&fields, "message"));
+    let turn = Turn::posted(&form, token(csrf));
+    let id = Uuid::try_parse(&form.message);
     let (Some(mut turn), Ok(id)) = (turn, id) else {
         return StatusCode::BAD_REQUEST.into_response();
     };
@@ -254,13 +298,10 @@ async fn post<C: CodeStep + Send + Sync + 'static>(
         return chat.answer(turn, Ask::Message, Some(FAILED)).await;
     };
     let db = &mut *db;
-    let step = match field(&fields, "step") {
-        "number" => chat.number(db, &mut turn, field(&fields, "number")).await,
-        "code" => chat.code(db, &turn, field(&fields, "code"), ip).await,
-        _ => {
-            chat.message(db, &mut turn, id, field(&fields, "words"))
-                .await
-        }
+    let step = match form.step.as_str() {
+        "number" => chat.number(db, &mut turn).await,
+        "code" => chat.code(db, &turn, &form.code, ip).await,
+        _ => chat.message(db, &mut turn, id, &form.words).await,
     };
     let (ask, notice) = step.unwrap_or_else(|error| {
         tracing::warn!(%error, "web-chat turn failed");
@@ -271,10 +312,10 @@ async fn post<C: CodeStep + Send + Sync + 'static>(
 
 type Step = Result<(Ask, Option<Notice>), ChatError>;
 
-impl<C: CodeStep + Send + Sync + 'static> Chat<C> {
+impl<C: ChatKeys> Chat<C> {
     /// INT-002, PRIV-008: her scrubbed words as T103's chat message under message ID `id`.
     async fn message(&self, db: &mut PgConnection, turn: &mut Turn, id: Uuid, raw: &str) -> Step {
-        let words = scrubbed(raw);
+        let words = (self.scrub)(raw);
         if words.trim().is_empty() {
             return Ok((Ask::Message, Some(EMPTY)));
         }
@@ -293,7 +334,7 @@ impl<C: CodeStep + Send + Sync + 'static> Chat<C> {
             received_at: now,
         };
         // Without keys no session passes the code, so the text path never reads this secret.
-        let secret = self.keys.as_ref().map(|k| k.secret.clone());
+        let secret = self.keys.as_ref().map(|k| k.secret().clone());
         let secret = secret.unwrap_or_else(|| SecretString::from(String::new()));
         Ok(
             match chat_message(db, &secret, &key, &msg, self.intake).await? {
@@ -309,18 +350,13 @@ impl<C: CodeStep + Send + Sync + 'static> Chat<C> {
 
     /// CON-025, D-3744: the typed number gets a Verify code; without keys nothing is sent or
     /// stored.
-    async fn number(&self, db: &mut PgConnection, turn: &mut Turn, typed: &str) -> Step {
+    async fn number(&self, db: &mut PgConnection, turn: &mut Turn) -> Step {
         let Some(keys) = &self.keys else {
             return Ok((Ask::Number, Some(NO_CODES)));
         };
-        let number = SecretString::from(typed.trim().to_owned());
-        let key = turn.key();
-        let parts = (&keys.vault, &keys.code);
-        match send_code(db, parts, &key, &number, Timestamp::now()).await {
-            Ok(true) => {
-                turn.number = typed.trim().to_owned();
-                Ok((Ask::Code, None))
-            }
+        let number = SecretString::from(turn.number.clone());
+        match keys.send(db, &turn.key(), &number, Timestamp::now()).await {
+            Ok(true) => Ok((Ask::Code, None)),
             Ok(false) => Ok((Ask::Message, None)),
             Err(ChatError::BadNumber) => Ok((Ask::Number, Some(BAD_NUMBER))),
             Err(ChatError::OptedOut) => Ok((Ask::Number, Some(OPTED_OUT))),
@@ -335,20 +371,22 @@ impl<C: CodeStep + Send + Sync + 'static> Chat<C> {
         db: &mut PgConnection,
         turn: &Turn,
         typed: &str,
-        ip: Option<std::net::IpAddr>,
+        ip: Option<IpAddr>,
     ) -> Step {
         let Some(keys) = &self.keys else {
             return Ok((Ask::Number, Some(NO_CODES)));
         };
         let number = SecretString::from(turn.number.clone());
         let settings = ChatSettings {
-            language: Language::En,
+            language: language_from_code("en"),
             settings: self.intake,
             ip,
         };
-        let parts = (&keys.secret, &keys.vault, &keys.code);
         let both = (&number, typed.trim());
-        match check_code(db, parts, &turn.key(), both, (settings, Timestamp::now())).await {
+        match keys
+            .check(db, &turn.key(), both, (settings, Timestamp::now()))
+            .await
+        {
             Ok(checked) => Ok(after_check(&checked)),
             Err(ChatError::CodeStep) => Ok((Ask::Code, Some(NO_CODES))),
             Err(error) => Err(error),
@@ -364,8 +402,8 @@ impl<C: CodeStep + Send + Sync + 'static> Chat<C> {
             spanish_conversations_on: true,
             ..self.intake
         };
-        let es = web_chat_consent_text(Language::Es, spanish);
-        let en = web_chat_consent_text(Language::En, self.intake);
+        let es = web_chat_consent_text(language_from_code("es"), spanish);
+        let en = web_chat_consent_text(language_from_code("en"), self.intake);
         let (Ok(consent_es), Ok(consent_en)) = (es, en) else {
             tracing::error!("request page consent text failed");
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
@@ -414,17 +452,6 @@ fn fresh_id() -> Uuid {
     Builder::from_random_bytes(bytes).into_uuid()
 }
 
-/// AI-002, PRIV-001: `raw` with names, numbers, emails, links and street numbers removed.
-fn scrubbed(raw: &str) -> String {
-    let common = CommonWords::default();
-    let known = Known {
-        common: &common,
-        vault_name: None,
-    };
-    let text = scrub(raw, &known, &mut NameMemory::default());
-    text.as_str().to_owned()
-}
-
 /// AI-026, D-492: whether the AI switch is on; a failed read hides the line, logged once.
 async fn ai_on(pool: &PgPool, env: Environment) -> bool {
     let read = match pool.acquire().await {
@@ -443,14 +470,19 @@ mod tests {
 
     use askhava_core::api::Environment;
     use askhava_intake::api::rules::Settings as IntakeSettings;
-    use askhava_intake::api::{ChatError, Checked, CodeStep};
+    use askhava_intake::api::{ChatError, ChatSettings, Checked};
     use axum::body::{Body, to_bytes};
     use axum::http::{Request, StatusCode, header};
+    use jiff::Timestamp;
     use secrecy::SecretString;
     use sqlx::PgPool;
+    use sqlx::postgres::PgConnection;
     use tower::ServiceExt;
 
-    use super::{Ask, NO_CODES, OPEN, TOO_MANY, TRY_LATER, WRONG_CODE, after_check, chat_routes};
+    use super::{
+        Ask, ChatKeys, NO_CODES, OPEN, Scrub, TOO_MANY, TRY_LATER, WRONG_CODE, after_check,
+        chat_routes,
+    };
 
     /// AI-026's sentence, word for word (`docs/spec/ai.md:30`).
     const AI_LINE: &str = "An AI service helps word our questions.";
@@ -458,17 +490,38 @@ mod tests {
     /// A code step that must never be called.
     struct NoCalls;
 
-    impl CodeStep for NoCalls {
-        async fn send(&self, _: &SecretString, _: &str) -> Result<(), ChatError> {
-            panic!("no code is sent without the part")
+    impl ChatKeys for NoCalls {
+        fn secret(&self) -> &SecretString {
+            unreachable!("no keys are given")
         }
-        async fn check(&self, _: &SecretString, _: &str) -> Result<bool, ChatError> {
-            panic!("no code is checked without the part")
+        async fn send(
+            &self,
+            _: &mut PgConnection,
+            _: &SecretString,
+            _: &SecretString,
+            _: Timestamp,
+        ) -> Result<bool, ChatError> {
+            unreachable!("no code is sent without the part")
+        }
+        async fn check(
+            &self,
+            _: &mut PgConnection,
+            _: &SecretString,
+            _: (&SecretString, &str),
+            _: (ChatSettings, Timestamp),
+        ) -> Result<Checked, ChatError> {
+            unreachable!("no code is checked without the part")
         }
     }
 
+    /// A stand-in scrubber that drops digits, so the test's typed number never reaches T103.
+    fn no_digits(raw: &str) -> String {
+        raw.chars().filter(|c| !c.is_ascii_digit()).collect()
+    }
+
     async fn call(pool: &PgPool, env: Environment, request: Request<Body>) -> (StatusCode, String) {
-        let app = chat_routes::<NoCalls>(pool.clone(), (env, IntakeSettings::default()), None);
+        let parts = (no_digits as Scrub, None::<NoCalls>);
+        let app = chat_routes(pool.clone(), (env, IntakeSettings::default()), parts);
         let response = app.oneshot(request).await.expect("answer");
         let status = response.status();
         let body = to_bytes(response.into_body(), 1 << 20).await.expect("body");
@@ -516,6 +569,10 @@ mod tests {
         let (status, page) = call(&pool, Environment::Dev, post(&first)).await;
         assert_eq!(status, StatusCode::OK);
         assert!(page.contains("name=\"number\""), "asks for the number");
+        assert!(
+            page.contains("name=\"said\" value=\"you My sink leaks\""),
+            "chat carried"
+        );
         let number = format!("chat={chat}&message={id}&step=number&number=928-555-0100");
         let (status, page) = call(&pool, Environment::Dev, post(&number)).await;
         assert_eq!(status, StatusCode::OK);
