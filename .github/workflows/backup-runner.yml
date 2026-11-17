@@ -264,6 +264,20 @@ jobs:
           RUNNER_PUSH_TOKEN: ${{ secrets.RUNNER_PUSH_TOKEN }}
         run: |
           python3 -m runner --resolve-merges 2>&1 | grep '^runner: ' || true
+      - name: Free the runner disk (D-4071)
+        # From November 16 19:06Z eight backup jobs lost their VM mid-session on a full /dev/root. Before any cache
+        # restore, remove toolchains this job never uses (a grep of this workflow, scripts/ and runner/ for android,
+        # dotnet, ghc, ghcup, cabal, stack, swift and codeql finds none): Node, Python, Go, rustup and cargo, Docker
+        # and its images, the Playwright browsers and the claude-code-action runtime stay. A failure frees less.
+        continue-on-error: true
+        timeout-minutes: 10
+        run: |
+          df -h / | sed 's/^/disk before: /'
+          for path in /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/share/swift; do
+            sudo rm -rf "$path" &
+          done
+          wait
+          df -h / | sed 's/^/disk after: /'
       - name: Rust build cache (D-514)
         # The worker's own cargo runs reuse the build; Cargo's fingerprints decide what rebuilds. Only `target/debug`:
         # the smoke's own build (`target/smoke`, D-1890) is the next step's entry, and an exclusion such as
@@ -450,6 +464,7 @@ jobs:
           gh api "repos/${GITHUB_REPOSITORY}/contents/kit/state.json?ref=claude/kit-state" -H 'Accept: application/vnd.github.raw' \
             > "$RUNNER_TEMP/session_model_state.json" 2>/dev/null || rm -f "$RUNNER_TEMP/session_model_state.json"
           python3 -m runner --session-model "$RUNNER_TEMP/session_model_state.json" | tee -a "$GITHUB_OUTPUT"
+          df -h / | sed 's/^/disk at session start: /' || true
       - uses: anthropics/claude-code-action@4fa93a88de49bbef68b10eb15aabedf28ca0e1ed # v1.0.271
         id: claude
         env:
@@ -516,6 +531,16 @@ jobs:
           stopped="$(python3 -c 'from runner.github_env import stop_background_smoke; print(stop_background_smoke())' 2>/dev/null || true)"
           echo "background smoke: ${stopped:-unknown}"
           echo "stopped=${stopped}" >> "$GITHUB_OUTPUT"
+      - name: Bound the smoke build entry (D-4071)
+        # A smoke entry of 46 GB on disk filled the runner's root disk (D-4071). Delete target/smoke's profile-level
+        # incremental folders, then save=no when the tree is still over runner/cache.py's SMOKE_CAP (24 GiB) or cannot
+        # be measured. Fails closed: a crashed step writes no output, and the save needs save=yes. The drop below still
+        # deletes the old entry, so the next job builds the smoke cold and saves a fresh, small one.
+        id: smoke-bound
+        if: always() && github.ref == 'refs/heads/main' && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != '' && steps.bg-smoke.outputs.stopped != 'stopped'
+        continue-on-error: true
+        run: |
+          cd "$RUNNER_TEMP/keeper" && python3 -m runner.cache bound --smoke "$GITHUB_WORKSPACE/target/smoke" | tee -a "$GITHUB_OUTPUT"
       - name: Drop the superseded smoke build entries (D-3143)
         # Each smoke entry is about 3.9 GB of GitHub's 10 GB repository cache, and the restore keys only ever take the
         # newest, so the entries this job's save replaces (key prefix rust-smoke-<os>-, created before this job
@@ -536,7 +561,7 @@ jobs:
         # entries), whatever the session's outcome: the manifest is written before Cargo runs, so even a red or
         # timed-out smoke leaves a target dir that matches it. Only from main's ref (D-3143): a run started by a
         # pull_request event saves under refs/pull/<n>/merge, which no later run can restore.
-        if: always() && github.ref == 'refs/heads/main' && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != '' && steps.smoke-drop.outputs.save != 'no' && steps.bg-smoke.outputs.stopped != 'stopped'
+        if: always() && github.ref == 'refs/heads/main' && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != '' && steps.smoke-drop.outputs.save != 'no' && steps.smoke-bound.outputs.save == 'yes' && steps.bg-smoke.outputs.stopped != 'stopped'
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: target/smoke
@@ -622,6 +647,7 @@ jobs:
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
         run: |
           set -u
+          df -h / | sed 's/^/disk at hand-in: /' || true
           # A session that claimed a task but ended without `--after` would hold the lease for three hours.
           # `--after` finishes only a task this run's session still holds; otherwise it answers
           # not_lease_holder and changes nothing; that, `runner: lost_race` and `runner: state_invalid` free no lease: released=no (D-3419).

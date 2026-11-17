@@ -41,6 +41,7 @@ pub mod business_signup;
 pub mod call_status;
 pub mod catalog_start;
 pub mod checkin;
+pub mod email_provider;
 pub mod inbound_retry;
 pub mod inbound_text;
 pub mod inbound_voice;
@@ -1204,7 +1205,8 @@ fn register_whos_calling(
 
 /// T330 (CALL-019, CALL-022, D-2288, D-3134): registers `calls.safety_call` inside the Twilio
 /// settings branch, over the same settings as `picks.line_retry`, with [`SafetyParts`] built once;
-/// the switch is not captured ([`safety_switch`] is read on each run).
+/// the switch is not captured ([`safety_switch`] is read on each run). T571 (CON-035, D-4051):
+/// beside it `calls.safety_key_retry` over the same parts' vault and clock.
 fn register_safety_call(
     registry: &mut Registry,
     settings: &Settings,
@@ -1221,9 +1223,21 @@ fn register_safety_call(
         vault: vault_from(settings, pairs)?,
         clock: Arc::clone(clock),
     });
+    let retry = Arc::clone(&parts);
     registry.register(askhava_calls::api::SAFETY_CALL_KIND, move |pool, task| {
         run_safety_call(pool, Arc::clone(&parts), task)
     });
+    registry.register(
+        askhava_calls::api::SAFETY_KEY_RETRY_KIND,
+        move |pool, task| {
+            let parts = Arc::clone(&retry);
+            async move {
+                let now = parts.clock.now();
+                askhava_calls::api::run_safety_key_retry(pool, parts.vault.as_ref(), task, now)
+                    .await
+            }
+        },
+    );
     Ok(())
 }
 

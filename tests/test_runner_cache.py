@@ -106,7 +106,8 @@ KEY_VALUE = re.compile(r"^\w+=")
 
 
 @pytest.mark.parametrize("argv", [["clear", "--target", "{tmp}/debug"], ["drop", "--prefix", "rust-smoke-Linux-", "--before", ""],
-                                  ["seed", "--root", "{tmp}", "--smoke", "{tmp}/none", "--target", "{tmp}/debug"]])
+                                  ["seed", "--root", "{tmp}", "--smoke", "{tmp}/none", "--target", "{tmp}/debug"],
+                                  ["bound", "--smoke", "{tmp}/debug", "--cap-gib", "1"]])
 def test_standard_output_holds_only_key_value_lines(tmp_path: Path, capsys: pytest.CaptureFixture[str], argv: list[str]) -> None:
     """The workflow appends standard output to $GITHUB_OUTPUT, which refuses a line without `=`: every message
     goes to standard error."""
@@ -114,6 +115,50 @@ def test_standard_output_holds_only_key_value_lines(tmp_path: Path, capsys: pyte
     assert cache.main([a.format(tmp=tmp_path) for a in argv]) == 0
     out = capsys.readouterr()
     assert all(KEY_VALUE.match(line) for line in out.out.splitlines()) and out.err.strip()
+
+
+# ---- bound: the smoke entry stays under its cap (D-4071)
+
+
+def _smoke(root: Path) -> Path:
+    for rel in ("debug/incremental/askhava_core-1abc/s-x/q.bin", "x86_64-unknown-linux-gnu/debug/incremental/a/b.bin",
+                "debug/deps/libserde-0123456789abcdef.rlib", "debug/build/incremental/keep.bin", "smoke.json"):
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text("x" * 100)
+    return root
+
+
+def test_bound_deletes_only_the_profile_level_incremental_folders(tmp_path: Path) -> None:
+    smoke = _smoke(tmp_path / "smoke")
+    assert cache.bound(smoke, 10_000) == "save=yes"
+    left = sorted(str(p.relative_to(smoke)) for p in smoke.rglob("*") if p.is_file())
+    assert left == ["debug/build/incremental/keep.bin", "debug/deps/libserde-0123456789abcdef.rlib", "smoke.json"]
+    assert not (smoke / "debug" / "incremental").exists()
+    assert not (smoke / "x86_64-unknown-linux-gnu" / "debug" / "incremental").exists()
+
+
+def test_bound_saves_at_or_under_the_cap_and_warns_over_it(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    smoke = _smoke(tmp_path / "smoke")
+    assert cache.bound(smoke, 300) == "save=yes"  # 500 bytes before, 300 after the incremental folders go
+    assert "500 bytes before, 300 bytes after" in capsys.readouterr().err
+    assert cache.bound(smoke, 299) == "save=no"
+    err = capsys.readouterr().err
+    assert "::warning::" in err and "(300 bytes)" in err and "(299 bytes" in err
+    assert cache.SMOKE_CAP == 24 << 30
+
+
+def test_bound_says_no_when_the_tree_cannot_be_measured(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                                         capsys: pytest.CaptureFixture[str]) -> None:
+    assert cache.bound(tmp_path / "none", 1 << 40) == "save=no"
+    smoke = _smoke(tmp_path / "smoke")
+
+    def broken(entries: list[Path]) -> int:
+        raise OSError("unreadable")
+
+    monkeypatch.setattr(cache, "_tree_size", broken)
+    assert cache.bound(smoke, 1 << 40) == "save=no"
+    assert "not measured" in capsys.readouterr().err
+    assert cache.main(["bound", "--smoke", str(smoke)]) == 0 and capsys.readouterr().out == "save=no\n"
 
 
 # ---- drop: a family's superseded entries
@@ -228,7 +273,7 @@ def test_the_smoke_entry_is_saved_only_from_main_alone_after_its_older_entries_a
     save = _named(steps, "Smoke build cache, save (D-1911)")
     restore = _named(steps, "Smoke build cache, restore (D-1890, D-1911)")
     assert drop["id"] == "smoke-drop" and MAIN in drop["if"] and "hashFiles('target/smoke-ran')" in drop["if"]
-    assert save["if"] == drop["if"].replace(" && steps.bg-smoke", " && steps.smoke-drop.outputs.save != 'no' && steps.bg-smoke")
+    assert save["if"] == drop["if"].replace(" && steps.bg-smoke", " && steps.smoke-drop.outputs.save != 'no' && steps.smoke-bound.outputs.save == 'yes' && steps.bg-smoke")
     assert order.index(drop["name"]) + 1 == order.index(save["name"]) and drop["continue-on-error"] is True
     assert drop["env"]["PREFIX"] == "rust-smoke-${{ runner.os }}-" and restore["with"]["key"].startswith(drop["env"]["PREFIX"])
     assert '--before "${JOB_START:-}"' in drop["run"] and 'cd "$RUNNER_TEMP/keeper"' in drop["run"]
@@ -262,3 +307,34 @@ def test_no_branch_run_saves_a_shared_cache() -> None:
                     assert step["with"]["save-if"] == "${{ " + MAIN + " }}", f"{flow}: {step.get('name')}"
                 if uses.startswith("actions/cache/save@"):
                     assert str(step.get("if", "")).startswith(MAIN), f"{flow}: {step.get('name')}"
+
+
+def test_the_disk_is_freed_before_any_restore_and_the_smoke_entry_is_bounded_before_the_drop() -> None:
+    """D-4071: the free-disk step runs after the merge resolution and before every cache restore; the bound step
+    runs under the drop's condition right after the background-smoke stop and right before the drop."""
+    steps = _steps("backup-runner.yml", "backup")
+    order = [s.get("name") or s.get("uses") for s in steps]
+    free = _named(steps, "Free the runner disk (D-4071)")
+    first_restore = next(i for i, s in enumerate(steps) if str(s.get("uses", "")).startswith("actions/cache/restore@"))
+    assert order.index("Close merged tasks before the smoke (D-3141)") + 1 == order.index(free["name"]) < first_restore
+    assert free["continue-on-error"] is True and free["timeout-minutes"] == 10
+    for path in ("/usr/local/lib/android", "/usr/share/dotnet", "/opt/ghc", "/usr/local/.ghcup",
+                 "/opt/hostedtoolcache/CodeQL", "/usr/share/swift"):
+        assert path in free["run"]
+    assert "sudo rm -rf" in free["run"] and "wait" in free["run"].split()
+    assert "sed 's/^/disk before: /'" in free["run"] and "sed 's/^/disk after: /'" in free["run"]
+    bound = _named(steps, "Bound the smoke build entry (D-4071)")
+    drop = _named(steps, "Drop the superseded smoke build entries (D-3143)")
+    stop = order.index("Stop a background smoke before the cache save (D-2560)")
+    assert bound["id"] == "smoke-bound" and bound["if"] == drop["if"] and bound["continue-on-error"] is True
+    assert stop + 1 == order.index(bound["name"]) and order.index(bound["name"]) + 1 == order.index(drop["name"])
+    assert bound["run"].strip() == ('cd "$RUNNER_TEMP/keeper" && python3 -m runner.cache bound --smoke '
+                                    '"$GITHUB_WORKSPACE/target/smoke" | tee -a "$GITHUB_OUTPUT"')
+
+
+def test_the_disk_is_logged_at_session_start_and_at_hand_in() -> None:
+    steps = _steps("backup-runner.yml", "backup")
+    model = _named(steps, "Pick the session's model (D-2225)")["run"].rstrip().splitlines()
+    assert model[-1].strip() == "df -h / | sed 's/^/disk at session start: /' || true"
+    safety = _named(steps, "Hand in for a session that stopped without handing in (D-503)")["run"].splitlines()
+    assert [line.strip() for line in safety[:2]] == ["set -u", "df -h / | sed 's/^/disk at hand-in: /' || true"]

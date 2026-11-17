@@ -19,7 +19,8 @@
 //! T271: [`DIALED_STATUS_PATH`], [`voice_turn_reporting`], [`voice_confirm_reporting`],
 //! [`dialed_line`] and [`line_parties`], the dialed leg's status callbacks (CALL-008, D-3118).
 //! T390: [`link_after_dial`], the LINK notice and one pending link after a blocked call connected
-//! a line, and [`LINK_REQUEST_LIFE`] (CALL-011, CALL-003, D-3079).
+//! a line, and [`LINK_REQUEST_LIFE`] (CALL-011, CALL-003, D-3079). T571: [`queue_safety_key_retry`]
+//! and [`run_safety_key_retry`], the safety key kept through a database error (CON-035, D-4051).
 
 pub use crate::handlers::{
     DIALED_STATUS_PATH, FinishedCall, LoggedCall, call_log, call_start_confirmed, dial_twiml,
@@ -46,6 +47,10 @@ pub use crate::routing::{
 };
 pub use crate::rules::{
     AnsweredBy, Caller, REPORT_MARK, answered_by, business_attempt, reached_report_mark, talked,
+};
+pub use crate::safety_key_retry::{
+    SAFETY_KEY_LOST_ALERT, SAFETY_KEY_RETRY_ATTEMPTS, SAFETY_KEY_RETRY_KIND,
+    queue_safety_key_retry, run_safety_key_retry, safety_key_lost,
 };
 pub use crate::service::{
     ASSIGNED_ACTION, AutomatedCall, CallGate, Connected, Line, POOL_ALERT,
