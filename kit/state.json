@@ -20497,7 +20497,21 @@
    "attempts": 0,
    "slug": "site-services-help-pages",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-17T06:03:54Z",
+    "problems": [
+     "T201: dependency T221 is DONE but its owned file app/site/templates/legal.html is not on main",
+     "T201: dependency T221 is DONE but its owned file app/site/templates/your_data.html is not on main",
+     "T201: dependency T221 is DONE but its owned file app/site/templates/business_data.html is not on main",
+     "T201: dependency T221 is DONE but its owned file app/site/src/legal_pages.rs is not on main",
+     "T201: dependency T221 is DONE but its owned file tests/e2e/legal_pages.spec.ts is not on main",
+     "T201: dependency T221 is DONE but its owned file tests/docs/test_legal_pages.py is not on main",
+     "T201: dependency T221 is DONE but its owned file docs/legal/published/versions.json is not on main",
+     "T201: dependency T221 is DONE but its owned file tests/docs/test_published_versions.py is not on main",
+     "T201: dependency T221 is DONE but its owned file app/intake/src/ai_on.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T202",
@@ -21450,7 +21464,21 @@
    "attempts": 0,
    "slug": "privacy-sms-docs",
    "type": "docs",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-17T06:03:54Z",
+    "problems": [
+     "T112: dependency T221 is DONE but its owned file app/site/templates/legal.html is not on main",
+     "T112: dependency T221 is DONE but its owned file app/site/templates/your_data.html is not on main",
+     "T112: dependency T221 is DONE but its owned file app/site/templates/business_data.html is not on main",
+     "T112: dependency T221 is DONE but its owned file app/site/src/legal_pages.rs is not on main",
+     "T112: dependency T221 is DONE but its owned file tests/e2e/legal_pages.spec.ts is not on main",
+     "T112: dependency T221 is DONE but its owned file tests/docs/test_legal_pages.py is not on main",
+     "T112: dependency T221 is DONE but its owned file docs/legal/published/versions.json is not on main",
+     "T112: dependency T221 is DONE but its owned file tests/docs/test_published_versions.py is not on main",
+     "T112: dependency T221 is DONE but its owned file app/intake/src/ai_on.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T113",
@@ -71901,7 +71929,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T06:01:33Z",
+ "updated_at": "2026-11-17T06:03:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

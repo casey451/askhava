@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T06:01:33Z by runner 6cc8a2fed8c3 (actions).
+Updated 2026-11-17T06:03:58Z by runner 6cc8a2fed8c3 (actions).
 
 **Building: T204 in progress since 04:22Z; 384 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,10 +8,12 @@ Updated 2026-11-17T06:01:33Z by runner 6cc8a2fed8c3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T204 claimed 04:22Z, lease until 08:58Z; lane 7: T586 claimed 04:49Z, lease until 08:52Z
 - **Week:** 15% used, 159.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:01Z, 0 min before this update
+- **Last run:** 06:01Z, 2 min before this update
 - **Keeper:** last ran 06:01Z, next wake 08:55Z
 
 ## Needs attention
+- PLAN GAP T201 (since 2026-11-17T06:03:54Z, no attempt used; a plan change fixes it): T201: dependency T221 is DONE but its owned file app/site/templates/legal.html is not on main; T201: dependency T221 is DONE but its owned file app/site/templates/your_data.html is not on main; T201: dependency T221 is DONE but its owned file app/site/templates/business_data.html is not on main; T201: dependency T221 is DONE but its owned file app/site/src/legal_pages.rs is not on main; T201: dependency T221 is DONE but its owned file tests/e2e/legal_pages.spec.ts is not on main; T201: dependency T221 is DONE but its owned file tests/docs/test_legal_pages.py is not on main; T201: dependency T221 is DONE but its owned file docs/legal/published/versions.json is not on main; T201: dependency T221 is DONE but its owned file tests/docs/test_published_versions.py is not on main; T201: dependency T221 is DONE but its owned file app/intake/src/ai_on.rs is not on main
+- PLAN GAP T112 (since 2026-11-17T06:03:54Z, no attempt used; a plan change fixes it): T112: dependency T221 is DONE but its owned file app/site/templates/legal.html is not on main; T112: dependency T221 is DONE but its owned file app/site/templates/your_data.html is not on main; T112: dependency T221 is DONE but its owned file app/site/templates/business_data.html is not on main; T112: dependency T221 is DONE but its owned file app/site/src/legal_pages.rs is not on main; T112: dependency T221 is DONE but its owned file tests/e2e/legal_pages.spec.ts is not on main; T112: dependency T221 is DONE but its owned file tests/docs/test_legal_pages.py is not on main; T112: dependency T221 is DONE but its owned file docs/legal/published/versions.json is not on main; T112: dependency T221 is DONE but its owned file tests/docs/test_published_versions.py is not on main; T112: dependency T221 is DONE but its owned file app/intake/src/ai_on.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 1 problem(s) on tasks still to run (+144 on DONE tasks); first: T235: stored context_pct 6% but it measures 10%; regenerate
 
