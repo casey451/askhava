@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T02:16:55Z by runner 13ee51165f3b (manual).
+Updated 2026-11-17T02:17:49Z by runner 13ee51165f3b (actions).
 
-**Building: T103 in progress since 02:12Z; 377 of 556 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T103 in progress since 02:12Z; 378 of 556 done; week 11% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 377 of 556 build tasks (owner gates not counted)
+- **Tasks done:** 378 of 556 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T103 claimed 02:12Z, lease until 05:12Z; lane 4: T221 claimed 01:54Z, lease until 04:54Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
 - **Week:** 11% used, 169.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:16Z, 0 min before this update
+- **Last run:** 02:17Z, 0 min before this update
 - **Keeper:** last ran 02:16Z, next wake 04:56Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-17T02:16:55Z by runner 13ee51165f3b (manual).
 | T469 | server (harness): the Resend email client from settings and  | MERGE_PENDING | 1 | 99 min | 02:12Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | check_failed | 1 | 2 h 47 min | 01:23Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   0.13. |
 | T320 | ops: a check that runs on a schedule raises its alert once w | MERGE_PENDING | 2 | 78 min | 01:13Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
-| T373 | businesses: changing a phone's number ends that phone's text | MERGE_PENDING | 2 | 42 min | 01:04Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
+| T373 | businesses: changing a phone's number ends that phone's text | done | 2 | 42 min | 01:04Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
 | T111 | Draft homeowner and business terms with every required claus | done | 4 | 34 min | 23:57Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
 | T373 | businesses: changing a phone's number ends that phone's text | check_failed | 1 | 74 min | 23:55Z |  |
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | QUEUED | 2 | 89 min | 23:36Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
@@ -71,31 +71,31 @@ Updated 2026-11-17T02:16:55Z by runner 13ee51165f3b (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 288 of 733 (39.3%) · partial 332 · unstarted 113
-**Tasks merged (throughput only):** 377 of 556
+**Requirements verified:** 307 of 733 (41.9%) · partial 313 · unstarted 113
+**Tasks merged (throughput only):** 378 of 556
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 20 | 11 | 4 | 35 |
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 21 | 35 | 2 | 58 |
-| calls | 11 | 13 | 1 | 25 |
+| calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
-| fees | 19 | 32 | 1 | 52 |
+| fees | 24 | 27 | 1 | 52 |
 | intake | 28 | 12 | 3 | 43 |
-| job-cards | 19 | 5 | 0 | 24 |
+| job-cards | 20 | 4 | 0 | 24 |
 | licensing | 37 | 11 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 20 | 23 | 2 | 45 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
-| privacy | 10 | 19 | 2 | 31 |
+| privacy | 12 | 17 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 33 | 22 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| security | 11 | 39 | 5 | 55 |
 | terms | 1 | 20 | 14 | 35 |
 | website | 0 | 14 | 14 | 28 |
-| wording | 1 | 10 | 21 | 32 |
+| wording | 2 | 9 | 21 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -108,7 +108,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 20 of 164 done
+- stage 5: 21 of 164 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
