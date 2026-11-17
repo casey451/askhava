@@ -65091,7 +65091,10 @@
    "update_push_failures": null,
    "merge_turn_since": "2026-11-17T15:13:25Z",
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest pick_046_opted_out_with_an_email_gets_one_email_and_no_text ... FAILED\ntest pick_046_no_consent_record_with_an_email_gets_one_email_and_no_text ... ok\ntest pick_046_no_email_on_file_gets_nothing ... ok\ntest pick_046_with_no_other_quote_the_email_says_we_will_email_you ... ok\ntest pick_046_without_the_postal_line_sends_nothing_and_the_step_ends ... ok\nfailures:\n---- pick_046_opted_out_with_an_email_gets_one_email_and_no_text stdout ----\nthread 'pick_046_opted_out_with_an_email_gets_one_email_and_no_text' (29930) panicked at tests/integration/tests/pick_lapsed_email.rs:273:5:\nno amount\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    pick_046_opted_out_with_an_email_gets_one_email_and_no_text\ntest result: FAILED. 8 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.92s\nerror: test failed, to rerun pass `-p askhava-integration --test pick_lapsed_email`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
-   "lane": "2"
+   "lane": "2",
+   "runner_closed_prs": [
+    960
+   ]
   },
   {
    "id": "T480",
@@ -75057,7 +75060,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T15:29:53Z",
+ "updated_at": "2026-11-17T15:30:13Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
