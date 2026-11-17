@@ -108,6 +108,7 @@ pub struct RouterParts {
     statics: StaticRoot,
     business: BusinessParts,
     site: askhava_site::api::SitePages,
+    environment: askhava_core::api::Environment,
 }
 
 /// The business pages' parts: the served sign-in (T280), sign-up (T302), the portal's vault
@@ -170,6 +171,14 @@ impl RouterParts {
         self
     }
 
+    /// Sets the environment the data pages read the AI switch in (AI-018, T221); without it they
+    /// read it as `Dev`.
+    #[must_use]
+    pub fn with_environment(mut self, environment: askhava_core::api::Environment) -> Self {
+        self.environment = environment;
+        self
+    }
+
     /// [`Self::with_confirm_settings`] with [`confirm_settings`]'s answer; `None` adds nothing.
     #[must_use]
     pub fn with_confirm_part(self, part: Option<(String, jiff::Timestamp, SecretString)>) -> Self {
@@ -188,6 +197,7 @@ impl From<Hooks> for RouterParts {
             statics: StaticRoot::default(),
             business: BusinessParts::default(),
             site: askhava_site::api::SitePages::default(),
+            environment: askhava_core::api::Environment::Dev,
         }
     }
 }
@@ -201,6 +211,7 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
             statics,
             business: BusinessParts::default(),
             site: askhava_site::api::SitePages::default(),
+            environment: askhava_core::api::Environment::Dev,
         }
     }
 }
@@ -213,6 +224,7 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
             statics,
             business: BusinessParts::default(),
             site: askhava_site::api::SitePages::default(),
+            environment: askhava_core::api::Environment::Dev,
         }
     }
 }
@@ -334,12 +346,14 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         statics,
         business,
         site,
+        environment,
     } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let business = business_pages(business, pool.clone(), (&webhooks, &voice, &stripe));
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
-    let pages = link_and_site_pages(&pool, &statics, site);
+    let pages = link_and_site_pages(&pool, &statics, site)
+        .merge(askhava_site::api::legal_routes(pool.clone(), environment));
     // Each 403 of these four is a source or signature refusal, recorded as a capped
     // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
     let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));

@@ -1,0 +1,101 @@
+{% extends "site_layout.html" %}
+{#- The business data page, /business-data, and in Spanish when `es`, /es/business-data (T221;
+    TERMS-021, OPS-037, AI-018, D-3844, D-3878). The retention days stay the bracketed placeholder
+    of docs/legal/privacy-policy.md section 8 until the owner fills both before publishing;
+    tests/docs/test_legal_pages.py keeps the two equal. AI-018's switched-off sentence shows while
+    `ai_on` is false. The Spanish text is a draft for native-speaker review (TERMS-018); each Spanish
+    passage carries its own lang (A11Y-004). -#}
+{% block lang %}{% if es %}es{% else %}en{% endif %}{% endblock %}
+{% block title %}{% if es %}Datos de negocios{% else %}Business data{% endif %}{% endblock %}
+{% block content %}
+{%- let brand = askhava_core::api::brand().display_name() %}
+{%- if es %}
+<h1 lang="es">Datos de negocios</h1>
+<p lang="es">Esta página explica qué guarda {{ brand }} sobre los negocios y los teléfonos de su equipo, por cuánto tiempo y quién lo puede ver.</p>
+<h2 lang="es">Qué guardamos</h2>
+<ul>
+<li lang="es">Los datos del negocio y de su licencia, tomados de registros públicos.</li>
+<li lang="es">Los nombres, correos electrónicos y teléfonos de los miembros de su equipo.</li>
+<li lang="es">El correo de avisos, donde llegan las solicitudes de trabajo y las elecciones.</li>
+<li lang="es">El canal que usted eligió para recibir las solicitudes y las elecciones.</li>
+<li lang="es">Su registro de avisos: cuándo se envió y se entregó cada correo de aviso, y cuándo se abrió por primera vez desde su propio enlace.</li>
+<li lang="es">Los registros de tiempos: cuándo se envió cada tarjeta de trabajo, cuándo se abrió y cuándo cotizó, y cuándo se envió cada elección, cuándo se abrió y cuándo se confirmó.</li>
+<li lang="es">Los registros de llamadas: quién llamó, cuándo y por cuánto tiempo. No contienen grabaciones; nunca grabamos las llamadas.</li>
+</ul>
+<h2 lang="es">Por cuánto tiempo</h2>
+<p lang="es">Registros del negocio, teléfonos del equipo y registros de llamadas: <span lang="en" class="retention-days">[days, set before launch and shown on the business data page]</span></p>
+<h2 lang="es">Quién lo puede ver</h2>
+<ul>
+<li lang="es">Usted y su equipo, en la página de su negocio.</li>
+<li lang="es">El dueño de {{ brand }}, para operar el servicio.</li>
+<li lang="es">Los propietarios ven el nombre de su negocio, su licencia y las cotizaciones que usted envía.</li>
+<li lang="es">Los proveedores que operan {{ brand }} ven solo lo que cada uno necesita para su labor.</li>
+</ul>
+<h2 lang="es">Lo que nunca preguntamos</h2>
+<p lang="es">{{ brand }} nunca pregunta por sus trabajadores. Los únicos datos del equipo que guardamos son los nombres, correos y teléfonos que usted y su equipo agregan.</p>
+<h2 lang="es">La policía y la ley</h2>
+<p lang="es">Los datos de un negocio van a la policía o a otros solo cuando una ley lo exige, como una citación o una orden judicial.</p>
+<p lang="es">Le avisaremos de cualquier exigencia legal sobre los datos de su negocio, salvo que la ley lo prohíba.</p>
+<p lang="es">El dueño de {{ brand }} nunca usa los datos de {{ brand }} para ningún otro trabajo o negocio.</p>
+<h2 lang="es">Mensajes automáticos e IA</h2>
+{%- if ai_on %}
+<p lang="es">Para clasificar su solicitud y ayudar a redactar nuestras preguntas, un servicio de IA de Anthropic lee la descripción de su trabajo después de que nuestro programa quita nombres, números de teléfono, correos electrónicos y números de calle. También escribe su tarjeta de trabajo, que usted ve antes de que salga. La IA nunca ve sus datos de contacto, nunca da precios ni diagnósticos, y nunca toma decisiones sobre dinero ni sobre quién recibe sus datos.</p>
+{%- else %}
+<p lang="es">Nuestros mensajes de texto son automáticos. Cuando se active, un servicio de IA ayuda a redactar nuestras preguntas y a escribir su tarjeta de trabajo a partir de su solicitud, después de que nuestro programa quita nombres, números de teléfono, correos electrónicos y números de calle. Usted ve la tarjeta antes de que salga.</p>
+{%- endif %}
+<p lang="es">Los detalles completos están en nuestra <a href="/privacy">política de privacidad</a> y en los <a href="/terms#business-terms">términos para negocios</a>, por ahora solo en inglés.</p>
+<p lang="en"><a href="/business-data">Business data, in English</a></p>
+{%- else %}
+<h1>Business data</h1>
+<p>Here's what {{ brand }} keeps about your business and your team's phones, how long we keep it, and who sees it.</p>
+<h2>What we keep</h2>
+<ul>
+<li>Business and license details from public records.</li>
+<li>Team members' names, emails and phone numbers.</li>
+<li>The email address where we send job requests and picks.</li>
+<li>How you chose to get job requests and picks.</li>
+<li>A log of each email we send you: when it was sent, arrived and first opened from its link.</li>
+<li>When each job card was sent, opened and quoted, and when each pick was sent, opened and confirmed.</li>
+<li>Call logs: who called, when and for how long. We never record calls, so call logs hold no recordings.</li>
+</ul>
+<h2>How long we keep it</h2>
+<p>Business records, team phones and call logs: <span class="retention-days">[days, set before launch and shown on the business data page]</span></p>
+<h2>Who can see it</h2>
+<ul>
+<li>You and your team, on your business page.</li>
+<li>The {{ brand }} owner, to run the service.</li>
+<li>Homeowners see your business name, your license and the quotes you send.</li>
+<li>Companies that help us run {{ brand }} see only what they need to do their part.</li>
+</ul>
+<h2>What we never ask</h2>
+<p>{{ brand }} never asks about your workers. The only team details we keep are the names, emails and phone numbers you and your team add.</p>
+<h2>Police and the law</h2>
+<p>We give your business's data to police or anyone else only when the law makes us. Examples are a subpoena or a warrant.</p>
+<p data-fixed="TERMS-021">We'll tell you about any legal demand for your business's data unless the law forbids it.</p>
+<p>{{ brand }}'s owner never uses {{ brand }}'s data for any other work or business.</p>
+<h2>Automated texts and AI</h2>
+{%- if ai_on %}
+<p data-fixed="AI-018">To sort your request and help word our questions, an AI service from Anthropic reads your job description after our software removes names, phone numbers, emails and street numbers. It also writes your job card, which you see before it goes out. The AI never sees your contact details, never gives prices or diagnoses, and never makes decisions about money or who gets your details.</p>
+{%- else %}
+<p data-fixed="AI-018">Our texts are automated. When it's switched on, an AI service helps word our questions and write your job card from your request, after our software removes names, phone numbers, emails and street numbers. You see the card before it goes.</p>
+{%- endif %}
+<p>The full details are in our <a href="/privacy">privacy policy</a> and our <a href="/terms#business-terms">business terms</a>.</p>
+<p lang="es"><a href="/es/business-data">Datos de negocios, en español</a></p>
+{%- endif %}
+{% endblock %}
+{% block footer %}
+{%- if es %}
+{%- let brand = askhava_core::api::brand().display_name() %}
+<h2 lang="es">Para propietarios</h2>
+<ul>
+<li><a href="/es/how-it-works">Cómo funciona</a></li>
+<li><a href="/services">Servicios</a></li>
+<li><a href="/request">Pida cotizaciones</a></li>
+<li><a href="/help">Ayuda</a></li>
+</ul>
+<p lang="es">Cotizaciones locales. Usted elige.</p>
+<p lang="es">{{ brand }} no es contratista y no realiza, cotiza ni supervisa trabajos. Pasamos su solicitud y le mostramos cotizaciones de negocios locales independientes, tal como las escribieron. Usted elige y contrata directamente al negocio.</p>
+{%- else %}
+{{ super() }}
+{%- endif %}
+{% endblock %}

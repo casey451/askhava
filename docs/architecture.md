@@ -422,7 +422,7 @@ Written as they happen to the `storage` adapter (OPS-010, OPS-011; `sources/01_s
 | tokio (`macros`, `rt-multi-thread`, `signal`, `net`, `time`, `sync`) | 1.53.3 (2026-10-13) | MIT | Async runtime; `sync` is named because the worker's semaphore and watch need it and sqlx only happens to enable it (D-491); 1.54.1 is past the cutoff |
 | tower / tower-http (`set-header`, `limit`, `fs`, `trace`, `request-id`, `timeout`, `catch-panic`, `sensitive-headers`) | 0.5.3 / 0.7.1 | MIT | Middleware: headers, body limits, static files, tracing, request IDs, timeouts, panic capture (D-481) |
 | askama | 0.16.1 (2026-09-04) | MIT OR Apache-2.0 | Compile-time HTML templates, autoescaped |
-| pulldown-cmark | 0.13.6 (2026-10-30) | MIT | Renders the legal documents once at start-up from `include_str!` of each file (`app/site/src/legal_pages.rs`, T221, D-491, D-3878, D-4070) |
+| pulldown-cmark | 0.13.6 (2026-10-30) | MIT | Renders the legal documents once at start-up from `include_str!` of each file (`app/site/src/legal_pages.rs`, T221, D-491, D-3878, D-4070); 0.13.6 for RUSTSEC-2026-0414 and RUSTSEC-2026-0433 (D-4031) |
 | serde / serde_json | 1.0.229 / 1.0.154 | MIT OR Apache-2.0 | Parsing with `deny_unknown_fields` |
 | serde-saphyr | 2.0.0 (2026-10-13) | MIT OR Apache-2.0 | Reading the catalog YAML (`serde_yaml` is unmaintained) |
 | sqlx (`default-features = false`; `postgres`, `runtime-tokio`, `tls-rustls-aws-lc-rs`, `macros`, `migrate`, `uuid`, `json`, `sqlx-toml`) | 0.9.0 (2026-05-21) | MIT OR Apache-2.0 | Postgres pool, compile-checked queries, migrations; the aws-lc-rs provider so sqlx and reqwest share one rustls provider, installed as the process default first thing in both binaries (D-481) |
@@ -597,11 +597,13 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /h/my-data | portals | T561 |
 | POST | /h/my-data/request | portals | T561 |
 | POST | /h/my-data/code | portals | T561 |
-| GET | /terms | site | T221 |
-| GET | /privacy | site | T221 |
-| GET | /sms-terms | site | T221 |
-| GET | /your-data | site | T221 |
-| GET | /business-data | site | T221 |
+| GET | /terms | site | yes |
+| GET | /privacy | site | yes |
+| GET | /sms-terms | site | yes |
+| GET | /your-data | site | yes |
+| GET | /business-data | site | yes |
+| GET | /es/your-data | site | yes |
+| GET | /es/business-data | site | yes |
 | GET | /help | site | T201 |
 | GET | /accessibility | site | T115 |
 | GET | /help/roc-complaint | site | T201 |
