@@ -12,6 +12,8 @@
 //! (INT-005, INT-025); nothing waits for a consent reply (CON-004, D-419). The urgency, choice and
 //! release steps follow: [`ask_how_soon`], [`answer_how_soon`] (with the INT-033 night count),
 //! [`answer_choice`] and [`release_emergency`], which enqueues the event `quotes` turns into cards.
+//! A would-be first message the D-132 phrase list reads as business intent gets only
+//! `business_signup_reply` and opens nothing (INT-020, [`business_reply`]; T103).
 //! [`on_opt_out`] runs after `messaging` has listed an opted-out number: it changes no job status
 //! (CON-012, JOB-020, D-005), marks the live jobs paused by the homeowner on a sole-word CANCEL or
 //! CANCELAR (CON-029) and enqueues [`OPTED_OUT_LIVE_KIND`] for the CON-028 notice (D-129, D-372).
@@ -29,6 +31,7 @@ use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
+use crate::conversation::{BUSINESS_SIGNUP_TEMPLATE, shows_business_intent};
 use crate::emergency::{self, Check, Choice, Hazard, Urgency, beep_is_alarm, is_safe_reply};
 use crate::emergency_count;
 use crate::models::{
@@ -36,7 +39,8 @@ use crate::models::{
 };
 use crate::rules::{
     CONSENT_CALL_TEMPLATE, CONSENT_TEMPLATE, DISCLOSURE_TEMPLATE, Inbound, Plan, SAFETY_TEMPLATE,
-    Send, Settings, Then, fold, language_code, language_from_code, plan, wanted_language,
+    Send, Settings, Then, consent_language, fold, language_code, language_from_code, plan,
+    wanted_language,
 };
 
 /// The INT-037 question to a smoke or CO alarm said only to beep.
@@ -157,6 +161,9 @@ async fn handle(
         settings,
         check,
     };
+    if open.is_none() && check == Check::Clear && shows_business_intent(msg.inbound.words) {
+        return business_reply(db, &step).await;
+    }
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
     let done = match open {
         None => open_request(&mut tx, &step, &decided).await?,
@@ -239,6 +246,24 @@ pub async fn receive_answer(
     }
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(handled)
+}
+
+/// INT-020, CON-001, D-132: a would-be first message showing business intent gets one text, the
+/// sign-up link with the brand and the STOP/HELP line, and opens no request, queues no consent
+/// text and records no consent (`Then::Nothing`).
+async fn business_reply(
+    db: &mut PgConnection,
+    step: &Step<'_, '_>,
+) -> Result<Handled, IntakeError> {
+    let inbound = step.msg.inbound;
+    let wanted = wanted_language(inbound.words, inbound.ai_spanish);
+    let language = consent_language(wanted, step.settings.spanish_conversations_on);
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let subject = [step.msg.inbox_id];
+    let text = (BUSINESS_SIGNUP_TEMPLATE, language);
+    let queued = queue(&mut tx, step, text, &subject, &[]).await?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(handled(None, vec![queued], Then::Nothing, Screened::Clear))
 }
 
 /// Whether `template` is a consent text template.
@@ -434,7 +459,7 @@ pub(crate) fn sha256_hex(text: &str) -> String {
 
 /// The consent-text version (CON-005): template, language and the first 12 hex digits of the
 /// SHA256 of the exact text sent, so any wording change is a new version.
-fn consent_version(template: &str, language: Language, body: &str) -> String {
+pub(crate) fn consent_version(template: &str, language: Language, body: &str) -> String {
     let hash = sha256_hex(body);
     format!("{template}:{}:{}", language_code(language), &hash[..12])
 }

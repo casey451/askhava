@@ -6,7 +6,8 @@
 //! daylight-and-evergreen look of `docs/design/DESIGN_SPEC.md` (WEB-001, D-3331), compiled into
 //! the binary and served at `/static/site/<name>` ([`assets`], [`routes`], T101). Other crates
 //! reach it only through [`api`]. The home and how-it-works pages, in English and the latter
-//! in Spanish, and the old directory paths are [`pages`] (T102). The legal and data pages are
+//! in Spanish, and the old directory paths are [`pages`] (T102), as are the services, coverage,
+//! help and ROC complaint pages (T201). The legal and data pages are
 //! `legal_pages` (T221). Autoescaping stays on in every template; only `legal.html` prints a
 //! draft's rendered Markdown, whose raw HTML is shown as text (SEC-011).
 

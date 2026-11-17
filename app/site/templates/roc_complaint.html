@@ -1,0 +1,13 @@
+{% extends "site_layout.html" %}
+{#- The ROC complaint page, /help/roc-complaint (T201; WEB-011): it links on to the Arizona
+    Registrar of Contractors' complaint form. The complaint text businesses' complaint replies send
+    names this path (app/businesses/src/complaints.rs). -#}
+{% block title %}Complain to the state about a contractor{% endblock %}
+{% block content %}
+{%- let brand = askhava_core::api::brand().display_name() %}
+<h1>Complain to the state about a contractor</h1>
+<p>The Arizona Registrar of Contractors (ROC) is the state office that licenses contractors.</p>
+<p>Did a job that needs a license go wrong? You can file a complaint with the ROC.</p>
+<p><a href="https://roc.az.gov/file-complaint">File a complaint on the ROC website</a></p>
+<p>You can also tell the {{ brand }} owner. <a href="/help#message">Send a message</a></p>
+{% endblock %}

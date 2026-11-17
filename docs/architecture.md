@@ -399,6 +399,8 @@ Each Railway project has four services: `web`, `worker`, `migrate` and PostgreSQ
 
 Written as they happen to the `storage` adapter (OPS-010, OPS-011; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:690`): the audit stream, the web request log (request IDs, routes with tokens redacted, status codes) and the AI structured readings. With Twilio's and Stripe's own records, they are the replay inputs after a restore (OPS-015 to OPS-019). The nightly encrypted export (`pg_dump -Fc`) goes to the same bucket under a separate key, kept 30 days (OPS-013); a restore runs the role bootstrap first (OPS-051). Point-in-time recovery comes from the host (OPS-012).
 
+The replay's helpers (T481, D-4005): `messaging::api::replay_window`, `replay_match` and `mark_replayed_sent` match unsent outbox rows to Twilio's sent log inside `messaging` (windows `CLOCK_SKEW` 5 minutes, `NO_BODY_WINDOW` 10 minutes) and answer row IDs only; `payments::api::rebuild_charge` books a lost Stripe charge through the success path, never calling Stripe.
+
 **Build notes** (D-3620). What each task built here, once a "What T### built" paragraph in this section, is one entry per line in the `NOTES.md` of the crate it is about (`docs/build-notes.md` when it names no crate), each line tagged with its task: `grep -n '(task 250)' app/*/NOTES.md docs/build-notes.md` prints every line of T250's note in order, and `grep -rn 'T250' app/*/NOTES.md docs/build-notes.md` every mention. A new build note goes at the end of its crate's `NOTES.md`, never here (section 12; `python3 scripts/split_arch_notes.py --check`).
 
 ## 11. Pinned stack versions
@@ -605,16 +607,16 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /business-data | site | yes |
 | GET | /es/your-data | site | yes |
 | GET | /es/business-data | site | yes |
-| GET | /help | site | T201 |
+| GET | /help | site | yes |
 | GET | /accessibility | site | T115 |
-| GET | /help/roc-complaint | site | T201 |
+| GET | /help/roc-complaint | site | yes |
 | GET | / | site | yes |
 | GET | /how-it-works | site | yes |
 | GET | /es/how-it-works | site | yes |
 | GET | /categories | site | yes |
 | GET | /events | site | yes |
-| GET | /services | site | T201 |
-| GET | /coverage | site | T201 |
+| GET | /services | site | yes |
+| GET | /coverage | site | yes |
 | GET | /business | site | T202 |
 | GET | /es/business | site | T202 |
 | GET | /business/help | site | T202 |
