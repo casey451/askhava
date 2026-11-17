@@ -20091,6 +20091,60 @@
    "acceptance": "`tests/integration/tests/call_texts_language.rs` passes with every listed case, the Spanish cases failing on `main` before the change; `whos_calling.rs` and `unreachable_steps.rs` integration tests pass unchanged."
   },
   {
+   "id": "T591",
+   "slug": "runner-disk-smoke-cap",
+   "title": "Runner (harness): free the backup job's disk and cap the smoke build cache",
+   "goal": "Plan change D-4071 (8 `backup` jobs lost their VM mid-session from Nov 16 19:06Z on a full root disk; evidence in D-4071): keep `.github/workflows/backup-runner.yml`'s `backup` job off a full `/dev/root`. Only that job and `runner/cache.py` change; nothing the smoke or a task worker runs changes. (1) Free the disk: a new step `Free the runner disk (D-4071)` (`continue-on-error: true`, `timeout-minutes: 10`) right after `Close merged tasks before the smoke (D-3141)` and right before `Rust build cache (D-514)`, so every cache restore lands on the freed disk and the merge resolution still runs within a minute of the start. It prints `df -h / | sed 's/^/disk before: /'`, removes `/usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/share/swift` with `sudo rm -rf` (one background job per path, then `wait`; a missing path is no error) and prints `df -h / | sed 's/^/disk after: /'`. First grep `.github/workflows/backup-runner.yml`, `scripts/` and `runner/` for each path's tools (android, dotnet, ghc, ghcup, cabal, stack, swift, codeql) and leave out any path the job uses; the report gives each grep's result. Node, Python (`setup-python`'s `/opt/hostedtoolcache/Python`), Go (gitleaks' fallback `go install`), rustup and cargo, Docker and its images (the Postgres service), the Playwright browsers and the claude-code-action runtime stay. (2) Cap the smoke entry, in `runner/cache.py` (stdlib only, functions under 50 lines, `key=value` lines alone on standard output): `bound(smoke, cap)` deletes the profile-level `incremental` folders (`smoke/*/incremental` and `smoke/<triple>/*/incremental`; the smoke runs with `CARGO_INCREMENTAL=0`, `runner/github_env.py:230`, so this rarely frees anything and the cap does the work), then sums the tree's apparent size (`github_env._tree_size`) and prints `save=yes` when it is at most `cap`, else `save=no` plus a `::warning::` line on standard error naming the size and the cap; a tree it cannot measure also gives `save=no`. Standard error gets one line with the bytes before and after. `SMOKE_CAP` is 24 GiB; the CLI is `python3 -m runner.cache bound --smoke <dir> [--cap-gib N]`. Nothing else under `target/smoke` is deleted. Workflow: a step `Bound the smoke build entry (D-4071)` (id `smoke-bound`, the same `if` as `smoke-drop`, `continue-on-error: true`, run as `cd \"$RUNNER_TEMP/keeper\" && python3 -m runner.cache bound --smoke \"$GITHUB_WORKSPACE/target/smoke\" | tee -a \"$GITHUB_OUTPUT\"`) right after `Stop a background smoke before the cache save (D-2560)` and right before `Drop the superseded smoke build entries (D-3143)`; the save's `if` gains ` && steps.smoke-bound.outputs.save == 'yes'` right after ` && steps.smoke-drop.outputs.save != 'no'` and before the final ` && steps.bg-smoke.outputs.stopped != 'stopped'` (which `tests/test_runner_smoke_reuse.py:508`, not owned here, pins as the ending). It fails closed: a step that crashed (bash `-e` without pipefail, so `tee` hides the exit) writes no output and the tree is not saved; the bound step runs under the drop's `if`, so an empty output can only mean the tree was not measured. The drop step's `if` is unchanged, so an entry over the cap is still dropped and nothing replaces it: the next job builds the smoke cold and saves a fresh, small entry. The cap heals itself that way, at the cost of one cold smoke build each time the entry outgrows it. Why 24 GiB: the entry held 4,970 MB compressed (about 23 GB on disk) through Nov 16 07:39 with no loss, and the observed ratio is about 4.7 to 1 (46 GB on disk for 9.4 to 9.7 GB), so the cap is about 5.1 GB compressed, inside D-3143's 10 GB repository budget beside `Ci`'s entries; with the worker's `target/debug` (26 GB seen), `target/tests` (1.7 GB) and llvm-cov (about 6 GB) it leaves over 25 GB free on the 145 GB disk (60 GB used by the image) even if step (1) frees nothing. (3) Disk lines: `df -h / | sed 's/^/disk at session start: /' || true` at the end of `Pick the session's model (D-2225)` (the last step before the session) and `df -h / | sed 's/^/disk at hand-in: /' || true` right after `set -u` in `Hand in for a session that stopped without handing in (D-503)` (`backup-runner.yml:624`); neither writes to `$GITHUB_OUTPUT`. (4) Tests in `tests/test_runner_cache.py`, on fake trees only: `bound` deletes profile-level `incremental` folders and keeps everything else, answers `save=yes` at or under a small cap and `save=no` with the warning over it, and `save=no` when the tree cannot be measured; `bound` joins `test_standard_output_holds_only_key_value_lines`. The workflow tests pin the two new steps' names, ids, conditions and order (the free-disk step after `Close merged tasks` and before the first `actions/cache/restore`; bound right after the background-smoke stop and right before the drop, the drop still directly before the save) and the two disk lines; `test_the_smoke_entry_is_saved_only_from_main_alone_after_its_older_entries_are_dropped` pins the save's new `if` exactly as `save[\"if\"] == drop[\"if\"].replace(\" && steps.bg-smoke\", \" && steps.smoke-drop.outputs.save != 'no' && steps.smoke-bound.outputs.save == 'yes' && steps.bg-smoke\")` (stricter, not looser); `tests/test_runner_smoke_reuse.py` passes unchanged; nothing else in an existing test changes. Update `docs/architecture.md`'s build-caches line (D-3143) with the cap and the free-disk step.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T100",
+    "T473"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    ".github/workflows/backup-runner.yml",
+    "runner/cache.py",
+    "tests/test_runner_cache.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/architecture.md",
+    "runner/github_env.py",
+    "tests/test_workflow_shell.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-4071",
+    "D-3143",
+    "D-1890",
+    "D-1911",
+    "D-2560"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 150,
+    "context_pct": 40
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T591-runner-disk-smoke-cap",
+   "prompt": "kit/prompts/T591.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_cache.py tests/test_workflow_shell.py` passes with the new cases, the `bound` cases failing on `main` (no `bound` there); every other `tests/test_runner_*.py` and `tests/test_safety_hand_in_release.py` passes unchanged; the report holds the greps of step (1); `actionlint` on `backup-runner.yml` reports nothing new."
+  },
+  {
    "id": "T549",
    "slug": "phase1-audit-money",
    "title": "Fresh Opus audit, part 1 of 3: payments, picks, quotes, jobs, catalog, licensing (D-3891)",
@@ -20730,7 +20784,8 @@
     "T587",
     "T588",
     "T589",
-    "T590"
+    "T590",
+    "T591"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
