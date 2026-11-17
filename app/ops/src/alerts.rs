@@ -7,19 +7,20 @@
 //! ([`record_business_counts`]) and `jobs` each trade's requests this Arizona calendar month
 //! ([`record_request_counts`]). Every alert waits for Casey; there is no backup person (OPS-002).
 //! Safety reports, disputes and complaints raise their own alerts in `businesses`, `jobs` and
-//! `payments` (OPS-005); safe mode and the push are T487's and T204's.
+//! `payments` (OPS-005); safe mode is T487's.
 //!
 //! Locks: the delivery report runs under one advisory lock (`ops.delivery`), and every coverage
 //! report under one other (`ops.coverage`, [`lock_coverage`]); each is a single key, taken again
 //! freely in the same transaction, so two reports in one transaction cannot deadlock on key order.
 
-use jiff::Timestamp;
+use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::api::{ALERT_ACKNOWLEDGED_ACTION, audit, raise_alert_once};
-use crate::models::{Actor, AuditEntry, Change, NewAlert, OpsError, Severity};
+use crate::models::{Actor, AuditEntry, Change, NewAlert, OpsError, Severity, is_code_name};
 use crate::service::raise_alert;
 
 /// The High text-delivery alert kind; at most one is open at a time (OPS-004, OPS-025, D-075).
@@ -151,6 +152,13 @@ async fn acknowledge(
     id: Uuid,
     at: Timestamp,
 ) -> Result<DeliveryOutcome, OpsError> {
+    acknowledge_one(tx, id, at).await?;
+    Ok(DeliveryOutcome::Acknowledged(id))
+}
+
+/// OPS-023: resolves alert `id` at `at` with its `ops.alert_ack` row by the system and one
+/// [`ALERT_ACKNOWLEDGED_ACTION`] audit row, which the digest lists as self-acknowledged.
+async fn acknowledge_one(tx: &mut PgConnection, id: Uuid, at: Timestamp) -> Result<(), OpsError> {
     sqlx::query!(
         "WITH done AS (UPDATE ops.alert SET resolved_at = $2 WHERE id = $1 RETURNING id) \
          INSERT INTO ops.alert_ack (alert_id, acknowledged_by, at) \
@@ -168,8 +176,7 @@ async fn acknowledge(
         subject_id: id,
         change: Change::Action,
     };
-    audit(tx, &entry).await?;
-    Ok(DeliveryOutcome::Acknowledged(id))
+    audit(tx, &entry).await.map(drop)
 }
 
 /// OPS-025, D-163: raises the High delivery alert for `audience` unless held since the last
@@ -342,4 +349,414 @@ async fn advisory_lock(db: &mut PgConnection, key: &str) -> Result<(), OpsError>
     .await
     .map(|_| ())
     .map_err(|_| OpsError::Database)
+}
+
+/// OPS-004, OPS-023: the alert kind of Stripe or webhook errors over 30 minutes (raised by T518).
+pub const VENDOR_ALERT: &str = "ops.vendor_errors";
+/// OPS-004, OPS-029: the alert kind of a health check failing twice (raised by T518).
+pub const HEALTH_ALERT: &str = "ops.health_check_failed";
+/// FEE-030, OPS-029: `payments`' nightly ledger difference (`payments::api::MISMATCH_ALERT`).
+pub const LEDGER_ALERT: &str = "payments.ledger_mismatch";
+/// OPS-052: a database volume above 85% full (raised by T525); listed in the daytime push only.
+pub const VOLUME_HIGH_ALERT: &str = "ops.volume_high";
+/// OPS-004, D-381: email use at 70% of the daily or 80% of the monthly limit, once a day.
+pub const EMAIL_LIMIT_ALERT: &str = "ops.email_limit";
+/// OPS-029: a Twilio number suspension notice.
+pub const NUMBER_SUSPENDED_ALERT: &str = "messaging.number_suspended";
+/// OPS-032, TXT-024: Twilio's notice that a suspended number is restored.
+pub const NUMBER_RESTORED_ALERT: &str = "messaging.number_restored";
+/// INT-023, TXT-015 (D-1378): `messaging`'s failed-text call-back alert; the daytime push lists
+/// only its High (urgent) rows, never the Normal (no-rush) ones.
+pub const FAILED_TEXT_CALL_BACK_ALERT: &str = "messaging.call_back_due";
+/// OPS-023, D-220: how long Stripe and webhook errors must stay clear before their alert clears.
+pub const VENDOR_QUIET: SignedDuration = SignedDuration::from_hours(2);
+/// OPS-029, D-3877: a health alert is raised at the second failed check (about 5 minutes in), so
+/// one still open 10 minutes later is a check failing 15 minutes after its first failure.
+pub const HEALTH_PUSH_AFTER: SignedDuration = SignedDuration::from_mins(10);
+/// OPS-029: two ledger alerts this far apart are two nightly checks, not one run's.
+const LEDGER_NIGHTS_APART: SignedDuration = SignedDuration::from_hours(12);
+/// OPS-029, SEC-047 (D-3881): the kinds that push as soon as they are open, besides any critical
+/// alert, a [`HEALTH_ALERT`] after [`HEALTH_PUSH_AFTER`] and a [`LEDGER_ALERT`] on its second night.
+pub const PUSH_AT_ONCE: &[&str] = &[
+    NUMBER_SUSPENDED_ALERT,
+    EMAIL_LIMIT_ALERT,
+    "privacy.vault_read_spike",
+    "privacy.vault_read_unregistered",
+];
+/// OPS-032, OPS-005, LIC-039, OPS-052, INT-023: the open alerts the 9 a.m. and 3 p.m. push lists.
+pub const DAYTIME_KINDS: &[&str] = &[
+    "intake.call_back_urgent",
+    "businesses.complaint_safety",
+    "jobs.problem_report_safety",
+    "licensing.list_still_failing",
+    NUMBER_RESTORED_ALERT,
+    VOLUME_HIGH_ALERT,
+];
+/// The kinds an OPS-023 clearing acknowledges ([`acknowledge_cleared`]).
+const CLEARING_KINDS: &[&str] = &[VENDOR_ALERT, HEALTH_ALERT, LEDGER_ALERT];
+/// OPS-032: how late a 9 a.m. or 3 p.m. push may still go out; a slot older than this is skipped.
+const PUSH_SLOT_GRACE: SignedDuration = SignedDuration::from_hours(1);
+/// Arizona's fixed offset from UTC (no daylight saving).
+const ARIZONA: SignedDuration = SignedDuration::from_hours(-7);
+
+/// OPS-023, D-220: whether Stripe and webhook errors, last seen at `last_error`, have been clear
+/// for [`VENDOR_QUIET`] at `now`; the caller then clears [`VENDOR_ALERT`], never [`LEDGER_ALERT`].
+#[must_use]
+pub fn vendor_quiet(last_error: Timestamp, now: Timestamp) -> bool {
+    now.duration_since(last_error) >= VENDOR_QUIET
+}
+
+/// OPS-023, D-220, D-3877: acknowledges every open alert of `kind` at `at` when its symptom
+/// cleared (a [`VENDOR_ALERT`] after [`vendor_quiet`], a [`HEALTH_ALERT`] when the check passes,
+/// a [`LEDGER_ALERT`] only when the next nightly reconcile matched): each is resolved with an
+/// `ops.alert_ack` row by the system and an audit row, in one transaction, and listed in the
+/// digest. Any other kind is never cleared this way and nothing is written. Returns the IDs.
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn acknowledge_cleared(
+    db: &mut PgConnection,
+    kind: &str,
+    at: Timestamp,
+) -> Result<Vec<Uuid>, OpsError> {
+    if !CLEARING_KINDS.contains(&kind) {
+        return Ok(Vec::new());
+    }
+    let mut tx = db.begin().await.map_err(|_| OpsError::Database)?;
+    let ids = sqlx::query_scalar!(
+        "SELECT id FROM ops.alert WHERE kind = $1 AND resolved_at IS NULL ORDER BY raised_at \
+         FOR UPDATE",
+        kind,
+    )
+    .fetch_all(&mut *tx)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    for id in &ids {
+        acknowledge_one(&mut tx, *id, at).await?;
+    }
+    tx.commit().await.map_err(|_| OpsError::Database)?;
+    Ok(ids)
+}
+
+/// One open alert to push or list: its ID, kind, severity and subject ID, never text (PRIV-006).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PushAlert {
+    /// The alert's ID.
+    pub id: Uuid,
+    /// The alert kind, a code name.
+    pub kind: String,
+    /// `critical`, `high` or `normal`.
+    pub severity: String,
+    /// The record it is about, by ID, if any (a job, a business).
+    pub subject_id: Option<Uuid>,
+}
+
+/// OPS-029, OPS-035, D-218: the open alerts not yet pushed that push to Casey's phone at `now`:
+/// every critical safety alert not acknowledged (OPS-028), a [`HEALTH_ALERT`] open
+/// [`HEALTH_PUSH_AFTER`] after it was raised, a [`LEDGER_ALERT`] still there at the next nightly
+/// check (the newest open one, raised a night after another open one, and only while no open one
+/// has pushed: one push per difference, D-218), and each [`PUSH_AT_ONCE`] kind; nothing else
+/// pushes, everything else waits for the portal and the digest. Oldest first.
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn alerts_to_push(
+    db: &mut PgConnection,
+    now: Timestamp,
+) -> Result<Vec<PushAlert>, OpsError> {
+    let health = now.saturating_sub(HEALTH_PUSH_AFTER).unwrap_or(now);
+    let kinds: Vec<String> = PUSH_AT_ONCE.iter().map(|k| (*k).to_owned()).collect();
+    sqlx::query_as!(
+        PushAlert,
+        r#"SELECT a.id, a.kind, a.severity, a.subject_id FROM ops.alert a
+           WHERE a.resolved_at IS NULL
+             AND NOT EXISTS (SELECT 1 FROM ops.alert_push p WHERE p.alert_id = a.id)
+             AND (a.severity = 'critical' OR a.kind = ANY($1)
+               OR (a.kind = $2 AND a.raised_at <= $3)
+               OR (a.kind = $4 AND EXISTS (SELECT 1 FROM ops.alert b WHERE b.kind = $4
+                 AND b.resolved_at IS NULL
+                 AND extract(epoch FROM a.raised_at - b.raised_at)::float8 >= $5::float8)
+                 AND NOT EXISTS (SELECT 1 FROM ops.alert c WHERE c.kind = $4
+                   AND c.resolved_at IS NULL AND (c.raised_at > a.raised_at
+                     OR EXISTS (SELECT 1 FROM ops.alert_push q WHERE q.alert_id = c.id)))))
+           ORDER BY a.raised_at, a.id"#,
+        &kinds,
+        HEALTH_ALERT,
+        health.to_sqlx() as _,
+        LEDGER_ALERT,
+        LEDGER_NIGHTS_APART.as_secs_f64(),
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| OpsError::Database)
+}
+
+/// OPS-001, OPS-035: records that alert `id` was pushed (emailed to the alert address) at `at`;
+/// T487's safe-mode clock starts from this row. A repeat keeps the first time.
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn record_push(db: &mut PgConnection, id: Uuid, at: Timestamp) -> Result<(), OpsError> {
+    sqlx::query!(
+        "INSERT INTO ops.alert_push (alert_id, pushed_at) VALUES ($1, $2) \
+         ON CONFLICT (alert_id) DO NOTHING",
+        id,
+        at.to_sqlx() as _,
+    )
+    .execute(db)
+    .await
+    .map(drop)
+    .map_err(|_| OpsError::Database)
+}
+
+/// OPS-032: the latest 9 a.m. or 3 p.m. Arizona push slot at or before `now`.
+#[must_use]
+pub fn push_slot(now: Timestamp) -> Timestamp {
+    let local = now.as_second() + ARIZONA.as_secs();
+    let day = local.div_euclid(86_400) * 86_400;
+    let into = local - day;
+    let slot = match into {
+        i if i >= 15 * 3_600 => day + 15 * 3_600,
+        i if i >= 9 * 3_600 => day + 9 * 3_600,
+        _ => day - 9 * 3_600,
+    };
+    Timestamp::from_second(slot - ARIZONA.as_secs()).unwrap_or(now)
+}
+
+/// One OPS-032 item that is not an open alert (a help request due within 24 hours or held back by
+/// the OPS-036 daily limit): kind and subject by code name and ID only.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PushItem {
+    /// The item's ID, which Casey's done mark names.
+    pub id: Uuid,
+    /// The item kind, a code name.
+    pub kind: String,
+    /// The kind of record it is about.
+    pub subject_kind: String,
+    /// The record's ID.
+    pub subject_id: Uuid,
+}
+
+/// One 9 a.m. or 3 p.m. push: its slot and what it lists.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DaytimePush {
+    /// The slot this push is for.
+    pub slot: Timestamp,
+    /// The open [`DAYTIME_KINDS`] alerts raised by the slot.
+    pub alerts: Vec<PushAlert>,
+    /// The open push items shown from the slot or earlier.
+    pub items: Vec<PushItem>,
+}
+
+/// OPS-032, D-277, D-492: the push due for `now`'s slot ([`push_slot`]), unless that slot was
+/// handled or is over an hour old (a missed 3 p.m. push is never sent at night; the
+/// next slot lists its items): every open [`DAYTIME_KINDS`] alert raised at or before the slot and every push item
+/// not marked done with `show_from` at or before it, so each stays listed until Casey marks it
+/// done and one raised after the slot waits for the next. With nothing open the slot is recorded
+/// as handled and `None` is returned: nothing is sent.
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn daytime_push_due(
+    db: &mut PgConnection,
+    now: Timestamp,
+) -> Result<Option<DaytimePush>, OpsError> {
+    let slot = push_slot(now);
+    if now.duration_since(slot) > PUSH_SLOT_GRACE {
+        return Ok(None);
+    }
+    let handled = sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM ops.push_slot WHERE slot = $1) AS "handled!""#,
+        slot.to_sqlx() as _,
+    )
+    .fetch_one(&mut *db)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    if handled {
+        return Ok(None);
+    }
+    let push = DaytimePush {
+        slot,
+        alerts: daytime_alerts(db, slot).await?,
+        items: open_items(db, slot).await?,
+    };
+    if push.alerts.is_empty() && push.items.is_empty() {
+        record_daytime_push(db, &push, now).await?;
+        return Ok(None);
+    }
+    Ok(Some(push))
+}
+
+/// OPS-032, INT-023: the open [`DAYTIME_KINDS`] alerts and High [`FAILED_TEXT_CALL_BACK_ALERT`]
+/// alerts raised at or before `slot`, oldest first.
+async fn daytime_alerts(
+    db: &mut PgConnection,
+    slot: Timestamp,
+) -> Result<Vec<PushAlert>, OpsError> {
+    let kinds: Vec<String> = DAYTIME_KINDS.iter().map(|k| (*k).to_owned()).collect();
+    sqlx::query_as!(
+        PushAlert,
+        "SELECT id, kind, severity, subject_id FROM ops.alert \
+         WHERE resolved_at IS NULL AND raised_at <= $2 \
+         AND (kind = ANY($1) OR (kind = $3 AND severity = 'high')) \
+         ORDER BY raised_at, id",
+        &kinds,
+        slot.to_sqlx() as _,
+        FAILED_TEXT_CALL_BACK_ALERT,
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| OpsError::Database)
+}
+
+/// The push items not marked done and shown from `slot` or earlier, oldest first.
+async fn open_items(db: &mut PgConnection, slot: Timestamp) -> Result<Vec<PushItem>, OpsError> {
+    sqlx::query_as!(
+        PushItem,
+        "SELECT id, kind, subject_kind, subject_id FROM ops.push_item \
+         WHERE done_at IS NULL AND show_from <= $1 ORDER BY show_from, id",
+        slot.to_sqlx() as _,
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| OpsError::Database)
+}
+
+/// OPS-032, OPS-001, OPS-052: records `push`'s slot as handled at `at` and, for each listed alert
+/// but a [`VOLUME_HIGH_ALERT`] (which never starts safe mode), its push time, in one transaction.
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn record_daytime_push(
+    db: &mut PgConnection,
+    push: &DaytimePush,
+    at: Timestamp,
+) -> Result<(), OpsError> {
+    let mut tx = db.begin().await.map_err(|_| OpsError::Database)?;
+    let count = push.alerts.len() + push.items.len();
+    sqlx::query!(
+        "INSERT INTO ops.push_slot (slot, items, handled_at) VALUES ($1, $2, $3) \
+         ON CONFLICT (slot) DO NOTHING",
+        push.slot.to_sqlx() as _,
+        i32::try_from(count).unwrap_or(i32::MAX),
+        at.to_sqlx() as _,
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    for alert in push.alerts.iter().filter(|a| a.kind != VOLUME_HIGH_ALERT) {
+        record_push(&mut tx, alert.id, at).await?;
+    }
+    tx.commit().await.map_err(|_| OpsError::Database)
+}
+
+/// OPS-032, D-4044: adds one push item of `kind` about `subject`, listed from `show_from` until
+/// Casey marks it done; at most one open item per kind and subject (a repeat returns `None`).
+///
+/// # Errors
+///
+/// [`OpsError::NotACodeName`] (nothing is written), or [`OpsError::Database`].
+pub async fn add_push_item(
+    db: &mut PgConnection,
+    kind: &'static str,
+    subject: (&'static str, Uuid),
+    show_from: Timestamp,
+) -> Result<Option<Uuid>, OpsError> {
+    if !is_code_name(kind) {
+        return Err(OpsError::NotACodeName("kind"));
+    }
+    if !is_code_name(subject.0) {
+        return Err(OpsError::NotACodeName("subject_kind"));
+    }
+    sqlx::query_scalar!(
+        "INSERT INTO ops.push_item (kind, subject_kind, subject_id, show_from) \
+         VALUES ($1, $2, $3, $4) \
+         ON CONFLICT (kind, subject_kind, subject_id) WHERE done_at IS NULL DO NOTHING RETURNING id",
+        kind,
+        subject.0,
+        subject.1,
+        show_from.to_sqlx() as _,
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| OpsError::Database)
+}
+
+/// OPS-032: Casey's done mark on push item `id` at `at`; returns false for an item already done
+/// or unknown, so a repeat is safe.
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn mark_push_item_done(
+    db: &mut PgConnection,
+    id: Uuid,
+    at: Timestamp,
+) -> Result<bool, OpsError> {
+    sqlx::query_scalar!(
+        "UPDATE ops.push_item SET done_at = $2 WHERE id = $1 AND done_at IS NULL RETURNING id",
+        id,
+        at.to_sqlx() as _,
+    )
+    .fetch_optional(db)
+    .await
+    .map(|row| row.is_some())
+    .map_err(|_| OpsError::Database)
+}
+
+/// The audit action of a change to the owner's away date (OPS-026).
+pub const AWAY_SET_ACTION: &str = "ops.away_set";
+
+/// OPS-026, D-207: stores the date Casey is away until (`None` when he is back) at `at`, with one
+/// audit row by `owner`, in one transaction; it changes no timer. T483 shows it to businesses and
+/// in the HELP reply.
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn set_away_until(
+    db: &mut PgConnection,
+    until: Option<Date>,
+    owner: Uuid,
+    at: Timestamp,
+) -> Result<(), OpsError> {
+    let mut tx = db.begin().await.map_err(|_| OpsError::Database)?;
+    sqlx::query!(
+        "UPDATE ops.owner_away SET away_until = $1::text::date, set_at = $2",
+        until.map(|d| d.to_string()),
+        at.to_sqlx() as _,
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    let entry = AuditEntry {
+        actor: Actor::Owner(owner),
+        action: AWAY_SET_ACTION,
+        subject_kind: "ops.owner_away",
+        subject_id: Uuid::nil(),
+        change: Change::Field("away_until"),
+    };
+    audit(&mut tx, &entry).await?;
+    tx.commit().await.map_err(|_| OpsError::Database)
+}
+
+/// OPS-026: the date Casey is away until, if one is set.
+///
+/// # Errors
+///
+/// [`OpsError::Database`] (also for a stored date that does not read back).
+pub async fn away_until(db: &mut PgConnection) -> Result<Option<Date>, OpsError> {
+    let stored = sqlx::query_scalar!("SELECT away_until::text FROM ops.owner_away")
+        .fetch_optional(db)
+        .await
+        .map_err(|_| OpsError::Database)?
+        .flatten();
+    stored
+        .map(|d| d.parse::<Date>().map_err(|_| OpsError::Database))
+        .transpose()
 }

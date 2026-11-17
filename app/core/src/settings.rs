@@ -102,6 +102,9 @@ const KEYS: &[&str] = &[
     "ASKHAVA_EMAIL_DAILY_LIMIT",
     "ASKHAVA_EMAIL_MONTHLY_LIMIT",
     "ASKHAVA_EMAIL_BULK_HOLD_PERCENT",
+    // OPS-035's alert address, read as a `SecretString` by `askhava_server`'s alert email sender
+    // and never logged (T204, D-3882, D-4044).
+    "ASKHAVA_ALERT_EMAIL",
     // The homeowner line's one configured number, parsed by `askhava_server` for `messaging`'s
     // outbox sender (T356, TXT-022, D-2628).
     "ASKHAVA_HOMEOWNER_NUMBER",
