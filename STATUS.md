@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T14:33:44Z by runner e1c5e4bc416f (actions).
+Updated 2026-11-17T14:51:20Z by runner a44660021dec (actions).
 
-**Idle since 14:20Z; 397 of 561 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 14:41Z; 398 of 561 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 397 of 561 build tasks (owner gates not counted)
+- **Tasks done:** 398 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 14:20Z (no task in progress)
+- **Lane:** idle since 14:41Z (no task in progress)
 - **Week:** 21% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:33Z, 0 min before this update
+- **Last run:** 14:33Z, 17 min before this update
 - **Keeper:** last ran 14:33Z, next wake 14:53Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-17T14:33:44Z by runner e1c5e4bc416f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T471 | picks and intake: her "backup has your pick" text on every p | MERGE_PENDING | 1 | 47 min | 14:20Z |  |
+| T471 | picks and intake: her "backup has your pick" text on every p | done | 1 | 47 min | 14:20Z |  |
 | T321 | messaging: the consent-purge functions, the inbound-text clo | MERGE_PENDING | 1 | 49 min | 13:42Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 2 | 94 min | 13:39Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T363 | portals: the served pick and its code step apply the per-IP  | MERGE_PENDING | 1 | 62 min | 13:38Z |  |
@@ -90,8 +90,6 @@ Updated 2026-11-17T14:33:44Z by runner e1c5e4bc416f (actions).
 | T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z |  |
 | T521 | catalog: each category's plural display name and a list read | done | 1 | 34 min | 15:09Z |  |
 | T477 | payments, picks and quotes: the scorecard's money, pick and  | done | 2 | 42 min | 14:55Z | T477 review not approved after the one fix round (D-522). Head cbf7179ee (fix round of 634d3f7dd: jobs_by_trade(db, to)  |
-| T308 | portals (harness): the quote page's close button (JOB-019) i | done | 1 | 72 min | 14:42Z |  |
-| T529 | payments: an owner refund has its own refund trigger (D-3883 | done | 2 | 28 min | 14:39Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 
 ### Plan and harness merges on main
 - none
@@ -99,7 +97,7 @@ Updated 2026-11-17T14:33:44Z by runner e1c5e4bc416f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 304 of 733 (41.5%) · partial 341 · unstarted 88
-**Tasks merged (throughput only):** 397 of 561
+**Tasks merged (throughput only):** 398 of 561
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -135,7 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 40 of 169 done
+- stage 5: 41 of 169 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
