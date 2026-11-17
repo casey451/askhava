@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T19:49:51Z by runner 889565bba82e (actions).
+Updated 2026-11-17T19:50:07Z by runner 889565bba82e (actions).
 
 **Building: T582 in progress since 19:37Z; 407 of 570 done; week 27% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-17T19:49:51Z by runner 889565bba82e (actions).
 - **Lane:** lane 1: T582 claimed 19:37Z, lease until 22:37Z; lane 5: T115 claimed 18:45Z, lease until 22:31Z; lane 6: T106 claimed 19:20Z, lease until 22:20Z; lane 7: T594 claimed 19:39Z, lease until 22:39Z
 - **Week:** 27% used, 139.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:49Z, 0 min before this update
-- **Keeper:** last ran 19:28Z, next wake 21:48Z
+- **Keeper:** last ran 19:50Z, next wake 22:23Z
 
 ## Needs attention
 - BLOCKED T104: Review not approved after the one fix round (head ec5f136577adfe010b854d7f2d0dec66bf17f238; tests/docs/test_wording_scan.py 349 of 350 lines; pytest 220 passed; prehandin.sh green; smoke.sh green on first head 2a14626dd). First review findings (pronoun hand-over "share it/pass it/give it", Spanish plural "más baratas aparecen primero", "listed/shown by price", "se le da") were fixed and hold; repack dropped nothing. Second reviewer's findings:
