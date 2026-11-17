@@ -20,13 +20,14 @@ use std::sync::{Arc, Mutex, PoisonError};
 use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_core::api::{Clock, Lease, ManualClock, Registry, Settings, WorkerId, claim};
 use askhava_messaging::api::{
-    EmailLimits, HOURLY_CHECKS_KIND, OWNER_ALERT_CALL_KIND, WEBHOOKS_SILENT_ALERT, check_email_use,
-    schedule_alert_push, schedule_hourly_checks,
+    CALL_BACK_ALERT, EmailLimits, HOURLY_CHECKS_KIND, OWNER_ALERT_CALL_KIND, WEBHOOKS_SILENT_ALERT,
+    check_email_use, schedule_alert_push, schedule_hourly_checks,
 };
 use askhava_ops::api::{
-    EMAIL_LIMIT_ALERT, HEALTH_ALERT, LEDGER_ALERT, VENDOR_ALERT, VOLUME_HIGH_ALERT,
-    acknowledge_cleared, add_push_item, alerts_to_push, away_until, daytime_push_due,
-    mark_push_item_done, push_slot, record_daytime_push, record_push, set_away_until, vendor_quiet,
+    EMAIL_LIMIT_ALERT, FAILED_TEXT_CALL_BACK_ALERT, HEALTH_ALERT, LEDGER_ALERT, VENDOR_ALERT,
+    VOLUME_HIGH_ALERT, acknowledge_cleared, add_push_item, alerts_to_push, away_until,
+    daytime_push_due, mark_push_item_done, push_slot, record_daytime_push, record_push,
+    set_away_until, vendor_quiet,
 };
 use askhava_payments::api::{ReconcileStripe, StripeCharge, reconcile};
 use askhava_picks::api::ConfirmSettings;
@@ -365,6 +366,37 @@ async fn td_ops_09_the_daytime_push_lists_open_items_until_done(pool: PgPool) {
     );
     let next = daytime_push_due(&mut conn, at(NEXT_MORNING) + 48 * HOUR).await;
     assert!(next.expect("9:00").is_some(), "the next slot lists it");
+}
+
+/// TD-OPS-09, INT-023: a 911-list request whose texts all fail with no email on file leaves a High
+/// `messaging.call_back_due` alert, which the next 9:00 push lists; a no-rush (Normal) one is not.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_09_an_urgent_failed_text_call_back_is_in_the_daytime_push(pool: PgPool) {
+    assert_eq!(
+        FAILED_TEXT_CALL_BACK_ALERT, CALL_BACK_ALERT,
+        "the kind messaging raises"
+    );
+    let mut conn = pool.acquire().await.expect("conn");
+    let urgent = plant(&pool, CALL_BACK_ALERT, "high", at(AFTERNOON) + MIN).await;
+    let no_rush = plant(&pool, CALL_BACK_ALERT, "normal", at(AFTERNOON) + MIN).await;
+    let morning = daytime_push_due(&mut conn, at(NEXT_MORNING)).await;
+    let morning = morning.expect("9:00").expect("a push");
+    let listed: Vec<Uuid> = morning.alerts.iter().map(|a| a.id).collect();
+    assert_eq!(listed, vec![urgent], "only the urgent call-back is listed");
+    record_daytime_push(&mut conn, &morning, at(NEXT_MORNING))
+        .await
+        .expect("record");
+    let push_row = "SELECT count(*) FROM ops.alert_push WHERE alert_id = $1";
+    assert_eq!(
+        count(&pool, push_row, urgent).await,
+        1,
+        "safe mode's clock starts"
+    );
+    assert_eq!(
+        count(&pool, push_row, no_rush).await,
+        0,
+        "no-rush never pushes"
+    );
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]

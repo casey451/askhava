@@ -19,12 +19,13 @@ use crate::service;
 
 pub use crate::alerts::{
     AWAY_SET_ACTION, Audience, COVERAGE_ALERT, CoverageCount, CoverageScope, DAYTIME_KINDS,
-    DELIVERY_ALERT, DaytimePush, DeliveryCounts, DeliveryOutcome, EMAIL_LIMIT_ALERT, HEALTH_ALERT,
-    HEALTH_PUSH_AFTER, LEDGER_ALERT, NUMBER_RESTORED_ALERT, NUMBER_SUSPENDED_ALERT, PUSH_AT_ONCE,
-    PushAlert, PushItem, VENDOR_ALERT, VENDOR_QUIET, VOLUME_HIGH_ALERT, acknowledge_cleared,
-    add_push_item, alerts_to_push, away_until, daytime_push_due, lock_coverage,
-    mark_push_item_done, push_slot, record_business_counts, record_daytime_push,
-    record_delivery_counts, record_push, record_request_counts, set_away_until, vendor_quiet,
+    DELIVERY_ALERT, DaytimePush, DeliveryCounts, DeliveryOutcome, EMAIL_LIMIT_ALERT,
+    FAILED_TEXT_CALL_BACK_ALERT, HEALTH_ALERT, HEALTH_PUSH_AFTER, LEDGER_ALERT,
+    NUMBER_RESTORED_ALERT, NUMBER_SUSPENDED_ALERT, PUSH_AT_ONCE, PushAlert, PushItem, VENDOR_ALERT,
+    VENDOR_QUIET, VOLUME_HIGH_ALERT, acknowledge_cleared, add_push_item, alerts_to_push,
+    away_until, daytime_push_due, lock_coverage, mark_push_item_done, push_slot,
+    record_business_counts, record_daytime_push, record_delivery_counts, record_push,
+    record_request_counts, set_away_until, vendor_quiet,
 };
 pub use crate::audit_subjects::{AuditSubject, audit_subjects};
 pub use crate::models::{

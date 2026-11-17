@@ -365,6 +365,9 @@ pub const EMAIL_LIMIT_ALERT: &str = "ops.email_limit";
 pub const NUMBER_SUSPENDED_ALERT: &str = "messaging.number_suspended";
 /// OPS-032, TXT-024: Twilio's notice that a suspended number is restored.
 pub const NUMBER_RESTORED_ALERT: &str = "messaging.number_restored";
+/// INT-023, TXT-015 (D-1378): `messaging`'s failed-text call-back alert; the daytime push lists
+/// only its High (urgent) rows, never the Normal (no-rush) ones.
+pub const FAILED_TEXT_CALL_BACK_ALERT: &str = "messaging.call_back_due";
 /// OPS-023, D-220: how long Stripe and webhook errors must stay clear before their alert clears.
 pub const VENDOR_QUIET: SignedDuration = SignedDuration::from_hours(2);
 /// OPS-029, D-3877: a health alert is raised at the second failed check (about 5 minutes in), so
@@ -588,7 +591,8 @@ pub async fn daytime_push_due(
     Ok(Some(push))
 }
 
-/// The open [`DAYTIME_KINDS`] alerts raised at or before `slot`, oldest first.
+/// OPS-032, INT-023: the open [`DAYTIME_KINDS`] alerts and High [`FAILED_TEXT_CALL_BACK_ALERT`]
+/// alerts raised at or before `slot`, oldest first.
 async fn daytime_alerts(
     db: &mut PgConnection,
     slot: Timestamp,
@@ -597,10 +601,12 @@ async fn daytime_alerts(
     sqlx::query_as!(
         PushAlert,
         "SELECT id, kind, severity, subject_id FROM ops.alert \
-         WHERE resolved_at IS NULL AND kind = ANY($1) AND raised_at <= $2 \
+         WHERE resolved_at IS NULL AND raised_at <= $2 \
+         AND (kind = ANY($1) OR (kind = $3 AND severity = 'high')) \
          ORDER BY raised_at, id",
         &kinds,
         slot.to_sqlx() as _,
+        FAILED_TEXT_CALL_BACK_ALERT,
     )
     .fetch_all(db)
     .await
