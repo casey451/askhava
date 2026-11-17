@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-17T12:42:39Z by runner 7fcfed420d7f (actions).
+Updated 2026-11-17T12:44:54Z by runner 555722d10a90 (actions).
 
 **Building: T479 in progress since 12:28Z; 396 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 396 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T479 claimed 12:28Z, lease until 15:28Z; lane 2: T202 claimed 12:18Z, lease until 15:18Z; lane 3: T204 claimed 12:04Z, lease until 15:04Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 6: T594 claimed 12:36Z, lease until 15:36Z
+- **Lane:** lane 1: T479 claimed 12:28Z, lease until 15:28Z; lane 2: T202 claimed 12:18Z, lease until 15:18Z; lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 6: T594 claimed 12:36Z, lease until 15:36Z
 - **Week:** 19% used, 150.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:39Z, 2 min before this update
+- **Last run:** 12:42Z, 2 min before this update
 - **Keeper:** last ran 12:22Z, next wake 15:07Z
 
 ## Needs attention
 - BLOCKED T113: plan gap reported: PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked == len(check_legal_docs.DOCUMENTS) == 10`. T113 must list `twilio-campaign.md` in `DOCUMENTS` (prompt Goal, line 9), which makes the count 11, and T113 does not own that file. Smallest plan change: let T113 own that one line and change `== 10` to `== 11` (or drop the literal). Evidence: bash scripts/smoke.sh red with exactly one failure: tests/docs/test_terms_clauses.py::test_spanish_summary_is_listed_as_a_business_document - AssertionError 11 == 10 (1 failed, 3154 passed, 11 ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T113 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 7 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+153 on DONE tasks); first: T204: stored context_pct 22% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -146,7 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T479 (lease until 2026-11-17T15:28:39Z)
 - lane 2: T202 (lease until 2026-11-17T15:18:10Z)
-- lane 3: T204 (lease until 2026-11-17T15:04:32Z)
+- lane 3: T204 (lease until 2026-11-17T15:44:54Z)
 - lane 4: T363 (lease until 2026-11-17T15:35:51Z)
 - lane 6: T594 (lease until 2026-11-17T15:36:45Z)
 
