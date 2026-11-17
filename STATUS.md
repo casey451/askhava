@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-17T15:09:56Z by runner a44660021dec (actions).
+Updated 2026-11-17T15:13:36Z by runner 215d4cc126ab (actions).
 
-**Building: T113 in progress since 15:04Z; 398 of 561 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T113 in progress since 15:04Z; 399 of 561 done; week 21% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 398 of 561 build tasks (owner gates not counted)
+- **Tasks done:** 399 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T113 claimed 15:04Z, lease until 18:04Z
 - **Week:** 21% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:09Z, 0 min before this update
+- **Last run:** 15:10Z, 3 min before this update
 - **Keeper:** last ran 14:52Z, next wake 15:12Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T491 (since 2026-11-17T14:53:18Z, no attempt used; a plan change fixes it): T491: dependency T471 is DONE but its owned file tests/integration/tests/pick_moved_text.rs is not on main
-- Strict plan check red: 6 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+153 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -25,7 +25,7 @@ Updated 2026-11-17T15:09:56Z by runner a44660021dec (actions).
 | T363 | portals: the served pick and its code step apply the per-IP  | MERGE_PENDING | 1 | 62 min | 13:38Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | MERGE_PENDING | 1 | 50 min | 13:19Z |  |
 | T594 | site: the end-to-end spec of the web chat and request page a | BLOCKED | 1 | 42 min | 13:18Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
-| T202 | site: Spanish pages, the business page blocks and the requir | MERGE_PENDING | 2 | 43 min | 13:01Z | merging main into the reviewed head conflicts in app/site/src/api.rs, docs/architecture.md, tests/a11y/page_states.ts; a |
+| T202 | site: Spanish pages, the business page blocks and the requir | done | 2 | 43 min | 13:01Z | merging main into the reviewed head conflicts in app/site/src/api.rs, docs/architecture.md, tests/a11y/page_states.ts; a |
 | T113 | Draft the Twilio campaign description from the real template | BLOCKED | 1 | 10 min | 12:21Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
 | T441 | portals: the quote page shows the kept number, and the pick  | done | 1 | 74 min | 11:32Z |  |
 | T572 | intake: the under-13 stop also clears the vault contact's na | done | 1 | 48 min | 11:31Z |  |
@@ -88,16 +88,14 @@ Updated 2026-11-17T15:09:56Z by runner a44660021dec (actions).
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 1 | 4 min | 16:21Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | check_failed | 2 | 104 min | 15:51Z |  |
 | T497 | Stand-ins (harness): sticky vendor faults for the J4 outage  | done | 1 | 75 min | 15:32Z |  |
-| T101 | site: base layout in the design spec's look, works without J | check_failed | 2 | 39 min | 15:11Z |  |
-| T521 | catalog: each category's plural display name and a list read | done | 1 | 34 min | 15:09Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 304 of 733 (41.5%) · partial 341 · unstarted 88
-**Tasks merged (throughput only):** 398 of 561
+**Requirements verified:** 304 of 733 (41.5%) · partial 350 · unstarted 79
+**Tasks merged (throughput only):** 399 of 561
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -116,11 +114,11 @@ Updated 2026-11-17T15:09:56Z by runner a44660021dec (actions).
 | privacy | 14 | 15 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 33 | 22 | 1 | 56 |
-| recurring | 8 | 0 | 3 | 11 |
+| recurring | 8 | 1 | 2 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 1 | 28 | 6 | 35 |
-| website | 0 | 18 | 10 | 28 |
-| wording | 2 | 12 | 18 | 32 |
+| website | 0 | 24 | 4 | 28 |
+| wording | 2 | 14 | 16 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -133,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 41 of 169 done
+- stage 5: 42 of 169 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
