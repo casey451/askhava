@@ -3195,6 +3195,15 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - laftly.com/business now shows how fees work, the fee table, a made-up sample job card for each open trade and the "Who runs Laftly" block. /es/business and /es are the Spanish versions, marked as drafts for a native speaker to check. /business/help has a safety tip for people working alone in customers' homes.
 - Open item for you: the city business-license guide on the handyman and no-license sample cards stays hidden until you fill in its cost, the time it takes and the city's link (settings `ASKHAVA_CITY_LICENSE_COST`, `ASKHAVA_CITY_LICENSE_TIME`, `ASKHAVA_CITY_LICENSE_URL`). No figure was typed in for you.
 
+## More lanes? Not yet: idle lanes come from the smoke check, and T596 fixes that (D-4180, November 17)
+- You offered more lanes this morning. The build is staying at 7: in the morning's numbers the 7 lanes averaged about 5.9 busy and were all full only 31% of the time, so an 8th lane would mostly sit idle too.
+- Lanes sat idle because each new task waits for the runner's safety check of the latest main (13 to 22 minutes), and every time main moved during that check it was thrown away and started over. That cost about 4 lane-hours this morning.
+- A new runner fix, T596, goes first: a check already running on the previous version of main is allowed to finish and counts, when everything merged since was already proven green. A failed check still stops the build exactly as before. It should win back about half of that idle time.
+- Also changed (no code): plan and hand-off changes are brought up to date with main just before they merge, so they no longer force a fresh check.
+- Finished tasks also waited in line to merge: each merge needs one round of checks (about 20 minutes), and the next task's round started about 7 minutes late on average because the runner only queued it during its next full session. A second fix, T597, right after T596, queues it as soon as the runner closes each merge, about 6 minutes sooner (roughly 5 lane-hours a day).
+- Also: plan updates now land only right after a task merges or when nothing is waiting to merge. Today 11 of the 26 merge rounds were restarted by plan updates.
+- Nothing needs you now.
+
 ## Your outside audit of November 17: what it changed (D-4196)
 - All 29 findings were checked against today's code. Eight need work; the rest are already handled, were decided on purpose earlier, or are small enough to leave (each has a one-line reason in D-4196).
 - Two planned tasks grow. T470 (the worker that sends stored emails) will also send a welcome or notice email that was held back because the day's email limit was reached, once the limit resets, instead of leaving it stuck. T518 (the Stripe alerts) also fixes a money mistake: if Stripe ever refused our key, the app would tell the business its card was declined; now it is treated as "Stripe can't be reached", which follows the 4-hour rule; you get an alert only if such failures go on for over 30 minutes. No money was ever charged wrongly by this.
