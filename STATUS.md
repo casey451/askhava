@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T18:08:47Z by runner 575b42f0c7a4 (actions).
+Updated 2026-11-17T18:10:18Z by runner db201a48b809 (actions).
 
-**Building: T115 in progress since 17:27Z; 403 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T115 in progress since 17:27Z; 404 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 403 of 570 build tasks (owner gates not counted)
+- **Tasks done:** 404 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 7: T115 claimed 17:27Z, lease until 21:08Z
 - **Week:** 25% used, 142.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:57Z, 11 min before this update
+- **Last run:** 18:09Z, 1 min before this update
 - **Keeper:** last ran 17:57Z, next wake 20:30Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-17T18:08:47Z by runner 575b42f0c7a4 (actions).
 |---|---|---|---|---|---|---|
 | T596 | Runner (harness): an ancestor's running smoke finishes and c | MERGE_PENDING | 1 | 41 min | 17:49Z |  |
 | T491 | picks: the Confirm window's end, every way it comes, runs th | MERGE_PENDING | 1 | 2 h 2 min | 17:44Z |  |
-| T599 | Tests (harness): the PICK-046 email's no-amount check ignore | MERGE_PENDING | 1 | 32 min | 17:36Z |  |
+| T599 | Tests (harness): the PICK-046 email's no-amount check ignore | done | 1 | 32 min | 17:36Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 2 | 42 min | 17:35Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 1 | 51 min | 16:52Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | BLOCKED | 1 | 24 min | 16:50Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
@@ -93,7 +93,7 @@ Updated 2026-11-17T18:08:47Z by runner 575b42f0c7a4 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 336 of 733 (45.8%) · partial 323 · unstarted 74
-**Tasks merged (throughput only):** 403 of 570
+**Tasks merged (throughput only):** 404 of 570
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -129,7 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 46 of 178 done
+- stage 5: 47 of 178 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
