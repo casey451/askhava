@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T05:27:35Z by runner 93502530e6e1 (actions).
+Updated 2026-11-17T05:27:56Z by runner 93502530e6e1 (actions).
 
-**Building: T103 in progress since 03:40Z; 382 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T204 in progress since 04:22Z; 382 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 382 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T103 claimed 03:40Z, lease until 08:09Z; lane 4: T204 claimed 04:22Z, lease until 08:06Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T586 claimed 04:49Z, lease until 08:23Z
+- **Lane:** lane 4: T204 claimed 04:22Z, lease until 08:06Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T586 claimed 04:49Z, lease until 08:23Z
 - **Week:** 15% used, 159.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 05:23Z, 4 min before this update
 - **Keeper:** last ran 05:11Z, next wake 06:44Z
@@ -18,6 +18,7 @@ Updated 2026-11-17T05:27:35Z by runner 93502530e6e1 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T103 | intake: the web-chat conversation, where typing a verified m | MERGE_PENDING | 1 | 106 min | 05:27Z |  |
 | T585 | businesses and licensing: a license change that drops job ty | MERGE_PENDING | 1 | 43 min | 05:10Z |  |
 | T571 | server and calls: a press of 9 on the safety call is never l | MERGE_PENDING | 1 | 45 min | 05:08Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | MERGE_PENDING | 2 | 29 min | 04:41Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
@@ -124,10 +125,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T103 (lease until 2026-11-17T08:09:33Z)
 - lane 4: T204 (lease until 2026-11-17T08:06:15Z)
 - lane 6: T481 (lease until 2026-11-17T06:42:02Z)
 - lane 7: T586 (lease until 2026-11-17T08:23:08Z)
 
 ## Last usage reading
-- {"task": "T585", "at": "2026-11-17T05:10:34Z", "cache_read_input_tokens": 2583080, "output_tokens": 28614, "input_tokens": 105, "cache_creation_input_tokens": 105383}
+- {"task": "T103", "at": "2026-11-17T05:27:34Z", "cache_creation_input_tokens": 368658, "cache_read_input_tokens": 15439634, "output_tokens": 100729, "input_tokens": 337}
