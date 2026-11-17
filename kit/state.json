@@ -19975,12 +19975,11 @@
      }
     }
    ],
-   "reviewed_sha": "6920534c28d327fddba564259d6afc03e79dbc03",
+   "reviewed_sha": "9cbf08f431a6aa23cdeb97545e11c9862e23e7a4",
    "review_lease": {
     "task": "T221",
-    "session": "actions-43996819875",
-    "expires": "2026-11-17T05:43:34Z",
-    "lane": "4"
+    "session": "actions-44012506133",
+    "expires": "2026-11-17T07:11:21Z"
    },
    "branch": "claude/task/T221-site-legal-pages",
    "auto_merge": {
@@ -19992,7 +19991,6 @@
    "runner_closed_prs": [
     917
    ],
-   "merge_turn_since": "2026-11-17T03:56:30Z",
    "resync": {
     "attempt": 2,
     "from": "6920534c28d327fddba564259d6afc03e79dbc03",
@@ -20011,6 +20009,16 @@
       "docs/architecture.md"
      ],
      "at": "2026-11-17T03:56:30Z"
+    }
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "4554b589df2717bd082b4572c2f46f2f253fb530",
+     "to": "9cbf08f431a6aa23cdeb97545e11c9862e23e7a4",
+     "main": "78bc4c55419e545bac97e39351a09c75198f6870",
+     "how": "hand-in",
+     "at": "2026-11-17T04:41:04Z"
     }
    ],
    "update_waiting_since": null,
@@ -71341,7 +71349,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T04:38:52Z",
+ "updated_at": "2026-11-17T04:41:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -71439,7 +71447,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "78bc4c55419e545bac97e39351a09c75198f6870",
+ "runner_sha": "88ddba75a337827d59e909bce6a45e8d83cf443b",
  "starter": "actions",
  "smoke_runs": [
   {
