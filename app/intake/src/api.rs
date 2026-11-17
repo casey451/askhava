@@ -28,6 +28,7 @@
 
 pub use crate::accepted_quote::run_accepted_quote;
 pub use crate::address_wait::{ADDRESS_IN_KIND, AskedAgain, ask_again, run_address_needed};
+pub use crate::ai_on::ai_on;
 pub use crate::cards_out::{
     CARDS_OUT_TEMPLATE, CardsOutKeys, CardsSent, HOLD_RECHECK, run_cards_approved,
     run_emergency_released, send_approved, send_emergency,
