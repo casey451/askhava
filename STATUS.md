@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T16:53:51Z by runner a499065fb6c7 (actions).
+Updated 2026-11-17T17:03:18Z by runner 73cd87129b4f (actions).
 
 **Building: T491 in progress since 15:41Z; 402 of 569 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 402 of 569 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T491 claimed 15:41Z, lease until 19:27Z; lane 2: T104 claimed 16:53Z, lease until 19:53Z
+- **Lane:** lane 1: T491 claimed 15:41Z, lease until 20:03Z; lane 2: T104 claimed 16:53Z, lease until 19:53Z
 - **Week:** 24% used, 144.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:53Z, 0 min before this update
+- **Last run:** 16:53Z, 9 min before this update
 - **Keeper:** last ran 16:53Z, next wake 19:29Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-17T16:53:51Z by runner a499065fb6c7 (actions).
 Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T528 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- Strict plan check red: 8 problem(s) on tasks still to run (+155 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+155 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,7 +88,6 @@ Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decisio
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | resync | 1 | 92 min | 17:52Z |  |
 | T361 | quotes and picks: a quote keeps its number once shown, and a | BLOCKED | 1 | 50 min | 17:41Z |  |
 | T324 | harness: 95% branch floors for the money and privacy files o | QUEUED | 1 | 61 min | 17:33Z |  |
-| T475 | messaging, quotes, payments and ai: the readers behind the O | done | 1 | 114 min | 17:02Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -139,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T491 (lease until 2026-11-17T19:27:15Z)
+- T491 (lease until 2026-11-17T20:03:17Z)
 - lane 2: T104 (lease until 2026-11-17T19:53:13Z)
 
 ## Last usage reading
