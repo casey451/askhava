@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE ops.owner_digest SET opened_at = $2 WHERE id = $1 AND opened_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "000d1eb0d65be485e846a962a95cb2c9f164fa660f778b0724a1a80d0eb527f6"
+}

@@ -1,0 +1,50 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT code, active, counted_at FROM ops.coverage WHERE scope = 'trade' ORDER BY code",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "code",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.coverage",
+            "name": "code"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "active",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "ops.coverage",
+            "name": "active"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "counted_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "ops.coverage",
+            "name": "counted_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "26a3a78578347b6af4c66959dbc67ba0c49af3f4d91925f5eb93c18bde734e95"
+}
