@@ -20535,7 +20535,7 @@
     "T348",
     "T100"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "site-web-chat",
    "type": "build",
@@ -20572,13 +20572,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 219,
      "head_sha": "93502530e6e1aeccf81d44affced52ea060b4efa",
-     "pr": null,
-     "checks": null,
+     "pr": 933,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-17T03:40:50Z",
      "ended_at": "2026-11-17T05:27:34Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 13604489,
@@ -20627,7 +20684,33 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-17T06:26:21Z"
+   "merge_turn_since": "2026-11-17T06:26:21Z",
+   "merged_sha": "335c43f151daef6f4b884de23eebd8196c28b414",
+   "merged_at": "2026-11-17T06:50:59Z",
+   "files": [
+    ".sqlx/query-1281ede6c650eb30c20a9f69a38615b228d511dd6e4beb9927949692b6700bf9.json",
+    ".sqlx/query-351b15c7a818281c46421eefc00fa429ee918dc959a6db3b102fca415450c99d.json",
+    ".sqlx/query-3f3d9801b0090b1320e161cf7956914fefd59a5e819052f64ac1a5384085306b.json",
+    ".sqlx/query-57f8d52d40412fb0faa8c937214e3a8e6c3b9e63c369c5d87e40e019131ba38e.json",
+    ".sqlx/query-ae9ee79cbd95e288629ad13f2caa56b06748ecdaaca4216506107776c6b8e06b.json",
+    ".sqlx/query-c473d7bc07a0d2050e7c8d772d0dba97d61f02e78b22464b7173feea8c285c27.json",
+    ".sqlx/query-cd177b20faabdfdc54ca98e6bff4e02055318c835ffbd95528a53f9ccd2f2894.json",
+    ".sqlx/query-d732f1056cfc56700fa4a4443e078298d9a3a1ced40d5aa45409c312ecbc9c33.json",
+    ".sqlx/query-e3efcbc8e1c73ed8feaab45048eb0bd1fbda188ade3807551a34551aee1598ff.json",
+    "app/intake/CLAUDE.md",
+    "app/intake/NOTES.md",
+    "app/intake/src/api.rs",
+    "app/intake/src/conversation.rs",
+    "app/intake/src/lib.rs",
+    "app/intake/src/service.rs",
+    "app/intake/src/web_chat.rs",
+    "app/messaging/templates/en.json",
+    "app/messaging/templates/es.json",
+    "app/quotes/src/update_texts.rs",
+    "docs/decisions.md",
+    "migrations/0191_intake_request_source.sql",
+    "tests/integration/tests/web_chat.rs"
+   ]
   },
   {
    "id": "T222",
@@ -72208,7 +72291,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T06:48:45Z",
+ "updated_at": "2026-11-17T06:52:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -72306,7 +72389,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6cc8a2fed8c30b8226f5d9558674bd256f2d2290",
+ "runner_sha": "335c43f151daef6f4b884de23eebd8196c28b414",
  "starter": "actions",
  "smoke_runs": [
   {
