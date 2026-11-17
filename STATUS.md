@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T17:28:28Z by runner db201a48b809 (manual).
+Updated 2026-11-17T17:35:19Z by runner 01543c2e001f (actions).
 
 **Building: T491 in progress since 15:41Z; 403 of 570 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 403 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T491 claimed 15:41Z, lease until 20:16Z; lane 2: T104 claimed 16:53Z, lease until 19:53Z; lane 3: T599 claimed 17:04Z, lease until 20:04Z; lane 4: T596 claimed 17:07Z, lease until 20:07Z; lane 7: T115 claimed 17:27Z, lease until 20:27Z
+- **Lane:** lane 1: T491 claimed 15:41Z, lease until 20:16Z; lane 3: T599 claimed 17:04Z, lease until 20:04Z; lane 4: T596 claimed 17:07Z, lease until 20:07Z; lane 7: T115 claimed 17:27Z, lease until 20:27Z
 - **Week:** 24% used, 142.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:28Z, 0 min before this update
+- **Last run:** 17:28Z, 6 min before this update
 - **Keeper:** last ran 16:53Z, next wake 19:29Z
 
 ## Needs attention
@@ -19,7 +19,8 @@ Updated 2026-11-17T17:28:28Z by runner db201a48b809 (manual).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 1 | 51 min | 16:52Z | Review not approved after the one fix round (head 4a1b93c4f0752f54caff26156143741f7b4d9659; tests/docs/test_wording_scan |
+| T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 2 | 42 min | 17:35Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
+| T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 1 | 51 min | 16:52Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | BLOCKED | 1 | 24 min | 16:50Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
 | T595 | server and site: a same-site web chat POST passes its CSRF c | MERGE_PENDING | 1 | 45 min | 16:19Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | done | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -85,38 +86,37 @@ Updated 2026-11-17T17:28:28Z by runner db201a48b809 (manual).
 | T559 | Tests (harness): wait for the code step's autofocus and the  | done | 1 | 64 min | 18:02Z |  |
 | T303 | server and portals: owner sign-in, sign-out and step-up are  | resync | 1 | 92 min | 17:52Z |  |
 | T361 | quotes and picks: a quote keeps its number once shown, and a | BLOCKED | 1 | 50 min | 17:41Z |  |
-| T324 | harness: 95% branch floors for the money and privacy files o | QUEUED | 1 | 61 min | 17:33Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 309 of 733 (42.2%) · partial 350 · unstarted 74
-**Tasks merged (throughput only):** 403 of 570
+**Requirements verified:** 336 of 733 (45.8%) · partial 323 · unstarted 74
+**Tasks merged (throughput only):** 403 of 569
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 14 | 18 | 3 | 35 |
+| accessibility | 19 | 13 | 3 | 35 |
 | ai | 12 | 14 | 3 | 29 |
 | businesses | 23 | 33 | 2 | 58 |
-| calls | 12 | 12 | 1 | 25 |
+| calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 19 | 1 | 35 |
-| fees | 18 | 33 | 1 | 52 |
+| fees | 24 | 27 | 1 | 52 |
 | intake | 26 | 17 | 0 | 43 |
 | job-cards | 18 | 6 | 0 | 24 |
-| licensing | 39 | 9 | 0 | 48 |
-| lifecycle | 24 | 4 | 0 | 28 |
-| messaging | 20 | 23 | 2 | 45 |
+| licensing | 40 | 8 | 0 | 48 |
+| lifecycle | 27 | 1 | 0 | 28 |
+| messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 27 | 26 | 54 |
-| privacy | 12 | 17 | 2 | 31 |
+| privacy | 14 | 15 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 37 | 19 | 0 | 56 |
 | recurring | 8 | 1 | 2 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| security | 12 | 38 | 5 | 55 |
 | terms | 12 | 17 | 6 | 35 |
-| website | 0 | 24 | 4 | 28 |
-| wording | 2 | 14 | 16 | 32 |
+| website | 1 | 23 | 4 | 28 |
+| wording | 3 | 13 | 16 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -137,10 +137,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T491 (lease until 2026-11-17T20:16:04Z)
-- lane 2: T104 (lease until 2026-11-17T19:53:13Z)
 - lane 3: T599 (lease until 2026-11-17T20:04:24Z)
 - lane 4: T596 (lease until 2026-11-17T20:07:46Z)
 - lane 7: T115 (lease until 2026-11-17T20:27:20Z)
 
 ## Last usage reading
-- {"task": "T104", "at": "2026-11-17T16:52:15Z", "cache_creation_input_tokens": 195156, "input_tokens": 132, "output_tokens": 47964, "cache_read_input_tokens": 3312201}
+- {"task": "T104", "at": "2026-11-17T17:35:19Z", "cache_read_input_tokens": 5091436, "cache_creation_input_tokens": 214763, "output_tokens": 67656, "input_tokens": 147}
