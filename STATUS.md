@@ -1,18 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T07:46:44Z by runner eabc0711c109 (actions).
+Updated 2026-11-17T07:47:16Z by runner eabc0711c109 (actions).
 
 **Building: T107 in progress since 07:34Z; 388 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 388 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z; lane 6: T112 claimed 07:36Z, lease until 10:36Z
-- **Week:** 16% used, 160.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:40Z, 6 min before this update
+- **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z; lane 3: T570 claimed 07:46Z, lease until 10:46Z; lane 6: T112 claimed 07:36Z, lease until 10:36Z
+- **Week:** 16% used, 159.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 07:47Z, 0 min before this update
 - **Keeper:** last ran 07:40Z, next wake 10:37Z
 
 ## Needs attention
 - BLOCKED T489: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes `sec_048_every_refusal_is_a_security_event` panic at auth_matrix.rs:181:9 ("/request has no door in auth_matrix.rs: add its matrix rule (SEC-019)"). sec_048 (:720-:723) builds its POST list from route_table() and calls door(path, false), ignoring the served-by-site flag that td_sec_01 (:637) and :693 pass; so any site POST outside the listed prefixes panics. POST /request is the first site POST. The file is owned by T348 (harness; also T088, T231, T302, T308); T489 does not ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T489 --plan-fix D-### --reason "..."` (D-2859)
+- PLAN GAP T202 (since 2026-11-17T07:46:34Z, no attempt used; a plan change fixes it): T202: dependency T201 is DONE but its owned file app/site/templates/services.html is not on main; T202: dependency T201 is DONE but its owned file app/site/templates/help.html is not on main; T202: dependency T201 is DONE but its owned file tests/e2e/site_help_pages.spec.ts is not on main; T202: dependency T201 is DONE but its owned file app/site/templates/coverage.html is not on main; T202: dependency T201 is DONE but its owned file app/site/templates/roc_complaint.html is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 2 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 19%; regenerate
 
@@ -117,7 +118,7 @@ Updated 2026-11-17T07:46:44Z by runner eabc0711c109 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T07:33:16Z (week)): week: 33.3M used, 160.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T06:24:12Z.
+- Pacing (session_reading 2026-11-17T07:39:56Z (week)): week: 34.3M used, 159.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T06:02:58Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -134,6 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T107 (lease until 2026-11-17T10:34:41Z)
+- lane 3: T570 (lease until 2026-11-17T10:46:34Z)
 - lane 6: T112 (lease until 2026-11-17T10:36:38Z)
 
 ## Last usage reading
