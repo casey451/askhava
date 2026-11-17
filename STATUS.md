@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:39:24Z by runner 700a56e30e5a (actions).
+Updated 2026-11-17T13:39:32Z by runner f911c8fdcb55 (manual).
 
 **Building: T204 in progress since 12:04Z; 396 of 560 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -15,7 +15,7 @@ Updated 2026-11-17T13:39:24Z by runner 700a56e30e5a (actions).
 - BLOCKED T594: plan gap reported: PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change: a T489 fix task that adds `.method(Method::POST)` to the request builder in `posted_csrf` and puts the "18 or older" line (CON-025, docs/spec/consent.md:29) on the request page, then re-run T594.
 Evidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/web_chat.spec.ts` exit=1, 5 failed, 2 passed. web_chat.spec.ts:137 (18 or older) fails: Expected pattern /18 or older/i not in main. web_chat.spec.ts:142, :153, :187 fail at line 94 (main form has 0 fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T594 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 7 problem(s) on tasks still to run (+153 on DONE tasks); first: T204: stored context_pct 22% but it measures 33%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -100,31 +100,31 @@ Evidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 304 of 733 (41.5%) · partial 341 · unstarted 88
+**Requirements verified:** 281 of 733 (38.3%) · partial 364 · unstarted 88
 **Tasks merged (throughput only):** 396 of 560
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 19 | 13 | 3 | 35 |
+| accessibility | 15 | 17 | 3 | 35 |
 | ai | 11 | 15 | 3 | 29 |
 | businesses | 21 | 35 | 2 | 58 |
-| calls | 13 | 11 | 1 | 25 |
+| calls | 11 | 13 | 1 | 25 |
 | consent | 14 | 20 | 1 | 35 |
-| fees | 24 | 27 | 1 | 52 |
+| fees | 19 | 32 | 1 | 52 |
 | intake | 25 | 18 | 0 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
+| job-cards | 19 | 5 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 20 | 23 | 2 | 45 |
 | ops-recovery | 1 | 23 | 30 | 54 |
-| privacy | 14 | 15 | 2 | 31 |
+| privacy | 12 | 17 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 33 | 22 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 11 | 39 | 5 | 55 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 1 | 28 | 6 | 35 |
 | website | 0 | 18 | 10 | 28 |
-| wording | 2 | 12 | 18 | 32 |
+| wording | 1 | 13 | 18 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
