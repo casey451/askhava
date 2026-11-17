@@ -20953,7 +20953,8 @@
     "T592",
     "T593",
     "T594",
-    "T596"
+    "T596",
+    "T597"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -36642,7 +36643,8 @@
     "T392",
     "T139",
     "T438",
-    "T596"
+    "T596",
+    "T597"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -39949,6 +39951,58 @@
    "branch": "claude/task/T596-runner-keep-ancestor-smoke",
    "prompt": "kit/prompts/T596.md",
    "acceptance": "`python3 -m pytest tests/test_runner_ancestor_smoke.py tests/test_runner_smoke_reuse.py tests/test_runner_pre_smoke.py` passes, the keep-and-record cases failing against `main`'s runner (which stops the ancestor smoke); every other `tests/test_runner_*.py`, `tests/test_check_state.py` and `tests/test_safety_hand_in_release.py` passes unchanged; `git diff origin/main -- tests/test_runner_smoke_reuse.py tests/test_runner_pre_smoke.py kit/state_schema.json BUILD_BRIEF.md` is empty."
+  },
+  {
+   "id": "T597",
+   "slug": "runner-early-update-merge",
+   "title": "Runner (harness): the early merge-close step also pushes the merge line's next update merge",
+   "goal": "Plan change D-4180, choice (5) (merge-line lag; evidence in D-4180): when a task merges, the next turn holder of the D-3418 merge line gets its update merge only inside some lane's session cycle, after the cache, warm-up and smoke steps; the early `--resolve-merges` step (D-3141; `.github/workflows/backup-runner.yml` \"Close merged tasks before the smoke (D-3141)\", `runner/cycle.py` `resolve_merged`) marks the merged task DONE but pushes no update. Measured on November 17: T572 merged 14:16:07Z, the early step marked it DONE at 14:23:05Z, and a lane's cycle pushed T202's update merge only at 14:29:16Z; the median lag from `main` moving to the next update merge was 7 minutes (0 to 18). Make the early step push that update within about a minute of the merge. (1) `cycle.resolve_merged`: when it closed at least one merged task (it would return `MERGES_RESOLVED`), it then runs the cycle's own merge-line pass, `_resolve_merges(state, env, cfg, now)`, on the resolved state, and pushes the one resulting state with a single `push_state` against the state it read. So the turn and its order are exactly the cycle's: `_merge_line` (FIX-MAIN first, then hand-in order, then task id), `_line_place`, `_mark_turn`, the late tasks taken last, the red-`main` guard (only FIX-MAIN moves while `main` is red), and every open-PR rule of `_open_pr_step` and `_update_step` (the update merge is `env.update_branch`, built by `_built_update` and pushed only after `UpdateMerge.is_update_merge` proves it is exactly the reviewed head plus `main`, union-aware, a fast-forward never forced, refused as \"moved\" when the branch tip is not the reviewed head; a conflict goes to a resync, D-891; push failures and waits count as today; auto-merge kept or turned on as today). Each outcome goes through `_lane_outcome` as in the cycle. Nothing else changes: with nothing merged to close it still returns `NO_MERGED` and writes nothing, touches no update merge, inbox, smoke or claim; a lost race still changes nothing in the state (an update merge already pushed is then adopted by the cycle's existing `update_merge_of` path as \"adopted\", D-584/D-620); the result string stays `MERGES_RESOLVED` so `runner/__main__.py`'s early-row and refill logic (D-3141) is unchanged. No lease is taken or needed: `_update_step` checks no lease today (verified, `runner/cycle.py:846`), any lane's cycle updates any task's branch, and auto-pr's lane-lease rule (`verify.auto_merge_reason`) is unchanged. Keep `resolve_merged` and each helper under 50 lines (split as needed). (2) Workflow: the step's comment (\"Nothing else: open pull requests ... stay the session's\") now says it also pushes the merge line's next update merge (D-4180). Confirm, at that point of the job, that `RUNNER_PUSH_TOKEN` (already in the step's env), git's identity and fetch of `main` and the task branch are what `GitHubEnv.update_branch` needs (the cycle's later steps run it today) and add only what is missing; keep `continue-on-error: true` (a failure leaves the update to the session's cycle, as before) and keep `timeout-minutes: 5` unless the report shows an update merge needs longer. (3) Tests in `tests/test_runner_merge_early.py`: after a merge, the early step pushes the update merge of the new turn holder (the first in hand-in order), and only of it, with exactly one state push; FIX-MAIN pending takes the turn first; while `main` is red no update merge is pushed for any other task; a turn holder whose branch is already current pushes nothing and turns on auto-merge as the cycle does; a conflict sends the turn holder to a resync exactly as the cycle does; a lost race leaves the state as read and the cycle then adopts the pushed update merge; nothing merged still writes nothing and pushes no update. The one pinned assertion that changes is `tests/test_runner_merge_early.py:135` (`assert not env.updates  # the open one's update merge stays the cycle's`): it becomes `env.updates == [(T002's branch, T002's reviewed head)]`, because the open T002 is now the turn holder and gets the cycle's own update merge earlier; this is not a weakening, as the update obeys every rule the cycle's does and the assertion stays exact. `:56` (one merged task, nothing else pending: `not env.updates`) and `:101` (nothing merged) stay unchanged. `tests/test_runner_merge_line.py` (no task owns it) passes unchanged. Update `docs/architecture.md`'s merge-line or early-close text with D-4180. Out of scope (a note in D-4180): stopping a current, out-of-turn branch from auto-merging while the turn holder's round runs (the T471 case) reverses D-3418's \"a branch already current with main merges without waiting for its turn\" and needs auto-merge turned off and on through GitHub and auto-pr's `verify.auto_merge_reason`; it is not done here.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T596",
+    "T345",
+    "T473",
+    "T474",
+    "T591"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "recovery"
+   ],
+   "owns": [
+    "runner/cycle.py",
+    ".github/workflows/backup-runner.yml",
+    "tests/test_runner_merge_early.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "tests/test_runner_merge_line.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-4180"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 36
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T597-runner-early-update-merge",
+   "prompt": "kit/prompts/T597.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_merge_early.py tests/test_runner_merge_line.py tests/test_failure_drills.py` passes, the new early-update cases failing against `main`'s runner; only the assertion at `tests/test_runner_merge_early.py:135` changes among existing ones; every other `tests/test_runner_*.py` and `tests/test_workflow_shell.py` passes unchanged; `actionlint` on `backup-runner.yml` reports nothing new."
   }
  ]
 }
