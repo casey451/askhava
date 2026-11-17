@@ -3138,3 +3138,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - As you asked, the task that serves the business "enter your code" page before team and billing changes is split: T364 now builds the code page itself, and the new T565 builds the role change, removal and monthly-limit changes behind it, with their tests. Nothing was dropped.
 - The team page task (T544) now waits for T565; the other tasks that only need the code page still wait only for T364.
 - Nothing needs you now.
+
+## The urgent audit findings are planned (D-4051, November 16)
+
+- No more early-joiner price lock anywhere: old decisions that mentioned a lock now show that part struck when they are pasted into a task's instructions, and the legal-documents check now fails any draft that offers a price lock, a "founding rate" or similar.
+- Four new fix tasks: texting CLOSE will actually close a job (T570); pressing 9 on the safety call can no longer be lost to a database hiccup, and the safety call cannot be turned on before this fix (T571); a child under 13 who gave a name and address has them erased (T572); texts to businesses will actually be sent, before business texting is switched on (T573).
+- Your two remaining questions from the build now say Laftly and laftly.com instead of the old name.
+- Nothing needs you now.

@@ -1,5 +1,5 @@
 {
- "note": "Decisions a later decision withdrew, superseded, replaced or reversed in words scripts/gen_prompts.py cannot read; prompts mark the old one and paste the new one (D-491). Add a pair when a reviewer finds a prompt resting on a reversed decision.",
+ "note": "Decisions a later decision withdrew, superseded, replaced or reversed in words scripts/gen_prompts.py cannot read; prompts mark the old one and paste the new one (D-491). Add a pair when a reviewer finds a prompt resting on a reversed decision. \"partial\" lists a decision a later one took only part of, with the struck words verbatim: prompts paste it with those words replaced by a note and paste the successor too (D-4051).",
  "superseded": {
   "D-051": "D-419",
   "D-052": "D-419",
@@ -37,8 +37,6 @@
   "D-148": "D-365",
   "D-192": "D-345",
   "D-062": "D-311",
-  "D-197": "D-465",
-  "D-261": "D-465",
   "D-187": "D-312",
   "D-320": "D-491",
   "D-341": "D-491",
@@ -56,6 +54,25 @@
   "D-351": "D-381",
   "D-027": "D-2407",
   "D-154": "D-2407",
-  "D-1143": "D-2463"
+  "D-1143": "D-2463",
+  "D-1405": "D-1494"
+ },
+ "partial": {
+  "D-465": {
+   "by": "D-1494",
+   "cut": "FEE-040's price lock for early joiners is 6 months, not 12, so a later fee change can reach pilot businesses sooner, and the business terms say so"
+  },
+  "D-197": {
+   "by": "D-1494",
+   "cut": "and FEE-040: a business that joins within the first 90 days after launch is charged no more than the amounts in effect on its join date for 12 months from that date"
+  },
+  "D-261": {
+   "by": "D-1494",
+   "cut": "FEE-040: 12 months from the later of the join date and the trade's opening date"
+  },
+  "D-288": {
+   "by": "D-1494",
+   "cut": "FEE-040's lock for a business waiting on its city-list match starts no earlier than its activation"
+  }
  }
 }
