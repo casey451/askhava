@@ -18,7 +18,9 @@
 //! emails (`open_cards_digest`, CARD-022; `missed_cards`, BIZ-044); store the homeowner's copy of
 //! the quote she accepted (`accepted_quote_email`, PICK-042, PICK-054); email an opted-out
 //! homeowner her confirmation while texting is off, or how to text again when she writes without
-//! START, else list her for the weekly digest (`optout_email`, CON-030, CON-016).
+//! START, else list her for the weekly digest (`optout_email`, CON-030, CON-016); count each Arizona
+//! week's opt-out rate by audience and alert at 3% of homeowners or 5% of businesses
+//! (`consent_alerts`, CON-022 to CON-024).
 
 pub use crate::accepted_quote_email::{
     ACCEPTED_QUOTE_TEMPLATE, AcceptedQuoteFacts, AcceptedQuoteSender, queue_accepted_quote,
@@ -33,6 +35,12 @@ pub use crate::checkin_email::{
     CHECK_IN_ANSWERS, CHECK_IN_DAYS, CHECK_IN_EMAIL_TEMPLATE, CHECK_IN_PREFIX, CheckInFacts,
     CheckInSender, answer_label, check_in_code, parse_check_in_code, queue_check_in_email,
     render_check_in,
+};
+pub use crate::consent_alerts::{
+    BUSINESS_ALERT_PERCENT, BUSINESS_OPTOUT_ALERT, CONSENT_KEEP_YEARS, HOMEOWNER_ALERT_PERCENT,
+    HOMEOWNER_OPTOUT_ALERT, OPTOUT_RATE_CHECK_KIND, OptOutRates, WEEK_SUBJECT, Week, WeekRate,
+    alert_kind, alert_percent, check_optout_rates, register_optout_rate_check,
+    schedule_optout_rate_check, weekly_optout_rates,
 };
 pub use crate::coverage_email::{
     COVERAGE_EMAIL_TEMPLATE, CoverageFacts, OWNER_INBOX, coverage_lines, queue_coverage_email,

@@ -1,0 +1,53 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT e.index_version, e.digest, e.inbox_id\n           FROM messaging.optout_event e\n           WHERE e.action = 'opt_out' AND e.effective_at >= $1 AND e.effective_at < $2\n             AND NOT EXISTS (\n               SELECT 1 FROM messaging.optout_event p\n               WHERE p.index_version = e.index_version AND p.digest = e.digest\n                 AND p.action = 'opt_out'\n                 AND (p.effective_at < e.effective_at\n                      OR (p.effective_at = e.effective_at AND p.id < e.id))\n                 AND NOT EXISTS (\n                   SELECT 1 FROM messaging.optout_event s\n                   WHERE s.index_version = e.index_version AND s.digest = e.digest\n                     AND s.action = 'start'\n                     AND s.effective_at > p.effective_at AND s.effective_at < e.effective_at))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "index_version",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "messaging.optout_event",
+            "name": "index_version"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "digest",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "messaging.optout_event",
+            "name": "digest"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "inbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.optout_event",
+            "name": "inbox_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "df1bfcdf07b657b562cc5179f4bb5dc1b71cacc186ad00fea3111189ba42edcc"
+}

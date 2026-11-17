@@ -1699,9 +1699,10 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
 /// more than a day earlier and `core`'s daily prune of rate-limit windows older than the longest
 /// window plus a day, both at `clock`'s now; each queues the next day's run first, and
 /// `schedule_start` in `worker.rs` seeds both. OPS-046, D-3883 (T531): `messaging`'s daily
-/// deferral check the same way.
+/// deferral check the same way; CON-024, D-3881 (T107): its weekly opt-out rate check.
 fn register_daily_sweeps(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     askhava_messaging::api::register_deferral_check(registry, Arc::clone(clock));
+    askhava_messaging::api::register_optout_rate_check(registry, Arc::clone(clock));
     let at = Arc::clone(clock);
     registry.register(
         askhava_portals::api::SESSION_SWEEP_KIND,
