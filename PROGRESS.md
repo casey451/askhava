@@ -6314,3 +6314,4 @@
 - 2026-11-17T08:36:16Z runner 678dce1e44fa (actions): {}
 - 2026-11-17T08:40:27Z runner 678dce1e44fa (actions): {}
 - 2026-11-17T08:40:54Z runner 678dce1e44fa (actions): {}
+- 2026-11-17T08:41:43Z runner 678dce1e44fa (actions): {"T489": "QUEUED -> IN_PROGRESS"}; T489 estimated 1.6M tokens (calibrated); week has 157.1M left (no five-hour budget, D-3056) after 2.9M still running in another lane (session_reading 2026-11-17T08:40:27Z (week)); running to the limit (model window, D-2225), claimed
