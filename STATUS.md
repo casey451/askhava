@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T22:46:42Z by runner 245bd02ea33c (actions).
+Updated 2026-11-17T22:46:54Z by runner 245bd02ea33c (actions).
 
 **Building: T606 in progress since 22:20Z; 412 of 582 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 412 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T606 claimed 22:20Z, lease until 01:20Z; lane 4: T115 claimed 22:09Z, lease until 01:09Z
+- **Lane:** lane 3: T606 claimed 22:20Z, lease until 01:20Z
 - **Week:** 32% used, 131.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:39Z, 6 min before this update
+- **Last run:** 22:39Z, 7 min before this update
 - **Keeper:** last ran 22:39Z, next wake 01:11Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-17T22:46:42Z by runner 245bd02ea33c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | MERGE_PENDING | 3 | 37 min | 22:46Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
 | T603 | Perf and twin (harness): the web vitals report records LCP a | done | 1 | 40 min | 22:05Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | done | 4 | 44 min | 21:44Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T594 | site: the end-to-end spec of the web chat and request page a | MERGE_PENDING | 2 | 83 min | 21:03Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
@@ -25,7 +26,7 @@ Updated 2026-11-17T22:46:42Z by runner 245bd02ea33c (actions).
 | T602 | privacy: the inbound email signature check refuses an out-of | MERGE_PENDING | 1 | 30 min | 20:37Z |  |
 | T597 | Runner (harness): the early merge-close step also pushes the | done | 1 | 26 min | 20:28Z |  |
 | T582 | quotes and messaging (harness): a late read-back confirm is  | MERGE_PENDING | 1 | 36 min | 20:13Z |  |
-| T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | BLOCKED | 2 | 68 min | 19:54Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
+| T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | BLOCKED | 2 | 68 min | 19:54Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | BLOCKED | 3 | 46 min | 19:24Z |  |
 | T605 | businesses, intake and picks: the leaving answers, not-cover | MERGE_PENDING | 1 | 46 min | 19:15Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | done | 2 | 37 min | 19:05Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
@@ -134,7 +135,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T606 (lease until 2026-11-18T01:20:29Z)
-- lane 4: T115 (lease until 2026-11-18T01:09:12Z)
 
 ## Last usage reading
-- {"task": "T603", "at": "2026-11-17T22:05:00Z", "output_tokens": 19486, "cache_read_input_tokens": 2243643, "cache_creation_input_tokens": 82931, "input_tokens": 103}
+- {"task": "T115", "at": "2026-11-17T22:46:41Z", "cache_read_input_tokens": 6427404, "cache_creation_input_tokens": 199002, "output_tokens": 60256, "input_tokens": 142}
