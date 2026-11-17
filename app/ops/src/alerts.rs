@@ -391,9 +391,9 @@ pub const DAYTIME_KINDS: &[&str] = &[
 ];
 /// The kinds an OPS-023 clearing acknowledges ([`acknowledge_cleared`]).
 const CLEARING_KINDS: &[&str] = &[VENDOR_ALERT, HEALTH_ALERT, LEDGER_ALERT];
-/// Arizona's fixed offset from UTC (no daylight saving).
 /// OPS-032: how late a 9 a.m. or 3 p.m. push may still go out; a slot older than this is skipped.
 const PUSH_SLOT_GRACE: SignedDuration = SignedDuration::from_hours(1);
+/// Arizona's fixed offset from UTC (no daylight saving).
 const ARIZONA: SignedDuration = SignedDuration::from_hours(-7);
 
 /// OPS-023, D-220: whether Stripe and webhook errors, last seen at `last_error`, have been clear

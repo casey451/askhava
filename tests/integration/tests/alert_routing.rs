@@ -13,6 +13,8 @@
 //! as T518 raises them (D-3877). Fake data only.
 
 use std::path::Path;
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering::SeqCst;
 use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
@@ -30,6 +32,7 @@ use askhava_payments::api::{ReconcileStripe, StripeCharge, reconcile};
 use askhava_picks::api::ConfirmSettings;
 use axum::Router;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::routing::post;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
@@ -382,7 +385,17 @@ async fn td_ops_08_the_away_date_is_stored_and_cleared(pool: PgPool) {
 
 /// A recording server shaped as the Resend stand-in on 127.0.0.1; returns its base URL.
 async fn recorder(seen: Seen) -> String {
-    async fn emails(State(seen): State<Seen>, body: String) -> String {
+    failing_recorder(seen, 0).await
+}
+
+/// [`recorder`], but the first `fails` sends are refused with a 400 and not recorded.
+async fn failing_recorder(seen: Seen, fails: usize) -> String {
+    type Shared = (Seen, Arc<AtomicUsize>);
+    async fn emails(State((seen, fails)): State<Shared>, body: String) -> (StatusCode, String) {
+        let left = fails.try_update(SeqCst, SeqCst, |n| n.checked_sub(1));
+        if left.is_ok() {
+            return (StatusCode::BAD_REQUEST, "{}".to_owned());
+        }
         let email: serde_json::Value = serde_json::from_str(&body).expect("json");
         let field = |name: &str| email[name].as_str().unwrap_or_default().to_owned();
         let to = email["to"][0]
@@ -390,11 +403,14 @@ async fn recorder(seen: Seen) -> String {
             .map_or_else(|| field("to"), str::to_owned);
         let mut seen = seen.lock().unwrap_or_else(PoisonError::into_inner);
         seen.push((to, field("text")));
-        format!("{{\"id\":\"re_fake_{}\"}}", seen.len())
+        (
+            StatusCode::OK,
+            format!("{{\"id\":\"re_fake_{}\"}}", seen.len()),
+        )
     }
     let app = Router::new()
         .route("/resend/emails", post(emails))
-        .with_state(seen);
+        .with_state((seen, Arc::new(AtomicUsize::new(fails))));
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
         .await
         .expect("bind");
@@ -546,6 +562,46 @@ async fn td_ops_10_the_call_is_queued_when_the_email_fails(pool: PgPool) {
         "not emailed, not pushed"
     );
     assert_eq!(count(&pool, push_row, safety).await, 0);
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_10_one_failed_email_does_not_stop_the_rest(pool: PgPool) {
+    let seen = Seen::default();
+    let base = failing_recorder(Arc::clone(&seen), 1).await;
+    let clock = Arc::new(ManualClock::new(at(NEXT_MORNING)));
+    let registry = registry(clock.clone(), &base, "one-fails");
+    let earlier = plant(&pool, "messaging.number_suspended", "high", at(NIGHT) - MIN).await;
+    let safety = plant(&pool, "jobs.problem_report_safety", "critical", at(NIGHT)).await;
+    plant(&pool, CALL_BACK, "high", at(NIGHT)).await;
+    let mut conn = pool.acquire().await.expect("conn");
+    schedule_alert_push(&mut conn, clock.now())
+        .await
+        .expect("seed");
+    clock.advance(MIN);
+    run_due(&pool, &registry, &clock, false).await;
+    let push_row = "SELECT count(*) FROM ops.alert_push WHERE alert_id = $1";
+    assert_eq!(
+        count(&pool, push_row, earlier).await,
+        0,
+        "the first email fails, so no push"
+    );
+    assert_eq!(
+        count(&pool, push_row, safety).await,
+        1,
+        "the next alert still goes"
+    );
+    let sent = emails(&seen);
+    let (daytime, alerts): (Vec<_>, Vec<_>) = sent
+        .iter()
+        .map(|(_, text)| text)
+        .partition(|text| text.starts_with("Still open"));
+    assert_eq!(alerts.len(), 1, "one alert email after the failed one");
+    assert!(
+        alerts[0].contains("jobs.problem_report_safety"),
+        "the next alert's own email went out"
+    );
+    assert_eq!(daytime.len(), 1, "the 9:00 daytime push still went out");
+    assert!(daytime[0].contains(CALL_BACK), "it lists the call-back");
 }
 
 /// Plants `n` sent emails at `sent` (fake rows, no body).
