@@ -1,19 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-17T12:18:30Z by runner 7a22e40cdfb5 (actions).
+Updated 2026-11-17T12:18:53Z by runner 7a22e40cdfb5 (actions).
 
-**Building: T204 in progress since 12:04Z; 395 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T202 in progress since 12:18Z; 395 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 395 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T204 claimed 12:04Z, lease until 15:04Z; lane 4: T113 claimed 12:11Z, lease until 15:11Z
-- **Week:** 19% used, 154.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:17Z, 0 min before this update
+- **Lane:** lane 2: T202 claimed 12:18Z, lease until 15:18Z; lane 3: T204 claimed 12:04Z, lease until 15:04Z; lane 4: T113 claimed 12:11Z, lease until 15:11Z
+- **Week:** 19% used, 154.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 12:17Z, 1 min before this update
 - **Keeper:** last ran 11:58Z, next wake 12:18Z
 
 ## Needs attention
 - PLAN GAP T363 (since 2026-11-17T12:01:54Z, no attempt used; a plan change fixes it): T363: dependency T441 is DONE but its owned file tests/integration/tests/pick_bound_forms.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T479 (since 2026-11-17T12:18:10Z, no attempt used; a plan change fixes it): T479: dependency T489 is DONE but its owned file app/site/src/chat.rs is not on main; T479: dependency T489 is DONE but its owned file app/site/templates/request.html is not on main; T479: dependency T489 is DONE but its owned file app/server/src/chat_codes.rs is not on main
+- PLAN GAP T594 (since 2026-11-17T12:18:10Z, no attempt used; a plan change fixes it): T594: dependency T489 is DONE but its owned file app/site/src/chat.rs is not on main; T594: dependency T489 is DONE but its owned file app/site/templates/request.html is not on main; T594: dependency T489 is DONE but its owned file app/server/src/chat_codes.rs is not on main
 - Strict plan check red: 5 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
 ## Last 24 hours
@@ -128,7 +130,7 @@ Updated 2026-11-17T12:18:30Z by runner 7a22e40cdfb5 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T11:58:13Z (week)): week: 39.6M used, 154.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T03:09:49Z.
+- Pacing (session_reading 2026-11-17T11:58:13Z (week)): week: 39.9M used, 154.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T03:32:34Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -144,6 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T202 (lease until 2026-11-17T15:18:10Z)
 - lane 3: T204 (lease until 2026-11-17T15:04:32Z)
 - lane 4: T113 (lease until 2026-11-17T15:11:04Z)
 
