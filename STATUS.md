@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T02:28:30Z by runner 13ee51165f3b (actions).
+Updated 2026-11-17T02:28:52Z by runner 13ee51165f3b (actions).
 
 **Building: T107 in progress since 02:20Z; 378 of 556 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-17T02:28:30Z by runner 13ee51165f3b (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:20Z; lane 2: T103 claimed 02:12Z, lease until 05:12Z; lane 4: T221 claimed 01:54Z, lease until 04:54Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
 - **Week:** 12% used, 167.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:27Z, 1 min before this update
-- **Keeper:** last ran 02:26Z, next wake 04:56Z
+- **Last run:** 02:28Z, 0 min before this update
+- **Keeper:** last ran 02:28Z, next wake 04:56Z
 
 ## Needs attention
 - BLOCKED T584: plan gap reported: PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to reach MEMBER_ADDRESS, but `queue_all` at :265 hard-marks MEMBER_MAILBOX (the member's only, main mailbox) returned first. D-4052 B30 says `emergency_test` must skip a main address that may not get notices, while T584's acceptance says the existing notice-email tests pass unchanged; both cannot hold. Evidence (worker, reproduced by the reviewer): with only the B30 emergency_test skip in app/businesses/src/notice_emails.rs, `cargo test -p askhava-integration --test business_event_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T584 --plan-fix D-### --reason "..."` (D-2859)
