@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T15:50:57Z by runner a499065fb6c7 (actions).
+Updated 2026-11-17T15:54:17Z by runner 774d33861a6a (actions).
 
 **Building: T491 in progress since 15:41Z; 400 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-17T15:50:57Z by runner a499065fb6c7 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T491 claimed 15:41Z, lease until 18:41Z; lane 2: T479 claimed 15:29Z, lease until 18:29Z; lane 6: T595 claimed 15:33Z, lease until 18:33Z
 - **Week:** 22% used, 147.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:41Z, 9 min before this update
+- **Last run:** 15:51Z, 3 min before this update
 - **Keeper:** last ran 15:40Z, next wake 18:31Z
 
 ## Needs attention
@@ -87,7 +87,6 @@ Updated 2026-11-17T15:50:57Z by runner a499065fb6c7 (actions).
 | T473 | Pin backup-runner's Postgres service image by digest | done | 1 | 17 min | 16:46Z |  |
 | T101 | site: base layout in the design spec's look, works without J | done | 3 | 80 min | 16:39Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 1 | 4 min | 16:21Z |  |
-| T105 | ops: High and critical alerts with their automatic acknowled | check_failed | 2 | 104 min | 15:51Z |  |
 
 ### Plan and harness merges on main
 - none
