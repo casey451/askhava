@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE intake.web_chat_session SET first_message_id = $2, contact_id = NULL, code_sent_at = NULL, wrong_tries = 0, verified_at = NULL, conversation_id = NULL WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "351b15c7a818281c46421eefc00fa429ee918dc959a6db3b102fca415450c99d"
+}
