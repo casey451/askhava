@@ -9,27 +9,40 @@
 //! `ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES`) before it renders, and fills "Accept by" from the deadline
 //! it returns; on an error nothing goes. It restarts `jobs`' Awaiting confirm backstop one business
 //! minute past the deadline and queues [`CONFIRM_ENDS_KIND`] at the deadline, where
-//! [`run_confirm_ends`] expires a pick still waiting and returns the job to Quotes ready. A job
-//! chosen as an emergency keeps `jobs`' own 60 clock minutes (PICK-044). A notice held until after
-//! `jobs` already returned the job (its backstop or the emergency's 60 minutes) expires the pick.
+//! [`run_confirm_ends_at`] runs the lapse of a pick still waiting. A job chosen as an emergency
+//! keeps `jobs`' own 60 clock minutes (PICK-044) and gets the same task at their end, so the lapse
+//! runs whichever of `jobs`' timer and the task comes first (`jobs` cannot call `picks`).
+//!
+//! T491 (PICK-019, PICK-044, PICK-046, PICK-047, D-3750, D-3805): the lapse is the one `pick_ended`
+//! runs: `confirm_reminders::lapse` (the pick expires, then `backup_choice`; never paused, since a
+//! CANCEL pause withdraws the waiting pick first, CON-029), the job back to Quotes ready only when
+//! no pick then waits, then PICK-047's or PICK-046's text event after the last job move. A window
+//! end that finds the job already in Quotes ready (`jobs`' backstop or the emergency 60 minutes got
+//! there first) lapses at the later of its due time and the worker's now, so a late worker never
+//! starts the backup's window in the past; a notice sent after that lapses at its send.
 //! T214 (PICK-050, D-3024): the notice's values carry `cant_take`, the pick's "Can't take it" page.
 
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
 use askhava_core::api::{Claimed, Guarded, HandlerError, NewTask, add_business_minutes, enqueue};
-use askhava_jobs::api::{JobRow, JobStatus, current, job_number, move_to, restart_timer};
+use askhava_jobs::api::{
+    JobRow, JobStatus, current, job_number, move_to, restart_timer, rules::timeout,
+};
 use askhava_ops::api::Actor;
 use jiff::Timestamp;
 use serde_json::{Value, json};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
+use crate::backup_choice::Backup;
 use crate::cant_take::cant_take_link;
 use crate::confirm::{
     ConfirmSettings, PICK_NOTICE_EMERGENCY_TEMPLATE, PICK_NOTICE_TEMPLATE, confirm_by,
 };
+use crate::confirm_reminders::lapse;
 use crate::models::{self, PicksError};
 use crate::money_notices::BUSINESS_NOTICE_KIND;
-use crate::status::{awaits_confirm, confirm_backstop_minutes, pick_lost};
+use crate::pick_ended::queue_backup_text;
+use crate::status::{awaits_confirm, confirm_backstop_minutes, pick_lost, returned_unconfirmed};
 
 /// The `core.task` kind of the Confirm window's end (PICK-019).
 pub const CONFIRM_ENDS_KIND: &str = "picks.confirm_ends";
@@ -85,18 +98,20 @@ pub async fn run_pick_notice(
     tx.commit().await.map_err(|_| DB_FAILED)
 }
 
-/// PICK-019, D-345, D-381: starts pick `pick`'s Confirm window from `sent_at`, the pick notice's
-/// real send (whole seconds), and returns its end, the notice's "Accept by"; none for an emergency
-/// job (PICK-044, `jobs`' 60 clock minutes). `jobs`' backstop is restarted one business minute past
-/// the end, so the window's own task decides. A repeat with the same instant restarts nothing and
-/// queues nothing new (D-1503).
+/// PICK-019, PICK-044, D-345, D-381, D-3750: starts pick `pick`'s Confirm window from `sent_at`,
+/// the pick notice's real send (whole seconds), and returns its end, the notice's "Accept by";
+/// none for an emergency job (PICK-044, `jobs`' 60 clock minutes), which still gets one
+/// [`CONFIRM_ENDS_KIND`] task at the end of those 60 minutes. `jobs`' backstop is restarted one
+/// business minute past the end, so the window's own task decides. A repeat with the same instant
+/// restarts nothing and queues nothing new (D-1503).
 ///
 /// # Errors
 ///
 /// [`PicksError::MovedOn`] when the pick no longer waits or the job left Awaiting confirm; when
-/// `jobs` already returned the job (its backstop or an emergency's 60 minutes fired before the
-/// send) the pick is first stored as expired at `sent_at`, so no "Accept by" goes for a dead pick
-/// (PICK-035, D-1503). [`PicksError::Job`] or [`PicksError::Database`].
+/// `jobs` already returned the job to Quotes ready (its backstop or an emergency's 60 minutes fired
+/// before the send) the lapse runs first at `sent_at` (PICK-046, PICK-047), and in any other lost
+/// status the pick is stored as expired, so no "Accept by" goes for a dead pick (PICK-035,
+/// D-1503). [`PicksError::Job`] or [`PicksError::Database`].
 pub async fn notice_sent(
     db: &mut PgConnection,
     pick: Uuid,
@@ -105,12 +120,16 @@ pub async fn notice_sent(
 ) -> Result<Option<Timestamp>, PicksError> {
     let start = Timestamp::from_second(sent_at.as_second()).map_err(|_| PicksError::Job)?;
     let mut tx = db.begin().await.map_err(|_| PicksError::Database)?;
-    let (job, _) = models::lock_waiting(&mut tx, pick)
+    let (job, business) = models::lock_waiting(&mut tx, pick)
         .await?
         .ok_or(PicksError::MovedOn)?;
     let row = current(&mut tx, job).await.map_err(|_| PicksError::Job)?;
     if pick_lost(row.status) {
-        models::expire_pick(&mut tx, pick, start).await?;
+        if returned_unconfirmed(row.status) {
+            lapse_at(&mut tx, (pick, job, business), start).await?;
+        } else {
+            models::expire_pick(&mut tx, pick, start).await?;
+        }
         tx.commit().await.map_err(|_| PicksError::Database)?;
         return Err(PicksError::MovedOn);
     }
@@ -118,11 +137,44 @@ pub async fn notice_sent(
         return Err(PicksError::MovedOn);
     }
     if row.emergency {
+        emergency_window(&mut tx, (pick, job), row.timer_from).await?;
+        tx.commit().await.map_err(|_| PicksError::Database)?;
         return Ok(None);
     }
     let due = start_window(&mut tx, (pick, job, &row), start, settings).await?;
     tx.commit().await.map_err(|_| PicksError::Database)?;
     Ok(Some(due))
+}
+
+/// PICK-044, D-3750: queues the emergency pick's [`CONFIRM_ENDS_KIND`] task at the end of `jobs`'
+/// 60 clock minutes counted from the job's `from` (its `timer_from`, the instant `jobs` uses),
+/// deduped as the normal window's, so the lapse runs even when `jobs`' timer returns the job first.
+async fn emergency_window(
+    tx: &mut PgConnection,
+    (pick, job): (Uuid, Uuid),
+    from: Timestamp,
+) -> Result<(), PicksError> {
+    let due = timeout(JobStatus::AwaitingConfirm, from, true)
+        .ok_or(PicksError::Job)?
+        .at;
+    queue_window_end(tx, (pick, job), (from, due)).await
+}
+
+/// One [`CONFIRM_ENDS_KIND`] task for pick `pick` on `job`, due at `due`, carrying the job's
+/// timer start `from` it fences on; deduped by the pick and `due`.
+async fn queue_window_end(
+    tx: &mut PgConnection,
+    (pick, job): (Uuid, Uuid),
+    (from, due): (Timestamp, Timestamp),
+) -> Result<(), PicksError> {
+    let payload =
+        json!({"pick": pick, "job": job, "from": from.as_second(), "due": due.as_second()});
+    let mut task = NewTask::new(CONFIRM_ENDS_KIND, payload, due);
+    task.dedupe_key = Some(format!("{CONFIRM_ENDS_KIND}.{pick}.{}", due.as_second()));
+    enqueue(tx, &task)
+        .await
+        .map_err(|_| PicksError::Database)
+        .map(drop)
 }
 
 /// Restarts `jobs`' backstop to end one business minute after the window that starts at `start`,
@@ -145,49 +197,90 @@ async fn start_window(
             return Err(PicksError::MovedOn);
         }
     }
-    let payload =
-        json!({"pick": pick, "job": job, "from": from.as_second(), "due": due.as_second()});
-    let mut task = NewTask::new(CONFIRM_ENDS_KIND, payload, due);
-    task.dedupe_key = Some(format!("{CONFIRM_ENDS_KIND}.{pick}.{}", due.as_second()));
-    enqueue(tx, &task).await.map_err(|_| PicksError::Database)?;
+    queue_window_end(tx, (pick, job), (from, due)).await?;
     Ok(due)
 }
 
-/// The [`CONFIRM_ENDS_KIND`] handler (PICK-019, JOB-006): a pick still waiting whose window this
-/// task timed (the job's wait still counts from the task's `from`) is expired and the job moves
-/// from Awaiting confirm to Quotes ready, in one transaction; anything else is a stale timer and
-/// does nothing. Safe to run twice.
+/// The [`CONFIRM_ENDS_KIND`] handler (PICK-019, JOB-006): [`run_confirm_ends_at`] with the task's
+/// own due time as the worker's now.
 ///
 /// # Errors
 /// A fixed sentence for a malformed task or a failed statement; the queue tries again.
 pub async fn run_confirm_ends(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    let due = second(&task.payload, "due")?;
+    run_confirm_ends_at(pool, task, due).await
+}
+
+/// The [`CONFIRM_ENDS_KIND`] handler on the worker clock's `now` (PICK-019, PICK-044, PICK-046,
+/// PICK-047, JOB-006, D-3750, D-4187): for a pick still waiting, a job in Awaiting confirm whose
+/// wait still counts from the task's `from`, or a job already back in Quotes ready (`jobs`'
+/// backstop or the emergency 60 minutes came first), lapses ([`lapse_at`]) at the later of the
+/// task's due time and `now`, so a late worker never starts the backup's window in the past; a
+/// restarted window, any other status or a pick no longer waiting does nothing. One transaction;
+/// safe to run twice.
+///
+/// # Errors
+/// A fixed sentence for a malformed task or a failed statement; the queue tries again.
+pub async fn run_confirm_ends_at(
+    pool: PgPool,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
     let pick = id(&task.payload, "pick")?;
-    let second = |name: &str| {
-        task.payload[name]
-            .as_i64()
-            .and_then(|s| Timestamp::from_second(s).ok())
-            .ok_or(HandlerError("confirm-window task is missing a time"))
-    };
-    let (from, due) = (second("from")?, second("due")?);
+    let (from, due) = (
+        second(&task.payload, "from")?,
+        second(&task.payload, "due")?,
+    );
     let mut tx = pool.begin().await.map_err(|_| DB_FAILED)?;
-    let Some((job, _)) = models::lock_waiting(&mut tx, pick)
+    let Some((job, business)) = models::lock_waiting(&mut tx, pick)
         .await
         .map_err(|_| DB_FAILED)?
     else {
         return Ok(());
     };
     let row = current(&mut tx, job).await.map_err(|_| DB_FAILED)?;
-    if !awaits_confirm(row.status) || row.timer_from.as_second() != from.as_second() {
+    let same_wait = awaits_confirm(row.status) && row.timer_from.as_second() == from.as_second();
+    if !same_wait && !returned_unconfirmed(row.status) {
         return Ok(());
     }
-    let arrow = (JobStatus::AwaitingConfirm, JobStatus::QuotesReady);
-    match move_to(&mut tx, job, arrow, due, Actor::System).await {
-        Ok(Guarded::Applied(())) => {}
-        Ok(Guarded::MovedOn) => return Ok(()),
-        Err(_) => return Err(DB_FAILED),
-    }
-    models::expire_pick(&mut tx, pick, due)
+    lapse_at(&mut tx, (pick, job, business), due.max(now))
         .await
         .map_err(|_| DB_FAILED)?;
     tx.commit().await.map_err(|_| DB_FAILED)
+}
+
+/// A whole-second instant named `name` in a window task's payload.
+fn second(payload: &Value, name: &str) -> Result<Timestamp, HandlerError> {
+    payload[name]
+        .as_i64()
+        .and_then(|s| Timestamp::from_second(s).ok())
+        .ok_or(HandlerError("confirm-window task is missing a time"))
+}
+
+/// PICK-019, PICK-046, PICK-047, CON-029, D-3750: the lapse of waiting pick `pick` of `business`
+/// on `job` at `at`, inside the caller's transaction, as `pick_ended` runs it: the pick expires and
+/// moves to her backup ([`lapse`], never paused: a pause withdraws the waiting pick first), the job
+/// returns from Awaiting confirm to Quotes ready only when no pick then waits, and after that last
+/// move her PICK-047 or PICK-046 text event is queued.
+///
+/// # Errors
+///
+/// [`PicksError::MovedOn`] (roll back), [`PicksError::Job`], [`PicksError::Database`] or the
+/// backup move's errors.
+async fn lapse_at(
+    tx: &mut PgConnection,
+    (pick, job, business): (Uuid, Uuid, Uuid),
+    at: Timestamp,
+) -> Result<(), PicksError> {
+    let backup: Backup = lapse(tx, pick, false, (Actor::System, at)).await?;
+    let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
+    if awaits_confirm(status) && models::waiting_pick(tx, job).await?.is_none() {
+        let arrow = (JobStatus::AwaitingConfirm, JobStatus::QuotesReady);
+        match move_to(tx, job, arrow, at, Actor::System).await {
+            Ok(Guarded::Applied(())) => {}
+            Ok(Guarded::MovedOn) => return Err(PicksError::MovedOn),
+            Err(_) => return Err(PicksError::Job),
+        }
+    }
+    queue_backup_text(tx, (job, pick, business), (backup, false), at).await
 }
