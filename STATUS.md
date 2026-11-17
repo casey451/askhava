@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T16:01:11Z by runner a499065fb6c7 (actions).
+Updated 2026-11-17T16:12:54Z by runner 2f2fa8c6a62f (manual).
 
 **Building: T491 in progress since 15:41Z; 400 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-17T16:01:11Z by runner a499065fb6c7 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T491 claimed 15:41Z, lease until 18:41Z; lane 2: T479 claimed 15:29Z, lease until 18:29Z; lane 4: T104 claimed 16:00Z, lease until 19:00Z; lane 6: T595 claimed 15:33Z, lease until 18:33Z
 - **Week:** 22% used, 146.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:55Z, 5 min before this update
+- **Last run:** 16:01Z, 11 min before this update
 - **Keeper:** last ran 15:55Z, next wake 18:32Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- Strict plan check red: 8 problem(s) on tasks still to run (+155 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+158 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -93,31 +93,31 @@ Updated 2026-11-17T16:01:11Z by runner a499065fb6c7 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 343 of 733 (46.8%) · partial 311 · unstarted 79
+**Requirements verified:** 317 of 733 (43.2%) · partial 337 · unstarted 79
 **Tasks merged (throughput only):** 400 of 561
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 19 | 13 | 3 | 35 |
+| accessibility | 14 | 18 | 3 | 35 |
 | ai | 12 | 14 | 3 | 29 |
 | businesses | 23 | 33 | 2 | 58 |
-| calls | 14 | 10 | 1 | 25 |
+| calls | 12 | 12 | 1 | 25 |
 | consent | 15 | 19 | 1 | 35 |
-| fees | 27 | 24 | 1 | 52 |
+| fees | 21 | 30 | 1 | 52 |
 | intake | 27 | 16 | 0 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
+| job-cards | 19 | 5 | 0 | 24 |
 | licensing | 40 | 8 | 0 | 48 |
-| lifecycle | 27 | 1 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
+| lifecycle | 24 | 4 | 0 | 28 |
+| messaging | 20 | 23 | 2 | 45 |
 | ops-recovery | 1 | 23 | 30 | 54 |
-| privacy | 15 | 14 | 2 | 31 |
+| privacy | 13 | 16 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 37 | 18 | 1 | 56 |
 | recurring | 8 | 1 | 2 | 11 |
-| security | 12 | 38 | 5 | 55 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 12 | 17 | 6 | 35 |
 | website | 1 | 23 | 4 | 28 |
-| wording | 3 | 13 | 16 | 32 |
+| wording | 2 | 14 | 16 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
