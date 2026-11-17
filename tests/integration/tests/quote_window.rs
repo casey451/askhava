@@ -13,8 +13,8 @@ use askhava_licensing::api::LicenseKind;
 use askhava_ops::api::Actor;
 use askhava_quotes::api::{
     Format, Price, Quote, QuoteForm, QuoteRules, Submitted, WINDOWS_KIND, WindowsCheck,
-    confirm_quote, mark_unavailable, parse_quote, run_windows_end, shown_quotes, submit_quote,
-    windows_ended,
+    confirm_quote, confirm_quote_at, mark_unavailable, parse_quote, run_windows_end, shown_quotes,
+    submit_quote, windows_ended,
 };
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -154,7 +154,7 @@ async fn td_pick_02_only_confirmed_quotes_are_shown(mut db: Db) {
         .expect("form");
     assert_eq!(shown_quotes(&mut db, id).await, Ok(vec![b]));
     assert_eq!(
-        confirm_quote(&mut db, id, a).await,
+        confirm_quote_at(&mut db, (id, a), at("03T09:30:00")).await,
         Ok(Guarded::Applied(()))
     );
     assert_eq!(shown_quotes(&mut db, id).await, Ok(vec![a, b]));
