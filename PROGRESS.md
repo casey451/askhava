@@ -6294,3 +6294,4 @@
 - 2026-11-17T07:40:25Z runner eabc0711c109 (actions): {}
 - 2026-11-17T07:46:44Z runner eabc0711c109 (actions): {"T201": "MERGE_PENDING -> DONE"}
 - 2026-11-17T07:47:16Z runner eabc0711c109 (actions): {"T570": "QUEUED -> IN_PROGRESS"}; T570 estimated 1.1M tokens (calibrated); week has 159.7M left (no five-hour budget, D-3056) after 2.3M still running in another lane (session_reading 2026-11-17T07:39:56Z (week)); running to the limit (model window, D-2225), claimed
+- 2026-11-17T07:56:02Z runner 24cdb307a1ca (actions): {"T202": "QUEUED -> IN_PROGRESS"}; T202 estimated 1.5M tokens (calibrated); week has 158.6M left (no five-hour budget, D-3056) after 3.4M still running in another lane (session_reading 2026-11-17T07:39:56Z (week)); running to the limit (model window, D-2225), claimed
