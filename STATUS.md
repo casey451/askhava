@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-17T23:35:38Z by runner b1fe64c6fb5a (actions).
+Updated 2026-11-17T23:38:16Z by runner 7296f77b5c76 (actions).
 
-**Building: T478 in progress since 23:24Z; 414 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T587 in progress since 23:37Z; 414 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 414 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T478 claimed 23:24Z, lease until 02:24Z
-- **Week:** 33% used, 128.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:35Z, 0 min before this update
+- **Lane:** lane 1: T587 claimed 23:37Z, lease until 02:37Z; lane 2: T478 claimed 23:24Z, lease until 02:24Z
+- **Week:** 33% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 23:35Z, 2 min before this update
 - **Keeper:** last ran 23:35Z, next wake 02:27Z
 
 ## Needs attention
 - BLOCKED T203: plan gap reported: PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be "at the top of the quote page". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/pr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T583 (since 2026-11-17T23:24:36Z, no attempt used; a plan change fixes it): T583: dependency T582 is DONE but its owned file app/quotes/src/count_update.rs is not on main; T583: dependency T582 is DONE but its owned file app/messaging/src/quote_text_sent.rs is not on main; T583: dependency T582 is DONE but its owned file tests/integration/tests/quote_count_event.rs is not on main
-- Strict plan check red: 18 problem(s) on tasks still to run (+183 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 18 problem(s) on tasks still to run (+185 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,7 +86,6 @@ Updated 2026-11-17T23:35:38Z by runner b1fe64c6fb5a (actions).
 | T373 | businesses: changing a phone's number ends that phone's text | done | 2 | 42 min | 01:04Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
 | T111 | Draft homeowner and business terms with every required claus | done | 4 | 34 min | 23:57Z | Review not approved after the one allowed fix round (head d014c9d4313961aa8e702ef758390e00b95fe641). Drafts, clauses, sc |
 | T373 | businesses: changing a phone's number ends that phone's text | check_failed | 1 | 74 min | 23:55Z |  |
-| T523 | quotes, jobs, picks and intake: the readers the owner flags  | QUEUED | 2 | 89 min | 23:36Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 
 ### Plan and harness merges on main
 - none
@@ -122,7 +121,7 @@ Updated 2026-11-17T23:35:38Z by runner b1fe64c6fb5a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T23:24:05Z (week)): week: 66.0M used, 128.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T19:43:10Z.
+- Pacing (session_reading 2026-11-17T23:35:17Z (week)): week: 67.4M used, 126.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T20:07:36Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -137,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T587 (lease until 2026-11-18T02:37:58Z)
 - lane 2: T478 (lease until 2026-11-18T02:24:36Z)
 
 ## Last usage reading
