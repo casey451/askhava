@@ -368,7 +368,8 @@ const CAPABILITY_STATES: readonly PageState[] = [
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CAPABILITY_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
 /**
- * The public site pages (T102; WEB-001, WEB-012): no seed, the plain path. The old directory paths
+ * The public site pages (T102; WEB-001, WEB-012) and the legal and data pages (T221; WEB-014,
+ * TERMS-021, TERMS-023): no seed, the plain path. The old directory paths
  * answer with the home page (WEB-012).
  */
 const SITE_PAGE_STATES: readonly PageState[] = [
@@ -377,6 +378,13 @@ const SITE_PAGE_STATES: readonly PageState[] = [
   ["/events", "old events path, home page", "without giving out your number", "Para propietarios"],
   ["/how-it-works", "how it works", "Tell us about a job you need done.", "Para propietarios"],
   ["/es/how-it-works", "how it works in Spanish", "Cuéntenos de un trabajo que necesita.", "Homeowners"],
+  ["/terms", "terms, homeowner then business", "Business Terms", "Para propietarios"],
+  ["/privacy", "privacy policy", "How long we keep it", "Para propietarios"],
+  ["/sms-terms", "SMS terms", "How you agree", "Para propietarios"],
+  ["/your-data", "homeowner data page", "What we never ask", "Para propietarios"],
+  ["/es/your-data", "homeowner data page in Spanish", "Lo que nunca preguntamos", "Homeowners"],
+  ["/business-data", "business data page", "A log of each email we send you", "Para propietarios"],
+  ["/es/business-data", "business data page in Spanish", "Su registro de avisos", "Homeowners"],
 ].map(([route = "", name = "", shows = "", hides = ""]) => ({ route, name, shows, hides, sql: "", statusRegions: [] }));
 const OWNER_SIGNIN_ROUTE = "/owner/sign-in";
 const OWNER_STEP_UP_ROUTE = "/owner/step-up";
@@ -422,6 +430,13 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: "/events", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/events") },
   { route: "/how-it-works", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/how-it-works") },
   { route: "/es/how-it-works", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/es/how-it-works") },
+  { route: "/terms", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/terms") },
+  { route: "/privacy", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/privacy") },
+  { route: "/sms-terms", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/sms-terms") },
+  { route: "/your-data", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/your-data") },
+  { route: "/es/your-data", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/es/your-data") },
+  { route: "/business-data", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/business-data") },
+  { route: "/es/business-data", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/es/business-data") },
   { route: OWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: OWNER_SIGNIN_STATES },
   { route: OWNER_STEP_UP_ROUTE, seed: portalSeed(false), states: OWNER_STEP_UP_STATES },
 ];

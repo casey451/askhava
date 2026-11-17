@@ -11,7 +11,7 @@
 //! trade it touched (before and after an edit) under `ops`' one coverage lock, taken before the
 //! count, so two changes at once never report a stale count and two reports in one transaction
 //! cannot deadlock on key order ([`report_coverage`]). A license change that drops job types
-//! through `capability.rs` is not reported yet (D-3911).
+//! through `capability.rs` reports through [`report_edit`] too (T585, D-4052).
 
 use std::collections::BTreeSet;
 
@@ -147,7 +147,7 @@ async fn move_status(
 }
 
 /// The towns and trades (catalog categories) business `id` serves now (OPS-006).
-async fn coverage_keys(
+pub(crate) async fn coverage_keys(
     tx: &mut PgConnection,
     id: Uuid,
 ) -> Result<(Vec<String>, Vec<String>), BusinessesError> {
@@ -206,7 +206,7 @@ async fn report_coverage(
 
 /// OPS-006: after an edit of an active business's towns or job types, reports the keys it served
 /// before (`before`) and serves now, so a dropped town or trade is counted too.
-async fn report_edit(
+pub(crate) async fn report_edit(
     tx: &mut PgConnection,
     id: Uuid,
     before: (Vec<String>, Vec<String>),

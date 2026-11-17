@@ -108,6 +108,7 @@ pub struct RouterParts {
     statics: StaticRoot,
     business: BusinessParts,
     site: askhava_site::api::SitePages,
+    environment: askhava_core::api::Environment,
 }
 
 /// The business pages' parts: the served sign-in (T280), sign-up (T302), the portal's vault
@@ -170,6 +171,14 @@ impl RouterParts {
         self
     }
 
+    /// Sets the environment the data pages read the AI switch in (AI-018, T221); without it they
+    /// read it as `Dev`.
+    #[must_use]
+    pub fn with_environment(mut self, environment: askhava_core::api::Environment) -> Self {
+        self.environment = environment;
+        self
+    }
+
     /// [`Self::with_confirm_settings`] with [`confirm_settings`]'s answer; `None` adds nothing.
     #[must_use]
     pub fn with_confirm_part(self, part: Option<(String, jiff::Timestamp, SecretString)>) -> Self {
@@ -188,6 +197,7 @@ impl From<Hooks> for RouterParts {
             statics: StaticRoot::default(),
             business: BusinessParts::default(),
             site: askhava_site::api::SitePages::default(),
+            environment: askhava_core::api::Environment::Dev,
         }
     }
 }
@@ -201,6 +211,7 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
             statics,
             business: BusinessParts::default(),
             site: askhava_site::api::SitePages::default(),
+            environment: askhava_core::api::Environment::Dev,
         }
     }
 }
@@ -213,6 +224,7 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
             statics,
             business: BusinessParts::default(),
             site: askhava_site::api::SitePages::default(),
+            environment: askhava_core::api::Environment::Dev,
         }
     }
 }
@@ -334,12 +346,14 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         statics,
         business,
         site,
+        environment,
     } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let business = business_pages(business, pool.clone(), (&webhooks, &voice, &stripe));
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
-    let pages = link_and_site_pages(&pool, &statics, site);
+    let pages = link_and_site_pages(&pool, &statics, site)
+        .merge(askhava_site::api::legal_routes(pool.clone(), environment));
     // Each 403 of these four is a source or signature refusal, recorded as a capped
     // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
     let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));
@@ -1252,7 +1266,8 @@ fn register_whos_calling(
 
 /// T330 (CALL-019, CALL-022, D-2288, D-3134): registers `calls.safety_call` inside the Twilio
 /// settings branch, over the same settings as `picks.line_retry`, with [`SafetyParts`] built once;
-/// the switch is not captured ([`safety_switch`] is read on each run).
+/// the switch is not captured ([`safety_switch`] is read on each run). T571 (CON-035, D-4051):
+/// beside it `calls.safety_key_retry` over the same parts' vault and clock.
 fn register_safety_call(
     registry: &mut Registry,
     settings: &Settings,
@@ -1269,9 +1284,21 @@ fn register_safety_call(
         vault: vault_from(settings, pairs)?,
         clock: Arc::clone(clock),
     });
+    let retry = Arc::clone(&parts);
     registry.register(askhava_calls::api::SAFETY_CALL_KIND, move |pool, task| {
         run_safety_call(pool, Arc::clone(&parts), task)
     });
+    registry.register(
+        askhava_calls::api::SAFETY_KEY_RETRY_KIND,
+        move |pool, task| {
+            let parts = Arc::clone(&retry);
+            async move {
+                let now = parts.clock.now();
+                askhava_calls::api::run_safety_key_retry(pool, parts.vault.as_ref(), task, now)
+                    .await
+            }
+        },
+    );
     Ok(())
 }
 
