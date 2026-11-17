@@ -21191,8 +21191,8 @@
     "T489",
     "T202"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "wording-scan",
    "type": "build",
    "stage": "5",
@@ -21256,8 +21256,32 @@
        "turns": 16
       }
      }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 175,
+     "head_sha": "ec5f136577adfe010b854d7f2d0dec66bf17f238",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-17T18:38:19Z",
+     "ended_at": "2026-11-17T19:24:57Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 10451685,
+       "turns": 91
+      },
+      "reviewer": {
+       "tokens": 794008,
+       "turns": 19
+      }
+     }
     }
-   ]
+   ],
+   "reason": "Review not approved after the one fix round (head ec5f136577adfe010b854d7f2d0dec66bf17f238; tests/docs/test_wording_scan.py 349 of 350 lines; pytest 220 passed; prehandin.sh green; smoke.sh green on first head 2a14626dd). First review findings (pronoun hand-over \"share it/pass it/give it\", Spanish plural \"m\u00e1s baratas aparecen primero\", \"listed/shown by price\", \"se le da\") were fixed and hold; repack dropped nothing. Second reviewer's findings:\n1. tests/docs/test_wording_scan.py:71 (TERMS-010, false positive introduced by the fix): the pronoun branch `(?:HAND_OVER|give|send|show)\\s+(?:it|them|this)\\b` matches \"this <noun>\" and \"them\" = businesses. Wrongly flagged: \"After you give consent, we share this request with up to five businesses.\" / \"Add your phone number, then we send this request to local businesses.\" / \"Verify your mobile number so we can send this request to pros.\" / \"Once you confirm your phone number, we send them a description of the job.\" / \"Enter your phone number and we will send this code.\" (en.json:195 already says \"We'll send this to the {count} ... businesses\"; it passes only because the number is in another sentence.) Fix: drop \"this\"; count it/them only when followed by sentence end, punctuation, or to|with|along|over|on|out|away, e.g. `\\s+(?:it|them)(?=\\s*(?:$|[.!?;,]|\\s(?:to|with|along|over|on|out|away)\\b))`; add the first and fourth sentences to PASSES.\n2. tests/docs/test_wording_scan.py:79/:81-82 (WORD-003): Spanish \"shown/listed by price\" missed: \"Las cotizaciones se muestran por precio.\" / \"Mostramos las cotizaciones por precio.\" Fix: widen `orden\\w* (?:\\w+ ){0,3}por (...)` to `(?:orden|muestr|mostr|list|present)\\w* (?:\\w+ ){0,3}por (?:precio|calidad|calificaci)`; add both to FAILS.\nOptional (not counted): \"We collect your phone number and let the business see it.\" / \"Su n\u00famero de tel\u00e9fono lo recibe el negocio que elija.\" / \"Your phone number? We share it with the pro you pick.\" (\"?\" ends the sentence) / \"Los precios m\u00e1s bajos van primero.\"; \"We text your phone number a code; type it in.\" is wrongly flagged (already so on 2a14626dd).\nA retry should start from this attempt's design (pushed branch, if kept) and apply these two fixes; each rule should be checked against both missed phrasings and plausible legitimate consent-flow copy before hand-in."
   },
   {
    "id": "T203",
@@ -71936,12 +71960,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T605",
-   "at": "2026-11-17T19:15:32Z",
-   "output_tokens": 27330,
-   "cache_creation_input_tokens": 133247,
-   "input_tokens": 101,
-   "cache_read_input_tokens": 3054791
+   "task": "T104",
+   "at": "2026-11-17T19:24:57Z",
+   "output_tokens": 129566,
+   "input_tokens": 209,
+   "cache_creation_input_tokens": 310798,
+   "cache_read_input_tokens": 10805120
   },
   "source": "session_reading 2026-11-17T19:19:15Z (week)",
   "by_task": {
@@ -76373,14 +76397,14 @@
     "estimated_bytes": 551744,
     "estimated_tokens": 601372,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 409919,
-    "input_tokens": 279,
-    "output_tokens": 115620,
-    "cache_read_input_tokens": 8403637,
-    "worker_tokens": 7810894,
-    "worker_turns": 115,
-    "reviewer_tokens": 1118561,
-    "reviewer_turns": 31,
+    "cache_creation_input_tokens": 720717,
+    "input_tokens": 488,
+    "output_tokens": 245186,
+    "cache_read_input_tokens": 19208757,
+    "worker_tokens": 18262579,
+    "worker_turns": 206,
+    "reviewer_tokens": 1912569,
+    "reviewer_turns": 50,
     "last_model": "claude-opus-5-5"
    },
    "T528": {
@@ -76461,11 +76485,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-17T15:39:33Z",
-    "tokens": 6866957
+    "tokens": 8388042
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 255027029
+    "tokens": 256548114
    }
   },
   "session_reading": {
@@ -76476,7 +76500,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T19:20:53Z",
+ "updated_at": "2026-11-17T19:24:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -76574,7 +76598,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "805fa0d42eefe326c773335cb0da43569e094395",
+ "runner_sha": "ec5f136577adfe010b854d7f2d0dec66bf17f238",
  "starter": "actions",
  "smoke_runs": [
   {

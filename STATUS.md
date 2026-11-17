@@ -1,30 +1,36 @@
 # Ask Hava build status
 
-Updated 2026-11-17T19:20:53Z by runner 805fa0d42eef (actions).
+Updated 2026-11-17T19:24:58Z by runner ec5f136577ad (actions).
 
 **Building: T115 in progress since 18:45Z; 406 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 406 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 6: T106 claimed 19:20Z, lease until 22:20Z; lane 7: T104 claimed 18:38Z, lease until 22:17Z
+- **Lane:** lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 6: T106 claimed 19:20Z, lease until 22:20Z
 - **Week:** 25% used, 143.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:19Z, 1 min before this update
+- **Last run:** 19:20Z, 4 min before this update
 - **Keeper:** last ran 19:19Z, next wake 21:48Z
 
 ## Needs attention
+- BLOCKED T104: Review not approved after the one fix round (head ec5f136577adfe010b854d7f2d0dec66bf17f238; tests/docs/test_wording_scan.py 349 of 350 lines; pytest 220 passed; prehandin.sh green; smoke.sh green on first head 2a14626dd). First review findings (pronoun hand-over "share it/pass it/give it", Spanish plural "más baratas aparecen primero", "listed/shown by price", "se le da") were fixed and hold; repack dropped nothing. Second reviewer's findings:
+1. tests/docs/test_wording_scan.py:71 (TERMS-010, false positive introduced by the fix): the pronoun branch `(?:HAND_OVER|give|send|show)\s+(?:it|them|this)\b` matches "this <noun>" and "them" = businesses. Wrongly flagged: "After you give consent, we share this request with up to five businesses." / "Add your phone number, then we send this request to local businesses." / "Verify your mobile number so we can send this request to pros." / "Once you confirm your phone number, we send them a description of the job." / "Enter your phone number and we will send this code." (en.json:195 already says "We'll send this to the {count} ... businesses"; it passes only because the number is in another sentence.) Fix: drop "this"; count it/them only when followed by sentence end, punctuation, or to|with|along|over|on|out|away, e.g. `\s+(?:it|them)(?=\s*(?:$|[.!?;,]|\s(?:to|with|along|over|on|out|away)\b))`; add the first and fourth sentences to PASSES.
+2. tests/docs/test_wording_scan.py:79/:81-82 (WORD-003): Spanish "shown/listed by price" missed: "Las cotizaciones se muestran por precio." / "Mostramos las cotizaciones por precio." Fix: widen `orden\w* (?:\w+ ){0,3}por (...)` to `(?:orden|muestr|mostr|list|present)\w* (?:\w+ ){0,3}por (?:precio|calidad|calificaci)`; add both to FAILS.
+Optional (not counted): "We collect your phone number and let the business see it." / "Su número de teléfono lo recibe el negocio que elija." / "Your phone number? We share it with the pro you pick." ("?" ends the sentence) / "Los precios más bajos van primero."; "We text your phone number a code; type it in." is wrongly flagged (already so on 2a14626dd).
+A retry should start from this attempt's design (pushed branch, if kept) and apply these two fixes; each rule should be checked against both missed phrasings and plausible legitimate consent-flow copy before hand-in.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 11 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T104 | Wording scan: brand, banned words and the not-a-contractor p | BLOCKED | 3 | 46 min | 19:24Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T605 | businesses, intake and picks: the leaving answers, not-cover | MERGE_PENDING | 1 | 46 min | 19:15Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | MERGE_PENDING | 2 | 37 min | 19:05Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | QUEUED | 1 | 58 min | 18:25Z | T115 attempt not handed in (heads 575b42f0c, fix round 6fd736270). / 1) prehandin red at `npm audit --audit-level=low` o |
 | T596 | Runner (harness): an ancestor's running smoke finishes and c | MERGE_PENDING | 1 | 41 min | 17:49Z |  |
 | T491 | picks: the Confirm window's end, every way it comes, runs th | MERGE_PENDING | 1 | 2 h 2 min | 17:44Z |  |
 | T599 | Tests (harness): the PICK-046 email's no-amount check ignore | done | 1 | 32 min | 17:36Z |  |
-| T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 2 | 42 min | 17:35Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
+| T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 2 | 42 min | 17:35Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 1 | 51 min | 16:52Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | BLOCKED | 1 | 24 min | 16:50Z |  |
 | T595 | server and site: a same-site web chat POST passes its CSRF c | done | 1 | 45 min | 16:19Z |  |
@@ -136,7 +142,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 5: T115 (lease until 2026-11-17T21:45:57Z)
 - lane 6: T106 (lease until 2026-11-17T22:20:44Z)
-- lane 7: T104 (lease until 2026-11-17T22:17:33Z)
 
 ## Last usage reading
-- {"task": "T605", "at": "2026-11-17T19:15:32Z", "output_tokens": 27330, "cache_creation_input_tokens": 133247, "input_tokens": 101, "cache_read_input_tokens": 3054791}
+- {"task": "T104", "at": "2026-11-17T19:24:57Z", "output_tokens": 129566, "input_tokens": 209, "cache_creation_input_tokens": 310798, "cache_read_input_tokens": 10805120}
