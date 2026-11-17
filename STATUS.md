@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T15:29:04Z by runner 215d4cc126ab (actions).
+Updated 2026-11-17T15:29:43Z by runner 215d4cc126ab (actions).
 
 **Building: T113 in progress since 15:04Z; 399 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-17T15:29:04Z by runner 215d4cc126ab (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T113 claimed 15:04Z, lease until 18:04Z
 - **Week:** 22% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:28Z, 0 min before this update
+- **Last run:** 15:29Z, 0 min before this update
 - **Keeper:** last ran 15:29Z, next wake 18:07Z
 
 ## Needs attention
@@ -25,7 +25,7 @@ Updated 2026-11-17T15:29:04Z by runner 215d4cc126ab (actions).
 | T321 | messaging: the consent-purge functions, the inbound-text clo | MERGE_PENDING | 1 | 49 min | 13:42Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 2 | 94 min | 13:39Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
 | T363 | portals: the served pick and its code step apply the per-IP  | MERGE_PENDING | 1 | 62 min | 13:38Z |  |
-| T479 | ops and portals: "Not a fit for us" on the job page, and the | MERGE_PENDING | 1 | 50 min | 13:19Z |  |
+| T479 | ops and portals: "Not a fit for us" on the job page, and the | check_failed | 1 | 50 min | 13:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T594 | site: the end-to-end spec of the web chat and request page a | BLOCKED | 1 | 42 min | 13:18Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T202 | site: Spanish pages, the business page blocks and the requir | done | 2 | 43 min | 13:01Z | merging main into the reviewed head conflicts in app/site/src/api.rs, docs/architecture.md, tests/a11y/page_states.ts; a |
 | T113 | Draft the Twilio campaign description from the real template | BLOCKED | 1 | 10 min | 12:21Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
