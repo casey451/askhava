@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T12:03:15Z by runner 7b2e31773677 (actions).
+Updated 2026-11-17T12:10:40Z by runner e3c40d129221 (actions).
 
-**Idle since 11:54Z; 394 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T204 in progress since 12:04Z; 394 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 394 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 11:54Z (no task in progress)
-- **Week:** 19% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:02Z, 1 min before this update
+- **Lane:** lane 3: T204 claimed 12:04Z, lease until 15:04Z
+- **Week:** 19% used, 156.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 12:09Z, 0 min before this update
 - **Keeper:** last ran 11:58Z, next wake 12:18Z
 
 ## Needs attention
@@ -128,7 +128,7 @@ Updated 2026-11-17T12:03:15Z by runner 7b2e31773677 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T10:34:49Z (week)): week: 42.0M used, 152.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T03:48:33Z.
+- Pacing (session_reading 2026-11-17T11:58:13Z (week)): week: 38.0M used, 156.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T03:04:16Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -144,6 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 3: T204 (lease until 2026-11-17T15:04:32Z)
 
 ## Last usage reading
 - {"task": "T441", "at": "2026-11-17T11:32:02Z", "cache_read_input_tokens": 6761752, "cache_creation_input_tokens": 290355, "output_tokens": 64925, "input_tokens": 196}
