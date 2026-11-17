@@ -563,13 +563,40 @@ def ancestry_smoke(state: State, chain: list[str], merged: set[str], now: dateti
     green (the env's `green_twin_tree`, asked only after the cheaper tests; None: only DONE merges count, as before).
     Never while `main` is red. The caller adds the nightly and `main`'s checks on those commits (`cycle._start_smoke`);
     an exception from `proven` reaches the caller, which runs the smoke."""
+    distance = _ancestry_walk(state, chain, merged, limit, proven)
+    if distance is None:
+        return None
+    sha = chain[distance]
+    real = [r for r in state.get("smoke_runs") or [] if isinstance(r, dict) and r.get("sha") == sha and _real_green(r)]
+    return _ancestry_base(state, sha, real[-1], now)
+
+
+def ancestry_pending(state: State, chain: list[str], sha: str, merged: set[str], limit: int,
+                     proven: Callable[[str], bool] | None = None) -> bool:
+    """Whether `sha`, the commit this job's own smoke still runs or ran on, would be `ancestry_smoke`'s base for
+    `chain[0]` the moment a fresh real green is recorded on it (D-4180): `main` not red, `limit` >= 1, `sha` is
+    `chain[d]` for some 1 <= d <= `limit`, nothing doubts `sha` (`_clean_commit`) and every commit `chain[0:d]`, the
+    head included, passes the very per-commit tests `ancestry_smoke` applies (`_ancestry_walk`: no real run of its
+    own, `_clean_commit`, a DONE task's squash merge or `proven`). The caller (`cycle._start_smoke`) adds the
+    nightly and `main`'s checks on `chain[0:d+1]`; an exception from `proven` reaches it."""
+    if not sha or not _clean_commit(state, sha):
+        return False
+    return _ancestry_walk(state, chain, merged, limit, proven, sha) is not None
+
+
+def _ancestry_walk(state: State, chain: list[str], merged: set[str], limit: int,
+                   proven: Callable[[str], bool] | None, target: str = "") -> int | None:
+    """The per-commit loop of an ancestry reuse (D-3058, D-3156, D-4180): the distance of the first commit 1 to
+    `limit` back that is `target` (when given) or has a real green run (when not), provided every commit before
+    it, the head included, has no real green run, passes `_clean_commit` and is in `merged` or `proven` says
+    exactly True (asked last); else None. Never while `main` is red or with `limit` below 1."""
     if limit < 1 or not chain or state.get("main_red"):
         return None
     runs = [r for r in state.get("smoke_runs") or [] if isinstance(r, dict)]
     for distance, sha in enumerate(chain[: limit + 1]):
-        real = [r for r in runs if r.get("sha") == sha and _real_green(r)]
-        if distance and real:
-            return _ancestry_base(state, sha, real[-1], now)
+        real = any(r.get("sha") == sha and _real_green(r) for r in runs)
+        if distance and (sha == target if target else real):
+            return distance
         if real or distance >= limit or not _clean_commit(state, sha):
             return None
         if sha not in merged and not (proven is not None and proven(sha) is True):
