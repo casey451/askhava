@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T19:15:34Z by runner 329317afda64 (actions).
+Updated 2026-11-17T19:15:49Z by runner 329317afda64 (actions).
 
-**Building: T605 in progress since 18:29Z; 406 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T115 in progress since 18:45Z; 406 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 406 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T605 claimed 18:29Z, lease until 22:11Z; lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 7: T104 claimed 18:38Z, lease until 21:38Z
+- **Lane:** lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 7: T104 claimed 18:38Z, lease until 21:38Z
 - **Week:** 25% used, 141.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:15Z, 0 min before this update
 - **Keeper:** last ran 19:06Z, next wake 21:32Z
@@ -18,6 +18,7 @@ Updated 2026-11-17T19:15:34Z by runner 329317afda64 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T605 | businesses, intake and picks: the leaving answers, not-cover | MERGE_PENDING | 1 | 46 min | 19:15Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | MERGE_PENDING | 2 | 37 min | 19:05Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | QUEUED | 1 | 58 min | 18:25Z | T115 attempt not handed in (heads 575b42f0c, fix round 6fd736270). / 1) prehandin red at `npm audit --audit-level=low` o |
 | T596 | Runner (harness): an ancestor's running smoke finishes and c | MERGE_PENDING | 1 | 41 min | 17:49Z |  |
@@ -133,9 +134,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T605 (lease until 2026-11-17T22:11:17Z)
 - lane 5: T115 (lease until 2026-11-17T21:45:57Z)
 - lane 7: T104 (lease until 2026-11-17T21:38:19Z)
 
 ## Last usage reading
-- {"task": "T528", "at": "2026-11-17T19:05:05Z", "input_tokens": 115, "output_tokens": 29759, "cache_creation_input_tokens": 131638, "cache_read_input_tokens": 3519927}
+- {"task": "T605", "at": "2026-11-17T19:15:32Z", "output_tokens": 27330, "cache_creation_input_tokens": 133247, "input_tokens": 101, "cache_read_input_tokens": 3054791}
