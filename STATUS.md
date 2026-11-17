@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T23:38:54Z by runner 7296f77b5c76 (actions).
+Updated 2026-11-17T23:49:23Z by runner 25b746d18910 (actions).
 
-**Building: T587 in progress since 23:37Z; 414 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T587 in progress since 23:37Z; 415 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 414 of 582 build tasks (owner gates not counted)
+- **Tasks done:** 415 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T587 claimed 23:37Z, lease until 02:37Z; lane 2: T478 claimed 23:24Z, lease until 02:24Z
 - **Week:** 33% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:38Z, 0 min before this update
+- **Last run:** 23:39Z, 10 min before this update
 - **Keeper:** last ran 23:38Z, next wake 02:26Z
 
 ## Needs attention
@@ -27,7 +27,7 @@ Updated 2026-11-17T23:38:54Z by runner 7296f77b5c76 (actions).
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | done | 4 | 44 min | 21:44Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T594 | site: the end-to-end spec of the web chat and request page a | MERGE_PENDING | 2 | 83 min | 21:03Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T106 | ops: /healthz and the web and worker liveness exits | MERGE_PENDING | 1 | 77 min | 20:38Z |  |
-| T602 | privacy: the inbound email signature check refuses an out-of | MERGE_PENDING | 1 | 30 min | 20:37Z |  |
+| T602 | privacy: the inbound email signature check refuses an out-of | done | 1 | 30 min | 20:37Z |  |
 | T597 | Runner (harness): the early merge-close step also pushes the | done | 1 | 26 min | 20:28Z |  |
 | T582 | quotes and messaging (harness): a late read-back confirm is  | done | 1 | 36 min | 20:13Z |  |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | BLOCKED | 2 | 68 min | 19:54Z |  |
@@ -93,7 +93,7 @@ Updated 2026-11-17T23:38:54Z by runner 7296f77b5c76 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 671 · unstarted 64
-**Tasks merged (throughput only):** 414 of 582
+**Tasks merged (throughput only):** 415 of 582
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -129,7 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 57 of 190 done
+- stage 5: 58 of 190 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
