@@ -21194,7 +21194,17 @@
    "attempts": 0,
    "slug": "wording-scan",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-17T15:25:02Z",
+    "problems": [
+     "T104: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main",
+     "T104: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main",
+     "T104: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main",
+     "T104: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main",
+     "T104: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main"
+    ]
+   }
   },
   {
    "id": "T203",
@@ -22594,7 +22604,17 @@
    "attempts": 0,
    "slug": "a11y-docs-statement",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-17T15:25:02Z",
+    "problems": [
+     "T115: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main",
+     "T115: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main",
+     "T115: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main",
+     "T115: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main",
+     "T115: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main"
+    ]
+   }
   },
   {
    "id": "T116",
@@ -74983,7 +75003,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T15:21:35Z",
+ "updated_at": "2026-11-17T15:25:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -75081,7 +75101,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "215d4cc126abccb1cece1c228f1f20937d65e194",
+ "runner_sha": "a44660021decbcb04d6dac8d0822c2d35aae09cd",
  "starter": "actions",
  "smoke_runs": [
   {
