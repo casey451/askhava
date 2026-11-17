@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T11:38:01Z by runner 7b2e31773677 (actions).
+Updated 2026-11-17T11:38:43Z by runner 7a22e40cdfb5 (actions).
 
 **Idle since 11:32Z; 393 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-17T11:38:01Z by runner 7b2e31773677 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 11:32Z (no task in progress)
 - **Week:** 19% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:37Z, 0 min before this update
+- **Last run:** 11:38Z, 0 min before this update
 - **Keeper:** last ran 11:38Z, next wake 11:58Z
 
 ## Needs attention
-- PLAN GAP T321 (since 2026-11-17T09:31:01Z, no attempt used; a plan change fixes it): T321: dependency T107 is DONE but its owned file app/messaging/src/consent_alerts.rs is not on main; T321: dependency T107 is DONE but its owned file tests/integration/tests/consent_records_alerts.rs is not on main
+- PLAN GAP T113 (since 2026-11-17T11:38:31Z, no attempt used; a plan change fixes it): T113: dependency T112 is DONE but its owned file tests/docs/test_privacy_policy.py is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 5 problem(s) on tasks still to run (+148 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |

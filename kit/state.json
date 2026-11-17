@@ -22296,7 +22296,13 @@
    "attempts": 0,
    "slug": "twilio-campaign",
    "type": "docs",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-17T11:38:31Z",
+    "problems": [
+     "T113: dependency T112 is DONE but its owned file tests/docs/test_privacy_policy.py is not on main"
+    ]
+   }
   },
   {
    "id": "T229",
@@ -38015,14 +38021,7 @@
    "attempts": 0,
    "slug": "consent-five-year-purge",
    "type": "build",
-   "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-17T09:31:01Z",
-    "problems": [
-     "T321: dependency T107 is DONE but its owned file app/messaging/src/consent_alerts.rs is not on main",
-     "T321: dependency T107 is DONE but its owned file tests/integration/tests/consent_records_alerts.rs is not on main"
-    ]
-   }
+   "stage": "5"
   },
   {
    "id": "T311",
@@ -73888,7 +73887,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T11:38:01Z",
+ "updated_at": "2026-11-17T11:38:43Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -73986,7 +73985,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7b2e317736778aa4f62a04af90ad7c04f04ea950",
+ "runner_sha": "7a22e40cdfb57bf4d433a73a20ab9372f0a8d8c9",
  "starter": "actions",
  "smoke_runs": [
   {
