@@ -6637,3 +6637,4 @@
 - 2026-11-17T19:39:54Z runner 805fa0d42eef (actions): {"T594": "QUEUED -> IN_PROGRESS"}; T594 estimated 1.1M tokens (calibrated); week has 139.2M left (no five-hour budget, D-3056) after 2.8M still running in another lane (session_reading 2026-11-17T19:28:29Z (week)); running to the limit (model window, D-2225), claimed
 - 2026-11-17T19:49:51Z runner 889565bba82e (actions): {}
 - 2026-11-17T19:50:07Z runner 889565bba82e (actions): {}
+- 2026-11-17T19:51:58Z runner c6d52c655da5 (actions): {"T596": "MERGE_PENDING -> DONE"}
