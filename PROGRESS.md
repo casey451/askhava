@@ -6420,3 +6420,4 @@
 - 2026-11-17T12:21:12Z runner 4fc6998df41d (actions): {"T113": "IN_PROGRESS -> BLOCKED"}
 - 2026-11-17T12:22:02Z runner 4fc6998df41d (actions): {}
 - 2026-11-17T12:22:18Z runner 7b2e31773677 (actions): {}
+- 2026-11-17T12:28:49Z runner 33f876050cc0 (actions): {"T479": "QUEUED -> IN_PROGRESS"}; T479 estimated 1.6M tokens (calibrated); week has 152.8M left (no five-hour budget, D-3056) after 3.2M still running in another lane (session_reading 2026-11-17T12:21:46Z (week)); running to the limit (model window, D-2225), claimed
