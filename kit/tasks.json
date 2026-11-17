@@ -14750,7 +14750,7 @@
    "id": "T518",
    "slug": "vendor-error-health-alerts",
    "title": "server, ops and payments: the Stripe-or-webhook-errors and failed-health-check alerts are raised (D-3877)",
-   "goal": "Plan change D-3877 (Fable's pre-claim check of T105, reviewed in two rounds): OPS-004 alerts Casey when \"Stripe or webhook errors last over 30 minutes\" and when \"the 5-minute health check fails twice\", but no task raises either alert and no alert kind exists for them on `main` ff584ab; T105 raises the other OPS-004 alerts. (1) Webhook outcomes: a layer on the `/webhooks` routes in the new `app/server/src/vendor_alerts.rs`, added in the shared `app/server/src/lib.rs`, writes one `ops` audit row (action `server.webhook_error`, the route's code name as subject kind, a fresh UUID per request as `subject_id`, `app/ops/src/models.rs:105`; no body, no sender) for each request the app answers with a 5xx, and one `server.webhook_ok` row for the first 2xx on each route in each 5-minute window, keyed on the route and the window start (at most 12 rows an hour per route); the layer keeps no in-memory state, so this holds across restarts and across processes. Each row is written in its own transaction on a fresh connection after the response is decided; a failed write is logged and never changes the response. A refused signature is a security event, not an error. A 5xx caused by the database being down cannot be recorded; the health check below covers that case. (2) Stripe outcomes: the new `app/payments/src/stripe_errors.rs`, re-exported by one `api.rs` line, returns from `payments`' own rows the times of the window's Stripe calls that failed (`AttemptStatus::Unreachable` or no answer, `app/payments/src/charge.rs:280` to `:295`, and failed refunds) and of those that succeeded, times and outcomes only. (3) A worker task in `vendor_alerts.rs`, registered in `server::worker_registry` and first queued from `schedule_start` (`app/server/src/bin/worker.rs:74`) under a dedupe key, runs every 5 minutes. Error runs are tracked separately: one for Stripe and one for each webhook route. A Stripe run is broken only by a successful Stripe call, a webhook run only by a `server.webhook_ok` row on the same route (webhook rows read through T477's `ops` audit-subjects reader, `app/ops/src/audit_subjects.rs`). A run \"lasts over 30 minutes\" when an error comes 30 minutes or more after its first error with no such success in between; any run that does raises one High `ops.vendor_errors` alert, once, through `ops::api::raise_kind_once`. It runs the check T106's `/healthz` runs (`app/server/src/healthz.rs`) in process and raises one High `ops.health_check_failed` alert (the kind `app/ops/src/models.rs:218` names) when two checks in a row fail. The in-process check covers the database and the worker only; an unreachable web process is UptimeRobot's alone (OPS-007), which alerts Casey directly. On each run it also clears its own alerts through T204's kind-taking `ops::api` acknowledgement (OPS-023, D-220): an open `ops.vendor_errors` alert with no Stripe or webhook error in the last 2 hours, and an open `ops.health_check_failed` alert on the first passing check. OPS-029 pushes a health alert still failing 15 minutes after its first failure; this task raises at the second failure (about 5 minutes), so T204's push fires when the alert is still open 10 minutes after it was raised, and TD-OPS-08's 0, 10 and 15-minute cases hold. Tests in `tests/integration/tests/vendor_alerts.rs` against PostgreSQL with fake data only (TD-OPS-44). Update the `server`, `ops` and `payments` `NOTES.md` and `docs/decisions.md`. Plan change D-3882 (Fable's pre-claim checks, Nov 16, 2026): `tests/security/tests/security_event_cap.rs:366` to `:374` pins the strings `refused(inbound_text::routes(h))`, `refused(inbound_voice::routes(v))`, `refused(stripe_webhook_routes(s))` and `refused(voice_status::routes(h))` and exactly four `refused(`, so the outcome layer wraps outside `refused(...)` or is one router-level layer keyed on the `/webhooks` prefix, and those four strings stay; `call_status::routes` (`app/server/src/lib.rs:313`) is a fifth `/webhooks` router and is covered too. The timeout's 503 and a panic's 500 come from outer layers (`lib.rs:332` to `:336`), which a route layer does not see; the health check covers those. The per-window `server.webhook_ok` row is written through `ops::api::audit_once` (`app/ops/src/api.rs:181`) with a subject ID derived from the route and the window start, so a second 2xx in the window writes nothing. No constant this task adds is named `*_KIND` unless it is a task kind. Plan change D-4044 (the Opus pre-claim scouts a, b and c, Nov 16, 2026, each finding checked on `main` f4898b7): The in-process health check is T106's one `pub(crate)` function in `app/server/src/healthz.rs` (D-4044), called as it is; this task does not edit that file. Cites now: `schedule_start` is `app/server/src/bin/worker.rs:92` (was `:74`); `audit_once` is `app/ops/src/api.rs:192` (was `:181`); `answer_status` is `app/payments/src/charge.rs:279` to `:298` (was `:280` to `:295`); `call_status::routes` is `app/server/src/lib.rs:351` (was `:313`); the panic and timeout layers are `lib.rs:367` to `:371` (was `:332` to `:336`); the four pinned `refused(` strings and their count are `tests/security/tests/security_event_cap.rs:364` to `:374` (was `:366` to `:374`). `AuditSubject` gains a `field` under D-4037 (T523): read its fields by name, never build it by struct literal.",
+   "goal": "Plan change D-3877 (Fable's pre-claim check of T105, reviewed in two rounds): OPS-004 alerts Casey when \"Stripe or webhook errors last over 30 minutes\" and when \"the 5-minute health check fails twice\", but no task raises either alert and no alert kind exists for them on `main` ff584ab; T105 raises the other OPS-004 alerts. (1) Webhook outcomes: a layer on the `/webhooks` routes in the new `app/server/src/vendor_alerts.rs`, added in the shared `app/server/src/lib.rs`, writes one `ops` audit row (action `server.webhook_error`, the route's code name as subject kind, a fresh UUID per request as `subject_id`, `app/ops/src/models.rs:105`; no body, no sender) for each request the app answers with a 5xx, and one `server.webhook_ok` row for the first 2xx on each route in each 5-minute window, keyed on the route and the window start (at most 12 rows an hour per route); the layer keeps no in-memory state, so this holds across restarts and across processes. Each row is written in its own transaction on a fresh connection after the response is decided; a failed write is logged and never changes the response. A refused signature is a security event, not an error. A 5xx caused by the database being down cannot be recorded; the health check below covers that case. (2) Stripe outcomes: the new `app/payments/src/stripe_errors.rs`, re-exported by one `api.rs` line, returns from `payments`' own rows the times of the window's Stripe calls that failed (`AttemptStatus::Unreachable` or no answer, `app/payments/src/charge.rs:280` to `:295`, and failed refunds) and of those that succeeded, times and outcomes only. (3) A worker task in `vendor_alerts.rs`, registered in `server::worker_registry` and first queued from `schedule_start` (`app/server/src/bin/worker.rs:74`) under a dedupe key, runs every 5 minutes. Error runs are tracked separately: one for Stripe and one for each webhook route. A Stripe run is broken only by a successful Stripe call, a webhook run only by a `server.webhook_ok` row on the same route (webhook rows read through T477's `ops` audit-subjects reader, `app/ops/src/audit_subjects.rs`). A run \"lasts over 30 minutes\" when an error comes 30 minutes or more after its first error with no such success in between; any run that does raises one High `ops.vendor_errors` alert, once, through `ops::api::raise_kind_once`. It runs the check T106's `/healthz` runs (`app/server/src/healthz.rs`) in process and raises one High `ops.health_check_failed` alert (the kind `app/ops/src/models.rs:218` names) when two checks in a row fail. The in-process check covers the database and the worker only; an unreachable web process is UptimeRobot's alone (OPS-007), which alerts Casey directly. On each run it also clears its own alerts through T204's kind-taking `ops::api` acknowledgement (OPS-023, D-220): an open `ops.vendor_errors` alert with no Stripe or webhook error in the last 2 hours, and an open `ops.health_check_failed` alert on the first passing check. OPS-029 pushes a health alert still failing 15 minutes after its first failure; this task raises at the second failure (about 5 minutes), so T204's push fires when the alert is still open 10 minutes after it was raised, and TD-OPS-08's 0, 10 and 15-minute cases hold. Tests in `tests/integration/tests/vendor_alerts.rs` against PostgreSQL with fake data only (TD-OPS-44). Update the `server`, `ops` and `payments` `NOTES.md` and `docs/decisions.md`. Plan change D-3882 (Fable's pre-claim checks, Nov 16, 2026): `tests/security/tests/security_event_cap.rs:366` to `:374` pins the strings `refused(inbound_text::routes(h))`, `refused(inbound_voice::routes(v))`, `refused(stripe_webhook_routes(s))` and `refused(voice_status::routes(h))` and exactly four `refused(`, so the outcome layer wraps outside `refused(...)` or is one router-level layer keyed on the `/webhooks` prefix, and those four strings stay; `call_status::routes` (`app/server/src/lib.rs:313`) is a fifth `/webhooks` router and is covered too. The timeout's 503 and a panic's 500 come from outer layers (`lib.rs:332` to `:336`), which a route layer does not see; the health check covers those. The per-window `server.webhook_ok` row is written through `ops::api::audit_once` (`app/ops/src/api.rs:181`) with a subject ID derived from the route and the window start, so a second 2xx in the window writes nothing. No constant this task adds is named `*_KIND` unless it is a task kind. Plan change D-4044 (the Opus pre-claim scouts a, b and c, Nov 16, 2026, each finding checked on `main` f4898b7): The in-process health check is T106's one `pub(crate)` function in `app/server/src/healthz.rs` (D-4044), called as it is; this task does not edit that file. Cites now: `schedule_start` is `app/server/src/bin/worker.rs:92` (was `:74`); `audit_once` is `app/ops/src/api.rs:192` (was `:181`); `answer_status` is `app/payments/src/charge.rs:279` to `:298` (was `:280` to `:295`); `call_status::routes` is `app/server/src/lib.rs:351` (was `:313`); the panic and timeout layers are `lib.rs:367` to `:371` (was `:332` to `:336`); the four pinned `refused(` strings and their count are `tests/security/tests/security_event_cap.rs:364` to `:374` (was `:366` to `:374`). `AuditSubject` gains a `field` under D-4037 (T523): read its fields by name, never build it by struct literal. Plan change D-4196 (Casey's outside audit of Nov 17, 2026, finding 13, verified on `main` 2f2fa8c; FEE-018, FEE-020, FEE-037): this task also owns `app/payments/src/charge.rs`. `answer_status` (`app/payments/src/charge.rs:279` to `:298`) answers `None` for a confirm Stripe refused with a 4xx other than 402 and 429, so `confirm_answer` (`:240` to `:251`) reads the intent again; with a bad, revoked or under-permissioned key that read fails too, and `AttemptStatus::after_refusal(None)` (`app/payments/src/status.rs:96`) answers `Declined`. The business is then told its card failed, FEE-020's card-fix window opens and the pick moves on as the business's fault, while this task's alert, which counts only `Unreachable` and unanswered attempts, never sees it. Add one arm before `400..=499`: `AdapterError::Vendor { status: 401 | 403, .. }` is `Some(AttemptStatus::Unreachable)`, so the attempt takes FEE-018's Stripe-down path (`ChargeOutcome::StripeDown`, `status.rs:181`, and the 4-hour release) and `stripe_errors` counts it. `after_refusal` does not change: TD-FEE-20 (`app/payments/src/tests/charge.rs:155`) pins `after_refusal(None)` as a decline. A 404 keeps today's path (read the intent again): the same confirm sends the business's saved `payment_method`, and nothing in the repository shows Stripe's 404 on a confirm can only mean our key or account rather than a missing object of the business's, so treating it as Stripe being down is not supported by the evidence. Tests in the new `tests/integration/tests/charge_vendor_auth.rs` against PostgreSQL, fake data only, with a fake `PaymentsAdapter` that answers `Vendor { status: 401 }` (and in a second case 403) to both the confirm and the intent read: the attempt is stored `unreachable`, the outcome is `StripeDown` with no card-fix deadline (FEE-020), and `stripe_errors` reports it as a failed Stripe call, so two such attempts 31 minutes apart raise one `ops.vendor_errors` alert; a 402 still declines with the card-fix deadline, and a 400 whose intent read answers `requires_payment_method` still declines. T132 (QUEUED, the other owner of `charge.rs`) already comes after this task (T518 is among its ancestors), and T126, T142 and T237 to T239 (whole-`app/` owners) do too, so no two of them run side by side.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14771,17 +14771,23 @@
    "owns": [
     "app/server/src/vendor_alerts.rs",
     "app/payments/src/stripe_errors.rs",
-    "tests/integration/tests/vendor_alerts.rs"
+    "tests/integration/tests/vendor_alerts.rs",
+    "app/payments/src/charge.rs",
+    "tests/integration/tests/charge_vendor_auth.rs"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/security.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/fees.md"
    ],
    "requirements": [
-    "OPS-004"
+    "OPS-004",
+    "FEE-018",
+    "FEE-020",
+    "FEE-037"
    ],
    "tests": [
     "TD-OPS-44"
@@ -14790,13 +14796,14 @@
     "D-3877",
     "D-220",
     "D-3882",
-    "D-4044"
+    "D-4044",
+    "D-4196"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 450,
-    "context_pct": 11
+    "files": 5,
+    "lines": 550,
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -14806,7 +14813,7 @@
    "branch": "claude/task/T518-vendor-error-health-alerts",
    "prompt": "kit/prompts/T518.md",
    "copy": true,
-   "acceptance": "`cargo test -p askhava-integration --test vendor_alerts` passes against PostgreSQL (TD-OPS-44): errors at 0 and 31 minutes with nothing between raise one High `ops.vendor_errors` alert, a success on the same run between them raises none, webhook 5xx answers at 0 and 31 minutes with a successful Stripe call between still raise one alert, a restart between a 5xx and the next 2xx still records the success, and a second run raises no second alert; two clean hours clear it and an error at 1 hour 59 minutes does not; two failed health checks in a row raise one High `ops.health_check_failed` alert, one raises none, and one passing check clears it; a failed audit write leaves the webhook response unchanged; T204's TD-OPS-08 cases still pass."
+   "acceptance": "`cargo test -p askhava-integration --test vendor_alerts` passes against PostgreSQL (TD-OPS-44): errors at 0 and 31 minutes with nothing between raise one High `ops.vendor_errors` alert, a success on the same run between them raises none, webhook 5xx answers at 0 and 31 minutes with a successful Stripe call between still raise one alert, a restart between a 5xx and the next 2xx still records the success, and a second run raises no second alert; two clean hours clear it and an error at 1 hour 59 minutes does not; two failed health checks in a row raise one High `ops.health_check_failed` alert, one raises none, and one passing check clears it; a failed audit write leaves the webhook response unchanged; T204's TD-OPS-08 cases still pass. `tests/integration/tests/charge_vendor_auth.rs` passes (D-4196): a 401 or 403 on the confirm is stored `unreachable`, answers `StripeDown` with no card-fix deadline and is counted by `stripe_errors`; a 402 and a refused 400 still decline; TD-FEE-20's `app/payments/src/tests/charge.rs` cases and `tests/integration/tests/charge_attempts.rs` pass unchanged."
   },
   {
    "id": "T100",
@@ -16170,7 +16177,8 @@
     "T489",
     "T490",
     "T472",
-    "T536"
+    "T536",
+    "T600"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16215,7 +16223,8 @@
     "D-3744",
     "D-3750",
     "D-3889",
-    "D-3892"
+    "D-3892",
+    "D-4196"
    ],
    "cites": [],
    "budget": {
@@ -20952,7 +20961,13 @@
     "T591",
     "T592",
     "T593",
-    "T594"
+    "T594",
+    "T600",
+    "T601",
+    "T602",
+    "T604",
+    "T599",
+    "T603"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -23346,7 +23361,8 @@
    "deps": [
     "T139",
     "T243",
-    "T416"
+    "T416",
+    "T600"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -23383,7 +23399,8 @@
     "D-2038",
     "D-2054",
     "D-2350",
-    "D-3292"
+    "D-3292",
+    "D-4196"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -39059,7 +39076,7 @@
    "id": "T470",
    "slug": "email-outbox-send",
    "title": "messaging and server: the worker task that sends queued emails through the email provider",
-   "goal": "Plan change D-3750 (D-3263, D-3186; SEC-025, OPS-038, SEC-018, PRIV-016, BIZ-019): emails stored in `messaging.email_outbox` by `queue_email` (`app/messaging/src/email.rs:343`) and by the business notice sender (job cards, pick and money notices, `app/messaging/src/business_notices.rs`), the receipts and the homeowner emails are never sent: only the account mailers call `send_email` (`app/messaging/src/email.rs:454`), for their own row, and no task sends a queued row to a provider (D-3263 parked T222's email checks for it). Only the account mailers store a credential mark in place of a credential (`LINK_MARK`, `app/messaging/src/signin_mail.rs`; T468's `CODE_MARK`) and add it only on the way to the provider; business notices store real per-recipient sign-in links in their bodies (`app/messaging/src/business_notices.rs:24`, `:389`), so a stored notice is itself a credential for its recipient. (1) `migrations/0207_messaging_email_lease.sql` (headed `messaging`): `messaging.email_outbox` gains `claimed_at timestamptz` (the drain's lease) and the status `dropped` (a row never to be sent; its subject and bodies are cleared in the same statement, as a sent row's are, so the status CHECKs extend to it); no old migration is edited. Its number follows T456's `0205` (T470 depends on T456 for that order only, V9; each moved up one by D-3779) and T236's migration moves to `0208`. (2) `app/messaging/src/email_due.rs` (new; exported through the shared `api.rs` and `lib.rs`): the `messaging.email_due` worker task. Each run, at the worker clock's now, leases a bounded batch, oldest first, in one short committed statement under `FOR UPDATE SKIP LOCKED` that sets `status = 'sending'` and `claimed_at = now` together: it takes `queued` rows whose `not_before` passed and whose `claimed_at` is null or stale, plus `sending` rows only when their lease is stale (`claimed_at` older than `STALE_AFTER`, 5 minutes, as `outbox_sender`'s, or unset 5 minutes past `not_before`), because `claim_email` itself takes `queued` or `sending` (`app/messaging/src/models.rs:764`) and a non-429 provider error leaves a row `sending` (`app/messaging/src/email.rs:494`). A row a worker leased is therefore `sending` with a fresh lease, which no second lease takes, whether the two runs overlap or follow one another, so each row gets one provider call per lease, under its stored idempotency key (SEC-018: a retry after a stale lease is the same email to Resend). `app/messaging/src/models.rs` (owners done): `hold_email` (`:819`), which puts a row back to `queued`, also clears `claimed_at` and never touches a `dropped` row (`status NOT IN ('sent', 'dropped')`), so a held row is leased again once its `not_before` passes. Each leased row is then sent through `send_email` with the provider, email key and `DailyLimit` it is handed (T469's `EmailProvider`), so OPS-038's bulk hold and the daily quota (SEC-025) hold as for every other email. It takes only templates no other code sends: never a template whose own handler calls `send_email` (the sign-in link, the email code, the welcome and phone-stopped, the coverage notice and the business event emails), listed by template ID in one constant; and, as a backstop, a leased row whose subject or body holds `LINK_MARK` or `CODE_MARK` is `dropped` with one High alert naming the row ID only and never sent, so a literal mark never reaches anyone. A homeowner row's address is read through `EmailTo::Homeowner` (the vault, under `messaging`'s send grant); a business row's comes from a resolver trait the composition supplies, which answers the address, or `Gone` when the row's business has left (BIZ-051: leaving stops all notices) or its mailbox is no longer a current member's (a removed member, SEC-024), and a `Gone` row is `dropped` unsent, since it holds that person's sign-in link. With no provider handed in, a run does nothing: it leases, sends and marks nothing and queues no next run; with one, it queues its next run, as `send_due` does (`app/messaging/src/outbox_sender.rs`). No transaction is open during the provider call, and no address, body or key is logged (PRIV-016). (3) `app/privacy/src/business_contacts.rs`: `BusinessPurpose::Notice` (\"the business notice and card emails: the address only\"), in `ALL`, with its audit label (SEC-047). (4) `app/server/src/email_due.rs` (new): the resolver (the current-member and left-business checks through `businesses::api`, then `read_business_mailbox` under `BusinessPurpose::Notice` on a bare connection) and the handler, registered in `worker_registry` (the shared `app/server/src/lib.rs`) always, with T469's provider when it exists and with none otherwise, so `tests/integration/tests/task_registry.rs` (TD-OPS-36, built from the dev stand-in pairs with no Resend key) passes unchanged; the first run is queued at start only when a provider exists. (5) Tests, fake data only, in `tests/integration/tests/email_due.rs` against PostgreSQL with a recording `EmailAdapter`: a queued homeowner email and a queued business notice email each go once to the right address; two workers' leases over the same rows, run both at once and one after the other (the second after the first committed its lease but before its send finished), leave the adapter with exactly one call per row; a `sending` row with a fresh lease is not taken and one with a stale lease is, under the same key; a row `hold_email` put back to `queued` has no lease and goes once its `not_before` passes, and a `dropped` row is never held or sent; a row whose `not_before` is later waits; a bulk row waits above the hold share while a job card still goes; a refused send goes on a later run under the same key; a row of a self-sending template is never taken; a row holding `LINK_MARK` or `CODE_MARK` is dropped with one alert and never sent; a notice to a removed member or a business that left is dropped unsent; with no provider nothing changes and no next run is queued; no address appears in any log line. Update `app/messaging/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-3883: this task's migration moved up one, to `0207_messaging_email_lease.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): a leased row whose address read answers `EmailError::NoAddress` (`app/messaging/src/email.rs:536` to `:542`) is `dropped`, not left `sending` to be leased again forever; `messaging::api::unsent_business_mailboxes` (`app/messaging/src/api.rs:290`, the shared file) gains `AND status <> 'dropped'`, so a dropped row keeps no removed member's address; if `schedule_start` (`app/server/src/bin/worker.rs:74`, 47 body lines) would pass 50 lines, this task moves its calls into a helper first. `app/server/CLAUDE.md` is at its 8,192-byte cap, so server notes go in `app/server/NOTES.md`. If the change outgrows 600 lines, the natural split is the `messaging` drain versus the `server` resolver and handler: report it.",
+   "goal": "Plan change D-3750 (D-3263, D-3186; SEC-025, OPS-038, SEC-018, PRIV-016, BIZ-019): emails stored in `messaging.email_outbox` by `queue_email` (`app/messaging/src/email.rs:343`) and by the business notice sender (job cards, pick and money notices, `app/messaging/src/business_notices.rs`), the receipts and the homeowner emails are never sent: only the account mailers call `send_email` (`app/messaging/src/email.rs:454`), for their own row, and no task sends a queued row to a provider (D-3263 parked T222's email checks for it). Only the account mailers store a credential mark in place of a credential (`LINK_MARK`, `app/messaging/src/signin_mail.rs`; T468's `CODE_MARK`) and add it only on the way to the provider; business notices store real per-recipient sign-in links in their bodies (`app/messaging/src/business_notices.rs:24`, `:389`), so a stored notice is itself a credential for its recipient. (1) `migrations/0207_messaging_email_lease.sql` (headed `messaging`): `messaging.email_outbox` gains `claimed_at timestamptz` (the drain's lease) and the status `dropped` (a row never to be sent; its subject and bodies are cleared in the same statement, as a sent row's are, so the status CHECKs extend to it); no old migration is edited. Its number follows T456's `0205` (T470 depends on T456 for that order only, V9; each moved up one by D-3779) and T236's migration moves to `0208`. (2) `app/messaging/src/email_due.rs` (new; exported through the shared `api.rs` and `lib.rs`): the `messaging.email_due` worker task. Each run, at the worker clock's now, leases a bounded batch, oldest first, in one short committed statement under `FOR UPDATE SKIP LOCKED` that sets `status = 'sending'` and `claimed_at = now` together: it takes `queued` rows whose `not_before` passed and whose `claimed_at` is null or stale, plus `sending` rows only when their lease is stale (`claimed_at` older than `STALE_AFTER`, 5 minutes, as `outbox_sender`'s, or unset 5 minutes past `not_before`), because `claim_email` itself takes `queued` or `sending` (`app/messaging/src/models.rs:764`) and a non-429 provider error leaves a row `sending` (`app/messaging/src/email.rs:494`). A row a worker leased is therefore `sending` with a fresh lease, which no second lease takes, whether the two runs overlap or follow one another, so each row gets one provider call per lease, under its stored idempotency key (SEC-018: a retry after a stale lease is the same email to Resend). `app/messaging/src/models.rs` (owners done): `hold_email` (`:819`), which puts a row back to `queued`, also clears `claimed_at` and never touches a `dropped` row (`status NOT IN ('sent', 'dropped')`), so a held row is leased again once its `not_before` passes. Each leased row is then sent through `send_email` with the provider, email key and `DailyLimit` it is handed (T469's `EmailProvider`), so OPS-038's bulk hold and the daily quota (SEC-025) hold as for every other email. It takes only templates no other code sends: never a template whose own handler calls `send_email` (the sign-in link, the email code, the welcome and phone-stopped, the coverage notice and the business event emails), listed by template ID in one constant; and, as a backstop, a leased row whose subject or body holds `LINK_MARK` or `CODE_MARK` is `dropped` with one High alert naming the row ID only and never sent, so a literal mark never reaches anyone. A homeowner row's address is read through `EmailTo::Homeowner` (the vault, under `messaging`'s send grant); a business row's comes from a resolver trait the composition supplies, which answers the address, or `Gone` when the row's business has left (BIZ-051: leaving stops all notices) or its mailbox is no longer a current member's (a removed member, SEC-024), and a `Gone` row is `dropped` unsent, since it holds that person's sign-in link. With no provider handed in, a run does nothing: it leases, sends and marks nothing and queues no next run; with one, it queues its next run, as `send_due` does (`app/messaging/src/outbox_sender.rs`). No transaction is open during the provider call, and no address, body or key is logged (PRIV-016). (3) `app/privacy/src/business_contacts.rs`: `BusinessPurpose::Notice` (\"the business notice and card emails: the address only\"), in `ALL`, with its audit label (SEC-047). (4) `app/server/src/email_due.rs` (new): the resolver (the current-member and left-business checks through `businesses::api`, then `read_business_mailbox` under `BusinessPurpose::Notice` on a bare connection) and the handler, registered in `worker_registry` (the shared `app/server/src/lib.rs`) always, with T469's provider when it exists and with none otherwise, so `tests/integration/tests/task_registry.rs` (TD-OPS-36, built from the dev stand-in pairs with no Resend key) passes unchanged; the first run is queued at start only when a provider exists. (5) Tests, fake data only, in `tests/integration/tests/email_due.rs` against PostgreSQL with a recording `EmailAdapter`: a queued homeowner email and a queued business notice email each go once to the right address; two workers' leases over the same rows, run both at once and one after the other (the second after the first committed its lease but before its send finished), leave the adapter with exactly one call per row; a `sending` row with a fresh lease is not taken and one with a stale lease is, under the same key; a row `hold_email` put back to `queued` has no lease and goes once its `not_before` passes, and a `dropped` row is never held or sent; a row whose `not_before` is later waits; a bulk row waits above the hold share while a job card still goes; a refused send goes on a later run under the same key; a row of a self-sending template is never taken; a row holding `LINK_MARK` or `CODE_MARK` is dropped with one alert and never sent; a notice to a removed member or a business that left is dropped unsent; with no provider nothing changes and no next run is queued; no address appears in any log line. Update `app/messaging/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-3883: this task's migration moved up one, to `0207_messaging_email_lease.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): a leased row whose address read answers `EmailError::NoAddress` (`app/messaging/src/email.rs:536` to `:542`) is `dropped`, not left `sending` to be leased again forever; `messaging::api::unsent_business_mailboxes` (`app/messaging/src/api.rs:290`, the shared file) gains `AND status <> 'dropped'`, so a dropped row keeps no removed member's address; if `schedule_start` (`app/server/src/bin/worker.rs:74`, 47 body lines) would pass 50 lines, this task moves its calls into a helper first. `app/server/CLAUDE.md` is at its 8,192-byte cap, so server notes go in `app/server/NOTES.md`. If the change outgrows 600 lines, the natural split is the `messaging` drain versus the `server` resolver and handler: report it. Plan change D-4196 (Casey's outside audit of Nov 17, 2026, finding 1, verified on `main` 2f2fa8c): a row of a self-sending template that `send_email` held on a 429 or a full daily quota is never sent today: `models::hold_email` (`app/messaging/src/models.rs:812`, called from `app/messaging/src/email.rs:539` and `:573`) puts it back to `queued` with a later `not_before` and `waiting_for` set to `provider_limit` or `daily_limit` (the column's only values, `migrations/0089_messaging_retries_email.sql:49`), its own handler turns `EmailSent::Waiting` into a `HandlerError` (`app/businesses/src/account_emails.rs:165`, `app/businesses/src/coverage_notice.rs:138`, `app/businesses/src/notice_emails.rs:608`), and `core::tasks` gives up after 5 tries with a 30-second doubling backoff (`app/core/src/tasks.rs:43`, `:164`), about 8 minutes, long before the midnight-UTC reset (`next_reset`, `email.rs:462`). So the drain also leases a self-sending template's row whose `waiting_for` is not null once its `not_before` passes, and sends it once like any other leased row (a race with that template's own handler retry is the same email under the same idempotency key, SEC-018). A held row of the sign-in link or the email code still holds `LINK_MARK` or `CODE_MARK` and is `dropped` unsent with no alert, because its link or code has expired; the High alert stays for a marked row of any other template. T204's owner alert emails (`owner_alert_push` and `owner_daytime_push`, `app/messaging/src/alert_emails.rs:44`, `:46`) join the self-sending list and are never taken, held or not: their address is the owner alert address, not a member's mailbox (the resolver would answer `Gone`), and `push_alerts` records a push only after its send (`alert_emails.rs:269`), so it tries them again itself. Add to `tests/integration/tests/email_due.rs`: a welcome row held with `daily_limit` is not taken before its `not_before` and goes once after it; a held sign-in link row is dropped unsent with no alert; an owner alert row is never taken. Cites now: `send_email` is `email.rs:501` (was `:454`), `hold_email` is `models.rs:812` (was `:819`). This adds about 40 lines; the budget stays at the 600-line cap for a build task, and D-3889's split still applies if the change outgrows it.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -39112,7 +39129,8 @@
     "D-3750",
     "D-3779",
     "D-3883",
-    "D-3889"
+    "D-3889",
+    "D-4196"
    ],
    "cites": [],
    "budget": {
@@ -39127,7 +39145,7 @@
    ],
    "branch": "claude/task/T470-email-outbox-send",
    "prompt": "kit/prompts/T470.md",
-   "acceptance": "`tests/integration/tests/email_due.rs` passes against PostgreSQL: each queued homeowner and business email goes once to the right address, two workers' leases, overlapping or one after the other, make one provider call per row, `hold_email` clears the lease, a fresh lease is never retaken and a stale one is under the same key, `not_before` and the bulk hold are kept, a self-sending template is never taken, a marked row and a notice to a removed member or a business that left are dropped unsent, with no provider nothing changes, and no address is logged; `tests/integration/tests/business_contacts.rs`, `tests/integration/tests/task_registry.rs` and every existing email test pass unchanged."
+   "acceptance": "`tests/integration/tests/email_due.rs` passes against PostgreSQL: each queued homeowner and business email goes once to the right address, two workers' leases, overlapping or one after the other, make one provider call per row, `hold_email` clears the lease, a fresh lease is never retaken and a stale one is under the same key, `not_before` and the bulk hold are kept, a self-sending template is never taken, a marked row and a notice to a removed member or a business that left are dropped unsent, with no provider nothing changes, and no address is logged; `tests/integration/tests/business_contacts.rs`, `tests/integration/tests/task_registry.rs` and every existing email test pass unchanged; a self-sending template's row held with `daily_limit` goes once after its `not_before`, a held sign-in link row is dropped unsent with no alert, and an owner alert row is never taken (D-4196)."
   },
   {
    "id": "T471",
@@ -39896,6 +39914,351 @@
    "prompt": "kit/prompts/T595.md",
    "copy": true,
    "goal": "Plan change D-4174 (the Opus triage of T594's attempt 1, Nov 17, 2026, checked on `main` f911c8f): T489's chat layer refuses every same-site `POST /request`, and the request page lacks CON-025's 18-or-older line, so T594's end-to-end spec cannot pass; this task fixes both in T489's files (T489 is done) and adds the route test that would have caught the first. (1) SEC-042: `posted_csrf` (`app/server/src/chat_codes.rs:186` to `:201`) re-reads the buffered body through `Request::builder()` with no method, so the rebuilt request is a `GET`, axum's `Form` reads a `GET`'s form from the query string (empty: the builder's URI is `/`), the posted `csrf` is always empty, `csrf_matches` (`app/portals/src/session.rs:327` to `:330`) is false and `check_token` (`chat_codes.rs:171` to `:172`) answers 403 with a `csrf_rejected` event to every `POST`, a right token included. The fix is `.method(Method::POST)` on that builder (`Method` is already imported, `:35`), nothing else in the layer: the order of checks (cross-site refusal outermost, then the token, `POST` only, D-4120 trap (a)), the 403 and its one event per refusal (SEC-048), the body limit, `no-store`, the pre-session cookie and the `ChatCsrf` hand-off stay as they are, and the refusal function is still not spelled `refused(` (D-4120 trap (b)). The bug fails closed: the empty string never equals the 64-hex token, so no forged or missing token was ever accepted, and after the fix a missing, empty, wrong or other-cookie token is still refused. (2) CON-025 (`docs/spec/consent.md:29`: \"the start screen says the user must be 18 or older\"; TD-CON-10, `docs/test-design.md:349`): `app/site/templates/request.html` shows the line `You must be 18 or older to use {{ brand }}.` (the `brand` already bound at `:10`) in its own `<p>` right after the English consent text (`:17`) and above the chat box, on every step, outside `lang=\"es\"`; it is plain copy (no `data-fixed`: CON-025 fixes the fact, not the wording), so `scripts/check_copy.py` measures it and reports 0 problems; no Spanish copy is added (WEB-006 covers only the consent draft). Nothing else on the page changes, so the `/request` `PAGE_STATES` entries in `tests/a11y/page_states.ts` stay valid and are not edited, and `Ally` stays at 0 violations. (3) Why T489's tests missed it: `app/site/src/chat.rs`'s unit tests call `chat_routes` directly, without `server`'s guard (`chat.rs:524`); `app/server/tests/door_matrix.rs` only proves refusals (`probe_csrf`, `:1263`, a cross-site and a wrong-token `POST`) and accepts any answer below 500 for a Public `POST` with the actor's own token (`judge`, `:448`), so a 403 passed; `app/server/tests/route_wiring.rs` probes with a bodiless `PROBE` request. So this task adds `app/server/tests/web_chat_route.rs` (TD-SEC-72; fake data only, no real number, the router built with `build_router` and `RouterParts::from((None, None, None, None))` as `app/server/tests/business_signin_route.rs:142` to `:143` does, so no code is sent and the code step answers below 500, D-3744; security events counted from the captured log lines as `app/server/tests/owner_signin_route.rs:290` does): a `GET /request` sets the pre-session cookie, shows the token in the form's `csrf` field and shows the 18-or-older line before the form; a same-origin `POST /request` with that cookie, that token and a job message is not a 403, is `no-store`, records no `csrf_rejected` event and answers below 500 with the posted words in the page's chat list (the `<ol>` T594's spec reads); the same `POST` with no `csrf` field, an empty one, a 64-zero token or the token of another pre-session cookie is a 403 with exactly one `csrf_rejected` event for `/request` and changes nothing; a cross-site `POST` (`Sec-Fetch-Site: cross-site`) with the right token is still a 403 with one event. Two traps in that test: (i) the accepted `POST` must carry what `chat.rs`'s `post` handler needs, or it answers 400 with no chat list: the form is `Posted` (`app/site/src/chat.rs:131` to `:141`, `deny_unknown_fields`, so no field outside `csrf`, `chat`, `message`, `g`, `said`, `step`, `words`, `number`, `code`), `chat` a 32-hex key not all zeros (`Turn::posted`, `:176` to `:188`), `message` a UUID (`Uuid::try_parse`, `:292` to `:295`), `step=message` and `words` that are not empty after scrubbing (fake job words with no name or number, `:318` to `:321`); (ii) `is_cross_site` (`app/portals/src/security.rs:334` to `:341`) treats a `POST` with neither `Sec-Fetch-Site` nor `Origin` as cross-site, so every same-site request in the test sends `Sec-Fetch-Site: same-origin` (or an `Origin` of `https://` plus the request's `Host`), as `door_matrix.rs`'s `request` does (`:347` to `:379`); a refusal case differs from the accepted one only in its token or its site header. The test fails on `main` today (the first case) and passes with fix (1). `door_matrix.rs`, `route_wiring.rs`, `tests/security/tests/auth_matrix.rs`, `security_event_cap.rs` and `chat.rs` are not changed and still pass. Then T594 is requeued and runs its spec unchanged in purpose (D-4174). Budget 3 files and 250 lines; the lines of shared docs are not counted against it."
+  },
+  {
+   "id": "T599",
+   "slug": "lapsed-email-amount-check",
+   "title": "Tests (harness): the PICK-046 email's no-amount check ignores the random link token (flaky test fix)",
+   "goal": "Plan change D-4196 (a flaky test, not from the outside audit; it cost T479's attempt 1 on Nov 17, 2026; `BUILD_BRIEF.md:272`): `tests/integration/tests/pick_lapsed_email.rs:273` (T446, DONE; PICK-046) asserts `!plain.contains(\"190\") && !plain.contains('$')` on an email body that also holds the homeowner's quote-page link `https://<domain>/q/<token>`, and the token is an HMAC-SHA256 in 64 hex characters over a random salt (`link_token`, `app/core/src/ids.rs:254`), so the check fails by chance whenever `190` turns up in it (62 places times 16 to the minus 3, about 1.5% of runs). Fix, keeping the check at least as strict: take the `/q/` token out of the body first (cut each `/q/` followed by 64 hex characters down to `/q/`; the test already checks the body starts with the link's prefix), then assert the rest holds no `190` and no `$`, so the fake quote's 190 dollars (19000 cents, `:119`) written anywhere in the words still fails the test, and assert the cut removed exactly one token, so the check cannot pass on a body whose link changed shape. Asserting only `$190` or `190.00` was rejected: it would let a bare `190` through. Sweep (D-4196): a grep of `tests/` and `app/` for negative `contains` checks of short digit or hex strings found no other check on a text with a random token: `tests/integration/tests/quote_texts.rs:239` (`list_texts` has no link), `tests/integration/tests/summary_step.rs:197` (a body compared whole just before), `tests/integration/tests/confirm_reminders.rs:289` (an empty link), `tests/integration/tests/open_cards_digest.rs:223` (fixed links), `tests/integration/tests/radius_matching.rs:282` (5 digits against an audit row's UUIDs, under 1 in 30,000), `app/core/src/tests/ids.rs:133` (a fixed redacted string), `app/portals/src/homeowner_portal.rs:467` and `:500` and `app/portals/src/job_release.rs:231` (pages and `Debug` output with no token); 7- and 8-character checks (phone numbers, `tests/integration/tests/task_registry.rs:479`) are below 1 in 10 million; the file's Spanish case (`:389` to `:391`) checks words, not digits. Repeat the sweep (`grep -rnE '!.{0,40}\\.contains\\(\"[0-9a-fA-F]{2,4}\"\\)' tests app` and short digit constants such as `LAST4`) and report any new case in the hand-in; this task changes only its one file. Nothing in the app changes.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T446"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "tests/integration/tests/pick_lapsed_email.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "app/core/src/ids.rs",
+    "docs/spec/quotes-pick.md"
+   ],
+   "requirements": [
+    "PICK-046"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4196",
+    "D-3579",
+    "D-3324"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 40,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T599-lapsed-email-amount-check",
+   "prompt": "kit/prompts/T599.md",
+   "acceptance": "`cargo test -p askhava-integration --test pick_lapsed_email` passes against PostgreSQL with every case; the no-amount check fails when the body is given a `190` outside the link (shown in the report by a temporary local edit, not committed) and passes for any token; the report lists the sweep's grep and its result."
+  },
+  {
+   "id": "T600",
+   "slug": "worker-clock-handlers",
+   "title": "intake, businesses, privacy and server: four worker handlers apply their rules on the worker clock, not the wall clock",
+   "goal": "Plan change D-4196 (Casey's outside audit of Nov 17, 2026, finding 2, verified on `main` 2f2fa8c by an Opus verification pass and re-checked before planning; D-3447's pattern): four worker handlers read the wall clock (`Timestamp::now()`) where the rule they apply needs the worker's injected clock (`core::Clock`; `ManualClock` in tests, the test-control clock in end-to-end runs, D-740), so a test that moves the clock forward gets wrong answers. Production runs one clock (`SystemClock`, `app/core/src/clock.rs:42`, D-2886), so no live behaviour changes. (1) `app/intake/src/cards_out.rs:131` (`run_cards_approved`, `:115`) and `:151` (`run_emergency_released`, `:141`): that `now` stamps `quotes.shown_card.sent_at` (`app/quotes/src/job_text.rs:296`), which starts PICK-001's 24-hour quote window (`window_open`, `app/quotes/src/intake.rs:46`), and times INT-005's hold recheck; after a clock advance the cards are stamped in the past and the window closes early. (2) `app/businesses/src/complaints.rs:490` (`run_box_closed`, `:481`): `list_closed` (`:443`) checks BIZ-029's 5-day reply box against the wall clock, so after an advance the task answers `BoxOpen` and retries until it dead-letters. (3) `app/businesses/src/complaint_holds.rs:65` (`run_complaint_holds`, `:55`) stamps the complaint hold events on the wall clock, and (4) `app/privacy/src/purge.rs:199` (`purge_photos`, `:189`) queues each photo object's delete at the wall clock; D-3447 recorded (3) and (4) as known limits. Fix, D-3447's way: each keeps its signature and calls a new `*_at` version that takes `now` (`run_cards_approved_at`, `run_emergency_released_at`, `run_box_closed_at`, `run_complaint_holds_at`, `purge_photos_at`), exported through the crate's shared `api.rs`. The shared `app/server/src/lib.rs` registers the `*_at` versions on the worker clock: `register_card_sender` (`:1370`, called at `:955`) and `register_business_handlers` (`:1605`, called at `:771`) take the clock as `register_purge_handlers` (`:1733`) does, and `stage_step` (`:1842`) passes its `now` to `run_complaint_holds_at`; in `app/privacy/src/handlers.rs`, `run_purge_due_at` (`:59`) calls `purge_photos_at` with its `now`. `delete_my_data` (`purge.rs:425`, the homeowner's own request on a web route) keeps the wall clock. If a function would pass 50 lines, move its registrations into a helper first. The audit's other wall-clock reads are not rule inputs and stay (D-3447's `(pool, task)` wrappers, run-at times that are due at once under either clock, event stamps, web handlers' session and rate checks). Tests, fake data only, in the new `tests/integration/tests/worker_clock_handlers.rs` against PostgreSQL, each at a time two days ahead of the wall clock: (a) the cards-approved step stamps `shown_card.sent_at` at that time; (b) a complaint received 120 hours before it is listed and the task finishes; (c) the complaint hold events and the photo object's delete task are stamped at it; each `(pool, task)` wrapper still runs. Update the `intake`, `businesses`, `privacy` and `server` notes and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T526",
+    "T293",
+    "T398",
+    "T276",
+    "T367",
+    "T444",
+    "T092",
+    "T257",
+    "T274",
+    "T083"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/cards_out.rs",
+    "app/businesses/src/complaints.rs",
+    "app/businesses/src/complaint_holds.rs",
+    "app/privacy/src/purge.rs",
+    "app/privacy/src/handlers.rs",
+    "tests/integration/tests/worker_clock_handlers.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/brains/rust-production.md",
+    "app/core/src/clock.rs",
+    "app/quotes/src/intake.rs",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/businesses.md",
+    "docs/spec/privacy.md",
+    "docs/spec/intake.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "PICK-001",
+    "BIZ-029",
+    "PRIV-007",
+    "PRIV-009",
+    "INT-005",
+    "SEC-035"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4196",
+    "D-3447",
+    "D-2641",
+    "D-740"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 300,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T600-worker-clock-handlers",
+   "prompt": "kit/prompts/T600.md",
+   "acceptance": "`tests/integration/tests/worker_clock_handlers.rs` passes against PostgreSQL with cases (a) to (c) failing on `main` before the change; `tests/integration/tests/task_registry.rs`, every existing cards-out, complaint and purge test pass unchanged."
+  },
+  {
+   "id": "T601",
+   "slug": "card-pool-area-batch",
+   "title": "businesses and quotes: the card pool reads every service area in one statement",
+   "goal": "Plan change D-4196 (Casey's outside audit of Nov 17, 2026, finding 27, verified on `main` 2f2fa8c; the follow-up D-3360 named): for a job with a location, `quotes::card_pool`'s `reached()` (`app/quotes/src/card_pool.rs:174` to `:204`) reads `businesses::api::businesses_with_service_area` (`app/businesses/src/api.rs:213` to `:220`, every row) and then `businesses::api::service_area` (`app/businesses/src/service_area.rs:139`) once for each business outside the job's town, one statement each, so a card send's reads grow with every business that has a service area (about 2 seconds at 20,000 businesses in the audit's replay; a worker path, not a request). (1) `app/businesses/src/service_area.rs`: a new `service_areas(conn)` answers every stored service area in one statement (`SELECT business_id, base_zip, radius_miles FROM businesses.service_area ORDER BY business_id`) as `(Uuid, StoredServiceArea)` pairs, with `service_area`'s centroid lookup and errors, re-exported by one line in the shared `api.rs`; `businesses_with_service_area`, whose only caller is `reached()`, is removed (no unused code on `main`). (2) `reached()` uses it in place of the per-business loop, skipping businesses that serve the job's town and those with no centroid exactly as today, so the pool and its `Reach` do not change. `quotes` already calls `businesses::api` (`kit/layers.json`); no migration; `pooled()`'s per-business reads (`card_pool.rs:208` to `:217`) stay, since the businesses reached bound them. Tests in the new `tests/integration/tests/card_pool_queries.rs` against PostgreSQL, fake data only: with 300 fake businesses whose service areas lie outside the job's town, some reaching the job and some not, `quotes::api::card_pool` answers the reached ones and the in-town ones once each, as before; one call reads `businesses.service_area` once whatever the business count (counted from `pg_stat_xact_user_tables` inside one transaction, or an equivalent statement count), and a job with no location reads it not at all. Update the `businesses` and `quotes` notes (`app/businesses/NOTES.md:44` names the removed read) and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "quotes",
+   "deps": [
+    "T249",
+    "T251",
+    "T248",
+    "T100"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "app/businesses/src/service_area.rs",
+    "app/quotes/src/card_pool.rs",
+    "tests/integration/tests/card_pool_queries.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/job-cards.md",
+    "tests/integration/tests/radius_matching.rs"
+   ],
+   "requirements": [
+    "CARD-001",
+    "CARD-024"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4196",
+    "D-3360",
+    "D-1519"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 200,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T601-card-pool-area-batch",
+   "prompt": "kit/prompts/T601.md",
+   "acceptance": "`tests/integration/tests/card_pool_queries.rs` passes against PostgreSQL, its one-read case failing on `main` before the change; T249's `tests/integration/tests/radius_matching.rs` (TD-CARD-13) and `tests/integration/tests/capability_setup.rs` pass unchanged."
+  },
+  {
+   "id": "T602",
+   "slug": "svix-stamp-overflow",
+   "title": "privacy: the inbound email signature check refuses an out-of-range timestamp without overflow",
+   "goal": "Plan change D-4196 (Casey's outside audit of Nov 17, 2026, finding 4, verified on `main` 2f2fa8c): `privacy::reader`'s Svix check `verify` (`app/privacy/src/reader.rs:276`) parses the unauthenticated `svix-timestamp` header and, before the signature check, computes `(now.as_second() - sent).abs()` (`:281` to `:282`); a stamp of `i64::MIN`, or far enough from now, overflows: a panic in debug, test and CI builds, wrapped arithmetic in release (the release profile sets no `overflow-checks`) that happens to answer `Stale`. No production route reaches it yet (`read_inbound_email`'s only caller is `tests/integration/tests/read_inbound.rs`). Fix as the sister check `fresh` does (`app/adapters/src/signatures.rs:343` to `:350`): `now.as_second().checked_sub(sent).map(i64::unsigned_abs)`, and `None` or a gap over `WEBHOOK_TOLERANCE_SECS` (300) is `InboundError::Stale` (PRIV-026, SEC-016); nothing else in the file changes. Tests in the new `app/privacy/src/tests/webhook_stamp.rs` (one `mod` line in the shared `tests/mod.rs`; `verify` may become `pub(crate)` for it): the stamps `i64::MIN`, `i64::MAX` and `-1` are `Stale` and nothing panics, a stamp 300 seconds away goes on to the signature check and one 301 seconds away is `Stale`. Update the `privacy` notes and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "privacy",
+   "deps": [
+    "T023",
+    "T100",
+    "T517"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/privacy/src/reader.rs",
+    "app/privacy/src/tests/webhook_stamp.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "app/adapters/src/signatures.rs",
+    "docs/spec/privacy.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "PRIV-026",
+    "SEC-016"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4196"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 60,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T602-svix-stamp-overflow",
+   "prompt": "kit/prompts/T602.md",
+   "acceptance": "`cargo test -p askhava-privacy webhook_stamp` passes, the `i64::MIN` case panicking on `main` before the change; `tests/integration/tests/read_inbound.rs` passes unchanged."
+  },
+  {
+   "id": "T603",
+   "slug": "web-vitals-lcp-twin-dispute",
+   "title": "Perf and twin (harness): the web vitals report records LCP and goes on past a page without one; the twin's dispute event binds its share",
+   "goal": "Plan change D-4196 (Casey's outside audit of Nov 17, 2026, findings 26 and 19, verified on `main` 2f2fa8c; T417 and T418 are DONE and `tests/perf/` has no other owner; `twin/` is protected, so this is a harness task with an Opus review). (1) The web vitals report has never written a figure: Ci run 44116906662 (green, Nov 17, E2e job, \"Performance report\" step) failed `tests/perf/web_vitals.spec.ts` at `expect(figures.lcp_ms, ...).not.toBeNull()` (`:155`) on its first page, `home`, and printed `::warning::the web vitals spec did not finish`; the step has `continue-on-error: true` (`.github/workflows/ci.yml:755` to `:757`, D-3292), so `Ci` stayed green. The likely cause, not yet proven: `observe()` records LCP only while `found.input` is false (`:81` to `:82`), and the Event Timing observer (`durationThreshold: 16`, `:93`) sets `input` from an entry delivered during load. Reproduce it locally first and log which entry type set `input`. Then `observe()` records LCP whatever the input state (`measure()` already takes LCP from the snapshot read before `interact()`, `:134` to `:138`, so a click cannot move it), and a page that still reports no LCP prints one `::warning::` line naming the page, is written as not measured, and the loop goes on to the next page instead of throwing. This changes an assertion, so under `BUILD_BRIEF.md:69` D-4196 justifies it: the check has never passed (it has stopped at its first page since T418), so no passing check is weakened; the report stays warn-only as D-3292 decided; and a missing figure is now reported per page instead of hiding every other page's figures. The INP and quote-page control assertions stay. (2) Run the report and refresh `docs/audit/perf-baseline-ci.json` and the stale lines of `docs/audit/perf-baseline.md` (`:19` says home answers 404 and `/b` is not served; home is served now, `app/site/src/pages.rs:45`) from that run, never by hand. (3) `twin/twin.py:1186` to `:1188`: `dispute_some` reads the loop variable `ev` when the simulation runs, after the loop has ended (ruff B023). Today each `disputes` scenario has one disputes event, the last (`twin/twin_scenarios.json:319`, `:331`), so results are right, but a later event would change the share or raise `KeyError`. Bind it at definition (`def dispute_some(share=ev[\"share\"]):` and use `share`); no other twin line changes and `twin/gate.py` gives the same result on every scenario. Finding 21's dead assignments (`twin/twin.py:576`, `:783`, `:1149`) stay: `:783`'s `t_rel` marks a missing oracle check (a release before the message), which needs its own decision, not a deletion.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T417",
+    "T418",
+    "T172"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "tests/perf/web_vitals.spec.ts",
+    "docs/audit/perf-baseline.md",
+    "docs/audit/perf-baseline-ci.json",
+    "twin/twin.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "tests/perf/playwright.config.ts",
+    "perf/compare.py",
+    "twin/twin_scenarios.json"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-4196",
+    "D-3292",
+    "D-3142"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 120,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T603-web-vitals-lcp-twin-dispute",
+   "prompt": "kit/prompts/T603.md",
+   "acceptance": "`npx playwright test -c tests/perf` (as the Ci step runs it) writes figures for every served page, a page with no LCP gives one `::warning::` line and the loop continues; `python3 -m pytest tests/perf/test_compare.py tests/twin/` passes unchanged; `python3 twin/gate.py` gives the same verdicts as on `main`; `docs/audit/perf-baseline.md` and `perf-baseline-ci.json` come from the run in the report."
+  },
+  {
+   "id": "T604",
+   "slug": "sentry-no-native-tls",
+   "title": "Dependencies: sentry without default features, so native-tls is no longer built",
+   "goal": "Plan change D-4196 (Casey's outside audit of Nov 17, 2026, finding 5, verified on `main` 2f2fa8c; D-1643 and D-1666 planned this and no task did it; SEC-021): `Cargo.toml:67` declares `sentry = { version = \"=0.49.3\", features = [\"rustls\", \"reqwest\", \"tracing\", \"panic\", \"backtrace\"] }` without `default-features = false`, so sentry's default `transport` feature turns on its `native-tls` feature and reqwest's `native-tls-no-alpn`; through the one shared `reqwest`, `native-tls`, `hyper-tls` and `tokio-native-tls` are built into every crate, against `docs/architecture.md` section 11's rustls rule (the workspace `reqwest`, `Cargo.toml:49`, already has `default-features = false`). `openssl-sys` and the image's `libssl3t64` stay: `webauthn-rs-core` needs OpenSSL (`docs/architecture.md:440`). In the shared `Cargo.toml` set `default-features = false` and list sentry's features: its 0.49.3 defaults (`backtrace`, `contexts`, `debug-images`, `logs`, `metrics`, `panic`, `release-health`, `transport`) without `transport`, plus `rustls`, `reqwest` and `tracing`; drop another default only when a grep of `app/` shows nothing uses it, and name it in the decision entry. Re-lock so the shared `Cargo.lock` only loses the packages no longer used (no version moves). Then `cargo tree --locked -i native-tls -e normal` and the same for `hyper-tls` print nothing, and `deny.toml` `[bans] deny` gains `{ crate = \"native-tls\", reason = \"...\" }` so it cannot come back. Record the cargo-audit and cargo-deny results in `docs/decisions.md` (`BUILD_BRIEF.md:122`).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "core",
+   "deps": [
+    "T009"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "deny.toml"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "app/core/src/logging.rs",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "SEC-021"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4196",
+    "D-1643",
+    "D-1666",
+    "D-4141"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 40,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T604-sentry-no-native-tls",
+   "prompt": "kit/prompts/T604.md",
+   "acceptance": "`cargo tree --locked -i native-tls -e normal` prints nothing; `cargo deny check bans licenses sources advisories` and `cargo audit` pass; `cargo test -p askhava-core` (including `app/core/src/tests/logging.rs`) and the Sentry stub test of T217 pass unchanged; the `Cargo.lock` diff only removes packages."
   }
  ]
 }
