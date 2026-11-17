@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-17T19:07:53Z by runner 805fa0d42eef (manual).
+Updated 2026-11-17T19:11:17Z by runner 329317afda64 (actions).
 
 **Building: T605 in progress since 18:29Z; 406 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 406 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T605 claimed 18:29Z, lease until 21:29Z; lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 7: T104 claimed 18:38Z, lease until 21:38Z
+- **Lane:** lane 2: T605 claimed 18:29Z, lease until 22:11Z; lane 5: T115 claimed 18:45Z, lease until 21:45Z; lane 7: T104 claimed 18:38Z, lease until 21:38Z
 - **Week:** 25% used, 141.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:06Z, 1 min before this update
+- **Last run:** 19:07Z, 3 min before this update
 - **Keeper:** last ran 19:06Z, next wake 21:32Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- Strict plan check red: 11 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+173 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -134,7 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T605 (lease until 2026-11-17T21:29:26Z)
+- lane 2: T605 (lease until 2026-11-17T22:11:17Z)
 - lane 5: T115 (lease until 2026-11-17T21:45:57Z)
 - lane 7: T104 (lease until 2026-11-17T21:38:19Z)
 
