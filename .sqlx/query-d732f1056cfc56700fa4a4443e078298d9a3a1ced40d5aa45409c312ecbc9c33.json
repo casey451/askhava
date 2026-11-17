@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO intake.web_chat_session (key_digest, request_source, started_at) VALUES ($1, $2, $3) ON CONFLICT (key_digest) DO UPDATE SET key_digest = EXCLUDED.key_digest RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.web_chat_session",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bytea",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d732f1056cfc56700fa4a4443e078298d9a3a1ced40d5aa45409c312ecbc9c33"
+}

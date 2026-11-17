@@ -28,6 +28,8 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - The HELP reply holds the help email, askhava.com/help, the LIST line and the settings' times, and only the roaming line differs for Canada: `tests/integration/tests/help_start.rs`.
 - A mailbox code email's stored row holds `CODE_MARK`, never the code, and a repeat of one send is one email: `tests/integration/tests/signup_mail_paths.rs` (T468).
 - `check_webhook_silence` run again while webhooks stay silent raises no second alert: `tests/integration/tests/alert_dedupe.rs::td_ops_34_webhook_silence_alerts_once_while_silent` (T320).
+- `mark_replayed_sent` sends nothing, marks a row once, never a `blocked` or `expired` row, and never one SID on two rows: `tests/integration/tests/replay_helpers.rs` (T481).
+- CON-024: a repeat STOP is never counted again, STOP, START, STOP is, and 2.99% of homeowners never alerts while 3.00% alerts once per week: `tests/integration/tests/consent_records_alerts.rs` (T107).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/messaging/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/messaging/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

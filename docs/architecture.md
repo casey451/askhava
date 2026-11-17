@@ -201,6 +201,7 @@ wargames/            the Phase 2 war games (Python, standard library): personas,
 - Confirm's $0 decision and release (T494, D-3824; FEE-010, FEE-012, PICK-022): `portals::confirm_waiver` is the one place the Confirm route judges a free first win: `join_dates` builds `payments::api::JoinDates` from `businesses::api::join_facts`, `catalog::api::trades_opened` (a new `portals` to `catalog` call) and the launch-date setting the caller passes (no sign-up row, or no launch setting, is `Timestamp::MAX`: no win); `decide_at_confirm` runs `waive_at_confirm` on the caller's Confirm transaction; after it commits, `release_no_fee` takes `no_fee_release` for the pick's own business and job and hands it to the `payments::api::ReleaseSink` (`server`'s `PickReleaser`, which releases once).
 - Pilot scorecard money, pick and quote inputs (T477, D-3920 to D-3922; OPS-039, OPS-047, PICK-052, FEE-046): read-only readers in `payments::scorecard_inputs`, `picks::scorecard_inputs` and `quotes::scorecard_inputs`, each taking job IDs and a window; `quotes::api::jobs_by_trade(to)` gives every job carded before `to` per trade (first sent card's category), request-level quote inputs are windowed on the job's first card and count quotes received before `to`, and `picks` takes its qualifying job IDs from `quotes` readers. PICK-052's returned notes are `quotes.note_returned` audit rows (`quotes::api::record_note_returned`, field = the reason's code name, never the note), read back through `ops::api::audit_subjects`. FEE-046's set-aside rate is `ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS` (default 860), passed to `LedgerTotals::net_per_introduction_cents`.
 - Safety key kept (T571, D-4051, D-4088; CON-035): `server::voice_status`'s key route, when `calls::api::safety_key_once` fails, queues the core task `calls.safety_key_retry` (`calls::safety_key_retry`, IDs, arrival and key only; up to 8 claims, then one High `calls.safety_key_lost` alert about the safety alert); when the queue fails too it answers 200 with a 2-second `<Pause>` and a POST `<Redirect>` to itself carrying `Digits` and `attempt` (at most 3), then the spoken STOP line and the same alert if it can. Registered in `register_safety_call` with the safety parts' vault.
+- Weekly opt-out rates (T107, D-3880, D-3881, D-4082, D-4059; CON-022 to CON-024): `messaging::consent_alerts` counts each Arizona week (Monday 00:00 to Monday 00:00, UTC-7, `messaging::api::Week`) by audience: texted is the distinct `recipient_id` of sent `messaging.outbox` rows, opted out the distinct digests whose `messaging.optout_event` newly listed the number (a repeat STOP is not counted; STOP, START, STOP is), a business's being one whose inbox row has the `businesses.phone_stopped` audit row (read through `ops::api::audited`). The weekly core task `messaging.optout_rate_check` (registered in `server::worker_registry`, first queued by `schedule_start` under a per-week dedupe key) checks the week just ended and raises one Normal `messaging.optout_rate_homeowners` (3%) or `messaging.optout_rate_businesses` (5%) alert per week through `ops::api::raise_alert_once`, subject `messaging.optout_week`. T108's dashboard and T524's digest read `weekly_optout_rates`; counts only leave `messaging`. No new table.
 
 ## 3. Modules, what each owns, and its tables
 
@@ -397,6 +398,8 @@ Each Railway project has four services: `web`, `worker`, `migrate` and PostgreSQ
 ## 10. Off-database records and recovery
 
 Written as they happen to the `storage` adapter (OPS-010, OPS-011; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:690`): the audit stream, the web request log (request IDs, routes with tokens redacted, status codes) and the AI structured readings. With Twilio's and Stripe's own records, they are the replay inputs after a restore (OPS-015 to OPS-019). The nightly encrypted export (`pg_dump -Fc`) goes to the same bucket under a separate key, kept 30 days (OPS-013); a restore runs the role bootstrap first (OPS-051). Point-in-time recovery comes from the host (OPS-012).
+
+The replay's helpers (T481, D-4005): `messaging::api::replay_window`, `replay_match` and `mark_replayed_sent` match unsent outbox rows to Twilio's sent log inside `messaging` (windows `CLOCK_SKEW` 5 minutes, `NO_BODY_WINDOW` 10 minutes) and answer row IDs only; `payments::api::rebuild_charge` books a lost Stripe charge through the success path, never calling Stripe.
 
 **Build notes** (D-3620). What each task built here, once a "What T### built" paragraph in this section, is one entry per line in the `NOTES.md` of the crate it is about (`docs/build-notes.md` when it names no crate), each line tagged with its task: `grep -n '(task 250)' app/*/NOTES.md docs/build-notes.md` prints every line of T250's note in order, and `grep -rn 'T250' app/*/NOTES.md docs/build-notes.md` every mention. A new build note goes at the end of its crate's `NOTES.md`, never here (section 12; `python3 scripts/split_arch_notes.py --check`).
 
@@ -604,16 +607,16 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /business-data | site | yes |
 | GET | /es/your-data | site | yes |
 | GET | /es/business-data | site | yes |
-| GET | /help | site | T201 |
+| GET | /help | site | yes |
 | GET | /accessibility | site | T115 |
-| GET | /help/roc-complaint | site | T201 |
+| GET | /help/roc-complaint | site | yes |
 | GET | / | site | yes |
 | GET | /how-it-works | site | yes |
 | GET | /es/how-it-works | site | yes |
 | GET | /categories | site | yes |
 | GET | /events | site | yes |
-| GET | /services | site | T201 |
-| GET | /coverage | site | T201 |
+| GET | /services | site | yes |
+| GET | /coverage | site | yes |
 | GET | /business | site | T202 |
 | GET | /es/business | site | T202 |
 | GET | /business/help | site | T202 |

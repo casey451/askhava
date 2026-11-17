@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n             count(DISTINCT recipient_id) FILTER (WHERE recipient_kind = 'homeowner') AS \"homeowners!\",\n             count(DISTINCT recipient_id) FILTER (WHERE recipient_kind = 'business') AS \"businesses!\"\n           FROM messaging.outbox\n           WHERE status = 'sent' AND sent_at >= $1 AND sent_at < $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "homeowners!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "businesses!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "95c93984389b68e8369f9ee582ca4dd4ef1aee658656e5bff7ed8262f3dc9254"
+}

@@ -368,8 +368,9 @@ const CAPABILITY_STATES: readonly PageState[] = [
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CAPABILITY_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
 /**
- * The public site pages (T102; WEB-001, WEB-012) and the legal and data pages (T221; WEB-014,
- * TERMS-021, TERMS-023): no seed, the plain path. The old directory paths
+ * The public site pages (T102; WEB-001, WEB-012), the legal and data pages (T221; WEB-014,
+ * TERMS-021, TERMS-023) and the services, coverage, help and ROC pages (T201; WEB-008, WEB-011,
+ * WEB-015, WEB-023): no seed, the plain path. The old directory paths
  * answer with the home page (WEB-012).
  */
 const SITE_PAGE_STATES: readonly PageState[] = [
@@ -385,6 +386,10 @@ const SITE_PAGE_STATES: readonly PageState[] = [
   ["/es/your-data", "homeowner data page in Spanish", "Lo que nunca preguntamos", "Homeowners"],
   ["/business-data", "business data page", "A log of each email we send you", "Para propietarios"],
   ["/es/business-data", "business data page in Spanish", "Su registro de avisos", "Homeowners"],
+  ["/services", "services, licensed trades", "Get quotes from licensed plumbers.", "Para propietarios"],
+  ["/coverage", "what we cover now", "may charge roaming fees.", "Para propietarios"],
+  ["/help", "help page", "Messages are not watched around the clock.", "Para propietarios"],
+  ["/help/roc-complaint", "ROC complaint page", "File a complaint on the ROC website", "Para propietarios"],
 ].map(([route = "", name = "", shows = "", hides = ""]) => ({ route, name, shows, hides, sql: "", statusRegions: [] }));
 const OWNER_SIGNIN_ROUTE = "/owner/sign-in";
 const OWNER_STEP_UP_ROUTE = "/owner/step-up";
@@ -437,6 +442,10 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: "/es/your-data", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/es/your-data") },
   { route: "/business-data", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/business-data") },
   { route: "/es/business-data", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/es/business-data") },
+  { route: "/services", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/services") },
+  { route: "/coverage", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/coverage") },
+  { route: "/help", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/help") },
+  { route: "/help/roc-complaint", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/help/roc-complaint") },
   { route: OWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: OWNER_SIGNIN_STATES },
   { route: OWNER_STEP_UP_ROUTE, seed: portalSeed(false), states: OWNER_STEP_UP_STATES },
 ];

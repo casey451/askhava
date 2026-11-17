@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE intake.web_chat_session SET first_message_id = COALESCE(first_message_id, $2) WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c473d7bc07a0d2050e7c8d772d0dba97d61f02e78b22464b7173feea8c285c27"
+}

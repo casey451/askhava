@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT provider_sid AS \"sid!\" FROM messaging.outbox WHERE provider_sid = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sid!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "provider_sid"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "71b46bac53661b449fa18a74c9cfa32d89a79b72f9e4ddbe3601c1a6e09709ed"
+}

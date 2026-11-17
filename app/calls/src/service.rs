@@ -11,7 +11,9 @@
 
 use askhava_adapters::api::{MaskedPool, PoolNumber};
 use askhava_messaging::api::{SendWindow, send_window};
-use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
+use askhava_ops::api::{
+    Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert, raise_alert_once,
+};
 use askhava_privacy::api::Vault;
 use jiff::Timestamp;
 use sqlx::types::Uuid;
@@ -26,6 +28,9 @@ pub const POOL_ALERT: &str = "calls.pool_exhausted";
 pub const ASSIGNED_ACTION: &str = "calls.number_assigned";
 /// The `ops.alert` kind raised when a safety call cannot dial her number (CALL-019, D-1682).
 pub const SAFETY_NOT_DIALABLE_ALERT: &str = "calls.safety_call_not_dialable";
+/// The fixed subject of the pool alert a refused line raises: the pool itself, not a line, so
+/// `raise_alert_once` keeps it to one open alert (CALL-017, D-231, D-4052 B23).
+const POOL_SUBJECT: (&str, Uuid) = (LINE_KIND, Uuid::nil());
 /// The alert subject kind of a homeowner's vault contact.
 const CONTACT_KIND: &str = "privacy.contact";
 /// The audit and alert subject kind of a line.
@@ -159,17 +164,16 @@ pub async fn assign_number(
     })
 }
 
-/// No free PIN on the chosen number: raises the pool alert (no line to name), commits it and
-/// refuses the line (CALL-003, CALL-017, D-1755).
+/// No free PIN on the chosen number: raises the pool alert about [`POOL_SUBJECT`] (no line to
+/// name) unless a pool alert is already open, commits and refuses the line, so a full pool on a
+/// busy evening leaves one open alert until Casey acknowledges it (CALL-003, CALL-017, OPS-004,
+/// D-231, D-1755, D-4052 B23).
 async fn refuse_line(mut tx: sqlx::Transaction<'_, sqlx::Postgres>) -> Result<Line, CallsError> {
-    let alert = NewAlert {
-        kind: POOL_ALERT,
-        severity: Severity::High,
-        subject: None,
-    };
-    raise_alert(&mut tx, &alert)
-        .await
-        .map_err(|_| CallsError::Ops)?;
+    if !models::alert_open(&mut tx).await? {
+        raise_alert_once(&mut tx, POOL_ALERT, Severity::High, POOL_SUBJECT)
+            .await
+            .map_err(|_| CallsError::Ops)?;
+    }
     tx.commit().await.map_err(|_| CallsError::Database)?;
     Err(CallsError::NoFreePin)
 }

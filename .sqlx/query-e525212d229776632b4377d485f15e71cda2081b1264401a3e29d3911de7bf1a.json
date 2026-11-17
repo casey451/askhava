@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT recipient_kind, recipient_id, status FROM messaging.outbox WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "recipient_kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "recipient_kind"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "recipient_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "recipient_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "status",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "status"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e525212d229776632b4377d485f15e71cda2081b1264401a3e29d3911de7bf1a"
+}
