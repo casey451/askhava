@@ -15,12 +15,15 @@
 //! queues the consent text as its first text and records consent (channel `web_chat`, this
 //! session). After that each chat message runs the text path ([`crate::service::receive_text`])
 //! with its chat message ID, and a message in a request with a job is kept through
-//! `keep_description` under that ID, so a retried POST stores nothing twice (D-3189). No number
-//! is logged, stored outside the vault or put in an error.
+//! `keep_description` under that ID, so a retried POST stores nothing twice (D-3189). Once the
+//! session's request closes, its next message sends it back to before the code, so a new request
+//! opens only through [`check_code`] (D-4056). A number on the suppression list gets
+//! [`ChatError::OptedOut`] and no code (CON-013, D-4056). The page's consent text is the text the
+//! switch sends (D-4057). No number is logged, stored outside the vault or put in an error.
 
 use std::net::IpAddr;
 
-use askhava_messaging::api::{Language, render};
+use askhava_messaging::api::{Language, SendWindow, render, send_window};
 use askhava_ops::api::Actor;
 use askhava_privacy::api::{NewContact, Vault, VaultError, find_by_phone, store_contact};
 use jiff::Timestamp;
@@ -80,6 +83,10 @@ pub enum ChatError {
     /// The code step (Verify) failed.
     #[error("the code step failed")]
     CodeStep,
+    /// The number is on the suppression list: no code goes and nothing opens until it texts
+    /// START (CON-013, CON-015, D-4056).
+    #[error("the number has opted out of texts")]
+    OptedOut,
     /// The new-request limit could not be checked.
     #[error("the new-request limit failed")]
     Limit,
@@ -142,19 +149,28 @@ struct Session {
     conversation: Option<Uuid>,
 }
 
-/// CON-025, D-4044: the consent text the request page shows above the chat box, the template
-/// [`consent_template`] picks rendered with its Spanish as the draft whatever the switch.
+/// CON-025, CON-026, D-4044, D-4057: the consent text the request page shows above the chat box,
+/// exactly the first text [`check_code`] queues for the same `settings`: the template
+/// [`consent_template`] picks, in `language` while Spanish conversations are on and in English
+/// while they are off (a Spanish page then shows the English text that will be sent).
 ///
 /// # Errors
 ///
 /// [`IntakeError::Template`].
 pub fn web_chat_consent_text(
     language: Language,
-    safety_call_on: bool,
+    settings: Settings,
 ) -> Result<String, IntakeError> {
-    render(consent_template(safety_call_on), language, true, &[])
-        .map(|r| r.body)
-        .map_err(|_| IntakeError::Template)
+    let spanish = settings.spanish_conversations_on;
+    let language = consent_language(language, spanish);
+    render(
+        consent_template(settings.safety_call_on),
+        language,
+        spanish,
+        &[],
+    )
+    .map(|r| r.body)
+    .map_err(|_| IntakeError::Template)
 }
 
 /// INT-047, D-457: a `g` code as stored (lower case, letters, digits, `-` and `_`, at most 32), or
@@ -240,6 +256,10 @@ pub async fn chat_message(
         first_message(db, s.id, msg.message_id).await?;
         return screen(msg.words, settings).map_err(ChatError::from);
     };
+    if models::open_conversation(db, contact).await? != Some(request) {
+        start_again(db, s.id, msg.message_id).await?;
+        return screen(msg.words, settings).map_err(ChatError::from);
+    }
     let inbound = Inbound {
         words: msg.words,
         opt_out: false,
@@ -262,6 +282,24 @@ pub async fn chat_message(
         keep_words(db, (request, job), msg.message_id, words).await?;
     }
     Ok(ChatAnswer::Texted(handled))
+}
+
+/// SEC-014, INT-047, CON-005, D-1951, D-4056: the session's request has closed, so the session
+/// goes back to before the code (no contact, no code, no tries, no request, `message` its first
+/// message): a new request opens only through [`check_code`], under the new-request limit, with
+/// the session's source and a `web_chat` consent record, never through the text path.
+async fn start_again(db: &mut PgConnection, id: Uuid, message: Uuid) -> Result<(), IntakeError> {
+    sqlx::query!(
+        "UPDATE intake.web_chat_session SET first_message_id = $2, contact_id = NULL, \
+         code_sent_at = NULL, wrong_tries = 0, verified_at = NULL, conversation_id = NULL \
+         WHERE id = $1",
+        id,
+        message
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| IntakeError::Database)
 }
 
 /// The pre-code screen (INT-002, INT-004, INT-020): the stem match first, then the phrase list.
@@ -318,6 +356,9 @@ pub async fn send_code<C: CodeStep>(
         return Ok(false);
     }
     let contact = contact_of(db, vault, number).await?;
+    if opted_out(db, vault, contact, now).await? {
+        return Err(ChatError::OptedOut);
+    }
     sqlx::query!(
         "UPDATE intake.web_chat_session SET contact_id = $2, code_sent_at = $3 WHERE id = $1",
         s.id,
@@ -375,6 +416,11 @@ pub async fn check_code<C: CodeStep>(
     if s.tries >= MAX_CODE_TRIES {
         return Ok(Checked::TooManyTries);
     }
+    if let Some(contact) = s.contact
+        && opted_out(db, vault, contact, now).await?
+    {
+        return Err(ChatError::OptedOut);
+    }
     let typed = typed.trim();
     let same = match find_by_phone(db, vault, number.expose_secret()).await {
         Ok(found) => found.is_some() && found == s.contact,
@@ -389,6 +435,19 @@ pub async fn check_code<C: CodeStep>(
     let done = open_verified(&mut tx, secret, &s, chat, now).await?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(done)
+}
+
+/// CON-013, CON-015, D-4056: whether `contact`'s number is on the suppression list.
+async fn opted_out(
+    db: &mut PgConnection,
+    vault: &Vault,
+    contact: Uuid,
+    now: Timestamp,
+) -> Result<bool, ChatError> {
+    let window = send_window(db, vault, contact, now)
+        .await
+        .map_err(|_| IntakeError::Outbox)?;
+    Ok(window == SendWindow::OptedOut)
 }
 
 async fn wrong_try(db: &mut PgConnection, id: Uuid) -> Result<(), IntakeError> {
