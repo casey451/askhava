@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:34:43Z by runner f911c8fdcb55 (actions).
+Updated 2026-11-17T13:35:09Z by runner f911c8fdcb55 (actions).
 
 **Building: T204 in progress since 12:04Z; 396 of 560 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-17T13:34:43Z by runner f911c8fdcb55 (actions).
 - **Lane:** lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 6: T471 claimed 13:32Z, lease until 16:32Z; lane 7: T321 claimed 12:53Z, lease until 15:53Z
 - **Week:** 20% used, 149.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:34Z, 0 min before this update
-- **Keeper:** last ran 13:21Z, next wake 15:38Z
+- **Keeper:** last ran 13:35Z, next wake 15:38Z
 
 ## Needs attention
 - BLOCKED T594: plan gap reported: PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change: a T489 fix task that adds `.method(Method::POST)` to the request builder in `posted_csrf` and puts the "18 or older" line (CON-025, docs/spec/consent.md:29) on the request page, then re-run T594.
