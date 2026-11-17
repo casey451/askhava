@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T06:47:09Z by runner f7aa2cf22f49 (actions).
+Updated 2026-11-17T06:47:39Z by runner 801480c2de0d (actions).
 
 **Building: T564 in progress since 06:04Z; 385 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,12 @@ Updated 2026-11-17T06:47:09Z by runner f7aa2cf22f49 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T564 claimed 06:04Z, lease until 09:04Z; lane 3: T112 claimed 06:30Z, lease until 09:30Z; lane 5: T201 claimed 06:26Z, lease until 09:26Z
 - **Week:** 15% used, 160.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:46Z, 0 min before this update
+- **Last run:** 06:47Z, 0 min before this update
 - **Keeper:** last ran 06:47Z, next wake 09:06Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- Strict plan check red: 2 problem(s) on tasks still to run (+144 on DONE tasks); first: T115: stored context_pct 13% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -82,18 +83,18 @@ Updated 2026-11-17T06:47:09Z by runner f7aa2cf22f49 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 305 of 733 (41.6%) · partial 320 · unstarted 108
-**Tasks merged (throughput only):** 385 of 557
+**Requirements verified:** 302 of 733 (41.2%) · partial 323 · unstarted 108
+**Tasks merged (throughput only):** 385 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 20 | 11 | 4 | 35 |
+| accessibility | 19 | 12 | 4 | 35 |
 | ai | 11 | 14 | 4 | 29 |
 | businesses | 21 | 35 | 2 | 58 |
 | calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 27 | 13 | 3 | 43 |
+| intake | 25 | 15 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
