@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T08:18:17Z by runner 678dce1e44fa (actions).
+Updated 2026-11-17T08:20:06Z by runner 4604faf7f532 (actions).
 
 **Building: T107 in progress since 07:34Z; 388 of 560 done; week 17% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 388 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z; lane 3: T570 claimed 07:46Z, lease until 10:46Z; lane 5: T202 claimed 07:55Z, lease until 10:55Z; lane 6: T112 claimed 07:36Z, lease until 11:13Z
+- **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z; lane 3: T570 claimed 07:46Z, lease until 11:20Z; lane 5: T202 claimed 07:55Z, lease until 10:55Z; lane 6: T112 claimed 07:36Z, lease until 11:13Z
 - **Week:** 17% used, 158.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:18Z, 0 min before this update
+- **Last run:** 08:18Z, 1 min before this update
 - **Keeper:** last ran 08:18Z, next wake 10:37Z
 
 ## Needs attention
@@ -87,7 +87,7 @@ Updated 2026-11-17T08:18:17Z by runner 678dce1e44fa (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 302 of 733 (41.2%) · partial 331 · unstarted 100
-**Tasks merged (throughput only):** 388 of 560
+**Tasks merged (throughput only):** 388 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -132,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T107 (lease until 2026-11-17T10:34:41Z)
-- lane 3: T570 (lease until 2026-11-17T10:46:34Z)
+- lane 3: T570 (lease until 2026-11-17T11:20:06Z)
 - lane 5: T202 (lease until 2026-11-17T10:55:47Z)
 - lane 6: T112 (lease until 2026-11-17T11:13:50Z)
 
