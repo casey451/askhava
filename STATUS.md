@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T21:35:03Z by runner 2c331d907e11 (actions).
+Updated 2026-11-17T21:44:01Z by runner 6bc026df21df (actions).
 
 **Building: T603 in progress since 21:24Z; 410 of 578 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-17T21:35:03Z by runner 2c331d907e11 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T603 claimed 21:24Z, lease until 00:24Z; lane 4: T104 claimed 20:59Z, lease until 23:59Z
 - **Week:** 31% used, 133.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:34Z, 0 min before this update
+- **Last run:** 21:35Z, 8 min before this update
 - **Keeper:** last ran 21:35Z, next wake 00:02Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+175 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+168 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -82,7 +82,6 @@ Updated 2026-11-17T21:35:03Z by runner 2c331d907e11 (actions).
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | QUEUED | 2 | 89 min | 23:36Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 3 | 37 min | 22:10Z |  |
 | T320 | ops: a check that runs on a schedule raises its alert once w | check_failed | 1 | 39 min | 21:46Z |  |
-| T523 | quotes, jobs, picks and intake: the readers the owner flags  | BLOCKED | 1 | 5 min | 21:38Z |  |
 
 ### Plan and harness merges on main
 - none
