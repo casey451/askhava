@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T06:44:25Z by runner d57e86c2de64 (actions).
+Updated 2026-11-17T06:44:45Z by runner d57e86c2de64 (actions).
 
 **Building: T564 in progress since 06:04Z; 385 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 385 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T564 claimed 06:04Z, lease until 09:04Z; lane 3: T112 claimed 06:30Z, lease until 09:30Z; lane 4: T204 claimed 04:22Z, lease until 09:18Z; lane 5: T201 claimed 06:26Z, lease until 09:26Z
+- **Lane:** lane 1: T564 claimed 06:04Z, lease until 09:04Z; lane 3: T112 claimed 06:30Z, lease until 09:30Z; lane 5: T201 claimed 06:26Z, lease until 09:26Z
 - **Week:** 15% used, 160.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:33Z, 10 min before this update
 - **Keeper:** last ran 06:33Z, next wake 09:06Z
@@ -18,6 +18,7 @@ Updated 2026-11-17T06:44:25Z by runner d57e86c2de64 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | MERGE_PENDING | 1 | 2 h 21 min | 06:44Z |  |
 | T586 | calls and privacy: TwiML text is escaped, a full number pool | MERGE_PENDING | 1 | 88 min | 06:17Z |  |
 | T481 | messaging and payments: mark a replayed text sent from the c | MERGE_PENDING | 1 | 114 min | 05:36Z |  |
 | T103 | intake: the web-chat conversation, where typing a verified m | MERGE_PENDING | 1 | 106 min | 05:27Z |  |
@@ -128,8 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T564 (lease until 2026-11-17T09:04:06Z)
 - lane 3: T112 (lease until 2026-11-17T09:30:36Z)
-- lane 4: T204 (lease until 2026-11-17T09:18:59Z)
 - lane 5: T201 (lease until 2026-11-17T09:26:21Z)
 
 ## Last usage reading
-- {"task": "T586", "at": "2026-11-17T06:17:36Z", "output_tokens": 45555, "input_tokens": 170, "cache_read_input_tokens": 4390425, "cache_creation_input_tokens": 211855}
+- {"task": "T204", "at": "2026-11-17T06:44:23Z", "cache_read_input_tokens": 21302470, "cache_creation_input_tokens": 522566, "input_tokens": 440, "output_tokens": 154454}
