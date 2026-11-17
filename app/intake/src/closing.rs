@@ -9,7 +9,8 @@
 //! opt-out (bare "cancel" included) changes no job (D-005): `messaging` already answered it.
 //! [`close_from_page`] is the quote page's close button. A close moves the job to Cancelled from
 //! any status before Done (JOB-018), with its audit row, and closes the request once every job is
-//! final. Like `answer_list`, [`answer_close`] waits for the conversation dispatcher (D-999).
+//! final. `replies::reply_in` calls [`answer_close`] for a clear text in an open request, inside
+//! the reply's transaction, so its `begin` is a savepoint (D-4051, D-4064).
 
 use askhava_jobs::api::{JobStatus, current, job_number, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};

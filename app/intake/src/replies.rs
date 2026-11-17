@@ -5,8 +5,12 @@
 //! through (CON-008) and the HELP reply was queued (CON-018). In an open request a text that is
 //! only LIST or LISTA, optionally with a request number, gets `answer_list`'s lines (TXT-031); any
 //! other reply first restarts each Intake job's 72-hour no-reply wait at the reply (`hear`,
-//! INT-019, D-807), then goes to `receive_text` as before, so consent, the 911 screen, CLOSE,
-//! cancel and `<n> YES` keep their own paths. The INT-032 "That's 2 jobs" wiring stays D-999's open
+//! INT-019, D-807). A clear text (no 911-list match, INT-002) then goes to `answer_close`
+//! (JOB-019 to JOB-023, D-4051, D-4064): a CLOSE or CERRAR text, a cancel-intent message or a lone
+//! open number answering "Close which?" that closes jobs or asks which ends the reply as
+//! [`Reply::Closed`]; a mere mention adds the JOB-023 line and goes on. Everything else goes to
+//! `receive_text` as before, so consent, the 911 screen and `<n> YES` keep their own paths; a
+//! text that is not clear never reaches `answer_close`. The INT-032 "That's 2 jobs" wiring stays D-999's open
 //! gap. Before all of that, a check-in answer on one of her Connected jobs goes to
 //! `check_in_replies` in the same transaction (JOB-015, D-1840).
 //!
@@ -25,6 +29,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::check_in_replies::check_in_reply;
+use crate::closing::{Closing, answer_close};
 use crate::conversation::{Taken, ask_name_address, hear, name_address_open, take_name_address};
 use crate::emergency::{Check, check};
 use crate::handlers::{answer_list, list_ask};
@@ -46,6 +51,10 @@ pub enum Reply {
     /// `take_name_address` did, and the screen's result, whose texts end with the one ask again
     /// on [`Taken::Again`].
     NameAddress(Taken, Handled),
+    /// A CLOSE text, a cancel-intent message or a "Close which?" answer in an open request:
+    /// `answer_close` closed these jobs or asked "Close which?" (JOB-019 to JOB-022, D-4051),
+    /// with the text it queued.
+    Closed(Closing, Option<Queued>),
 }
 
 /// The raw text of a reply and the vault its name-and-address answer is written to (INT-027,
@@ -114,7 +123,7 @@ async fn reply_in(
         return Ok(Reply::CheckedIn(job));
     }
     let open = models::open_conversation(&mut tx, msg.contact).await?;
-    let mut step_11 = None;
+    let (mut step_11, mut mention) = (None, None);
     if let Some(conversation) = open.filter(|_| !answered_elsewhere) {
         if list_ask(msg.inbound.words).is_some() {
             let spanish_on = settings.spanish_conversations_on;
@@ -125,6 +134,12 @@ async fn reply_in(
             }
         }
         hear(&mut tx, conversation, msg).await?;
+        let (ended, said) = by_text(&mut tx, secret, msg).await?;
+        mention = said;
+        if let Some(reply) = ended {
+            tx.commit().await.map_err(|_| IntakeError::Database)?;
+            return Ok(reply);
+        }
         if !closes(msg.inbound.words) {
             if let Some(raw) = raw.filter(|_| list_ask(msg.inbound.words).is_none())
                 && name_address_open(&mut tx, msg.contact).await?
@@ -137,6 +152,7 @@ async fn reply_in(
         }
     }
     let mut handled = receive_text(&mut tx, secret, msg, settings).await?;
+    handled.texts.extend(mention);
     if let Some(conversation) = step_11.filter(|_| moves_on(&handled)) {
         let spanish_on = settings.spanish_conversations_on;
         let ask = ask_last_question(&mut tx, secret, (msg, conversation), spanish_on).await?;
@@ -144,6 +160,26 @@ async fn reply_in(
     }
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Reply::Handled(handled))
+}
+
+/// A clear text about closing goes to `answer_close` inside the reply's transaction (JOB-019 to
+/// JOB-023, INT-002, D-4051, D-4064). `Closing::Closed` and `Closing::Which` end the reply (the
+/// first item); on `Closing::Explained` its JOB-023 line (the second item) joins the reply's texts
+/// and the text goes on. A text with a 911-list match never goes there: `shows_intent` reads
+/// "never mind, I smell gas" as intent, and `receive_text` holds the only 911 screen.
+async fn by_text(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+) -> Result<(Option<Reply>, Option<Queued>), IntakeError> {
+    if !clear(msg.inbound.words) {
+        return Ok((None, None));
+    }
+    let (closing, text) = answer_close(tx, secret, msg).await?;
+    Ok(match closing {
+        Closing::Closed(_) | Closing::Which(_) => (Some(Reply::Closed(closing, text)), None),
+        Closing::Explained(_) | Closing::Nothing => (None, text),
+    })
 }
 
 /// A CLOSE text, a "Close which?" answer or a cancel intent keeps its own path (JOB-019, D-3703).
