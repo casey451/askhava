@@ -1,10 +1,21 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT business_id, withdrawn_at IS NOT NULL AS \"withdrawn!\", unavailable_at IS NOT NULL AS \"unavailable!\", format, amount_cents, low_cents, high_cents, tier_names, tier_cents, period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site, earliest_visit::text AS visit, visit_part FROM quotes.quote WHERE job_id = $1 AND confirmed ORDER BY received_at, business_id",
+  "query": "SELECT shown_number AS \"shown_number!\", business_id, withdrawn_at IS NOT NULL AS \"withdrawn!\", unavailable_at IS NOT NULL AS \"unavailable!\", format, amount_cents, low_cents, high_cents, tier_names, tier_cents, period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site, earliest_visit::text AS visit, visit_part FROM quotes.quote WHERE job_id = $1 AND confirmed ORDER BY shown_number",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
+        "name": "shown_number!",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "shown_number"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
         "name": "business_id",
         "type_info": "Uuid",
         "origin": {
@@ -15,19 +26,19 @@
         }
       },
       {
-        "ordinal": 1,
+        "ordinal": 2,
         "name": "withdrawn!",
         "type_info": "Bool",
         "origin": "Expression"
       },
       {
-        "ordinal": 2,
+        "ordinal": 3,
         "name": "unavailable!",
         "type_info": "Bool",
         "origin": "Expression"
       },
       {
-        "ordinal": 3,
+        "ordinal": 4,
         "name": "format",
         "type_info": "Text",
         "origin": {
@@ -38,7 +49,7 @@
         }
       },
       {
-        "ordinal": 4,
+        "ordinal": 5,
         "name": "amount_cents",
         "type_info": "Int8",
         "origin": {
@@ -49,7 +60,7 @@
         }
       },
       {
-        "ordinal": 5,
+        "ordinal": 6,
         "name": "low_cents",
         "type_info": "Int8",
         "origin": {
@@ -60,7 +71,7 @@
         }
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
         "name": "high_cents",
         "type_info": "Int8",
         "origin": {
@@ -71,7 +82,7 @@
         }
       },
       {
-        "ordinal": 7,
+        "ordinal": 8,
         "name": "tier_names",
         "type_info": "TextArray",
         "origin": {
@@ -82,7 +93,7 @@
         }
       },
       {
-        "ordinal": 8,
+        "ordinal": 9,
         "name": "tier_cents",
         "type_info": "Int8Array",
         "origin": {
@@ -93,7 +104,7 @@
         }
       },
       {
-        "ordinal": 9,
+        "ordinal": 10,
         "name": "period",
         "type_info": "Text",
         "origin": {
@@ -104,7 +115,7 @@
         }
       },
       {
-        "ordinal": 10,
+        "ordinal": 11,
         "name": "setup_cents",
         "type_info": "Int8",
         "origin": {
@@ -115,7 +126,7 @@
         }
       },
       {
-        "ordinal": 11,
+        "ordinal": 12,
         "name": "hourly_rate_cents",
         "type_info": "Int8",
         "origin": {
@@ -126,7 +137,7 @@
         }
       },
       {
-        "ordinal": 12,
+        "ordinal": 13,
         "name": "hours_low",
         "type_info": "Int4",
         "origin": {
@@ -137,7 +148,7 @@
         }
       },
       {
-        "ordinal": 13,
+        "ordinal": 14,
         "name": "hours_high",
         "type_info": "Int4",
         "origin": {
@@ -148,7 +159,7 @@
         }
       },
       {
-        "ordinal": 14,
+        "ordinal": 15,
         "name": "confirm_on_site",
         "type_info": "Bool",
         "origin": {
@@ -159,13 +170,13 @@
         }
       },
       {
-        "ordinal": 15,
+        "ordinal": 16,
         "name": "visit",
         "type_info": "Text",
         "origin": "Expression"
       },
       {
-        "ordinal": 16,
+        "ordinal": 17,
         "name": "visit_part",
         "type_info": "Text",
         "origin": {
@@ -182,6 +193,7 @@
       ]
     },
     "nullable": [
+      true,
       false,
       null,
       null,
@@ -201,5 +213,5 @@
       true
     ]
   },
-  "hash": "7b6403aca30338ea516243ea0a634c8d1495d8d0e26785e9e14a709c2f0c752f"
+  "hash": "b722955b5a197ac27aff21cdb983b66e95177e0d917f90889d566702573f5c28"
 }

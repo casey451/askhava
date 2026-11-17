@@ -12,9 +12,7 @@
 //! picks with no text back, only once the PICK-016 Terms line was sent for that request.
 
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
-use askhava_jobs::api::{current, job_number};
 use askhava_ops::api::{Actor, NewAlert, Severity, raise_alert};
-use askhava_quotes::api::page_quotes;
 use jiff::Timestamp;
 use jiff::tz::{TimeZone, offset};
 use secrecy::{ExposeSecret, SecretString};
@@ -23,13 +21,13 @@ use sqlx::{Connection, PgConnection};
 
 use crate::models::{self, PicksError};
 use crate::rules::{
-    CodeState, CodeVia, JobView, Plan, SendAsk, SendRefused, code_state, plan_text_pick,
-    read_text_pick, send_allowed,
+    CodeState, CodeVia, Plan, SendAsk, SendRefused, code_state, plan_text_pick, read_text_pick,
+    send_allowed,
 };
 use crate::service::{
-    CodeCheck, CodeSent, CodeTo, PagePick, VERIFY_CAP_ALERT, check_code, page_pick,
+    CodeCheck, CodeSent, CodeTo, PagePick, VERIFY_CAP_ALERT, bound_pick, check_code,
+    shown_business, view,
 };
-use crate::status::stage;
 
 /// Whether Ask Hava may text the homeowner now (PICK-029).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -194,32 +192,18 @@ pub enum OptedOutYes {
     Nothing,
 }
 
-/// One job as the text-pick rule reads it.
-async fn job_view(tx: &mut PgConnection, job: Uuid, paused: bool) -> Result<JobView, PicksError> {
-    let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
-    let quotes = page_quotes(tx, job).await.map_err(|_| PicksError::Quotes)?;
-    let waiting = models::waiting_pick(tx, job).await?;
-    Ok(JobView {
-        job,
-        number: job_number(tx, job).await.map_err(|_| PicksError::Job)?,
-        stage: stage(status),
-        paused,
-        terms_sent: models::terms_sent(tx, job).await?,
-        quotes: quotes.iter().map(|q| !q.unavailable).collect(),
-        waiting: waiting.and_then(|w| usize::try_from(w.1).ok()),
-    })
-}
-
 /// PICK-030, D-050, D-478: a "<number> YES" from an opted-out homeowner's own phone, inside the
 /// caller's transaction, over her live `jobs` (each with its CON-029 pause, which the caller must
 /// read in the same transaction with `intake::api::paused_under_lock`, under the homeowner lock,
-/// D-1605). The text-pick rule chooses the job; a pick goes through the page pick's core with that
-/// job's own pause (no text queued; stored with channel `page`, D-1614). `None` when the words are
-/// not a text pick.
+/// D-1605). The text-pick rule chooses the job over the text pick's own view, numbered by shown
+/// number (the number came from a LIST or lapse text); a pick goes through `bound_pick` with that
+/// job's own pause and the business the number was shown for (no text queued; stored with channel
+/// `page`, D-1614); a number that no longer maps to that business is `Nothing` (PICK-008,
+/// D-2632, D-3999). `None` when the words are not a text pick.
 ///
 /// # Errors
 ///
-/// As [`page_pick`]: [`PicksError::MovedOn`] means roll back.
+/// As `page_pick`: [`PicksError::MovedOn`] means roll back.
 pub async fn opted_out_yes(
     tx: &mut PgConnection,
     words: &str,
@@ -231,14 +215,18 @@ pub async fn opted_out_yes(
     };
     let mut views = Vec::with_capacity(jobs.len());
     for &(job, paused) in jobs {
-        views.push(job_view(tx, job, paused).await?);
+        views.push(view(tx, job, paused).await?);
     }
     views.sort_by_key(|v| v.number);
     let done = match plan_text_pick(read, &views) {
         Plan::Terms(job) => OptedOutYes::TermsFirst(job),
         Plan::Pick(job) | Plan::Replace(job) | Plan::Same(job) => {
             let paused = jobs.iter().any(|&(j, p)| j == job && p);
-            match page_pick(tx, (job, paused), read.quote, actor, at).await? {
+            let Some(business) = shown_business(tx, job, read.quote).await? else {
+                return Ok(Some(OptedOutYes::Nothing));
+            };
+            let quote = (read.quote, business);
+            match bound_pick(tx, (job, paused), quote, actor, at).await? {
                 PagePick::Picked(pick) => OptedOutYes::Picked(pick),
                 PagePick::Same(pick) => OptedOutYes::Same(pick),
                 PagePick::Taken => OptedOutYes::Nothing,
