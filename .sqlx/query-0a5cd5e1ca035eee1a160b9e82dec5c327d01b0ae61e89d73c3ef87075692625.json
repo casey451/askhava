@@ -1,0 +1,78 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT subject_id, from_status, to_status, field, at FROM ops.audit_log WHERE actor_kind = 'system' AND subject_kind = $1 AND (to_status IS NOT NULL OR field IS NOT NULL) AND at >= $2 AND at < $3 ORDER BY at, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "subject_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "ops.audit_log",
+            "name": "subject_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "from_status",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.audit_log",
+            "name": "from_status"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "to_status",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.audit_log",
+            "name": "to_status"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "field",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.audit_log",
+            "name": "field"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "ops.audit_log",
+            "name": "at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "0a5cd5e1ca035eee1a160b9e82dec5c327d01b0ae61e89d73c3ef87075692625"
+}
