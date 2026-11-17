@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T03:25:19Z by runner 13ee51165f3b (actions).
+Updated 2026-11-17T03:30:29Z by runner 794f81de7ef2 (actions).
 
 **Building: T107 in progress since 02:20Z; 378 of 557 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 378 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:57Z; lane 2: T103 claimed 02:12Z, lease until 06:13Z; lane 7: T591 claimed 03:16Z, lease until 06:16Z
+- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:57Z; lane 7: T591 claimed 03:16Z, lease until 06:16Z
 - **Week:** 12% used, 165.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:25Z, 0 min before this update
+- **Last run:** 03:25Z, 5 min before this update
 - **Keeper:** last ran 03:25Z, next wake 06:00Z
 
 ## Needs attention
@@ -67,15 +67,14 @@ Updated 2026-11-17T03:25:19Z by runner 13ee51165f3b (actions).
 | T409 | server (harness): the door probe's owner actor signs in thro | done | 1 | 36 min | 13:05Z |  |
 | T531 | messaging and server: OPS-046's first-six-weeks email figure | done | 1 | 36 min | 13:01Z |  |
 | T100 | Stage 4 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 39 min | 08:16Z |  |
-| T517 | Stage 4 cleanup, part 1: duplicate functions in server, port | proof_missing | 1 | 84 min | 03:25Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 307 of 733 (41.9%) · partial 313 · unstarted 113
-**Tasks merged (throughput only):** 378 of 556
+**Requirements verified:** 305 of 733 (41.6%) · partial 315 · unstarted 113
+**Tasks merged (throughput only):** 378 of 557
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -85,9 +84,9 @@ Updated 2026-11-17T03:25:19Z by runner 13ee51165f3b (actions).
 | calls | 13 | 11 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 28 | 12 | 3 | 43 |
+| intake | 27 | 13 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
-| licensing | 37 | 11 | 0 | 48 |
+| licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
@@ -119,7 +118,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T107 (lease until 2026-11-17T05:57:37Z)
-- lane 2: T103 (lease until 2026-11-17T06:13:14Z)
 - lane 7: T591 (lease until 2026-11-17T06:16:00Z)
 
 ## Last usage reading
