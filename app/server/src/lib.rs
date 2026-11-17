@@ -480,12 +480,13 @@ const VAULT_INDEX_KEY: &str = "VAULT_INDEX_KEY";
 /// quote-page link key (version 1) and the outbox key, and the vault built from `VAULT_KEY` and
 /// `VAULT_INDEX_KEY` in `pairs` (a blank value counts as unset). With neither vault key it is
 /// `None` in dev and CI (no sender is registered) and an error in the test and live projects;
-/// one key without the other is an error everywhere, never a quiet "no sender".
+/// one key without the other is an error everywhere, never a quiet "no sender". With
+/// `ASKHAVA_POSTAL_ADDRESS` set the keys carry the footer line PICK-046's email needs (T446).
 ///
 /// # Errors
 ///
-/// A weak `ID_SECRET`, a bad vault key, a half-set pair, or no vault keys in the test or live
-/// project; the message names the missing key, never a value.
+/// A weak `ID_SECRET`, a bad vault key, a half-set pair, no vault keys in the test or live
+/// project, or a postal line that is no mailbox; the message names the key, never a value.
 pub fn job_text_keys<I>(
     settings: &Settings,
     id_secret: &SecretString,
@@ -498,7 +499,20 @@ where
         return Ok(None);
     };
     let link = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
-    Ok(Some(JobTextKeys::new(link, id_secret.clone(), vault)))
+    let keys = JobTextKeys::new(link, id_secret.clone(), vault);
+    Ok(Some(match settings.postal_address() {
+        Ok(line) => keys.with_postal(checked_postal(line)?),
+        Err(_) => keys,
+    }))
+}
+
+/// T446 (PICK-046, SEC-028): the footer postal line PICK-046's email needs, a P.O. box or else a
+/// private mailbox, as [`email_parts`] reads it; a line that is neither stops the start.
+fn checked_postal(line: &str) -> io::Result<askhava_messaging::api::PostalAddress> {
+    use askhava_messaging::api::{MailboxKind, PostalAddress};
+    PostalAddress::new(line, MailboxKind::PoBox)
+        .or_else(|_| PostalAddress::new(line, MailboxKind::PrivateMailbox))
+        .map_err(|_| bad_postal())
 }
 
 /// The published homeowner Terms a page pick accepts: the exact text of
