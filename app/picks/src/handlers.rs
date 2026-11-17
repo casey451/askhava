@@ -212,11 +212,12 @@ pub async fn run_confirm_ends(pool: PgPool, task: Claimed) -> Result<(), Handler
 }
 
 /// The [`CONFIRM_ENDS_KIND`] handler on the worker clock's `now` (PICK-019, PICK-044, PICK-046,
-/// PICK-047, JOB-006, D-3750): for a pick still waiting, a job in Awaiting confirm whose wait still
-/// counts from the task's `from` lapses at the task's due time ([`lapse_at`]); a job already back
-/// in Quotes ready (`jobs`' backstop or the emergency 60 minutes came first) lapses at the later of
-/// due and `now`, so the backup's window never starts in the past; a restarted window, any other
-/// status or a pick no longer waiting does nothing. One transaction; safe to run twice.
+/// PICK-047, JOB-006, D-3750, D-4187): for a pick still waiting, a job in Awaiting confirm whose
+/// wait still counts from the task's `from`, or a job already back in Quotes ready (`jobs`'
+/// backstop or the emergency 60 minutes came first), lapses ([`lapse_at`]) at the later of the
+/// task's due time and `now`, so a late worker never starts the backup's window in the past; a
+/// restarted window, any other status or a pick no longer waiting does nothing. One transaction;
+/// safe to run twice.
 ///
 /// # Errors
 /// A fixed sentence for a malformed task or a failed statement; the queue tries again.
@@ -238,14 +239,11 @@ pub async fn run_confirm_ends_at(
         return Ok(());
     };
     let row = current(&mut tx, job).await.map_err(|_| DB_FAILED)?;
-    let at = if awaits_confirm(row.status) && row.timer_from.as_second() == from.as_second() {
-        due
-    } else if returned_unconfirmed(row.status) {
-        due.max(now)
-    } else {
+    let same_wait = awaits_confirm(row.status) && row.timer_from.as_second() == from.as_second();
+    if !same_wait && !returned_unconfirmed(row.status) {
         return Ok(());
-    };
-    lapse_at(&mut tx, (pick, job, business), at)
+    }
+    lapse_at(&mut tx, (pick, job, business), due.max(now))
         .await
         .map_err(|_| DB_FAILED)?;
     tx.commit().await.map_err(|_| DB_FAILED)

@@ -22,8 +22,8 @@ use askhava_jobs::api::{JobStatus, TEXT_KIND, current, move_to, record_job_facts
 use askhava_messaging::api::{RevokeChannel, suppress};
 use askhava_ops::api::Actor;
 use askhava_picks::api::{
-    Browser, CONFIRM_ENDS_KIND, ConfirmSettings, PagePick, bind_backup, choose_backup, notice_sent,
-    page_pick, run_confirm_ends_at,
+    Browser, CONFIRM_ENDS_KIND, ConfirmSettings, PagePick, PicksError, bind_backup, choose_backup,
+    notice_sent, page_pick, run_confirm_ends_at,
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use base64::Engine as _;
@@ -363,8 +363,9 @@ async fn pick_046_the_window_end_with_no_backup_queues_pick_lapsed_once(pool: Pg
 }
 
 /// PICK-044, PICK-046, PICK-047: an emergency pick's 60 minutes lapse it whichever of `jobs`' timer
-/// (`jobs_first`) and the window task runs first: a backup move or one PICK-046 event, at once.
-async fn emergency_lapses(pool: PgPool, (backup, jobs_first): (bool, bool)) {
+/// (`jobs_first`) and the window task runs first, on a worker `late` minutes past the due time: a
+/// backup move whose pick starts at the worker's now, or one PICK-046 event (D-4187).
+async fn emergency_lapses(pool: PgPool, (backup, jobs_first): (bool, bool), late: i64) {
     let mut db = pool.acquire().await.expect("db");
     let (job, pick) = picked(&mut db, (true, backup), ts(DAY)).await;
     let sent_at = ts(DAY) + SignedDuration::from_mins(5);
@@ -386,14 +387,15 @@ async fn emergency_lapses(pool: PgPool, (backup, jobs_first): (bool, bool)) {
             "jobs' timer fired"
         );
     }
-    let clock = Arc::new(ManualClock::new(due));
+    let now = due + SignedDuration::from_mins(late);
+    let clock = Arc::new(ManualClock::new(now));
     run_due(&pool, &registry(clock.clone()), &clock).await;
     assert_eq!(pick_status(&mut db, pick).await, "expired");
     let moved = events(&mut db, pick, "pick_moved").await.len();
     let lapsed = events(&mut db, pick, "pick_lapsed").await.len();
     assert_eq!((moved, lapsed), if backup { (1, 0) } else { (0, 1) });
     let want = if backup {
-        vec![(business(2), due)]
+        vec![(business(2), now)]
     } else {
         vec![]
     };
@@ -402,22 +404,53 @@ async fn emergency_lapses(pool: PgPool, (backup, jobs_first): (bool, bool)) {
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn pick_044_an_emergency_lapses_to_the_backup_after_jobs_timer(pool: PgPool) {
-    emergency_lapses(pool, (true, true)).await;
+    emergency_lapses(pool, (true, true), 0).await;
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn pick_044_an_emergency_lapses_to_the_backup_by_its_window_task(pool: PgPool) {
-    emergency_lapses(pool, (true, false)).await;
+    emergency_lapses(pool, (true, false), 0).await;
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn pick_046_an_emergency_with_no_backup_lapses_after_jobs_timer(pool: PgPool) {
-    emergency_lapses(pool, (false, true)).await;
+    emergency_lapses(pool, (false, true), 0).await;
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn pick_046_an_emergency_with_no_backup_lapses_by_its_window_task(pool: PgPool) {
-    emergency_lapses(pool, (false, false)).await;
+    emergency_lapses(pool, (false, false), 0).await;
+}
+
+/// PICK-044, PICK-047, D-4187: on an emergency job whose window task runs before `jobs`' timer on a
+/// worker 20 minutes late, the backup's pick and 60 minutes start at the worker's now, never at
+/// the past due time.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn pick_044_a_late_window_task_starts_the_emergency_backup_now(pool: PgPool) {
+    emergency_lapses(pool, (true, false), 20).await;
+}
+
+/// PICK-019, PICK-047: a notice sent after `jobs`' backstop returned the job answers `MovedOn` and
+/// lapses the pick: it expires, the backup's pick starts at the send, and one `pick_moved` event
+/// (no `pick_lapsed`) is queued at the job's version after the move.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn pick_047_a_notice_after_the_backstop_moves_to_the_backup(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let (job, pick) = picked(&mut db, (false, true), ts(DAY)).await;
+    let back = (JobStatus::AwaitingConfirm, JobStatus::QuotesReady);
+    let moved = move_to(&mut db, job, back, ts(DAY), Actor::System).await;
+    assert!(
+        moved.expect("move").applied().is_some(),
+        "the backstop fired"
+    );
+    let late = ts(DAY) + SignedDuration::from_mins(5);
+    let sent_late = notice_sent(&mut db, pick, late, ConfirmSettings::default()).await;
+    assert_eq!(sent_late, Err(PicksError::MovedOn));
+    assert_eq!(pick_status(&mut db, pick).await, "expired");
+    assert_eq!(waiting(&mut db, job).await, vec![(business(2), late)]);
+    let version = i64::from(current(&mut db, job).await.expect("job").version);
+    assert_eq!(events(&mut db, pick, "pick_moved").await, vec![version]);
+    assert!(events(&mut db, pick, "pick_lapsed").await.is_empty());
 }
 
 /// PICK-019, PICK-047: a normal pick lapses the same when `jobs`' backstop returned the job first,
