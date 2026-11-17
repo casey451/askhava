@@ -3170,3 +3170,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - A box shown for the old number and sent after the change is turned down, so a tick never counts for a number the person did not see.
 - One leftover for a later task: the list of phones that may get a sign-in code still counts the old agreement after a member's own extra phone changes number. It sends nothing extra today beyond the sign-in code that member asked for, but it should follow the same rule.
 - Nothing needs you now.
+## Pre-claim checks of the audit fix tasks (D-4064, November 17)
+- Before any of the new audit fix tasks start, Opus checkers read each one against the code. Their fixes are now in the tasks.
+- Children: the under-13 stop was never actually called when a child texts their age, so it did nothing. That task now wires it in, so a child who says "I'm 11" by text gets the stop and has the name and address erased.
+- Safety: a text like "never mind, I smell gas" still gets the 911 reply first; it never just closes the job.
+- Licenses: when an ROC license lapses, the card drops the city-license line, but a handyman's card still shows "Not a licensed contractor..." as the rule requires.
+- Two small test changes follow from rules already decided: one test now uses a fixed time inside the 24-hour quote window, and one expects no email to a member whose address is bouncing. Both tasks that make them get the stricter Opus review.
