@@ -12,8 +12,9 @@ nothing else); a string entry names another vulnerable package, whose own `via` 
 entry holds it and the advisory's own `name` all match one exception, and the reported package that
 reaches it is one of that exception's `dependents` (the chain known when the exception was granted).
 A package whose trace reaches no advisory at all, an advisory without a GHSA id, or a string naming a
-package npm did not report, fails. After an exception's `review_by` date every run fails until a plan
-change re-checks for a patched release and either removes the exception or moves the date.
+package npm did not report, fails. After an exception's `review_by` date every run prints a WARNING to
+re-check for a patched release (remove the exception or move the date by a plan change) and still judges
+the report as before: a date must never turn `main` or the nightly red without a commit to revert.
 
 It fails closed: npm missing, output that is not JSON, an `error` key, an `auditReportVersion` other
 than 2, a vulnerability count that disagrees with the list, or an exception entry missing a field.
@@ -150,18 +151,18 @@ def excused_by(root: str, package: str, advisory: dict[str, Any], exceptions: tu
     return ""
 
 
-def expired(exceptions: tuple[dict[str, Any], ...], today: date) -> list[str]:
-    """One problem per exception whose review_by date has passed."""
-    return [f"exception {e['ghsa']} on {e['package']} ({e['decision']}) passed its review date {e['review_by']}: "
-            f"re-check for a patched {e['package']} and remove the exception, or move the date by a plan change"
+def overdue(exceptions: tuple[dict[str, Any], ...], today: date) -> list[str]:
+    """One warning per exception whose review_by date has passed (a warning, never a failure)."""
+    return [f"WARNING: exception {e['ghsa']} ({e['decision']}) passed its review date {e['review_by']}: "
+            f"re-check for a patched {e['package']} and remove the exception or move the date by a plan change"
             for e in exceptions if today > date.fromisoformat(e["review_by"])]
 
 
 def judge(vulns: dict[str, Any], exceptions: tuple[dict[str, Any], ...],
-          today: date | None = None) -> tuple[list[str], set[str]]:
-    """Return (problems, excused GHSA ids) for a vulnerabilities map, judged on `today` (default: now)."""
+          today: date | None = None) -> tuple[list[str], set[str], list[str]]:
+    """Return (problems, excused GHSA ids, review-date warnings) for a vulnerabilities map on `today`."""
     check_exceptions(exceptions)
-    problems = expired(exceptions, today or date.today())
+    problems: list[str] = []
     excused: set[str] = set()
     for name in sorted(vulns):
         found = trace(vulns, name)
@@ -174,7 +175,7 @@ def judge(vulns: dict[str, Any], exceptions: tuple[dict[str, Any], ...],
                 ident = advisory_id(advisory) or str(advisory.get("url") or advisory.get("source"))
                 problems.append(f"{name}: {ident} on {package} ({advisory.get('severity')}): "
                                 f"{advisory.get('title')}")
-    return problems, excused
+    return problems, excused, overdue(exceptions, today or date.today())
 
 
 def run_npm() -> str:
@@ -190,7 +191,7 @@ def run_npm() -> str:
 def report(text: str, exceptions: tuple[dict[str, Any], ...] = EXCEPTIONS, today: date | None = None) -> int:
     """Judge one report's text on `today` (default: now), print the outcome and return the exit status."""
     try:
-        problems, excused = judge(parse_report(text), exceptions, today)
+        problems, excused, warnings = judge(parse_report(text), exceptions, today)
     except AuditError as exc:
         print(f"npm audit: FAILED (cannot judge): {exc}")
         return 1
@@ -201,6 +202,8 @@ def report(text: str, exceptions: tuple[dict[str, Any], ...] = EXCEPTIONS, today
         else:
             print(f"npm audit: note: {entry['ghsa']} on {entry['package']} ({entry['decision']}) is no "
                   "longer reported; a plan change should remove its exception")
+    for line in warnings:
+        print(f"npm audit: {line}")
     for line in sorted(set(problems)):
         print(f"npm audit: {line}")
     print("npm audit: FAILED" if problems else "npm audit: ok")

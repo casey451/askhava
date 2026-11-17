@@ -88,7 +88,7 @@ def test_a_string_via_that_reaches_another_advisory_fails() -> None:
     vulns = real_chain()
     vulns["evil"] = vuln("evil", [advisory("evil", OTHER)])
     vulns["fdir"]["via"].append("evil")
-    problems, _ = audit.judge(vulns, audit.EXCEPTIONS, TODAY)
+    problems, _, _ = audit.judge(vulns, audit.EXCEPTIONS, TODAY)
     assert "fdir: GHSA-2222-3333-4444 on evil (high): planted advisory on evil" in problems
 
 
@@ -104,7 +104,7 @@ def test_cycles_terminate_and_a_cycle_with_no_advisory_fails() -> None:
     vulns["picomatch"]["via"].append("typescript-eslint")
     assert audit.judge(vulns, audit.EXCEPTIONS, TODAY)[0] == []
     loop = {"a": vuln("a", ["b"]), "b": vuln("b", ["a"])}
-    problems, _ = audit.judge(loop, audit.EXCEPTIONS, TODAY)
+    problems, _, _ = audit.judge(loop, audit.EXCEPTIONS, TODAY)
     assert problems == ["a: reported vulnerable but traces to no advisory",
                         "b: reported vulnerable but traces to no advisory"]
 
@@ -201,8 +201,31 @@ def test_only_a_github_advisory_url_ending_in_the_id_counts() -> None:
         assert audit.report(report(vulns), today=TODAY) == 1, url
 
 
-def test_after_the_review_date_every_run_fails_until_it_is_rechecked(capsys: pytest.CaptureFixture[str]) -> None:
-    assert audit.report(report(real_chain()), today=date(2026, 12, 17)) == 0, "the review date itself still passes"
-    assert audit.report(report(real_chain()), today=date(2026, 12, 18)) == 1
-    assert "passed its review date 2026-12-17: re-check for a patched picomatch" in capsys.readouterr().out
-    assert audit.report(report({}), today=date(2026, 12, 18)) == 1
+WARNING = ("npm audit: WARNING: exception GHSA-fc5q-39xc-vjpf (D-4223) passed its review date 2026-12-17: "
+           "re-check for a patched picomatch and remove the exception or move the date by a plan change")
+
+
+def test_after_the_review_date_every_run_warns_but_still_judges(capsys: pytest.CaptureFixture[str]) -> None:
+    """A date never turns main or the nightly red (no commit to revert): it warns, and the report decides."""
+    assert audit.report(report(real_chain()), today=date(2026, 12, 17)) == 0
+    assert WARNING not in capsys.readouterr().out, "the review date itself is not yet past"
+    assert audit.report(report(real_chain()), today=date(2026, 12, 18)) == 0
+    out = capsys.readouterr().out
+    assert WARNING in out and out.rstrip().endswith("npm audit: ok")
+    vulns = real_chain()
+    vulns["left-pad"] = vuln("left-pad", [advisory("left-pad", OTHER, "low")])
+    assert audit.report(report(vulns), today=date(2026, 12, 18)) == 1, "past the date, other advisories still fail"
+
+
+def test_main_passes_its_date_through_to_the_judgement(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    saved = tmp_path / "audit.json"
+    saved.write_text(report(real_chain()), encoding="utf-8")
+    assert audit.main(["--input", str(saved)], date(2026, 12, 18)) == 0
+    assert WARNING in capsys.readouterr().out
+
+
+def test_check_exceptions_refuses_dependents_that_omit_the_package_itself() -> None:
+    broken = {**audit.EXCEPTIONS[0], "dependents": ("fdir", "tinyglobby")}
+    with pytest.raises(audit.AuditError, match="dependents list naming its package"):
+        audit.check_exceptions((broken,))
+    audit.check_exceptions(audit.EXCEPTIONS)
