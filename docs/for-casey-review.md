@@ -3218,3 +3218,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - `docs/legal/twilio-campaign.md` is the text for registering the homeowner texting campaign: the settings, the description, the six sample messages (each copied from the real text it stands for), the Spanish steps and what happens if the campaign is refused. Nothing is submitted; you register it by hand when the account checklist gets there.
 - One thing to know: the description no longer says people opt in by "replying OK", because texting in is the opt-in (D-419). Everything else is the wording from the changes file.
+
+## The wording check gets a fixed list (D-4229)
+
+- The test that scans every page, text and document for banned wording (T104) failed review three times. The scan itself worked each time; each new reviewer just thought of more ways to say a banned thing ("sorted by price", "we get a cut", "your number goes to the business"), and there was no end to that.
+- The plan now gives the test one fixed list: every banned pattern, with a sentence that must fail and true sentences that must pass, in English and Spanish. It includes every phrasing the three reviewers found. Wording outside the list gets logged for later instead of failing the task. Banned wording that is really on a page still stops the task, list or no list.
+- No rule got looser, and all the real pages and documents pass the list today. Nothing needs you now.
