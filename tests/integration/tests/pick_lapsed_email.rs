@@ -5,8 +5,10 @@
 //! quotes from named businesses; `intake::api::job_text_step` then runs the `pick_lapsed` event
 //! for the first business, with keys that carry the footer postal line. An opted-out number with
 //! an email on file gets one email and no text, a rerun stores nothing more, no email on file gets
-//! nothing, and a textable number gets the text and no email. Every number (555-01xx), address,
-//! name, ID and word is fake.
+//! nothing, and a textable number gets the text and no email. No consent record or a number
+//! that fails the area-code check gets the email too, a Spanish request gets it in Spanish, and
+//! keys without the postal line send nothing and still end the step. Every number (555-01xx),
+//! address, name, ID and word is fake.
 
 use askhava_core::api::{IdSecret, brand};
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
@@ -30,6 +32,8 @@ use sqlx::{PgConnection, PgPool};
 
 const ID_SECRET: &str = "test-only-id-secret-for-t446-not-a-real-key";
 const PHONE: &str = "+19285550146";
+/// Area code 999 is in no area-code table (QH-003): never textable.
+const NO_AREA_PHONE: &str = "+19995550146";
 const EMAIL: &str = "sample.homeowner@example.invalid";
 /// 10:00 a.m. Arizona.
 const DAY: &str = "2026-11-02T17:00:00Z";
@@ -58,10 +62,33 @@ fn secret() -> SecretString {
     SecretString::from(ID_SECRET.to_owned())
 }
 
-fn keys() -> JobTextKeys {
+/// The step's keys without the footer postal line.
+fn keys_without_postal() -> JobTextKeys {
     let link = IdSecret::new(1, secret()).expect("link key");
+    JobTextKeys::new(link, secret(), vault())
+}
+
+fn keys() -> JobTextKeys {
     let postal = PostalAddress::new("PO Box 0146, Sample City, AZ 86400", MailboxKind::PoBox);
-    JobTextKeys::new(link, secret(), vault()).with_postal(postal.expect("postal"))
+    keys_without_postal().with_postal(postal.expect("postal"))
+}
+
+/// The homeowner who texts in: her number, whether an email is on file, and her request's words
+/// (Spanish when `spanish`).
+struct Her {
+    phone: &'static str,
+    email: bool,
+    spanish: bool,
+}
+
+impl Her {
+    const fn english(email: bool) -> Self {
+        Self {
+            phone: PHONE,
+            email,
+            spanish: false,
+        }
+    }
 }
 
 /// `count` named businesses, each with a confirmed quote on `job`, in arrival order.
@@ -119,33 +146,51 @@ async fn walk_to_quotes_ready(db: &mut PgConnection, job: Uuid, count: usize, at
 /// A homeowner (with an email when `email`) texts in and her job walks to Quotes ready with
 /// `count` quotes; returns the `pick_lapsed` event for business 1's ended pick.
 async fn lapsed_event(db: &mut PgConnection, email: bool, count: usize) -> JobText {
+    lapsed_event_for(db, &Her::english(email), count).await
+}
+
+/// The vault contact for `her`, with her number and, when she has one, her email.
+async fn her_contact(db: &mut PgConnection, her: &Her) -> Uuid {
+    let new = NewContact {
+        name: None,
+        phone: Some(SecretString::from(her.phone.to_owned())),
+        email: her.email.then(|| SecretString::from(EMAIL.to_owned())),
+        address: None,
+        onsite_contact: None,
+    };
+    store_contact(db, &vault(), &new).await.expect("contact")
+}
+
+/// [`lapsed_event`] for the homeowner `her`.
+async fn lapsed_event_for(db: &mut PgConnection, her: &Her, count: usize) -> JobText {
     let at = ts(DAY);
     askhava_catalog::api::load_embedded(db)
         .await
         .expect("catalog");
-    let new = NewContact {
-        name: None,
-        phone: Some(SecretString::from(PHONE.to_owned())),
-        email: email.then(|| SecretString::from(EMAIL.to_owned())),
-        address: None,
-        onsite_contact: None,
+    let contact = her_contact(db, her).await;
+    let words = if her.spanish {
+        "el desagüe de mi cocina está tapado"
+    } else {
+        "my kitchen drain is backing up"
     };
-    let her = store_contact(db, &vault(), &new).await.expect("contact");
-    let words = "my kitchen drain is backing up";
     let inbound = Inbound {
         words,
         opt_out: false,
         help: false,
         emergency: false,
-        ai_spanish: None,
+        ai_spanish: Some(her.spanish),
+    };
+    let settings = IntakeSettings {
+        spanish_conversations_on: her.spanish,
+        ..IntakeSettings::default()
     };
     let msg = TextIn {
         inbox_id: Uuid::new_v4(),
-        contact: her,
+        contact,
         inbound,
         received_at: at,
     };
-    let handled = receive_text(db, &secret(), &msg, IntakeSettings::default()).await;
+    let handled = receive_text(db, &secret(), &msg, settings).await;
     let conversation = handled.expect("open").conversation.expect("request");
     let start = JobStart {
         conversation,
@@ -277,4 +322,88 @@ async fn pick_046_a_textable_homeowner_gets_the_text_and_no_email(pool: PgPool) 
     assert!(matches!(got, JobTextStep::Queued(_)), "{got:?}");
     assert_eq!(texts(&mut db).await, 1, "the text");
     assert!(emails(&mut db).await.is_empty(), "never both");
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn pick_046_no_consent_record_with_an_email_gets_one_email_and_no_text(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let text = lapsed_event(&mut db, true, 3).await;
+    sqlx::query("DELETE FROM intake.consent_record")
+        .execute(&mut *db)
+        .await
+        .expect("no consent record");
+    let got = step(&mut db, &text).await;
+    assert_eq!(got, JobTextStep::Skipped(JobTextSkip::NoConsent));
+    assert_eq!(texts(&mut db).await, 0, "no text without consent");
+    let stored = emails(&mut db).await;
+    assert_eq!(stored.len(), 1, "one email");
+    let want = format!(
+        "{} couldn't take it this time. You still have other quotes.",
+        NAMES[0]
+    );
+    assert!(stored[0].1.starts_with(&want), "{}", stored[0].1);
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn pick_046_a_number_failing_the_area_code_check_gets_one_email_and_no_text(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let her = Her {
+        phone: NO_AREA_PHONE,
+        email: true,
+        spanish: false,
+    };
+    let text = lapsed_event_for(&mut db, &her, 3).await;
+    let got = step(&mut db, &text).await;
+    assert_eq!(got, JobTextStep::Skipped(JobTextSkip::NotTextable));
+    assert_eq!(texts(&mut db).await, 0, "no text to that number");
+    let stored = emails(&mut db).await;
+    assert_eq!(stored.len(), 1, "one email");
+    assert!(!stored[0].1.contains(NO_AREA_PHONE), "no contact");
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn pick_046_a_spanish_request_gets_the_spanish_no_other_quote_email(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let her = Her {
+        phone: PHONE,
+        email: true,
+        spanish: true,
+    };
+    let text = lapsed_event_for(&mut db, &her, 1).await;
+    opt_out(&mut db).await;
+    step(&mut db, &text).await;
+    let stored = emails(&mut db).await;
+    assert_eq!(stored.len(), 1, "one email");
+    let (subject, plain) = &stored[0];
+    let short = brand().es().short_name();
+    assert_eq!(
+        subject,
+        &format!("{short}: {} no pudo tomarlo esta vez", NAMES[0])
+    );
+    let want = format!(
+        "{} no pudo tomarlo esta vez. Le avisaremos por correo cuando llegue otra cotización. \
+         Si no puede esperar, puede llamar a una compañía que conozca.\n",
+        NAMES[0]
+    );
+    assert!(plain.starts_with(&want), "{plain}");
+    for english in ["couldn't", "email you", "texto"] {
+        assert!(!plain.contains(english), "{english}: {plain}");
+    }
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn pick_046_without_the_postal_line_sends_nothing_and_the_step_ends(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let text = lapsed_event(&mut db, true, 3).await;
+    opt_out(&mut db).await;
+    let got = job_text_step(&mut db, &keys_without_postal(), &text, ts(DAY)).await;
+    assert_eq!(
+        got.expect("the step ends Ok"),
+        JobTextStep::Skipped(JobTextSkip::OptedOut)
+    );
+    assert_eq!(texts(&mut db).await, 0, "no text");
+    assert!(
+        emails(&mut db).await.is_empty(),
+        "no email without the postal line"
+    );
 }
