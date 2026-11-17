@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-17T05:28:41Z by runner 6fd433f79813 (actions).
+Updated 2026-11-17T05:28:59Z by runner 6fd433f79813 (actions).
 
-**Building: T204 in progress since 04:22Z; 382 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T204 in progress since 04:22Z; 383 of 559 done; week 15% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 382 of 559 build tasks (owner gates not counted)
+- **Tasks done:** 383 of 559 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T204 claimed 04:22Z, lease until 08:06Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T586 claimed 04:49Z, lease until 08:23Z
 - **Week:** 15% used, 159.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -19,7 +19,7 @@ Updated 2026-11-17T05:28:41Z by runner 6fd433f79813 (actions).
 |---|---|---|---|---|---|---|
 | T103 | intake: the web-chat conversation, where typing a verified m | MERGE_PENDING | 1 | 106 min | 05:27Z |  |
 | T585 | businesses and licensing: a license change that drops job ty | MERGE_PENDING | 1 | 43 min | 05:10Z |  |
-| T571 | server and calls: a press of 9 on the safety call is never l | MERGE_PENDING | 1 | 45 min | 05:08Z |  |
+| T571 | server and calls: a press of 9 on the safety call is never l | done | 1 | 45 min | 05:08Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | MERGE_PENDING | 2 | 29 min | 04:41Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T591 | Runner (harness): free the backup job's disk and cap the smo | done | 1 | 67 min | 04:23Z |  |
 | T107 | Consent records kept 5 years, no export, opt-out rate alerts | QUEUED | 1 | 85 min | 03:45Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
@@ -80,7 +80,7 @@ Updated 2026-11-17T05:28:41Z by runner 6fd433f79813 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 302 of 733 (41.2%) · partial 318 · unstarted 113
-**Tasks merged (throughput only):** 382 of 559
+**Tasks merged (throughput only):** 383 of 559
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -116,7 +116,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 25 of 167 done
+- stage 5: 26 of 167 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
