@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T23:24:11Z by runner 85f807e77a6d (actions).
+Updated 2026-11-17T23:24:25Z by runner 9dd9cd236f2f (actions).
 
 **Idle since 23:23Z; 413 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-17T23:24:11Z by runner 85f807e77a6d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 23:23Z (no task in progress)
 - **Week:** 33% used, 129.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:23Z, 0 min before this update
-- **Keeper:** last ran 23:22Z, next wake 01:22Z
+- **Last run:** 23:24Z, 0 min before this update
+- **Keeper:** last ran 23:24Z, next wake 23:44Z
 
 ## Needs attention
 - BLOCKED T203: plan gap reported: PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be "at the top of the quote page". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/pr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T478 (since 2026-11-17T23:05:09Z, no attempt used; a plan change fixes it): T478: dependency T605 is DONE but its owned file app/businesses/src/digest_counts.rs is not on main; T478: dependency T605 is DONE but its owned file app/intake/src/not_covered_counts.rs is not on main; T478: dependency T605 is DONE but its owned file app/picks/src/digest_counts.rs is not on main; T478: dependency T605 is DONE but its owned file tests/integration/tests/digest_counts.rs is not on main
-- Strict plan check red: 12 problem(s) on tasks still to run (+177 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+177 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
