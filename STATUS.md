@@ -1,19 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-17T05:04:40Z by runner 6e75cfa8d80c (actions).
+Updated 2026-11-17T05:05:17Z by runner 6c6c4cf89350 (actions).
 
 **Building: T103 in progress since 03:40Z; 382 of 557 done; week 14% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 382 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T103 claimed 03:40Z, lease until 07:28Z; lane 3: T585 claimed 04:27Z, lease until 07:27Z; lane 4: T204 claimed 04:22Z, lease until 07:22Z; lane 5: T571 claimed 04:23Z, lease until 08:04Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T586 claimed 04:49Z, lease until 07:49Z
+- **Lane:** lane 2: T103 claimed 03:40Z, lease until 07:28Z; lane 3: T585 claimed 04:27Z, lease until 08:05Z; lane 4: T204 claimed 04:22Z, lease until 07:22Z; lane 5: T571 claimed 04:23Z, lease until 08:04Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T586 claimed 04:49Z, lease until 07:49Z
 - **Week:** 14% used, 159.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:03Z, 1 min before this update
+- **Last run:** 05:04Z, 0 min before this update
 - **Keeper:** last ran 05:03Z, next wake 06:44Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 2 problem(s) on tasks still to run (+143 on DONE tasks); first: T571: stored context_pct 10% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -123,7 +122,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T103 (lease until 2026-11-17T07:28:17Z)
-- lane 3: T585 (lease until 2026-11-17T07:27:13Z)
+- lane 3: T585 (lease until 2026-11-17T08:05:17Z)
 - lane 4: T204 (lease until 2026-11-17T07:22:48Z)
 - lane 5: T571 (lease until 2026-11-17T08:04:40Z)
 - lane 6: T481 (lease until 2026-11-17T06:42:02Z)
