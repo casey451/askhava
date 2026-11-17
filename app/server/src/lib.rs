@@ -284,12 +284,13 @@ fn business_pages(
 }
 
 /// The feedback page (T230), the check-in answer page (T231), the email action links (T301), the
-/// built browser files (T362), the site's stylesheet (T101) and the site pages with `site`'s
-/// settings (T102), each over `pool`.
+/// built browser files (T362), the site's stylesheet (T101), the site pages with `site`'s
+/// settings (T102), and the legal, data, services, coverage and help pages (T221, T201) with the AI
+/// switch read in `environment`, each over `pool`.
 fn link_and_site_pages(
     pool: &PgPool,
     statics: &StaticRoot,
-    site: askhava_site::api::SitePages,
+    (site, environment): (askhava_site::api::SitePages, Environment),
 ) -> Router {
     feedback_routes(pool.clone(), Arc::new(SystemClock))
         .merge(checkin::routes(pool.clone()))
@@ -297,6 +298,8 @@ fn link_and_site_pages(
         .merge(static_files::router(statics))
         .merge(askhava_site::api::site_routes())
         .merge(askhava_site::api::page_routes(pool.clone(), site))
+        .merge(askhava_site::api::legal_routes(pool.clone(), environment))
+        .merge(askhava_site::api::help_routes(pool.clone(), environment))
 }
 
 /// The app's router: every module's routes, merged once here (D-481), under
@@ -322,7 +325,9 @@ fn link_and_site_pages(
 /// ([`owner_signin`], T303), with the passkey relying party on the brand file's domain (D-3844).
 /// The site's compiled-in stylesheet is at `/static/site/<name>` (`site::api::site_routes`, T101);
 /// the home and how-it-works pages and the old directory paths are `site::api::page_routes`, with
-/// the parts' site settings ([`RouterParts::with_site_pages`], T102).
+/// the parts' site settings ([`RouterParts::with_site_pages`], T102); the services, coverage, help
+/// and ROC complaint pages are `site::api::help_routes`, with the AI switch read in the parts'
+/// environment (T201).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241) and the placed calls' status and safety-key routes
 /// (`voice_status`, CALL-022, OPS-028, T378); `None` adds none. `voice` ([`voice_hooks`]) adds the
@@ -352,8 +357,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
     let business = business_pages(business, pool.clone(), (&webhooks, &voice, &stripe));
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
-    let pages = link_and_site_pages(&pool, &statics, site)
-        .merge(askhava_site::api::legal_routes(pool.clone(), environment));
+    let pages = link_and_site_pages(&pool, &statics, (site, environment));
     // Each 403 of these four is a source or signature refusal, recorded as a capped
     // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
     let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));

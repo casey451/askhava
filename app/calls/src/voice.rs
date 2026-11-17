@@ -40,7 +40,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::models::CallsError;
-use crate::routing::Party;
+use crate::routing::{Party, xml_escape};
 use crate::rules::AnsweredBy;
 use crate::service::{AutomatedCall, CallGate, automated_call_gate};
 
@@ -124,8 +124,9 @@ fn callback(main: &str, from: &PoolNumber) -> Option<String> {
 
 /// CALL-014, CALL-015, D-366: the code call's TwiML: "This is Ask Hava LLC", the code said slowly
 /// twice, the main number as the callback, then "Press 1 to hear it again" (`again` is the app's
-/// own path that replays it). `None` when the code is not 4 to 8 digits, `main` is not E.164 or is
-/// `from`. It holds the code: send it only as the webhook's reply, never log it.
+/// own path that replays it); the words and `again` are XML-escaped (D-4052). `None` when the
+/// code is not 4 to 8 digits, `main` is not E.164 or is `from`. It holds the code: send it only as
+/// the webhook's reply, never log it.
 #[must_use]
 pub fn code_call_twiml(
     from: &PoolNumber,
@@ -142,6 +143,7 @@ pub fn code_call_twiml(
          To call us back, dial {back}. Press 1 to hear it again.",
         brand().legal_name()
     );
+    let (words, again) = (xml_escape(&words), xml_escape(again));
     Some(SecretString::from(format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather input=\"dtmf\" \
          numDigits=\"1\" timeout=\"10\" action=\"{again}\"><Say><prosody rate=\"slow\">{words}\
@@ -241,10 +243,12 @@ pub fn safety_script(main: &str, from: &PoolNumber) -> Option<String> {
 }
 
 /// The safety call's TwiML: [`safety_script`] in a one-digit `Gather` posting to `stop` (the app's
-/// own path that takes "press 9"), then a hang-up. `None` as for [`safety_script`].
+/// own path that takes "press 9"), then a hang-up; the words and `stop` are XML-escaped here, so a
+/// caller passes the plain URL (D-4052). `None` as for [`safety_script`].
 #[must_use]
 pub fn safety_twiml(main: &str, from: &PoolNumber, stop: &str) -> Option<String> {
-    let words = safety_script(main, from)?;
+    let words = xml_escape(&safety_script(main, from)?);
+    let stop = xml_escape(stop);
     Some(format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather input=\"dtmf\" \
          numDigits=\"1\" timeout=\"5\" action=\"{stop}\"><Say>{words}</Say></Gather><Hangup/>\
@@ -413,11 +417,11 @@ pub async fn place_safety_call<V: VoiceAdapter>(
 
 /// The safety call's plan (CALL-022, OPS-028, D-2762, D-2771): [`safety_twiml`] with its `Gather`
 /// posting to the absolute [`SAFETY_KEY_PATH`] URL (inline TwiML has no URL to resolve a relative
-/// one against; `&` written `&amp;` in the attribute), progress and detection to
+/// one against; [`safety_twiml`] writes its `&` as `&amp;` in the attribute), progress and detection to
 /// [`SAFETY_STATUS_PATH`], both with [`SafetyCall::query`]. `None` as for [`safety_twiml`].
 fn safety_plan<V>(dialer: &SafetyDialer<'_, V>, call: &SafetyCall) -> Option<CallPlan> {
     let (base, query) = (dialer.public_base, call.query());
-    let stop = format!("{base}{SAFETY_KEY_PATH}?{}", query.replace('&', "&amp;"));
+    let stop = format!("{base}{SAFETY_KEY_PATH}?{query}");
     let twiml = safety_twiml(dialer.main, dialer.from, &stop)?;
     let status = format!("{base}{SAFETY_STATUS_PATH}?{query}");
     Some(CallPlan::new(SecretString::from(twiml), status)?.detecting_machine())
@@ -682,11 +686,8 @@ pub fn owner_bridge_twiml(
     if !(8..=15).contains(&digits.len()) || !digits.bytes().all(|b| b.is_ascii_digit()) {
         return None;
     }
-    let from = from.as_str();
-    let words = safety_words
-        .replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;");
+    let from = xml_escape(from.as_str());
+    let words = xml_escape(safety_words);
     Some(SecretString::from(format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>{words}</Say>\
          <Dial callerId=\"{from}\" record=\"do-not-record\"><Number>{to}</Number></Dial>\
