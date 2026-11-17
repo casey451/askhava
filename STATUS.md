@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T20:40:53Z by runner 2e3965ee9584 (actions).
+Updated 2026-11-17T20:41:09Z by runner 2e3965ee9584 (actions).
 
 **Building: T594 in progress since 19:39Z; 408 of 570 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-17T20:40:53Z by runner 2e3965ee9584 (actions).
 - **Lane:** lane 7: T594 claimed 19:39Z, lease until 23:30Z
 - **Week:** 29% used, 135.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:40Z, 0 min before this update
-- **Keeper:** last ran 20:40Z, next wake 23:33Z
+- **Keeper:** last ran 20:41Z, next wake 23:33Z
 
 ## Needs attention
 - BLOCKED T115: plan gap reported: PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing in `package.json`/`package-lock.json` can fix it; the smallest plan change is a harness task that adds a reviewed audit exception for this advisory to `scripts/prehandin.sh` and Ci's audit step.
