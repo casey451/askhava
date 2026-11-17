@@ -20,6 +20,7 @@ pub use crate::payments::{
     CHARGE_PAGE_MAX, Charge, ChargeList, ConfirmedIntent, IntentMetadata, ListedCharge,
     PaymentIntent, PaymentsAdapter, StripePayments, StripeRefund, ThreeDs, UnconfirmedIntent,
 };
+pub use crate::resend_config::ResendConfig;
 pub use crate::signatures::{
     Delivery, REJECTED_STATUS, SignatureError, VerifiedWebhook, WEBHOOK_TOLERANCE_SECS,
     WebhookVendor, check_webhook_source, refuse, verify_webhook, webhook_source_list,

@@ -13,7 +13,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::models::{
-    Actor, AuditEntry, AuditRow, Change, NewAlert, OpsError, Switch, is_code_name,
+    Actor, AuditEntry, AuditRow, Change, NewAlert, OpsError, Severity, Switch, is_code_name,
 };
 
 /// The most rows one export call returns.
@@ -111,6 +111,52 @@ pub async fn raise_alert(db: &mut PgConnection, alert: &NewAlert) -> Result<Uuid
     .fetch_one(db)
     .await
     .map_err(|_| OpsError::Database)
+}
+
+/// OPS-004, SEC-051, D-3144: raises a subject-less `kind` alert unless one of that kind with no
+/// subject is still open (unresolved), checking and raising in one transaction under an advisory
+/// lock on the kind alone, so two raises at once give one alert; returns the new alert's ID, or
+/// `None` when one was open. The subject-less twin of `raise_alert_once`, for a check that runs
+/// on a schedule (such as `messaging::check_webhook_silence`): it opens one alert while its
+/// condition lasts and a new one only after that one is resolved. [`raise_alert`] itself stays one
+/// alert per call, because each event is its own alert (TD-FEE-33, SEC-048).
+///
+/// # Errors
+///
+/// [`OpsError::NotACodeName`] (nothing is written), or [`OpsError::Database`].
+pub async fn raise_kind_once(
+    db: &mut PgConnection,
+    kind: &'static str,
+    severity: Severity,
+) -> Result<Option<Uuid>, OpsError> {
+    let alert = NewAlert {
+        kind,
+        severity,
+        subject: None,
+    };
+    let mut tx = db.begin().await.map_err(|_| OpsError::Database)?;
+    let key = format!("ops.alert_kind:{kind}");
+    sqlx::query_scalar!(
+        r#"SELECT 1 AS "locked!" FROM (SELECT pg_advisory_xact_lock(hashtextextended($1::text, 21))) AS lock"#,
+        key,
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    let open = sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM ops.alert WHERE kind = $1 AND subject_kind IS NULL
+           AND resolved_at IS NULL) AS "open!""#,
+        kind,
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    if open {
+        return Ok(None);
+    }
+    let id = raise_alert(&mut tx, &alert).await?;
+    tx.commit().await.map_err(|_| OpsError::Database)?;
+    Ok(Some(id))
 }
 
 /// Whether `switch` is on; a switch never set is off (OPS-003).
