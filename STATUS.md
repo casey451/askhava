@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T22:46:54Z by runner 245bd02ea33c (actions).
+Updated 2026-11-17T22:47:12Z by runner 245bd02ea33c (actions).
 
 **Building: T606 in progress since 22:20Z; 412 of 582 done; week 32% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-17T22:46:54Z by runner 245bd02ea33c (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T606 claimed 22:20Z, lease until 01:20Z
 - **Week:** 32% used, 131.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:39Z, 7 min before this update
+- **Last run:** 22:46Z, 0 min before this update
 - **Keeper:** last ran 22:39Z, next wake 01:11Z
 
 ## Needs attention
