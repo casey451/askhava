@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T02:43:34Z by runner 6ef44d5dbc0c (actions).
+Updated 2026-11-17T02:57:37Z by runner 3fc00a310d0b (actions).
 
-**Building: T107 in progress since 02:20Z; 378 of 556 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T107 in progress since 02:20Z; 378 of 557 done; week 12% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 378 of 556 build tasks (owner gates not counted)
+- **Tasks done:** 378 of 557 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:20Z; lane 2: T103 claimed 02:12Z, lease until 05:42Z; lane 3: T584 claimed 02:40Z, lease until 05:40Z; lane 4: T221 claimed 01:54Z, lease until 05:43Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
+- **Lane:** lane 1: T107 claimed 02:20Z, lease until 05:57Z; lane 2: T103 claimed 02:12Z, lease until 05:42Z; lane 3: T584 claimed 02:40Z, lease until 05:40Z; lane 4: T221 claimed 01:54Z, lease until 05:43Z; lane 7: T586 claimed 02:01Z, lease until 05:01Z
 - **Week:** 12% used, 165.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:43Z, 0 min before this update
+- **Last run:** 02:43Z, 13 min before this update
 - **Keeper:** last ran 02:28Z, next wake 04:56Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 2 problem(s) on tasks still to run (+137 on DONE tasks); first: T221: stored context_pct 10% but it measures 20%; regenerate
+- Strict plan check red: 1 problem(s) on tasks still to run (+142 on DONE tasks); first: T235: stored context_pct 6% but it measures 10%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -117,7 +117,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T107 (lease until 2026-11-17T05:20:52Z)
+- T107 (lease until 2026-11-17T05:57:37Z)
 - lane 2: T103 (lease until 2026-11-17T05:42:52Z)
 - lane 3: T584 (lease until 2026-11-17T05:40:25Z)
 - lane 4: T221 (lease until 2026-11-17T05:43:34Z)
