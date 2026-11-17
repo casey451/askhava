@@ -7,14 +7,15 @@
 //! one email per recipient through `messaging`'s account email outbox (the SEC-028 footer and the
 //! one sender), keyed by the template, the mailbox, the business and the task, so a retried or
 //! repeated task stores and sends each email once. Recipients: `backup_changed`, `sample_card` and
-//! `sample_pick` go to the payload's `to` mailboxes; `emergency_test` to the member's main address;
+//! `sample_pick` go to the payload's `to` mailboxes;
 //! `notice_address_changed` to the `old` address (SEC-024); `notice_address_returned` to the
 //! owner's main and backup addresses that may still get notices, never the returned one (BIZ-040,
 //! D-3682); `phone_linked`, `after_hours_off` and `license_change` to the owner's account address
-//! (`phone_linked` only while its member is on the team and the phone still waits, JOB-006). The
-//! rows are stored in one transaction rolled back when none is new, so a repeat keeps no second
-//! Approve link. Known gap: `emergency_test`, `after_hours_off`, `phone_linked` and
-//! `license_change` do not yet check `may_get_notices` on the main address (BIZ-040).
+//! while it may get notices, else the owner's other addresses that may (`phone_linked` only while
+//! its member is on the team and the phone still waits, JOB-006); `emergency_test` to a member's
+//! main address only while it may get notices, with no fallback (BIZ-040, BIZ-055, D-4052 B30).
+//! With no address left nothing is sent. The rows are stored in one transaction rolled back when
+//! none is new, so a repeat keeps no second Approve link.
 //! Addresses, the person's language, the linking member's name, the phone's last 4 digits and
 //! every link come through [`NoticeParts`], which the composition implements (`businesses` may not
 //! call `privacy` or `portals`; the Approve link is `portals::api::mint_action_link`'s, D-3112).
@@ -345,6 +346,10 @@ async fn plan<E, P: NoticeParts>(
         }
         _ => listed(task, spanish)?,
     };
+    let to = reachable(db, kind, owner, to).await?;
+    if to.is_empty() {
+        return Ok(None);
+    }
     Ok(Some(Planned {
         template,
         to,
@@ -408,18 +413,9 @@ async fn returned<P: NoticeParts>(
     (task, owner): (&Claimed, TeamMember),
     spanish: bool,
 ) -> Result<Option<Planned>, HandlerError> {
-    let (business, gone) = (owner.business, id(task, "mailbox")?);
-    let bad = returned_mailboxes(db, business).await.map_err(|_| FAILED)?;
-    let mut to = Vec::new();
-    for mailbox in owner_addresses(db, owner).await? {
-        let main_ok = mailbox != owner.mailbox
-            || may_get_notices(db, business, mailbox)
-                .await
-                .map_err(|_| FAILED)?;
-        if mailbox != gone && !bad.contains(&mailbox) && main_ok {
-            to.push(mailbox);
-        }
-    }
+    let gone = id(task, "mailbox")?;
+    let mut to = owner_reachable(db, owner).await?;
+    to.retain(|m| *m != gone);
     if to.is_empty() {
         return Ok(None);
     }
@@ -431,6 +427,63 @@ async fn returned<P: NoticeParts>(
         to,
         words,
     }))
+}
+
+/// BIZ-040, BIZ-055, D-4052 B30: the mailboxes `kind` may go to. `emergency_test` keeps the
+/// member's main address only while it may get notices (no fallback: a backup does not get it,
+/// BIZ-043); `after_hours_off`, `phone_linked` and `license_change` go to the owner's main address
+/// while it may get notices, else to the rest of [`owner_reachable`]; every other kind keeps `to`.
+async fn reachable(
+    db: &mut PgConnection,
+    kind: &str,
+    owner: TeamMember,
+    to: Vec<Uuid>,
+) -> Result<Vec<Uuid>, HandlerError> {
+    match kind {
+        EMERGENCY_TEST_KIND => {
+            let mut kept = Vec::new();
+            for mailbox in to {
+                if may_get_notices(db, owner.business, mailbox)
+                    .await
+                    .map_err(|_| FAILED)?
+                {
+                    kept.push(mailbox);
+                }
+            }
+            Ok(kept)
+        }
+        AFTER_HOURS_OFF_KIND | PHONE_LINKED_KIND | LICENSE_CHANGE_KIND => {
+            let all = owner_reachable(db, owner).await?;
+            Ok(if all.contains(&owner.mailbox) {
+                vec![owner.mailbox]
+            } else {
+                all
+            })
+        }
+        _ => Ok(to),
+    }
+}
+
+/// BIZ-040, BIZ-055, D-3682: the owner's addresses an account email may reach: the main one
+/// while it may get notices and the verified backup, never a returned mailbox; empty when none is
+/// left (the returned-address banner and the weekly digest still tell the owner).
+async fn owner_reachable(
+    db: &mut PgConnection,
+    owner: TeamMember,
+) -> Result<Vec<Uuid>, HandlerError> {
+    let business = owner.business;
+    let bad = returned_mailboxes(db, business).await.map_err(|_| FAILED)?;
+    let mut to = Vec::new();
+    for mailbox in owner_addresses(db, owner).await? {
+        let main_ok = mailbox != owner.mailbox
+            || may_get_notices(db, business, mailbox)
+                .await
+                .map_err(|_| FAILED)?;
+        if !bad.contains(&mailbox) && main_ok {
+            to.push(mailbox);
+        }
+    }
+    Ok(to)
 }
 
 /// The owner's main mailbox and, when verified, the owner's backup: the backup follows its main
