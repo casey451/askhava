@@ -301,7 +301,8 @@ async fn queue_all(db: &mut PgConnection, t: &Team) {
 }
 
 /// The subject and body each kind must carry and who gets it (`link` stands for the Approve link,
-/// checked by its prefix), in the owner's and the member's language.
+/// checked by its prefix), in the owner's and the member's language. The emergency test goes to
+/// nobody: `queue_all` returns the member's only (main) address first (BIZ-040, D-4052, D-4064).
 fn expected((owner_es, member_es): (bool, bool)) -> Vec<([String; 2], Vec<&'static str>)> {
     let (c, removed, offered) = LICENSE;
     let change = Reapplied {
@@ -315,7 +316,7 @@ fn expected((owner_es, member_es): (bool, bool)) -> Vec<([String; 2], Vec<&'stat
         (sample_pick_words(&time, member_es), vec![MEMBER_ADDRESS]),
         (backup_changed_words(member_es), vec![MEMBER_ADDRESS]),
         (address_changed_words(member_es), vec![OLD_ADDRESS]),
-        (emergency_test_words(member_es), vec![MEMBER_ADDRESS]),
+        (emergency_test_words(member_es), vec![]),
         (
             returned_words(owner_es, MEMBER_ADDRESS),
             vec![OWNER_ADDRESS],

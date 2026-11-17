@@ -41,6 +41,7 @@ pub mod business_signup;
 pub mod call_status;
 pub mod catalog_start;
 pub mod checkin;
+pub mod email_provider;
 pub mod inbound_retry;
 pub mod inbound_text;
 pub mod inbound_voice;

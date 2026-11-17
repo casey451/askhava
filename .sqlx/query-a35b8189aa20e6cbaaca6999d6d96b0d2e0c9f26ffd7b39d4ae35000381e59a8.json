@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.email_check (member_id, business_id, pick_alert_yes_at) SELECT id, business_id, $3 FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL ON CONFLICT (member_id) DO UPDATE SET pick_alert_yes_at = $3 WHERE businesses.email_check.business_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a35b8189aa20e6cbaaca6999d6d96b0d2e0c9f26ffd7b39d4ae35000381e59a8"
+}
