@@ -72169,7 +72169,27 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "reviewed_sha": "7339fbf848107b26dee454bbd3d85124421460fe",
+   "review_lease": {
+    "task": "T602",
+    "session": "actions-44163635770",
+    "expires": "2026-11-17T23:07:35Z",
+    "lane": "5"
+   },
+   "branch": "claude/task/T602-svix-stamp-overflow",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "a24dd09854740e2e66439d137cfe3063c4216d24",
+     "to": "7339fbf848107b26dee454bbd3d85124421460fe",
+     "main": "2e3965ee95843ee6ca080025bab0ff99897d837d",
+     "how": "hand-in",
+     "at": "2026-11-17T20:37:48Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T603",
@@ -76868,7 +76888,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T20:30:32Z",
+ "updated_at": "2026-11-17T20:37:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -76966,7 +76986,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "1455f0d6ae6f0a5fc1c41fef902d3582b3d1b642",
+ "runner_sha": "a24dd09854740e2e66439d137cfe3063c4216d24",
  "starter": "actions",
  "smoke_runs": [
   {
