@@ -40,6 +40,12 @@
 //! pick, so a rerun stores nothing more. The footer postal line reaches it through
 //! [`JobTextKeys::with_postal`]; without it the step sends nothing and logs why. A text that can
 //! go goes as above, never both.
+//!
+//! T471 (PICK-047, QH-004, D-3750): `picks` queues `pick_moved` with `{job, pick, moved, business}`
+//! when an ended pick moved to her backup. Its body is `picks::api::backup_text` with the ended
+//! business's and the backup's public names (the backup's business read through
+//! `picks::api::pick_business` from the `moved` pick); it carries no link and has no email. Like
+//! `pick_lapsed` it is exempt on an emergency job and keyed and held on the ended pick.
 
 use std::sync::Arc;
 
@@ -56,7 +62,10 @@ use askhava_messaging::api::{
     Recipient, Relation, SendWindow, enqueue_exempt, homeowner_has_email, queue_email, render,
     send_window,
 };
-use askhava_picks::api::{PICK_LAPSED_TEMPLATE, ended_businesses, lapse_plan, lapse_text};
+use askhava_picks::api::{
+    PICK_LAPSED_TEMPLATE, PICK_MOVED_TEMPLATE, backup_text, ended_businesses, lapse_plan,
+    lapse_text, pick_business,
+};
 use askhava_privacy::api::Vault;
 use askhava_quotes::api::{list_lines, page_quotes, shown_numbers};
 use jiff::Timestamp;
@@ -82,9 +91,10 @@ pub const CHECK_IN_MORE_TEMPLATE: &str = "check_in_more";
 /// Every template a `jobs.homeowner_text` event may name: JOB-010, JOB-011, JOB-012, JOB-025's
 /// closing note, TXT-042 and TXT-016 (`jobs`' `timeout_text`, `handlers` and `first_quote`), the
 /// day-3 and day-14 check-ins and the MORE list (JOB-015), the feedback request (JOB-017), the
-/// TXT-029 PROBLEM reply (JOB-016), JOB-027's close text and 72-hour question (D-1842) and
-/// PICK-046's text after a pick ended with no backup (`picks`' `pick_ended`, D-3579).
-pub const JOB_TEXT_TEMPLATES: [&str; 14] = [
+/// TXT-029 PROBLEM reply (JOB-016), JOB-027's close text and 72-hour question (D-1842),
+/// PICK-046's text after a pick ended with no backup (`picks`' `pick_ended`, D-3579) and PICK-047's
+/// after it moved to her backup (D-3750).
+pub const JOB_TEXT_TEMPLATES: [&str; 15] = [
     "no_quotes_yet",
     "closed_no_quotes",
     "closed_no_pick",
@@ -99,6 +109,7 @@ pub const JOB_TEXT_TEMPLATES: [&str; 14] = [
     UNREACHABLE_CLOSED_TEMPLATE,
     EMAILED_QUESTION_TEMPLATE,
     PICK_LAPSED_TEMPLATE,
+    PICK_MOVED_TEMPLATE,
 ];
 /// The page a template's `{link}` opens, by path prefix on the brand's domain: her quote page
 /// `/q/` for TXT-016, TXT-042 and PICK-046 (PICK-010), the private feedback page `/f/` for JOB-017 (T230,
@@ -377,14 +388,20 @@ async fn quote_link(
     Ok(page_link("q", token.as_str()))
 }
 
-/// QH-004, D-3579: PICK-046's text of a job the homeowner chose as an emergency may go outside
-/// the window; the choice is read from the job now, never from the event.
+/// QH-004, D-3579, D-3750: PICK-046's and PICK-047's texts of a job the homeowner chose as an
+/// emergency may go outside the window; the choice is read from the job now, never from the event.
 async fn exempt(db: &mut PgConnection, text: &JobText) -> Result<bool, IntakeError> {
-    if text.template != PICK_LAPSED_TEMPLATE {
+    if !per_pick(text) {
         return Ok(false);
     }
     let row = current(db, text.job).await.map_err(|_| IntakeError::Job)?;
     Ok(row.emergency)
+}
+
+/// PICK-046, PICK-047, D-3572, D-3750: a text sent once per ended pick (`pick_lapsed` and
+/// `pick_moved`): its outbox key and hold key carry the ended pick.
+fn per_pick(text: &JobText) -> bool {
+    text.template == PICK_LAPSED_TEMPLATE || text.template == PICK_MOVED_TEMPLATE
 }
 
 /// True while the job is still at the event's version (`jobs::api::text_due`).
@@ -485,7 +502,7 @@ async fn hold(
     let mut task = NewTask::new(TEXT_KIND, payload, until);
     let run = until.as_microsecond();
     let pick = id_value(&text.values, "pick")
-        .filter(|_| text.template == PICK_LAPSED_TEMPLATE)
+        .filter(|_| per_pick(text))
         .map_or_else(String::new, |p| format!(".{p}"));
     task.dedupe_key = Some(format!(
         "{TEXT_KIND}.{}.{}{pick}.{run}",
@@ -514,7 +531,7 @@ async fn queue(
     }
     let body = body_of(&mut tx, keys, text, language_from_code(language), now).await?;
     let subject: Vec<Uuid> = std::iter::once(text.job)
-        .chain(id_value(&text.values, "pick").filter(|_| text.template == PICK_LAPSED_TEMPLATE))
+        .chain(id_value(&text.values, "pick").filter(|_| per_pick(text)))
         .collect();
     let new = NewText {
         template_id: text.template,
@@ -540,7 +557,8 @@ async fn queue(
 }
 
 /// The body of `text` in `language`: the template's link, with a token issued in `tx` (SEC-037),
-/// then PICK-046's [`lapsed_body`] or the template's own [`job_text_body`].
+/// then PICK-046's [`lapsed_body`] or the template's own [`job_text_body`]; PICK-047's
+/// [`moved_body`] has no link.
 async fn body_of(
     tx: &mut PgConnection,
     keys: &JobTextKeys,
@@ -548,6 +566,9 @@ async fn body_of(
     language: Language,
     now: Timestamp,
 ) -> Result<String, IntakeError> {
+    if text.template == PICK_MOVED_TEMPLATE {
+        return moved_body(tx, text, language).await;
+    }
     let page = LINKED_TEMPLATES
         .iter()
         .find_map(|(id, page)| (*id == text.template).then_some(*page));
@@ -566,7 +587,33 @@ async fn body_of(
     }
 }
 
-/// An ID the event carries in `values` under `key` (PICK-046's `pick` and `business`).
+/// PICK-047, D-3750: `picks::api::backup_text` in `language` naming the ended pick's business
+/// (`business`) and her backup's (the `moved` pick's) by their public names.
+async fn moved_body(
+    tx: &mut PgConnection,
+    text: &JobText,
+    language: Language,
+) -> Result<String, IntakeError> {
+    let business = id_value(&text.values, "business").ok_or(IntakeError::Template)?;
+    let moved = id_value(&text.values, "moved").ok_or(IntakeError::Template)?;
+    let backup = pick_business(&mut *tx, moved)
+        .await
+        .map_err(|_| IntakeError::Database)?;
+    let names = public_names(&mut *tx, &[business, backup])
+        .await
+        .map_err(|_| IntakeError::Database)?;
+    let name = |id: Uuid| {
+        names
+            .iter()
+            .find(|(b, _)| *b == id)
+            .map(|(_, n)| n.as_str())
+            .ok_or(IntakeError::Template)
+    };
+    Ok(backup_text(name(business)?, name(backup)?, language))
+}
+
+/// An ID the event carries in `values` under `key` (PICK-046's and PICK-047's `pick` and
+/// `business`, PICK-047's `moved`).
 fn id_value(values: &Value, key: &str) -> Option<Uuid> {
     values[key].as_str().and_then(|v| Uuid::parse_str(v).ok())
 }

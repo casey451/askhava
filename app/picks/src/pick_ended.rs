@@ -9,7 +9,9 @@
 //! settled, lapsed or withdrawn meanwhile changes nothing), returns a job in Payment pending to
 //! Quotes ready (the `backup_choice` contract), moves the pick at once to the homeowner's backup
 //! (PICK-047), and with no pick then waiting returns the job from Awaiting confirm to Quotes ready.
-//! With no backup it queues one `jobs::api::TEXT_KIND` event with [`PICK_LAPSED_TEMPLATE`], the
+//! After its last job move a moved pick queues one `jobs::api::TEXT_KIND` event with
+//! [`PICK_MOVED_TEMPLATE`] (`{job, pick, moved, business}`, PICK-047's text, `backup_text`, D-3750)
+//! and with no backup it queues one with [`PICK_LAPSED_TEMPLATE`], the
 //! job's version and the IDs `{job, pick, business}` only (never a contact; `picks` holds none),
 //! at `lapse_plan`'s `send_at` (at once on an emergency job, else the next 8 a.m. at night),
 //! deduped by the pick. `intake`'s job-text sender renders `lapse_text` with her other quotes and
@@ -22,7 +24,7 @@ use askhava_jobs::api::{JobStatus, TEXT_KIND, current, move_to};
 use askhava_ops::api::Actor;
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
-use serde_json::json;
+use serde_json::{Value, json};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
@@ -34,6 +36,10 @@ use crate::status::{PickStatus, awaits_charge, awaits_confirm};
 /// The `jobs.homeowner_text` template of PICK-046's "couldn't take it this time" text; `intake`'s
 /// sender builds its words from `lapse_text` (D-3579).
 pub const PICK_LAPSED_TEMPLATE: &str = "pick_lapsed";
+
+/// The `jobs.homeowner_text` template of PICK-047's "your backup has your pick now" text;
+/// `intake`'s sender builds its words from `backup_text` (D-3750).
+pub const PICK_MOVED_TEMPLATE: &str = "pick_moved";
 
 const DB_FAILED: HandlerError = HandlerError("pick-ended database statement failed");
 
@@ -61,7 +67,8 @@ pub async fn run_pick_ended(
 
 /// FEE-018, FEE-020, FEE-041, PICK-046, PICK-047, D-3579: inside the caller's transaction, ends
 /// waiting pick `pick` as `payment_failed` at `at`, frees its job and moves it to her backup;
-/// [`Backup::NoBackup`] also queues her PICK-046 text event. A pick no longer waiting is
+/// after its last job move [`Backup::Moved`] queues her PICK-047 text event and
+/// [`Backup::NoBackup`] her PICK-046 one. A pick no longer waiting is
 /// [`Backup::Done`] with nothing changed. The job and business are read from the pick's own row,
 /// never from the event.
 ///
@@ -98,9 +105,7 @@ pub async fn pick_ended(
         )
         .await?;
     }
-    if backup == Backup::NoBackup {
-        queue_lapsed_text(tx, (job, pick, business), at).await?;
-    }
+    queue_backup_text(tx, (job, pick, business), (backup, false), at).await?;
     Ok(backup)
 }
 
@@ -163,15 +168,80 @@ pub(crate) async fn queue_lapsed_text(
     (job, pick, business): (Uuid, Uuid, Uuid),
     at: Timestamp,
 ) -> Result<(), PicksError> {
+    let values = json!({"job": job, "pick": pick, "business": business});
+    queue_pick_text(
+        tx,
+        (job, pick, business),
+        (PICK_LAPSED_TEMPLATE, values),
+        at,
+    )
+    .await
+}
+
+/// PICK-047, QH-004, D-3750: one `jobs.homeowner_text` event for [`PICK_MOVED_TEMPLATE`] after
+/// ended pick `pick` of `business` moved to her backup pick `moved`, with those IDs and the job's
+/// only, at the job's version now (so the caller queues it after its own last job move), due at
+/// `lapse_plan`'s `send_at` as PICK-046's is (at once on an emergency job, else under quiet
+/// hours); deduped by the ended pick. `intake` reads both businesses' public names at send time.
+pub(crate) async fn queue_moved_text(
+    tx: &mut PgConnection,
+    (job, pick, moved, business): (Uuid, Uuid, Uuid, Uuid),
+    at: Timestamp,
+) -> Result<(), PicksError> {
+    let values = json!({"job": job, "pick": pick, "moved": moved, "business": business});
+    queue_pick_text(tx, (job, pick, business), (PICK_MOVED_TEMPLATE, values), at).await
+}
+
+/// PICK-047, PICK-046, CON-029, D-3750: her text after ended pick `pick` of `business` on `job`
+/// was decided: [`queue_moved_text`] on [`Backup::Moved`], [`queue_lapsed_text`] on
+/// [`Backup::NoBackup`] unless the job is `paused`, nothing on [`Backup::Done`]. Every caller
+/// runs it after its own last job move.
+///
+/// # Errors
+///
+/// [`PicksError::Job`] or [`PicksError::Database`].
+pub(crate) async fn queue_backup_text(
+    tx: &mut PgConnection,
+    (job, pick, business): (Uuid, Uuid, Uuid),
+    (backup, paused): (Backup, bool),
+    at: Timestamp,
+) -> Result<(), PicksError> {
+    match backup {
+        Backup::Moved(moved) => queue_moved_text(tx, (job, pick, moved, business), at).await,
+        Backup::NoBackup if !paused => queue_lapsed_text(tx, (job, pick, business), at).await,
+        Backup::NoBackup | Backup::Done => Ok(()),
+    }
+}
+
+/// One `jobs.homeowner_text` event of `template` with `values` (IDs only) at the job's version
+/// now, due at `lapse_plan`'s `send_at`, deduped by the ended pick and the template.
+async fn queue_pick_text(
+    tx: &mut PgConnection,
+    (job, pick, business): (Uuid, Uuid, Uuid),
+    (template, values): (&str, Value),
+    at: Timestamp,
+) -> Result<(), PicksError> {
     let row = current(tx, job).await.map_err(|_| PicksError::Job)?;
     let plan = lapse_plan((at, row.emergency), business, &[]);
     let payload = json!({"job": job, "version": row.version,
-        "template": PICK_LAPSED_TEMPLATE,
-        "values": {"job": job, "pick": pick, "business": business}});
+        "template": template, "values": values});
     let mut task = NewTask::new(TEXT_KIND, payload, plan.send_at);
-    task.dedupe_key = Some(format!("{TEXT_KIND}.{pick}.{PICK_LAPSED_TEMPLATE}"));
+    task.dedupe_key = Some(format!("{TEXT_KIND}.{pick}.{template}"));
     enqueue(tx, &task)
         .await
         .map_err(|_| PicksError::Database)
         .map(drop)
+}
+
+/// PICK-047, D-3750: the business of pick `pick`, read from its own row (`intake` names the
+/// backup's business in PICK-047's text by it; the pick ID only, never a contact).
+///
+/// # Errors
+///
+/// [`PicksError::Database`], also for an unknown pick.
+pub async fn pick_business(db: &mut PgConnection, pick: Uuid) -> Result<Uuid, PicksError> {
+    sqlx::query_scalar!("SELECT business_id FROM picks.pick WHERE id = $1", pick)
+        .fetch_one(db)
+        .await
+        .map_err(|_| PicksError::Database)
 }
