@@ -6562,3 +6562,4 @@
 - 2026-11-17T17:03:18Z runner 73cd87129b4f (actions): {}
 - 2026-11-17T17:03:41Z runner 73cd87129b4f (actions): {}
 - 2026-11-17T17:04:25Z runner ef5618258f95 (actions): {"T596": "None -> QUEUED", "T597": "None -> QUEUED", "T599": "None -> QUEUED", "T600": "None -> QUEUED", "T601": "None -> QUEUED", "T602": "None -> QUEUED", "T603": "None -> QUEUED", "T604": "None -> QUEUED"}
+- 2026-11-17T17:04:57Z runner ef5618258f95 (actions): {"T599": "QUEUED -> IN_PROGRESS"}; T599 estimated 979k tokens (calibrated); week has 144.1M left (no five-hour budget, D-3056) after 1.9M still running in another lane (session_reading 2026-11-17T16:52:53Z (week)); running to the limit (model window, D-2225), claimed

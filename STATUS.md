@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T17:04:25Z by runner ef5618258f95 (actions).
+Updated 2026-11-17T17:04:57Z by runner ef5618258f95 (actions).
 
 **Building: T491 in progress since 15:41Z; 402 of 569 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 402 of 569 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T491 claimed 15:41Z, lease until 20:03Z; lane 2: T104 claimed 16:53Z, lease until 19:53Z
-- **Week:** 24% used, 144.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:03Z, 0 min before this update
+- **Lane:** lane 1: T491 claimed 15:41Z, lease until 20:03Z; lane 2: T104 claimed 16:53Z, lease until 19:53Z; lane 3: T599 claimed 17:04Z, lease until 20:04Z
+- **Week:** 24% used, 144.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:03Z, 1 min before this update
 - **Keeper:** last ran 16:53Z, next wake 19:29Z
 
 ## Needs attention
@@ -123,7 +123,7 @@ Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decisio
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T16:52:53Z (week)): week: 49.3M used, 144.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T04:01:40Z.
+- Pacing (session_reading 2026-11-17T16:52:53Z (week)): week: 49.9M used, 144.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T10:17:05Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -140,6 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T491 (lease until 2026-11-17T20:03:41Z)
 - lane 2: T104 (lease until 2026-11-17T19:53:13Z)
+- lane 3: T599 (lease until 2026-11-17T20:04:24Z)
 
 ## Last usage reading
 - {"task": "T104", "at": "2026-11-17T16:52:15Z", "cache_creation_input_tokens": 195156, "input_tokens": 132, "output_tokens": 47964, "cache_read_input_tokens": 3312201}
