@@ -3149,5 +3149,6 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - No more early-joiner price lock anywhere: old decisions that mentioned a lock now show that part struck when they are pasted into a task's instructions, and the legal-documents check now fails any draft that offers a price lock, a "founding rate" or similar.
 - Four new fix tasks: texting CLOSE will actually close a job (T570); pressing 9 on the safety call can no longer be lost to a database hiccup, and the safety call cannot be turned on before this fix (T571); a child under 13 who gave a name and address has them erased (T572); texts to businesses will actually be sent, before business texting is switched on (T573).
+- When a child under 13 is stopped, the name and address are also erased from any earlier job from the same phone, even one a business already paid to be introduced to: the rule for children has no exception.
 - Your two remaining questions from the build now say Laftly and laftly.com instead of the old name.
 - Nothing needs you now.
