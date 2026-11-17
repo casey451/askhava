@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T17:57:13Z by runner db201a48b809 (actions).
+Updated 2026-11-17T18:08:47Z by runner 575b42f0c7a4 (actions).
 
 **Building: T115 in progress since 17:27Z; 403 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 403 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 7: T115 claimed 17:27Z, lease until 20:27Z
+- **Lane:** lane 7: T115 claimed 17:27Z, lease until 21:08Z
 - **Week:** 25% used, 142.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:57Z, 0 min before this update
+- **Last run:** 17:57Z, 11 min before this update
 - **Keeper:** last ran 17:57Z, next wake 20:30Z
 
 ## Needs attention
@@ -86,7 +86,6 @@ Updated 2026-11-17T17:57:13Z by runner db201a48b809 (actions).
 | T102 | site: home and how-it-works pages with the footer, tagline,  | resync | 1 | 59 min | 18:42Z |  |
 | T166 | site: self-hosted Gelasio and DM Sans fonts and the design-t | done | 1 | 52 min | 18:17Z |  |
 | T105 | ops: High and critical alerts with their automatic acknowled | done | 3 | 51 min | 18:12Z | merging main into the reviewed head conflicts in app/ops/src/api.rs; a resync merges it in on this attempt (D-891) |
-| T559 | Tests (harness): wait for the code step's autofocus and the  | done | 1 | 64 min | 18:02Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -138,7 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 7: T115 (lease until 2026-11-17T20:27:20Z)
+- lane 7: T115 (lease until 2026-11-17T21:08:47Z)
 
 ## Last usage reading
 - {"task": "T596", "at": "2026-11-17T17:49:19Z", "output_tokens": 47905, "input_tokens": 88, "cache_read_input_tokens": 2836773, "cache_creation_input_tokens": 160807}
