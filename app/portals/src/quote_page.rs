@@ -45,6 +45,7 @@ use askhava_licensing::api::{CardLanguage, CardLine};
 use askhava_picks::api::accepted_pick;
 use askhava_quotes::api::{
     AcceptedQuote, PageQuote, Price, QuotesError, accepted_quote, page_quotes, quoted_prices,
+    shown_numbers,
 };
 use axum::Router;
 use axum::extract::{FromRef, Path, RawQuery, Request, State};
@@ -55,6 +56,7 @@ use axum::routing::{get, post};
 use axum_extra::extract::cookie::CookieJar;
 use jiff::{SignedDuration, Timestamp};
 use sqlx::PgPool;
+use sqlx::types::Uuid;
 
 use crate::confirm_pay::money;
 use crate::pick_flow::tier_value;
@@ -95,6 +97,40 @@ pub fn number_quotes(mut quotes: Vec<PageQuote>) -> Vec<Numbered> {
             quote,
         })
         .collect()
+}
+
+/// PICK-008, D-2632, D-3878: `quotes` numbered by the shown number each kept since it was first
+/// shown (`shown`, `quotes::api::shown_numbers`' `(number, business)`), lowest first, so a
+/// withdrawn or unavailable quote keeps its place and number and the page, its packages and its
+/// pick forms agree with the LIST and the text picks. A quote with no shown number (none: every
+/// confirmed quote gets one, migration 0202) is left off.
+#[must_use]
+pub fn number_shown(quotes: Vec<PageQuote>, shown: &[(u32, Uuid)]) -> Vec<Numbered> {
+    let mut numbered: Vec<Numbered> = quotes
+        .into_iter()
+        .filter_map(|quote| {
+            let (n, _) = shown.iter().find(|(_, b)| *b == quote.business)?;
+            let number = usize::try_from(*n).ok()?;
+            Some(Numbered { number, quote })
+        })
+        .collect();
+    numbered.sort_by_key(|q| q.number);
+    numbered
+}
+
+/// PICK-008, D-2632, D-3878: `job`'s page quotes numbered by their shown numbers
+/// ([`number_shown`]).
+///
+/// # Errors
+///
+/// `page_quotes`' or `shown_numbers`' [`QuotesError`].
+pub(crate) async fn shown_page(
+    db: &mut sqlx::PgConnection,
+    job: Uuid,
+) -> Result<Vec<Numbered>, QuotesError> {
+    let quotes = page_quotes(db, job).await?;
+    let shown = shown_numbers(db, job).await?;
+    Ok(number_shown(quotes, &shown))
 }
 
 /// PICK-011: whether a token stops working at `now`: only once the job is final and 30 days have
@@ -515,8 +551,9 @@ async fn load(
         && paused_by_homeowner(&mut db, job)
             .await
             .map_err(|_| PageError::Read)?;
-    let quotes = page_quotes(&mut db, job).await;
-    let quotes = number_quotes(quotes.map_err(|_| PageError::Read)?);
+    let quotes = shown_page(&mut db, job)
+        .await
+        .map_err(|_| PageError::Read)?;
     let pick_open = status.takes_pick();
     let tiers = if pick_open {
         quote_packages(&mut db, job, &quotes)

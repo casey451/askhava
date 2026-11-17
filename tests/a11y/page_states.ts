@@ -394,6 +394,7 @@ const SITE_PAGE_STATES: readonly PageState[] = [
   ["/business", "business page", "You quote once. No bidding rounds, no paid placement.", "Para propietarios"],
   ["/es/business", "business page in Spanish", "Sin rondas de ofertas, sin posiciones pagadas.", "Homeowners"],
   ["/business/help", "business help page", "Safety when you work alone", "Para propietarios"],
+  ["/request", "request page and web chat, first question", "What job do you need done?", "Your chat with"],
 ].map(([route = "", name = "", shows = "", hides = ""]) => ({ route, name, shows, hides, sql: "", statusRegions: [] }));
 const OWNER_SIGNIN_ROUTE = "/owner/sign-in";
 const OWNER_STEP_UP_ROUTE = "/owner/step-up";
@@ -454,6 +455,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: "/business", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/business") },
   { route: "/es/business", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/es/business") },
   { route: "/business/help", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/business/help") },
+  { route: "/request", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/request") },
   { route: OWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: OWNER_SIGNIN_STATES },
   { route: OWNER_STEP_UP_ROUTE, seed: portalSeed(false), states: OWNER_STEP_UP_STATES },
 ];

@@ -282,12 +282,8 @@ fn methods_in(rest: &str) -> BTreeSet<&'static str> {
         .collect()
 }
 
-/// The route table: each path with the methods it is served on (none: declared, not served yet).
-fn route_table() -> BTreeMap<String, BTreeSet<&'static str>> {
-    routes().into_iter().map(|(p, (m, _))| (p, m)).collect()
-}
-
-/// [`route_table`] with, for each path, whether a `.route(` call of the `site` module serves it.
+/// The route table: each path with the methods it is served on (none: declared, not served yet)
+/// and whether a `.route(` call of the `site` module serves it.
 fn routes() -> BTreeMap<String, (BTreeSet<&'static str>, bool)> {
     let sources = app_sources();
     let consts = constants(&sources);
@@ -718,8 +714,8 @@ async fn td_sec_01_every_route_by_every_actor(pool: PgPool) {
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn sec_048_every_refusal_is_a_security_event(pool: PgPool) {
     let w = world(&pool).await;
-    let posts = route_table().into_iter().filter(|(path, methods)| {
-        methods.contains("post") && matches!(door(path, false), Door::Link)
+    let posts = routes().into_iter().filter(|(path, (methods, site))| {
+        methods.contains("post") && matches!(door(path, *site), Door::Link)
     });
     for (path, _) in posts {
         for who in &w.who {
@@ -779,4 +775,9 @@ fn td_sec_61_yes_rows_and_new_door_rules() {
         assert!(!allowed(Door::ActionLink, actor));
         assert_eq!(allowed(Door::Owner, actor), actor == Actor::Owner);
     }
+    assert_eq!(
+        door("/request", true),
+        Door::Public,
+        "the site's request and chat page is the Public door (D-3882)"
+    );
 }

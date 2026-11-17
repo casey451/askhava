@@ -617,6 +617,8 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /events | site | yes |
 | GET | /services | site | yes |
 | GET | /coverage | site | yes |
+| GET | /request | site | yes |
+| POST | /request | site | yes |
 | GET | /business | site | yes |
 | GET | /es/business | site | yes |
 | GET | /business/help | site | yes |
