@@ -146,6 +146,7 @@ pub use crate::released_view::{Seat, ViewAnswer, ViewFacts, may_view, released_v
 pub use crate::scorecard_inputs::{confirmed_share, diagnostic_share, picked_requests};
 pub use crate::service::FEE_FACTS_ALERT;
 pub use crate::service::PACKAGE_TEMPLATE;
+pub use crate::service::bound_pick;
 pub use crate::service::page_pick_tier;
 pub use crate::service::{
     CONFIRMED_TEMPLATE, CodeCheck, CodeSent, CodeTo, DONE_TEMPLATE, NO_QUOTE_TEMPLATE,

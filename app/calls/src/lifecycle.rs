@@ -36,7 +36,7 @@ use sqlx::{Connection, PgConnection};
 
 use crate::models::CallsError;
 use crate::pins::stored_pin;
-use crate::routing::Party;
+use crate::routing::{Party, xml_escape};
 
 /// CALL-009: a line closes this many days after it opened.
 pub const LINE_DAYS: i64 = 30;
@@ -316,14 +316,14 @@ pub async fn request_link(
 
 /// CALL-020, D-227: the whole answer to a call to the Ask Hava number: the greeting in English,
 /// then Spanish, then a hang-up. No `Record`, `Dial` or voicemail verb, so nothing is recorded and
-/// no call is forwarded.
+/// no call is forwarded. Each greeting is XML-escaped (D-4052).
 #[must_use]
 pub fn greeting_twiml() -> String {
     format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response>\
          <Say language=\"en-US\">{}</Say><Say language=\"es-MX\">{}</Say>\
          <Hangup/></Response>",
-        greeting_en(),
-        greeting_es()
+        xml_escape(&greeting_en()),
+        xml_escape(&greeting_es())
     )
 }
