@@ -6733,3 +6733,4 @@
 - 2026-11-17T23:00:53Z runner 2a27c184336a (actions): {}
 - 2026-11-17T23:05:21Z runner 2a27c184336a (actions): {"T605": "MERGE_PENDING -> DONE"}
 - 2026-11-17T23:05:39Z runner 2a27c184336a (actions): {"T203": "QUEUED -> IN_PROGRESS"}; T203 estimated 567k tokens (calibrated); week has 129.5M left (no five-hour budget, D-3056) after 517k still running in another lane (session_reading 2026-11-17T23:00:34Z (week)); running to the limit (model window, D-2225), claimed
+- 2026-11-17T23:08:39Z runner b1fe64c6fb5a (actions): {"T203": "IN_PROGRESS -> BLOCKED"}
