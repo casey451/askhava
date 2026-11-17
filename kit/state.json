@@ -71289,7 +71289,27 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "reviewed_sha": "7ba8016f534b7620282d5c1945a5b66f31ba45ee",
+   "review_lease": {
+    "task": "T599",
+    "session": "actions-44130492108",
+    "expires": "2026-11-17T20:04:24Z",
+    "lane": "3"
+   },
+   "branch": "claude/task/T599-lapsed-email-amount-check",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "c761a31611b443f7650b5200ffb90e62cd860c55",
+     "to": "7ba8016f534b7620282d5c1945a5b66f31ba45ee",
+     "main": "db201a48b80932499273435bb66aa4e1ffcce767",
+     "how": "hand-in",
+     "at": "2026-11-17T17:36:57Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T600",
@@ -75870,7 +75890,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T17:36:36Z",
+ "updated_at": "2026-11-17T17:37:00Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -75968,7 +75988,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3b1f28c2022d3a06cefd5e99be6203001699996b",
+ "runner_sha": "c761a31611b443f7650b5200ffb90e62cd860c55",
  "starter": "actions",
  "smoke_runs": [
   {

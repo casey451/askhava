@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T17:36:36Z by runner 3b1f28c2022d (actions).
+Updated 2026-11-17T17:37:00Z by runner c761a31611b4 (actions).
 
 **Building: T491 in progress since 15:41Z; 403 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -92,8 +92,8 @@ Updated 2026-11-17T17:36:36Z by runner 3b1f28c2022d (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 343 of 733 (46.8%) · partial 316 · unstarted 74
-**Tasks merged (throughput only):** 403 of 561
+**Requirements verified:** 336 of 733 (45.8%) · partial 323 · unstarted 74
+**Tasks merged (throughput only):** 403 of 569
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -102,14 +102,14 @@ Updated 2026-11-17T17:36:36Z by runner 3b1f28c2022d (actions).
 | businesses | 23 | 33 | 2 | 58 |
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 19 | 1 | 35 |
-| fees | 27 | 24 | 1 | 52 |
-| intake | 27 | 16 | 0 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
+| fees | 24 | 27 | 1 | 52 |
+| intake | 26 | 17 | 0 | 43 |
+| job-cards | 18 | 6 | 0 | 24 |
 | licensing | 40 | 8 | 0 | 48 |
 | lifecycle | 27 | 1 | 0 | 28 |
 | messaging | 24 | 19 | 2 | 45 |
 | ops-recovery | 1 | 27 | 26 | 54 |
-| privacy | 15 | 14 | 2 | 31 |
+| privacy | 14 | 15 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 37 | 19 | 0 | 56 |
 | recurring | 8 | 1 | 2 | 11 |
