@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T20:39:13Z by runner ef83f179555e (actions).
+Updated 2026-11-17T20:39:28Z by runner 805fa0d42eef (actions).
 
 **Building: T594 in progress since 19:39Z; 408 of 570 done; week 29% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-17T20:39:13Z by runner ef83f179555e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 7: T594 claimed 19:39Z, lease until 23:30Z
 - **Week:** 29% used, 135.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:38Z, 0 min before this update
-- **Keeper:** last ran 20:38Z, next wake 23:22Z
+- **Last run:** 20:39Z, 0 min before this update
+- **Keeper:** last ran 20:39Z, next wake 23:33Z
 
 ## Needs attention
 - BLOCKED T115: plan gap reported: PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing in `package.json`/`package-lock.json` can fix it; the smallest plan change is a harness task that adds a reviewed audit exception for this advisory to `scripts/prehandin.sh` and Ci's audit step.
 Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=4.0.7, latest published is 4.0.7, no patched version, so no override works. Path: typescript-eslint@8.71.2 -> @typescript-eslint/typescript-estree@8.71.2 -> tinyglobby@0.2.17 -> picomatch@4.0.7 (also via f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T115 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 13 problem(s) on tasks still to run (+174 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
