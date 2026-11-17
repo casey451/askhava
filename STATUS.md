@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T12:17:24Z by runner 33f876050cc0 (actions).
+Updated 2026-11-17T12:18:30Z by runner 7a22e40cdfb5 (actions).
 
 **Building: T204 in progress since 12:04Z; 395 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-17T12:17:24Z by runner 33f876050cc0 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T204 claimed 12:04Z, lease until 15:04Z; lane 4: T113 claimed 12:11Z, lease until 15:11Z
 - **Week:** 19% used, 154.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:11Z, 5 min before this update
+- **Last run:** 12:17Z, 0 min before this update
 - **Keeper:** last ran 11:58Z, next wake 12:18Z
 
 ## Needs attention
 - PLAN GAP T363 (since 2026-11-17T12:01:54Z, no attempt used; a plan change fixes it): T363: dependency T441 is DONE but its owned file tests/integration/tests/pick_bound_forms.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 6 problem(s) on tasks still to run (+151 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +22,7 @@ Updated 2026-11-17T12:17:24Z by runner 33f876050cc0 (actions).
 | T441 | portals: the quote page shows the kept number, and the pick  | done | 1 | 74 min | 11:32Z |  |
 | T572 | intake: the under-13 stop also clears the vault contact's na | MERGE_PENDING | 1 | 48 min | 11:31Z |  |
 | T446 | intake and messaging: PICK-046's "couldn't take it" notice g | MERGE_PENDING | 1 | 87 min | 11:29Z |  |
-| T202 | site: Spanish pages, the business page blocks and the requir | MERGE_PENDING | 2 | 56 min | 11:26Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
+| T202 | site: Spanish pages, the business page blocks and the requir | resync | 2 | 56 min | 11:26Z | merging main into the reviewed head conflicts in app/site/src/api.rs, docs/architecture.md, tests/a11y/page_states.ts; a |
 | T112 | Draft the privacy policy and SMS terms | done | 3 | 66 min | 11:10Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
 | T489 | site and server: the web chat and request pages with the con | done | 3 | 46 min | 11:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | check_failed | 1 | 35 min | 10:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
