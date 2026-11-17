@@ -4,7 +4,7 @@ GitHub keeps at most 10 GB of Actions cache per repository and evicts entries on
 backup job used to save the worker's whole `target/debug` with the registry (about 3.4 GB) once per commit of
 `main`, and a job that compiled the smoke saved `target/smoke` (about 3.9 GB), so each merge added about 7.3 GB
 and pushed `Ci`'s `main`-only entries (D-2782) out within hours: on November 12, 0 of 36 Rust restores and 0 of
-12 sqlx-cli restores in 12 `ci` runs hit. `backup-runner.yml` calls this module at four points:
+12 sqlx-cli restores in 12 `ci` runs hit. `backup-runner.yml` calls this module at five points:
 
 - `seed`: after the smoke warm-up and before the session, give the worker's empty `target/debug` the smoke build's
   dependency artifacts (`github_env.seed_files`, the set the smoke seed copies the other way, D-1890). A fresh
@@ -14,6 +14,10 @@ and pushed `Ci`'s `main`-only entries (D-2782) out within hours: on November 12,
 - `drop`: delete a family's older entries (key prefix, created before the job started) just before the job saves
   its newer one, so the family holds one entry; it answers `save=no` when another job has saved a newer entry of
   the family since this one started, so two lanes never keep two smoke entries.
+- `bound`: before the smoke entry is saved, delete its profile-level `incremental` folders and answer `save=no`
+  when `target/smoke` is still over `SMOKE_CAP` or cannot be measured (D-4071: a 46 GB smoke tree filled the
+  runner's root disk). The drop step still deletes the old entry, so the next job builds the smoke cold and saves
+  a fresh, small one: the cap heals itself at the cost of one cold smoke build.
 
 Standard library only. Only `key=value` lines go to standard output (the workflow appends them to
 `$GITHUB_OUTPUT`, which refuses any other line); messages go to standard error. Nothing here ever fails the
@@ -36,6 +40,8 @@ from runner.github_env import SEED_MARGIN, _member_names, _tree_size, copy_seed,
 Run = Callable[[list[str]], tuple[int, str]]
 PAGE = 100  # GitHub's largest page of the cache list
 STAMP = 19  # the characters of an ISO timestamp up to the second ("2026-11-12T04:05:06")
+GIB = 1 << 30
+SMOKE_CAP = 24 * GIB  # about 5.1 GB compressed at the observed 4.7 to 1, inside D-3143's 10 GB budget (D-4071)
 
 
 def run_command(args: list[str]) -> tuple[int, str]:
@@ -150,6 +156,37 @@ def drop(repo: str, prefix: str, before: str, run: Run = run_command) -> str:
     return "save=yes"
 
 
+def incremental_folders(smoke: Path) -> list[Path]:
+    """The profile-level `incremental` folders of `smoke` (`<profile>/incremental` and
+    `<triple>/<profile>/incremental`, a target triple always holding a `-`, so a profile's own `build/incremental`
+    is never taken); links are never followed or deleted."""
+    found = [*smoke.glob("*/incremental"), *(p for p in smoke.glob("*/*/incremental") if "-" in p.parent.parent.name)]
+    return [p for p in found if p.is_dir() and not p.is_symlink()]
+
+
+def bound(smoke: Path, cap: int = SMOKE_CAP) -> str:
+    """Keep the smoke entry under `cap` bytes (D-4071): delete `smoke`'s profile-level `incremental` folders,
+    then `save=yes` when the tree's apparent size is at most `cap`, else `save=no` with a warning. A tree that
+    is no folder or cannot be measured gives `save=no` (fail closed: nothing unmeasured is saved)."""
+    if not smoke.is_dir():
+        note(f"smoke build not measured: {smoke} is no folder; not saved")
+        return "save=no"
+    try:
+        before = _tree_size([smoke])
+        for folder in incremental_folders(smoke):
+            shutil.rmtree(folder, ignore_errors=True)
+        after = _tree_size([smoke])
+    except OSError as exc:
+        note(f"smoke build not measured: {str(exc)[:200]}; not saved")
+        return "save=no"
+    note(f"smoke build: {before} bytes before, {after} bytes after deleting its incremental folders")
+    if after <= cap:
+        return "save=yes"
+    note(f"::warning::smoke build entry not saved: {after / GIB:.1f} GiB ({after} bytes) is over the cap of "
+         f"{cap / GIB:.1f} GiB ({cap} bytes, D-4071); the next job builds the smoke cold")
+    return "save=no"
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python3 -m runner.cache")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -163,6 +200,9 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--prefix", required=True)
     d.add_argument("--before", required=True)
     d.add_argument("--repo", default="")
+    b = sub.add_parser("bound")
+    b.add_argument("--smoke", type=Path, default=Path("target/smoke"))
+    b.add_argument("--cap-gib", type=float, default=SMOKE_CAP / GIB)
     args = ap.parse_args(argv)
     if args.cmd == "seed":
         try:
@@ -171,6 +211,8 @@ def main(argv: list[str] | None = None) -> int:
             note(f"worker build not seeded: {str(exc)[:200]}")
     elif args.cmd == "clear":
         print(clear(args.target))
+    elif args.cmd == "bound":
+        print(bound(args.smoke, int(args.cap_gib * GIB)))
     elif not args.repo or len(args.before) < STAMP:
         note("cache entries not dropped: no repository or start time")
         print("save=yes")
