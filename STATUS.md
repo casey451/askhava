@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-17T21:15:39Z by runner 932e38ca7258 (actions).
+Updated 2026-11-17T21:24:29Z by runner 2c331d907e11 (actions).
 
-**Building: T104 in progress since 20:59Z; 410 of 570 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T603 in progress since 21:24Z; 410 of 570 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 410 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T104 claimed 20:59Z, lease until 23:59Z
-- **Week:** 30% used, 134.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:15Z, 0 min before this update
+- **Lane:** lane 3: T603 claimed 21:24Z, lease until 00:24Z; lane 4: T104 claimed 20:59Z, lease until 23:59Z
+- **Week:** 30% used, 133.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 21:15Z, 8 min before this update
 - **Keeper:** last ran 21:15Z, next wake 00:02Z
 
 ## Needs attention
 - BLOCKED T115: plan gap reported: PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing in `package.json`/`package-lock.json` can fix it; the smallest plan change is a harness task that adds a reviewed audit exception for this advisory to `scripts/prehandin.sh` and Ci's audit step.
 Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=4.0.7, latest published is 4.0.7, no patched version, so no override works. Path: typescript-eslint@8.71.2 -> @typescript-eslint/typescript-estree@8.71.2 -> tinyglobby@0.2.17 -> picomatch@4.0.7 (also via f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T115 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 11 problem(s) on tasks still to run (+168 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+175 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,7 +86,6 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 | T320 | ops: a check that runs on a schedule raises its alert once w | check_failed | 1 | 39 min | 21:46Z |  |
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | BLOCKED | 1 | 5 min | 21:38Z |  |
 | T111 | Draft homeowner and business terms with every required claus | QUEUED | 2 | 66 min | 21:28Z |  |
-| T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 1 | 14 min | 21:22Z | PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `paymen |
 
 ### Plan and harness merges on main
 - none
@@ -122,7 +121,7 @@ Evidence (confirmed by reviewer a72d87631599620e5): advisory covers picomatch <=
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T20:51:12Z (week)): week: 59.1M used, 134.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T07:39:06Z.
+- Pacing (session_reading 2026-11-17T21:15:25Z (week)): week: 60.7M used, 133.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T07:49:40Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -138,6 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 3: T603 (lease until 2026-11-18T00:24:10Z)
 - lane 4: T104 (lease until 2026-11-17T23:59:59Z)
 
 ## Last usage reading
