@@ -1,26 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-17T12:18:53Z by runner 7a22e40cdfb5 (actions).
+Updated 2026-11-17T12:21:12Z by runner 4fc6998df41d (actions).
 
 **Building: T202 in progress since 12:18Z; 395 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 395 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T202 claimed 12:18Z, lease until 15:18Z; lane 3: T204 claimed 12:04Z, lease until 15:04Z; lane 4: T113 claimed 12:11Z, lease until 15:11Z
+- **Lane:** lane 2: T202 claimed 12:18Z, lease until 15:18Z; lane 3: T204 claimed 12:04Z, lease until 15:04Z
 - **Week:** 19% used, 154.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:17Z, 1 min before this update
+- **Last run:** 12:19Z, 2 min before this update
 - **Keeper:** last ran 11:58Z, next wake 12:18Z
 
 ## Needs attention
+- BLOCKED T113: plan gap reported: PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked == len(check_legal_docs.DOCUMENTS) == 10`. T113 must list `twilio-campaign.md` in `DOCUMENTS` (prompt Goal, line 9), which makes the count 11, and T113 does not own that file. Smallest plan change: let T113 own that one line and change `== 10` to `== 11` (or drop the literal). Evidence: bash scripts/smoke.sh red with exactly one failure: tests/docs/test_terms_clauses.py::test_spanish_summary_is_listed_as_a_business_document - AssertionError 11 == 10 (1 failed, 3154 passed, 11 ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T113 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T363 (since 2026-11-17T12:01:54Z, no attempt used; a plan change fixes it): T363: dependency T441 is DONE but its owned file tests/integration/tests/pick_bound_forms.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T479 (since 2026-11-17T12:18:10Z, no attempt used; a plan change fixes it): T479: dependency T489 is DONE but its owned file app/site/src/chat.rs is not on main; T479: dependency T489 is DONE but its owned file app/site/templates/request.html is not on main; T479: dependency T489 is DONE but its owned file app/server/src/chat_codes.rs is not on main
 - PLAN GAP T594 (since 2026-11-17T12:18:10Z, no attempt used; a plan change fixes it): T594: dependency T489 is DONE but its owned file app/site/src/chat.rs is not on main; T594: dependency T489 is DONE but its owned file app/site/templates/request.html is not on main; T594: dependency T489 is DONE but its owned file app/server/src/chat_codes.rs is not on main
-- Strict plan check red: 5 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+150 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T113 | Draft the Twilio campaign description from the real template | BLOCKED | 1 | 10 min | 12:21Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
 | T441 | portals: the quote page shows the kept number, and the pick  | done | 1 | 74 min | 11:32Z |  |
 | T572 | intake: the under-13 stop also clears the vault contact's na | MERGE_PENDING | 1 | 48 min | 11:31Z |  |
 | T446 | intake and messaging: PICK-046's "couldn't take it" notice g | MERGE_PENDING | 1 | 87 min | 11:29Z |  |
@@ -148,7 +150,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T202 (lease until 2026-11-17T15:18:10Z)
 - lane 3: T204 (lease until 2026-11-17T15:04:32Z)
-- lane 4: T113 (lease until 2026-11-17T15:11:04Z)
 
 ## Last usage reading
-- {"task": "T441", "at": "2026-11-17T11:32:02Z", "cache_read_input_tokens": 6761752, "cache_creation_input_tokens": 290355, "output_tokens": 64925, "input_tokens": 196}
+- {"task": "T113", "at": "2026-11-17T12:21:11Z", "output_tokens": 24705, "cache_creation_input_tokens": 108723, "input_tokens": 82, "cache_read_input_tokens": 2514890}
