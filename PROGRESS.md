@@ -6513,3 +6513,4 @@
 - 2026-11-17T15:28:34Z runner 215d4cc126ab (actions): {}
 - 2026-11-17T15:29:04Z runner 215d4cc126ab (actions): {}
 - 2026-11-17T15:29:43Z runner 215d4cc126ab (actions): {"T479": "MERGE_PENDING -> QUEUED"}
+- 2026-11-17T15:29:53Z runner 215d4cc126ab (actions): {"T479": "QUEUED -> IN_PROGRESS"}; T479 estimated 1.6M tokens (calibrated); week has 149.6M left (no five-hour budget, D-3056) after 351k still running in another lane (session_reading 2026-11-17T15:28:33Z (week)); running to the limit (model window, D-2225), claimed

@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-17T15:29:43Z by runner 215d4cc126ab (actions).
+Updated 2026-11-17T15:29:53Z by runner 215d4cc126ab (actions).
 
-**Building: T113 in progress since 15:04Z; 399 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T479 in progress since 15:29Z; 399 of 561 done; week 22% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 399 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T113 claimed 15:04Z, lease until 18:04Z
-- **Week:** 22% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T479 claimed 15:29Z, lease until 18:29Z; lane 5: T113 claimed 15:04Z, lease until 18:04Z
+- **Week:** 22% used, 149.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:29Z, 0 min before this update
 - **Keeper:** last ran 15:29Z, next wake 18:07Z
 
@@ -15,7 +15,7 @@ Updated 2026-11-17T15:29:43Z by runner 215d4cc126ab (actions).
 - PLAN GAP T104 (since 2026-11-17T15:25:02Z, no attempt used; a plan change fixes it): T104: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T104: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T104: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T104: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T104: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
 - PLAN GAP T115 (since 2026-11-17T15:25:02Z, no attempt used; a plan change fixes it): T115: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T115: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T115: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T115: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T115: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T491 (since 2026-11-17T14:53:18Z, no attempt used; a plan change fixes it): T491: dependency T471 is DONE but its owned file tests/integration/tests/pick_moved_text.rs is not on main
+- PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
 - Strict plan check red: 6 problem(s) on tasks still to run (+153 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
@@ -125,7 +125,7 @@ Updated 2026-11-17T15:29:43Z by runner 215d4cc126ab (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-17T14:51:54Z (week)): week: 42.0M used, 152.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T04:35:30Z.
+- Pacing (session_reading 2026-11-17T15:28:33Z (week)): week: 44.4M used, 149.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-29T05:31:21Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -141,6 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T479 (lease until 2026-11-17T18:29:29Z)
 - lane 5: T113 (lease until 2026-11-17T18:04:28Z)
 
 ## Last usage reading
