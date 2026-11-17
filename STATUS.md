@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-17T10:35:14Z by runner 05795302ae60 (actions).
+Updated 2026-11-17T10:37:16Z by runner 53181b8075d0 (actions).
 
 **Building: T489 in progress since 10:15Z; 392 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 392 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T489 claimed 10:15Z, lease until 13:15Z; lane 3: T441 claimed 10:17Z, lease until 13:17Z; lane 4: T112 claimed 10:03Z, lease until 13:03Z; lane 6: T202 claimed 10:29Z, lease until 13:29Z; lane 7: T446 claimed 10:02Z, lease until 13:02Z
+- **Lane:** lane 1: T489 claimed 10:15Z, lease until 13:15Z; lane 3: T441 claimed 10:17Z, lease until 13:17Z; lane 4: T112 claimed 10:03Z, lease until 13:37Z; lane 6: T202 claimed 10:29Z, lease until 13:29Z; lane 7: T446 claimed 10:02Z, lease until 13:02Z
 - **Week:** 18% used, 151.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:35Z, 0 min before this update
+- **Last run:** 10:35Z, 1 min before this update
 - **Keeper:** last ran 10:35Z, next wake 13:05Z
 
 ## Needs attention
 - PLAN GAP T321 (since 2026-11-17T09:31:01Z, no attempt used; a plan change fixes it): T321: dependency T107 is DONE but its owned file app/messaging/src/consent_alerts.rs is not on main; T321: dependency T107 is DONE but its owned file tests/integration/tests/consent_records_alerts.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 3 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+145 on DONE tasks); first: T112: stored context_pct 10% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -139,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T489 (lease until 2026-11-17T13:15:39Z)
 - lane 3: T441 (lease until 2026-11-17T13:17:37Z)
-- lane 4: T112 (lease until 2026-11-17T13:03:48Z)
+- lane 4: T112 (lease until 2026-11-17T13:37:16Z)
 - lane 6: T202 (lease until 2026-11-17T13:29:48Z)
 - lane 7: T446 (lease until 2026-11-17T13:02:21Z)
 
