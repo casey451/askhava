@@ -72,6 +72,7 @@
 <form method="post" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="quote" value="{{ q.number }}">
+<input type="hidden" name="business" value="{{ q.quote.business }}">
 {% let packages = self.packages(q.number) %}{% if !packages.is_empty() %}<fieldset{% if self.choose_again(q.number) %} aria-describedby="quote-{{ q.number }}-tier-error"{% endif %}>
 <legend>Choose a package</legend>
 {% if self.choose_again(q.number) %}<p id="quote-{{ q.number }}-tier-error" class="field-error">Error: Choose one package, then press Pick #{{ q.number }}. If you already chose one, the business has since changed its packages. Check the prices and choose again.</p>
