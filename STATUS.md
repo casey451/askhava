@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T10:49:29Z by runner 894d21959a1b (actions).
+Updated 2026-11-17T10:50:34Z by runner aeffbefd2538 (actions).
 
 **Building: T489 in progress since 10:15Z; 392 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 392 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T489 claimed 10:15Z, lease until 13:15Z; lane 3: T441 claimed 10:17Z, lease until 13:17Z; lane 4: T112 claimed 10:03Z, lease until 13:37Z; lane 5: T572 claimed 10:43Z, lease until 13:43Z; lane 6: T202 claimed 10:29Z, lease until 13:29Z; lane 7: T446 claimed 10:02Z, lease until 13:02Z
+- **Lane:** lane 1: T489 claimed 10:15Z, lease until 13:15Z; lane 3: T441 claimed 10:17Z, lease until 13:17Z; lane 4: T112 claimed 10:03Z, lease until 13:37Z; lane 5: T572 claimed 10:43Z, lease until 13:43Z; lane 6: T202 claimed 10:29Z, lease until 13:29Z; lane 7: T446 claimed 10:02Z, lease until 13:50Z
 - **Week:** 18% used, 152.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:49Z, 0 min before this update
 - **Keeper:** last ran 10:49Z, next wake 13:04Z
@@ -14,7 +14,7 @@ Updated 2026-11-17T10:49:29Z by runner 894d21959a1b (actions).
 ## Needs attention
 - PLAN GAP T321 (since 2026-11-17T09:31:01Z, no attempt used; a plan change fixes it): T321: dependency T107 is DONE but its owned file app/messaging/src/consent_alerts.rs is not on main; T321: dependency T107 is DONE but its owned file tests/integration/tests/consent_records_alerts.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 5 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+145 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -142,7 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T112 (lease until 2026-11-17T13:37:16Z)
 - lane 5: T572 (lease until 2026-11-17T13:43:03Z)
 - lane 6: T202 (lease until 2026-11-17T13:29:48Z)
-- lane 7: T446 (lease until 2026-11-17T13:02:21Z)
+- lane 7: T446 (lease until 2026-11-17T13:50:34Z)
 
 ## Last usage reading
 - {"task": "T204", "at": "2026-11-17T10:33:55Z", "cache_creation_input_tokens": 61924, "cache_read_input_tokens": 1004729, "output_tokens": 9958, "input_tokens": 67}
