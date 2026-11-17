@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T09:31:10Z by runner 780be8a3f3ba (actions).
+Updated 2026-11-17T09:39:43Z by runner 780be8a3f3ba (actions).
 
-**Building: T489 in progress since 08:41Z; 390 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T489 in progress since 08:41Z; 391 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 390 of 560 build tasks (owner gates not counted)
+- **Tasks done:** 391 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 6: T489 claimed 08:41Z, lease until 11:41Z
 - **Week:** 18% used, 157.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:25Z, 5 min before this update
+- **Last run:** 09:39Z, 0 min before this update
 - **Keeper:** last ran 09:25Z, next wake 11:43Z
 
 ## Needs attention
@@ -26,7 +26,7 @@ Updated 2026-11-17T09:31:10Z by runner 780be8a3f3ba (actions).
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z |  |
 | T201 | site: services and help pages, the ROC complaint page | done | 1 | 56 min | 07:22Z |  |
 | T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z | PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes |
-| T564 | quotes, picks and intake: the LIST, text picks, lapse text a | MERGE_PENDING | 1 | 43 min | 06:47Z |  |
+| T564 | quotes, picks and intake: the LIST, text picks, lapse text a | done | 1 | 43 min | 06:47Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | resync | 1 | 2 h 21 min | 06:44Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
 | T586 | calls and privacy: TwiML text is escaped, a full number pool | done | 1 | 88 min | 06:17Z |  |
 | T481 | messaging and payments: mark a replayed text sent from the c | done | 1 | 114 min | 05:36Z |  |
@@ -92,7 +92,7 @@ Updated 2026-11-17T09:31:10Z by runner 780be8a3f3ba (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 302 of 733 (41.2%) · partial 333 · unstarted 98
-**Tasks merged (throughput only):** 390 of 560
+**Tasks merged (throughput only):** 391 of 560
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -128,7 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 33 of 168 done
+- stage 5: 34 of 168 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
