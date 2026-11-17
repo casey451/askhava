@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T17:49:21Z by runner 32cc1abdecdb (actions).
+Updated 2026-11-17T17:49:46Z by runner 32cc1abdecdb (actions).
 
-**Building: T596 in progress since 17:07Z; 403 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T115 in progress since 17:27Z; 403 of 570 done; week 25% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 403 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T596 claimed 17:07Z, lease until 20:42Z; lane 7: T115 claimed 17:27Z, lease until 20:27Z
+- **Lane:** lane 7: T115 claimed 17:27Z, lease until 20:27Z
 - **Week:** 25% used, 142.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:45Z, 3 min before this update
 - **Keeper:** last ran 17:45Z, next wake 20:29Z
@@ -19,6 +19,7 @@ Updated 2026-11-17T17:49:21Z by runner 32cc1abdecdb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T596 | Runner (harness): an ancestor's running smoke finishes and c | MERGE_PENDING | 1 | 41 min | 17:49Z |  |
 | T491 | picks: the Confirm window's end, every way it comes, runs th | MERGE_PENDING | 1 | 2 h 2 min | 17:44Z |  |
 | T599 | Tests (harness): the PICK-046 email's no-amount check ignore | MERGE_PENDING | 1 | 32 min | 17:36Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 2 | 42 min | 17:35Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
@@ -138,8 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T596 (lease until 2026-11-17T20:42:38Z)
 - lane 7: T115 (lease until 2026-11-17T20:27:20Z)
 
 ## Last usage reading
-- {"task": "T491", "at": "2026-11-17T17:44:15Z", "cache_read_input_tokens": 7776183, "cache_creation_input_tokens": 450109, "input_tokens": 277, "output_tokens": 87772}
+- {"task": "T596", "at": "2026-11-17T17:49:19Z", "output_tokens": 47905, "input_tokens": 88, "cache_read_input_tokens": 2836773, "cache_creation_input_tokens": 160807}
