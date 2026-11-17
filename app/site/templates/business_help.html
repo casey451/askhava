@@ -1,0 +1,19 @@
+{% extends "site_layout.html" %}
+{#- The business help page, /business/help (T202; WEB-020, D-249): the safety tip for people working
+    alone in customers' homes, and where to ask for help. GET only; it reads nothing but the banner. -#}
+{% block title %}Help for businesses{% endblock %}
+{% block content %}
+{%- let brand = askhava_core::api::brand().display_name() %}
+<h1>Help for businesses</h1>
+<h2>Safety when you work alone</h2>
+<p>If you go into customers' homes alone, these habits can keep you safer.</p>
+<ul>
+<li>Before you go, tell someone where the job is and when you expect to finish.</li>
+<li>Keep your phone charged and on you.</li>
+<li>If something feels wrong, you can leave. You don't have to finish the job.</li>
+<li>If anyone is in danger, call 911.</li>
+</ul>
+<h2>Ask {{ brand }}</h2>
+<p>Email <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a>. We usually answer help and charge questions within 2 days.</p>
+<p><a href="/business">Back to the business page</a></p>
+{% endblock %}
