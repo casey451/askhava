@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-17T19:39:54Z by runner 805fa0d42eef (actions).
+Updated 2026-11-17T19:49:51Z by runner 889565bba82e (actions).
 
-**Building: T582 in progress since 19:37Z; 407 of 570 done; week 26% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T582 in progress since 19:37Z; 407 of 570 done; week 27% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 407 of 570 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T582 claimed 19:37Z, lease until 22:37Z; lane 5: T115 claimed 18:45Z, lease until 22:31Z; lane 6: T106 claimed 19:20Z, lease until 22:20Z; lane 7: T594 claimed 19:39Z, lease until 22:39Z
-- **Week:** 26% used, 139.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:37Z, 2 min before this update
+- **Week:** 27% used, 139.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:49Z, 0 min before this update
 - **Keeper:** last ran 19:28Z, next wake 21:48Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-17T19:39:54Z by runner 805fa0d42eef (actions).
 Optional (not counted): "We collect your phone number and let the business see it." / "Su número de teléfono lo recibe el negocio que elija." / "Your phone number? We share it with the pro you pick." ("?" ends the sentence) / "Los precios más bajos van primero."; "We text your phone number a code; type it in." is wrongly flagged (already so on 2a14626dd).
 A retry should start from this attempt's design (pushed branch, if kept) and apply these two fixes; each rule should be checked against both missed phrasings and plausible legitimate consent-flow copy before hand-in.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 11 problem(s) on tasks still to run (+166 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+167 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -87,7 +87,6 @@ A retry should start from this attempt's design (pushed branch, if kept) and app
 | T102 | site: home and how-it-works pages with the footer, tagline,  | done | 1 | 46 min | 21:03Z |  |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | BLOCKED | 1 | 41 min | 20:41Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T361 | quotes and picks: a quote keeps its number once shown, and a | done | 2 | 93 min | 20:12Z | PLAN GAP: app/intake/src/job_texts.rs:473 (`(1..).zip(page)`) and :494 (`.filter(\|(n, _)\| others.contains(n))`). kit/tas |
-| T487 | ops and payments: safe mode after 24 hours pauses charges, a | done | 1 | 50 min | 19:47Z |  |
 
 ### Plan and harness merges on main
 - none
