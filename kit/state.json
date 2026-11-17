@@ -21388,7 +21388,11 @@
     "T561",
     "T562",
     "T563",
-    "T564"
+    "T564",
+    "T570",
+    "T571",
+    "T572",
+    "T573"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -51619,7 +51623,8 @@
     "T151",
     "T432",
     "T449",
-    "T540"
+    "T540",
+    "T571"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -62428,7 +62433,8 @@
   {
    "id": "T482",
    "deps": [
-    "T151"
+    "T151",
+    "T570"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -65389,7 +65395,8 @@
     "T490",
     "T520",
     "T527",
-    "T562"
+    "T562",
+    "T573"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -65724,7 +65731,11 @@
     "T561",
     "T562",
     "T563",
-    "T564"
+    "T564",
+    "T570",
+    "T571",
+    "T572",
+    "T573"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -66082,6 +66093,61 @@
    "attempts": 0,
    "slug": "business-guarded-changes-served",
    "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T570",
+   "deps": [
+    "T049",
+    "T100",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "close-by-text",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T571",
+   "deps": [
+    "T378",
+    "T100",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "safety-key-not-lost",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T572",
+   "deps": [
+    "T040",
+    "T255",
+    "T432",
+    "T100",
+    "T517",
+    "T103"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "under-13-vault-purge",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T573",
+   "deps": [
+    "T480",
+    "T470",
+    "T447"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-outbox-rows-sent",
+   "type": "harness",
    "stage": "5"
   }
  ],
@@ -70200,7 +70266,7 @@
    }
   }
  },
- "updated_at": "2026-11-17T01:24:53Z",
+ "updated_at": "2026-11-17T01:34:17Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -70298,7 +70364,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "17080bb84ed6a05de68895d7e67e741b6c360ca9",
+ "runner_sha": "f602aaf30948587d2be5d8aa4b08c731975c5032",
  "starter": "actions",
  "smoke_runs": [
   {
