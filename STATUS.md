@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T16:19:28Z by runner 226e7f3c08ea (actions).
+Updated 2026-11-17T16:19:38Z by runner 226e7f3c08ea (actions).
 
 **Building: T491 in progress since 15:41Z; 401 of 561 done; week 23% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 401 of 561 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T491 claimed 15:41Z, lease until 18:41Z; lane 4: T104 claimed 16:00Z, lease until 19:00Z; lane 6: T595 claimed 15:33Z, lease until 19:15Z
+- **Lane:** lane 1: T491 claimed 15:41Z, lease until 18:41Z; lane 4: T104 claimed 16:00Z, lease until 19:00Z
 - **Week:** 23% used, 146.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:19Z, 0 min before this update
 - **Keeper:** last ran 16:18Z, next wake 18:43Z
@@ -19,6 +19,7 @@ Updated 2026-11-17T16:19:28Z by runner 226e7f3c08ea (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T595 | server and site: a same-site web chat POST passes its CSRF c | MERGE_PENDING | 1 | 45 min | 16:19Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | MERGE_PENDING | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T113 | Draft the Twilio campaign description from the real template | MERGE_PENDING | 2 | 35 min | 15:39Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
 | T471 | picks and intake: her "backup has your pick" text on every p | done | 1 | 47 min | 14:20Z |  |
@@ -140,7 +141,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T491 (lease until 2026-11-17T18:41:21Z)
 - lane 4: T104 (lease until 2026-11-17T19:00:59Z)
-- lane 6: T595 (lease until 2026-11-17T19:15:30Z)
 
 ## Last usage reading
-- {"task": "T479", "at": "2026-11-17T16:17:16Z", "cache_read_input_tokens": 1157441, "output_tokens": 11955, "cache_creation_input_tokens": 101227, "input_tokens": 58}
+- {"task": "T595", "at": "2026-11-17T16:19:04Z", "cache_creation_input_tokens": 92990, "input_tokens": 65, "output_tokens": 17171, "cache_read_input_tokens": 1440852}
