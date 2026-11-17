@@ -18613,7 +18613,8 @@
     "T115",
     "T428",
     "T114",
-    "T519"
+    "T519",
+    "T606"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -18737,7 +18738,7 @@
    "id": "T115",
    "slug": "a11y-docs-statement",
    "title": "docs/a11y.md (plan, statement, VoiceOver script), statement page, email checks",
-   "goal": "`docs/a11y.md` holds the accessibility plan, the statement and the Gate B VoiceOver script; the statement page gives the conformance target, known limits and the text, email or form contact with the relay line and no phone line; and a docs test proves every email has real text, a plain-text part and meaningful link text (A11Y-019, A11Y-020, A11Y-022). Plan change D-3155: the statement page is `GET /accessibility` (module `site`), a route in `pages.rs`'s router that `build_router` already merges (T102), added to `docs/architecture.md` section 13 as `yes` by this task; its text is `docs/legal/accessibility-statement.md`, rendered once at start-up by T221's `app/site/src/legal_pages.rs` (D-3878), not a third copy: `docs/a11y.md` holds the plan and the VoiceOver script and links the statement, and TD-WEB-08's checks run on that document and the rendered page. Plan change D-3838 (A11Y-002, D-3836's lesson): in the same change that serves `/accessibility`, this task adds each route's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts` (fake data only, `shows` and `hides` lines that tell each state apart) and runs `bash scripts/prehandin.sh --ally`, so `tests/a11y/axe_all_pages.spec.ts` stays green. Plan change D-3883: TD-WEB-08's \"call\" check finds an offer to call Laftly or a phone number, not the word itself; `docs/a11y.md` only links the statement. Plan change D-4044 (the Opus pre-claim scouts, Nov 16, 2026): T103 no longer depends on T202 (order only for T103), so this task, which needs T201's and T202's pages, depends on T202 directly; nothing else changes.",
+   "goal": "`docs/a11y.md` holds the accessibility plan, the statement and the Gate B VoiceOver script; the statement page gives the conformance target, known limits and the text, email or form contact with the relay line and no phone line; and a docs test proves every email has real text, a plain-text part and meaningful link text (A11Y-019, A11Y-020, A11Y-022). Plan change D-3155: the statement page is `GET /accessibility` (module `site`), a route in `pages.rs`'s router that `build_router` already merges (T102), added to `docs/architecture.md` section 13 as `yes` by this task; its text is `docs/legal/accessibility-statement.md`, rendered once at start-up by T221's `app/site/src/legal_pages.rs` (D-3878), not a third copy: `docs/a11y.md` holds the plan and the VoiceOver script and links the statement, and TD-WEB-08's checks run on that document and the rendered page. Plan change D-3838 (A11Y-002, D-3836's lesson): in the same change that serves `/accessibility`, this task adds each route's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts` (fake data only, `shows` and `hides` lines that tell each state apart) and runs `bash scripts/prehandin.sh --ally`, so `tests/a11y/axe_all_pages.spec.ts` stays green. Plan change D-3883: TD-WEB-08's \"call\" check finds an offer to call Laftly or a phone number, not the word itself; `docs/a11y.md` only links the statement. Plan change D-4044 (the Opus pre-claim scouts, Nov 16, 2026): T103 no longer depends on T202 (order only for T103), so this task, which needs T201's and T202's pages, depends on T202 directly; nothing else changes. Plan change D-4240 (Fable triage, Nov 17, 2026): two attempts failed. The red `npm audit` (GHSA-fc5q-39xc-vjpf) is not this task's: D-4223's `scripts/npm_audit.py` excuses that one advisory in `Ci` and `scripts/prehandin.sh`, so report no npm-audit gap; if `scripts/npm_audit.py` is not on `main`, stop with `PLAN GAP:` before building. Both reviews failed only on open-ended scans (review 1: six \"call\" phrasings; review 2: ten more and three compiling empty-text forms), which have no end state. As for T111 (D-4038), T112 (D-4119) and T104 (D-4229), they are now closed lists, one definition for worker and reviewer. Build exactly these rules; every pattern is case-insensitive; plant every must-fail and must-pass case below as its own parametrized case, the brand read from the brand file, never a literal. Budget 6 files, 600 lines. (1) Where TD-WEB-08 lives. The lists are written once, in the new owned `tests/docs/test_accessibility_statement.py` (`Ci`), which scans `docs/legal/accessibility-statement.md` as written and the reader text (`{# … #}`, `{% … %}`, `{{ … }}` and tags removed) of `app/site/templates/accessibility.html`, `site_layout.html` and `base.html`: every word `/accessibility` shows comes from those four files. `tests/a11y/statement.spec.ts` (`Ally`) holds no word list: on the rendered page it checks that `main`'s `textContent` (whitespace runs as one space) holds every non-blank line of the document (a leading `#` run or `- ` removed) and each required line of (5), that no `a[href^=\"tel:\"]` exists, and that `\\d{3}[\\s.-]\\d{4}` matches nothing in it. The `/accessibility` unit test this task adds to `app/site/src/pages.rs` holds no word list; it checks only that the page holds the statement's title and rendered body; the other tasks' `gone` lists in that file (TD-WEB-01 at `pages.rs:679`, TD-WEB-03 at `:920`) are not this task's and stay. (2) What is true (A11Y-020, CALL-013, CALL-020, D-3883): the statement names calls only where it offers none. Text: whitespace runs become one space. List A, the statement's own true wording, removed word for word before List B, each a must-pass case: \"at phone, tablet and desktop widths\", \"so no notice needs a phone call or audio\", \"Masked calls between a homeowner and the business they chose work with 711 relay services.\", \"A call to it hears a short recorded message asking you to text; there is no voicemail.\" and \"If you use a relay service, you can reach us by text or email.\" (the statement's only two relay sentences). (3) List B, never allowed in what is left: `\\bcall\\w*`, `\\b(?:tele)?phon(?:e|es|ed|ing)\\b`, `\\bdial(?:s|ed|ing)?\\b`, `\\bring\\b`, `\\bvoice(?:s|mail\\w*)?\\b`, `\\b(?:talk|speak)\\w*\\s+(?:to|with)\\b`, `\\b711\\b`, `\\b(?:TTY|TDD|VRS)\\b`, `\\bvideo relay\\b`, `\\brelay\\w*`, `\\bhotline\\b`, `\\bhelp ?line\\b`, `\\btoll[- ]free\\b`, `\\bll[aá]m\\w*`, `\\btel[eé]fon\\w*`, `\\bvoz\\b`, and every match of `TEN_DIGIT`, `SEVEN_DIGIT` and `TEL_LINK` of `tests/docs/test_no_phone_numbers_in_templates.py`, imported, never copied. (4) Must fail: \"Call or text us.\", \"You can call anytime.\", \"Feel free to call.\", \"Calling us is fine.\", \"Request a callback.\", \"Caller ID shows our number; reply anytime.\", \"A call to the Laftly number reaches the owner.\", \"Reach us by phone.\", \"Phone the Laftly number.\", \"Telephoning us works too.\", \"Our telephone is answered on weekdays.\", \"Dial our number and wait.\", \"Give us a ring.\", \"Contact us by text, email or voice.\", \"Leave us a voice message.\", \"Leave a voicemail and we reply.\", \"Talking to us is easy.\", \"Speaking with us works.\", \"Talk to a person.\", \"Speak with the owner.\", \"Use 711 to reach us.\", \"Use TTY to reach us.\", \"TDD users can reach us.\", \"Use VRS to reach us.\", \"Video relay users can reach our number directly.\", \"Relay users can reach our number directly.\", \"Use a relay service to reach us.\", \"Our hotline is open.\", \"Our helpline is open.\", \"Our help line is open.\", \"Our toll-free number is open.\", \"It is toll free.\", \"Llámenos cuando quiera.\", \"Puede llamar a nuestro número.\", \"Escríbanos o use el teléfono.\", \"Deje un mensaje de voz.\", \"Text us at 928-555-0142.\", \"Our number is (928) 555-0142.\", \"Reach us at 555-0142.\", \"Reach us at +1 928 555 0142.\", \"tel:+19285550142\", the third List A sentence with its full stop replaced by \", and you can call us too.\", the fourth followed by \" Call us anyway.\", the second followed by \", but you may phone us\", and the document followed by \"You can also call us.\". Must pass: each List A entry, the document as it stands, the three templates as they stand, \"Tell us about any barrier by text (text HELP to the Laftly number), by email at help@laftly.com, or with the help page's form.\", \"The Laftly owner usually replies within 2 days, the same as our HELP replies.\", \"The Laftly number is text-only.\", \"Every page is checked with VoiceOver on an iPhone.\", \"A screen reader speaks every label.\", \"Each dialog takes focus when it opens.\", \"We recall no page that fails a check.\", \"Pages are tested at 320, 768 and 1280 px.\" and \"Version 0.2 (draft) · November 13, 2026 · Not yet in effect\". (5) Required lines, in the document and on the page: \"WCAG 2.2 Level AA\", \"Known limits\", \"by text\", \"by email at help@\" followed by the brand file's domain, \"the help page's form\", \"If you use a relay service, you can reach us by text or email.\" and \"usually replies within 2 days\". (6) A11Y-019, `tests/docs/test_email_accessibility.py`. Scope: every `.rs` file under `app/*/src/` outside a `tests` folder, each read up to its first `#[cfg(test)]` line. Email HTML: `app/messaging/templates/email_layout.html`, every `app/*/templates/*.html` that names it, and every `source = r#\"…\"#` in scope that names it. A literal is `Email {` or `Rendered {`, alone or after a path made only of the segments `crate`, `super`, `self`, `email`, `api`, `adapters`, `askhava_adapters`, `messaging` and `askhava_messaging` (`email::Rendered {`, `super::email::Rendered {`, `crate::email::Rendered {`), or `Self {` when the nearest line above that starts with `impl` is, whole, `impl(?:<[^>]*>)?\\s+(?:[\\w:]+(?:<[^>]*>)?\\s+for\\s+)?(?:Email|Rendered)(?:<[^>]*>)?\\s*\\{\\s*$`, so the type is exactly `Email` or `Rendered`, never a longer name (`impl ResendEmail {`, `app/adapters/src/email.rs:65`) or a trait implemented for another type; it follows neither a word character, a `:`, nor (after spaces) `struct`, `enum`, `impl`, `for`, `let` or `->`; its fields are its body split at commas outside brackets and strings. The provider's `pub struct Email<'a>` (`app/adapters/src/email.rs:22`) must hold `pub html: &'a str,` and `pub text: &'a str,` and no `skip_serializing`. (7) Plain-text part. Each `Email` literal must set `text` and each `Rendered` literal `plain`, with no `..` field. The value read is the field's expression and, when that is the bare field name or an identifier after any run of `&`, `&mut` and `*` and before any run of the methods and `[..]` listed next, also the right side of the nearest `let` above it in the file that binds that name (a tuple `let`: only the element at the name's position). A `let mut` binding ends the trace (it is filled later; clippy denies `unused_mut`). With whitespace removed, a value fails when all of it is `(?:&(?:mut)?|\\*)*` then one of `\"\"`, `r#*\"\"#*`, `(?:std::string::)?String::new\\(\\)`, `(?:Default|String|str|<[^>]+>)::default\\(\\)`, `String::from\\(\"\"\\)`, `String::with_capacity\\([^)]*\\)`, `format!\\(\"\"\\)`, `concat!\\(\\)`, then any run of `\\.(?:as_str|clone|to_string|to_owned|into|as_ref|trim|borrow)\\(\\)` and `\\[\\.\\.\\]`; or when it holds `.unwrap_or_default()`, `.unwrap_or(` one such form `)`, or `.unwrap_or_else(` then `String::new`, `String::default`, `Default::default` or `||` one such form, then `)`. Must fail, as `text:` of an `Email` literal: `\"\"`, `&String::new()`, `&String::default()`, `&\"\".to_string()`, `&\"\".to_owned()`, `&String::from(\"\")`, `&format!(\"\")`, `Default::default()`, `<&str>::default()`, `r\"\"`, `String::new().as_str()`, `body.unwrap_or(\"\")`, `&text` under `let text = String::new();`, the bare `text` under `let text = \"\";`, `&text` under `let (html, text) = (email.html.replace(MARK, link), String::new());`, `text.as_str()` under `let text = String::new();`, `&String::new()[..]`, `&\"\"[..]`, `text: \"\"` in `crate::api::Email { … }` and in `Self { … }` inside `impl<'a> Email<'a>`, a literal with `..other`, and one with no `text`; as `plain` of a `Rendered` literal: `String::new()`, `String::default()`, `Default::default()`, `\"\".to_string()`, `\"\".to_owned()`, `\"\".into()`, `String::from(\"\")`, `format!(\"\")`, `String::with_capacity(64)`, the bare `plain` under `let plain = String::new();`, under `let plain = String::default();` with the literal on four lines, and under `let plain: String = Default::default();`, `r.plain.unwrap_or_default()`, `r.plain.unwrap_or_else(String::new)`, `r.plain.unwrap_or(String::new())`, `plain.clone()` under `let plain = String::new();`, the bare `plain` in `email::Rendered { … }` under `let (html, plain) = (view.render()?, String::new());`, `plain: String::new()` in `super::email::Rendered { … }` and in `Self { … }` inside `impl Rendered` and inside `impl Default for Rendered`, a literal with `..Rendered::default()`, and one with no `plain`. Must pass: every literal in scope as it stands (three `Email`, eight `Rendered` on `main` c6d52c65; the test fails if it finds none of either), `text: &claim.rendered.plain`, `&text` under `let (html, text) = (email.html.replace(LINK_MARK, link), email.text.replace(LINK_MARK, link));`, the bare `plain` under a `format!` with placeholders, also when a `let page = … .unwrap_or_default();` stands above it, `plain: r.plain.ok_or(EmailError::Database)?`, `plain: lines.join(\"\\n\")`, `plain: body.replace(MARK, \"\")`, the bare `plain` under `let mut plain = String::new();` and a `writeln!(plain, …)`, the bare `plain` under `let (plain, html) = (format!(\"{message}\\n\"), String::new());`, `Self { subject, html, plain }` inside `impl Rendered`, `Self { lang: \"en\" }` inside `impl Layout`, `Ok(Self { http })` inside `impl ResendEmail {`, `Self { http }` inside `impl EmailAdapter for ResendEmail {`, and five lines that are no literal: `pub struct Rendered {`, `fn render(n: Notice<'_>) -> Rendered {`, `impl fmt::Debug for Rendered {`, `if facts.contact != Contact::Email {` and `let Rendered { subject, html, plain } = rendered;`. (8) Real text and link text, in each email HTML source. No image form: `<\\s*(?:img|picture|svg|canvas|object|embed|video|audio|iframe|map|area)\\b`, `\\btype\\s*=\\s*[\"']?image\\b`, `\\burl\\s*\\(`, `\\bbackground\\s*=`, `\\bbackground-image\\b`, `\\bdata:image\\b` (`docs/design/DESIGN_SPEC.md:95`, `:140`: emails carry no image). Text: the source (its `{% block content %}` part when it extends the layout), with `{# … #}`, `{% … %}`, tags and whole `title`, `style` and `script` elements removed, is not blank. Links: for each `<a …>…</a>`, the inner text (tags removed, entities unescaped with `html.unescape`, whitespace as one space, trailing `.`, `!`, `:`, `;`, `,`, `>` and `»` removed, lower-cased) holds a letter or a digit, is not one of click here, here, click, tap here, tap, press here, this link, link, this page, read more, learn more, more, more info, more information, details, see more, view, open, go, continue, haga clic aquí, haga clic aqui, clic aquí, clic aqui, aquí, aqui, pulse aquí, toque aquí, este enlace, enlace, más, mas, leer más, ver más, más información, ver, abrir, continuar, and does not match `\\b(?:click|tap|press) here\\b|\\b(?:clic|pulse|toque) aqu[ií]\\b`. Must fail, each inside a source that extends the layout: `<img src=\"/static/receipt.png\" alt=\"Your receipt\">`, an `<svg>` with a title, `<td background=\"/static/receipt.png\">`, `style=\"background:url(/static/receipt.png)\"`, `style=\"background-image:none\"`, `<input type=\"image\" alt=\"Confirm job 1042\">`, `<img src=\"data:image/png;base64,AAAA\" alt=\"Confirm job 1042\">`, a content block holding only `<p></p>`, and links whose text is \"Click here\", \"here\", \"Click here to confirm job 1042\", \"Read more.\", `<strong>More</strong>`, nothing, `&nbsp;`, \"→\", \"Haga clic aquí\", \"Aquí\" and \"Ver más\". Must pass: the six email sources on `main` as they stand, links \"Confirm job 1042\", `{{ label }}`, \"Manage email notices\" and \"Vea su página de cotizaciones\", and `style=\"background:#F3ECE0;\"`. (9) Review. A scan gap is a finding only when a test misses a listed pattern or must-fail case, flags a listed must-pass case or anything in a scanned file as it stands, or departs from rules (1) to (8). What a rule forbids and is actually in a scanned file still blocks, whether or not a pattern catches it: an offer to call or phone, or a phone number, on the statement or its page; an email with no plain-text part, a body that is an image, or link text that does not say where it goes. This task owns none of the statement, the layouts or the email code: if a rule flags one of them on the worker's head, the worker stops with `PLAN GAP: <file:line>` and the rule (true wording needs a plan change to List A, a real fault a fix by its owner) and adds no exemption of its own. Any other phrasing or form the scans miss or over-catch goes in the reviewer's report under \"Scan list notes (not findings)\", the review still ends APPROVED when nothing else is wrong, and the worker logs it in `docs/decisions.md` as \"statement scan list: add <pattern>\" or \"email scan list: add <form>\". Known notes, not findings: a call word outside List B (\"buzz\", \"cellphone\", \"smartphone\", \"landline\", \"answering machine\", Spanish \"Marque nuestro número.\", \"Hable con nosotros.\"); true wording List B would flag if the statement gained it (\"call 911\", \"speaks to you\", \"We relay your request to businesses.\"); a number in words; a link label set in code through `{{ … }}`; a link whose text is its own address (`app/messaging/src/business_notices.rs:287`); a literal behind a `use … as` or `type` alias; an empty value more than one `let` away, in a constant or returned by a function; an empty form outside rule (7) (`\"\".repeat(2)`, `[\"\"; 0].concat()`); an image added from Rust. D-2506's wrong-implementation check is met for these tests by a scan with one listed pattern or form removed, which that entry's planted case catches; it never asks for a new phrasing. (10) `Ally`: `bash scripts/prehandin.sh --ally` on a reused local database has failed two or three times at `tests/a11y/j2_keyboard.spec.ts:149` (business sign-up by keyboard), which this task does not touch; that is `ALLY RED:` in the report and a hand-in (End routine step 1), never a fix here. Every rule was run before this change on `main` c6d52c65: every scanned file clean, every must-fail case caught, every must-pass case clean.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -18758,6 +18759,7 @@
     "app/site/templates/accessibility.html",
     "tests/a11y/statement.spec.ts",
     "tests/docs/test_email_accessibility.py",
+    "tests/docs/test_accessibility_statement.py",
     "app/site/src/pages.rs"
    ],
    "reads": [
@@ -18768,7 +18770,12 @@
     "docs/brains/accessibility-forms.md",
     "docs/brains/contractor-lead-experience.md",
     "docs/legal/accessibility-statement.md",
-    "app/site/src/legal_pages.rs"
+    "app/site/src/legal_pages.rs",
+    "app/site/templates/site_layout.html",
+    "app/site/templates/base.html",
+    "tests/docs/test_no_phone_numbers_in_templates.py",
+    "app/adapters/src/email.rs",
+    "app/messaging/templates/email_layout.html"
    ],
    "requirements": [
     "A11Y-019",
@@ -18786,13 +18793,14 @@
     "D-3838",
     "D-3878",
     "D-3883",
-    "D-4044"
+    "D-4044",
+    "D-4240"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 400,
-    "context_pct": 13
+    "files": 6,
+    "lines": 600,
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -21036,7 +21044,15 @@
     "T602",
     "T604",
     "T599",
-    "T603"
+    "T603",
+    "T606",
+    "T607",
+    "T608",
+    "T609",
+    "T610",
+    "T611",
+    "T612",
+    "T613"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -33435,7 +33451,7 @@
    "id": "T216",
    "slug": "site-textures",
    "title": "site: the hero photo and mark (photography assets)",
-   "goal": "Plan change D-3331 repurposes this task from the retired plaster, brass and paper textures to photography assets: the home hero photo `docs/design/photos/hero-kitchen.webp` and the mark `docs/design/brand/mark.svg` are served from `app/site/static/photos/hero-kitchen.webp` and `app/site/static/brand/mark.svg` with no metadata, and the stylesheet (`site.css`, which this task edits after T166) and the home template use them as DESIGN_SPEC section 5 says (the photo decorative with `alt=\"\"`, width and height set, never under text). The photo is a concept placeholder: licensed photos replace it at the same name and size before launch (a launch item for Casey, D-3331), so the file name is fixed and nothing else names the image. Plan change D-3144: the runtime image keeps only built `.js` files (`Dockerfile:17` to `:21`), so the assets are served from bytes compiled into the binary: this task adds each to T101's fixed list in `app/site/src/assets.rs` (owned here after T166), served at `/static/site/photos/<name>` as `image/webp` and `/static/site/brand/<name>` as `image/svg+xml`, with no `.route(` line. Plan change D-3744: the home template is T102's `app/site/templates/home.html`, and the mark sits beside the wordmark in the header and footer (DESIGN_SPEC section 5, 30 by 27 px), which live in `app/site/templates/base.html` (the header today) and T101's `site_layout.html`; so this task owns all three, after T102, T101 and T200 (the other queued owner of `base.html`), places the photo in `home.html` and the mark wherever T101 and T102 put the header and footer, and changes nothing else in them. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the first-screen check has its own spec, `tests/e2e/home_first_screen.spec.ts`, owned here: at 390 by 844 and 320 by 740 the photo and the main button are inside the first viewport and no text box overlaps the photo's box; the line budget is unchanged. Plan change D-3878: the footer is T102's, written once in `site_layout.html` (owned by T102 after T101), so the footer mark goes there. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) The header mark is an `<img alt=\"\" width=\"30\" height=\"27\">` beside, not inside, the home link, so TD-WORD-37 (`app/portals/src/feedback.rs`, which T101 pins to the home link element only) and the first-`header a` colour check (`tests/e2e/pick_flow.spec.ts:98` to `:104`) hold unchanged. (2) The copy under `app/site/static/brand/` drops the `<title>` element of `docs/design/brand/mark.svg` (a brand literal that `tests/docs/test_brand_literals.py` fails, `.svg` not being in its `BINARY_EXTENSIONS`; the image is decorative, `alt=\"\"`).",
+   "goal": "Plan change D-3331 repurposes this task from the retired plaster, brass and paper textures to photography assets: the home hero photo `docs/design/photos/hero-kitchen.webp` and the mark `docs/design/brand/mark.svg` are served from `app/site/static/photos/hero-kitchen.webp` and `app/site/static/brand/mark.svg` with no metadata, and the stylesheet (`site.css`, which this task edits after T166) and the home template use them as DESIGN_SPEC section 5 says (the photo decorative with `alt=\"\"`, width and height set, never under text). The photo is a concept placeholder: licensed photos replace it at the same name and size before launch (a launch item for Casey, D-3331), so the file name is fixed and nothing else names the image. Plan change D-3144: the runtime image keeps only built `.js` files (`Dockerfile:17` to `:21`), so the assets are served from bytes compiled into the binary: this task adds each to T101's fixed list in `app/site/src/assets.rs` (owned here after T166), served at `/static/site/photos/<name>` as `image/webp` and `/static/site/brand/<name>` as `image/svg+xml`, with no `.route(` line. Plan change D-3744: the home template is T102's `app/site/templates/home.html`, and the mark sits beside the wordmark in the header and footer (DESIGN_SPEC section 5, 30 by 27 px), which live in `app/site/templates/base.html` (the header today) and T101's `site_layout.html`; so this task owns all three, after T102, T101 and T200 (the other queued owner of `base.html`), places the photo in `home.html` and the mark wherever T101 and T102 put the header and footer, and changes nothing else in them. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the first-screen check has its own spec, `tests/e2e/home_first_screen.spec.ts`, owned here: at 390 by 844 and 320 by 740 the photo and the main button are inside the first viewport and no text box overlaps the photo's box; the line budget is unchanged. Plan change D-3878: the footer is T102's, written once in `site_layout.html` (owned by T102 after T101), so the footer mark goes there. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) The header mark is an `<img alt=\"\" width=\"30\" height=\"27\">` beside, not inside, the home link, so TD-WORD-37 (`app/portals/src/feedback.rs`, which T101 pins to the home link element only) and the first-`header a` colour check (`tests/e2e/pick_flow.spec.ts:98` to `:104`) hold unchanged. (2) The copy under `app/site/static/brand/` drops the `<title>` element of `docs/design/brand/mark.svg` (a brand literal that `tests/docs/test_brand_literals.py` fails, `.svg` not being in its `BINARY_EXTENSIONS`; the image is decorative, `alt=\"\"`). Plan change D-4246: WEB-030 caps the home page's first view at 280 KB as served, so the hero photo stays 100 KB or less (today's is 82 KB; DESIGN_SPEC section 5), and the licensed replacement before launch meets the same limit.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -33483,13 +33499,14 @@
     "D-3744",
     "D-3844",
     "D-3878",
-    "D-3890"
+    "D-3890",
+    "D-4246"
    ],
    "cites": [],
    "budget": {
     "files": 8,
     "lines": 150,
-    "context_pct": 13
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -40438,6 +40455,569 @@
    "branch": "claude/task/T604-sentry-no-native-tls",
    "prompt": "kit/prompts/T604.md",
    "acceptance": "`Cargo.lock` holds no `native-tls`, `hyper-tls` or `tokio-native-tls` package (`cargo tree --locked -e normal | grep -cE 'native-tls|hyper-tls'` is 0); `docs/architecture.md:450` names the new feature list; `cargo deny check bans licenses sources advisories` and `cargo audit` pass; `cargo test -p askhava-core` (including `app/core/src/tests/logging.rs`) and the Sentry stub test of T217 pass unchanged; the `Cargo.lock` diff only removes packages."
+  },
+  {
+   "id": "T606",
+   "slug": "copy-arrow-rule",
+   "title": "harness: scripts/check_copy.py allows one aria-hidden arrow inside a primary button and fails every other arrow",
+   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one `aria-hidden` arrow inside a primary button (`:105`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Casey's brief said `scripts/check_copy.py` has an arrows-as-decoration rule; it has none (checked on `main` 2e3965ee: no arrow pattern in the script, nor in `docs/ai_smell.yaml`); the rule lives only in DESIGN_SPEC section 9's cold read. This task adds it as the spec now states it, before any template gains the arrow. `scripts/check_copy.py` reports a problem for: (1) any arrow (the Unicode Arrows block U+2190 to U+21FF, U+2794 to U+27BF, U+27F0 to U+27FF, U+2900 to U+297F and U+2B00 to U+2BFF, and the typed `->`, `=>` and `<-`) in a `docs/copy/site-copy.md` copy line; (2) in a page template under `app/*/templates/` (the `es_*.html` files included: the rule is about markup, not language; the Spanish guillemets « » are not arrows), any arrow outside the one allowed place: the whole text of a `<span aria-hidden=\"true\">` that is a direct child of a `<button>` whose class list holds `button` and not `button-quiet` (the reference's primary button), after the button's own words, at most one per button; (3) any arrow character or its CSS escape (such as `\\2192`) inside a `content:` value in `app/**/*.css` or in a Rust stylesheet constant (every `const …_CSS: &str` under `app/`, today `FORMS_CSS` and `FEEDBACK_CSS` in `app/portals/src/feedback.rs`). Each problem names the file and the text, like the script's other problems. The template rule keeps T519's and D-3881's parsing (Askama statements, `{# #}` removal, `data-fixed`), and the script's other rules and their thresholds stay exactly as they are. `scripts/check_copy.py` is a locked script (`kit/plan.lock`); this harness task owns it, so its pull request rewrites the lock with `python3 scripts/check_plan_lock.py --write` and appends its own `docs/decisions.md` entry naming it (`docs/governance.md` section 1). The new `tests/test_check_copy_arrows.py` plants, each in a temporary root: an arrow in a site-copy line; an arrow in a link; an arrow span without `aria-hidden`; an `aria-hidden` arrow span outside a button; two arrow spans in one button; an arrow before the button's words; an arrow span in a `button-quiet` or class-less button; an arrow in `FORMS_CSS`-style Rust constant text; `content: \"→\"` and `content: \"\\2192\"` in a stylesheet; and `->` in template text, each failing; and a `<button class=\"button button-wide\">Get quotes <span aria-hidden=\"true\">→</span></button>` that passes. T229, which also owns the script, now runs after this task and keeps the rule.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T519"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "docs"
+   ],
+   "owns": [
+    "scripts/check_copy.py",
+    "tests/test_check_copy_arrows.py"
+   ],
+   "reads": [
+    "docs/design/DESIGN_SPEC.md",
+    "docs/spec/website.md",
+    "docs/spec/wording.md",
+    "docs/copy/copy-panel.md",
+    "docs/governance.md",
+    "tests/test_check_copy.py",
+    "tests/test_check_copy_templates.py",
+    "app/portals/src/feedback.rs"
+   ],
+   "requirements": [
+    "WEB-029",
+    "WORD-029"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4246",
+    "D-474",
+    "D-3878",
+    "D-3881"
+   ],
+   "cites": [
+    "docs/design/DESIGN_SPEC.md:105",
+    "docs/design/DESIGN_SPEC.md:152"
+   ],
+   "budget": {
+    "files": 2,
+    "lines": 220,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T606-copy-arrow-rule",
+   "prompt": "kit/prompts/T606.md",
+   "acceptance": "`python3 -m pytest tests/test_check_copy_arrows.py tests/test_check_copy.py tests/test_check_copy_templates.py` passes, the existing two files unchanged; every planted case fails for the stated reason and the allowed button passes; `python3 scripts/check_copy.py` exits 0 on the repository; `python3 scripts/check_plan_lock.py` passes with the task's own decision entry."
+  },
+  {
+   "id": "T607",
+   "slug": "site-v6-bringup",
+   "title": "site: site.css brought up to the V6 reference (laftly-v6.css), component by component under the reference's class names",
+   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. This task adds no motion and no polish beyond what V6 already sets: it brings `app/site/static/site.css` up to V6 so the polish (T613) and the template tasks (T608 to T611) build on it. The live stylesheet (5.8 KB after T101, plus what T216 and T593 add for the photo, mark and request box) carries little of the reference `docs/design/reference/laftly-v6.css` (285 lines, 17.5 KB, about 4.2 KB gzipped). It takes the reference's components under the reference's own class names (header and Menu, hero, request box, `button` and `button-quiet`, `button-wide`, card, quote card with its `#N` row, price block, fact rows with `line` hairlines, fee card, how-it-works steps, fair band, footer, 911 note, forms), written in the reference's dense one-rule-per-line style and to this spec rather than pasted: section 2's tokens only (no other hex; shadows as `rgba(30,41,38,a)` and `rgba(36,88,73,a)`, the button highlight as `rgba(255,255,255,a)`), no font size under 16 px or outside px, no `linear-gradient(`, no class name containing badge, pill, chip or tag, `url()` only for the site's fonts, the header not sticky (A11Y-026), the 3 px focus ring (A11Y-005), and the only transition the 150 ms button colour fade inside `@media (prefers-reduced-motion: no-preference)` (A11Y-009). The rules T216 and T593 wrote for the photo, mark and request box are kept and folded into the reference's structure, with section 9's first-screen measurements unchanged. The existing `@font-face` blocks and the `:root` colour tokens stay untouched. Estimated about 330 added and 240 removed lines (the old component rules give way to the reference's).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "site",
+   "deps": [
+    "T606",
+    "T593"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility"
+   ],
+   "owns": [
+    "app/site/static/site.css"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/spec/website.md",
+    "docs/spec/accessibility.md",
+    "docs/design/reference/laftly-v6.css",
+    "docs/design/reference/home.html",
+    "docs/design/reference/quote_page.html",
+    "docs/ai_smell.yaml",
+    "tests/a11y/design_tokens.spec.ts"
+   ],
+   "requirements": [
+    "WEB-027",
+    "A11Y-009",
+    "A11Y-005",
+    "A11Y-026"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4246",
+    "D-3331",
+    "D-3901"
+   ],
+   "cites": [
+    "docs/design/DESIGN_SPEC.md:44",
+    "docs/design/DESIGN_SPEC.md:76",
+    "docs/design/DESIGN_SPEC.md:77",
+    "docs/design/DESIGN_SPEC.md:102",
+    "docs/design/DESIGN_SPEC.md:105",
+    "docs/design/DESIGN_SPEC.md:109",
+    "docs/design/DESIGN_SPEC.md:117"
+   ],
+   "budget": {
+    "files": 1,
+    "lines": 570,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T607-site-v6-bringup",
+   "prompt": "kit/prompts/T607.md",
+   "acceptance": "`tests/a11y/design_tokens.spec.ts`, `tests/a11y/reflow_spacing.spec.ts` (A11Y-009 at every width), every other Ally spec (0 axe violations) and `tests/e2e/home_first_screen.spec.ts` pass unchanged; `scripts/check_ai_smell.py` and `scripts/check_copy.py` report 0 problems; every class name of the reference's components is styled."
+  },
+  {
+   "id": "T608",
+   "slug": "home-quote-polish",
+   "title": "site and portals: the home page and the quote page in full V6 with the D-4246 polish, checked in screenshots at 320, 390, 768 and 1440",
+   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Limits every polish task keeps (WEB-029, WEB-030): CSS only, no script added to any site page; movement is `transform` alone and no element that holds text starts below full opacity (so axe's contrast, the design-token test and the first-screen measurements see the resting page); entrance motion only on the first render of the home page below its first screen and of the quote page's cards, at most 12 px, staggered with `:nth-child` (the CSP allows no `style` attribute, SEC-013), every animation's end time (delay plus duration times iterations) within 900 ms; no view transition between pages (D-4246 dropped it); hover and press under 350 ms; no animation repeats more than 3 times; every animation and transition inside `@media (prefers-reduced-motion: no-preference)`, so A11Y-009's test (`tests/a11y/reflow_spacing.spec.ts`) passes unchanged; colors only as section 2's tokens (shadows as `rgba(30,41,38,a)` or `rgba(36,88,73,a)`, the primary button's inner highlight as `rgba(255,255,255,a)`, no other hex), no font size under 16 px or in a unit other than px, no `linear-gradient(` (an axe incomplete on a gradient button would fail TD-A11Y-01), and no class name containing the words badge, pill, chip or tag (`docs/ai_smell.yaml`'s badge-or-pill rule is a `\\b` match, so `quote-tag` fails; D-4246 declines chips and pills). Every word stays as it is: markup and classes change, text does not; capitals (`text-transform: uppercase`) never go on text a test reads through `innerText`, which returns the shown case (for example `tests/e2e/business_portal_served.spec.ts:114` and `tests/e2e/pick_flow.spec.ts:106`, whose page text must keep its case), and `scripts/check_copy.py`, `scripts/check_ai_smell.py` and every existing test that reads page text pass unchanged. (1) Home (`home.html`, and `es_home.html` with the same structure) after T216's photo and T593's hero and request box: the reference's markup classes on every section, so the page matches `docs/design/mockups/v6-home-390-*.png` and `v6-home-1440-*.png`; the request box stays on `canvas` with no card (DESIGN_SPEC section 6, `:104`; D-4246 declines the raised card because the first screen at 320 by 740 has about 1 px to spare), with the focus glow on its textarea; the \"Get quotes\" button (class `button`) takes the one `aria-hidden` arrow span only after the task has checked that no test reads its label as raw text or markup (`toHaveText`, `innerText`, an exact HTML match, T593's `app/server/tests/home_request_box.rs` and `tests/e2e/site_pages.spec.ts` included; an accessible-name match such as `getByRole(\"button\", { name: \"Get quotes\" })` is fine); if one does, the button stays without the arrow (a note in the report, not a gap); the hero (photo, headline, request box) never moves; sections below the first screen carry `rise`. The hero photo keeps T216's width and height and gains `fetchpriority=\"high\"` and `decoding=\"async\"`, never `loading=\"lazy\"`. The home page's one italic accent is a short phrase of the existing headline in a `<span>` styled with Gelasio 500 italic; the words, their order and the headline's text content stay exactly the same (if an existing test compares the raw HTML or raw text of the headline, a button or a link that this task's required change must alter, report it as a plan gap rather than changing the test; `es_home.html` takes the same accent on its own headline or none). The kicker takes the small-label style. No example card over the photo (D-4246 drops it: text never sits on the photo, `:47` and `:87`). (2) `base.html` gains, in `head`, `<link rel=\"preload\" as=\"font\" type=\"font/woff2\" crossorigin>` for `gelasio-latin-500-normal.woff2` and `dm-sans-latin-400-normal.woff2` from `/static/site/fonts/`; the stylesheet stays first in `body` (D-3901) and nothing else in the layout changes. (3) Quote page (`app/portals/templates/quote_page.html`): the page head and the cards in V6 (paper cards, the `#N` label above a rule, the price block, fact rows, the `band` \"In their words\" panel, the small-label style on each card's number-and-time row and on fact-row labels, and the price block and raised `$`, only where the markup already separates them (the card lines `app/portals/src/quote_cards.rs` writes are one text each and that file stays unowned here: where a line is not split, say so in the report as a note, not a plan gap), the CSS-drawn external-link mark after each ROC, Google and Yelp link through the class `out` on the `<li>` of a link line only (`{% if let Some(href) = line.link %}`), never inside or on the `<a>`; plain card lines stay bare `<li>` (`tests/integration/tests/quote_page_cards.rs:243`, `:249`, `:259`, `:270`, `:272`, `:300`, `:395`, `:404` assert raw `<li>text</li>`) and are styled through `.card-lines li`; so every link's markup stays byte for byte what `tests/integration/tests/quote_page_cards.rs` (`:246`, `:250`, `:251`, `:321`, `:336`) expects, the links staying underlined and never pill-shaped (`docs/ai_smell.yaml:161`), no arrow on any Pick button, no italic on the quote page (the business's words stay upright, `:109`), the ruled list of the ranking, order and not-a-contractor lines), every card the same size, color and order of parts (PICK-009), in arrival order; server-rendered cards carry `rise`. The words, the `role=\"status\"` region (empty at first render, A11Y-033), the forms, CSRF fields and data attributes stay exactly as they are; the card lines `quote_cards.rs` writes are styled, not rewritten. The summary card's \"quoted so far\" and \"open until\" (`:118`) need data the page does not have; they are not part of this task (D-4246 open item), and no progress bar is drawn. (4) `app/portals/static/quote_page.ts`: each card it imports after load has `rise` removed before it is inserted, so a new quote appears with no motion (`:127`, WEB-029); nothing else in the script changes. (5) `tests/a11y/polish_screens.spec.ts` (Ally config; fixtures' `open` and `STATES_TO_CHECK`): for the home page and every quote-page state, at 320 by 740, 390 by 844, 768 by 1024 and 1440 by 900, it waits for `document.getAnimations()` to finish, saves a first-screen and a full-page PNG under `test-results/polish/` (never committed), and fails on sideways scroll, or when any animation from `document.getAnimations()` has an `effect.getComputedTiming().endTime` over 900 ms or more than 3 iterations; with `POLISH_SCREENS=all` it covers every state in `STATES_TO_CHECK` (the reviewers of T609 to T612 use that). It also seeds a second quote after the quote page loads, advances the poll with Playwright's clock and asserts that the appended card has no animation. Fake data only.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "site",
+   "deps": [
+    "T613",
+    "T593",
+    "T441"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility",
+    "security"
+   ],
+   "owns": [
+    "app/site/static/site.css",
+    "app/site/templates/home.html",
+    "app/site/templates/es_home.html",
+    "app/site/templates/base.html",
+    "app/portals/templates/quote_page.html",
+    "app/portals/static/quote_page.ts",
+    "tests/a11y/polish_screens.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/spec/website.md",
+    "docs/spec/accessibility.md",
+    "docs/design/reference/home.html",
+    "docs/design/reference/quote_page.html",
+    "docs/design/reference/laftly-v6.css",
+    "docs/spec/quotes-pick.md",
+    "tests/a11y/page_states.ts",
+    "tests/a11y/fixtures.ts"
+   ],
+   "requirements": [
+    "WEB-029",
+    "WEB-030",
+    "WEB-027",
+    "A11Y-009",
+    "A11Y-033",
+    "PICK-009"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4246",
+    "D-3331",
+    "D-3901",
+    "D-4098",
+    "D-492"
+   ],
+   "cites": [
+    "docs/design/DESIGN_SPEC.md:104",
+    "docs/design/DESIGN_SPEC.md:105",
+    "docs/design/DESIGN_SPEC.md:109",
+    "docs/design/DESIGN_SPEC.md:118",
+    "docs/design/DESIGN_SPEC.md:127",
+    "docs/design/DESIGN_SPEC.md:128",
+    "docs/design/DESIGN_SPEC.md:129",
+    "docs/design/DESIGN_SPEC.md:53",
+    "docs/design/DESIGN_SPEC.md:68"
+   ],
+   "budget": {
+    "files": 7,
+    "lines": 520,
+    "context_pct": 27
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T608-home-quote-polish",
+   "prompt": "kit/prompts/T608.md",
+   "acceptance": "The Ally suite (axe 0 violations, `design_tokens`, `reflow_spacing`'s A11Y-009 test at every width, `targets_contrast`) and `tests/e2e/home_first_screen.spec.ts`, `tests/e2e/site_pages.spec.ts`, `tests/e2e/pick_flow.spec.ts`, `tests/e2e/site_no_js.spec.ts`, `tests/e2e/static_served.spec.ts`, `app/server/tests/home_request_box.rs` and the portals' quote-page tests pass unchanged; `tests/a11y/polish_screens.spec.ts` passes; `scripts/check_copy.py` and `scripts/check_ai_smell.py` report 0. Screenshot review: besides the code review, a separate Opus reviewer session runs `tests/a11y/polish_screens.spec.ts`, opens every PNG beside `docs/design/mockups/` (390 and 1440) and the reference pages rendered at 320 and 768, and records its verdict in the pull request: V6 as the mock-ups show, nothing overlapping, nothing pushed off the first screen, and differences only where D-4246 sets them (20 px cards, layered shadow, the arrow)."
+  },
+  {
+   "id": "T609",
+   "slug": "site-pages-polish",
+   "title": "site: the D-4246 polish on the footer, how it works, the business page, coverage, services, help and the chat start screen",
+   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Limits every polish task keeps (WEB-029, WEB-030): CSS only, no script added to any site page; movement is `transform` alone and no element that holds text starts below full opacity (so axe's contrast, the design-token test and the first-screen measurements see the resting page); entrance motion only on the first render of the home page below its first screen and of the quote page's cards, at most 12 px, staggered with `:nth-child` (the CSP allows no `style` attribute, SEC-013), every animation's end time (delay plus duration times iterations) within 900 ms; no view transition between pages (D-4246 dropped it); hover and press under 350 ms; no animation repeats more than 3 times; every animation and transition inside `@media (prefers-reduced-motion: no-preference)`, so A11Y-009's test (`tests/a11y/reflow_spacing.spec.ts`) passes unchanged; colors only as section 2's tokens (shadows as `rgba(30,41,38,a)` or `rgba(36,88,73,a)`, the primary button's inner highlight as `rgba(255,255,255,a)`, no other hex), no font size under 16 px or in a unit other than px, no `linear-gradient(` (an axe incomplete on a gradient button would fail TD-A11Y-01), and no class name containing the words badge, pill, chip or tag (`docs/ai_smell.yaml`'s badge-or-pill rule is a `\\b` match, so `quote-tag` fails; D-4246 declines chips and pills). Every word stays as it is: markup and classes change, text does not; capitals (`text-transform: uppercase`) never go on text a test reads through `innerText`, which returns the shown case (for example `tests/e2e/business_portal_served.spec.ts:114` and `tests/e2e/pick_flow.spec.ts:106`, whose page text must keep its case), and `scripts/check_copy.py`, `scripts/check_ai_smell.py` and every existing test that reads page text pass unchanged. The remaining English site pages take the V6 components T607 styled: the footer in `site_layout.html` as section 6 sets it (mark, serif tagline, two link columns of 44 px rows, the not-a-contractor statement); how it works with the serif numerals and rules; the business page's fee card with tabular figures (the fee lines and the WEB-024 notice line read from data, as today); coverage, services and help with paper cards where section 8 puts them (the 911 note on help, its 2 px `alert` border, no shadow); and the chat start screen (`request.html`, the CON-025 consent text and the 18-or-older line) with its form on a paper card and its \"Send\" button (class `button`) carrying the arrow span only after the task has checked that no test reads that label as raw text or markup (as T608 checks \"Get quotes\"; `tests/e2e/web_chat.spec.ts` included); the code buttons get no arrow. Existing kickers and fact-row labels take the small-label style, and a page may set one short phrase of an existing headline in the italic accent (`:53`). These pages get depth, type, hover and press, and no entrance motion (section 7 keeps entrance motion to the home and quote pages). The header is T608's `base.html`, unchanged here.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "site",
+   "deps": [
+    "T608",
+    "T200"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility"
+   ],
+   "owns": [
+    "app/site/static/site.css",
+    "app/site/templates/site_layout.html",
+    "app/site/templates/how_it_works.html",
+    "app/site/templates/business.html",
+    "app/site/templates/coverage.html",
+    "app/site/templates/services.html",
+    "app/site/templates/help.html",
+    "app/site/templates/request.html"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/spec/website.md",
+    "docs/spec/accessibility.md",
+    "docs/design/reference/home.html",
+    "docs/design/reference/laftly-v6.css",
+    "tests/a11y/page_states.ts"
+   ],
+   "requirements": [
+    "WEB-027",
+    "A11Y-009",
+    "WEB-024"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4246",
+    "D-3331",
+    "D-3878"
+   ],
+   "cites": [
+    "docs/design/DESIGN_SPEC.md:111",
+    "docs/design/DESIGN_SPEC.md:117",
+    "docs/design/DESIGN_SPEC.md:123",
+    "docs/design/DESIGN_SPEC.md:128"
+   ],
+   "budget": {
+    "files": 8,
+    "lines": 480,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T609-site-pages-polish",
+   "prompt": "kit/prompts/T609.md",
+   "acceptance": "The Ally suite (axe 0 violations at every width, `design_tokens`, A11Y-009's reduced-motion test) and every existing e2e and unit test of these pages (`tests/e2e/site_pages.spec.ts`, `site_help_pages.spec.ts`, `site_no_js.spec.ts`, `web_chat.spec.ts`, the site crate's tests) pass unchanged; `tests/e2e/site_polish.spec.ts` passes; `scripts/check_copy.py` and `scripts/check_ai_smell.py` report 0. Screenshot review: a separate Opus reviewer session runs `POLISH_SCREENS=all npx playwright test --config tests/a11y/playwright.config.ts tests/a11y/polish_screens.spec.ts` and records its verdict on these pages at the four widths in the pull request."
+  },
+  {
+   "id": "T610",
+   "slug": "site-pages-polish-two",
+   "title": "site: the D-4246 polish on the Spanish pages, the legal pages and the data and business help pages",
+   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Limits every polish task keeps (WEB-029, WEB-030): CSS only, no script added to any site page; movement is `transform` alone and no element that holds text starts below full opacity (so axe's contrast, the design-token test and the first-screen measurements see the resting page); entrance motion only on the first render of the home page below its first screen and of the quote page's cards, at most 12 px, staggered with `:nth-child` (the CSP allows no `style` attribute, SEC-013), every animation's end time (delay plus duration times iterations) within 900 ms; no view transition between pages (D-4246 dropped it); hover and press under 350 ms; no animation repeats more than 3 times; every animation and transition inside `@media (prefers-reduced-motion: no-preference)`, so A11Y-009's test (`tests/a11y/reflow_spacing.spec.ts`) passes unchanged; colors only as section 2's tokens (shadows as `rgba(30,41,38,a)` or `rgba(36,88,73,a)`, the primary button's inner highlight as `rgba(255,255,255,a)`, no other hex), no font size under 16 px or in a unit other than px, no `linear-gradient(` (an axe incomplete on a gradient button would fail TD-A11Y-01), and no class name containing the words badge, pill, chip or tag (`docs/ai_smell.yaml`'s badge-or-pill rule is a `\\b` match, so `quote-tag` fails; D-4246 declines chips and pills). Every word stays as it is: markup and classes change, text does not; capitals (`text-transform: uppercase`) never go on text a test reads through `innerText`, which returns the shown case (for example `tests/e2e/business_portal_served.spec.ts:114` and `tests/e2e/pick_flow.spec.ts:106`, whose page text must keep its case), and `scripts/check_copy.py`, `scripts/check_ai_smell.py` and every existing test that reads page text pass unchanged. The rest of the site pages take T607's components: the Spanish how-it-works and business pages mirror their English pages' structure as T609 left it (`lang` unchanged, A11Y-004); legal pages keep long text in a reading column on `canvas` (section 8) with type and spacing polish only; the data pages and the business help page put their forms and fact lists on paper cards with tabular figures; the ROC complaint page likewise. The small-label style goes on existing labels only (the kicker, fact-row labels); no italic accent beyond one existing headline phrase a page, and none in legal text. Depth, type, hover and press only; no entrance motion.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "site",
+   "deps": [
+    "T609"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility"
+   ],
+   "owns": [
+    "app/site/static/site.css",
+    "app/site/templates/es_how_it_works.html",
+    "app/site/templates/es_business.html",
+    "app/site/templates/legal.html",
+    "app/site/templates/your_data.html",
+    "app/site/templates/business_data.html",
+    "app/site/templates/business_help.html",
+    "app/site/templates/roc_complaint.html"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/spec/website.md",
+    "docs/spec/accessibility.md",
+    "docs/design/reference/laftly-v6.css",
+    "tests/a11y/page_states.ts"
+   ],
+   "requirements": [
+    "WEB-027",
+    "A11Y-009",
+    "A11Y-004"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4246",
+    "D-3331"
+   ],
+   "cites": [
+    "docs/design/DESIGN_SPEC.md:123",
+    "docs/design/DESIGN_SPEC.md:128",
+    "docs/design/DESIGN_SPEC.md:135"
+   ],
+   "budget": {
+    "files": 8,
+    "lines": 420,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T610-site-pages-polish-two",
+   "prompt": "kit/prompts/T610.md",
+   "acceptance": "The Ally suite (axe 0 violations, `design_tokens`, A11Y-009's reduced-motion test) and every existing test of these pages (`tests/e2e/legal_pages.spec.ts`, `site_pages.spec.ts`, the site crate's tests) pass unchanged; `scripts/check_copy.py` and `scripts/check_ai_smell.py` report 0. Screenshot review as T609's, on these pages."
+  },
+  {
+   "id": "T611",
+   "slug": "portal-polish",
+   "title": "portals: depth, type and press on the portal screens through site.css and the portal stylesheets, no entrance motion",
+   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Limits every polish task keeps (WEB-029, WEB-030): CSS only, no script added to any site page; movement is `transform` alone and no element that holds text starts below full opacity (so axe's contrast, the design-token test and the first-screen measurements see the resting page); entrance motion only on the first render of the home page below its first screen and of the quote page's cards, at most 12 px, staggered with `:nth-child` (the CSP allows no `style` attribute, SEC-013), every animation's end time (delay plus duration times iterations) within 900 ms; no view transition between pages (D-4246 dropped it); hover and press under 350 ms; no animation repeats more than 3 times; every animation and transition inside `@media (prefers-reduced-motion: no-preference)`, so A11Y-009's test (`tests/a11y/reflow_spacing.spec.ts`) passes unchanged; colors only as section 2's tokens (shadows as `rgba(30,41,38,a)` or `rgba(36,88,73,a)`, the primary button's inner highlight as `rgba(255,255,255,a)`, no other hex), no font size under 16 px or in a unit other than px, no `linear-gradient(` (an axe incomplete on a gradient button would fail TD-A11Y-01), and no class name containing the words badge, pill, chip or tag (`docs/ai_smell.yaml`'s badge-or-pill rule is a `\\b` match, so `quote-tag` fails; D-4246 declines chips and pills). Every word stays as it is: markup and classes change, text does not; capitals (`text-transform: uppercase`) never go on text a test reads through `innerText`, which returns the shown case (for example `tests/e2e/business_portal_served.spec.ts:114` and `tests/e2e/pick_flow.spec.ts:106`, whose page text must keep its case), and `scripts/check_copy.py`, `scripts/check_ai_smell.py` and every existing test that reads page text pass unchanged. Portal screens (business, homeowner and owner) extend `base.html` and link `site.css`, then `/static/portals/forms.css` or `feedback.css` (the `FORMS_CSS` and `FEEDBACK_CSS` constants in `app/portals/src/feedback.rs`, T520's after D-3878). About thirty queued tasks own the portal templates, so this task changes no template: its rules key on the markup the portal pages already have (the working area's forms, tables in their labeled scroll region, job cards and receipts as section 8 lists them) and give them paper depth (`paper-shadow`, 20 px cards, 12 px controls), type (tabular figures on every price, time, count and code, heading tracking) the small-label style where portal markup already has a separate label, and the press scale, nothing else (no italic accent on portal screens): no entrance motion, no lift, no arrow (a portal template adds the arrow span only in its own task). A rule here never matches a site page's `rise` element. Later portal tasks inherit the styles without change.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T610",
+    "T520"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility",
+    "security"
+   ],
+   "owns": [
+    "app/site/static/site.css",
+    "app/portals/src/feedback.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/spec/website.md",
+    "docs/spec/accessibility.md",
+    "docs/design/reference/laftly-v6.css",
+    "app/portals/src/tests/forms_css.rs",
+    "tests/a11y/page_states.ts"
+   ],
+   "requirements": [
+    "WEB-027",
+    "A11Y-009",
+    "A11Y-028"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4246",
+    "D-3331",
+    "D-3878"
+   ],
+   "cites": [
+    "docs/design/DESIGN_SPEC.md:124",
+    "docs/design/DESIGN_SPEC.md:128",
+    "docs/design/DESIGN_SPEC.md:139"
+   ],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 25
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T611-portal-polish",
+   "prompt": "kit/prompts/T611.md",
+   "acceptance": "`app/portals/src/tests/forms_css.rs` and the portal crate's tests pass unchanged; the Ally suite (axe 0 violations on every portal page state, `design_tokens`, A11Y-009's reduced-motion test) passes unchanged; `tests/e2e/site_polish.spec.ts` passes. Screenshot review as T609's, on the portal page states."
+  },
+  {
+   "id": "T612",
+   "slug": "polish-speed-checks",
+   "title": "harness: the WEB-029 and WEB-030 runtime checks on every site page (no script, first-view weight, hero and font loading, animation limits) and CLS 0.05 in the performance report",
+   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. (1) The new `tests/e2e/site_speed.spec.ts` fails when: any site page (every GET route the `site` crate serves, read from its router as `tests/a11y/fixtures.ts` reads the route table) has a `<script>` element or requests a script; the home page's first view at 390 by 844 (every response body until the load event, as served, uncompressed) passes 280 KB (D-4246's baseline: the five Gelasio and DM Sans files 82.6 KB, the hero photo 82.3 KB and the mark 4.1 KB already make 169 KB, with today's site.css 5.9 KB and about 11 KB of HTML; T613's italic file adds about 20 KB); the hero photo is over 100 KB, lacks width, height or `fetchpriority=\"high\"`, or is lazy; the two first-screen fonts are not preloaded from `/static/site/fonts/` or a preloaded font goes unused; and, with motion on, on the home and quote pages: an animation from `document.getAnimations()` changes a property other than `transform`, has more than 3 iterations or an `effect.getComputedTiming().endTime` over 900 ms, any element inside the home page's first screen animates, or a button's hover or press transition lasts 350 ms or more; on every portal page state other than the quote page, any entrance animation runs; any stylesheet holds `@view-transition`; and, from computed styles on every page state, more than one outermost italic element (an italic element whose parent is not italic) is on a page, or an italic one sits inside a quote card, a form, a button or a link, or `text-transform: uppercase` is on an `h1` to `h6`, a `label`, a `button` or an `a`. Each check has a planted case that fails it. (2) `perf/compare.py` adds CLS 0.05 to its aspirational figures beside LCP 1.5 s, reported for the home and quote pages and never failing a build (D-3292); `tests/perf/test_compare.py` gains the planted case. This is a harness task because `tests/perf/test_compare.py` is T418's test; it runs after T603, which changes `tests/perf/web_vitals.spec.ts`. (3) Nothing is weakened: A11Y-009's reduced-motion test (`tests/a11y/reflow_spacing.spec.ts`, every computed animation and transition duration 0 on every page state at every width) is reused unchanged and must pass, and the Ally suite stays at 0 axe violations.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T611",
+    "T603"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "accessibility"
+   ],
+   "owns": [
+    "tests/e2e/site_speed.spec.ts",
+    "perf/compare.py",
+    "tests/perf/test_compare.py"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/spec/website.md",
+    "docs/spec/accessibility.md",
+    "tests/perf/web_vitals.spec.ts",
+    "tests/a11y/page_states.ts",
+    "tests/a11y/reflow_spacing.spec.ts",
+    "tests/e2e/fixtures.ts"
+   ],
+   "requirements": [
+    "WEB-029",
+    "WEB-030",
+    "A11Y-009"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4246",
+    "D-3292"
+   ],
+   "cites": [
+    "docs/design/DESIGN_SPEC.md:128",
+    "docs/design/DESIGN_SPEC.md:129",
+    "docs/design/DESIGN_SPEC.md:153",
+    "docs/design/DESIGN_SPEC.md:154"
+   ],
+   "budget": {
+    "files": 3,
+    "lines": 320,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T612-polish-speed-checks",
+   "prompt": "kit/prompts/T612.md",
+   "acceptance": "`tests/e2e/site_speed.spec.ts` passes on the polished pages with every planted case failing for its reason; `python3 -m pytest tests/perf/test_compare.py` passes; the performance step reports LCP and CLS for the home and quote pages against 1.5 s and 0.05; the Ally suite, `tests/e2e/site_polish.spec.ts` and `tests/a11y/reflow_spacing.spec.ts` pass unchanged. Final screenshot review: a separate Opus reviewer session runs `POLISH_SCREENS=all` over every page state at the four widths and records its verdict on the whole site in the pull request."
+  },
+  {
+   "id": "T613",
+   "slug": "site-polish-tokens",
+   "title": "site: the D-4246 polish layer in site.css (tokens, layered shadows, type, press and motion blocks, the italic font) and the stylesheet's own limits test",
+   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Limits every polish task keeps (WEB-029, WEB-030): CSS only, no script added to any site page; movement is `transform` alone and no element that holds text starts below full opacity (so axe's contrast, the design-token test and the first-screen measurements see the resting page); entrance motion only on the first render of the home page below its first screen and of the quote page's cards, at most 12 px, staggered with `:nth-child` (the CSP allows no `style` attribute, SEC-013), every animation's end time (delay plus duration times iterations) within 900 ms; no view transition between pages (D-4246 dropped it); hover and press under 350 ms; no animation repeats more than 3 times; every animation and transition inside `@media (prefers-reduced-motion: no-preference)`, so A11Y-009's test (`tests/a11y/reflow_spacing.spec.ts`) passes unchanged; colors only as section 2's tokens (shadows as `rgba(30,41,38,a)` or `rgba(36,88,73,a)`, the primary button's inner highlight as `rgba(255,255,255,a)`, no other hex), no font size under 16 px or in a unit other than px, no `linear-gradient(` (an axe incomplete on a gradient button would fail TD-A11Y-01), and no class name containing the words badge, pill, chip or tag (`docs/ai_smell.yaml`'s badge-or-pill rule is a `\\b` match, so `quote-tag` fails; D-4246 declines chips and pills). Every word stays as it is: markup and classes change, text does not; capitals (`text-transform: uppercase`) never go on text a test reads through `innerText`, which returns the shown case (for example `tests/e2e/business_portal_served.spec.ts:114` and `tests/e2e/pick_flow.spec.ts:106`, whose page text must keep its case), and `scripts/check_copy.py`, `scripts/check_ai_smell.py` and every existing test that reads page text pass unchanged. T607 has brought `site.css` up to the reference V6; this task adds the polish on top, so the template tasks after it (T608 to T611) only add classes. (1) Tokens in `:root`: `--paper-shadow` and `--paper-lift` (section 2's new values), the primary button's edge, highlight and tinted shadow, the request box's focus glow, the corner radii (cards 20, inner boxes and controls 12, the 911 note 14), the press scale 0.975, the durations (150 ms color fade, under 350 ms hover and press, the entrance), and `--spring`, the `linear()` easing from Casey's brief (`linear(0, .0697 4.6%, .2533 9.6%, .5164 15.4%, .7547 21.4%, .9081 27.2%, .9927 33.2%, 1.0279 39.8%, 1.0297 46.6%, 1.0136 56.6%, 1.0012 70.4%, .9989 86%, 1)`). (2) Depth and type on T607's components: the layered shadows, 20 px cards with 12 px inner boxes, the primary button's highlight (`inset 0 1px 0 rgba(255,255,255,.14)`), drop and tinted shadow, the request textarea's focus glow (the `focus` ring stays 3:1 or more on it, section 2), tabular figures, `text-wrap: pretty`, the heading tracking of section 3, the price block's raised half-size `$` at 24 px or more, the `band` \"In their words\" panel, and the small-label and italic-accent classes. (3) Motion, all inside one `@media (prefers-reduced-motion: no-preference)` block, with no `@view-transition` (D-4246 dropped it): the press scale, the primary button's arrow nudge (3 px, `(hover: hover)` only), the lift for `a.card` only (a whole-card link; no reading card lifts), and a `rise` keyframe (transform only, at most 12 px) that runs only on an element carrying the class `rise`, with `:nth-child` delays of about 90 ms; outside the block nothing moves. The header stays not sticky (A11Y-026). (4) The italic accent's font: Gelasio 500 italic, the same SIL Open Font License family as the Gelasio files in `docs/design/fonts/` (whose `OFL-Gelasio.txt` covers it), taken with `npm pack @fontsource/gelasio@5.3.0` (a download, not a dependency: `package.json` does not change); before using it the task checks that the package's `package.json` says `\"license\": \"OFL-1.1\"` and that its `LICENSE` text equals `docs/design/fonts/OFL-Gelasio.txt` (stop and report if either differs), and records the tarball's npm `integrity` value and the font file's SHA-256 in its decision entry; its latin subset `files/gelasio-latin-500-italic.woff2` is copied unchanged as `gelasio-latin-500-italic.woff2`, stored in `docs/design/fonts/` and served from `app/site/static/fonts/` through `app/site/src/assets.rs`'s fixed list as `font/woff2` (D-3144: bytes compiled in, no `.route(` line), with a `@font-face` (`font-style: italic`, `font-display: swap`) and no metadata (the PII scanner passes); a unit test in `assets.rs`'s test module asserts that the served bytes equal `docs/design/fonts/gelasio-latin-500-italic.woff2` byte for byte. It is not preloaded. The small-label style (capitals through `text-transform: uppercase`, +0.05em tracking, 16 px or more) and the external-link mark (an `.out a::after` of about 0.6em, the class on the link's parent element drawn from `currentColor` top and right borders with a short diagonal, no `url()`, no image and no character in `content`, so `tests/a11y/design_tokens.spec.ts`'s fonts-only `url()` rule holds and the links' markup never changes) are classes the template tasks apply. (5) `tests/e2e/site_polish.spec.ts` fetches the served `/static/site/site.css` and fails when: its gzipped size (Node's `zlib.gzipSync`) is over 25 KB; any `@keyframes` changes a property other than `transform`; any `animation` or `transition` sits outside a `prefers-reduced-motion: no-preference` block; `@view-transition` appears at all; a transition lasts 350 ms or more; an entrance animation's delay plus duration passes 900 ms; any iteration count is `infinite` or above 3; or `linear-gradient(` appears; each with a planted stylesheet string that fails it. The site and portal pages that link the stylesheet today keep rendering: `tests/a11y/design_tokens.spec.ts` and the whole Ally suite pass unchanged with motion on.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "site",
+   "deps": [
+    "T607"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility",
+    "licensing"
+   ],
+   "owns": [
+    "app/site/static/site.css",
+    "tests/e2e/site_polish.spec.ts",
+    "app/site/src/assets.rs",
+    "app/site/static/fonts/gelasio-latin-500-italic.woff2",
+    "docs/design/fonts/gelasio-latin-500-italic.woff2"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/spec/website.md",
+    "docs/spec/accessibility.md",
+    "docs/design/reference/laftly-v6.css",
+    "docs/design/reference/home.html",
+    "docs/design/reference/quote_page.html",
+    "docs/ai_smell.yaml",
+    "tests/a11y/design_tokens.spec.ts",
+    "tests/a11y/reflow_spacing.spec.ts",
+    "docs/design/fonts/OFL-Gelasio.txt"
+   ],
+   "requirements": [
+    "WEB-029",
+    "WEB-030",
+    "WEB-027",
+    "A11Y-009",
+    "A11Y-005"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4246",
+    "D-3331",
+    "D-3292",
+    "D-3901"
+   ],
+   "cites": [
+    "docs/design/DESIGN_SPEC.md:44",
+    "docs/design/DESIGN_SPEC.md:76",
+    "docs/design/DESIGN_SPEC.md:77",
+    "docs/design/DESIGN_SPEC.md:123",
+    "docs/design/DESIGN_SPEC.md:124",
+    "docs/design/DESIGN_SPEC.md:128",
+    "docs/design/DESIGN_SPEC.md:129",
+    "docs/design/DESIGN_SPEC.md:51",
+    "docs/design/DESIGN_SPEC.md:53",
+    "docs/design/DESIGN_SPEC.md:68",
+    "docs/design/DESIGN_SPEC.md:42",
+    "docs/design/DESIGN_SPEC.md:109"
+   ],
+   "budget": {
+    "files": 5,
+    "lines": 450,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T613-site-polish-tokens",
+   "prompt": "kit/prompts/T613.md",
+   "acceptance": "`tests/e2e/site_polish.spec.ts` passes with each planted case failing for its reason; `/static/site/fonts/gelasio-latin-500-italic.woff2` answers 200 as `font/woff2` and the site crate's asset tests pass, the byte-identity case included; `site.css` is 25 KB or less gzipped; `tests/a11y/design_tokens.spec.ts`, `tests/a11y/reflow_spacing.spec.ts` (A11Y-009 at every width) and every other Ally spec pass unchanged with 0 axe violations; `scripts/check_ai_smell.py` and `scripts/check_copy.py` report 0 problems; `tests/e2e/home_first_screen.spec.ts` passes unchanged."
   }
  ]
 }
