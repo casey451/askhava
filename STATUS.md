@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T12:53:43Z by runner 7fcfed420d7f (actions).
+Updated 2026-11-17T12:59:59Z by runner e9821f027c6b (manual).
 
 **Building: T479 in progress since 12:28Z; 396 of 560 done; week 19% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-17T12:53:43Z by runner 7fcfed420d7f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T479 claimed 12:28Z, lease until 15:28Z; lane 2: T202 claimed 12:18Z, lease until 15:18Z; lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 6: T594 claimed 12:36Z, lease until 15:36Z; lane 7: T321 claimed 12:53Z, lease until 15:53Z
 - **Week:** 19% used, 148.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:45Z, 8 min before this update
+- **Last run:** 12:53Z, 6 min before this update
 - **Keeper:** last ran 12:22Z, next wake 15:07Z
 
 ## Needs attention
-- BLOCKED T113: plan gap reported: PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked == len(check_legal_docs.DOCUMENTS) == 10`. T113 must list `twilio-campaign.md` in `DOCUMENTS` (prompt Goal, line 9), which makes the count 11, and T113 does not own that file. Smallest plan change: let T113 own that one line and change `== 10` to `== 11` (or drop the literal). Evidence: bash scripts/smoke.sh red with exactly one failure: tests/docs/test_terms_clauses.py::test_spanish_summary_is_listed_as_a_business_document - AssertionError 11 == 10 (1 failed, 3154 passed, 11 ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T113 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 7 problem(s) on tasks still to run (+152 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
@@ -100,31 +99,31 @@ Updated 2026-11-17T12:53:43Z by runner 7fcfed420d7f (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 304 of 733 (41.5%) · partial 341 · unstarted 88
+**Requirements verified:** 281 of 733 (38.3%) · partial 364 · unstarted 88
 **Tasks merged (throughput only):** 396 of 560
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 19 | 13 | 3 | 35 |
+| accessibility | 15 | 17 | 3 | 35 |
 | ai | 11 | 15 | 3 | 29 |
 | businesses | 21 | 35 | 2 | 58 |
-| calls | 13 | 11 | 1 | 25 |
+| calls | 11 | 13 | 1 | 25 |
 | consent | 14 | 20 | 1 | 35 |
-| fees | 24 | 27 | 1 | 52 |
+| fees | 19 | 32 | 1 | 52 |
 | intake | 25 | 18 | 0 | 43 |
-| job-cards | 20 | 4 | 0 | 24 |
+| job-cards | 19 | 5 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 24 | 19 | 2 | 45 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 20 | 23 | 2 | 45 |
 | ops-recovery | 1 | 23 | 30 | 54 |
-| privacy | 14 | 15 | 2 | 31 |
+| privacy | 12 | 17 | 2 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 33 | 22 | 1 | 56 |
 | recurring | 8 | 0 | 3 | 11 |
-| security | 11 | 39 | 5 | 55 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 1 | 28 | 6 | 35 |
 | website | 0 | 18 | 10 | 28 |
-| wording | 2 | 12 | 18 | 32 |
+| wording | 1 | 13 | 18 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
