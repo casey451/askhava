@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T07:40:11Z by runner eabc0711c109 (actions).
+Updated 2026-11-17T07:40:25Z by runner eabc0711c109 (actions).
 
 **Building: T107 in progress since 07:34Z; 387 of 559 done; week 16% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-17T07:40:11Z by runner eabc0711c109 (actions).
 - **Lane:** lane 2: T107 claimed 07:34Z, lease until 10:34Z; lane 6: T112 claimed 07:36Z, lease until 10:36Z
 - **Week:** 16% used, 160.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:40Z, 0 min before this update
-- **Keeper:** last ran 07:39Z, next wake 10:37Z
+- **Keeper:** last ran 07:40Z, next wake 10:37Z
 
 ## Needs attention
 - BLOCKED T489: plan gap reported: PLAN GAP: tests/security/tests/auth_matrix.rs:722. The `POST /request` route this task must serve (D-3878, D-3882) makes `sec_048_every_refusal_is_a_security_event` panic at auth_matrix.rs:181:9 ("/request has no door in auth_matrix.rs: add its matrix rule (SEC-019)"). sec_048 (:720-:723) builds its POST list from route_table() and calls door(path, false), ignoring the served-by-site flag that td_sec_01 (:637) and :693 pass; so any site POST outside the listed prefixes panics. POST /request is the first site POST. The file is owned by T348 (harness; also T088, T231, T302, T308); T489 does not ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T489 --plan-fix D-### --reason "..."` (D-2859)
