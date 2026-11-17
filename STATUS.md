@@ -1,25 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-17T13:20:05Z by runner 33f876050cc0 (actions).
+Updated 2026-11-17T13:20:23Z by runner d63448b288ec (actions).
 
-**Building: T479 in progress since 12:28Z; 396 of 560 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T204 in progress since 12:04Z; 396 of 560 done; week 20% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 396 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T479 claimed 12:28Z, lease until 16:15Z; lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 7: T321 claimed 12:53Z, lease until 15:53Z
+- **Lane:** lane 3: T204 claimed 12:04Z, lease until 15:44Z; lane 4: T363 claimed 12:35Z, lease until 15:35Z; lane 7: T321 claimed 12:53Z, lease until 15:53Z
 - **Week:** 20% used, 148.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:19Z, 0 min before this update
+- **Last run:** 13:20Z, 0 min before this update
 - **Keeper:** last ran 13:19Z, next wake 15:38Z
 
 ## Needs attention
 - BLOCKED T594: plan gap reported: PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change: a T489 fix task that adds `.method(Method::POST)` to the request builder in `posted_csrf` and puts the "18 or older" line (CON-025, docs/spec/consent.md:29) on the request page, then re-run T594.
 Evidence: `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/web_chat.spec.ts` exit=1, 5 failed, 2 passed. web_chat.spec.ts:137 (18 or older) fails: Expected pattern /18 or older/i not in main. web_chat.spec.ts:142, :153, :187 fail at line 94 (main form has 0 fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T594 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 6 problem(s) on tasks still to run (+151 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+154 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T479 | ops and portals: "Not a fit for us" on the job page, and the | MERGE_PENDING | 1 | 50 min | 13:19Z |  |
 | T594 | site: the end-to-end spec of the web chat and request page a | BLOCKED | 1 | 42 min | 13:18Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T202 | site: Spanish pages, the business page blocks and the requir | MERGE_PENDING | 2 | 43 min | 13:01Z | merging main into the reviewed head conflicts in app/site/src/api.rs, docs/architecture.md, tests/a11y/page_states.ts; a |
 | T113 | Draft the Twilio campaign description from the real template | BLOCKED | 1 | 10 min | 12:21Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
@@ -144,10 +145,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T479 (lease until 2026-11-17T16:15:51Z)
+- nothing
 - lane 3: T204 (lease until 2026-11-17T15:44:54Z)
 - lane 4: T363 (lease until 2026-11-17T15:35:51Z)
 - lane 7: T321 (lease until 2026-11-17T15:53:04Z)
 
 ## Last usage reading
-- {"task": "T594", "at": "2026-11-17T13:18:48Z", "input_tokens": 170, "cache_creation_input_tokens": 237026, "cache_read_input_tokens": 5630145, "output_tokens": 46460}
+- {"task": "T479", "at": "2026-11-17T13:19:37Z", "cache_read_input_tokens": 6557509, "cache_creation_input_tokens": 190350, "output_tokens": 53447, "input_tokens": 153}
