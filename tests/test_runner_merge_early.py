@@ -5,7 +5,9 @@ merge frees its lane and its dependents within a minute of the job's start inste
 pre-session smoke (T388: merged 22:53Z, DONE 23:19Z on November 11). These tests prove it closes a merged task
 without any smoke, never closes one the cycle would not (same state as `_resolve_merges` on the same inputs:
 Ci, Twin and Ally green on the merged head, equal trees, a reviewed head; otherwise BLOCKED and a red main),
-leaves open pull requests and running checks to the cycle, and that its result reaches the refill and chain logic.
+leaves running checks to the cycle, and that its result reaches the refill and chain logic. Once it closed a
+merge, it also runs the cycle's own merge-line pass on the open pull requests, so the next turn holder's update
+merge is pushed at once, but never turns auto-merge on (D-4180).
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ import pytest
 
 from runner import __main__ as entry, cycle, state as st
 from test_failure_drills import NOW, FakeEnv, config, green_pr as any_green_pr, make_task, reviewed
+from test_runner_merge_line import LineEnv, branch, head, open_pr, pending, three_behind
 from test_runner_two_lanes import _refill, _step, _workflow, by_head, head_of, staged, two_lane
 
 
@@ -132,7 +135,7 @@ def test_two_lanes_close_every_merged_lane_and_leave_an_open_one(tmp_path: Path)
     cfg = two_lane(graph, tmp_path, "s3", "1")
     assert cycle.resolve_merged(cfg, env, NOW + timedelta(minutes=10)) == cycle.MERGES_RESOLVED
     assert st.status(env.store, "T001") == st.DONE and st.status(env.store, "T002") == st.MERGE_PENDING
-    assert not env.updates  # the open one's update merge stays the cycle's
+    assert env.updates == [("claude/task/T002-x", head_of("T002"))]  # the open turn holder's update merge, now (D-4180)
     assert cycle.refill_lanes(cfg, env.store, NOW + timedelta(minutes=10)) == ["1"]
     assert cycle.refill_lanes(cfg, env.store, NOW + timedelta(minutes=10), own="1") == []  # this job's session takes it
 
@@ -248,3 +251,100 @@ def test_a_cleanup_task_waiting_for_its_stage_proof_is_left_to_the_cycle(tmp_pat
     assert cycle.resolve_merged(cfg, env, NOW) == cycle.NO_MERGED and env.store == before
     env.store["stage_proofs"] = {"2": {"evidence": "nightly run 1 green"}}
     assert cycle.resolve_merged(cfg, env, NOW) == cycle.MERGES_RESOLVED and st.status(env.store, "T001") == st.DONE
+
+
+# ---- the early step pushes the merge line's next update merge (D-4180)
+
+
+def _line_after_merge(tmp_path: Path, auto_merge: bool = False) -> tuple[LineEnv, cycle.Config]:
+    """T003, T001, T002 open and behind main in that hand-in order; T000, handed in first, has merged green."""
+    env, _, state = three_behind(tmp_path)
+    cfg = config([make_task(t) for t in ("T000", "T001", "T002", "T003")], tmp_path)
+    env.store = pending(state, "T000", -10, "4")
+    env.prs["T000"] = dict(any_green_pr(head("T000")), number=10, merged_sha="sq0000")
+    for tid in ("T001", "T002", "T003"):
+        env.prs[tid]["auto_merge"] = auto_merge
+    return env, cfg
+
+
+def test_after_a_merge_only_the_new_turn_holder_is_updated_with_one_push_and_no_auto_merge(tmp_path: Path) -> None:
+    env, cfg = _line_after_merge(tmp_path)
+    pushes = env.pushes
+    assert cycle.resolve_merged(cfg, env, NOW + timedelta(minutes=30)) == cycle.MERGES_RESOLVED
+    assert st.status(env.store, "T000") == st.DONE and env.pushes == pushes + 1
+    assert env.updates == [(branch("T003"), head("T003"))] and st.entry(env.store, "T003")["reviewed_sha"] == "m-t003"
+    assert env.auto_merges == [] and not st.entry(env.store, "T003").get("auto_merge")  # the session's cycle turns it on
+    for tid in ("T001", "T002"):
+        assert st.entry(env.store, tid)["reviewed_sha"] == head(tid)
+
+
+def test_fix_main_pending_takes_the_turn_first(tmp_path: Path) -> None:
+    env, cfg = _line_after_merge(tmp_path)
+    env.store = pending(env.store, st.FIX_MAIN, 25, "fix")
+    env.prs[st.FIX_MAIN] = open_pr(st.FIX_MAIN, 9)
+    env.by_branch[branch(st.FIX_MAIN)] = {"status": "pushed", "sha": "m-fix", "main": "main0002"}
+    assert cycle.resolve_merged(cfg, env, NOW + timedelta(minutes=30)) == cycle.MERGES_RESOLVED
+    assert env.updates == [(branch(st.FIX_MAIN), head(st.FIX_MAIN))]
+
+
+def test_a_merge_that_turns_main_red_pushes_no_update_merge_for_any_other_task(tmp_path: Path) -> None:
+    env, cfg = _line_after_merge(tmp_path)
+    env.prs["T000"]["checks"] = [{"name": n, "sha": head("T000"), "conclusion": "failure" if n == "Twin" else "success"}
+                                 for n in ("Ci", "Twin", "Ally")]
+    assert cycle.resolve_merged(cfg, env, NOW + timedelta(minutes=30)) == cycle.MERGES_RESOLVED
+    assert env.store["main_red"]["task"] == "T000" and env.updates == [] and env.auto_merges == []
+
+
+def test_a_current_turn_holder_pushes_nothing_and_leaves_auto_merge_to_the_cycle(tmp_path: Path) -> None:
+    env, cfg = _line_after_merge(tmp_path)
+    env.prs["T003"] = open_pr("T003", 3, checks="green")
+    env.by_branch[branch("T003")] = {"status": "current"}
+    assert cycle.resolve_merged(cfg, env, NOW + timedelta(minutes=30)) == cycle.MERGES_RESOLVED
+    assert env.updates == [(branch("T003"), head("T003"))] and env.auto_merges == []
+    assert st.entry(env.store, "T003")["reviewed_sha"] == head("T003") and not st.entry(env.store, "T003").get("auto_merge")
+    cycle._resolve_merges(env.read_state(), env, cfg, NOW + timedelta(minutes=31))
+    assert (branch("T003"), head("T003")) in env.auto_merges  # the session's cycle turns it on, as before
+
+
+def test_merged_tasks_it_cannot_close_stay_as_read_while_the_turn_holder_is_updated(tmp_path: Path) -> None:
+    env, cfg = _line_after_merge(tmp_path)
+    cfg = dataclasses.replace(cfg, graph=[*cfg.graph, make_task("T004", type="cleanup", stage="2"), make_task("T005")])
+    env.store = pending(pending(st.sync_graph(env.store, cfg.graph), "T004", -5, "5"), "T005", -4, "6")
+    env.prs["T004"] = dict(any_green_pr(head("T004")), number=11, merged_sha="sq0004")  # no stage proof yet
+    env.prs["T005"] = dict(any_green_pr("other05"), number=12, merged_sha="sq0005")
+    env.update_merges = None  # git cannot place T005's merged head (D-584)
+    before = copy.deepcopy(env.store)
+    assert cycle.resolve_merged(cfg, env, NOW + timedelta(minutes=30)) == cycle.MERGES_RESOLVED
+    assert st.entry(env.store, "T004") == st.entry(before, "T004") and st.entry(env.store, "T005") == st.entry(before, "T005")
+    assert env.updates == [(branch("T003"), head("T003"))]
+
+
+def test_a_conflict_sends_the_turn_holder_to_a_resync_exactly_as_the_cycle_does(tmp_path: Path) -> None:
+    env, cfg = _line_after_merge(tmp_path, auto_merge=True)
+    env.by_branch[branch("T003")] = {"status": "conflict", "paths": ["app/t003/x.py"], "main": "main0002"}
+    later = NOW + timedelta(minutes=30)
+    expected = _cycle_would(env, cfg, later)
+    assert cycle.resolve_merged(cfg, env, later) == cycle.MERGES_RESOLVED and env.store == expected
+    assert st.status(env.store, "T003") == st.QUEUED and st.entry(env.store, "T003")["resync"]
+    assert env.updates == [(branch("T003"), head("T003")), (branch("T001"), head("T001"))]
+
+
+def test_a_lost_race_leaves_the_state_and_the_cycle_adopts_the_pushed_update_merge(tmp_path: Path) -> None:
+    env, cfg = _line_after_merge(tmp_path)
+    real_push, before = env.push_state, copy.deepcopy(env.store)
+    env.push_state = lambda new, base: False  # type: ignore[method-assign]
+    assert cycle.resolve_merged(cfg, env, NOW + timedelta(minutes=30)) == "lost_race" and env.store == before
+    env.push_state = real_push  # type: ignore[method-assign]
+    env.prs["T003"] = dict(open_pr("T003", 3), head_sha="m-t003")
+    env.by_branch[branch("T003")] = {"status": "current"}  # the update merge already on the branch
+    env.update_merges = env.update_merge = True  # the pushed head is the reviewed head plus main (D-584, D-620)
+    out, _ = cycle._resolve_merges(env.read_state(), env, cfg, NOW + timedelta(minutes=35))
+    assert st.entry(out, "T003")["reviewed_sha"] == "m-t003" and st.entry(out, "T003")["update_merges"][-1]["how"] == "adopted"
+
+
+def test_nothing_merged_pushes_no_update_merge(tmp_path: Path) -> None:
+    env, _, state = three_behind(tmp_path)
+    env.store = state
+    cfg = config([make_task(t) for t in ("T001", "T002", "T003")], tmp_path)
+    assert cycle.resolve_merged(cfg, env, NOW + timedelta(minutes=30)) == cycle.NO_MERGED
+    assert env.store == state and env.pushes == 0 and env.updates == []
