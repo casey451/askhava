@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T21:27:47Z by runner 051904e6de90 (manual).
+Updated 2026-11-17T21:34:19Z by runner 2c331d907e11 (actions).
 
 **Building: T603 in progress since 21:24Z; 410 of 578 done; week 30% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-17T21:27:47Z by runner 051904e6de90 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T603 claimed 21:24Z, lease until 00:24Z; lane 4: T104 claimed 20:59Z, lease until 23:59Z
 - **Week:** 30% used, 133.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:24Z, 3 min before this update
+- **Last run:** 21:27Z, 6 min before this update
 - **Keeper:** last ran 21:15Z, next wake 00:02Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 11 problem(s) on tasks still to run (+176 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+175 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -83,15 +83,14 @@ Updated 2026-11-17T21:27:47Z by runner 051904e6de90 (manual).
 | T111 | Draft homeowner and business terms with every required claus | BLOCKED | 3 | 37 min | 22:10Z |  |
 | T320 | ops: a check that runs on a schedule raises its alert once w | check_failed | 1 | 39 min | 21:46Z |  |
 | T523 | quotes, jobs, picks and intake: the readers the owner flags  | BLOCKED | 1 | 5 min | 21:38Z |  |
-| T111 | Draft homeowner and business terms with every required claus | QUEUED | 2 | 66 min | 21:28Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 735 (0.0%) · partial 664 · unstarted 71
-**Tasks merged (throughput only):** 410 of 578
+**Requirements verified:** 0 of 733 (0.0%) · partial 664 · unstarted 69
+**Tasks merged (throughput only):** 410 of 570
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -113,7 +112,7 @@ Updated 2026-11-17T21:27:47Z by runner 051904e6de90 (manual).
 | recurring | 0 | 9 | 2 | 11 |
 | security | 0 | 50 | 5 | 55 |
 | terms | 0 | 32 | 3 | 35 |
-| website | 0 | 24 | 6 | 30 |
+| website | 0 | 24 | 4 | 28 |
 | wording | 0 | 16 | 16 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
@@ -127,7 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 53 of 178 done
+- stage 5: 53 of 186 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
