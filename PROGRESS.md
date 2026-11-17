@@ -6644,3 +6644,4 @@
 - 2026-11-17T19:55:27Z runner 339f0a35397d (actions): {}
 - 2026-11-17T20:01:37Z runner c6d52c655da5 (actions): {}
 - 2026-11-17T20:01:50Z runner c6d52c655da5 (actions): {"T597": "QUEUED -> IN_PROGRESS"}; T597 estimated 887k tokens (calibrated); week has 136.5M left (no five-hour budget, D-3056) after 3.5M still running in another lane (session_reading 2026-11-17T19:55:04Z (week)); running to the limit (model window, D-2225), claimed
+- 2026-11-17T20:02:03Z runner 889565bba82e (manual): {}
