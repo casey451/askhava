@@ -34,7 +34,8 @@ impl Default for LivenessLimit {
 }
 
 impl LivenessLimit {
-    /// Reads `ASKHAVA_LIVENESS_LIMIT_SECS` (30 to 3,600; unset is 180) from `pairs` (OPS-049).
+    /// Reads `ASKHAVA_LIVENESS_LIMIT_SECS` (150 to 3,600; unset is 180) from `pairs` (OPS-049).
+    /// The floor outlasts one 120-second handler run plus a check, when no tick moves (D-4224).
     ///
     /// # Errors
     /// A bad value, naming the key, never the value.
@@ -43,7 +44,7 @@ impl LivenessLimit {
             return Ok(Self::default());
         };
         match raw.trim().parse::<u64>() {
-            Ok(secs @ 30..=3_600) => Ok(Self(Duration::from_secs(secs))),
+            Ok(secs @ 150..=3_600) => Ok(Self(Duration::from_secs(secs))),
             _ => Err(io::Error::other(format!("{LIMIT_KEY} is invalid"))),
         }
     }

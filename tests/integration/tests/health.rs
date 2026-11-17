@@ -145,12 +145,14 @@ async fn td_ops_24_a_worker_that_stops_ticking_exits(pool: PgPool) {
 }
 
 /// TD-OPS-24: the 3 minutes is a setting; a bad value is refused naming the key, never the value.
+/// The floor is 150 seconds (D-4224): a full worker waits up to 120 seconds on one handler run
+/// without a new tick, plus the 10-second check, so a lower limit would kill a healthy worker.
 #[tokio::test(start_paused = true)]
 async fn td_ops_24_the_limit_is_a_setting() {
-    let limit = LivenessLimit::from_pairs([(LIMIT_KEY.into(), "60".into())]).expect("limit");
+    let limit = LivenessLimit::from_pairs([(LIMIT_KEY.into(), "150".into())]).expect("limit");
     let watch = watch_web(unreachable_pool(), limit);
     assert!(
-        tokio::time::timeout(Duration::from_secs(61), watch)
+        tokio::time::timeout(Duration::from_secs(151), watch)
             .await
             .is_ok()
     );
@@ -161,4 +163,7 @@ async fn td_ops_24_the_limit_is_a_setting() {
         refused.contains(LIMIT_KEY) && !refused.contains("fake-9"),
         "{refused}"
     );
+    for low in ["30", "60", "149"] {
+        assert!(LivenessLimit::from_pairs([(LIMIT_KEY.into(), low.into())]).is_err());
+    }
 }
