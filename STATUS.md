@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T23:23:31Z by runner 85f807e77a6d (actions).
+Updated 2026-11-17T23:23:44Z by runner 85f807e77a6d (actions).
 
-**Building: T606 in progress since 22:20Z; 413 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 23:23Z; 413 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 413 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T606 claimed 22:20Z, lease until 01:20Z
+- **Lane:** idle since 23:23Z (no task in progress)
 - **Week:** 33% used, 129.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:22Z, 0 min before this update
 - **Keeper:** last ran 23:22Z, next wake 01:22Z
@@ -20,6 +20,7 @@ Updated 2026-11-17T23:23:31Z by runner 85f807e77a6d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T606 | harness: scripts/check_copy.py allows one aria-hidden arrow  | MERGE_PENDING | 1 | 62 min | 23:23Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 1 | 3 min | 23:08Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | MERGE_PENDING | 3 | 37 min | 22:46Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
 | T603 | Perf and twin (harness): the web vitals report records LCP a | done | 1 | 40 min | 22:05Z |  |
@@ -137,7 +138,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T606 (lease until 2026-11-18T01:20:29Z)
 
 ## Last usage reading
-- {"task": "T203", "at": "2026-11-17T23:08:38Z", "output_tokens": 12954, "cache_read_input_tokens": 1421354, "cache_creation_input_tokens": 87178, "input_tokens": 68}
+- {"task": "T606", "at": "2026-11-17T23:23:27Z", "input_tokens": 104, "output_tokens": 43016, "cache_read_input_tokens": 1961371, "cache_creation_input_tokens": 156556}
