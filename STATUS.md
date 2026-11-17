@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-17T22:00:31Z by runner 6669641e12b4 (actions).
+Updated 2026-11-17T22:02:07Z by runner 051904e6de90 (actions).
 
-**Building: T603 in progress since 21:24Z; 410 of 578 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T603 in progress since 21:24Z; 411 of 578 done; week 31% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 410 of 578 build tasks (owner gates not counted)
+- **Tasks done:** 411 of 578 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T603 claimed 21:24Z, lease until 01:00Z
 - **Week:** 31% used, 133.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:45Z, 15 min before this update
+- **Last run:** 22:00Z, 1 min before this update
 - **Keeper:** last ran 21:44Z, next wake 00:26Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+175 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+176 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T104 | Wording scan: brand, banned words and the not-a-contractor p | MERGE_PENDING | 4 | 44 min | 21:44Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
+| T104 | Wording scan: brand, banned words and the not-a-contractor p | done | 4 | 44 min | 21:44Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T594 | site: the end-to-end spec of the web chat and request page a | MERGE_PENDING | 2 | 83 min | 21:03Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T106 | ops: /healthz and the web and worker liveness exits | MERGE_PENDING | 1 | 77 min | 20:38Z |  |
 | T602 | privacy: the inbound email signature check refuses an out-of | MERGE_PENDING | 1 | 30 min | 20:37Z |  |
@@ -88,8 +88,8 @@ Updated 2026-11-17T22:00:31Z by runner 6669641e12b4 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 733 (0.0%) · partial 664 · unstarted 69
-**Tasks merged (throughput only):** 410 of 570
+**Requirements verified:** 0 of 735 (0.0%) · partial 671 · unstarted 64
+**Tasks merged (throughput only):** 411 of 578
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -111,8 +111,8 @@ Updated 2026-11-17T22:00:31Z by runner 6669641e12b4 (actions).
 | recurring | 0 | 9 | 2 | 11 |
 | security | 0 | 50 | 5 | 55 |
 | terms | 0 | 32 | 3 | 35 |
-| website | 0 | 24 | 4 | 28 |
-| wording | 0 | 16 | 16 | 32 |
+| website | 0 | 24 | 6 | 30 |
+| wording | 0 | 23 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -125,7 +125,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 53 of 186 done
+- stage 5: 54 of 186 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
