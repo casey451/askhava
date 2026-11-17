@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-17T03:56:16Z by runner f7aa2cf22f49 (actions).
+Updated 2026-11-17T03:56:36Z by runner 0241d76c6e76 (actions).
 
 **Building: T103 in progress since 03:40Z; 380 of 557 done; week 13% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-17T03:56:16Z by runner f7aa2cf22f49 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T103 claimed 03:40Z, lease until 06:40Z; lane 6: T481 claimed 03:42Z, lease until 06:42Z; lane 7: T591 claimed 03:16Z, lease until 06:40Z
 - **Week:** 13% used, 165.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:47Z, 8 min before this update
+- **Last run:** 03:56Z, 0 min before this update
 - **Keeper:** last ran 03:47Z, next wake 06:43Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-17T03:56:16Z by runner f7aa2cf22f49 (actions).
 |---|---|---|---|---|---|---|
 | T107 | Consent records kept 5 years, no export, opt-out rate alerts | QUEUED | 1 | 85 min | 03:45Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 | T584 | businesses (harness): sign-up activation retried after a con | MERGE_PENDING | 2 | 43 min | 03:23Z | PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to rea |
-| T221 | site: the terms, privacy policy, SMS terms, homeowner data a | MERGE_PENDING | 2 | 79 min | 03:14Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   0.13. |
+| T221 | site: the terms, privacy policy, SMS terms, homeowner data a | resync | 2 | 79 min | 03:14Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T584 | businesses (harness): sign-up activation retried after a con | BLOCKED | 1 | 3 min | 02:26Z |  |
 | T469 | server (harness): the Resend email client from settings and  | done | 1 | 99 min | 02:12Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | check_failed | 1 | 2 h 47 min | 01:23Z |  |
