@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-17T16:52:09Z by runner 2f2fa8c6a62f (actions).
+Updated 2026-11-17T16:52:16Z by runner 4a1b93c4f075 (actions).
 
 **Building: T491 in progress since 15:41Z; 402 of 569 done; week 24% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 402 of 569 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T491 claimed 15:41Z, lease until 19:27Z; lane 4: T104 claimed 16:00Z, lease until 19:50Z
+- **Lane:** lane 1: T491 claimed 15:41Z, lease until 19:27Z
 - **Week:** 24% used, 146.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:52Z, 0 min before this update
 - **Keeper:** last ran 16:35Z, next wake 19:28Z
@@ -16,11 +16,12 @@ Updated 2026-11-17T16:52:09Z by runner 2f2fa8c6a62f (actions).
 Evidence: ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T528 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T488 (since 2026-11-17T15:29:29Z, no attempt used; a plan change fixes it): T488: dependency T202 is DONE but its owned file app/site/templates/es_home.html is not on main; T488: dependency T202 is DONE but its owned file tests/docs/test_required_lines.py is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/es_business.html is not on main; T488: dependency T202 is DONE but its owned file app/site/templates/business_help.html is not on main
-- Strict plan check red: 9 problem(s) on tasks still to run (+159 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+155 on DONE tasks); first: T402: stored context_pct 40% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 1 | 51 min | 16:52Z | Review not approved after the one fix round (head 4a1b93c4f0752f54caff26156143741f7b4d9659; tests/docs/test_wording_scan |
 | T528 | ops, businesses, intake, picks and licensing: the readers th | BLOCKED | 1 | 24 min | 16:50Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
 | T595 | server and site: a same-site web chat POST passes its CSRF c | MERGE_PENDING | 1 | 45 min | 16:19Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | done | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -140,7 +141,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T491 (lease until 2026-11-17T19:27:15Z)
-- lane 4: T104 (lease until 2026-11-17T19:50:05Z)
 
 ## Last usage reading
-- {"task": "T528", "at": "2026-11-17T16:50:55Z", "input_tokens": 133, "output_tokens": 44021, "cache_read_input_tokens": 5379305, "cache_creation_input_tokens": 134353}
+- {"task": "T104", "at": "2026-11-17T16:52:15Z", "cache_creation_input_tokens": 195156, "input_tokens": 132, "output_tokens": 47964, "cache_read_input_tokens": 3312201}
