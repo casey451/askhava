@@ -239,7 +239,8 @@ async fn td_con_09_businesses_alert_at_5_00_told_apart_by_phone_stopped(pool: Pg
 }
 
 /// TD-CON-09 (CON-024, D-4082): a repeat STOP from a listed number in the next week is not that
-/// week's opt-out; STOP, START, STOP counts again; one number twice in a week counts once.
+/// week's opt-out; STOP, START, STOP counts again; one number twice in a week counts once; a
+/// START before the first STOP or after the repeat STOP does not make the repeat count.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_con_09_a_repeat_stop_is_not_counted_and_stop_start_stop_is(pool: PgPool) {
     let vault = vault();
@@ -248,10 +249,16 @@ async fn td_con_09_a_repeat_stop_is_not_counted_and_stop_start_stop_is(pool: PgP
         digest(&vault, 102),
         digest(&vault, 103),
     );
-    for number in [&repeat, &again] {
+    let (late_start, early_start) = (digest(&vault, 104), digest(&vault, 105));
+    for number in [&repeat, &again, &late_start] {
         event(&pool, "opt_out", number, None, midweek(0)).await;
     }
-    event(&pool, "opt_out", &repeat, None, midweek(1)).await;
+    event(&pool, "start", &early_start, None, midweek(0)).await;
+    event(&pool, "opt_out", &early_start, None, midweek(0) + DAY).await;
+    for number in [&repeat, &late_start, &early_start] {
+        event(&pool, "opt_out", number, None, midweek(1)).await;
+    }
+    event(&pool, "start", &late_start, None, midweek(2)).await;
     event(&pool, "start", &again, None, midweek(1)).await;
     event(&pool, "opt_out", &again, None, midweek(1) + DAY).await;
     event(&pool, "opt_out", &twice, None, midweek(1)).await;
@@ -259,14 +266,36 @@ async fn td_con_09_a_repeat_stop_is_not_counted_and_stop_start_stop_is(pool: PgP
     let mut db = pool.acquire().await.expect("connection");
     assert_eq!(
         rates(&mut db, 0).await.homeowners.opted_out,
-        2,
-        "both newly listed"
+        4,
+        "all four newly listed"
     );
     assert_eq!(
         rates(&mut db, 1).await.homeowners.opted_out,
         2,
-        "STOP, START, STOP and one new number; the repeat STOP is not counted"
+        "STOP, START, STOP and one new number; no repeat STOP is counted"
     );
+    assert_eq!(rates(&mut db, 2).await.homeowners.opted_out, 0);
+}
+
+/// TD-CON-09 (CON-024, D-4082): a send and an opt-out at exactly Monday 00:00 Arizona time are
+/// the new week's; one second earlier they are the week before's.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_09_an_event_at_monday_00_00_is_the_new_weeks(pool: PgPool) {
+    let vault = vault();
+    let before = ts(MONDAY) - SignedDuration::from_secs(1);
+    sent(&pool, "homeowner", 1, ts(MONDAY)).await;
+    sent(&pool, "homeowner", 1, before).await;
+    event(&pool, "opt_out", &digest(&vault, 110), None, ts(MONDAY)).await;
+    event(&pool, "opt_out", &digest(&vault, 111), None, before).await;
+    let mut db = pool.acquire().await.expect("connection");
+    for weeks in [0, -1] {
+        let rates = rates(&mut db, weeks).await;
+        assert_eq!(
+            (rates.homeowners.texted, rates.homeowners.opted_out),
+            (1, 1),
+            "week {weeks}"
+        );
+    }
 }
 
 /// TD-CON-09 (CON-022, CON-023): the opt-out log, the message log and the suppression list
