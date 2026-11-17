@@ -1,18 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-17T01:36:01Z by runner f602aaf30948 (actions).
+Updated 2026-11-17T01:40:43Z by runner fdfeb78d6a6e (actions).
 
-**Building: T103 in progress since 00:02Z; 377 of 545 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T103 in progress since 00:02Z; 377 of 556 done; week 10% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 377 of 545 build tasks (owner gates not counted)
+- **Tasks done:** 377 of 556 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T103 claimed 00:02Z, lease until 03:45Z; lane 2: T107 claimed 01:22Z, lease until 04:22Z; lane 5: T469 claimed 00:32Z, lease until 04:01Z
+- **Lane:** lane 1: T103 claimed 00:02Z, lease until 04:40Z; lane 2: T107 claimed 01:22Z, lease until 04:22Z; lane 5: T469 claimed 00:32Z, lease until 04:01Z
 - **Week:** 10% used, 172.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:35Z, 0 min before this update
+- **Last run:** 01:36Z, 4 min before this update
 - **Keeper:** last ran 01:36Z, next wake 03:48Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- Strict plan check red: 17 problem(s) on tasks still to run (+138 on DONE tasks); first: T103: stored context_pct 25% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -72,8 +73,8 @@ Updated 2026-11-17T01:36:01Z by runner f602aaf30948 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 321 of 733 (43.8%) · partial 299 · unstarted 113
-**Tasks merged (throughput only):** 377 of 545
+**Requirements verified:** 328 of 733 (44.7%) · partial 292 · unstarted 113
+**Tasks merged (throughput only):** 377 of 541
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -83,10 +84,10 @@ Updated 2026-11-17T01:36:01Z by runner f602aaf30948 (actions).
 | calls | 14 | 10 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
 | fees | 24 | 27 | 1 | 52 |
-| intake | 29 | 11 | 3 | 43 |
+| intake | 30 | 10 | 3 | 43 |
 | job-cards | 20 | 4 | 0 | 24 |
 | licensing | 39 | 9 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
+| lifecycle | 27 | 1 | 0 | 28 |
 | messaging | 26 | 17 | 2 | 45 |
 | ops-recovery | 1 | 22 | 31 | 54 |
 | privacy | 12 | 17 | 2 | 31 |
@@ -116,7 +117,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T103 (lease until 2026-11-17T03:45:28Z)
+- T103 (lease until 2026-11-17T04:40:43Z)
 - lane 2: T107 (lease until 2026-11-17T04:22:20Z)
 - lane 5: T469 (lease until 2026-11-17T04:01:32Z)
 
