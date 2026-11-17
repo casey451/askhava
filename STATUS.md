@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-17T10:04:04Z by runner e01709a30d98 (actions).
+Updated 2026-11-17T10:08:17Z by runner 894d21959a1b (actions).
 
-**Building: T204 in progress since 09:58Z; 391 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T204 in progress since 09:58Z; 392 of 560 done; week 18% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 391 of 560 build tasks (owner gates not counted)
+- **Tasks done:** 392 of 560 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T204 claimed 09:58Z, lease until 12:58Z; lane 4: T112 claimed 10:03Z, lease until 13:03Z; lane 7: T446 claimed 10:02Z, lease until 13:02Z
 - **Week:** 18% used, 155.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:02Z, 1 min before this update
+- **Last run:** 10:04Z, 3 min before this update
 - **Keeper:** last ran 09:57Z, next wake 10:17Z
 
 ## Needs attention
 - PLAN GAP T321 (since 2026-11-17T09:31:01Z, no attempt used; a plan change fixes it): T321: dependency T107 is DONE but its owned file app/messaging/src/consent_alerts.rs is not on main; T321: dependency T107 is DONE but its owned file tests/integration/tests/consent_records_alerts.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 5 problem(s) on tasks still to run (+146 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+147 on DONE tasks); first: T115: stored context_pct 13% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -23,7 +23,7 @@ Updated 2026-11-17T10:04:04Z by runner e01709a30d98 (actions).
 | T202 | site: Spanish pages, the business page blocks and the requir | MERGE_PENDING | 1 | 88 min | 09:23Z |  |
 | T107 | Consent records kept 5 years, no export, opt-out rate alerts | done | 2 | 85 min | 09:00Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 2 | 52 min | 08:28Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
-| T570 | intake: a CLOSE text, a "Close which?" answer and a cancel-i | MERGE_PENDING | 1 | 39 min | 08:26Z |  |
+| T570 | intake: a CLOSE text, a "Close which?" answer and a cancel-i | done | 1 | 39 min | 08:26Z |  |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z |  |
 | T201 | site: services and help pages, the ROC complaint page | done | 1 | 56 min | 07:22Z |  |
 | T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z |  |
@@ -93,7 +93,7 @@ Updated 2026-11-17T10:04:04Z by runner e01709a30d98 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 302 of 733 (41.2%) · partial 333 · unstarted 98
-**Tasks merged (throughput only):** 391 of 560
+**Tasks merged (throughput only):** 392 of 560
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -129,7 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 34 of 168 done
+- stage 5: 35 of 168 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
