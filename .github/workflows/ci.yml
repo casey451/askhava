@@ -18,6 +18,8 @@ on:
   workflow_call:
 permissions:
   contents: read
+  # The proven-parent pass reads the runs and jobs of a parent commit (D-4281).
+  actions: read
 env:
   # Incremental artifacts are not reused across runs and bloat the cache; Cargo.toml [profile.dev] sets
   # debug = "line-tables-only" to keep the cached target small (D-693).
@@ -155,6 +157,7 @@ jobs:
         id: changes
         env:
           EVENT_NAME: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           # The nightly (called with the caller's event name, schedule or workflow_dispatch) and every run on main
           # compile everything. A branch run compiles the Rust
@@ -168,6 +171,14 @@ jobs:
           rust=false; npm=false
           echo "$files" | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
           echo "$files" | grep -Eq '^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y)/|app/[^/]+/static/.*\.ts$)' && npm=true
+          # Proven-parent pass (D-4281): a flag set true may go back to false only on an exact proven= line.
+          proven() {
+            line="$(python3 scripts/ci_proven.py --job "$1" --flag "$2" --step-script "$0" || true)"
+            echo "$1 $2: $line"
+            [[ "$line" =~ ^proven=[0-9a-f]{40}$ ]]
+          }
+          if [ "$rust" = true ] && proven "Checks" rust; then rust=false; fi
+          if [ "$npm" = true ] && proven "Checks" npm; then npm=false; fi
           echo "rust=$rust" >> "$GITHUB_OUTPUT"; echo "npm=$npm" >> "$GITHUB_OUTPUT"
           echo "rust=$rust npm=$npm"
 
@@ -361,6 +372,13 @@ jobs:
           rust=false
           git diff --no-renames --name-only "$base" HEAD \
             | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          # Proven-parent pass (D-4281): a flag set true may go back to false only on an exact proven= line.
+          proven() {
+            line="$(python3 scripts/ci_proven.py --job "$1" --flag "$2" --step-script "$0" || true)"
+            echo "$1 $2: $line"
+            [[ "$line" =~ ^proven=[0-9a-f]{40}$ ]]
+          }
+          if [ "$rust" = true ] && proven "Lint and slow tests" rust; then rust=false; fi
           echo "rust=$rust" >> "$GITHUB_OUTPUT"; echo "rust=$rust"
 
       - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
@@ -518,6 +536,13 @@ jobs:
           rust=false
           git diff --no-renames --name-only "$base" HEAD \
             | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|coverage_floor\.json)|scripts/coverage_floor\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          # Proven-parent pass (D-4281): a flag set true may go back to false only on an exact proven= line.
+          proven() {
+            line="$(python3 scripts/ci_proven.py --job "$1" --flag "$2" --step-script "$0" || true)"
+            echo "$1 $2: $line"
+            [[ "$line" =~ ^proven=[0-9a-f]{40}$ ]]
+          }
+          if [ "$rust" = true ] && proven "Coverage" rust; then rust=false; fi
           echo "rust=$rust" >> "$GITHUB_OUTPUT"
 
       - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
@@ -645,6 +670,13 @@ jobs:
           run=false
           git diff --no-renames --name-only "$base" HEAD \
             | grep -Eq '^(app/|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|stand_ins/|tests/(e2e|a11y|perf)/|perf/|package(-lock)?\.json|tsconfig|Cargo\.(toml|lock)|rust-toolchain\.toml|\.sqlx/|\.github/workflows/(ci|a11y)\.yml)' && run=true
+          # Proven-parent pass (D-4281): a flag set true may go back to false only on an exact proven= line.
+          proven() {
+            line="$(python3 scripts/ci_proven.py --job "$1" --flag "$2" --step-script "$0" || true)"
+            echo "$1 $2: $line"
+            [[ "$line" =~ ^proven=[0-9a-f]{40}$ ]]
+          }
+          if [ "$run" = true ] && proven "E2e" run; then run=false; fi
           echo "run=$run" >> "$GITHUB_OUTPUT"; echo "run=$run"
 
       - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
