@@ -50,6 +50,7 @@ mod order_dispatch;
 mod photos;
 mod purge;
 mod question_bank;
+mod quote_updates;
 mod replies;
 mod resubscribe;
 mod routing;

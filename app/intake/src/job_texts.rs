@@ -140,8 +140,8 @@ const FAILED: &str = "the jobs homeowner-text step failed";
 /// PRIV-004), and the footer postal line PICK-046's email needs (SEC-028; `None` sends no email).
 pub struct JobTextKeys {
     link: IdSecret,
-    outbox: SecretString,
-    vault: Vault,
+    pub(crate) outbox: SecretString,
+    pub(crate) vault: Vault,
     postal: Option<PostalAddress>,
 }
 
@@ -376,7 +376,7 @@ async fn email_postal<'k>(
 }
 
 /// Her quote page `/q/<token>` with a token issued in `tx` (PICK-010, SEC-037).
-async fn quote_link(
+pub(crate) async fn quote_link(
     tx: &mut PgConnection,
     keys: &JobTextKeys,
     job: Uuid,

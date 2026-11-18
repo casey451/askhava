@@ -10,10 +10,14 @@
 //! `https://<domain>` (D-3844), so `build_router` needs no new part. Every response is
 //! `no-store`; every `POST` passes `refuse_cross_site` and then the CSRF form check before any
 //! owner check, so a cross-site or wrong-token `POST` from anyone is a 403 with one
-//! `csrf_rejected` event (D-3878). Every sign-in `POST`, a passkey answer too (the password is
-//! checked on every path), calls `admit_owner_password` first and, when refused, answers as a
-//! wrong password does and checks nothing (D-1951, D-2206, D-3962). A wrong password or code says
-//! nothing about which was wrong.
+//! `csrf_rejected` event (D-3878). Every sign-in `POST`, a passkey answer too, admits
+//! `admit_owner_ip` first; a passkey answer then goes to `owner_passkey_sign_in` (assertion
+//! before password, never the account limit when verified), any other post admits
+//! `admit_owner_account` before its argon2; a refusal answers as a wrong password does and checks
+//! nothing (SEC-040, D-1951, D-2206, D-3962, D-4294). Each passkey challenge admits
+//! `admit_owner_passkey_challenge` (429 when refused), and each step-up try
+//! `admit_owner_step_up` before the TOTP check: a refused try checks nothing and ends the session
+//! (SEC-020, SEC-043). A wrong password or code says nothing about which was wrong.
 //!
 //! [`require_owner`] is the owner-session check T304, T305 and T310 use (with [`note_owner_site`]
 //! as a route layer): `portals::api::owner_principal` (12 hours at most, 30 minutes idle); no
@@ -30,9 +34,10 @@ use askhava_portals::api::{
     ButtonForm, CookieJar, CsrfField, CsrfForm, OWNER_PASSKEY_ROUTE, OWNER_SIGN_OUT_ALL_ROUTE,
     OWNER_SIGN_OUT_ROUTE, OWNER_SIGNIN_ROUTE, OWNER_STEP_UP_ROUTE, OwnerAuth, OwnerAuthError,
     OwnerPrincipal, SESSION_COOKIE, SecondFactor, SecurityEvent, SecurityEventKind, StepUpScreen,
-    WebSecurity, admit_owner_password, admit_security_event, csrf_token, current_session,
-    ensure_pre_session, no_store, owner_principal, owner_sign_in, owner_sign_out, owner_signed_out,
-    owner_signin_page, owner_step_up, owner_step_up_page, passkey_registered,
+    WebSecurity, admit_owner_account, admit_owner_ip, admit_owner_passkey_challenge,
+    admit_owner_step_up, admit_security_event, csrf_token, current_session, ensure_pre_session,
+    no_store, owner_passkey_sign_in, owner_principal, owner_sign_in, owner_sign_out,
+    owner_signed_out, owner_signin_page, owner_step_up, owner_step_up_page, passkey_registered,
     passkey_sign_in_options, record_security_event, refuse_cross_site, security_event_client,
     sign_out_everywhere,
 };
@@ -292,10 +297,17 @@ fn factor_of(form: &SignInForm) -> SecondFactor<'_> {
     }
 }
 
-/// `POST` [`OWNER_SIGNIN_ROUTE`] (SEC-005, SEC-007, SEC-014, SEC-020, SEC-042, SEC-043): every
-/// try, passkey answers included (`owner_sign_in` checks the password on every path), admits
-/// `admit_owner_password`'s limit first and a refusal checks nothing (D-1951, D-2206); then both factors,
-/// and a 303 to the step-up page with the new session cookie. Any failure is the same 401 page.
+/// Whether `admitted` let the try through; a refusal or a counter failure is a refusal.
+fn passed(admitted: Result<Admission, askhava_intake::api::LimitError>) -> bool {
+    matches!(admitted, Ok(Admission::Admitted))
+}
+
+/// `POST` [`OWNER_SIGNIN_ROUTE`] (SEC-005, SEC-007, SEC-014, SEC-020, SEC-040, SEC-042,
+/// SEC-043): every try admits `admit_owner_ip` first; a passkey answer is checked before the
+/// password by `owner_passkey_sign_in`, which counts only an unverified one for the account; any
+/// other try admits `admit_owner_account` before its argon2 (D-1951, D-2206, D-4294). A refusal
+/// checks nothing. Then a 303 to the step-up page with the new session cookie; any failure is the
+/// same 401 page.
 async fn sign_in(
     State(owner): State<Owner>,
     Extension(site): Extension<OwnerSite>,
@@ -303,28 +315,48 @@ async fn sign_in(
     CsrfForm(form): CsrfForm<SignInForm>,
 ) -> Response {
     let now = owner.clock.now();
-    let admitted = admit_owner_password(&owner.pool, site.client, now).await;
-    if !matches!(admitted, Ok(Admission::Admitted)) {
+    if !passed(admit_owner_ip(&owner.pool, site.client, now).await) {
         return sign_in_answer(&owner, jar, StatusCode::UNAUTHORIZED).await;
     }
-    let Ok(mut db) = owner.pool.acquire().await else {
-        return failed("database");
+    let password = form.password.as_str();
+    let signed = match factor_of(&form) {
+        SecondFactor::Passkey {
+            challenge,
+            credential,
+        } => {
+            let answer = (password, challenge, credential);
+            owner_passkey_sign_in(&owner.pool, jar.clone(), answer, &owner.auth, now).await
+        }
+        factor => {
+            if !passed(admit_owner_account(&owner.pool, now).await) {
+                return sign_in_answer(&owner, jar, StatusCode::UNAUTHORIZED).await;
+            }
+            let Ok(mut db) = owner.pool.acquire().await else {
+                return failed("database");
+            };
+            owner_sign_in(&mut db, jar.clone(), (password, factor), &owner.auth, now).await
+        }
     };
-    let factors = (form.password.as_str(), factor_of(&form));
-    match owner_sign_in(&mut db, jar.clone(), factors, &owner.auth, now).await {
+    match signed {
         Ok(jar) => (jar, see_other(OWNER_STEP_UP_ROUTE)).into_response(),
         Err(OwnerAuthError::Refused) => sign_in_answer(&owner, jar, StatusCode::UNAUTHORIZED).await,
         Err(_) => failed("owner sign-in"),
     }
 }
 
-/// `POST` [`OWNER_PASSKEY_ROUTE`]: a passkey sign-in challenge as JSON for `passkey.ts`; 404 when
-/// no passkey is registered, 429 while too many challenges are live (D-098, D-1919).
+/// `POST` [`OWNER_PASSKEY_ROUTE`] (SEC-014, SEC-040, D-4294): admits
+/// `admit_owner_passkey_challenge` for the client address first (a refusal is a 429 that issues
+/// nothing), then a passkey sign-in challenge as JSON for `passkey.ts`; 404 when no passkey is
+/// registered, 429 at the table-size bound (D-098, D-1919).
 async fn passkey_options(
     State(owner): State<Owner>,
+    Extension(site): Extension<OwnerSite>,
     CsrfForm(_): CsrfForm<ButtonForm>,
 ) -> Response {
     let now = owner.clock.now();
+    if !passed(admit_owner_passkey_challenge(&owner.pool, site.client, now).await) {
+        return StatusCode::TOO_MANY_REQUESTS.into_response();
+    }
     let Ok(mut db) = owner.pool.acquire().await else {
         return failed("database");
     };
@@ -364,9 +396,11 @@ async fn step_up_page(
     step_up_answer(&jar, StepUpScreen::Ask, StatusCode::OK)
 }
 
-/// `POST` [`OWNER_STEP_UP_ROUTE`] (SEC-043, SEC-048): a right TOTP code restarts the 5-minute
-/// window; a wrong, old or reused one is `portals`' `auth_failed` event and the form again, a 400
-/// with no sign-in link (D-3878).
+/// `POST` [`OWNER_STEP_UP_ROUTE`] (SEC-020, SEC-043, SEC-048): `admit_owner_step_up` first (5
+/// tries per session, 10 per address an hour, D-4294); a refused try checks no code, ends the
+/// session on the server and is [`owner_signed_out`] with the cookie cleared. A right TOTP code
+/// restarts the 5-minute window; a wrong, old or reused one is `portals`' `auth_failed` event and
+/// the form again, a 400 with no sign-in link (D-3878).
 async fn step_up(
     State(owner): State<Owner>,
     Extension(site): Extension<OwnerSite>,
@@ -381,6 +415,13 @@ async fn step_up(
     let Ok(mut db) = owner.pool.acquire().await else {
         return failed("database");
     };
+    let tries = (principal.session(), site.client);
+    if !passed(admit_owner_step_up(&owner.pool, tries, now).await) {
+        return match owner_sign_out(&mut db, jar).await {
+            Ok(jar) => (jar, owner_signed_out()).into_response(),
+            Err(_) => failed("owner step-up limit"),
+        };
+    }
     let factor = SecondFactor::Totp(form.code.trim());
     let step = (owner.auth.as_ref(), factor, site.route.as_str());
     match owner_step_up(&mut db, &mut principal, step, now).await {
