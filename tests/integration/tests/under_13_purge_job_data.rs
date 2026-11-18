@@ -58,7 +58,7 @@ async fn reply(db: &mut Db, contact: Uuid, words: &str, minute: i64) -> Result<R
         .map_err(|e| e.to_string())
 }
 
-/// A fake contact with a request, its job, two photo rows and a kept description and card.
+/// A fake contact with a request and its plumbing job (see [`job_with_words`]).
 async fn seeded(db: &mut Db, phone: &str, tag: &str) -> (Uuid, Uuid, Uuid) {
     let new = NewContact {
         phone: Some(SecretString::from(phone.to_owned())),
@@ -69,12 +69,23 @@ async fn seeded(db: &mut Db, phone: &str, tag: &str) -> (Uuid, Uuid, Uuid) {
         panic!("a first text opens a request");
     };
     let request = first.conversation.expect("request");
+    let job = job_with_words(db, request, ("plumbing", tag), 1).await;
+    (who, request, job)
+}
+
+/// A new `trade` job of `request` with two photo rows and a kept description and card.
+async fn job_with_words(
+    db: &mut Db,
+    request: Uuid,
+    (trade, tag): (&str, &str),
+    minute: i64,
+) -> Uuid {
     let start = JobStart {
         conversation: request,
         words: LEAK,
         emergency: false,
-        trade: "plumbing",
-        at: at(1),
+        trade,
+        at: at(minute),
     };
     let Opened::Created(job) = begin_job(db, &start).await.expect("job") else {
         panic!("a new job");
@@ -98,7 +109,7 @@ async fn seeded(db: &mut Db, phone: &str, tag: &str) -> (Uuid, Uuid, Uuid) {
             .await
             .expect("seed");
     }
-    (who, request, job)
+    job
 }
 
 /// (photo rows, queued object deletes, descriptions, cards) of `job`, whose objects carry `tag`.
@@ -131,17 +142,20 @@ async fn closed_and_consents(db: &mut Db, request: Uuid, who: Uuid) -> (bool, i6
     .expect("request")
 }
 
-/// TD-INT-44 (INT-038, PRIV-008, D-4294): "I'm 11" deletes her request's job photo rows (each
-/// object's delete queued) and its kept words and card; the consent record stays; another
-/// person's request keeps its photos and words.
+/// TD-INT-44 (INT-038, PRIV-008, D-4294, D-4377): "I'm 11" deletes the photo rows (each
+/// object's delete queued) and kept words and card of every job of her request, a second trade's
+/// job too; the consent record stays; another person's request keeps its photos and words.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_44_under_13_deletes_photos_and_job_words(mut db: Db) {
     let (who, request, job) = seeded(&mut db, "(928) 555-0165", "child").await;
+    let wiring = job_with_words(&mut db, request, ("electrical", "wire"), 2).await;
     let (_, _, other) = seeded(&mut db, "(928) 555-0166", "other").await;
     assert_eq!(kept(&mut db, job, "child").await, (2, 0, 1, 1));
+    assert_eq!(kept(&mut db, wiring, "wire").await, (2, 0, 1, 1));
     let got = reply(&mut db, who, "I'm 11", 10).await;
     assert!(matches!(got, Ok(Reply::UnderAge(AgeStop::Under13, _))));
     assert_eq!(kept(&mut db, job, "child").await, (0, 2, 0, 0));
+    assert_eq!(kept(&mut db, wiring, "wire").await, (0, 2, 0, 0));
     assert_eq!(closed_and_consents(&mut db, request, who).await, (true, 1));
     assert_eq!(kept(&mut db, other, "other").await, (2, 0, 1, 1));
 }

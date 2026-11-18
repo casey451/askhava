@@ -305,7 +305,7 @@ pub async fn stop_if_under_18(
     if !models::close_request(&mut tx, conversation, msg.received_at).await? {
         return Ok(None);
     }
-    for job in jobs {
+    for &job in &jobs {
         cancel_job(&mut tx, job, msg.received_at).await?;
     }
     let language = wanted_language(msg.inbound.words, msg.inbound.ai_spanish);
@@ -320,7 +320,7 @@ pub async fn stop_if_under_18(
     )
     .await?;
     if stop == AgeStop::Under13 {
-        purge_child(&mut tx, (conversation, homeowner), msg.contact).await?;
+        purge_child(&mut tx, (conversation, homeowner), msg.contact, &jobs).await?;
     }
     let entry = AuditEntry {
         actor: Actor::System,
@@ -336,8 +336,9 @@ pub async fn stop_if_under_18(
     Ok(Some((stop, queued)))
 }
 
-/// INT-038, PRIV-007, PRIV-008, D-4142, D-4294: under 13, each job of the request loses its photo
-/// rows (`purge_photos`, each sealed object's delete queued) and its kept words and cards
+/// INT-038, PRIV-007, PRIV-008, D-4142, D-4294: under 13, each of `jobs` (the request's jobs,
+/// read before `models::close_request` deletes the `job.*` links, D-4377) loses its photo rows
+/// (`purge_photos`, each sealed object's delete queued) and its kept words and cards
 /// (`purge_job_text`), then the request's data (`models::purge_request`), then the sender's vault
 /// contact (`purge_contact`, a savepoint), so a failure of any keeps nothing.
 /// The caller took the homeowner row first, so the contact row comes after it, as in the
@@ -348,8 +349,9 @@ async fn purge_child(
     tx: &mut PgConnection,
     (conversation, homeowner): (Uuid, Uuid),
     contact: Uuid,
+    jobs: &[Uuid],
 ) -> Result<(), IntakeError> {
-    for job in models::request_jobs(tx, conversation).await? {
+    for &job in jobs {
         purge_photos(tx, job)
             .await
             .map_err(|_| IntakeError::Vault)?;
