@@ -21,13 +21,15 @@
 //! call list until a footer postal setting exists (TXT-023, D-2186, T279). All of these
 //! registrations live in `askhava_server::worker_registry`, which the task-kind registry test
 //! builds too (TD-OPS-36), with the hourly no-handler check (OPS-004, D-2285, T327), whose first
-//! run `schedule_start` queues.
+//! run `schedule_start` queues. It exits non-zero once its database round trip or claim-loop
+//! tick has failed for `ASKHAVA_LIVENESS_LIMIT_SECS` (`liveness`, OPS-049, T106).
 
 use std::io;
 use std::sync::Arc;
 use std::time::Duration;
 
-use askhava_core::api::{TestControl, Worker, WorkerId, app_pool};
+use askhava_core::api::{ClaimTick, TestControl, Worker, WorkerId, app_pool};
+use askhava_server::liveness::{LivenessLimit, watch_worker};
 use askhava_server::offdb_stream::{OffDbStream, schedule_verify};
 
 /// How long running handlers get to finish after SIGTERM, inside the host's grace period.
@@ -60,11 +62,13 @@ async fn main() -> io::Result<()> {
         clock,
         owner,
     };
-    worker
-        .run(shutdown, DRAIN)
-        .await
-        .map_err(io::Error::other)?;
-    Ok(())
+    let tick = Arc::new(ClaimTick::default());
+    let limit = LivenessLimit::from_pairs(std::env::vars())?;
+    let watch = watch_worker(worker.pool.clone(), Arc::clone(&tick), limit);
+    tokio::select! {
+        ran = worker.run_watched(shutdown, DRAIN, &tick) => ran.map(|_| ()).map_err(io::Error::other),
+        failed = watch => Err(failed),
+    }
 }
 
 /// `messaging`'s daily tasks at start: the body cut, the day-31 body scan, the outbox sender's
