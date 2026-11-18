@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO ops.help_keyword (contact_id, at) VALUES ($1, $2) ON CONFLICT (contact_id) DO UPDATE SET at = EXCLUDED.at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "17148d28e0ddb4363ce7de99ed57a831aa270d9bd828984f8b4dafb24b6cbc42"
+}
