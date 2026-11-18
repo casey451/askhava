@@ -8,6 +8,7 @@ mod alerts;
 pub mod api;
 mod audit_subjects;
 mod digest_rows;
+mod help_requests;
 mod models;
 mod safe_mode;
 mod scorecard_inputs;
