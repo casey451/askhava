@@ -39,6 +39,7 @@ pub use crate::purge_events::{
 pub use crate::request_counts::{
     REQUEST_COUNTS_KIND, report_request_counts, run_request_counts, schedule_request_counts,
 };
+pub use crate::scorecard_inputs::{TradeJobs, WeekRequests, jobs_by_trade, requests_per_week};
 pub use crate::service::{
     TIMER_KIND, create, job_number, move_to, raise_number_floor, restart_timer, run_timer,
 };

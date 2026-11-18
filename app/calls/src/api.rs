@@ -52,6 +52,7 @@ pub use crate::safety_key_retry::{
     SAFETY_KEY_LOST_ALERT, SAFETY_KEY_RETRY_ATTEMPTS, SAFETY_KEY_RETRY_KIND,
     queue_safety_key_retry, run_safety_key_retry, safety_key_lost,
 };
+pub use crate::scorecard_inputs::{CallsAnswered, calls_answered};
 pub use crate::service::{
     ASSIGNED_ACTION, AutomatedCall, CallGate, Connected, Line, POOL_ALERT,
     SAFETY_NOT_DIALABLE_ALERT, assign_number, automated_call_gate,

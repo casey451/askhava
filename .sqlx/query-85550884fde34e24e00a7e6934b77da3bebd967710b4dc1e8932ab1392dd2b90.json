@@ -1,0 +1,48 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT g_code, heard_from, count(*) AS \"signups!\" FROM businesses.signup\n           WHERE submitted_at >= $1 AND submitted_at < $2\n           GROUP BY g_code, heard_from ORDER BY g_code NULLS LAST, heard_from NULLS LAST",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "g_code",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.signup",
+            "name": "g_code"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "heard_from",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.signup",
+            "name": "heard_from"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "signups!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      null
+    ]
+  },
+  "hash": "85550884fde34e24e00a7e6934b77da3bebd967710b4dc1e8932ab1392dd2b90"
+}
