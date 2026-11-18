@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:14:36Z by runner 2425d18559d2 (actions).
+Updated 2026-11-18T22:17:06Z by runner 7d58f8e9c040 (actions).
 
 **Building: T306 in progress since 22:14Z; 460 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 460 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 5: T583 claimed 21:55Z, lease until 00:55Z; lane 7: T504 claimed 22:07Z, lease until 01:07Z
-- **Week:** 69% used, 54.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:14Z, 0 min before this update
+- **Lane:** lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 5: T583 claimed 21:55Z, lease until 00:55Z; lane 6: T701 claimed 22:16Z, lease until 01:16Z; lane 7: T504 claimed 22:07Z, lease until 01:07Z
+- **Week:** 69% used, 53.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:14Z, 2 min before this update
 - **Keeper:** last ran 22:13Z, next wake 22:33Z
 
 ## Needs attention
@@ -118,7 +118,7 @@ Updated 2026-11-18T22:14:36Z by runner 2425d18559d2 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T22:12:27Z (week)): week: 139.4M used, 54.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T04:48:57Z.
+- Pacing (session_reading 2026-11-18T22:12:27Z (week)): week: 141.0M used, 53.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T04:31:34Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -136,6 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 3: T306 (lease until 2026-11-19T01:14:21Z)
 - lane 5: T583 (lease until 2026-11-19T00:55:41Z)
+- lane 6: T701 (lease until 2026-11-19T01:16:47Z)
 - lane 7: T504 (lease until 2026-11-19T01:07:47Z)
 
 ## Last usage reading
