@@ -4,14 +4,12 @@
 //
 // A Connected job with a live link token is seeded through psql on DATABASE_URL, as
 // feedback.spec.ts does; each button opens /c/<token>/<day>-<answer>. A mail scanner's GET (twice)
-// must change nothing; only the page's POST with its CSRF token records the answer, once. Under
-// the site's `Referrer-Policy: no-referrer` the browser sends `Origin: null` on a same-origin form
-// POST, which `security::is_cross_site` refuses (D-1250), so `page.route` re-sends the page's POST
-// with the https Origin a same-origin request has. The email itself (one button per answer, zero
+// must change nothing; only the page's POST with its CSRF token records the answer, once. The page
+// posts with the browser's own headers (`Sec-Fetch-Site: same-origin`, `Origin: null` under
+// `Referrer-Policy: no-referrer`; D-4292). The email itself (one button per answer, zero
 // texts) is checked in app/messaging/src/checkin_email.rs. Fake data only.
 import { createHash, randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import type { Page } from "@playwright/test";
 import { axeScan, WIDTHS } from "../a11y/fixtures";
 import { test, expect } from "./fixtures";
 
@@ -40,17 +38,6 @@ function jobState(hash: string): string {
     JOIN jobs.quote_token t ON t.job_id = j.id WHERE t.token_hash = decode('${hash}', 'hex')`);
 }
 
-/** Re-sends every POST with a same-origin https Origin (see the header and D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/c/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const origin = new URL(request.url()).host;
-    const headers = { ...request.headers(), origin: `https://${origin}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 test("TD-TXT-31 TXT-034, SEC-026: a button opened by GET twice changes nothing and still works; only the POST records, once", async ({ page }) => {
   const { hash, token } = seedJob("connected");
   const before = jobState(hash);
@@ -63,7 +50,6 @@ test("TD-TXT-31 TXT-034, SEC-026: a button opened by GET twice changes nothing a
   expect(jobState(hash), "GET changes nothing").toBe(before);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Send your answer for request \d+$/);
   await expect(page.locator("main")).toContainText("You picked: The work is done");
-  await httpsOrigin(page);
   await page.getByRole("button", { name: "Send" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Thanks\. We got your answer for request \d+\.$/);
   expect(jobState(hash).split("|")[0]).toBe("done");
@@ -107,7 +93,6 @@ test("TD-TXT-31 SEC-037: a bad link or an unknown answer code is a 404", async (
 
 test("TD-TXT-31 (axe part): the answer page and its thanks have no axe violation at 320, 768 and 1280 px", async ({ page }) => {
   const { token } = seedJob("connected");
-  await httpsOrigin(page);
   await page.goto(`/c/${token}/14-later`);
   const scan = async (state: string): Promise<void> => {
     for (const width of WIDTHS) {
