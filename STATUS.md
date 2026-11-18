@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T15:59:10Z by runner fdf87f6f8474 (actions).
+Updated 2026-11-18T16:01:24Z by runner fdf87f6f8474 (actions).
 
-**Building: T624 in progress since 15:49Z; 447 of 645 done; week 62% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T645 in progress since 16:01Z; 447 of 645 done; week 62% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 447 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T624 claimed 15:49Z, lease until 18:49Z; lane 4: T592 claimed 15:38Z, lease until 18:38Z; lane 5: T720 claimed 15:43Z, lease until 18:43Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
-- **Week:** 62% used, 68.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:56Z, 2 min before this update
+- **Lane:** lane 2: T645 claimed 16:01Z, lease until 19:01Z; lane 3: T624 claimed 15:49Z, lease until 18:49Z; lane 4: T592 claimed 15:38Z, lease until 18:38Z; lane 5: T720 claimed 15:43Z, lease until 18:43Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
+- **Week:** 62% used, 66.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:59Z, 2 min before this update
 - **Keeper:** last ran 15:56Z, next wake 18:41Z
 
 ## Needs attention
@@ -119,7 +119,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T15:48:07Z (week)): week: 125.7M used, 68.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T05:10:41Z.
+- Pacing (session_reading 2026-11-18T15:56:30Z (week)): week: 127.6M used, 66.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T05:42:58Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -135,6 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T645 (lease until 2026-11-18T19:01:06Z)
 - lane 3: T624 (lease until 2026-11-18T18:49:02Z)
 - lane 4: T592 (lease until 2026-11-18T18:38:59Z)
 - lane 5: T720 (lease until 2026-11-18T18:43:30Z)
