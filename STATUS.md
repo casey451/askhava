@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T00:26:08Z by runner 170c3aba634d (actions).
+Updated 2026-11-18T00:26:21Z by runner 170c3aba634d (actions).
 
-**Building: T587 in progress since 23:37Z; 417 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T478 in progress since 23:24Z; 417 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 417 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T587 claimed 23:37Z, lease until 03:21Z; lane 2: T478 claimed 23:24Z, lease until 03:11Z; lane 5: T151 claimed 00:12Z, lease until 03:12Z; lane 6: T108 claimed 00:23Z, lease until 03:23Z
+- **Lane:** lane 2: T478 claimed 23:24Z, lease until 03:11Z; lane 5: T151 claimed 00:12Z, lease until 03:12Z; lane 6: T108 claimed 00:23Z, lease until 03:23Z
 - **Week:** 33% used, 123.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:23Z, 2 min before this update
 - **Keeper:** last ran 23:38Z, next wake 02:26Z
@@ -20,6 +20,7 @@ Updated 2026-11-18T00:26:08Z by runner 170c3aba634d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T587 | payments and picks: the old Confirm fee writer is marked tes | MERGE_PENDING | 1 | 48 min | 00:26Z |  |
 | T606 | harness: scripts/check_copy.py allows one aria-hidden arrow  | MERGE_PENDING | 1 | 62 min | 23:23Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 1 | 3 min | 23:08Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | MERGE_PENDING | 3 | 37 min | 22:46Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
@@ -134,10 +135,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T587 (lease until 2026-11-18T03:21:23Z)
+- nothing
 - lane 2: T478 (lease until 2026-11-18T03:11:24Z)
 - lane 5: T151 (lease until 2026-11-18T03:12:48Z)
 - lane 6: T108 (lease until 2026-11-18T03:23:10Z)
 
 ## Last usage reading
-- {"task": "T606", "at": "2026-11-17T23:23:27Z", "input_tokens": 104, "output_tokens": 43016, "cache_read_input_tokens": 1961371, "cache_creation_input_tokens": 156556}
+- {"task": "T587", "at": "2026-11-18T00:26:07Z", "cache_creation_input_tokens": 121464, "cache_read_input_tokens": 2977344, "input_tokens": 102, "output_tokens": 31179}
