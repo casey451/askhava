@@ -1,5 +1,6 @@
 //! The HTTP probe of the authorization matrix's realm, owner, action-link and public doors
-//! (TD-SEC-61, T348; SEC-019, SEC-048, SEC-034, SEC-004 to SEC-008, SEC-026; D-2440, D-736).
+//! (TD-SEC-61, TD-SEC-73, T348, T643; SEC-019, SEC-048, SEC-034, SEC-004 to SEC-008, SEC-026,
+//! SEC-042, SEC-009, SEC-012; D-2440, D-736, D-4292).
 //!
 //! `tests/security/tests/auth_matrix.rs` gives every route a door; a test crate may not depend on
 //! `askhava-server` (D-736), so the doors whose routes it cannot reach are probed here, through
@@ -14,10 +15,14 @@
 //! `{pick}` or `{complaint}` with the one not-found answer; an action link opens only for its
 //! minted kind, object and token (the path names no member, D-3093), and its `GET` changes nothing; a Quote link bound to Y on X's job, whose card never went to Y, is the one not-found answer (D-3706); a public `GET` needs no session and shows no
 //! fixture's personal data; every non-public response is `no-store`; every `POST`, cross-site or
-//! with a wrong CSRF token, is a 403 with one `csrf_rejected` security event (its log line,
-//! captured here, since `server` may read no module's table, TD-SEC-10) naming the route
-//! template. An admitted `GET` is a 200; an admitted CSRF-only `POST`, and any owner answer (a
-//! step-up challenge counts, SEC-043), passes when it is neither the door's refusal nor a 5xx.
+//! with a wrong CSRF token (sent as a browser's own post, and without `Sec-Fetch-Site` with
+//! `Origin: null`), is a 403 with one `csrf_rejected` security event (its log line, captured here,
+//! since `server` may read no module's table, TD-SEC-10) naming the route template; the sign-in
+//! and link `POST`s are probed for the `Origin: null` case too (TD-SEC-73, D-4292). Requests go
+//! as a browser sends them under `Referrer-Policy: no-referrer` (`Sec-Fetch-Site: same-origin`,
+//! `Origin: null`). An admitted `GET` is a 200; an admitted CSRF-only `POST`, and any owner answer
+//! (a step-up challenge counts, SEC-043), passes when it is neither the door's refusal nor a 5xx,
+//! and an own-site `POST` also when it is no 403 and logged no `csrf_rejected` event.
 //! A row with a path parameter other than `{pick}`, `{complaint}`, `{kind}`, `{object}` or
 //! `{token}` fails naming it. With no such row served the probe passes with zero routes. Planted
 //! cases run the same judging code on a test-local router. Every name, phone and ID is fake.
@@ -229,6 +234,32 @@ type Row = (Method, String, Door);
 /// The section 13 rows reading `yes` under the five probed doors; a `yes` row no door names fails
 /// naming it (as `auth_matrix.rs` fails the run).
 fn probed_rows() -> Vec<Row> {
+    let probed = |door: &Door| {
+        !matches!(
+            door,
+            Door::Link | Door::Asset | Door::Webhook | Door::SignIn
+        )
+    };
+    served_rows()
+        .into_iter()
+        .filter(|(_, _, door)| probed(door))
+        .collect()
+}
+
+/// D-4292, TD-SEC-73: the served `POST` rows [`probed_rows`] skips under the sign-in and link
+/// doors (sixteen today: the four `/q/*` posts, `/f`, `/c`, `/b/sign-in` and its token step, the
+/// eight sign-up steps, `/owner/sign-in` and `/owner/sign-in/passkey`), probed by
+/// [`probe_skipped_csrf`].
+fn skipped_posts() -> Vec<String> {
+    let skipped = |(method, _, door): &Row| {
+        *method == Method::POST && matches!(door, Door::Link | Door::SignIn)
+    };
+    let rows = served_rows().into_iter().filter(skipped);
+    rows.map(|(_, template, _)| template).collect()
+}
+
+/// Every section 13 row reading `yes` with its door; a `yes` row no door names fails naming it.
+fn served_rows() -> Vec<Row> {
     let start = ARCHITECTURE.find("\n## 13. Routes\n").expect("section 13");
     let body = &ARCHITECTURE[start + 1..];
     let body = body[1..].find("\n## ").map_or(body, |end| &body[..=end]);
@@ -241,14 +272,8 @@ fn probed_rows() -> Vec<Row> {
         let Some(door) = door(cells[2], cells[3] == "site") else {
             panic!("served row {line:?} has no door: add its matrix rule (SEC-019)");
         };
-        let probed = !matches!(
-            door,
-            Door::Link | Door::Asset | Door::Webhook | Door::SignIn
-        );
         let method = Method::from_bytes(cells[1].as_bytes()).expect("a method");
-        if probed {
-            rows.push((method, cells[2].to_owned(), door));
-        }
+        rows.push((method, cells[2].to_owned(), door));
     }
     rows
 }
@@ -327,21 +352,37 @@ fn fill(template: &str, (pick, complaint): (Uuid, Uuid), link: &Minted) -> Resul
     Ok(path)
 }
 
-/// What came back: status, whether `Cache-Control` holds `no-store`, body and `Location`.
+/// What came back: status, whether `Cache-Control` holds `no-store`, body and `Location`, and
+/// whether it was a fail-closed CSRF refusal (a 403, or a `csrf_rejected` event logged under its
+/// request ID, [`csrf_logged`]; D-4292).
 #[derive(Debug, PartialEq, Eq)]
 struct Reply {
     status: u16,
     no_store: bool,
     text: String,
+    csrf_refused: bool,
 }
 
-/// How a request reaches the app: same-origin with the jar's CSRF token, with a wrong one, or
-/// from another site.
+/// How a request reaches the app (D-4292, TD-SEC-73): `Own` and `WrongToken` as a browser sends
+/// its own form post under `Referrer-Policy: no-referrer` (`Sec-Fetch-Site: same-origin`,
+/// `Origin: null`) with the jar's CSRF token or a wrong one; `Cross` from another site
+/// (`Sec-Fetch-Site: cross-site`); `NullWrongToken` as a browser before Fetch Metadata
+/// (`Origin: null`, no `Sec-Fetch-Site`) with a wrong token, which only the token check refuses.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Site {
     Own,
     WrongToken,
     Cross,
+    NullWrongToken,
+}
+
+/// The `Sec-Fetch-Site` (if any) and `Origin` a request from `site` carries.
+fn site_headers(site: Site) -> (Option<&'static str>, String) {
+    match site {
+        Site::Own | Site::WrongToken => (Some("same-origin"), "null".to_owned()),
+        Site::Cross => (Some("cross-site"), format!("https://{HOST}")),
+        Site::NullWrongToken => (None, "null".to_owned()),
+    }
 }
 
 /// A form request for `method path` with `jar`'s cookies, request ID `id` and the body
@@ -353,24 +394,23 @@ fn request(
     id: Uuid,
 ) -> Request<Body> {
     let csrf = match site {
-        Site::WrongToken => "0".repeat(64),
+        Site::WrongToken | Site::NullWrongToken => "0".repeat(64),
         Site::Own | Site::Cross => csrf_token(jar).unwrap_or_default(),
     };
-    let fetch = if site == Site::Cross {
-        "cross-site"
-    } else {
-        "same-origin"
-    };
+    let (fetch, origin) = site_headers(site);
     let cookies: Vec<String> = jar
         .iter()
         .map(|c| format!("{}={}", c.name(), c.value()))
         .collect();
-    Request::builder()
+    let mut builder = Request::builder()
         .method(method.clone())
         .uri(path)
         .header(header::HOST, HOST)
-        .header(header::ORIGIN, format!("https://{HOST}"))
-        .header("sec-fetch-site", fetch)
+        .header(header::ORIGIN, origin);
+    if let Some(fetch) = fetch {
+        builder = builder.header("sec-fetch-site", fetch);
+    }
+    builder
         .header("x-request-id", id.to_string())
         .header(header::COOKIE, cookies.join("; "))
         .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
@@ -378,8 +418,19 @@ fn request(
         .expect("request")
 }
 
+/// Whether the [`Events`] subscriber in force (none in a planted case) logged a `csrf_rejected`
+/// event under request ID `id` (SEC-048, D-4292).
+fn csrf_logged(id: Option<Uuid>) -> bool {
+    let logged = |events: &Events| {
+        id.is_some_and(|id| events.of(id).iter().any(|e| e[0] == "csrf_rejected"))
+    };
+    tracing::dispatcher::get_default(|d| d.downcast_ref::<Events>().is_some_and(logged))
+}
+
 /// The answer to `request`, with the `name=value` of every non-empty cookie it sets.
 async fn answer(app: &Router, request: Request<Body>) -> (Reply, Vec<String>) {
+    let id = request.headers().get("x-request-id");
+    let id = id.and_then(|id| Uuid::try_parse_ascii(id.as_bytes()).ok());
     let response = app.clone().oneshot(request).await.expect("response");
     let (parts, body) = response.into_parts();
     let value = |name| {
@@ -399,6 +450,7 @@ async fn answer(app: &Router, request: Request<Body>) -> (Reply, Vec<String>) {
         status: parts.status.as_u16(),
         no_store: value(header::CACHE_CONTROL).contains("no-store"),
         text: format!("{text}{}", value(header::LOCATION)),
+        csrf_refused: parts.status == StatusCode::FORBIDDEN || csrf_logged(id),
     };
     (reply, set)
 }
@@ -429,7 +481,8 @@ fn refusal(door: Door, reply: &Reply) -> bool {
 /// SEC-019, SEC-034, D-2440: `actor`'s answer `reply` to `method` on a `door` route (not the
 /// action-link door, [`judge_opened`]). Every non-public answer is `no-store`; a public `GET` is
 /// a 200 with no fixture data; an admitted `GET` is a 200 (the owner's: neither refusal nor 5xx,
-/// so a step-up challenge passes), an admitted `POST` neither refusal nor 5xx; homeowner A never
+/// so a step-up challenge passes), an admitted `POST` neither refusal nor 5xx nor a fail-closed
+/// CSRF refusal (a public `POST` too, D-4292; a route's own 4xx passes); homeowner A never
 /// sees B's job or token; everyone else gets the door's refusal with no fixture detail.
 fn judge(
     door: Door,
@@ -445,7 +498,7 @@ fn judge(
     if door == Door::Public || !allowed(door, actor) {
         let ok = match door {
             Door::Public if method == Method::GET => status == 200,
-            Door::Public => status < 500,
+            Door::Public => status < 500 && !reply.csrf_refused,
             _ => refusal(door, reply),
         };
         return match shows(&reply.text, &personal) {
@@ -458,10 +511,11 @@ fn judge(
         };
     }
     let strict = method == Method::GET && door != Door::Owner;
+    let refused = method == Method::POST && reply.csrf_refused;
     let admitted = if strict {
         status == 200
     } else {
-        !refusal(door, reply) && status < 500
+        !refusal(door, reply) && status < 500 && !refused
     };
     if !admitted {
         return Err(format!("own record not reached: {status}"));
@@ -478,13 +532,13 @@ fn judge(
 }
 
 /// SEC-026, SEC-034: the answer to an action link's own token: `no-store`; a `GET` is a 200, a
-/// `POST` anything but the not-found answer or a 5xx.
+/// `POST` anything but the not-found answer, a 5xx or a fail-closed CSRF refusal (D-4292).
 fn judge_opened(method: &Method, reply: &Reply) -> Result<(), String> {
     let status = reply.status;
     let opened = if method == Method::GET {
         status == 200
     } else {
-        status != 404 && status < 500
+        status != 404 && status < 500 && !reply.csrf_refused
     };
     match (reply.no_store, opened) {
         (false, _) => Err(format!("{status} is not no-store (SEC-034)")),
@@ -670,10 +724,18 @@ fn router(pool: PgPool) -> Router {
             .expect("stripe hooks");
     let all = webhooks.is_some() && voice.is_some() && pick_keys.is_some() && stripe.is_some();
     assert!(all, "every optional part of build_router is configured");
+    let signin = askhava_server::business_signin::ServedSignIn::from_settings(
+        &settings,
+        pool.clone(),
+        pairs.clone(),
+    )
+    .expect("sign-in part");
     let signup = askhava_server::business_signup::ServedSignUp::from_settings(pool.clone(), pairs)
         .expect("sign-up part");
-    let parts = askhava_server::RouterParts::from((webhooks, voice, pick_keys, stripe));
-    askhava_server::build_router(pool, control.router(), parts.with_sign_up(signup))
+    let parts = askhava_server::RouterParts::from((webhooks, voice, pick_keys, stripe))
+        .with_sign_in(signin)
+        .with_sign_up(signup);
+    askhava_server::build_router(pool, control.router(), parts)
 }
 
 /// An active, verified R-39 business serving Lake Havasu City that ticked the job type.
@@ -1258,17 +1320,46 @@ async fn probe_bound(
     Ok(())
 }
 
-/// SEC-048: `who`'s cross-site and wrong-token `POST`s to `template` are each a 403 with one
-/// `csrf_rejected` event naming the template.
+/// SEC-048, D-4292: `who`'s cross-site and wrong-token `POST`s to `template`, the wrong token sent
+/// as a browser's own post and as one without `Sec-Fetch-Site` and with `Origin: null`, are each
+/// a 403 with one `csrf_rejected` event naming the template.
 async fn probe_csrf(w: &World, events: &Events, template: &str, who: &Who) -> Result<(), String> {
     let side = who.actor.side();
     let path = fill(template, w.fx.ids_on(template, side), &w.fx.links[side])?;
-    for site in [Site::Cross, Site::WrongToken] {
+    for site in [Site::Cross, Site::WrongToken, Site::NullWrongToken] {
         let id = Uuid::new_v4();
         let reply = send(&w.app, (&Method::POST, &path), &who.jar, site, id).await;
         judge_csrf(&reply, &events.of(id), template).map_err(|e| format!("{site:?}: {e}"))?;
     }
     Ok(())
+}
+
+/// The quote page forms that need a `quote` field to parse, so their CSRF check is reached.
+const QUOTE_FIELD_FORMS: [&str; 3] = ["/q/{token}", "/q/{token}/pick", "/q/{token}/code"];
+
+/// SEC-042, SEC-048, D-4292, TD-SEC-73: an anonymous browser's `POST` to a skipped sign-in or link
+/// row ([`skipped_posts`]), filled with A's quote token and a check-in answer, with a wrong token,
+/// no `Sec-Fetch-Site` and `Origin: null`, is a 403 with one `csrf_rejected` event naming the
+/// template: the token check backs the `Origin: null` fallback on these doors too.
+async fn probe_skipped_csrf(w: &World, events: &Events, template: &str) -> Result<(), String> {
+    let mut path = template.to_owned();
+    for (seg, value) in [("{token}", w.fx.tokens[0].as_str()), ("{answer}", "3-done")] {
+        path = path.replacen(seg, value, 1);
+    }
+    if path.contains('{') {
+        return Err(format!("{template}: no fill for its parameter (D-4292)"));
+    }
+    let extra = if QUOTE_FIELD_FORMS.contains(&template) {
+        "&quote=1"
+    } else {
+        ""
+    };
+    let anonymous = w.who.iter().find(|who| who.actor == Actor::Anonymous);
+    let jar = &anonymous.expect("the anonymous actor").jar;
+    let id = Uuid::new_v4();
+    let sent = request((&Method::POST, &path, extra), jar, Site::NullWrongToken, id);
+    let reply = answer(&w.app, sent).await.0;
+    judge_csrf(&reply, &events.of(id), template).map_err(|e| format!("POST {template}: {e}"))
 }
 
 /// The owner signed in again before each row it probes, so a sign-out row it probed ends only
@@ -1308,9 +1399,15 @@ async fn probe_row(
     Ok(())
 }
 
-/// TD-SEC-61 (SEC-019, SEC-034, SEC-048, D-2440): every section 13 row reading `yes` under the
-/// homeowner, business, owner, action-link or public door, by all six actors over HTTP through
-/// `build_router`; with none served it passes with zero routes, the fixtures still built.
+/// TD-SEC-61, TD-SEC-73 (SEC-019, SEC-034, SEC-048, SEC-042, D-2440, D-4292): every section 13
+/// row reading `yes` under the homeowner, business, owner, action-link or public door, by all six
+/// actors over HTTP through `build_router`, and every skipped sign-in or link `POST` by
+/// [`probe_skipped_csrf`]; with none served it passes with zero routes, the fixtures still built.
+///
+/// `admit_security_event` keeps at most `SECURITY_EVENT_CAP_FLOOR` (50) events of one kind per
+/// route template and client per minute, and every probe is client `0.0.0.0`: a probed `POST`
+/// template gets three refusals from each of the six actors (eighteen) and a skipped one gets one,
+/// so none nears 50 and `configure_security_events` is not called.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_sec_61_every_served_door_row_over_http(pool: PgPool) {
     let events = Events::default();
@@ -1318,6 +1415,11 @@ async fn td_sec_61_every_served_door_row_over_http(pool: PgPool) {
     let w = world(&pool).await;
     for row in &probed_rows() {
         if let Err(problem) = probe_row(&w, &events, row).await {
+            panic!("{problem}");
+        }
+    }
+    for template in &skipped_posts() {
+        if let Err(problem) = probe_skipped_csrf(&w, &events, template).await {
             panic!("{problem}");
         }
     }
@@ -1524,6 +1626,7 @@ fn td_sec_61_the_csrf_judge() {
         status,
         no_store: true,
         text: String::new(),
+        csrf_refused: status == 403,
     };
     let event = |route: &str| ["csrf_rejected".to_owned(), route.to_owned()];
     let t = "/b/notices";
@@ -1532,4 +1635,32 @@ fn td_sec_61_the_csrf_judge() {
     assert!(judge_csrf(&reply(403), &[event(t), event(t)], t).is_err());
     assert!(judge_csrf(&reply(403), &[event("unmatched")], t).is_err());
     assert!(judge_csrf(&reply(200), &[event(t)], t).is_err());
+}
+
+/// TD-SEC-73 (SEC-042, SEC-048, D-4292, D-3706): an own-site `POST` on the public door, an
+/// admitted realm row or an action link fails on a fail-closed CSRF refusal (a 403, or a 200 with
+/// a `csrf_rejected` event under its request ID) and passes on a route's own 4xx with no event.
+#[test]
+fn td_sec_73_an_own_post_fails_on_a_csrf_refusal() {
+    let fx = planted_fixtures();
+    let reply = |status, csrf_refused| Reply {
+        status,
+        no_store: true,
+        text: String::new(),
+        csrf_refused,
+    };
+    let post = &Method::POST;
+    for (got, ok) in [
+        (reply(422, false), true),
+        (reply(303, false), true),
+        (reply(403, true), false),
+        (reply(200, true), false),
+    ] {
+        let public = judge(Door::Public, (Actor::Anonymous, post), &got, &fx);
+        let realm = judge(Door::Business, (Actor::BusinessX, post), &got, &fx);
+        let opened = judge_opened(post, &got);
+        for judged in [public, realm, opened] {
+            assert_eq!(judged.is_ok(), ok, "{got:?}: {judged:?}");
+        }
+    }
 }
