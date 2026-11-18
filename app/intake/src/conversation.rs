@@ -21,7 +21,6 @@ use askhava_jobs::api::{JobStatus, create, current, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use askhava_privacy::api::{Vault, purge_contact, purge_photos, set_name_address};
-use askhava_quotes::api::purge_job_text;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use sqlx::types::Uuid;
@@ -354,7 +353,7 @@ async fn purge_child(
         purge_photos(tx, job)
             .await
             .map_err(|_| IntakeError::Vault)?;
-        purge_job_text(tx, job)
+        askhava_quotes::api::purge_job_text(tx, job)
             .await
             .map_err(|_| IntakeError::Quotes)?;
     }
