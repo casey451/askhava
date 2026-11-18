@@ -19279,8 +19279,8 @@
     "T201",
     "T294"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "help-page-get-help-form",
    "type": "build",
    "stage": "5",
@@ -19296,7 +19296,33 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "last_failure": "Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87).\nRemaining finding (reviewer 2): BIZ-047 (docs/spec/businesses.md:51) requires the emailed answer to carry the help page's answer for the topic first; the email still has only the \"Got it\" line (app/messaging/templates/en.json:547, app/portals/src/help.rs:119-127). D-4375 (4) calls it a plan gap because an {answer} placeholder breaks app/intake/src/tests/intake_timeouts.rs:80-94, but that test only needs placeholders filled from VALUES: add one template per answered topic (job, charge, sign-in, emails; en + es draft) with the topic answer as fixed text followed by the Got-it sentence, keep business_get_help_answer for \"Something else\", and have send_get_help pick the template by topic.\nChecks on that head (reviewer 2): smoke.sh exit 0; tests/e2e/get_help.spec.ts 4 passed; prehandin.sh --ally exit 1, 2 failed in tests/a11y/j2_keyboard.spec.ts:149 (Stripe confirm-pay stripeCalls undefined at tests/e2e/keyed.ts:210; heading \"Where your code goes\" not found after /b/signup/start), off T200's path; a rerun was refused by the local sign-up limit (500), so unproven either way.\nReport-only gaps carried: OPS-036 owner notification lacks job fields because intake::api::business_help passes fields: None (app/intake/src/handlers.rs:801-808, T151/T530); T309 must pass admit_help_form's Admission into send_help_form; branch is over budget (about 16 files, about 870 lines vs 9 files, 340 lines).",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 263,
+     "head_sha": "346acc872b66e2a8cd86b345b919fe4573f7db87",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-18T09:05:13Z",
+     "ended_at": "2026-11-18T12:02:44Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 16128121,
+       "turns": 154
+      },
+      "reviewer": {
+       "tokens": 1917097,
+       "turns": 36
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T152",
@@ -78164,12 +78190,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T408",
-   "at": "2026-11-18T11:34:50Z",
-   "input_tokens": 364,
-   "output_tokens": 128784,
-   "cache_read_input_tokens": 18678569,
-   "cache_creation_input_tokens": 431498
+   "task": "T200",
+   "at": "2026-11-18T12:02:44Z",
+   "cache_creation_input_tokens": 381862,
+   "input_tokens": 372,
+   "cache_read_input_tokens": 17551426,
+   "output_tokens": 111558
   },
   "source": "session_reading 2026-11-18T11:40:43Z (week)",
   "by_task": {
@@ -83047,7 +83073,17 @@
    },
    "T200": {
     "estimated_bytes": 648429,
-    "estimated_tokens": 1901960
+    "estimated_tokens": 1901960,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 381862,
+    "input_tokens": 372,
+    "cache_read_input_tokens": 17551426,
+    "output_tokens": 111558,
+    "worker_tokens": 16128121,
+    "worker_turns": 154,
+    "reviewer_tokens": 1917097,
+    "reviewer_turns": 36,
+    "last_model": "claude-opus-5-5"
    },
    "T650": {
     "estimated_bytes": 367903,
@@ -83115,11 +83151,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-18T07:49:11Z",
-    "tokens": 12145526
+    "tokens": 14394460
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 290008315
+    "tokens": 292257249
    }
   },
   "session_reading": {
@@ -83130,7 +83166,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T11:50:56Z",
+ "updated_at": "2026-11-18T12:02:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -83228,7 +83264,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f9aedd0bebe455c6be90f536332736179183715f",
+ "runner_sha": "346acc872b66e2a8cd86b345b919fe4573f7db87",
  "starter": "actions",
  "smoke_runs": [
   {

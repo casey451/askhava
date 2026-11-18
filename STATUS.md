@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T11:50:56Z by runner f9aedd0bebe4 (actions).
+Updated 2026-11-18T12:02:45Z by runner 346acc872b66 (actions).
 
 **Building: T583 in progress since 11:19Z; 440 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 440 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 4: T700 claimed 11:39Z, lease until 14:39Z; lane 5: T679 claimed 11:39Z, lease until 14:39Z; lane 6: T200 claimed 09:05Z, lease until 14:29Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
+- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 4: T700 claimed 11:39Z, lease until 14:39Z; lane 5: T679 claimed 11:39Z, lease until 14:39Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
 - **Week:** 54% used, 81.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:50Z, 0 min before this update
+- **Last run:** 11:51Z, 11 min before this update
 - **Keeper:** last ran 11:50Z, next wake 14:21Z
 
 ## Needs attention
@@ -16,11 +16,12 @@ Updated 2026-11-18T11:50:56Z by runner f9aedd0bebe4 (actions).
 - BLOCKED T563: plan gap reported: PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file) and kit/prompts/T563.md:9 (CROSS_SCHEMA_CALLS fixed at exactly one entry, messaging.last_message_at(). The sweep (head d7eb5dc64, all TD-CON-30 tests green, smoke and prehandin green) checks suppression via messaging::api::send_window before its per-number transaction, then clears the vault phone inside it. Review finding (unresolved): an opt-out via messaging::api::suppress (portal/email/owner paths) or a texted STOP committing between that check and the clear lets the sweep; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T563 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 25 problem(s) on tasks still to run (+226 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 27 problem(s) on tasks still to run (+223 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T200 | ops and portals: the owner help page with its screened reply | QUEUED | 1 | 2 h 57 min | 12:02Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
 | T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 2 | 2 h 21 min | 11:34Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z | PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file)  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | MERGE_PENDING | 2 | 51 min | 11:04Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
@@ -87,7 +88,7 @@ Updated 2026-11-18T11:50:56Z by runner f9aedd0bebe4 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 683 · unstarted 52
-**Tasks merged (throughput only):** 440 of 643
+**Tasks merged (throughput only):** 440 of 621
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -134,8 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T662 (lease until 2026-11-18T14:26:44Z)
 - lane 4: T700 (lease until 2026-11-18T14:39:04Z)
 - lane 5: T679 (lease until 2026-11-18T14:39:48Z)
-- lane 6: T200 (lease until 2026-11-18T14:29:31Z)
 - lane 7: T472 (lease until 2026-11-18T14:43:39Z)
 
 ## Last usage reading
-- {"task": "T408", "at": "2026-11-18T11:34:50Z", "input_tokens": 364, "output_tokens": 128784, "cache_read_input_tokens": 18678569, "cache_creation_input_tokens": 431498}
+- {"task": "T200", "at": "2026-11-18T12:02:44Z", "cache_creation_input_tokens": 381862, "input_tokens": 372, "cache_read_input_tokens": 17551426, "output_tokens": 111558}
