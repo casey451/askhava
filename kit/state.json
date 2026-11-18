@@ -76251,12 +76251,11 @@
      }
     }
    ],
-   "reviewed_sha": "c8c3de229be969d7b16494cc0eafb00797486a63",
+   "reviewed_sha": "2b894d8f481196f01fe6282267127912fd05f3fc",
    "review_lease": {
     "task": "T624",
-    "session": "actions-44332844273",
-    "expires": "2026-11-18T19:35:18Z",
-    "lane": "3"
+    "session": "actions-44350652740",
+    "expires": "2026-11-18T20:41:09Z"
    },
    "branch": "claude/task/T624-health-check-alert",
    "auto_merge": {
@@ -76264,7 +76263,6 @@
     "why": "auto-merge on #1046 (gh pr merge)",
     "head": "c8c3de229be969d7b16494cc0eafb00797486a63"
    },
-   "merge_turn_since": "2026-11-18T16:47:17Z",
    "runner_closed_prs": [
     1046
    ],
@@ -76289,6 +76287,16 @@
     }
    ],
    "last_failure": "merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D-891)",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "f9ac2e6c67c71aa9ee3ab1d490c5fba9bc4292ed",
+     "to": "2b894d8f481196f01fe6282267127912fd05f3fc",
+     "main": "da3e803af8d39c48c8ade3d2f1cf633fc1ffa715",
+     "how": "hand-in",
+     "at": "2026-11-18T18:26:16Z"
+    }
+   ],
    "update_waiting_since": null,
    "update_push_failures": null
   },
@@ -85370,7 +85378,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T18:25:53Z",
+ "updated_at": "2026-11-18T18:26:16Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -85468,7 +85476,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "dc963a52a0d91a599551837baeb0aa3fdf5d456c",
+ "runner_sha": "f9ac2e6c67c71aa9ee3ab1d490c5fba9bc4292ed",
  "starter": "actions",
  "smoke_runs": [
   {
