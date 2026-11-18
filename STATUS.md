@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T21:14:01Z by runner 70d828de1b07 (actions).
+Updated 2026-11-18T21:14:26Z by runner 70d828de1b07 (actions).
 
 **Building: T651 in progress since 19:44Z; 456 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 456 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T651 claimed 19:44Z, lease until 23:43Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 3: T483 claimed 18:25Z, lease until 00:10Z; lane 4: T364 claimed 21:12Z, lease until 00:12Z; lane 7: T503 claimed 20:58Z, lease until 23:58Z
+- **Lane:** lane 1: T651 claimed 19:44Z, lease until 23:43Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 4: T364 claimed 21:12Z, lease until 00:12Z; lane 7: T503 claimed 20:58Z, lease until 23:58Z
 - **Week:** 67% used, 55.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:13Z, 0 min before this update
 - **Keeper:** last ran 21:09Z, next wake 21:29Z
@@ -20,6 +20,7 @@ Updated 2026-11-18T21:14:01Z by runner 70d828de1b07 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T483 | messaging, portals and server: the owner's "away until" date | MERGE_PENDING | 1 | 2 h 48 min | 21:13Z |  |
 | T702 | privacy and messaging: no blind-index key version is retired | MERGE_PENDING | 1 | 40 min | 21:07Z | merging main into the reviewed head conflicts in kit/prompts/T702.md; a resync merges it in on this attempt (D-891) |
 | T706 | payments: held_release, the FEE-017 re-check that clears a p | MERGE_PENDING | 1 | 100 min | 20:54Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 1 | 48 min | 20:53Z | PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-addre |
@@ -132,9 +133,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T651 (lease until 2026-11-18T23:43:31Z)
 - lane 2: T722 (lease until 2026-11-18T23:48:16Z)
-- lane 3: T483 (lease until 2026-11-19T00:10:37Z)
 - lane 4: T364 (lease until 2026-11-19T00:12:55Z)
 - lane 7: T503 (lease until 2026-11-18T23:58:09Z)
 
 ## Last usage reading
-- {"task": "T702", "at": "2026-11-18T21:07:59Z", "output_tokens": 10314, "input_tokens": 58, "cache_creation_input_tokens": 53384, "cache_read_input_tokens": 741219}
+- {"task": "T483", "at": "2026-11-18T21:13:59Z", "cache_read_input_tokens": 10154303, "input_tokens": 275, "output_tokens": 76867, "cache_creation_input_tokens": 287935}
