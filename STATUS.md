@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:57:42Z by runner 0b3a6fc1de81 (actions).
+Updated 2026-11-18T22:58:08Z by runner 64c121a0ac2b (actions).
 
 **Building: T205 in progress since 22:21Z; 462 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 462 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T205 claimed 22:21Z, lease until 01:21Z; lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 6: T701 claimed 22:16Z, lease until 01:16Z
+- **Lane:** lane 2: T205 claimed 22:21Z, lease until 01:21Z; lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 6: T701 claimed 22:16Z, lease until 01:58Z
 - **Week:** 69% used, 51.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:57Z, 0 min before this update
+- **Last run:** 22:58Z, 0 min before this update
 - **Keeper:** last ran 22:55Z, next wake 23:15Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 50 problem(s) on tasks still to run (+266 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 50 problem(s) on tasks still to run (+267 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -136,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T205 (lease until 2026-11-19T01:21:45Z)
 - lane 3: T306 (lease until 2026-11-19T01:14:21Z)
-- lane 6: T701 (lease until 2026-11-19T01:16:47Z)
+- lane 6: T701 (lease until 2026-11-19T01:58:08Z)
 
 ## Last usage reading
 - {"task": "T583", "at": "2026-11-18T22:50:56Z", "input_tokens": 168, "cache_read_input_tokens": 7298731, "output_tokens": 53160, "cache_creation_input_tokens": 181231}
