@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"calls!\",\n                  count(*) FILTER (WHERE l.answered_by = 'person') AS \"answered!\"\n           FROM calls.call_log l JOIN calls.number_pool p ON p.id = l.line_id\n           WHERE p.job_id = ANY($1) AND l.ended_at >= $2 AND l.ended_at < $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "calls!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "answered!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "86ada14dd7459930f29f044c3da2e1286cae7bef2c71d4276c552b1a5777fb0e"
+}
