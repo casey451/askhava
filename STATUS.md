@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T14:36:27Z by runner 164e7e994839 (actions).
+Updated 2026-11-18T14:36:41Z by runner 164e7e994839 (actions).
 
 **Building: T665 in progress since 14:25Z; 445 of 643 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-18T14:36:27Z by runner 164e7e994839 (actions).
 - **Lane:** lane 1: T665 claimed 14:25Z, lease until 17:25Z; lane 2: T525 claimed 13:59Z, lease until 16:59Z
 - **Week:** 59% used, 77.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:36Z, 0 min before this update
-- **Keeper:** last ran 14:36Z, next wake 17:02Z
+- **Keeper:** last ran 14:36Z, next wake 17:01Z
 
 ## Needs attention
 - BLOCKED T408: plan gap reported: PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95%; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason "..."` (D-2859)
