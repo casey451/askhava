@@ -18100,7 +18100,6 @@
    "cites": [
     "app/privacy/src/vault.rs:767",
     "app/server/src/main.rs:98",
-    "app/server/src/lib.rs:576",
     "migrations/0036_privacy_vault.sql:36"
    ],
    "budget": {
