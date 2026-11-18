@@ -4,6 +4,7 @@ wakes; backup-runner.yml calls it. Also the smoke run's own target dir, fixed wo
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import os
 import shutil
@@ -16,7 +17,7 @@ from typing import Any
 
 import yaml
 
-from runner import keeper as kp, state as st
+from runner import __main__ as entry, keeper as kp, state as st
 
 ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW = ROOT / ".github" / "workflows" / "backup-runner.yml"
@@ -653,3 +654,110 @@ def test_the_warm_up_step_runs_after_the_cache_restore_and_before_the_session() 
     assert warm["continue-on-error"] is True and warm["run"].strip() == "python3 -m runner --warm-smoke"
     assert ge.WARM_TIMEOUT / 60 < warm["timeout-minutes"] <= 30
     assert warm["if"] == "hashFiles('Cargo.lock') != ''" and "secrets." not in json.dumps(warm)
+
+
+# ---- free lanes with claimable work (D-4281)
+
+
+def _task(tid: str, owns: str, **extra: Any) -> dict[str, Any]:
+    return {"id": tid, "deps": [], "type": "build", "stage": "2", "owns": [owns], "model": "claude-opus-5-5", **extra}
+
+
+def lanes_case(flying: int, eligible: int, pending: int = 0, **cfg_kw: Any) -> tuple[Any, dict[str, Any], dict[str, Any]]:
+    """Seven lanes: `flying` leased tasks on lanes 1.., then `pending` MERGE_PENDING ones on the next lanes, and
+    `eligible` QUEUED tasks, each in its own crate; the leases move to claude/lease's document as the keeper reads it."""
+    graph = [_task(f"T7{n:02d}", f"app/f{n}/src/a.rs") for n in range(1, flying + pending + 1)]
+    graph += [_task(f"T8{n:02d}", f"app/e{n}/") for n in range(1, eligible + 1)]
+    cfg = kp.cycle.Config(graph, {}, [], [], Path("."), "s", lambda: NOW, lanes=7, plan_health=lambda _s, _t: ["gap"], **cfg_kw)
+    s = st.sync_graph(st.new_state(), graph)
+    for n in range(1, flying + 1):
+        s = st.claim(s, f"T7{n:02d}", f"w{n}", NOW, lane=str(n))
+    for task in s["tasks"][flying:flying + pending]:
+        task.update(status=st.MERGE_PENDING, lane=str(int(task["id"][2:])))
+    doc = {"lease": s.pop("lease", None), "leases": s.pop("leases", {})}
+    return cfg, {**s, "backup_runner": "on"}, doc
+
+
+def test_five_lanes_in_flight_and_three_eligible_sleep_twenty_minutes_and_start_two_lanes() -> None:
+    cfg, s, doc = lanes_case(5, 3)
+    assert kp.wake_after(s, doc, NOW, "merged", cfg=cfg) == (20, "free lanes: 2 with claimable work")
+    assert "lease ends" in kp.wake_after(s, doc, NOW, "merged")[1]  # main's keeper: the lease time
+    action, minutes, why, lanes = kp.decide(s, doc, [], "9", NOW, "merged", [], cfg)
+    assert (action, minutes, lanes) == ("go", None, ["6", "7"]) and "start lanes 6 7" in why
+    assert kp.on_wake(s, doc, [], "9", NOW, "merged", [], cfg)[0] == "go"
+
+
+def test_seven_in_flight_or_only_merge_pending_work_keeps_the_lease_time() -> None:
+    cfg, s, doc = lanes_case(7, 3)
+    assert kp.wake_after(s, doc, NOW, "merged", cfg=cfg)[0] == 182
+    cfg, s, doc = lanes_case(2, 0, pending=3)
+    assert kp.has_work(s, NOW) and "lease ends" in kp.wake_after(s, doc, NOW, "merged", cfg=cfg)[1]
+    assert kp.decide(s, doc, [], "9", NOW, "merged", [], cfg)[:2] == ("rearm", 182)
+
+
+def test_a_cycle_that_claimed_nothing_or_an_unreadable_log_never_takes_the_short_path() -> None:
+    cfg, s, doc = lanes_case(5, 3)
+    for last in ("idle", "fix_main", "paced", "no_free_lane", "lease_live", "lost_race", "smoke_pending", "paced: wait", kp.UNREAD):
+        assert kp.wake_after(s, doc, NOW, last, cfg=cfg)[0] == 182, last
+        assert kp.decide(s, doc, [], "9", NOW, last, [], cfg)[:2] == ("rearm", 182), last
+    assert kp.REFILL_STOP == entry.REFILL_STOP
+
+
+def test_overlapping_clashing_or_plan_gap_marked_tasks_count_zero() -> None:
+    graph_extra = [_task("T901", "app/f1/src/a.rs"), _task("T902", "app/f2/src/b.rs")]
+    cfg, s, doc = lanes_case(5, 0, exclusive_crates=True)
+    cfg = dataclasses.replace(cfg, graph=[*cfg.graph, *graph_extra])
+    s = {**s, "tasks": [*s["tasks"], *st.sync_graph(st.new_state(), graph_extra)["tasks"]]}
+    assert kp.free_slots(s, doc, NOW, cfg) == 0 and kp.wake_after(s, doc, NOW, "merged", cfg=cfg)[0] == 182
+    cfg, s, doc = lanes_case(5, 1)
+    s["tasks"][-1]["plan_gap"] = {"why": ["fake gap"]}
+    assert kp.free_slots(s, doc, NOW, cfg) == 0 and kp.wake_after(s, doc, NOW, "merged", cfg=cfg)[0] == 182
+
+
+def test_the_pacer_the_week_stop_the_blocker_and_an_unreadable_state_still_win() -> None:
+    cfg, s, doc = lanes_case(0, 3, pending=5)
+    paced = {**s, "pacing": {"decision": "wait", "waiting_until": at(90)}}
+    assert kp.wake_after(paced, doc, NOW, "merged", False, False, cfg)[0] == 95
+    week = {"week": {"utilization": 0.99, "resets_at": at(100)}, "at": at(-10)}
+    stopped = {**s, "usage": {"session_reading": week}}
+    assert kp.wake_after(stopped, doc, NOW, "merged", False, False, cfg)[0] == 105
+    assert kp.wake_after({**s, "backup_runner": "off"}, doc, NOW, "merged", cfg=cfg)[0] is None
+    red = {**s, "main_red": True, "tasks": [*s["tasks"], {"id": st.FIX_MAIN, "status": "BLOCKED", "escalated_at": at(-5)}]}
+    assert kp.decide(red, doc, [], "9", NOW, "merged", [], cfg)[0] == "stop"
+    assert kp.wake_after(s, {"unreadable": True}, NOW, "merged", cfg=cfg) == (20, kp.wake_after(s, {"unreadable": True}, NOW)[1])
+    assert kp.decide({"unreadable": True}, doc, [], "9", NOW, "merged", [], cfg) == ("rearm", 20, kp.wake_after({"unreadable": True}, doc, NOW)[1], [])
+
+
+def test_live_runs_take_their_lanes_and_one_with_no_lane_takes_one_more() -> None:
+    cfg, s, doc = lanes_case(3, 5)
+    runs = [{"id": 1, "status": "in_progress"}, {"id": 2, "status": "queued"}, {"id": 9, "status": "in_progress"}]
+    jobs = [{"run_id": 1, "name": "backup lane 6", "status": "in_progress"}, {"run_id": 2, "name": "backup lane 7", "status": "queued"}]
+    assert kp.decide(s, doc, runs, "9", NOW, "merged", jobs, cfg)[3] == ["4", "5"]
+    gate = [*jobs, {"run_id": 3, "name": "gate", "status": "in_progress"}]
+    assert kp.decide(s, doc, [*runs, {"id": 3, "status": "in_progress"}], "9", NOW, "merged", gate, cfg)[3] == ["4"]
+    action, minutes, why, lanes = kp.decide(s, doc, runs, "9", NOW, "merged", None, cfg)  # jobs unread: today's answer
+    assert (action, minutes, lanes) == ("rearm", 182, []) and "run 1 is in_progress" in why
+
+
+def test_lanes_fallback_starts_lane_one_only() -> None:
+    cfg, s, doc = lanes_case(0, 3)
+    s["lanes_fallback"] = {"lane": "2", "why": ["fake strike"]}
+    assert kp.decide(s, doc, [], "9", NOW, "merged", [], cfg)[::3] == ("go", ["1"])
+
+
+def test_the_cli_reads_the_log_and_jobs_and_the_config_from_the_checkout(tmp_path: Path) -> None:
+    assert kp._last(None, "", "") == kp.UNREAD and kp._last(tmp_path / "none.jsonl", "", "") == kp.UNREAD
+    (tmp_path / "bad.jsonl").write_text('{"unreadable": true}\n')
+    (tmp_path / "log.jsonl").write_text('{"session": "a", "at": "x", "result": "merged"}\n')
+    assert kp._last(tmp_path / "bad.jsonl", "", "") == kp.UNREAD and kp._last(tmp_path / "log.jsonl", "", "") == "merged"
+    built = kp.refill_config()
+    assert built is not None and built.lanes == entry.lanes(ROOT / "kit" / "runner.json") and kp.refill_config(tmp_path) is None
+    assert kp.LANE_JOB.fullmatch("backup lane 6") and not kp.LANE_JOB.fullmatch("backup lane ${{ needs.gate.outputs.lane }}")
+
+
+def test_the_keeper_step_dispatches_one_run_per_free_lane_and_the_backup_job_names_its_lane() -> None:
+    flow = _flow()
+    assert flow["jobs"]["backup"]["name"] == "backup lane ${{ needs.gate.outputs.lane }}"
+    wake = flow["jobs"]["keeper"]["steps"][-1]["run"]
+    assert '--jobs "$jobs" --log "$RUNNER_TEMP/keeper_log.jsonl"' in wake and "actions/runs/${id}/jobs" in wake
+    assert 'for n in $lanes; do gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" -f lane="$n"; done' in wake

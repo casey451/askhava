@@ -13,6 +13,7 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
+use crate::flag_inputs::record_check_in_answer;
 use crate::handlers::TEXT_KIND;
 use crate::models::{self, JobsError};
 use crate::rules::{CheckIn, Contact, Reply, connected_move};
@@ -197,7 +198,8 @@ fn db_err<E>(_: E) -> HandlerError {
 /// which came in as `inbound`. A move ([`after_answer`]) is guarded on Connected and sends its
 /// text in its transaction; a PROBLEM close raises its alert in the same transaction, and no fee
 /// or ledger row changes. LATER changes nothing. A job no longer Connected changes nothing and
-/// raises nothing ([`Guarded::MovedOn`]), so a repeated answer is never listed twice.
+/// raises nothing ([`Guarded::MovedOn`]), so a repeated answer is never listed twice. An applied
+/// move also writes one `jobs.check_in_answer` audit row in its transaction (OPS-031, D-3881).
 ///
 /// # Errors
 ///
@@ -224,6 +226,7 @@ pub async fn answer_check_in(
     if moved.applied().is_none() {
         return Ok(Guarded::MovedOn);
     }
+    record_check_in_answer(&mut tx, id, (check, answer), actor).await?;
     if answer == Answer::Problem {
         flag_problem(&mut tx, inbound).await?;
     }
