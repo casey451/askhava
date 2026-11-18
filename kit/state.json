@@ -73119,7 +73119,7 @@
     "T471",
     "T564"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "quote-count-update-texts",
    "type": "build",
@@ -73136,8 +73136,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "plan gap reported: PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget to 650 changed lines, or move `tests/integration/tests/quote_update_texts.rs` into a test-only follow-up task with its own budget.\nEvidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget to 650 changed lines, or move `tests/integration/tests/quote_update_texts.rs` into a test-only follow-up task with its own budget.\nEvidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing a split), without dropping required cases, the worker-registry path or required docs; tests/integration/src/lib.rs (no shared helpers) is not owned by this task. The confirming reviewer measured a realistic minimum of about 590-615 lines (~30% over 450, and above the 600-line build ceiling MAX_LINES, scripts/validate_tasks.py:199; cf. D-4202's size split). Code at head a3034e2b1 had no correctness finding; all six required cases present; quote_update_texts 19 passed, smoke and prehandin green per the first worker.\nAlso noted by both reviewers as a plan item (not drift): a second quote arriving while the first-quote text is still held overnight is dropped (notice_for answers First), so no update tells \"2\" unless a third quote arrives; suggest holding the event to the first-quote text's send time.",
+   "reason": null,
+   "last_failure": "PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget to 650 changed lines, or move `tests/integration/tests/quote_update_texts.rs` into a test-only follow-up task with its own budget.\nEvidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing a split), without dropping required cases, the worker-registry path or required docs; tests/integration/src/lib.rs (no shared helpers) is not owned by this task. The confirming reviewer measured a realistic minimum of about 590-615 lines (~30% over 450, and above the 600-line build ceiling MAX_LINES, scripts/validate_tasks.py:199; cf. D-4202's size split). Code at head a3034e2b1 had no correctness finding; all six required cases present; quote_update_texts 19 passed, smoke and prehandin green per the first worker.\nAlso noted by both reviewers as a plan item (not drift): a second quote arriving while the first-quote text is still held overnight is dropped (notice_for answers First), so no update tells \"2\" unless a third quote arrives; suggest holding the event to the first-quote text's send time.\nre-queued after plan fix D-4419: split-into-T583-T708 (PR #1052)",
    "history": [
     {
      "attempt": 1,
@@ -73161,6 +73161,21 @@
        "turns": 33
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-18T18:43:55Z",
+     "reason": "split-into-T583-T708 (PR #1052)",
+     "by": "manual-2ba1e068484e",
+     "was": "plan gap reported: PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget to 650 changed lines, or move `tests/integration/tests/quote_update_texts.rs` into a test-only follow-up task with its own budget.\nEvidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4419",
+     "plan_since": "2026-11-18T11:19:34Z",
+     "plan_base": "238b98bc97944ce13d37c8626f3a59ce20a0f23d",
+     "plan_head": "935e6983d16cf4a603927b944ffaab5743158a45",
+     "plan_then": "10922b6f94919ec80eecf80f1a9ac0e2907893bee1301e03b8a6731db19a1a62",
+     "plan_now": "307ff2d864bcf27ae8ad551dcb6569bfb0a84354fb185da344b2cb64b083cf09"
     }
    ]
   },
@@ -85521,7 +85536,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T18:43:31Z",
+ "updated_at": "2026-11-18T18:43:55Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
