@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-18T15:48:26Z by runner 164e7e994839 (actions).
+Updated 2026-11-18T15:49:18Z by runner ed339f344700 (actions).
 
-**Building: T592 in progress since 15:38Z; 446 of 645 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T624 in progress since 15:49Z; 446 of 645 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 446 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T592 claimed 15:38Z, lease until 18:38Z; lane 5: T720 claimed 15:43Z, lease until 18:43Z; lane 6: T621 claimed 15:00Z, lease until 18:00Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
-- **Week:** 61% used, 67.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 3: T624 claimed 15:49Z, lease until 18:49Z; lane 4: T592 claimed 15:38Z, lease until 18:38Z; lane 5: T720 claimed 15:43Z, lease until 18:43Z; lane 6: T621 claimed 15:00Z, lease until 18:00Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
+- **Week:** 61% used, 68.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:48Z, 0 min before this update
 - **Keeper:** last ran 15:48Z, next wake 18:02Z
 
@@ -18,7 +18,7 @@ Updated 2026-11-18T15:48:26Z by runner 164e7e994839 (actions).
 Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 31 problem(s) on tasks still to run (+236 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 28 problem(s) on tasks still to run (+240 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,7 +90,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 684 · unstarted 51
-**Tasks merged (throughput only):** 446 of 643
+**Tasks merged (throughput only):** 446 of 645
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -118,7 +118,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T15:42:15Z (week)): week: 126.7M used, 67.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T05:05:10Z.
+- Pacing (session_reading 2026-11-18T15:48:07Z (week)): week: 125.7M used, 68.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T05:10:41Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -134,6 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 3: T624 (lease until 2026-11-18T18:49:02Z)
 - lane 4: T592 (lease until 2026-11-18T18:38:59Z)
 - lane 5: T720 (lease until 2026-11-18T18:43:30Z)
 - lane 6: T621 (lease until 2026-11-18T18:00:08Z)
