@@ -15,7 +15,7 @@
 // link seeded as tests/e2e/keyed_server.spec.ts seeds one (with a fake texting line for the
 // new-device code), the done screen links to the capability step, the step is saved, and the
 // inbox check opens. When no ROC list is stored yet, the fixture's one row is stored first. POSTs
-// are re-sent with a same-origin https Origin, as the J1 specs do (D-1250). Fake data only; no key
+// go with the browser's own headers (D-4292). Fake data only; no key
 // or value is printed or logged.
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -88,16 +88,6 @@ function seedSignInLink(business: string, token: string): void {
     SELECT decode('${hash}', 'hex'), id, business_id, now(), now() + interval '15 minutes' FROM m`);
 }
 
-/** Re-sends every business POST with a same-origin https Origin (D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/b/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 /** The code the Verify stand-in sent to `phone`, from its test hook standing in for the phone. */
 async function verifyCode(phone: string): Promise<string> {
   const reply = await fetch(`http://127.0.0.1:4010/_stand_in/twilio/code?to=${encodeURIComponent(phone)}`);
@@ -135,7 +125,6 @@ async function signUpToEmailStep(page: Page): Promise<void> {
 
 test("TD-SEC-69: a fake R-37 sign-up on the keyed binary activates through the app, and the first sign-in leads to the capability step and the inbox check", async ({ page }) => {
   storeRocList();
-  await httpsOrigin(page);
   await signUpToEmailStep(page);
   const business = await boundBusiness(page);
   expect(business, "the binding cookie names the sign-up").toMatch(/^[0-9a-f-]{36}$/);

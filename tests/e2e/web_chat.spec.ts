@@ -10,8 +10,8 @@
 // `messaging.outbox`. Her contact is found by the vault's blind index of her number. AI-026's line
 // is checked as shown only: outside Live the AI mode is always on, and the off case is T489's unit
 // test (D-4120). The texting number's suspension is a `messaging.mode_state` row, restored after.
-// The browser's chat POSTs are re-sent with a same-origin https Origin, as the other served specs do
-// (D-1250: the e2e servers speak plain http, and the cross-site check wants `https://<Host>`).
+// The browser's chat POSTs go with its own headers (`Sec-Fetch-Site: same-origin`), never rewritten
+// through `page.route`, and the server takes them (TD-SEC-73; SEC-042, A11Y-031; D-4292).
 // Fake data only: 928-555-01xx numbers and made-up jobs.
 import { readFileSync } from "node:fs";
 import type { Page } from "@playwright/test";
@@ -79,19 +79,8 @@ async function oneQuestion(page: Page, label: string): Promise<void> {
   await expect(form.getByLabel(label)).toBeVisible();
 }
 
-/** Re-sends every chat POST with a same-origin https Origin (D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/request", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
-/** Opens the request page with the chat's POSTs re-sent (D-1250). */
+/** Opens the request page on the keyed binary. */
 async function openChat(page: Page): Promise<void> {
-  await httpsOrigin(page);
   await page.goto(`${keyedUrl()}/request`);
 }
 
@@ -137,7 +126,7 @@ test("TD-CON-10 TD-WEB-01 CON-025 WEB-006 WEB-014 AI-026: the Spanish draft, the
   expect(consentsSince(from)).toEqual([]);
 });
 
-test("TD-CON-10 TD-INT-09 TD-INT-30 TD-A11Y-02 CON-025 A11Y-035: one question per page; only the Verify code until the right code, which records web-chat consent and queues the consent text first", async ({ page }) => {
+test("TD-CON-10 TD-INT-09 TD-INT-30 TD-A11Y-02 TD-SEC-73 CON-025 A11Y-035 SEC-042: one question per page; only the Verify code until the right code, which records web-chat consent and queues the consent text first", async ({ page }) => {
   const from = since();
   const her = fakeNumber();
   await toNumber(page);
@@ -189,7 +178,7 @@ test("TD-CON-10 TD-INT-30 CON-025: a wrong code alone, then no code, sends nothi
   expect(await codeFor(her)).toBe(code);
 });
 
-test("TD-CON-10 SEC-042: a valid chat form posted cross-site is refused and records nothing; the same form same-origin is taken", async ({ page }) => {
+test("TD-CON-10 TD-SEC-73 SEC-042: a valid chat form posted cross-site is refused and records nothing; the same form same-origin is taken", async ({ page }) => {
   const from = since();
   await page.goto(`${keyedUrl()}/request`);
   const form: Record<string, string> = { step: "message", words: JOB };
@@ -205,7 +194,7 @@ test("TD-CON-10 SEC-042: a valid chat form posted cross-site is refused and reco
   expect(refused.status()).toBe(403);
   expect(await refused.text()).not.toContain(JOB);
   expect(consentsSince(from)).toEqual([]);
-  // The same form from the page's own origin passes both checks: the token was valid (D-1250).
+  // The same form from the page's own origin passes both checks: the token was valid (D-4292).
   const taken = await post(`https://${new URL(url).host}`, "same-origin");
   expect(taken.status()).toBe(200);
   expect(await taken.text()).toContain(JOB);

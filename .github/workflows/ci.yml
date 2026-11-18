@@ -127,13 +127,20 @@ jobs:
         run: |
           python3 scripts/check_conflict_markers.py
 
-      - name: Plan lock and change rules (docs/governance.md)
+      - name: Fetch main (read-only, every ref; the delete guard, the merge base and the mutants need it, D-4281)
         env:
-          HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
           GH_TOKEN: ${{ github.token }}
         run: |
           # The checkout keeps no credentials; fetch main with the job token (read-only), masked in logs.
           git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main
+
+      # Skipped only on the merge train's throwaway refs (D-4281, T640): X carries two tasks' changes under no task
+      # branch, so the change rules would fail it; both heads meet these rules on their own task branches.
+      - name: Plan lock and change rules (docs/governance.md)
+        if: ${{ !startsWith(github.ref_name, 'claude/train/') }}
+        env:
+          HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
           python3 scripts/check_plan_lock.py
           python3 scripts/check_pr_change.py --base origin/main --branch "$HEAD_BRANCH"
 
@@ -147,6 +154,8 @@ jobs:
 
       - name: A check that exists on main cannot be skipped by deleting its inputs (D-479)
         run: |
+          # Fails closed: without main to compare with, a deleted input could not be seen.
+          git rev-parse --verify --quiet "origin/main^{commit}" >/dev/null || { echo "origin/main cannot be read"; exit 1; }
           for f in Cargo.toml Cargo.lock package-lock.json rust-toolchain.toml deny.toml tests/coverage_floor.json tests/mutation/mutants.toml; do
             if git cat-file -e "origin/main:$f" 2>/dev/null; then
               test -f "$f" || { echo "$f exists on main but not here: a required check would be skipped"; exit 1; }

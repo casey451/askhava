@@ -13,11 +13,10 @@
 // stand-in's code, computed as tests/e2e/business_portal_served.spec.ts does, and presses an Ask about
 // a charge link on a seeded $25 charge (payments.charge_evidence, keyed by pick, as T062 and T189
 // store it): the page answers with the job number, the small-job tier and the "Why was I charged?"
-// link, and one help request is queued (BIZ-032, FEE-031, D-225, D-3839). POSTs are re-sent with a same-origin https Origin, as
-// the J1 specs do (D-1250). No test-control route; fake data only; no token is printed.
+// link, and one help request is queued (BIZ-032, FEE-031, D-225, D-3839). POSTs go with
+// the browser's own headers (D-4292). No test-control route; fake data only; no token is printed.
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 import { keyedUrl, seal } from "./keyed";
 
@@ -129,16 +128,6 @@ function unused(path: string): boolean {
   return rows(`SELECT used_at IS NULL FROM portals.login_link WHERE token_sha256 = decode('${hash}', 'hex')`)[0]?.[0] === "t";
 }
 
-/** Re-sends every action-link and sign-in POST with a same-origin https Origin (D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route(/\/b\/(a|sign-in)\//, async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 test("TD-SEC-67: the quote form and the Hold page open in a browser and use nothing", async ({ page }) => {
   const quote = seedQuoteLink();
   await page.goto(`${keyedUrl()}${quote.path}`);
@@ -159,7 +148,6 @@ test("TD-SEC-67: a quote form POST past admit_quote's per-business limit stores 
     SELECT 'portals.quotes_per_business:id:${quote.business}', w, ${String(QUOTES_PER_BUSINESS)}
     FROM (VALUES (date_bin('1 hour', now(), timestamptz '1970-01-01 00:00:00+00')),
       (date_bin('1 hour', now() + interval '1 hour', timestamptz '1970-01-01 00:00:00+00'))) AS t(w)`);
-  await httpsOrigin(page);
   await page.goto(`${keyedUrl()}${quote.path}`);
   await page.getByRole("button", { name: /^Send quote for job \d+$/ }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your quote wasn't sent");
@@ -171,7 +159,6 @@ test("TD-SEC-67: a signed-in owner's Ask about a charge link answers with the ch
   const token = randomBytes(32).toString("hex");
   const ids = seedOwner(token);
   const charge = seedCharge(ids.business, ids.owner);
-  await httpsOrigin(page);
   await page.goto(`${keyedUrl()}/b/sign-in/${token}`);
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.getByLabel("Sign-in code").fill(verifyCode(OWNER_PHONE));

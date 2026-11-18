@@ -17,7 +17,8 @@ jobs:
     # carries that name on the head commit instead.
     name: governance-runner
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.head_branch != 'claude/kit-state'
+    # No pull request has the merge train's throwaway refs either (D-4281, T640).
+    if: github.event.workflow_run.head_branch != 'claude/kit-state' && !startsWith(github.event.workflow_run.head_branch, 'claude/train/')
     env:
       HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
       HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
