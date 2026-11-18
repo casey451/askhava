@@ -1,28 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-18T21:15:29Z by runner ac95475ba313 (actions).
+Updated 2026-11-18T21:19:53Z by runner 419da048481a (actions).
 
-**Building: T651 in progress since 19:44Z; 456 of 663 done; week 68% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T651 in progress since 19:44Z; 457 of 663 done; week 68% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 456 of 663 build tasks (owner gates not counted)
+- **Tasks done:** 457 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T651 claimed 19:44Z, lease until 23:43Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 4: T364 claimed 21:12Z, lease until 00:12Z; lane 7: T503 claimed 20:58Z, lease until 23:58Z
 - **Week:** 68% used, 55.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:15Z, 0 min before this update
+- **Last run:** 21:15Z, 4 min before this update
 - **Keeper:** last ran 21:15Z, next wake 23:46Z
 
 ## Needs attention
 - BLOCKED T715: plan gap reported: PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-address question (step 11) to be asked on the first reply after the area check, even when step 5 never told the coverage. That is the behaviour D-4441 correction (5) removes, so the test is red with T715's change. Smallest plan change: a harness follow-up (T715's attempt or a new task) that may change that test's `her_request` setup so step 5 finishes before step 11 is expected (e.g. first text through the full reply path / receive_raw_reply, or a reply naming a trade, with covera; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 51 problem(s) on tasks still to run (+264 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T483 | messaging, portals and server: the owner's "away until" date | MERGE_PENDING | 1 | 2 h 48 min | 21:13Z |  |
 | T702 | privacy and messaging: no blind-index key version is retired | MERGE_PENDING | 1 | 40 min | 21:07Z | merging main into the reviewed head conflicts in kit/prompts/T702.md; a resync merges it in on this attempt (D-891) |
-| T706 | payments: held_release, the FEE-017 re-check that clears a p | MERGE_PENDING | 1 | 100 min | 20:54Z |  |
+| T706 | payments: held_release, the FEE-017 re-check that clears a p | done | 1 | 100 min | 20:54Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 1 | 48 min | 20:53Z | PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-addre |
 | T502 | Decisions digest, piece 3: the next entries after the header | done | 1 | 38 min | 20:31Z |  |
 | T364 | server and portals: the business step-up code page is served | check_failed | 1 | 2 h 1 min | 20:29Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
@@ -87,23 +87,23 @@ Updated 2026-11-18T21:15:29Z by runner ac95475ba313 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 307 of 735 (41.8%) · partial 378 · unstarted 50
-**Tasks merged (throughput only):** 456 of 645
+**Requirements verified:** 294 of 735 (40.0%) · partial 391 · unstarted 50
+**Tasks merged (throughput only):** 457 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 17 | 18 | 0 | 35 |
 | ai | 9 | 17 | 3 | 29 |
-| businesses | 19 | 38 | 1 | 58 |
+| businesses | 17 | 40 | 1 | 58 |
 | calls | 12 | 13 | 0 | 25 |
 | consent | 14 | 21 | 0 | 35 |
-| fees | 24 | 27 | 1 | 52 |
-| intake | 16 | 27 | 0 | 43 |
+| fees | 23 | 28 | 1 | 52 |
+| intake | 10 | 33 | 0 | 43 |
 | job-cards | 14 | 10 | 0 | 24 |
-| licensing | 34 | 14 | 0 | 48 |
-| lifecycle | 19 | 9 | 0 | 28 |
-| messaging | 21 | 23 | 1 | 45 |
-| ops-recovery | 4 | 31 | 19 | 54 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 20 | 24 | 1 | 45 |
+| ops-recovery | 3 | 32 | 19 | 54 |
 | privacy | 9 | 21 | 1 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 27 | 29 | 0 | 56 |
@@ -124,7 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 99 of 262 done
+- stage 5: 100 of 262 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
