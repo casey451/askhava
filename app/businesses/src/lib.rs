@@ -46,6 +46,7 @@ mod consent;
 mod contact_ids;
 mod coverage_notice;
 mod deliverability_check;
+mod digest_counts;
 mod email_verification;
 mod emergency_switch;
 mod holding;
