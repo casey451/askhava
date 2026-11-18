@@ -3,26 +3,63 @@
 //! `ops::api::is_paused` and writes one audit row; the fee mode and a category switch need a fresh
 //! factor, are logged, and the fee terms land in `payments.fee_terms`; the home page renders the
 //! pushed alerts, the weekly opt-out rates and each needs-review sign-up's 4-day target line from
-//! planted rows, and no page holds a contact detail. Every password, code and ID is fake.
+//! planted rows, and no page holds a contact detail planted in the vault; each homeowner-line and
+//! banner change needs a fresh factor and is logged; a form posted to another route is refused.
+//! Every password, code, contact and ID is fake.
 
 use askhava_businesses::api::{create, review_target_line};
 use askhava_catalog::api::{category_list, load_embedded};
-use askhava_ops::api::{Switch, is_paused};
+use askhava_messaging::api::{Audience, LaunchChannel, NumberState, launch_channel, load_lines};
+use askhava_ops::api::{BannerBy, Switch, acknowledge_alert, banner_shown, is_paused, show_banner};
 use askhava_payments::api::{FeeMode, fee_terms_in_force};
 use askhava_portals::api::{
-    ChangeForm, CookieJar, OWNER_ALERT_ACK_ROUTE, OWNER_CATEGORY_ROUTE, OWNER_FEE_MODE_ROUTE,
-    OWNER_PAUSE_ROUTE, OwnerAuth, OwnerChange, OwnerPrincipal, OwnerToolError, PauseSwitch,
-    SecondFactor, apply_owner_change, bootstrap_owner, owner_home_page, owner_principal,
-    owner_settings_page, owner_sign_in, parse_change,
+    ChangeForm, CookieJar, OWNER_ALERT_ACK_ROUTE, OWNER_BANNER_ROUTE, OWNER_CATEGORY_ROUTE,
+    OWNER_FEE_MODE_ROUTE, OWNER_PAUSE_ROUTE, OWNER_TEXTING_ROUTE, OwnerAuth, OwnerChange,
+    OwnerPrincipal, OwnerToolError, PauseSwitch, SecondFactor, apply_owner_change, bootstrap_owner,
+    owner_home_page, owner_principal, owner_settings_page, owner_sign_in, parse_change,
 };
+use askhava_privacy::api::{NewContact, Vault, store_contact};
+use base64::Engine;
+use base64::engine::general_purpose::STANDARD;
 use hmac::{Hmac, KeyInit, Mac};
 use jiff::{SignedDuration, Timestamp};
+use secrecy::SecretString;
 use sha1::Sha1;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 const PASSWORD: &str = "fake owner pass phrase 2026";
 const TOKEN: &str = "fake-bootstrap-token-0123456789abcdef";
+/// A fake homeowner's name, phone, email and address, stored in the vault before a page renders.
+const CONTACT: [&str; 4] = [
+    "Dana Testperson",
+    "+19285550188",
+    "dana@example.com",
+    "123 Fake Test Way",
+];
+
+/// Stores [`CONTACT`] in the vault (fake keys); its contact ID.
+async fn plant_contact(db: &mut PgConnection) -> Uuid {
+    let key = |b: u8| SecretString::from(format!("1:{}", STANDARD.encode([b; 32])));
+    let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
+    let vault = Vault::new(&key(0x41), &key(0x42), &url).expect("vault");
+    let field = |i: usize| Some(SecretString::from(CONTACT[i]));
+    let new = NewContact {
+        name: field(0),
+        phone: field(1),
+        email: field(2),
+        address: field(3),
+        onsite_contact: None,
+    };
+    store_contact(db, &vault, &new).await.expect("contact")
+}
+
+/// No planted contact value, nor the phone's last digits, is on `page`.
+fn assert_no_contact(page: &str) {
+    for value in CONTACT.into_iter().chain(["5550188", "Dana"]) {
+        assert!(!page.contains(value), "the page holds {value}");
+    }
+}
 
 fn at(secs: i64) -> Timestamp {
     Timestamp::from_second(1_790_000_010).expect("time") + SignedDuration::from_secs(secs)
@@ -168,6 +205,7 @@ async fn td_fee_06_the_fee_mode_switch_needs_a_fresh_factor_and_is_stored(pool: 
 async fn a_category_switch_needs_a_fresh_factor_and_is_logged(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
     let code = a_category(&mut db).await;
+    plant_contact(&mut db).await;
     let jar = signed_in(&mut db).await;
     let off = form("category", &code, "off");
     let change = parse_change(OWNER_CATEGORY_ROUTE, &off).expect("form");
@@ -190,7 +228,7 @@ async fn a_category_switch_needs_a_fresh_factor_and_is_logged(pool: PgPool) {
         page.contains(&turn_on),
         "the switched-off category offers on"
     );
-    assert!(!page.contains('@'), "no contact detail");
+    assert_no_contact(&page);
 }
 
 /// Plants one needs-review sign-up waiting since `since`.
@@ -236,10 +274,18 @@ async fn plant_week_and_alert(db: &mut PgConnection, now: Timestamp) -> Uuid {
     .execute(&mut *db)
     .await
     .expect("opt-outs");
+    pushed_alert(db, ("ops.health_check_failed", "high"), Uuid::new_v4()).await
+}
+
+/// Plants one pushed `(kind, severity)` alert about the record `about`.
+async fn pushed_alert(db: &mut PgConnection, (kind, severity): (&str, &str), about: Uuid) -> Uuid {
     let alert: Uuid = sqlx::query_scalar(
         "INSERT INTO ops.alert (kind, severity, subject_kind, subject_id) \
-         VALUES ('ops.health_check_failed', 'high', 'jobs.job', gen_random_uuid()) RETURNING id",
+         VALUES ($1, $2, 'privacy.contact', $3) RETURNING id",
     )
+    .bind(kind)
+    .bind(severity)
+    .bind(about)
     .fetch_one(&mut *db)
     .await
     .expect("alert");
@@ -251,9 +297,26 @@ async fn plant_week_and_alert(db: &mut PgConnection, now: Timestamp) -> Uuid {
     alert
 }
 
-/// TD-BIZ-07 (BIZ-027), CON-024, OPS-035, OPS-001: the home page shows each needs-review sign-up's
-/// 4-day target line, last week's opt-out rate over the line, the pushed alert with its
-/// acknowledgement (which then resolves it, logged), and no contact detail.
+/// OPS-028, OPS-025: plants a pushed critical alert about a vault contact that the safety call
+/// acknowledged (no ack row) and a pushed text-delivery alert about her.
+async fn plant_answered_and_delivery(db: &mut PgConnection) {
+    let her = plant_contact(db).await;
+    let called = pushed_alert(db, ("payments.ledger_mismatch", "critical"), her).await;
+    let answered = acknowledge_alert(db, called, at(-5)).await;
+    assert!(answered.expect("call ack"));
+    pushed_alert(db, (askhava_ops::api::DELIVERY_ALERT, "high"), her).await;
+}
+
+/// How many "I've seen this alert" buttons and "Seen" lines `page` holds.
+fn alert_marks(page: &str) -> (usize, usize) {
+    let buttons = page.matches("I've seen this alert").count();
+    (buttons, page.matches("Seen ").count())
+}
+
+/// TD-BIZ-07 (BIZ-027), CON-024, OPS-035, OPS-001, OPS-025: the home page shows each needs-review
+/// sign-up's 4-day target line, last week's opt-out rate over the line, the pushed alert with its
+/// acknowledgement (which then resolves it, logged), a critical alert answered on the safety call
+/// as seen with no button, a text-delivery alert with no button, and no planted contact detail.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_07_the_home_page_renders_reviews_rates_and_alerts(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
@@ -261,9 +324,16 @@ async fn td_biz_07_the_home_page_renders_reviews_rates_and_alerts(pool: PgPool) 
     let since = at(-86_400);
     let business = needs_review(&mut db, since).await;
     let alert = plant_week_and_alert(&mut db, at(0)).await;
+    plant_answered_and_delivery(&mut db).await;
     let page = owner_home_page(&mut db, "fake-csrf", 4, at(0))
         .await
         .expect("page");
+    assert_eq!(
+        alert_marks(&page),
+        (1, 1),
+        "one button; the answered call is seen"
+    );
+    assert!(page.contains("This clears by itself once texts are getting through again."));
     assert!(
         page.contains(&business.to_string()),
         "the sign-up is listed"
@@ -275,7 +345,8 @@ async fn td_biz_07_the_home_page_renders_reviews_rates_and_alerts(pool: PgPool) 
     );
     assert!(page.contains("We texted 100; 3 opted out (3.0%). <strong>At or over the 3% alert"));
     assert!(page.contains("ops.health_check_failed (high)") && page.contains(&alert.to_string()));
-    assert!(page.contains("/static/portals/forms.css") && !page.contains('@'));
+    assert!(page.contains("/static/portals/forms.css"));
+    assert_no_contact(&page);
     let ack = form("acknowledge", &alert.to_string(), "");
     let change = parse_change(OWNER_ALERT_ACK_ROUTE, &ack).expect("form");
     let jar = signed_in(&mut db).await;
@@ -290,8 +361,125 @@ async fn td_biz_07_the_home_page_renders_reviews_rates_and_alerts(pool: PgPool) 
     let page = owner_home_page(&mut db, "fake-csrf", 4, at(20))
         .await
         .expect("page");
-    assert!(page.contains("Seen ") && !page.contains("I've seen this alert"));
+    assert_eq!(alert_marks(&page), (0, 2));
     let trade = PauseSwitch::Trade("no_such_trade".into());
     let unknown = apply_owner_change(&mut db, &owner, OwnerChange::Pause(trade, true), at(12));
     assert_eq!(unknown.await, Err(OwnerToolError::Refused));
+}
+
+/// The homeowner line as the page reads it: texting on, launch channel, number state.
+async fn line(db: &mut PgConnection) -> (bool, LaunchChannel, &'static str) {
+    let lines = load_lines(db, (None, None)).await.expect("lines");
+    let launch = launch_channel(db, Audience::Homeowner)
+        .await
+        .expect("launch");
+    let state = match lines.homeowner.state {
+        NumberState::Working => "working",
+        NumberState::Suspended { .. } => "suspended",
+        NumberState::Restored { .. } => "restored",
+    };
+    (lines.homeowner.texting_on, launch, state)
+}
+
+/// TD-SEC-22 (SEC-043, TXT-021, TXT-022, TXT-024, D-1843): homeowner texting off and on, the launch
+/// channel, the suspension and the restore each are refused at 5:01 with nothing changed, then
+/// change the line with one `messaging.mode_changed` row.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn each_homeowner_line_change_needs_a_fresh_factor_and_is_logged(pool: PgPool) {
+    use LaunchChannel::{Sms, WebAndEmail};
+    let mut db = pool.acquire().await.expect("db");
+    let jar = signed_in(&mut db).await;
+    let (stale, fresh) = (
+        principal(&mut db, &jar, 900).await,
+        principal(&mut db, &jar, 60).await,
+    );
+    let steps = [
+        (
+            form("homeowner_texting", "", "off"),
+            (false, Sms, "working"),
+        ),
+        (form("homeowner_texting", "", "on"), (true, Sms, "working")),
+        (
+            form("launch_channel", "web_and_email", ""),
+            (false, WebAndEmail, "working"),
+        ),
+        (
+            form("number_suspended", "", ""),
+            (false, WebAndEmail, "suspended"),
+        ),
+        (
+            form("number_restored", "", ""),
+            (false, WebAndEmail, "restored"),
+        ),
+    ];
+    for (logged, (body, after)) in (1..).zip(steps) {
+        let change = parse_change(OWNER_TEXTING_ROUTE, &body).expect("form");
+        let before = line(&mut db).await;
+        let refused = apply_owner_change(&mut db, &stale, change.clone(), at(900)).await;
+        let unchanged = (line(&mut db).await, mode_rows(&mut db).await);
+        let stale_case = (refused, unchanged);
+        let want = (Err(OwnerToolError::NeedsFreshFactor), (before, logged - 1));
+        assert_eq!(stale_case, want, "{}: refused changes nothing", body.change);
+        let done = apply_owner_change(&mut db, &fresh, change, at(60)).await;
+        let now = (done, line(&mut db).await, mode_rows(&mut db).await);
+        assert_eq!(now, (Ok(true), after, logged), "{}", body.change);
+    }
+}
+
+/// The count of homeowner-line change audit rows.
+async fn mode_rows(db: &mut PgConnection) -> i64 {
+    audit_rows(db, "messaging.mode_changed").await
+}
+
+/// TD-SEC-22 (SEC-043, TXT-024, D-1843): hiding the status banner is refused at 5:01 with the
+/// banner still shown, then hides it with one owner row in its history.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn the_banner_off_needs_a_fresh_factor_and_is_logged(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let jar = signed_in(&mut db).await;
+    let (stale, fresh) = (
+        principal(&mut db, &jar, 900).await,
+        principal(&mut db, &jar, 60).await,
+    );
+    let owner = fresh.owner();
+    let shown = show_banner(&mut db, BannerBy::Owner(owner), at(30)).await;
+    assert!(shown.expect("banner on"));
+    let off = parse_change(OWNER_BANNER_ROUTE, &form("banner_off", "", "")).expect("form");
+    let refused = apply_owner_change(&mut db, &stale, off.clone(), at(900)).await;
+    assert_eq!(refused, Err(OwnerToolError::NeedsFreshFactor));
+    let still = banner_shown(&mut db).await.expect("banner");
+    assert!(still, "refused changes nothing");
+    assert_eq!(
+        apply_owner_change(&mut db, &fresh, off, at(60)).await,
+        Ok(true)
+    );
+    let hidden: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM ops.status_banner WHERE NOT shown AND actor_kind = 'owner'",
+    )
+    .fetch_one(&mut *db)
+    .await
+    .expect("rows");
+    let shown = banner_shown(&mut db).await.expect("banner");
+    assert_eq!((shown, hidden), (false, 1));
+}
+
+/// SEC-043, D-1843: a valid form of each family posted to any other owner route is refused, so a
+/// guarded change cannot ride an unguarded route.
+#[test]
+fn a_valid_form_posted_to_another_route_is_refused() {
+    let alert = Uuid::new_v4().to_string();
+    let forms = [
+        (OWNER_PAUSE_ROUTE, form("pause_all", "", "on")),
+        (OWNER_FEE_MODE_ROUTE, form("fee_mode", "flat", "")),
+        (OWNER_CATEGORY_ROUTE, form("category", "plumbing", "off")),
+        (OWNER_TEXTING_ROUTE, form("homeowner_texting", "", "off")),
+        (OWNER_BANNER_ROUTE, form("banner_off", "", "")),
+        (OWNER_ALERT_ACK_ROUTE, form("acknowledge", &alert, "")),
+    ];
+    for (own, body) in &forms {
+        for (route, _) in &forms {
+            let parsed = parse_change(route, body);
+            assert_eq!(parsed.is_some(), route == own, "{} to {route}", body.change);
+        }
+    }
 }

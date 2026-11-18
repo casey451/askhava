@@ -22,8 +22,8 @@ use askhava_messaging::api::{
     set_launch_channel, switch_off, switch_on, weekly_optout_rates,
 };
 use askhava_ops::api::{
-    Actor, Switch, acknowledge_pushed_alert, banner_shown, clear_banner, is_paused, pushed_alerts,
-    set_switch,
+    Actor, DELIVERY_ALERT, Switch, acknowledge_pushed_alert, banner_shown, clear_banner, is_paused,
+    pushed_alerts, set_switch,
 };
 use askhava_payments::api::{FeeMode, fee_terms_in_force, switch_fee_mode};
 use jiff::{Timestamp, tz};
@@ -284,6 +284,9 @@ struct AlertRow {
     raised: String,
     pushed: String,
     acknowledged: Option<String>,
+    /// OPS-025, D-4283: a text-delivery alert, which only the delivery path acknowledges, so the
+    /// page offers no button for it.
+    delivery: bool,
 }
 
 /// One audience's week of opt-outs (CON-024).
@@ -382,6 +385,7 @@ async fn alert_rows(conn: &mut PgConnection) -> Result<Vec<AlertRow>, OwnerToolE
         .into_iter()
         .map(|a| AlertRow {
             id: a.id.to_string(),
+            delivery: a.subject.kind == DELIVERY_ALERT,
             subject: a
                 .subject
                 .subject_kind

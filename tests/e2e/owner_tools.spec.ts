@@ -24,8 +24,8 @@ const POSTS: [string, Record<string, string>][] = [
 ];
 
 const OWNER_WORDS = [
-  "Pause switches",
-  "Fee mode",
+  "Pause or resume",
+  "Save fee mode",
   "Opt-outs each week",
   "Sign-ups waiting for you",
   "Category settings",

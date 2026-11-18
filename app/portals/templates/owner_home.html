@@ -14,7 +14,8 @@
 {% else %}<ul id="pushed-alerts">
 {% for a in alerts %}<li><p>{{ a.kind }} ({{ a.severity }}){% if let Some(about) = a.subject %}, about {{ about }}{% endif %}. Started {{ a.raised }}. Sent to your phone {{ a.pushed }}.
 {% if let Some(done) = a.acknowledged %}Seen {{ done }}.{% endif %}</p>
-{% if a.acknowledged.is_none() %}<form method="post" action="{{ routes[0] }}" novalidate>
+{% if a.acknowledged.is_none() && a.delivery %}<p>This clears by itself once texts are getting through again.</p>
+{% else if a.acknowledged.is_none() %}<form method="post" action="{{ routes[0] }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="change" value="acknowledge"><input type="hidden" name="target" value="{{ a.id }}">
 <button type="submit">I've seen this alert</button>
 </form>{% endif %}</li>

@@ -42,11 +42,13 @@ pub struct PushedAlert {
     pub raised_at: Timestamp,
     /// When it was pushed to Casey's phone.
     pub pushed_at: Timestamp,
-    /// When it was acknowledged, by Casey or the system, if it was.
+    /// When it was acknowledged or resolved, if it was: its `ops.alert_ack` time, else its
+    /// `resolved_at` (a safety call answered through `acknowledge_alert` writes no ack row).
     pub acknowledged_at: Option<Timestamp>,
 }
 
-/// OPS-035, D-3882, D-3890: every alert with an `ops.alert_push` row, newest push first.
+/// OPS-035, D-3882, D-3890, D-4283: every alert with an `ops.alert_push` row, newest push first;
+/// one resolved without an ack row counts as acknowledged at its `resolved_at`.
 ///
 /// # Errors
 ///
@@ -54,7 +56,7 @@ pub struct PushedAlert {
 pub async fn pushed_alerts(db: &mut PgConnection) -> Result<Vec<PushedAlert>, OpsError> {
     let rows = sqlx::query!(
         r#"SELECT a.id, a.kind, a.severity, a.subject_kind, a.subject_id, a.raised_at,
-             p.pushed_at, k.at AS "acknowledged_at?"
+             p.pushed_at, coalesce(k.at, a.resolved_at) AS "acknowledged_at?"
            FROM ops.alert a JOIN ops.alert_push p ON p.alert_id = a.id
            LEFT JOIN ops.alert_ack k ON k.alert_id = a.id
            ORDER BY p.pushed_at DESC, a.id"#

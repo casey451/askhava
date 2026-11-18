@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT a.id, a.kind, a.severity, a.subject_kind, a.subject_id, a.raised_at,\n             p.pushed_at, k.at AS \"acknowledged_at?\"\n           FROM ops.alert a JOIN ops.alert_push p ON p.alert_id = a.id\n           LEFT JOIN ops.alert_ack k ON k.alert_id = a.id\n           ORDER BY p.pushed_at DESC, a.id",
+  "query": "SELECT a.id, a.kind, a.severity, a.subject_kind, a.subject_id, a.raised_at,\n             p.pushed_at, coalesce(k.at, a.resolved_at) AS \"acknowledged_at?\"\n           FROM ops.alert a JOIN ops.alert_push p ON p.alert_id = a.id\n           LEFT JOIN ops.alert_ack k ON k.alert_id = a.id\n           ORDER BY p.pushed_at DESC, a.id",
   "describe": {
     "columns": [
       {
@@ -84,12 +84,7 @@
         "ordinal": 7,
         "name": "acknowledged_at?",
         "type_info": "Timestamptz",
-        "origin": {
-          "Table": {
-            "table": "ops.alert_ack",
-            "name": "at"
-          }
-        }
+        "origin": "Expression"
       }
     ],
     "parameters": {
@@ -103,8 +98,8 @@
       true,
       false,
       false,
-      false
+      null
     ]
   },
-  "hash": "e2abe22db185c43a83b1d3afd7f1e4884ae16afef460cf05a8be028d54143798"
+  "hash": "fdeee1d26e55b19fc3e08921a40af40dbc5faa7024740285dde100594e5f3a75"
 }
