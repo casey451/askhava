@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT body_ref, from_owner, at FROM ops.help_message WHERE request_id = $1 ORDER BY at, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "body_ref",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "ops.help_message",
+            "name": "body_ref"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "from_owner",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "ops.help_message",
+            "name": "from_owner"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "ops.help_message",
+            "name": "at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "d3729b032215e88a4d95c1246630edc4bbf841e58f3cd9875e929a3616f87cf3"
+}

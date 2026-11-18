@@ -28,7 +28,10 @@
 //! `businesses::api::phone_stopped`, and any other text for which `businesses::api::auto_reply_due`
 //! holds queues `business_auto_reply` (BIZ-017, BIZ-032, D-1715), except a text that is exactly
 //! `LINK` and 4 digits (`calls::api::link_pin`), which goes only to `calls::api::link_reply` and
-//! gets no reply whether it linked or not (CALL-011, D-3079, T391). A directory hit counts as the
+//! gets no reply whether it linked or not (CALL-011, D-3079, T391). A business text that gets the
+//! auto reply also opens or joins the business's help request, and a homeowner's answered HELP
+//! records its time for CON-034's check of her next message (`intake::api::business_help`,
+//! `note_help`; OPS-036, T151, D-3881). A directory hit counts as the
 //! business's only if `businesses::api::phone_standing` is not `Some(false)`: a staff phone waiting
 //! for the owner's approval takes an unknown number's path, so its STOP, LINK or other text never
 //! acts for the business; `None` (no staff phone row) keeps the business. Read in the delivery's
@@ -76,9 +79,9 @@ use askhava_intake::api::rules::{
 };
 use askhava_intake::api::{
     Admission, Handled, IntakeError, LimitError, RawReply, Reply, SafetyCallAsk, TextIn,
-    admit_new_request, count_emergency_request, enqueue_safety_call, list_ask, name_address_open,
-    on_opt_out, open_request_jobs, pause_on_repeat_cancel, reads_as_address, receive_raw_reply,
-    restart_after_start,
+    admit_new_request, business_help, count_emergency_request, enqueue_safety_call, list_ask,
+    name_address_open, note_help, on_opt_out, open_request_jobs, pause_on_repeat_cancel,
+    reads_as_address, receive_raw_reply, restart_after_start,
 };
 use askhava_messaging::api::{
     APP_OPT_OUT_WORDS, Detected, EmergencyFacts, FollowUp, HelpSettings, InboundText, InboxError,
@@ -93,8 +96,8 @@ use askhava_ops::api::{
     raise_alert, show_banner,
 };
 use askhava_privacy::api::{
-    CommonWords, Inbound as Read, InboundWords, Known, NameMemory, NewContact, REMOVED, Vault,
-    VaultError, find_by_phone, read_inbound, read_inbound_for, store_contact,
+    CommonWords, Inbound as Read, InboundWords, Known, NameMemory, NewContact, REMOVED,
+    ScrubbedText, Vault, VaultError, find_by_phone, read_inbound, read_inbound_for, store_contact,
 };
 use askhava_quotes::api::{QuotesError, quoted_prices};
 use axum::Router;
@@ -592,7 +595,9 @@ async fn handle(
                 .await
                 .map(|()| After::Nothing);
         }
-        return auto_reply(h, db, &msg).await.map(|()| After::Nothing);
+        return auto_reply(h, db, (&msg, &read.text), now)
+            .await
+            .map(|()| After::Nothing);
     }
     paused_emergency(h, db, &msg, (to, now), false).await?;
     if let Some(error) = unread {
@@ -872,7 +877,7 @@ async fn screen(
         }
         Outcome::Resubscribed | Outcome::Open => false,
     };
-    help(h, db, msg, (to, listed)).await?;
+    help(h, db, msg, (to, listed, now)).await?;
     Ok(outcome == Outcome::Resubscribed)
 }
 
@@ -925,12 +930,14 @@ async fn homeowner_opted_out(
 }
 
 /// The HELP reply (CON-018, D-131) and the listed number's end (CON-016); a module error for a
-/// listed sender is `Halt::Settled`, never retried (D-2307).
+/// listed sender is `Halt::Settled`, never retried (D-2307). A homeowner's answered HELP also has
+/// its time recorded by `intake::api::note_help`, so her next message is checked against CON-034
+/// first; no help request opens and nothing is sent to the owner yet (OPS-036, D-3881).
 async fn help(
     h: &Ctx<'_>,
     db: &mut PgConnection,
     msg: &InboundText<'_>,
-    (to, listed): (&str, bool),
+    (to, listed, now): (&str, bool, Timestamp),
 ) -> Step<()> {
     let keep = |e: Halt| if listed { settled(e) } else { e };
     let replied = if keyword(msg.text).is_some() {
@@ -942,6 +949,11 @@ async fn help(
     } else {
         None
     };
+    if replied.is_some() && msg.relation != Relation::Business {
+        note_help(db, msg.contact, now)
+            .await
+            .map_err(|e| keep(intake_halt(e)))?;
+    }
     match (replied, listed) {
         (Some(_), _) => Err(Halt::Ends("help")),
         (None, true) => Err(Halt::Ends("suppressed")),
@@ -1033,11 +1045,20 @@ async fn acts_for_business(db: &mut PgConnection, line: Uuid) -> Step<bool> {
 /// `recipient` is the business ID, not the phone's line ID that `business_notices` stores and
 /// `businesses::api::may_text` takes: `sender_business` answers only the business, so no sender
 /// can check `may_text` for this row or resolve its phone until `messaging` also returns the line
-/// ID (open item, D-2042).
-async fn auto_reply(h: &Ctx<'_>, db: &mut PgConnection, msg: &InboundText<'_>) -> Step<()> {
+/// ID (open item, D-2042). The same text, not a command, first opens or joins the business's
+/// help request with its scrubbed words (`intake::api::business_help`, OPS-036, D-3881).
+async fn auto_reply(
+    h: &Ctx<'_>,
+    db: &mut PgConnection,
+    (msg, words): (&InboundText<'_>, &ScrubbedText),
+    now: Timestamp,
+) -> Step<()> {
     if !auto_reply_due(msg.text, false) {
         return Err(Halt::Ends("business"));
     }
+    business_help(db, (msg.inbox_id, msg.contact), words, now)
+        .await
+        .map_err(intake_halt)?;
     let body = render(AUTO_REPLY_TEMPLATE, Language::En, false, &[])
         .map_err(|e| Halt::Failed("auto_reply", variant(&e)))?;
     let text = NewText {

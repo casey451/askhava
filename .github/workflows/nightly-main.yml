@@ -9,6 +9,10 @@ permissions:
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
+    # ci.yml asks for actions: read (its proven-parent pass, D-4281); a called workflow gets no more than this grant.
+    permissions:
+      contents: read
+      actions: read
   twin:
     uses: ./.github/workflows/twin.yml
   a11y:

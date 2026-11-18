@@ -102,3 +102,66 @@ def test_the_trybuild_cache_and_its_guard_live_where_the_trybuild_tests_run() ->
     guard = _jobs_running('test -d target/tests/trybuild || { echo "the cache lost target/tests/trybuild"; exit 1; }')
     assert guard == ["lint"]
     assert "_cannot_be_forged_outside_" in _ci()["env"]["SPLIT_TESTS"].split()
+
+
+PROOF_CALLS = {"checks": [("Checks", "rust"), ("Checks", "npm")], "lint": [("Lint and slow tests", "rust")],
+               "coverage": [("Coverage", "rust")], "e2e": [("E2e", "run")]}
+EARLY_EXIT = 'if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then'
+
+
+def _changes(job: str) -> dict[str, Any]:
+    (step,) = [s for s in _ci()["jobs"][job]["steps"] if s.get("id") == "changes"]
+    return step
+
+
+def test_each_changes_step_passes_its_own_rule_and_trusts_only_a_proven_line() -> None:
+    """D-4281: the script reads the rule from the step's own script ("$0"), one per flag, and only an exact
+    `proven=<40 hex>` line sets a flag back to false; the step's token reads the parent's runs."""
+    rule_of = re.compile(r"grep -Eq '([^']+)'\s*&&\s*(\w+)=true")
+    for job, calls in PROOF_CALLS.items():
+        step, name = _changes(job), _ci()["jobs"][job]["name"]
+        text = step["run"]
+        assert step["env"]["GH_TOKEN"] == "${{ github.token }}", job
+        assert 'line="$(python3 scripts/ci_proven.py --job "$1" --flag "$2" --step-script "$0" || true)"' in text
+        assert '[[ "$line" =~ ^proven=[0-9a-f]{40}$ ]]' in text and text.count("ci_proven.py") == 1, job
+        flags = [flag for _rule, flag in rule_of.findall(text)]
+        assert sorted(flags) == sorted(flag for _name, flag in calls) and len(set(flags)) == len(flags), job
+        for job_name, flag in calls:
+            assert job_name == name
+            assert f'if [ "${flag}" = true ] && proven "{name}" {flag}; then {flag}=false; fi' in text, job
+
+
+def test_the_early_exit_is_unchanged_and_comes_before_the_proof() -> None:
+    """D-489, D-4281: schedule, workflow_dispatch and main runs still compile everything, before any proof."""
+    for job in PROOF_CALLS:
+        text = _changes(job)["run"]
+        assert text.count(EARLY_EXIT) == 1 and text.index(EARLY_EXIT) < text.index("proven()"), job
+        exit_line = text[text.index(EARLY_EXIT):].splitlines()[1]
+        assert exit_line.strip().endswith("exit 0") and "=true" in exit_line, job
+
+
+def test_the_delete_guard_precedes_the_checks_changes_step() -> None:
+    """D-479: a deleted compiled input fails the run before any flag is decided."""
+    names = [s.get("name", "") for s in _ci()["jobs"]["checks"]["steps"]]
+    guard = names.index("A check that exists on main cannot be skipped by deleting its inputs (D-479)")
+    assert guard < [s.get("id") for s in _ci()["jobs"]["checks"]["steps"]].index("changes")
+
+
+def test_no_scan_lock_rule_or_python_step_depends_on_the_flags() -> None:
+    """D-4281: only compile steps sit behind the flags; the scans, the plan lock and change rules, the Rust source
+    rules, the approved crates, the compiled-in-file check and the whole Python job run on every head."""
+    jobs = _ci()["jobs"]
+    always = ("Sources unchanged", "Secret scan", "PII scan", "No git conflict markers", "Plan lock and change rules",
+              "A check that exists on main", "Rust source rules", "Approved crates only", "Every compiled-in file")
+    for prefix in always:
+        (step,) = [s for s in jobs["checks"]["steps"] if s.get("name", "").startswith(prefix)]
+        assert "steps.changes" not in str(step.get("if", "")), prefix
+    assert not any("steps.changes" in str(s.get("if", "")) for s in jobs["python"]["steps"])
+
+
+def test_the_nightly_ci_call_grants_what_ci_asks() -> None:
+    """D-3795, D-4281: a called workflow gets no more than its caller grants, so a missing grant stops the nightly."""
+    nightly = yaml.safe_load((ROOT / ".github/workflows/nightly-main.yml").read_text(encoding="utf-8"))
+    granted, asked = nightly["jobs"]["ci"]["permissions"], _ci()["permissions"]
+    assert asked == {"contents": "read", "actions": "read"}
+    assert all(granted.get(scope) == level for scope, level in asked.items())
