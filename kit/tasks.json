@@ -37764,7 +37764,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 21
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -44139,16 +44139,11 @@
     "docs/spec/privacy.md",
     "docs/spec/messaging.md",
     "app/intake/src/order.rs",
-    "app/intake/src/zip_step.rs",
     "app/intake/src/routing.rs",
     "app/intake/src/matching.rs",
-    "app/intake/src/service.rs",
     "app/intake/src/conversation.rs",
     "docs/spec/wording.md",
-    "docs/brains/rust-production.md",
-    "app/intake/src/handlers.rs",
-    "app/intake/src/models.rs",
-    "app/jobs/src/request_counts.rs"
+    "docs/brains/rust-production.md"
    ],
    "requirements": [
     "INT-043",
@@ -44180,7 +44175,7 @@
    "budget": {
     "files": 10,
     "lines": 650,
-    "context_pct": 47
+    "context_pct": 42
    },
    "checks": [
     "Ci",
@@ -44252,7 +44247,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 23
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -44398,7 +44393,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 20
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -45530,7 +45525,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 20
+    "context_pct": 23
    },
    "checks": [
     "Ci",
