@@ -141,9 +141,11 @@ pub async fn help_keyword_recent(
     .map_err(|_| OpsError::Database)
 }
 
-/// OPS-036, D-4044: one help message from `asker`, its words kept under `body_ref`, at `at`,
-/// answered by `due`: joins an open request opened within the join window, or opens one, notified
-/// now within the daily limit, with its OPS-032 push item.
+/// OPS-036, D-4044, JOB-006: one help message from `asker`, its words kept under `body_ref`, at
+/// `at`, answered by `due`: joins an open request opened within the join window, or opens one,
+/// notified now within the daily limit, with its OPS-032 push item. A `body_ref` already kept (a
+/// rerun) returns its request as joined, with nothing written; the whole check-then-insert runs
+/// under one transaction lock, so two requests at once cannot beat either limit (D-4278).
 ///
 /// # Errors
 ///
@@ -154,6 +156,9 @@ pub async fn open_help_request(
     (body_ref, at, due): (Uuid, Timestamp, Timestamp),
     limits: HelpLimits,
 ) -> Result<HelpOpened, OpsError> {
+    if let Some(request) = already_kept(db, body_ref).await? {
+        return Ok(HelpOpened::Joined(request));
+    }
     if let Some(request) = joinable(db, asker, at, limits).await? {
         add_message(db, request, body_ref, (false, at)).await?;
         return Ok(HelpOpened::Joined(request));
@@ -179,6 +184,24 @@ pub async fn open_help_request(
     };
     add_push_item(db, HELP_PUSH_ITEM, (HELP_PUSH_ITEM, request), show_from).await?;
     Ok(HelpOpened::Opened { request, notify })
+}
+
+/// Takes the help-request transaction lock (held to commit), then finds the request that already
+/// holds the asker's message `body_ref`, open or closed (JOB-006, D-4278).
+async fn already_kept(db: &mut PgConnection, body_ref: Uuid) -> Result<Option<Uuid>, OpsError> {
+    sqlx::query!(
+        r#"SELECT 1 AS "locked!" FROM (SELECT pg_advisory_xact_lock(hashtextextended('ops.help_request', 151))) AS lock"#
+    )
+    .fetch_one(&mut *db)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    sqlx::query_scalar!(
+        "SELECT request_id FROM ops.help_message WHERE body_ref = $1 AND NOT from_owner LIMIT 1",
+        body_ref,
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| OpsError::Database)
 }
 
 /// The asker's newest open request opened within the join window before `at`.

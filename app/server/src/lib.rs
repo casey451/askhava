@@ -695,15 +695,20 @@ where
 
 /// `intake`'s no-reply reminder and close (INT-019), a business's "Ask about a charge" help request
 /// (OPS-036, T151) and the emergency address asked again on `picks.address_needed` (INT-029,
-/// T255), the first and last with the `ID_SECRET` as outbox key.
-fn register_intake_asks(registry: &mut Registry, id_secret: &SecretString) {
+/// T255), the first and last with the `ID_SECRET` as outbox key, the help request on the worker
+/// clock.
+fn register_intake_asks(registry: &mut Registry, id_secret: &SecretString, clock: &Arc<dyn Clock>) {
     let secret = id_secret.clone();
     registry.register(askhava_intake::api::NO_REPLY_KIND, move |pool, task| {
         askhava_intake::api::run_no_reply(pool, secret.clone(), task)
     });
-    registry.register(askhava_portals::api::HELP_REQUEST_KIND, |pool, task| {
-        askhava_intake::api::run_help_request_opened(pool, task, jiff::Timestamp::now())
-    });
+    let help_clock = Arc::clone(clock);
+    registry.register(
+        askhava_portals::api::HELP_REQUEST_KIND,
+        move |pool, task| {
+            askhava_intake::api::run_help_request_opened(pool, task, help_clock.now())
+        },
+    );
     let asked = id_secret.clone();
     registry.register(
         askhava_picks::api::ADDRESS_NEEDED_KIND,
@@ -740,7 +745,7 @@ where
     release_minter();
     let clock = Arc::clone(&stream.clock);
     let mut registry = Registry::new();
-    register_intake_asks(&mut registry, &stream.id_secret);
+    register_intake_asks(&mut registry, &stream.id_secret, &clock);
     registry.register(
         askhava_intake::api::CARD_TIMER_KIND,
         askhava_intake::api::run_card_timer,

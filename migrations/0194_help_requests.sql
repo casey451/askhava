@@ -30,6 +30,7 @@ CREATE TABLE ops.help_message (
   at timestamptz NOT NULL
 );
 CREATE INDEX help_message_request_idx ON ops.help_message (request_id, at);
+CREATE INDEX help_message_body_idx ON ops.help_message (body_ref);
 REVOKE UPDATE, DELETE, TRUNCATE ON ops.help_message FROM askhava_app;
 
 CREATE TABLE ops.help_keyword (

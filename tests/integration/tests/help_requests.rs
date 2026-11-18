@@ -5,14 +5,15 @@
 use std::sync::{Arc, Mutex};
 
 use askhava_adapters::api::{AdapterError, Email, EmailAdapter, IdempotencyKey};
-use askhava_core::api::{Claimed, brand};
+use askhava_core::api::{Claimed, Environment, ManualClock, brand};
+use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_intake::api::{
     CHARGE_QUESTION, business_help, help_answered, help_follow_up, note_help, receive_help_email,
     run_help_request_opened,
 };
 use askhava_messaging::api::{
     DailyLimit, HELP_NOTICE_KIND, HELP_PAGE_PATH, HelpNotice, HelpSender, MailboxKind,
-    run_help_notice,
+    run_help_notice, sender_add,
 };
 use askhava_ops::api::{
     HelpOpened, add_owner_reply, help_request, open_help_requests, set_help_closed,
@@ -22,15 +23,25 @@ use askhava_privacy::api::{
     CommonWords, EmailContext, InboundWords, Known, NameMemory, ScrubbedText, SignedDelivery,
     Vault, cut_problem_words, read_inbound_email, scrub,
 };
+use axum::body::Body;
+use axum::http::{Request, StatusCode};
 use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
 use hmac::{Hmac, KeyInit, Mac};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use serde_json::Value;
+use sha1::Sha1;
 use sha2::Sha256;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
+use tower::ServiceExt;
+
+/// The route under test, compiled into this test crate.
+#[path = r"../../../app/server/src/inbound_text.rs"]
+mod inbound_text;
+
+use inbound_text::{INBOUND_PATH, Webhooks, routes};
 
 const SENTINEL: &str =
     "why was I charged? call 928-555-0142 or fake.person@example.com, 123 Fake Street";
@@ -215,6 +226,18 @@ async fn td_ops_22_open_requests_with_due_dates(pool: PgPool) {
         open_help_requests(&mut db).await.expect("open"),
         vec![(request, due)]
     );
+    let show_from = sqlx::query_scalar::<_, jiff_sqlx::Timestamp>(
+        "SELECT show_from FROM ops.push_item WHERE subject_id = $1",
+    )
+    .bind(request)
+    .fetch_one(&mut *db)
+    .await
+    .expect("push item");
+    assert_eq!(
+        show_from.to_jiff(),
+        due - SignedDuration::from_hours(24),
+        "still open at its due time, it is in the next push"
+    );
     add_owner_reply(
         &mut db,
         request,
@@ -339,13 +362,18 @@ async fn td_ops_11_ask_about_a_charge_opens_one_request(pool: PgPool) {
         .fetch_one(&mut *db)
         .await
         .expect("event");
+    sqlx::query("UPDATE jobs.job SET emergency = true WHERE id = $1")
+        .bind(job)
+        .execute(&mut *db)
+        .await
+        .expect("emergency");
     let task = Claimed {
         id: 1,
         kind: HELP_REQUEST_KIND.to_owned(),
         payload,
         attempts: 1,
     };
-    run_help_request_opened(pool.clone(), task, az(2, 10))
+    run_help_request_opened(pool.clone(), task.clone(), az(2, 10))
         .await
         .expect("handled");
     let notice: HelpNotice =
@@ -355,7 +383,81 @@ async fn td_ops_11_ask_about_a_charge_opens_one_request(pool: PgPool) {
         ("business", "1209")
     );
     assert_eq!(notice.message, CHARGE_QUESTION);
-    assert_eq!(open_help_requests(&mut db).await.expect("open").len(), 1);
+    assert!(notice.urgent);
+    let due = az(2, 10) + SignedDuration::from_hours(24);
+    assert_eq!(
+        notice.due,
+        due.as_second(),
+        "an urgent job is due in 24 hours"
+    );
+    let open = open_help_requests(&mut db).await.expect("open");
+    assert_eq!(open, vec![(notice.request, due)]);
+    set_help_closed(&mut db, notice.request, (true, az(3, 0)))
+        .await
+        .expect("closed");
+    run_help_request_opened(pool.clone(), task, az(5, 0))
+        .await
+        .expect("rerun");
+    assert_eq!(
+        notices(&mut db).await.len(),
+        1,
+        "JOB-006: a rerun sends nothing"
+    );
+    assert!(open_help_requests(&mut db).await.expect("open").is_empty());
+    let row = help_request(&mut db, notice.request).await.expect("read");
+    assert_eq!(row.expect("row").messages.len(), 1);
+}
+
+/// OPS-036: the daily limit counts by Arizona day: ten at 23:5x leave 00:01 notified.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_11_the_limit_resets_at_arizona_midnight(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let mut last = None;
+    for (n, at) in (0..10)
+        .map(|n| az(23, 50 + n))
+        .chain([az(24, 1)])
+        .enumerate()
+    {
+        let n = u128::try_from(n).expect("n");
+        let who = (Uuid::from_u128(0x300 + n), Uuid::from_u128(0x400 + n));
+        let said = words("why was I charged?");
+        last = Some(business_help(&mut db, who, &said, at).await.expect("help"));
+    }
+    assert!(matches!(
+        last,
+        Some(HelpOpened::Opened { notify: true, .. })
+    ));
+    assert_eq!(notices(&mut db).await.len(), 11);
+}
+
+/// OPS-036, D-4278: a second message while the first request's transaction is open waits for
+/// it, then joins it: two at once never open two requests for one asker.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_11_two_at_once_open_one_request(pool: PgPool) {
+    let business = Uuid::from_u128(0xb5);
+    let mut first = pool.begin().await.expect("tx");
+    let said = words("why was I charged?");
+    let opened = business_help(
+        &mut first,
+        (Uuid::from_u128(0x51), business),
+        &said,
+        az(2, 10),
+    );
+    let request = opened.await.expect("help").request();
+    let pool2 = pool.clone();
+    let second = tokio::spawn(async move {
+        let mut tx = pool2.begin().await.expect("tx");
+        let said = words("cargo incorrecto");
+        let ids = (Uuid::from_u128(0x52), business);
+        let opened = business_help(&mut tx, ids, &said, az(2, 11)).await;
+        tx.commit().await.expect("commit");
+        opened
+    });
+    tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+    assert!(!second.is_finished(), "the second waits for the lock");
+    first.commit().await.expect("commit");
+    let joined = second.await.expect("task").expect("help");
+    assert_eq!(joined, HelpOpened::Joined(request));
 }
 
 fn signed_email(text: &str, dmarc: &str) -> askhava_privacy::api::InboundEmail {
@@ -430,4 +532,111 @@ async fn td_priv_11_a_help_email_body_stays_in_privacy(pool: PgPool) {
     assert!(ops.contains(&opened.request().to_string()) && !ops.contains("zq-sentinel"));
     let cut = cut_problem_words(&mut db, at + SignedDuration::from_hours(31 * 24)).await;
     assert_eq!(cut.expect("cut"), 1);
+}
+
+const BASE: &str = "https://hooks.example.test";
+const TOKEN: &str = "fake_twilio_auth_token";
+
+fn hooks(pool: &PgPool) -> Arc<Webhooks> {
+    let key = |b: u8| SecretString::from(format!("1:{}", STANDARD.encode([b; 32])));
+    let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
+    Arc::new(Webhooks {
+        pool: pool.clone(),
+        clock: Arc::new(ManualClock::new(az(2, 0))),
+        public_base: BASE.to_owned(),
+        auth_token: SecretString::from(TOKEN),
+        id_secret: SecretString::from("test-only-id-secret-not-a-real-key".to_owned()),
+        vault: Vault::new(&key(0x53), &key(0x63), &url).expect("vault"),
+        environment: Environment::Test,
+        intake: IntakeSettings::default(),
+    })
+}
+
+/// POSTs one inbound text, signed with the fake token, through the route; its status.
+async fn text(h: &Arc<Webhooks>, n: u32, from: &str, said: &str) -> StatusCode {
+    let sid = format!("SM{n:032}");
+    let mut fields = [
+        ("MessageSid", sid.as_str()),
+        ("From", from),
+        ("To", "+19285550100"),
+        ("Body", said),
+    ];
+    let encode = |v: &str| -> String {
+        v.bytes()
+            .map(|b| match b {
+                b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' => {
+                    (b as char).to_string()
+                }
+                _ => format!("%{b:02X}"),
+            })
+            .collect()
+    };
+    let body: Vec<String> = fields
+        .iter()
+        .map(|(n, v)| format!("{n}={}", encode(v)))
+        .collect();
+    fields.sort_unstable();
+    let mut mac = <Hmac<Sha1> as KeyInit>::new_from_slice(TOKEN.as_bytes()).expect("key");
+    mac.update(format!("{BASE}{INBOUND_PATH}").as_bytes());
+    for (name, value) in fields {
+        mac.update(name.as_bytes());
+        mac.update(value.as_bytes());
+    }
+    let request = Request::post(INBOUND_PATH)
+        .header(
+            "X-Twilio-Signature",
+            STANDARD.encode(mac.finalize().into_bytes()),
+        )
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(Body::from(body.join("&")))
+        .expect("request");
+    let answer = routes(Arc::clone(h)).oneshot(request).await;
+    answer.expect("answer").status()
+}
+
+/// CON-034, OPS-036 through the route: HELP records its time and notifies nobody, and her
+/// follow-up's notification names the HELP reply as the last text sent to her.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_11_route_help_records_its_time(pool: PgPool) {
+    let h = hooks(&pool);
+    assert_eq!(text(&h, 1, "+19285550161", "HELP").await, StatusCode::OK);
+    let mut db = pool.acquire().await.expect("conn");
+    let contact: Uuid = sqlx::query_scalar("SELECT contact_id FROM ops.help_keyword")
+        .fetch_one(&mut *db)
+        .await
+        .expect("HELP time recorded");
+    assert!(notices(&mut db).await.is_empty());
+    let reply: String =
+        sqlx::query_scalar("SELECT template_id FROM messaging.outbox WHERE recipient_id = $1")
+            .bind(contact)
+            .fetch_one(&mut *db)
+            .await
+            .expect("HELP reply queued");
+    let said = words("still stuck");
+    help_follow_up(&mut db, (Uuid::from_u128(0xe9), contact), &said, az(2, 5))
+        .await
+        .expect("help");
+    let notice: HelpNotice =
+        serde_json::from_value(notices(&mut db).await.pop().expect("notice")).expect("notice");
+    assert_eq!(notice.last_text, Some(reply));
+}
+
+/// TD-OPS-11 through the route: a linked business's "cargo incorrecto" opens one request with
+/// one notification.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_11_route_business_text_opens_one_request(pool: PgPool) {
+    let h = hooks(&pool);
+    let (business, phone) = (Uuid::from_u128(0xb8), "+19285550162");
+    let mut db = pool.acquire().await.expect("conn");
+    sender_add(&mut db, &h.vault, (business, Uuid::from_u128(0xb81)), phone)
+        .await
+        .expect("linked phone");
+    assert_eq!(text(&h, 2, phone, "cargo incorrecto").await, StatusCode::OK);
+    let asked: Vec<(String, Option<Uuid>)> =
+        sqlx::query_as("SELECT asker, asker_id FROM ops.help_request")
+            .fetch_all(&mut *db)
+            .await
+            .expect("requests");
+    assert_eq!(asked, vec![("business".to_owned(), Some(business))]);
+    assert_eq!(notices(&mut db).await.len(), 1);
 }
