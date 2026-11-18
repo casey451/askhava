@@ -36,6 +36,7 @@ mod conversation;
 mod design;
 mod emergency;
 mod emergency_count;
+mod flag_inputs;
 mod golden_run;
 mod handlers;
 mod job_texts;
