@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-18T20:43:31Z by runner 310c1e3aad9a (actions).
+Updated 2026-11-18T20:46:06Z by runner 8ba862b4c752 (actions).
 
-**Building: T651 in progress since 19:44Z; 455 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T651 in progress since 19:44Z; 456 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 455 of 663 build tasks (owner gates not counted)
+- **Tasks done:** 456 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T651 claimed 19:44Z, lease until 23:43Z; lane 3: T483 claimed 18:25Z, lease until 23:40Z; lane 5: T706 claimed 19:14Z, lease until 23:19Z; lane 6: T702 claimed 20:27Z, lease until 23:27Z; lane 7: T715 claimed 20:05Z, lease until 23:05Z
 - **Week:** 67% used, 53.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:41Z, 2 min before this update
+- **Last run:** 20:43Z, 2 min before this update
 - **Keeper:** last ran 20:37Z, next wake 22:47Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 51 problem(s) on tasks still to run (+262 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 51 problem(s) on tasks still to run (+264 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T502 | Decisions digest, piece 3: the next entries after the header | MERGE_PENDING | 1 | 38 min | 20:31Z |  |
+| T502 | Decisions digest, piece 3: the next entries after the header | done | 1 | 38 min | 20:31Z |  |
 | T364 | server and portals: the business step-up code page is served | MERGE_PENDING | 1 | 2 h 1 min | 20:29Z |  |
 | T702 | privacy and messaging: no blind-index key version is retired | resync | 1 | 59 min | 20:21Z | merging main into the reviewed head conflicts in kit/prompts/T702.md; a resync merges it in on this attempt (D-891) |
 | T501 | Decisions digest, piece 2: the next entries after the header | done | 1 | 73 min | 19:42Z |  |
@@ -84,7 +84,7 @@ Updated 2026-11-18T20:43:31Z by runner 310c1e3aad9a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 293 of 735 (39.9%) · partial 392 · unstarted 50
-**Tasks merged (throughput only):** 455 of 662
+**Tasks merged (throughput only):** 456 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -120,7 +120,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 98 of 262 done
+- stage 5: 99 of 262 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
