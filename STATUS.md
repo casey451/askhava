@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T12:08:40Z by runner 2ef2075302e7 (actions).
+Updated 2026-11-18T12:08:54Z by runner 2ef2075302e7 (actions).
 
 **Building: T583 in progress since 11:19Z; 440 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 440 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T583 claimed 11:19Z, lease until 15:03Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 4: T700 claimed 11:39Z, lease until 15:04Z; lane 5: T679 claimed 11:39Z, lease until 14:39Z; lane 6: T200 claimed 12:06Z, lease until 15:06Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
+- **Lane:** lane 1: T583 claimed 11:19Z, lease until 15:03Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 5: T679 claimed 11:39Z, lease until 14:39Z; lane 6: T200 claimed 12:06Z, lease until 15:06Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
 - **Week:** 54% used, 80.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:07Z, 1 min before this update
 - **Keeper:** last ran 12:03Z, next wake 12:23Z
@@ -21,6 +21,7 @@ Updated 2026-11-18T12:08:40Z by runner 2ef2075302e7 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T700 | Runner (harness): a merge-line task whose turn ran out goes  | MERGE_PENDING | 1 | 29 min | 12:08Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | QUEUED | 1 | 2 h 57 min | 12:02Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
 | T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 2 | 2 h 21 min | 11:34Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z | PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file)  |
@@ -133,10 +134,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T583 (lease until 2026-11-18T15:03:25Z)
 - lane 2: T662 (lease until 2026-11-18T14:26:44Z)
-- lane 4: T700 (lease until 2026-11-18T15:04:43Z)
 - lane 5: T679 (lease until 2026-11-18T14:39:48Z)
 - lane 6: T200 (lease until 2026-11-18T15:06:51Z)
 - lane 7: T472 (lease until 2026-11-18T14:43:39Z)
 
 ## Last usage reading
-- {"task": "T200", "at": "2026-11-18T12:02:44Z", "cache_creation_input_tokens": 381862, "input_tokens": 372, "cache_read_input_tokens": 17551426, "output_tokens": 111558}
+- {"task": "T700", "at": "2026-11-18T12:08:39Z", "cache_creation_input_tokens": 112575, "output_tokens": 34801, "cache_read_input_tokens": 2009266, "input_tokens": 81}
