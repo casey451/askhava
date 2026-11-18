@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-18T13:14:14Z by runner fb873cdccd9c (actions).
+Updated 2026-11-18T13:14:33Z by runner fb873cdccd9c (actions).
 
-**Building: T200 in progress since 12:06Z; 443 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T671 in progress since 13:14Z; 443 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 443 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T200 claimed 12:06Z, lease until 15:58Z
-- **Week:** 54% used, 80.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T671 claimed 13:14Z, lease until 16:14Z; lane 6: T200 claimed 12:06Z, lease until 15:58Z
+- **Week:** 54% used, 84.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:10Z, 3 min before this update
 - **Keeper:** last ran 12:51Z, next wake 13:11Z
 
@@ -121,7 +121,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T12:03:13Z (week)): week: 113.9M used, 80.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T08:04:34Z.
+- Pacing (session_reading 2026-11-18T12:51:16Z (week)): week: 109.9M used, 84.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T03:48:30Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -136,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T671 (lease until 2026-11-18T16:14:02Z)
 - lane 6: T200 (lease until 2026-11-18T15:58:46Z)
 
 ## Last usage reading
