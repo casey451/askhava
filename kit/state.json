@@ -24423,7 +24423,8 @@
     "T686",
     "T688",
     "T690",
-    "T691"
+    "T691",
+    "T720"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -39280,7 +39281,6 @@
     "T068",
     "T150",
     "T198",
-    "T158",
     "T204",
     "T209",
     "T212",
@@ -39292,6 +39292,7 @@
     "T404",
     "T451",
     "T455",
+    "T479",
     "T483"
    ],
    "status": "QUEUED",
@@ -69182,7 +69183,7 @@
   {
    "id": "T500",
    "deps": [
-    "T499"
+    "T720"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -71150,7 +71151,8 @@
     "T520",
     "T527",
     "T562",
-    "T573"
+    "T573",
+    "T593"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -73682,7 +73684,7 @@
    "deps": [
     "T102",
     "T416",
-    "T526"
+    "T115"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -78471,7 +78473,8 @@
   {
    "id": "T672",
    "deps": [
-    "T671"
+    "T671",
+    "T711"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -78858,7 +78861,8 @@
    "id": "T691",
    "deps": [
     "T671",
-    "T573"
+    "T573",
+    "T711"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -79010,6 +79014,26 @@
     "runner/cycle.py",
     "tests/test_runner_merge_line_rotation.py"
    ]
+  },
+  {
+   "id": "T720",
+   "deps": [],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "decision-digest-prep",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T711",
+   "deps": [
+    "T671"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-order-two-jobs",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -84089,7 +84113,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T15:18:02Z",
+ "updated_at": "2026-11-18T15:39:02Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -84187,7 +84211,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c260062c9bb184d860b2e597ac56fcecd4cd67e8",
+ "runner_sha": "ed339f3447007922b96d54527af9095fb416b550",
  "starter": "actions",
  "smoke_runs": [
   {
