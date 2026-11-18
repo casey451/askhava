@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T12:24:42Z by runner 3cb957d20dde (actions).
+Updated 2026-11-18T12:35:39Z by runner 50c23cdbdd10 (actions).
 
 **Building: T662 in progress since 11:26Z; 441 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 441 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 6: T200 claimed 12:06Z, lease until 15:06Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
+- **Lane:** lane 2: T662 claimed 11:26Z, lease until 15:35Z; lane 6: T200 claimed 12:06Z, lease until 15:06Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
 - **Week:** 54% used, 80.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:24Z, 0 min before this update
+- **Last run:** 12:24Z, 10 min before this update
 - **Keeper:** last ran 12:24Z, next wake 14:29Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-18T12:24:42Z by runner 3cb957d20dde (actions).
 Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 25 problem(s) on tasks still to run (+226 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 30 problem(s) on tasks still to run (+231 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -92,7 +92,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 683 · unstarted 52
-**Tasks merged (throughput only):** 441 of 643
+**Tasks merged (throughput only):** 441 of 621
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -136,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T662 (lease until 2026-11-18T14:26:44Z)
+- lane 2: T662 (lease until 2026-11-18T15:35:39Z)
 - lane 6: T200 (lease until 2026-11-18T15:06:51Z)
 - lane 7: T472 (lease until 2026-11-18T14:43:39Z)
 
