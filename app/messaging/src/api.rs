@@ -70,6 +70,11 @@ pub use crate::health_figures::{
     EmailFigures, NoticeTiming, PerAudience, TextFigures, email_figures, emails_sent,
     notice_timing, text_figures,
 };
+pub use crate::help_answers::{
+    ANSWER_TEMPLATES, ANSWER_WINDOW, AUTO_ANSWERED_ACTION, CLOSE_ANSWER, COST_ANSWER, HelpAsked,
+    HelpQuestion, MAX_WORDS, PERSON_ANSWER, QUOTES_ANSWER, answered_within, help_question,
+    person_answer, quotes_answer,
+};
 pub use crate::help_requests::{
     HELP_EMAIL_TEMPLATE, HELP_NOTICE_KIND, HELP_PAGE_PATH, HelpNotice, HelpSender, help_lines,
     last_text, queue_help_notice, register_help_notices, run_help_notice, send_help_notice,

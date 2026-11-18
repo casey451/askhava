@@ -27,8 +27,26 @@
 //! an open request is stopped (`conversation::stop_if_under_18`) before the close and
 //! name-and-address steps; a text that is not clear, or a first text, is stopped after its screen,
 //! so a 911 text goes first. Under 13 the stop also clears her vault contact's name and address.
+//!
+//! After HELP (CON-034, CON-018, OPS-036, INT-002, D-3753, D-4293, D-4344): in an open request a
+//! clear reply that no command parser takes (LIST, CLOSE or CERRAR with or without a number,
+//! `<n> YES`) is checked by `after_help`. Within 24 hours of an auto-answer it opens or joins her
+//! help request (`help_follow_up`, one notification); else, within 24 hours of her HELP, a
+//! plain-word question (`messaging::api::help_question`, never AI) gets its auto-answer, queued
+//! under its own template ID with one `help.auto_answered` audit row (the digest line) and no
+//! help request, and any other message opens or joins the help request. A 911-list match keeps
+//! today's path, so the safety text goes first.
 
-use askhava_privacy::api::Vault;
+use askhava_core::api::{IdSecret, brand};
+use askhava_jobs::api::quote_token::issue;
+use askhava_jobs::api::{current, job_number};
+use askhava_messaging::api::{
+    AUTO_ANSWERED_ACTION, CLOSE_ANSWER, COST_ANSWER, HelpAsked, HelpQuestion, Language,
+    answered_within, help_question, person_answer, quotes_answer, render,
+};
+use askhava_ops::api::{Actor, AuditEntry, Change, HelpOpened, audit};
+use askhava_privacy::api::{CommonWords, Known, NameMemory, ScrubbedText, Vault, scrub};
+use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
@@ -39,10 +57,12 @@ use crate::conversation::{
     Taken, ask_name_address, hear, name_address_open, stop_if_under_18, take_name_address,
 };
 use crate::emergency::{Check, check};
-use crate::handlers::{answer_list, list_ask};
+use crate::handlers::{answer_list, help_answered, help_follow_up, list_ask, queue_body};
 use crate::models::{self, IntakeError};
 use crate::order::ask_last_question;
-use crate::rules::{AgeStop, CloseReading, Settings, close_reading, split_name_address};
+use crate::rules::{
+    AgeStop, CloseReading, Settings, close_reading, language_from_code, split_name_address,
+};
 use crate::service::{Asked, Handled, Queued, Screened, TextIn, receive_answer, receive_text};
 
 /// What [`receive_reply`] did with one inbound text.
@@ -67,6 +87,12 @@ pub enum Reply {
     /// address are gone. A stop after a 911-list match or on a first text is a
     /// [`Reply::Handled`] whose texts end with the INT-038 text.
     UnderAge(AgeStop, Queued),
+    /// A plain-word question within 24 hours of her HELP (CON-034, D-4344): its auto-answer,
+    /// with no help request and no notification.
+    HelpAnswered(Queued),
+    /// Any other clear, non-command message after HELP, or any one within 24 hours of an
+    /// auto-answer: her help request opened or joined (OPS-036, CON-034).
+    HelpRequest(HelpOpened),
 }
 
 /// The raw text of a reply and the vault its name-and-address answer is written to (INT-027,
@@ -139,6 +165,12 @@ async fn reply_in(
         return Ok(Reply::CheckedIn(job));
     }
     let open = models::open_conversation(&mut tx, msg.contact).await?;
+    if let Some(conversation) = open.filter(|_| !answered_elsewhere)
+        && let Some(reply) = after_help(&mut tx, secret, msg, (conversation, settings)).await?
+    {
+        tx.commit().await.map_err(|_| IntakeError::Database)?;
+        return Ok(reply);
+    }
     let (mut step_11, mut mention) = (None, None);
     if let Some(conversation) = open.filter(|_| !answered_elsewhere) {
         let request = (conversation, settings, names);
@@ -347,4 +379,154 @@ async fn listed(
         }
         Err(e) => Err(e),
     }
+}
+
+/// CON-034, OPS-036, INT-002, D-4293, D-4344: her reply in open request `conversation` after
+/// HELP. A 911-list match or a command keeps today's path (`None`). Within 24 hours of an
+/// auto-answer the message opens or joins her help request; else, within 24 hours of her HELP, a
+/// plain-word question gets its auto-answer and anything else opens or joins the help request;
+/// otherwise `None`.
+async fn after_help(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    (conversation, settings): (Uuid, Settings),
+) -> Result<Option<Reply>, IntakeError> {
+    let words = msg.inbound.words;
+    if !clear(words) || command(words) {
+        return Ok(None);
+    }
+    let (contact, at) = (msg.contact, msg.received_at);
+    let answered = answered_within(tx, contact, at)
+        .await
+        .map_err(|_| IntakeError::Outbox)?;
+    if !answered && !help_answered(tx, contact, at).await? {
+        return Ok(None);
+    }
+    hear(tx, conversation, msg).await?;
+    if let Some(asked) = help_question(words).filter(|_| !answered) {
+        let request = (conversation, settings.spanish_conversations_on);
+        if let Some(queued) = auto_answer(tx, secret, msg, request, asked).await? {
+            return Ok(Some(Reply::HelpAnswered(queued)));
+        }
+    }
+    let opened = help_follow_up(tx, (msg.inbox_id, contact), &rescrubbed(words), at).await?;
+    Ok(Some(Reply::HelpRequest(opened)))
+}
+
+/// A message a command parser takes keeps its path after HELP (D-4293): LIST or LISTA, CLOSE or
+/// CERRAR alone or with one word, "CLOSE <number>", and `<n> YES` or `<n> SI`.
+fn command(words: &str) -> bool {
+    if list_ask(words).is_some() || matches!(close_reading(words, &[]), CloseReading::Close(_)) {
+        return true;
+    }
+    let lower = words.to_lowercase();
+    let tokens: Vec<&str> = lower
+        .split_whitespace()
+        .map(|t| t.trim_matches(|c: char| !c.is_alphanumeric()))
+        .filter(|t| !t.is_empty())
+        .collect();
+    let number = |t: &str| t.bytes().all(|b| b.is_ascii_digit());
+    match tokens.as_slice() {
+        ["close" | "cerrar"] | ["close" | "cerrar", _] => true,
+        [n, "yes" | "si" | "sí"] => number(n),
+        _ => false,
+    }
+}
+
+/// The already scrubbed `words` as a `ScrubbedText` for `help_follow_up` (PRIV-030): scrubbing
+/// scrubbed words again changes nothing a first scrub left.
+fn rescrubbed(words: &str) -> ScrubbedText {
+    let common = CommonWords::default();
+    let known = Known {
+        common: &common,
+        vault_name: None,
+    };
+    scrub(words, &known, &mut NameMemory::default())
+}
+
+/// CON-034, WORD-009, D-3882, D-4344: queues `asked`'s answer to her in request `conversation`
+/// with its digest audit row; `None` for the quotes or close question with no job to name.
+async fn auto_answer(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    (conversation, spanish_on): (Uuid, bool),
+    asked: HelpAsked,
+) -> Result<Option<Queued>, IntakeError> {
+    let language = answer_language(tx, conversation, asked, spanish_on).await?;
+    let job = newest_job(tx, conversation).await?;
+    let filled = |id: &str, values: &[(&str, &str)]| {
+        render(id, language, spanish_on, values)
+            .map(|t| t.body)
+            .map_err(|_| IntakeError::Template)
+    };
+    let body = match (asked.question, job) {
+        (HelpQuestion::Cost, _) => filled(COST_ANSWER, &[])?,
+        (HelpQuestion::Person, _) => person_answer(language),
+        (HelpQuestion::Close, Some((_, n))) => filled(CLOSE_ANSWER, &[("job", &n.to_string())])?,
+        (HelpQuestion::Quotes, Some((job, n))) => {
+            let status = current(tx, job).await.map_err(|_| IntakeError::Job)?.status;
+            let link = quote_link(tx, secret, job, msg.received_at).await?;
+            quotes_answer(n, status.code(), &link, language)
+        }
+        (HelpQuestion::Close | HelpQuestion::Quotes, None) => return Ok(None),
+    };
+    let to = (msg.contact, asked.question.template_id());
+    let queued = queue_body(tx, secret, to, &[conversation, msg.inbox_id], &body).await?;
+    let entry = AuditEntry {
+        actor: Actor::System,
+        action: AUTO_ANSWERED_ACTION,
+        subject_kind: "messaging.inbox",
+        subject_id: msg.inbox_id,
+        change: Change::Action,
+    };
+    audit(tx, &entry).await.map_err(|_| IntakeError::Audit)?;
+    Ok(Some(queued))
+}
+
+/// The answer's language: Spanish for a Spanish word or a Spanish request, while Spanish is on.
+async fn answer_language(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    asked: HelpAsked,
+    spanish_on: bool,
+) -> Result<Language, IntakeError> {
+    let row = models::conversation(tx, conversation).await?;
+    let code = row.ok_or(IntakeError::UnknownRequest)?.language;
+    let spanish = asked.spanish || language_from_code(&code) == Language::Es;
+    Ok(if spanish && spanish_on {
+        Language::Es
+    } else {
+        Language::En
+    })
+}
+
+/// The request's job with the highest number, with its number (her newest job).
+async fn newest_job(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Option<(Uuid, i64)>, IntakeError> {
+    let mut newest = None;
+    for job in models::request_jobs(tx, conversation).await? {
+        let number = job_number(tx, job).await.map_err(|_| IntakeError::Job)?;
+        if newest.is_none_or(|(_, n)| number > n) {
+            newest = Some((job, number));
+        }
+    }
+    Ok(newest)
+}
+
+/// Her quote page `https://<domain>/q/<token>` with a token issued now (PICK-010, SEC-037).
+async fn quote_link(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    job: Uuid,
+    at: Timestamp,
+) -> Result<String, IntakeError> {
+    let key = IdSecret::new(1, secret.clone()).map_err(|_| IntakeError::Job)?;
+    let token = issue(tx, &key, job, at)
+        .await
+        .map_err(|_| IntakeError::Job)?;
+    Ok(format!("https://{}/q/{}", brand().domain(), token.as_str()))
 }
