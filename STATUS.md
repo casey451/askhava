@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T15:47:34Z by runner ed339f344700 (actions).
+Updated 2026-11-18T15:47:44Z by runner 70e34aef6105 (actions).
 
-**Building: T665 in progress since 14:25Z; 446 of 645 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T592 in progress since 15:38Z; 446 of 645 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 446 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T665 claimed 14:25Z, lease until 18:43Z; lane 4: T592 claimed 15:38Z, lease until 18:38Z; lane 5: T720 claimed 15:43Z, lease until 18:43Z; lane 6: T621 claimed 15:00Z, lease until 18:00Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
+- **Lane:** lane 4: T592 claimed 15:38Z, lease until 18:38Z; lane 5: T720 claimed 15:43Z, lease until 18:43Z; lane 6: T621 claimed 15:00Z, lease until 18:00Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
 - **Week:** 61% used, 67.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:47Z, 0 min before this update
 - **Keeper:** last ran 15:47Z, next wake 16:07Z
@@ -18,11 +18,12 @@ Updated 2026-11-18T15:47:34Z by runner ed339f344700 (actions).
 Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 28 problem(s) on tasks still to run (+240 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 31 problem(s) on tasks still to run (+236 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T665 | server tests (harness): the door matrix fills a business job | MERGE_PENDING | 1 | 81 min | 15:47Z |  |
 | T525 | server and ops: the hourly vault-read check and the daily da | MERGE_PENDING | 1 | 102 min | 15:41Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | done | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
 | T671 | intake (harness): a homeowner's texts after the consent text | BLOCKED | 1 | 44 min | 13:58Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
@@ -89,7 +90,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 684 · unstarted 51
-**Tasks merged (throughput only):** 446 of 645
+**Tasks merged (throughput only):** 446 of 643
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -132,11 +133,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T665 (lease until 2026-11-18T18:43:58Z)
+- nothing
 - lane 4: T592 (lease until 2026-11-18T18:38:59Z)
 - lane 5: T720 (lease until 2026-11-18T18:43:30Z)
 - lane 6: T621 (lease until 2026-11-18T18:00:08Z)
 - lane 7: T671 (lease until 2026-11-18T18:43:09Z)
 
 ## Last usage reading
-- {"task": "T525", "at": "2026-11-18T15:41:25Z", "cache_creation_input_tokens": 273076, "input_tokens": 230, "output_tokens": 67695, "cache_read_input_tokens": 8525223}
+- {"task": "T665", "at": "2026-11-18T15:47:23Z", "output_tokens": 17259, "input_tokens": 73, "cache_creation_input_tokens": 90795, "cache_read_input_tokens": 1788418}

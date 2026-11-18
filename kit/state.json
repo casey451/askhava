@@ -78388,7 +78388,7 @@
     "T643",
     "T472"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "door-matrix-job-page",
    "type": "harness",
@@ -78405,6 +78405,31 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 46,
+     "head_sha": "70e34aef61058b721faa0cc690c16a1fba176e94",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-18T14:25:29Z",
+     "ended_at": "2026-11-18T15:47:23Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 1627548,
+       "turns": 29
+      },
+      "reviewer": {
+       "tokens": 268997,
+       "turns": 8
+      }
+     }
+    }
+   ],
    "reviewed_sha": "b71718804ed966d9e85009f36282f1add0596f9e",
    "review_lease": {
     "task": "T665",
@@ -78412,7 +78437,11 @@
     "expires": "2026-11-18T18:43:58Z"
    },
    "branch": "claude/task/T665-door-matrix-job-page",
-   "head_check_since": null,
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #1041 (gh pr merge)",
+    "head": "b71718804ed966d9e85009f36282f1add0596f9e"
+   },
    "update_merges": [
     {
      "from": "70e34aef61058b721faa0cc690c16a1fba176e94",
@@ -79157,12 +79186,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T525",
-   "at": "2026-11-18T15:41:25Z",
-   "cache_creation_input_tokens": 273076,
-   "input_tokens": 230,
-   "output_tokens": 67695,
-   "cache_read_input_tokens": 8525223
+   "task": "T665",
+   "at": "2026-11-18T15:47:23Z",
+   "output_tokens": 17259,
+   "input_tokens": 73,
+   "cache_creation_input_tokens": 90795,
+   "cache_read_input_tokens": 1788418
   },
   "source": "session_reading 2026-11-18T15:42:15Z (week)",
   "by_task": {
@@ -84194,7 +84223,17 @@
    },
    "T665": {
     "estimated_bytes": 384763,
-    "estimated_tokens": 1105035
+    "estimated_tokens": 1105035,
+    "usage_counting": "message_id",
+    "output_tokens": 17259,
+    "input_tokens": 73,
+    "cache_creation_input_tokens": 90795,
+    "cache_read_input_tokens": 1788418,
+    "worker_tokens": 1627548,
+    "worker_turns": 29,
+    "reviewer_tokens": 268997,
+    "reviewer_turns": 8,
+    "last_model": "claude-opus-5-5"
    },
    "T621": {
     "estimated_bytes": 374885,
@@ -84212,11 +84251,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-18T13:58:12Z",
-    "tokens": 5976226
+    "tokens": 6263194
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 302721679
+    "tokens": 303008647
    }
   },
   "session_reading": {
@@ -84227,7 +84266,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T15:47:34Z",
+ "updated_at": "2026-11-18T15:47:44Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -84325,7 +84364,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ed339f3447007922b96d54527af9095fb416b550",
+ "runner_sha": "70e34aef61058b721faa0cc690c16a1fba176e94",
  "starter": "actions",
  "smoke_runs": [
   {
