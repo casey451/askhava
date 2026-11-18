@@ -59,7 +59,9 @@ pub struct CardApprovals {
 }
 
 /// INT-047, OPS-039: the requests opened at or after `from` and before `to`, per source, sources
-/// in code order; a source with none is absent.
+/// in code order; a source with none is absent. Total only: no per-trade split, since a request
+/// gets a trade only once routed; a later split would be a job-ID variant over
+/// `intake.conversation.job_id` (D-4264).
 ///
 /// # Errors
 ///
