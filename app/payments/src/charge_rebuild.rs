@@ -32,15 +32,25 @@ pub enum Rebuilt {
     Refunded(String),
 }
 
-/// OPS-016, FEE-028, FEE-030, FEE-042, D-3753, D-3844: books one succeeded `charge` as Stripe
-/// lists it, once, at `at`, on its own transaction, when its `metadata[pick_id]` names a pick
-/// `payments` holds, its PaymentIntent is the one stored for that pick and the pick has a
-/// `charge_attempt` row; the pick's `pick_intent` row is locked first. It never calls Stripe. A
-/// refund (any amount) answers [`Rebuilt::Refunded`]; a pick with its evidence record answers
-/// [`Rebuilt::AlreadyBooked`]; anything else [`Rebuilt::Unmatched`]. Booked is reported only when
-/// this transaction wrote the evidence record: a record another path wrote meanwhile (the
-/// webhook does not take the pick's lock) means `book_success` wrote nothing, and answers
-/// [`Rebuilt::AlreadyBooked`].
+/// OPS-016, FEE-019, FEE-021, FEE-028, FEE-030, FEE-042, D-3753, D-3844, D-4292: books one
+/// succeeded `charge` as Stripe lists it, once, at `at`, on its own transaction (a savepoint
+/// inside a caller's), when its `metadata[pick_id]` names a pick `payments` holds, its
+/// PaymentIntent is the one stored for that pick and the pick has a `charge_attempt` row. It never
+/// calls Stripe. A refund (any amount) answers [`Rebuilt::Refunded`]; a pick with its evidence
+/// record answers [`Rebuilt::AlreadyBooked`]; anything else [`Rebuilt::Unmatched`].
+///
+/// Locks, in `record`'s order (D-4292): the pick's newest `charge_attempt` row `FOR UPDATE`, then
+/// its `pick_intent` row `FOR UPDATE`. `record` (the webhook and the 30-minute check) locks the
+/// attempt row `FOR UPDATE` and then `pick_intent` `FOR SHARE` through `hold_pick`;
+/// `confirm_and_pay`'s `begin_attempt`, `end_pick`, `end_intent_unless_charging` and
+/// `late_success` lock `pick_intent` and no existing attempt row, so no two paths wait on each
+/// other in opposite order. A newer attempt made while this call waited is seen under the
+/// `pick_intent` lock and the call starts over on it.
+///
+/// Booked is decided without `xmin`: the evidence record is read absent in a statement after the
+/// `pick_intent` lock is held, and every writer of `payments.charge_evidence` takes that lock
+/// first (`charge::write_evidence`, reached only through `book_success`, called by `record`'s
+/// effects after `hold_pick` and by this function), so `book_success` wrote it here.
 ///
 /// # Errors
 /// [`ChargeError::Database`]; nothing was written.
@@ -60,49 +70,67 @@ pub async fn rebuild_charge(
     else {
         return Ok(Rebuilt::Unmatched(charge.id.clone()));
     };
-    let mut tx = db(conn.begin().await)?;
-    let try_no = match held_try(&mut tx, pick, intent).await? {
-        Ok(try_no) => try_no,
-        Err(answer) => return Ok(answer.unwrap_or(Rebuilt::Unmatched(charge.id.clone()))),
+    loop {
+        let mut tx = db(conn.begin().await)?;
+        let try_no = match held_try(&mut tx, pick, intent).await? {
+            Held::Try(try_no) => try_no,
+            Held::Moved => {
+                db(tx.rollback().await)?;
+                continue;
+            }
+            Held::Answer(answer) => {
+                return Ok(answer.unwrap_or(Rebuilt::Unmatched(charge.id.clone())));
+            }
+        };
+        book_success(&mut tx, (pick, try_no), &charge.id, at).await?;
+        db(tx.commit().await)?;
+        return Ok(Rebuilt::Booked);
+    }
+}
+
+/// What [`held_try`] found under the pick's locks.
+enum Held {
+    /// The newest attempt, locked, with no evidence record: book on it.
+    Try(i32),
+    /// A newer attempt was made while this call waited: start over.
+    Moved,
+    /// `Some(AlreadyBooked)`, or `None` for unmatched (no such pick, another intent, no attempt).
+    Answer(Option<Rebuilt>),
+}
+
+/// D-3844, D-4292: locks pick `pick`'s newest `charge_attempt` row, then its `pick_intent` row,
+/// both `FOR UPDATE`, and then reads, in a fresh statement, whether its evidence record exists and
+/// whether that attempt is still the newest; the stored PaymentIntent must be `intent`.
+async fn held_try(tx: &mut PgConnection, pick: Uuid, intent: &str) -> Result<Held, ChargeError> {
+    let newest = db(sqlx::query_scalar!(
+        "SELECT try_no FROM payments.charge_attempt WHERE pick_id = $1
+          ORDER BY try_no DESC LIMIT 1 FOR UPDATE",
+        pick
+    )
+    .fetch_optional(&mut *tx)
+    .await)?;
+    let stored = db(sqlx::query_scalar!(
+        "SELECT stripe_intent_id FROM payments.pick_intent WHERE pick_id = $1 FOR UPDATE",
+        pick
+    )
+    .fetch_optional(&mut *tx)
+    .await)?;
+    let (Some(newest), Some(true)) = (newest, stored.map(|s| s == intent)) else {
+        return Ok(Held::Answer(None));
     };
-    book_success(&mut tx, (pick, try_no), &charge.id, at).await?;
-    let ours = db(sqlx::query_scalar!(
-        r#"SELECT EXISTS (SELECT 1 FROM payments.charge_evidence
-             WHERE pick_id = $1 AND xmin = pg_current_xact_id()::xid) AS "ours!""#,
+    let now = db(sqlx::query!(
+        r#"SELECT EXISTS (SELECT 1 FROM payments.charge_evidence WHERE pick_id = $1) AS "booked!",
+             (SELECT max(try_no) FROM payments.charge_attempt WHERE pick_id = $1) AS try_no"#,
         pick
     )
     .fetch_one(&mut *tx)
     .await)?;
-    db(tx.commit().await)?;
-    Ok(if ours {
-        Rebuilt::Booked
+    Ok(if now.booked {
+        Held::Answer(Some(Rebuilt::AlreadyBooked))
+    } else if now.try_no == Some(newest) {
+        Held::Try(newest)
     } else {
-        Rebuilt::AlreadyBooked
-    })
-}
-
-/// D-3844: under the lock of pick `pick`'s `pick_intent` row, its newest attempt's `try_no` when
-/// the stored PaymentIntent is `intent` and no evidence record exists; otherwise the answer:
-/// `Some(AlreadyBooked)`, or `None` for unmatched (no such pick, another intent, no attempt).
-async fn held_try(
-    tx: &mut PgConnection,
-    pick: Uuid,
-    intent: &str,
-) -> Result<Result<i32, Option<Rebuilt>>, ChargeError> {
-    let held = db(sqlx::query!(
-        r#"SELECT i.stripe_intent_id,
-             EXISTS (SELECT 1 FROM payments.charge_evidence e WHERE e.pick_id = i.pick_id) AS "booked!",
-             (SELECT max(a.try_no) FROM payments.charge_attempt a WHERE a.pick_id = i.pick_id) AS try_no
-           FROM payments.pick_intent i WHERE i.pick_id = $1 FOR UPDATE OF i"#,
-        pick
-    )
-    .fetch_optional(tx)
-    .await)?;
-    Ok(match held {
-        Some(h) if h.stripe_intent_id != intent => Err(None),
-        Some(h) if h.booked => Err(Some(Rebuilt::AlreadyBooked)),
-        Some(h) => h.try_no.ok_or(None),
-        None => Err(None),
+        Held::Moved
     })
 }
 

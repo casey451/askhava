@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM payments.charge_evidence WHERE pick_id = $1) AS \"booked!\",\n             (SELECT max(try_no) FROM payments.charge_attempt WHERE pick_id = $1) AS try_no",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "booked!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "try_no",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "8a045bb4ddf6dc4b82cb6fca8467384fa4685e709c5847733d22f5f1edb43c47"
+}
