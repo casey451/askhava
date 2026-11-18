@@ -33,17 +33,21 @@ WORKFLOW = ".github/workflows/ci.yml"
 # Inputs of the skippable steps that no job rule names (D-4321 lists each step's inputs): the coverage floor and
 # its script (Coverage compares against origin/main), cargo's config and cargo-audit's ignore list (`.cargo/`),
 # every workflow (the steps and pins themselves; app/privacy's scrub test reads them), this script, the npm audit
-# script, the feature-on security tests E2e builds, rustfmt's config, and the files the Rust tests read at run
-# time: kit/tasks.json (route_wiring, architecture_migrations), the Dockerfile (image_pinned, static_files_route),
-# tests/task_kinds_deferred.json (task_registry) and scripts/check_rust_rules.py (status_enums). For tsc and
-# eslint: tests/perf/ (tsconfig includes its .ts) and every .js/.mjs/.cjs/.ts/.mts/.cts/.jsx/.tsx path anywhere
-# (eslint parses each one its ignores do not drop, e.g. the prototype .js under sources/). For E2e:
-# tests/integration/ (its specs run the *_write_pages_for_axe tests and axe the pages they write). For every job:
-# scripts/brand.py (stand_ins/ai.py loads it for the short name; Rust tests and E2e start the stand-ins).
+# script, rustfmt's config, and the files the Rust tests read at run time: kit/tasks.json (route_wiring,
+# architecture_migrations), the Dockerfile (image_pinned, static_files_route), tests/task_kinds_deferred.json
+# (task_registry) and scripts/check_rust_rules.py (status_enums). Every path in a subdirectory of tests/ and every
+# Cargo.toml, Cargo.lock, rust-toolchain, clippy.toml and deny.toml anywhere: any workspace member or its manifest
+# can be compiled or loaded by a cargo step (cargo reads every member's manifest on any build; E2e's feature-on
+# security tests link tests/fixtures/), tsc includes tests/perf/ and E2e axes the pages tests/integration/ writes;
+# only the top-level tests/*.py stay outside (pytest runs in the Python job, never skipped). For tsc and eslint: every
+# .js/.mjs/.cjs/.ts/.mts/.cts/.jsx/.tsx path anywhere (eslint parses each one its ignores do not drop, e.g. the
+# prototype .js under sources/). For every job: scripts/brand.py (stand_ins/ai.py loads it for the short name;
+# Rust tests and E2e start the stand-ins).
 EXTRA = re.compile(r"^(tests/coverage_floor\.json|scripts/coverage_floor\.py|\.cargo/|\.github/workflows/"
-                   r"|scripts/ci_proven\.py|scripts/npm_audit\.py|tests/security/|\.?rustfmt\.toml"
+                   r"|scripts/ci_proven\.py|scripts/npm_audit\.py|tests/[^/]+/|\.?rustfmt\.toml"
                    r"|kit/tasks\.json|Dockerfile|tests/task_kinds_deferred\.json|scripts/check_rust_rules\.py"
-                   r"|tests/perf/|tests/integration/|scripts/brand\.py|.*\.[cm]?[jt]sx?\Z)", re.DOTALL)
+                   r"|scripts/brand\.py|.*\.[cm]?[jt]sx?\Z"
+                   r"|(.*/)?(Cargo\.(toml|lock)|rust-toolchain(\.toml)?|\.?clippy\.toml|deny\.toml)\Z)", re.DOTALL)
 TIMEOUT = 10
 PER_PAGE = 100
 SHA = re.compile(r"^[0-9a-f]{40}$")

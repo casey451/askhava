@@ -188,6 +188,23 @@ def test_a_runtime_input_outside_the_e2e_or_rust_rule_is_unproven(tmp_path: Path
     assert line == f"unproven: {path!r} changed since C and is a proof input"
 
 
+@pytest.mark.parametrize(("path", "job"), [("tests/fixtures/src/lib.rs", ("E2e", "run")),
+                                           ("tests/recovery/Cargo.toml", ("E2e", "run")),
+                                           ("tests/recovery/Cargo.toml", ("Checks", "rust")),
+                                           ("tools/nested/Cargo.toml", ("E2e", "run")),
+                                           ("tools/nested/Cargo.lock", ("Coverage", "rust"))])
+def test_any_workspace_member_or_cargo_manifest_is_a_proof_input(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                                                  path: str, job: tuple[str, str]) -> None:
+    repo = make(tmp_path, {path: "changed\n"})
+    line = decide(tmp_path, monkeypatch, green(repo, job[0]), job)
+    assert line.startswith(f"unproven: {path!r} changed since C and ")
+
+
+def test_a_top_level_python_test_alone_still_proves_e2e(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = make(tmp_path, {"tests/test_something.py": "changed\n"})
+    assert decide(tmp_path, monkeypatch, green(repo, "E2e"), ("E2e", "run")) == f"proven={repo.c}"
+
+
 @pytest.mark.parametrize("path", ["tests/perf/web_vitals.spec.ts", "tests/perf/fixture.json",
                                   "sources/03_business_and_design/website_prototype/p/assets/js/app.js",
                                   "tools/x.mjs", "a/b.cjs", "c.mts", "d.cts", "e.jsx", "f.tsx"])
