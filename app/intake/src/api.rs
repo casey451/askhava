@@ -53,6 +53,7 @@ pub use crate::emergency_count::{
     CHOICE_TEMPLATE, NIGHT_MANY_TEMPLATE, NIGHT_NONE_TEMPLATE, NIGHT_ONE_TEMPLATE, Offer, count,
     is_night, offer,
 };
+pub use crate::flag_inputs::repeat_requesters;
 pub use crate::golden_run::{
     GoldenRow, catalog_version, golden_results, golden_rows, reaches, run_golden, run_golden_for,
     score,

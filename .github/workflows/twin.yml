@@ -11,8 +11,9 @@ on:
   # merge, made governance.yml post a false failure. A check run attaches to its commit, so these push
   # runs satisfy a pull request with that head (the ruleset matches checks by name and app on the head
   # SHA). Every pull request here comes from claude/** or dependabot/**.
+  # The merge train's throwaway refs prove nothing here (D-4281, T640).
   push:
-    branches: ["claude/**", "dependabot/**", "!claude/kit-state"]
+    branches: ["claude/**", "dependabot/**", "!claude/kit-state", "!claude/train/**"]
   workflow_call:
 permissions:
   contents: read

@@ -7,6 +7,14 @@ Usage (inside a `changes` step, after the rule ran): `python3 scripts/ci_proven.
 <rust|npm|run> --step-script "$0"`. `$0` is the file the runner wrote the step's script to, so the rule is read
 from the very `grep -Eq '<rule>' ... && <flag>=true` the step just ran, never from a second copy.
 
+Candidates: C = HEAD^1, and on a `claude/task/T###-` branch every tip of a `claude/train/T###-<12 hex>` ref of the
+same task (the merge train, D-4281, T640: the runner's update merge X of this head's reviewed commit with the turn
+holder's head), listed with `git ls-remote` and fetched with `git fetch --no-tags --depth=1`, the job token in an
+`http.extraheader` set through git's environment, never in a URL or argv. A listing error, or a malformed name,
+drops only train candidates; a failed fetch drops only that one. A train tip needs no parent relation: rule (3)
+compares the job's compiled inputs byte for byte, and its runs are found by SHA as C's are. On a `claude/train/`
+ref nothing is proven. The first proven candidate wins.
+
 Proven only when ALL hold for C = HEAD^1: HEAD has exactly two parents and HEAD^2 is on origin/main's
 first-parent line (the runner's update merge, `runner/update_merge.py` `commit`); every push run of this
 repository's ci.yml on C has the job of that exact name completed with `success` in every attempt, and at least
@@ -20,6 +28,7 @@ the token (GH_TOKEN) is sent in a header and never printed.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
 import re
@@ -51,16 +60,18 @@ EXTRA = re.compile(r"^(tests/coverage_floor\.json|scripts/coverage_floor\.py|\.c
 TIMEOUT = 10
 PER_PAGE = 100
 SHA = re.compile(r"^[0-9a-f]{40}$")
+TASK_BRANCH = re.compile(r"^claude/task/(T[0-9]+)-")
+TRAIN_REF = re.compile(r"^refs/heads/claude/train/(T[0-9]+)-[0-9a-f]{12}\Z")
 
 
 class Unproven(Exception):
     """Why the flag stays true."""
 
 
-def git(*args: str) -> bytes:
-    """Run git in the current directory; any failure is Unproven."""
+def git(*args: str, env: dict[str, str] | None = None) -> bytes:
+    """Run git in the current directory; any failure is Unproven (git's stderr is never kept)."""
     try:
-        done = subprocess.run(["git", *args], capture_output=True, timeout=60, check=False)
+        done = subprocess.run(["git", *args], capture_output=True, timeout=60, check=False, env=env)
     except (OSError, subprocess.SubprocessError) as err:
         raise Unproven(f"git failed: {type(err).__name__}") from err
     if done.returncode != 0:
@@ -176,21 +187,88 @@ def proven_on(api: str, repo: str, token: str, sha: str, job: str) -> None:
         raise Unproven(f"no {job} job in a ci.yml push run on C")
 
 
+def git_env(env: dict[str, str]) -> dict[str, str]:
+    """This process's environment plus one `http.extraheader` carrying the job token, added through git's
+    GIT_CONFIG_COUNT keys so the token is in neither a URL nor argv."""
+    out = dict(os.environ)
+    count = int(out.get("GIT_CONFIG_COUNT", "0") or "0")
+    basic = base64.b64encode(f"x-access-token:{env['GH_TOKEN']}".encode()).decode()
+    out.update({"GIT_CONFIG_COUNT": str(count + 1), f"GIT_CONFIG_KEY_{count}": "http.extraheader",
+                f"GIT_CONFIG_VALUE_{count}": f"AUTHORIZATION: basic {basic}", "GIT_TERMINAL_PROMPT": "0"})
+    return out
+
+
+def train_tips(env: dict[str, str]) -> tuple[list[tuple[str, str]], str]:
+    """([(ref, sha)] of this task's train refs, why none were listed or ""); never raises."""
+    task = TASK_BRANCH.match(env.get("GITHUB_REF_NAME", ""))
+    if not task:
+        return [], ""
+    url = f"{env.get('GITHUB_SERVER_URL', 'https://github.com')}/{env['GITHUB_REPOSITORY']}"
+    try:
+        out = git("ls-remote", url, "refs/heads/claude/train/*", env=git_env(env)).decode()
+    except (Unproven, ValueError) as why:
+        return [], f"train refs: {why}"
+    tips = []
+    for line in out.splitlines():
+        sha, _, ref = line.partition("\t")
+        name = TRAIN_REF.match(ref)
+        if SHA.match(sha) and name and name.group(1) == task.group(1):
+            tips.append((ref.removeprefix("refs/heads/"), sha))
+    return sorted(tips), ""
+
+
+def judge_train(ref: str, sha: str, rule: str, job: str, env: dict[str, str]) -> None:
+    """Unproven unless the train tip, fetched into this shallow clone, proves the job by rules (2) and (3)."""
+    url = f"{env.get('GITHUB_SERVER_URL', 'https://github.com')}/{env['GITHUB_REPOSITORY']}"
+    try:
+        git("fetch", "--no-tags", "--depth=1", url, f"refs/heads/{ref}", env=git_env(env))
+    except Unproven as why:
+        raise Unproven(f"fetch failed{str(why).partition('failed')[2]}") from why
+    git("cat-file", "-e", f"{sha}^{{commit}}")
+    check_diff(sha, rule)
+    proven_on(env.get("GITHUB_API_URL", "https://api.github.com"), env["GITHUB_REPOSITORY"], env["GH_TOKEN"], sha, job)
+
+
+def judge_parent(rule: str, job: str, env: dict[str, str]) -> str:
+    """C = HEAD^1 when it proves the job by T638's rules (1) to (3)."""
+    parent, _head = candidate()
+    check_diff(parent, rule)
+    proven_on(env.get("GITHUB_API_URL", "https://api.github.com"), env["GITHUB_REPOSITORY"], env["GH_TOKEN"], parent,
+              job)
+    return parent
+
+
+def judge(job: str, flag: str, script: str, env: dict[str, str]) -> str:
+    """The proven sha; Unproven with every candidate's reason (C's alone when there is no train candidate)."""
+    if not env.get("GITHUB_REPOSITORY") or not env.get("GH_TOKEN"):
+        raise Unproven("GITHUB_REPOSITORY or GH_TOKEN is not set")
+    if env.get("GITHUB_REF_NAME", "").startswith("claude/train/"):
+        raise Unproven("a claude/train/ ref proves nothing")
+    rule = rule_of(script, flag)
+    try:
+        return judge_parent(rule, job, env)
+    except Unproven as why:
+        reasons = [str(why)]
+    tips, listing = train_tips(env)
+    reasons += [listing] if listing else []
+    for ref, sha in tips:
+        try:
+            judge_train(ref, sha, rule, job, env)
+            return sha
+        except Unproven as why:
+            reasons.append(f"{ref}: {why}")
+    raise Unproven("; ".join(reasons))
+
+
 def decide(job: str, flag: str, script: str, env: dict[str, str]) -> str:
     """The one line this script prints."""
     try:
-        repo, token = env.get("GITHUB_REPOSITORY", ""), env.get("GH_TOKEN", "")
-        if not repo or not token:
-            raise Unproven("GITHUB_REPOSITORY or GH_TOKEN is not set")
-        rule = rule_of(script, flag)
-        parent, _head = candidate()
-        check_diff(parent, rule)
-        proven_on(env.get("GITHUB_API_URL", "https://api.github.com"), repo, token, parent, job)
+        sha = judge(job, flag, script, env)
     except Unproven as why:
         return f"unproven: {why}"
     except Exception as err:  # noqa: BLE001  # reason: any surprise must leave the flag true, never fail the step
         return f"unproven: unexpected {type(err).__name__}"
-    return f"proven={parent}"
+    return f"proven={sha}"
 
 
 def main(argv: list[str] | None = None) -> int:
