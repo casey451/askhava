@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:45:41Z by runner 0b3a6fc1de81 (actions).
+Updated 2026-11-18T22:47:22Z by runner fdf2bf460d72 (actions).
 
 **Building: T205 in progress since 22:21Z; 461 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-18T22:45:41Z by runner 0b3a6fc1de81 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T205 claimed 22:21Z, lease until 01:21Z; lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 5: T583 claimed 21:55Z, lease until 00:55Z; lane 6: T701 claimed 22:16Z, lease until 01:16Z; lane 7: T504 claimed 22:07Z, lease until 01:44Z
 - **Week:** 69% used, 51.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:45Z, 0 min before this update
+- **Last run:** 22:46Z, 1 min before this update
 - **Keeper:** last ran 22:45Z, next wake 00:58Z
 
 ## Needs attention
@@ -81,7 +81,6 @@ Updated 2026-11-18T22:45:41Z by runner 0b3a6fc1de81 (actions).
 | T587 | payments and picks: the old Confirm fee writer is marked tes | done | 1 | 48 min | 00:26Z |  |
 | T606 | harness: scripts/check_copy.py allows one aria-hidden arrow  | done | 1 | 62 min | 23:23Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 1 | 3 min | 23:08Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
-| T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | done | 3 | 37 min | 22:46Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
 
 ### Plan and harness merges on main
 - none
