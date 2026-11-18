@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T01:47:49Z by runner 1dcfd0f29406 (actions).
+Updated 2026-11-18T01:48:04Z by runner 1dcfd0f29406 (actions).
 
-**Building: T478 in progress since 23:24Z; 420 of 598 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T151 in progress since 00:12Z; 420 of 598 done; week 37% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 420 of 598 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T478 claimed 23:24Z, lease until 04:03Z; lane 5: T151 claimed 00:12Z, lease until 04:19Z; lane 6: T108 claimed 00:23Z, lease until 03:23Z; lane 7: T604 claimed 00:31Z, lease until 04:22Z
+- **Lane:** lane 5: T151 claimed 00:12Z, lease until 04:19Z; lane 6: T108 claimed 00:23Z, lease until 03:23Z; lane 7: T604 claimed 00:31Z, lease until 04:22Z
 - **Week:** 37% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:44Z, 3 min before this update
 - **Keeper:** last ran 01:27Z, next wake 03:25Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T01:47:49Z by runner 1dcfd0f29406 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T478 | jobs, intake, calls, messaging and businesses: the scorecard | MERGE_PENDING | 1 | 2 h 23 min | 01:47Z |  |
 | T587 | payments and picks: the old Confirm fee writer is marked tes | done | 1 | 48 min | 00:26Z |  |
 | T606 | harness: scripts/check_copy.py allows one aria-hidden arrow  | done | 1 | 62 min | 23:23Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 1 | 3 min | 23:08Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
@@ -132,10 +133,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T478 (lease until 2026-11-18T04:03:33Z)
 - lane 5: T151 (lease until 2026-11-18T04:19:10Z)
 - lane 6: T108 (lease until 2026-11-18T03:23:10Z)
 - lane 7: T604 (lease until 2026-11-18T04:22:20Z)
 
 ## Last usage reading
-- {"task": "T587", "at": "2026-11-18T00:26:07Z", "cache_creation_input_tokens": 121464, "cache_read_input_tokens": 2977344, "input_tokens": 102, "output_tokens": 31179}
+- {"task": "T478", "at": "2026-11-18T01:47:47Z", "cache_creation_input_tokens": 285350, "input_tokens": 270, "output_tokens": 67643, "cache_read_input_tokens": 7134832}
