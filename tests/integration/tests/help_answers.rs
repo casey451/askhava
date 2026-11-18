@@ -21,7 +21,7 @@ use askhava_messaging::api::{
 };
 use askhava_ops::api::HelpOpened;
 use askhava_payments::api::Tier;
-use askhava_privacy::api::Vault;
+use askhava_privacy::api::{NewContact, Vault, store_contact};
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
 use jiff::{SignedDuration, Timestamp};
@@ -370,6 +370,81 @@ async fn td_con_17_commands_keep_their_paths_after_help(mut db: Db) {
         "{list:?}"
     );
     assert_eq!(notices(&mut db).await, 0);
+}
+
+/// INT-038 (D-4142, D-4346): "I'm 15" within 24 hours of HELP is stopped for a
+/// stated age under 18, never taken as a help follow-up.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn int_038_a_stated_age_under_18_after_help_still_stops(mut db: Db) {
+    helped(&mut db, 0xb901).await;
+    let msg = text(0xb901, "I'm 15", at(10));
+    let reply = reply(&mut db, &msg, SPANISH_ON).await;
+    assert!(matches!(reply, Reply::UnderAge(..)), "{reply:?}");
+    assert_eq!(notices(&mut db).await, 0);
+}
+
+/// INT-027 (D-4346): with her name-and-address question open, "Zelda Canary 12 Test Street" within 24
+/// hours of HELP is her answer, never a help follow-up.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn int_027_a_name_and_address_answer_after_help_is_taken(mut db: Db) {
+    let new = NewContact {
+        phone: Some(SecretString::from("(928) 555-0181".to_owned())),
+        ..NewContact::default()
+    };
+    let who = store_contact(&mut db, &vault(), &new)
+        .await
+        .expect("contact");
+    let (job, _) = helped(&mut db, who.as_u128()).await;
+    sqlx::query(
+        "INSERT INTO intake.intake_answer (conversation_id, question_id, choice, answered_at) \
+         SELECT id, 'name_address_asked', 'asked', to_timestamp($2) \
+         FROM intake.conversation WHERE job_id = $1",
+    )
+    .bind(job)
+    .bind(at(6).as_second() as f64)
+    .execute(&mut *db)
+    .await
+    .expect("ask");
+    let msg = text(who.as_u128(), "Zelda Canary 12 Test Street", at(10));
+    let reply = reply(&mut db, &msg, SPANISH_ON).await;
+    assert!(matches!(reply, Reply::NameAddress(..)), "{reply:?}");
+    assert_eq!(notices(&mut db).await, 0);
+}
+
+/// JOB-021 (D-4293, D-4346): a lone number answering a waiting "Close which?" within 24 hours
+/// of HELP closes that job, never a help follow-up.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn job_021_a_close_which_answer_after_help_closes(mut db: Db) {
+    let contact = 0xbb01;
+    let (job, number) = helped(&mut db, contact).await;
+    let start = JobStart {
+        conversation: conversation_of(&mut db, job).await,
+        words: "the AC is warm too",
+        emergency: false,
+        trade: "hvac",
+        at: at(2),
+    };
+    begin_job(&mut db, &start).await.expect("second job");
+    let which = reply(&mut db, &text(contact, "CLOSE", at(7)), SPANISH_ON).await;
+    assert!(
+        matches!(which, Reply::Closed(Closing::Which(_), _)),
+        "{which:?}"
+    );
+    let answer = number.to_string();
+    let reply = reply(&mut db, &text(contact, &answer, at(10)), SPANISH_ON).await;
+    assert!(
+        matches!(&reply, Reply::Closed(Closing::Closed(n), _) if n == &vec![number]),
+        "{reply:?}"
+    );
+    assert_eq!(notices(&mut db).await, 0);
+}
+
+async fn conversation_of(db: &mut Db, job: Uuid) -> Uuid {
+    sqlx::query_scalar("SELECT id FROM intake.conversation WHERE job_id = $1")
+        .bind(job)
+        .fetch_one(&mut **db)
+        .await
+        .expect("request")
 }
 
 /// TD-CON-17 (INT-002, CON-034): "smell gas" within 24 hours of HELP gets the safety text first,

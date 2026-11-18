@@ -29,8 +29,9 @@
 //! so a 911 text goes first. Under 13 the stop also clears her vault contact's name and address.
 //!
 //! After HELP (CON-034, CON-018, OPS-036, INT-002, D-3753, D-4293, D-4344): in an open request a
-//! clear reply that no command parser takes (LIST, CLOSE or CERRAR with or without a number,
-//! `<n> YES`) is checked by `after_help`. Within 24 hours of an auto-answer it opens or joins her
+//! clear reply that no command parser takes (LIST, CLOSE or CERRAR with or without a number, a
+//! lone number or ALL, `<n> YES`), states no age under 18 and is no raw answer to her open
+//! name-and-address question (D-4346) is checked by `after_help`. Within 24 hours of an auto-answer it opens or joins her
 //! help request (`help_follow_up`, one notification); else, within 24 hours of her HELP, a
 //! plain-word question (`messaging::api::help_question`, never AI) gets its auto-answer, queued
 //! under its own template ID with one `help.auto_answered` audit row (the digest line) and no
@@ -61,7 +62,8 @@ use crate::handlers::{answer_list, help_answered, help_follow_up, list_ask, queu
 use crate::models::{self, IntakeError};
 use crate::order::ask_last_question;
 use crate::rules::{
-    AgeStop, CloseReading, Settings, close_reading, language_from_code, split_name_address,
+    AgeStop, CloseReading, Settings, age_stop, close_reading, language_from_code,
+    split_name_address,
 };
 use crate::service::{Asked, Handled, Queued, Screened, TextIn, receive_answer, receive_text};
 
@@ -166,7 +168,8 @@ async fn reply_in(
     }
     let open = models::open_conversation(&mut tx, msg.contact).await?;
     if let Some(conversation) = open.filter(|_| !answered_elsewhere)
-        && let Some(reply) = after_help(&mut tx, secret, msg, (conversation, settings)).await?
+        && let Some(reply) =
+            after_help(&mut tx, secret, (msg, raw), (conversation, settings)).await?
     {
         tx.commit().await.map_err(|_| IntakeError::Database)?;
         return Ok(reply);
@@ -382,18 +385,22 @@ async fn listed(
 }
 
 /// CON-034, OPS-036, INT-002, D-4293, D-4344: her reply in open request `conversation` after
-/// HELP. A 911-list match or a command keeps today's path (`None`). Within 24 hours of an
-/// auto-answer the message opens or joins her help request; else, within 24 hours of her HELP, a
-/// plain-word question gets its auto-answer and anything else opens or joins the help request;
-/// otherwise `None`.
+/// HELP. A 911-list match, a command, a stated age under 18 (INT-038, D-4142) or a raw reply to
+/// her open name-and-address question (INT-027) keeps today's path (`None`, D-4346). Within 24
+/// hours of an auto-answer the message opens or joins her help request; else, within 24 hours of
+/// her HELP, a plain-word question gets its auto-answer and anything else opens or joins the help
+/// request; otherwise `None`.
 async fn after_help(
     tx: &mut PgConnection,
     secret: &SecretString,
-    msg: &TextIn<'_>,
+    (msg, raw): (&TextIn<'_>, Option<RawReply<'_>>),
     (conversation, settings): (Uuid, Settings),
 ) -> Result<Option<Reply>, IntakeError> {
     let words = msg.inbound.words;
-    if !clear(words) || command(words) {
+    if !clear(words) || command(words) || age_stop(words).is_some() {
+        return Ok(None);
+    }
+    if raw.is_some() && name_address_open(tx, msg.contact).await? {
         return Ok(None);
     }
     let (contact, at) = (msg.contact, msg.received_at);
@@ -414,10 +421,13 @@ async fn after_help(
     Ok(Some(Reply::HelpRequest(opened)))
 }
 
-/// A message a command parser takes keeps its path after HELP (D-4293): LIST or LISTA, CLOSE or
-/// CERRAR alone or with one word, "CLOSE <number>", and `<n> YES` or `<n> SI`.
+/// A message a command parser takes keeps its path after HELP (D-4293, JOB-021, D-4346): LIST
+/// or LISTA, CLOSE or CERRAR alone or with one word, "CLOSE <number>", a lone number or ALL (a
+/// possible answer to "Close which?", which `answer_close` decides), and `<n> YES` or `<n> SI`.
 fn command(words: &str) -> bool {
-    if list_ask(words).is_some() || matches!(close_reading(words, &[]), CloseReading::Close(_)) {
+    let lone = words.trim().trim_matches(|c: char| !c.is_alphanumeric());
+    let asked = [lone.parse::<i64>().unwrap_or(0)];
+    if list_ask(words).is_some() || matches!(close_reading(words, &asked), CloseReading::Close(_)) {
         return true;
     }
     let lower = words.to_lowercase();
