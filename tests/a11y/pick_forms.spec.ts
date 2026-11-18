@@ -5,26 +5,15 @@
 // A job in Quotes ready is seeded through fixtures.ts. The quote card's Pick opens the review step;
 // the code step (`POST /q/{token}/code`) is reached from the review's final form with its address
 // switched, because the final Pick shows "Nothing was picked" until Verify and the stored page
-// pick are wired (D-1248, D-1264). POSTs are re-sent with the same-origin https Origin, as
-// tests/e2e/pick_flow.spec.ts does, until D-1250's fix lands. Fake data only.
+// pick are wired (D-1248, D-1264). POSTs go with the browser's own headers, as
+// tests/e2e/pick_flow.spec.ts does (D-4292). Fake data only.
 import type { Page } from "@playwright/test";
 import { PAGE_STATES, WIDTHS, axeScan, expect, open, test } from "./fixtures";
 
 const READY = PAGE_STATES.find((state) => state.name === "three quotes, #2 gone");
 
-/** Re-sends every POST with a same-origin https Origin (D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/q/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 async function openCodeStep(page: Page, pageUrl: (state: NonNullable<typeof READY>) => string): Promise<void> {
   if (READY === undefined) throw new Error("no Quotes ready state");
-  await httpsOrigin(page);
   await open(page, pageUrl(READY), 1280);
   await page.getByRole("button", { name: "Pick #1" }).click();
   await page.locator("#final-pick").evaluate((button) => {

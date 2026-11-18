@@ -176,8 +176,8 @@ export async function signIn(page: Page, session: string | null): Promise<void> 
 }
 
 /**
- * Answers Stripe.js with the fake, re-sends the page's POSTs with a same-origin https Origin
- * (D-1250) and holds its JSON state read until `held` settles; returns the posted bodies.
+ * Answers Stripe.js with the fake, records the bodies of the page's POSTs (sent with the
+ * browser's own headers, D-4292) and holds its JSON state read until `held` settles; returns them.
  */
 export async function serve(page: Page, card: string, held: Promise<void> = Promise.resolve()): Promise<string[]> {
   const posted: string[] = [];
@@ -192,8 +192,7 @@ export async function serve(page: Page, card: string, held: Promise<void> = Prom
       return route.continue();
     }
     posted.push(request.postData() ?? "");
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
+    return route.continue();
   });
   return posted;
 }

@@ -18,10 +18,10 @@
 // one open masked line, no second fee; a second delivery changes nothing; the ledger matches the stand-in's charges to the cent; and the
 // Twilio stand-in records no call to the business's phone (the J2 half of TD-BIZ-22's and
 // TD-BIZ-25's sweeps: placed calls only, since the Verify stand-in does not record the channel).
-// POSTs are re-sent with a same-origin https Origin (D-1250). Fake data only.
+// POSTs go with the browser's own headers (D-4292). Fake data only.
 import { test, expect } from "./fixtures";
 import { type Seeded, WAITING, keyedUrl, confirmPath, openAsOwner, psql, seedPick, serve, signIn } from "./keyed";
-import { RECORD_PHONE, acceptAuthorization, callsTo, closing, deliverSuccess, httpsOrigin, joinedAt, plumbingOnBeforeLaunch, signUp, standInCharges } from "./j2";
+import { RECORD_PHONE, acceptAuthorization, callsTo, closing, deliverSuccess, joinedAt, plumbingOnBeforeLaunch, signUp, standInCharges } from "./j2";
 import type { Page } from "@playwright/test";
 
 /** The seeded homeowner's first name (keyed.ts `HOMEOWNER`), shown once released (PICK-024). */
@@ -40,7 +40,6 @@ async function portalShowsRelease(page: Page, seeded: Seeded): Promise<void> {
 }
 
 test("J2 TD-BIZ-22 TD-BIZ-25 FEE-001 FEE-010 FEE-016 PICK-021 PICK-022 D-1739 D-3862: a sign-up after day 90 confirms a $75 pick, pays once, is released once by the signed stand-in success and sees the details in the portal; no call to the business", async ({ page, request }) => {
-  await httpsOrigin(page);
   plumbingOnBeforeLaunch();
   const business = await signUp(page);
   const seeded = seedPick({ business, feeCents: MEDIUM_CENTS });
@@ -63,7 +62,6 @@ test("J2 TD-BIZ-22 TD-BIZ-25 FEE-001 FEE-010 FEE-016 PICK-021 PICK-022 D-1739 D-
 });
 
 test("J2 TD-BIZ-22 TD-BIZ-25 FEE-010 FEE-012 W24 PICK-022 D-1739 D-3863: a free first win confirms $0 with the $75 waived and is released at once, with no charge, no webhook and no call to the business", async ({ page, request }) => {
-  await httpsOrigin(page);
   plumbingOnBeforeLaunch();
   const business = await signUp(page);
   joinedAt(business, "2026-02-01T17:00:00Z");
