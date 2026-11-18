@@ -40,6 +40,7 @@ pub mod business_portal;
 pub mod business_signin;
 pub mod business_signup;
 pub mod call_status;
+pub mod cant_take_route;
 pub mod catalog_start;
 pub mod chat_codes;
 pub mod checkin;
@@ -277,7 +278,8 @@ impl ApprovalSecret for StripeApproval {
 
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
 /// the business portal (T300) over `pool`, always (`business_portal::served`), and the Confirm
-/// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; and the
+/// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; the "Can't
+/// take it" page and button ([`cant_take_route`], T472), always; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303), always.
 fn business_pages(
     parts: BusinessParts,
@@ -297,7 +299,10 @@ fn business_pages(
         })
     });
     let owner = owner_signin::routes(pool.clone());
-    let portal = business_portal::served(pool, parts.vault, (webhooks, voice)).merge(confirm);
+    let cant_take = cant_take_route::routes(pool.clone());
+    let portal = business_portal::served(pool, parts.vault, (webhooks, voice))
+        .merge(confirm)
+        .merge(cant_take);
     (parts.signin)
         .map_or_else(Router::new, business_signin::ServedSignIn::into_router)
         .merge(
