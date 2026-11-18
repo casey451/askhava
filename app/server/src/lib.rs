@@ -818,13 +818,24 @@ where
     register_accepted_quote(&mut registry);
     register_purge_handlers(&mut registry, &clock);
     if let Some(keys) = texts {
-        let text_clock = Arc::clone(&clock);
-        registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
-            let now = text_clock.now();
-            askhava_intake::api::run_job_text_at(pool, Arc::clone(&keys), task, now)
-        });
+        register_job_texts(&mut registry, &keys, &clock);
     }
     registry
+}
+
+/// `intake`'s homeowner job texts (`jobs.homeowner_text`, D-1030 (A)) and quote-count update
+/// texts (`quotes.count_update`, TXT-017, T583) on the worker's clock.
+fn register_job_texts(registry: &mut Registry, keys: &Arc<JobTextKeys>, clock: &Arc<dyn Clock>) {
+    let (text_keys, text_clock) = (Arc::clone(keys), Arc::clone(clock));
+    registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
+        let now = text_clock.now();
+        askhava_intake::api::run_job_text_at(pool, Arc::clone(&text_keys), task, now)
+    });
+    let (update_keys, update_clock) = (Arc::clone(keys), Arc::clone(clock));
+    registry.register(askhava_quotes::api::COUNT_UPDATE_KIND, move |pool, task| {
+        let now = update_clock.now();
+        askhava_intake::api::run_quote_update_at(pool, Arc::clone(&update_keys), task, now)
+    });
 }
 
 /// `picks`' notices to the business: the pick notice with the worker's Confirm window and its end
