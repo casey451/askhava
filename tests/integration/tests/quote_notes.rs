@@ -14,6 +14,7 @@ use askhava_core::api::{Guarded, brand};
 use askhava_jobs::api::{JobStatus, create, move_to};
 use askhava_licensing::api::LicenseKind;
 use askhava_ops::api::Actor;
+use askhava_privacy::api::ScrubbedText;
 use askhava_quotes::api::{
     Format, NOTE_LIMIT, NoteFlag, NoteProblem, NoteScreener, Price, Quote, QuoteForm, QuoteRules,
     Saved, Submitted, Withdrawal, check_note, mark_unavailable, parse_quote, save_quote,
@@ -95,11 +96,52 @@ async fn row(db: &mut Db, job: Uuid) -> Row {
 struct StandInAi;
 
 impl NoteScreener for StandInAi {
-    async fn screen(&self, note: &str) -> Option<NoteFlag> {
-        let lower = note.to_lowercase();
+    async fn screen(&self, note: &ScrubbedText) -> Option<NoteFlag> {
+        let lower = note.as_str().to_lowercase();
         (lower.contains("other company") || lower.contains("the other guys"))
             .then_some(NoteFlag::CriticizesBusiness)
     }
+}
+
+/// TD-PICK-65's stand-in: records every note it is handed and flags none.
+#[derive(Default)]
+struct RecordingAi(std::sync::Mutex<Vec<String>>);
+
+impl NoteScreener for RecordingAi {
+    async fn screen(&self, note: &ScrubbedText) -> Option<NoteFlag> {
+        let mut seen = self.0.lock().expect("lock");
+        seen.push(note.as_str().to_owned());
+        None
+    }
+}
+
+/// TD-PICK-65 (PICK-052, AI-002, AI-004, D-4327): a note that passes the code checks reaches the
+/// screener scrubbed (the planted house number "2150" and street name "mesquite" removed); a
+/// contact note reaches it zero times; with no screener nothing is called. "Meet at 2150
+/// Mesquite on Tuesday" is refused by `check_note` as a contact, so the planted line is
+/// "Park at 2150 mesquite on Tuesday", which `check_note` passes and the scrubber changes.
+#[tokio::test]
+async fn td_pick_65_the_screener_is_handed_only_the_scrubbed_note() {
+    assert_eq!(
+        check_note("Meet at 2150 Mesquite on Tuesday"),
+        Err(NoteProblem::Contact)
+    );
+    let planted = "Park at 2150 mesquite on Tuesday";
+    assert_eq!(check_note(planted), Ok(()));
+    let ai = RecordingAi::default();
+    assert_eq!(screen_note(planted, Some(&ai)).await, Ok(()));
+    for contact in [
+        "Text me at five five five, one two one two.",
+        "See my work at fake-example.com",
+    ] {
+        assert!(screen_note(contact, Some(&ai)).await.is_err(), "{contact}");
+    }
+    assert_eq!(screen_note(planted, None::<&RecordingAi>).await, Ok(()));
+    let seen = ai.0.lock().expect("lock").clone();
+    assert_eq!(seen.len(), 1, "only the planted note reaches the screener");
+    assert!(!seen[0].contains("2150"), "{}", seen[0]);
+    assert!(!seen[0].to_lowercase().contains("mesquite"), "{}", seen[0]);
+    assert!(seen[0].contains("Tuesday"), "{}", seen[0]);
 }
 
 /// TD-PICK-35 (PICK-052, D-442): contact and off-platform notes come back with the reason; a

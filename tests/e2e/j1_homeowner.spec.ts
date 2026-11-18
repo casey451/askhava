@@ -19,7 +19,6 @@ import { createHash, createHmac, randomBytes } from "node:crypto";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 import { webPort } from "./webserver";
 
@@ -154,16 +153,6 @@ function seedQuotes(conversation: string): { path: string; job: string } {
   return { path: `/q/${token}`, job };
 }
 
-/** Re-sends every POST with a same-origin https Origin (D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/q/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 /** The code the Verify stand-in sent to `phone`, from its test hook standing in for her phone. */
 async function verifyCode(phone: string): Promise<string> {
   const reply = await fetch(`http://127.0.0.1:4010/_stand_in/twilio/code?to=${encodeURIComponent(phone)}`);
@@ -198,7 +187,6 @@ test("J1 step 5 WORD-005 A11Y-014: both diagnostic-visit quotes in arrival order
 });
 
 test("J1 step 6 PICK-016 PICK-013 PICK-017 PICK-018: review, Go back, pick again, a wrong code then the right one, masked call, focus on the result", async ({ page }) => {
-  await httpsOrigin(page);
   await page.goto(BASE + state.path);
   await page.getByRole("button", { name: "Pick #2" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Check your pick: quote #2");
