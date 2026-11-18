@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T06:06:10Z by runner c91eb753ef55 (actions).
+Updated 2026-11-18T06:06:26Z by runner 8d82392ea8c4 (manual).
 
 **Building: T482 in progress since 05:26Z; 427 of 613 done; week 44% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-18T06:06:10Z by runner c91eb753ef55 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T482 claimed 05:26Z, lease until 08:26Z; lane 5: T643 claimed 05:25Z, lease until 08:25Z
 - **Week:** 44% used, 103.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:27Z, 38 min before this update
+- **Last run:** 06:06Z, 0 min before this update
 - **Keeper:** last ran 05:26Z, next wake 08:13Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 21 problem(s) on tasks still to run (+196 on DONE tasks); first: T205: stored context_pct 14% but it measures 19%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+203 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -91,7 +91,7 @@ Updated 2026-11-18T06:06:10Z by runner c91eb753ef55 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 680 · unstarted 55
-**Tasks merged (throughput only):** 427 of 606
+**Tasks merged (throughput only):** 427 of 613
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|

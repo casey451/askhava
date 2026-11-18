@@ -80670,7 +80670,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T06:06:10Z",
+ "updated_at": "2026-11-18T06:06:26Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -80768,8 +80768,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c91eb753ef55b8a38aff9800156e783814e4eba3",
- "starter": "actions",
+ "runner_sha": "8d82392ea8c401b821a35aacd001bace8d47031f",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "7296f77b5c767af9c6d34647d1507b346c3ea8cf",
@@ -81062,7 +81062,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 4349,
+ "next_decision": 4350,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -82141,6 +82141,12 @@
    "at": "2026-11-18T05:23:10Z",
    "reason": "Night spot-review batch 2: masked call lines close on cancel/PROBLEM/NO and a 30-day sweep; served per-visit quote stores its schedule; /b/jobs served; notice sign-in rate limit",
    "session": "manual-881d2a48e648"
+  },
+  {
+   "number": 4349,
+   "at": "2026-11-18T06:06:26Z",
+   "reason": "Jobs reach Payment pending and Connected (D-2015 (1)); Confirm re-check PICK-020; reconnect line keyed on pick; /b/jobs served (CARD-023)",
+   "session": "manual-998d036afbf8"
   }
  ],
  "lanes_fallback_history": [
