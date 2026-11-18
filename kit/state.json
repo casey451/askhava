@@ -21429,7 +21429,7 @@
     "T521",
     "T479"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "wording-statements-scan",
    "type": "build",
@@ -21447,8 +21447,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "plan gap reported: PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be \"at the top of the quote page\". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/pr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be \"at the top of the quote page\". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/prompts/T203.md:94), so a correct TD-WORD-05 test fails on main. Smallest plan change: let T203 own that one line of quote_page.html, or add a task (or extend T608) that puts the full long statement (brand from brand()) at the top of the page.\nSecond gap (reviewer confirmed): WORD-007 (`docs/spec/wording.md:11`, via TD-WORD-02 in T203's prompt line 66) wants \"Your number is never shared\" with \"Your first name and address go only to the business you pick.\" `app/site/templates/home.html:36` has only the second sentence (\"Your number stays with us.\"); no app .html has \"never shared\". home.html owners: T102 (DONE), T593, T216, T608 (QUEUED). Either add the sentence via an owning task or state that WORD-007 covers only the privacy policy.\nReviewer (fresh-eyes, Opus) confirmed both gaps independently. No commit made; branch unchanged at b1fe64c6f.",
+   "reason": null,
+   "last_failure": "PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be \"at the top of the quote page\". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/prompts/T203.md:94), so a correct TD-WORD-05 test fails on main. Smallest plan change: let T203 own that one line of quote_page.html, or add a task (or extend T608) that puts the full long statement (brand from brand()) at the top of the page.\nSecond gap (reviewer confirmed): WORD-007 (`docs/spec/wording.md:11`, via TD-WORD-02 in T203's prompt line 66) wants \"Your number is never shared\" with \"Your first name and address go only to the business you pick.\" `app/site/templates/home.html:36` has only the second sentence (\"Your number stays with us.\"); no app .html has \"never shared\". home.html owners: T102 (DONE), T593, T216, T608 (QUEUED). Either add the sentence via an owning task or state that WORD-007 covers only the privacy policy.\nReviewer (fresh-eyes, Opus) confirmed both gaps independently. No commit made; branch unchanged at b1fe64c6f.\nre-queued after plan fix D-4258: D-4258 (PR #993) fixes T203's reported plan gap: T203 owns the WORD-002 quote-page statement and the WORD-007 home line, with closed scan lists",
    "history": [
     {
      "attempt": 1,
@@ -21472,6 +21472,21 @@
        "turns": 9
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-18T01:32:31Z",
+     "reason": "D-4258 (PR #993) fixes T203's reported plan gap: T203 owns the WORD-002 quote-page statement and the WORD-007 home line, with closed scan lists",
+     "by": "manual-567cf12e1835",
+     "was": "plan gap reported: PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be \"at the top of the quote page\". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/pr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4258",
+     "plan_since": "2026-11-17T23:05:09Z",
+     "plan_base": "b1fe64c6fb5a17c6bca2290048ffa00b59cfbd30",
+     "plan_head": "c00d003c00ee25caad9c7e38f13eb5b20b490316",
+     "plan_then": "02537151efa52251c5c6c72365c436378b81deeac009ca7f1fee844da26738ef",
+     "plan_now": "d2b12843662d21ffb9b7de5a7fe6b112cd6045d80a6b58a79b27ad540bd157f7"
     }
    ]
   },
@@ -78664,7 +78679,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T01:27:27Z",
+ "updated_at": "2026-11-18T01:32:31Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -78762,8 +78777,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "82bbce61a338b78ab13bbb2a2a82ccabb94bbe57",
- "starter": "actions",
+ "runner_sha": "c00d003c00ee25caad9c7e38f13eb5b20b490316",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "c57d89a4648d9e55697cb87872ac582b72c5dd8b",
