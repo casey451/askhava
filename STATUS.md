@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-18T21:10:37Z by runner 70d828de1b07 (actions).
+Updated 2026-11-18T21:13:21Z by runner 419da048481a (actions).
 
 **Building: T651 in progress since 19:44Z; 456 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 456 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T651 claimed 19:44Z, lease until 23:43Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 3: T483 claimed 18:25Z, lease until 00:10Z; lane 7: T503 claimed 20:58Z, lease until 23:58Z
-- **Week:** 67% used, 54.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:09Z, 0 min before this update
+- **Lane:** lane 1: T651 claimed 19:44Z, lease until 23:43Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 3: T483 claimed 18:25Z, lease until 00:10Z; lane 4: T364 claimed 21:12Z, lease until 00:12Z; lane 7: T503 claimed 20:58Z, lease until 23:58Z
+- **Week:** 67% used, 55.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 21:11Z, 2 min before this update
 - **Keeper:** last ran 21:09Z, next wake 21:29Z
 
 ## Needs attention
 - BLOCKED T715: plan gap reported: PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-address question (step 11) to be asked on the first reply after the area check, even when step 5 never told the coverage. That is the behaviour D-4441 correction (5) removes, so the test is red with T715's change. Smallest plan change: a harness follow-up (T715's attempt or a new task) that may change that test's `her_request` setup so step 5 finishes before step 11 is expected (e.g. first text through the full reply path / receive_raw_reply, or a reply naming a trade, with covera; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 35 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 51 problem(s) on tasks still to run (+264 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,28 +86,28 @@ Updated 2026-11-18T21:10:37Z by runner 70d828de1b07 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 307 of 735 (41.8%) · partial 378 · unstarted 50
-**Tasks merged (throughput only):** 456 of 645
+**Requirements verified:** 293 of 735 (39.9%) · partial 392 · unstarted 50
+**Tasks merged (throughput only):** 456 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 17 | 18 | 0 | 35 |
 | ai | 9 | 17 | 3 | 29 |
-| businesses | 19 | 38 | 1 | 58 |
+| businesses | 17 | 40 | 1 | 58 |
 | calls | 12 | 13 | 0 | 25 |
 | consent | 14 | 21 | 0 | 35 |
-| fees | 24 | 27 | 1 | 52 |
-| intake | 16 | 27 | 0 | 43 |
+| fees | 23 | 28 | 1 | 52 |
+| intake | 10 | 33 | 0 | 43 |
 | job-cards | 14 | 10 | 0 | 24 |
-| licensing | 34 | 14 | 0 | 48 |
-| lifecycle | 19 | 9 | 0 | 28 |
-| messaging | 21 | 23 | 1 | 45 |
-| ops-recovery | 4 | 31 | 19 | 54 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 20 | 24 | 1 | 45 |
+| ops-recovery | 3 | 32 | 19 | 54 |
 | privacy | 9 | 21 | 1 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 27 | 29 | 0 | 56 |
 | recurring | 7 | 2 | 2 | 11 |
-| security | 9 | 41 | 5 | 55 |
+| security | 8 | 42 | 5 | 55 |
 | terms | 25 | 7 | 3 | 35 |
 | website | 9 | 16 | 5 | 30 |
 | wording | 12 | 11 | 9 | 32 |
@@ -115,7 +115,7 @@ Updated 2026-11-18T21:10:37Z by runner 70d828de1b07 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T20:55:32Z (week)): week: 139.4M used, 54.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T05:38:40Z.
+- Pacing (session_reading 2026-11-18T21:08:59Z (week)): week: 138.4M used, 55.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T05:53:25Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -133,6 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T651 (lease until 2026-11-18T23:43:31Z)
 - lane 2: T722 (lease until 2026-11-18T23:48:16Z)
 - lane 3: T483 (lease until 2026-11-19T00:10:37Z)
+- lane 4: T364 (lease until 2026-11-19T00:12:55Z)
 - lane 7: T503 (lease until 2026-11-18T23:58:09Z)
 
 ## Last usage reading
