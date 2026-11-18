@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T20:37:31Z by runner 8ba862b4c752 (actions).
+Updated 2026-11-18T20:37:52Z by runner 8ba862b4c752 (actions).
 
 **Building: T651 in progress since 19:44Z; 455 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -78,7 +78,6 @@ Updated 2026-11-18T20:37:31Z by runner 8ba862b4c752 (actions).
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | done | 4 | 44 min | 21:44Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T594 | site: the end-to-end spec of the web chat and request page a | done | 2 | 83 min | 21:03Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T106 | ops: /healthz and the web and worker liveness exits | done | 1 | 77 min | 20:38Z |  |
-| T602 | privacy: the inbound email signature check refuses an out-of | done | 1 | 30 min | 20:37Z |  |
 
 ### Plan and harness merges on main
 - none
