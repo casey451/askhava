@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH done AS (UPDATE ops.alert a SET resolved_at = $2 WHERE a.id = $1 AND a.resolved_at IS NULL AND a.kind <> $3 AND EXISTS (SELECT 1 FROM ops.alert_push p WHERE p.alert_id = a.id) RETURNING a.id) INSERT INTO ops.alert_ack (alert_id, acknowledged_by, at) SELECT id, 'casey', $2 FROM done RETURNING alert_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "alert_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "ops.alert_ack",
+            "name": "alert_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d302b30a476274fba8a10859c97769513be5187128bb90596bc0934458611091"
+}
