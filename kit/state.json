@@ -66865,7 +66865,7 @@
      }
     }
    ],
-   "reviewed_sha": "9e689e2cee39c5f699efa40cb43812c6a968d61e",
+   "reviewed_sha": "15b4a7634d0af5dfc486e2910189240aa156f203",
    "review_lease": {
     "task": "T483",
     "session": "actions-44368181881",
@@ -66885,10 +66885,23 @@
      "main": "419da048481abb3ced247ab22c39ddf2ee9c5a3d",
      "how": "hand-in",
      "at": "2026-11-18T21:14:01Z"
+    },
+    {
+     "from": "9e689e2cee39c5f699efa40cb43812c6a968d61e",
+     "to": "15b4a7634d0af5dfc486e2910189240aa156f203",
+     "main": "7d58f8e9c040ab48e0cd9375e7a8b4b0e1cfbb18",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-18T21:48:43Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-18T21:48:43Z"
   },
   {
    "id": "T484",
@@ -81312,7 +81325,7 @@
     "T273",
     "T412"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "suppression-key-guard",
    "type": "harness",
@@ -81396,13 +81409,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 29,
      "head_sha": "4c61fe086ce6cf71c56f855c158c88342239b8fc",
-     "pr": null,
-     "checks": null,
+     "pr": 1064,
+     "checks": [
+      {
+       "name": "backup lane 6",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-18T20:27:42Z",
      "ended_at": "2026-11-18T21:07:59Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 512064,
@@ -81476,7 +81546,37 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-18T21:19:36Z"
+   "merge_turn_since": "2026-11-18T21:19:36Z",
+   "merged_sha": "7d58f8e9c040ab48e0cd9375e7a8b4b0e1cfbb18",
+   "merged_at": "2026-11-18T21:46:45Z",
+   "files": [
+    ".sqlx/query-1387e7b7a2ff0f2bd0adceeb04229c4f1d60832fa0937705e4110d9c2a247003.json",
+    ".sqlx/query-1df5d830afd923e8b296a365d78af35414618e3a7001d78d7092a09b14e7a97a.json",
+    ".sqlx/query-3ed37e8e36187b000f9b86229f87b73012c33f5b34b8da155a79aa1e03ce0672.json",
+    ".sqlx/query-80cf849923284ca9ac364b264bb6d825a557d57043942cf84a934fea0e75972f.json",
+    ".sqlx/query-aa66d1245f8bbdf0aea9dccb880b2c3be64767681ca4f6f195b4f341a9c419de.json",
+    ".sqlx/query-b6ee769385650fb0607d2bd52850a645b46b6f8bb4a359a3ec9999b72a6eb856.json",
+    ".sqlx/query-be71d187e1a2307b92a88933c37240d779bdc4a7c8e808e58f83d8c5f1f09e3a.json",
+    ".sqlx/query-c358dce2c221b4613c5d5dc3d0b7782dc5ed5208e58ce84e8f25f6aa9b3116bc.json",
+    "app/messaging/CLAUDE.md",
+    "app/messaging/NOTES.md",
+    "app/messaging/src/api.rs",
+    "app/messaging/src/lib.rs",
+    "app/messaging/src/suppression_versions.rs",
+    "app/privacy/CLAUDE.md",
+    "app/privacy/NOTES.md",
+    "app/privacy/src/api.rs",
+    "app/privacy/src/vault.rs",
+    "app/server/NOTES.md",
+    "app/server/src/bin/worker.rs",
+    "app/server/src/lib.rs",
+    "app/server/src/main.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "kit/prompts/T702.md",
+    "tests/integration/tests/suppression_key_versions.rs",
+    "tests/integration/tests/vault.rs"
+   ]
   },
   {
    "id": "T701",
@@ -87086,7 +87186,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T21:37:54Z",
+ "updated_at": "2026-11-18T21:48:57Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -87184,7 +87284,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "42b0b6bcb0ae0b13c9fa81d3cd41d223298df29b",
+ "runner_sha": "7d58f8e9c040ab48e0cd9375e7a8b4b0e1cfbb18",
  "starter": "actions",
  "smoke_runs": [
   {
