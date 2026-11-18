@@ -8,6 +8,12 @@ What a script can measure; the copy panel reviewer judges the rest. For each blo
 Blocks whose wording a requirement fixes verbatim (legal, safety or any spec-fixed sentence, WORD-029, D-482) are
 marked "fixed" and skipped.
 
+Arrows (WEB-029, D-4246): an arrow (the ARROW blocks, or a typed ->, => or <-) is a problem in a site-copy line, in
+any page template (es_*.html included) outside the one allowed place (the whole text of a <span aria-hidden="true">
+that is a direct child of a <button> whose classes hold "button" and not "button-quiet", last, after the button's
+words, one per button), and in a CSS content: value (an arrow or its \\XXXX escape) in app/**/*.css or in a Rust
+"const ..._CSS: &str" under app/.
+
 It reads:
 - docs/copy/site-copy.md: each "## <page> · <block> (homeowner|business[, fixed])" heading,
   followed by its copy on lines starting with "> ";
@@ -27,6 +33,7 @@ Exit status 1 lists each problem.
 from __future__ import annotations
 
 import argparse
+import html
 import re
 import sys
 from dataclasses import dataclass, field
@@ -50,6 +57,10 @@ ENGLISH = frozenset("the and you your we to with our of for".split())
 INLINE = frozenset("a abbr b bdi bdo br cite code data dfn em i kbd mark q s small span strong sub sup time u wbr".split())
 VOID = frozenset("area base br col embed hr img input link meta source track wbr".split())
 EXPR, STMT = "\ue000", "\ue001"  # a {{ expression }}; a {% statement %} or |safe expression
+ARROW = re.compile("[\u2190-\u21ff\u2794-\u27bf\u27f0-\u27ff\u2900-\u297f\u2b00-\u2bff]|->|=>|<-")
+CSS_CONTENT = re.compile(r"""(?<![\w-])content\s*:((?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|[^;}"'])*)""")
+CSS_ESCAPE = re.compile(r"\\([0-9a-fA-F]{1,6})\s?")
+RUST_CSS = re.compile(r'(?s)\bconst\s+\w*_CSS\s*:\s*&(?:\'static\s+)?str\s*=\s*(?:r(#*)"(.*?)"\1|"((?:[^"\\]|\\.)*)")')
 REQUIREMENT = re.compile(r"^- \*\*(?P<id>[A-Z]+-\d+)\*\* (?P<text>.+)$", re.MULTILINE)
 
 
@@ -137,6 +148,7 @@ class Element:
     fixed: str | None
     clean: bool
     closed: bool = False
+    attrs: dict[str, str | None] = field(default_factory=dict)
     text: list[str] = field(default_factory=list)
 
     def plain(self) -> str:
@@ -169,7 +181,7 @@ class TemplateText(HTMLParser):
         found = dict(reversed(attrs))
         lang = (found.get("lang") or "").strip().lower() if "lang" in found else None
         fixed = (found.get("data-fixed") or "").strip() if "data-fixed" in found else None
-        self.stack.append(Element(tag, lang, fixed, not stmt))
+        self.stack.append(Element(tag, lang, fixed, not stmt, attrs=found))
 
     handle_startendtag = handle_starttag
 
@@ -235,12 +247,15 @@ def load_requirements(root: Path) -> dict[str, str]:
     return {m["id"]: " ".join(m["text"].split()) for t in texts for m in REQUIREMENT.finditer(t)}
 
 
+def template_paths(root: Path) -> list[Path]:
+    app = root / "app"
+    return sorted(app.glob("*/templates/**/*.html")) if app.is_dir() else []
+
+
 def parsed_templates(root: Path) -> list[tuple[str, TemplateText]]:
     """Each page template but es_*.html (Spanish, D-3878), parsed."""
-    app = root / "app"
-    paths = sorted(app.glob("*/templates/**/*.html")) if app.is_dir() else []
     return [(p.relative_to(root).as_posix(), parse_template(p.read_text(encoding="utf-8")))
-            for p in paths if not p.name.startswith("es_")]
+            for p in template_paths(root) if not p.name.startswith("es_")]
 
 
 def template_problems(root: Path) -> list[str]:
@@ -280,11 +295,82 @@ def template_blocks(root: Path) -> list[Block]:
     return blocks
 
 
+def allowed_arrow(stack: tuple[Element, ...]) -> bool:
+    """WEB-029, D-4246: text that is the one arrow a primary button may end with, in its own aria-hidden span."""
+    if len(stack) < 2 or stack[-1].name != "span" or stack[-2].name != "button":
+        return False
+    span, button = stack[-1], stack[-2]
+    classes = (button.attrs.get("class") or "").split()
+    words, _, after = button.plain().rpartition(span.plain())
+    return (span.attrs.get("aria-hidden") == "true" and span.closed and "button" in classes
+            and "button-quiet" not in classes and len(span.plain()) == 1 and bool(ARROW.fullmatch(span.plain()))
+            and after == "" and len(ARROW.findall(button.plain())) == 1 and bool(re.search(r"[\w\ue000]", words)))
+
+
+def template_arrow_problems(root: Path) -> list[str]:
+    """WEB-029, D-4246: arrows in template text, tags or <style> content: values (es_*.html included) outside
+    the one allowed place; <script> is skipped, where JavaScript's => is code, not copy."""
+    problems: list[str] = []
+    for path in template_paths(root):
+        rel, markup = path.relative_to(root).as_posix(), path.read_text(encoding="utf-8")
+        parser = parse_template(markup)
+        for _, raw, stack in parser.pieces:
+            text = " ".join(raw.replace(EXPR, " ").replace(STMT, " ").split())
+            if ARROW.search(text) and not allowed_arrow(stack):
+                problems.append(f"{rel}: arrow outside a primary button's aria-hidden span: {text[:70]}")
+        bare = re.sub(r"(?s)\{#.*?#\}|\{%.*?%\}|\{\{.*?\}\}|<!--.*?-->|<(script|style)\b.*?</\1>", " ", markup)
+        for tag in re.findall(r"<[A-Za-z][^>]*>", bare):
+            if ARROW.search(html.unescape(tag)):
+                problems.append(f"{rel}: arrow in a tag: {tag[:70]}")
+        for css in re.findall(r"(?is)<style\b[^>]*>(.*?)</style>", markup):
+            problems += css_arrow_problems(rel, css)
+    return problems
+
+
+def css_arrow_problems(where: str, css: str) -> list[str]:
+    """WEB-029, D-4246: an arrow, typed or as a CSS escape, in a content: value."""
+    problems: list[str] = []
+    for match in CSS_CONTENT.finditer(css):
+        value = CSS_ESCAPE.sub(lambda e: chr(min(int(e[1], 16), 0x10FFFF)), match[1])
+        if ARROW.search(value):
+            problems.append(f"{where}: arrow in CSS content: {match[0].strip()[:70]}")
+    return problems
+
+
+def rust_string(literal: str) -> str:
+    """A Rust string literal's text: line continuations, \\u{...}, quote and backslash escapes resolved."""
+    text = re.sub(r"\\\n\s*", "", literal)
+    return re.sub(r"\\u\{([0-9a-fA-F]+)\}|\\(.)", lambda e: chr(int(e[1], 16)) if e[1] else
+                  {"n": "\n", "t": "\t", "r": "\r"}.get(e[2], e[2]), text)
+
+
+def style_arrow_problems(root: Path) -> list[str]:
+    """WEB-029, D-4246: CSS content arrows in app/**/*.css and in every Rust const ..._CSS: &str under app/."""
+    app = root / "app"
+    if not app.is_dir():
+        return []
+    problems: list[str] = []
+    for path in sorted(app.rglob("*.css")):
+        problems += css_arrow_problems(path.relative_to(root).as_posix(), path.read_text(encoding="utf-8"))
+    for path in sorted(app.rglob("*.rs")):
+        for match in RUST_CSS.finditer(path.read_text(encoding="utf-8")):
+            css = match[2] if match[2] is not None else rust_string(match[3])
+            problems += css_arrow_problems(path.relative_to(root).as_posix(), css)
+    return problems
+
+
+def arrow_problems(root: Path) -> list[str]:
+    """WEB-029, D-4246: every arrow in copy, templates and CSS content but the one primary-button arrow."""
+    problems = [f"{block.where}: arrow in copy: {block.text[:70]}"
+                for block in site_copy_blocks(root) if ARROW.search(html.unescape(block.text))]
+    return problems + template_arrow_problems(root) + style_arrow_problems(root)
+
+
 def run(root: Path) -> list[str]:
     problems: list[str] = []
     for block in site_copy_blocks(root) + template_blocks(root):
         problems += check_block(block)
-    return problems + template_problems(root)
+    return problems + template_problems(root) + arrow_problems(root)
 
 
 def main(argv: list[str] | None = None) -> int:
