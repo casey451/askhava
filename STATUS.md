@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T20:22:37Z by runner 4ca0973d449f (actions).
+Updated 2026-11-18T20:23:11Z by runner 935e6983d16c (actions).
 
 **Building: T651 in progress since 19:44Z; 455 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,12 +9,12 @@ Updated 2026-11-18T20:22:37Z by runner 4ca0973d449f (actions).
 - **Lane:** lane 1: T651 claimed 19:44Z, lease until 22:44Z; lane 2: T502 claimed 19:53Z, lease until 22:53Z; lane 3: T483 claimed 18:25Z, lease until 22:51Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 5: T706 claimed 19:14Z, lease until 23:19Z; lane 7: T715 claimed 20:05Z, lease until 23:05Z
 - **Week:** 67% used, 55.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:22Z, 0 min before this update
-- **Keeper:** last ran 19:49Z, next wake 21:27Z
+- **Keeper:** last ran 20:23Z, next wake 21:31Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 52 problem(s) on tasks still to run (+262 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 48 problem(s) on tasks still to run (+262 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -84,8 +84,8 @@ Updated 2026-11-18T20:22:37Z by runner 4ca0973d449f (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 293 of 735 (39.9%) · partial 392 · unstarted 50
-**Tasks merged (throughput only):** 455 of 662
+**Requirements verified:** 299 of 735 (40.7%) · partial 386 · unstarted 50
+**Tasks merged (throughput only):** 455 of 657
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -95,7 +95,7 @@ Updated 2026-11-18T20:22:37Z by runner 4ca0973d449f (actions).
 | calls | 12 | 13 | 0 | 25 |
 | consent | 14 | 21 | 0 | 35 |
 | fees | 23 | 28 | 1 | 52 |
-| intake | 10 | 33 | 0 | 43 |
+| intake | 16 | 27 | 0 | 43 |
 | job-cards | 14 | 10 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
