@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:08:06Z by runner 42b0b6bcb0ae (actions).
+Updated 2026-11-18T22:11:41Z by runner 7d58f8e9c040 (actions).
 
-**Building: T583 in progress since 21:55Z; 459 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T583 in progress since 21:55Z; 460 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 459 of 663 build tasks (owner gates not counted)
+- **Tasks done:** 460 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T583 claimed 21:55Z, lease until 00:55Z; lane 7: T504 claimed 22:07Z, lease until 01:07Z
 - **Week:** 69% used, 54.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:07Z, 0 min before this update
+- **Last run:** 22:08Z, 3 min before this update
 - **Keeper:** last ran 22:06Z, next wake 22:26Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-18T22:08:06Z by runner 42b0b6bcb0ae (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T701 (since 2026-11-18T21:55:41Z, no attempt used; a plan change fixes it): T701: dependency T702 is DONE but its owned file app/messaging/src/suppression_versions.rs is not on main; T701: dependency T702 is DONE but its owned file tests/integration/tests/suppression_key_versions.rs is not on main
-- Strict plan check red: 50 problem(s) on tasks still to run (+265 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 51 problem(s) on tasks still to run (+265 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -25,7 +25,7 @@ Updated 2026-11-18T22:08:06Z by runner 42b0b6bcb0ae (actions).
 | T651 | server and portals: owner step-up try limit, the passkey pat | MERGE_PENDING | 1 | 2 h 7 min | 21:52Z |  |
 | T722 | payments: read a pick's disputes and record Casey's evidence | MERGE_PENDING | 1 | 45 min | 21:33Z |  |
 | T503 | Decisions digest, piece 4: the next entries after the header | done | 1 | 31 min | 21:30Z |  |
-| T483 | messaging, portals and server: the owner's "away until" date | MERGE_PENDING | 1 | 2 h 48 min | 21:13Z |  |
+| T483 | messaging, portals and server: the owner's "away until" date | done | 1 | 2 h 48 min | 21:13Z |  |
 | T702 | privacy and messaging: no blind-index key version is retired | done | 1 | 40 min | 21:07Z |  |
 | T706 | payments: held_release, the FEE-017 re-check that clears a p | done | 1 | 100 min | 20:54Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 1 | 48 min | 20:53Z | PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-addre |
@@ -91,7 +91,7 @@ Updated 2026-11-18T22:08:06Z by runner 42b0b6bcb0ae (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 294 of 735 (40.0%) · partial 391 · unstarted 50
-**Tasks merged (throughput only):** 459 of 663
+**Tasks merged (throughput only):** 460 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -127,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 102 of 262 done
+- stage 5: 103 of 262 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
