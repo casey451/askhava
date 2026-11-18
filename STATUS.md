@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T12:42:25Z by runner 1fa6e8e13b65 (actions).
+Updated 2026-11-18T12:42:42Z by runner d951c0a08c26 (actions).
 
 **Building: T200 in progress since 12:06Z; 442 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 442 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T200 claimed 12:06Z, lease until 15:06Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
+- **Lane:** lane 6: T200 claimed 12:06Z, lease until 15:06Z; lane 7: T472 claimed 11:43Z, lease until 15:42Z
 - **Week:** 54% used, 80.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:40Z, 1 min before this update
+- **Last run:** 12:42Z, 0 min before this update
 - **Keeper:** last ran 12:40Z, next wake 14:46Z
 
 ## Needs attention
@@ -138,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 6: T200 (lease until 2026-11-18T15:06:51Z)
-- lane 7: T472 (lease until 2026-11-18T14:43:39Z)
+- lane 7: T472 (lease until 2026-11-18T15:42:42Z)
 
 ## Last usage reading
 - {"task": "T662", "at": "2026-11-18T12:39:45Z", "output_tokens": 58659, "cache_creation_input_tokens": 221897, "cache_read_input_tokens": 7701145, "input_tokens": 160}
