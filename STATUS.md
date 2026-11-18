@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T15:55:51Z by runner fd1b3cfb94d0 (actions).
+Updated 2026-11-18T15:56:05Z by runner fd1b3cfb94d0 (actions).
 
 **Building: T624 in progress since 15:49Z; 446 of 645 done; week 61% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 446 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T624 claimed 15:49Z, lease until 18:49Z; lane 4: T592 claimed 15:38Z, lease until 18:38Z; lane 5: T720 claimed 15:43Z, lease until 18:43Z; lane 6: T621 claimed 15:00Z, lease until 18:53Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
+- **Lane:** lane 3: T624 claimed 15:49Z, lease until 18:49Z; lane 4: T592 claimed 15:38Z, lease until 18:38Z; lane 5: T720 claimed 15:43Z, lease until 18:43Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
 - **Week:** 61% used, 68.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:53Z, 2 min before this update
 - **Keeper:** last ran 15:53Z, next wake 18:03Z
@@ -23,6 +23,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T621 | portals: the scorecard's go and stop line settings and its p | MERGE_PENDING | 1 | 55 min | 15:55Z |  |
 | T665 | server tests (harness): the door matrix fills a business job | MERGE_PENDING | 1 | 81 min | 15:47Z |  |
 | T525 | server and ops: the hourly vault-read check and the daily da | MERGE_PENDING | 1 | 102 min | 15:41Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | done | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
@@ -137,8 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T624 (lease until 2026-11-18T18:49:02Z)
 - lane 4: T592 (lease until 2026-11-18T18:38:59Z)
 - lane 5: T720 (lease until 2026-11-18T18:43:30Z)
-- lane 6: T621 (lease until 2026-11-18T18:53:22Z)
 - lane 7: T671 (lease until 2026-11-18T18:43:09Z)
 
 ## Last usage reading
-- {"task": "T665", "at": "2026-11-18T15:47:23Z", "output_tokens": 17259, "input_tokens": 73, "cache_creation_input_tokens": 90795, "cache_read_input_tokens": 1788418}
+- {"task": "T621", "at": "2026-11-18T15:55:50Z", "cache_creation_input_tokens": 122682, "input_tokens": 75, "output_tokens": 34061, "cache_read_input_tokens": 2068595}
