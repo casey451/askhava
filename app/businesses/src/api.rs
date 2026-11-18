@@ -131,6 +131,9 @@ pub use crate::reply_link::{is_main_phone, link_by_reply};
 pub use crate::review_queue::{ReviewWaiting, needs_review_signups};
 pub use crate::rules::JobTypeChoice;
 pub use crate::rules::{Checks, Event, OwnHours, Widens};
+pub use crate::scorecard_inputs::{
+    SignupRoutes, SignupSource, complaints_for_jobs, signup_routes, signups_by_source,
+};
 pub use crate::service::{
     Ticks, apply, create, night_count, own_hours, pause_for_rule, pause_self, resume_self,
     set_job_types, set_own_hours, set_ticks, set_towns,

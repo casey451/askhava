@@ -64,6 +64,7 @@ mod public_name;
 mod reply_link;
 mod review_queue;
 mod rules;
+mod scorecard_inputs;
 mod service;
 mod service_area;
 mod sign_in_lines;
