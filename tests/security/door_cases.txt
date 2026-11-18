@@ -46,6 +46,7 @@ Homeowner /h/requests site
 Business /b
 Business /b/account
 Business /b/picks/{pick}
+Business /b/picks/{pick}/cant-take
 Business /b/complaints/{complaint}/reply
 Business /b/signup/capability
 Business /b/signup/other
