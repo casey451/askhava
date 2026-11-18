@@ -3383,3 +3383,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **What happens now:** after the consent text she is asked her ZIP; once her town is known she gets the "We'll send this to the N businesses" line (or "We don't cover ... yet") right away when her first text named the kind of job.
 - **The gap:** if her first text named no trade we know ("Hi, can you help?"), she is asked her first name and address right after the ZIP, and her job opens only once a later text names a trade; the question that would ask her ("Is this mainly 1) plumbing or 2) heating/AC?") has no approved wording yet and comes with the trade questions in a later task (T672).
 - Our choice; nothing needs you now.
+
+## Spanish "That's 2 jobs" text, for the Spanish reviewer (D-4486)
+
+- **What it says:** "Laftly: Son 2 trabajos. Empezamos con {trade}. Responda TAMBIÉN para empezar también con {business}." It goes to a homeowner whose first text names two kinds of work.
+- **For the reviewer:** `{trade}` is the first kind of work and `{business}` is the second kind of work (for example "plomería"), not a business name. Please check the sentence with a kind of work in that spot.
+- Our choice; it waits for the native-speaker review like every Spanish text.

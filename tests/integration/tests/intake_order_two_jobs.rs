@@ -212,9 +212,27 @@ async fn td_int_45_two_trades_get_the_two_jobs_text(mut db: Db) {
     assert_eq!(one, [CONSENT_TEMPLATE, ZIP_QUESTION_TEMPLATE]);
 }
 
+/// Asserts request `id` cannot open again beside her newer open request: the database's
+/// `conversation_one_open_idx` refuses a second open request of hers (unique violation 23505),
+/// which is what keeps the early way from ever meeting another open request's job (D-4490).
+async fn second_open_refused(db: &mut PgConnection, id: Uuid) {
+    sqlx::query("RESET ROLE")
+        .execute(&mut *db)
+        .await
+        .expect("reset");
+    let err = sqlx::query("UPDATE intake.conversation SET closed_at = NULL WHERE id = $1")
+        .bind(id)
+        .execute(&mut *db)
+        .await
+        .expect_err("a second open request of hers is refused");
+    let code = err.as_database_error().and_then(|e| e.code());
+    assert_eq!(code.as_deref(), Some("23505"), "the one-open-request index");
+    set_app_role(db).await.expect("role");
+}
+
 /// TD-INT-45 (INT-032, INT-009, D-4439): ALSO before the ZIP opens exactly one more job, for the
-/// second trade, with property `none`, never joining the same-trade job of her other request;
-/// a second ALSO opens nothing; no ALSO is kept as words.
+/// second trade, with property `none`, never joining the same-trade job of her other open
+/// request; a second ALSO opens nothing; no ALSO is kept as words.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_45_also_before_the_zip_opens_the_second_job_the_early_way(mut db: Db) {
     setup(&mut db).await;
@@ -237,6 +255,7 @@ async fn td_int_45_also_before_the_zip_opens_the_second_job_the_early_way(mut db
     sent(&mut db, 0x0555_0203, TOILET_FIRST, 10).await;
     let id = request(&mut db, 0x0555_0203).await;
     assert_ne!(id, earlier);
+    second_open_refused(&mut db, earlier).await;
     sent(&mut db, 0x0555_0203, "ALSO", 11).await;
     let both = ["job.handyman.none", "job.plumbing_repair.none"];
     assert_eq!(links(&mut db, id).await, both);

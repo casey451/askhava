@@ -257,7 +257,7 @@
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "{brand_short}: Son 2 trabajos. Empezamos con {trade}. Responda TAMBIÉN para empezar {business} también."
+    "text": "{brand_short}: Son 2 trabajos. Empezamos con {trade}. Responda TAMBIÉN para empezar también con {business}."
   },
   "quote_update": {
     "audience": "homeowner",
