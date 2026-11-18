@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T18:18:15Z by runner 5f10daa65df6 (actions).
+Updated 2026-11-18T18:18:26Z by runner 5f10daa65df6 (actions).
 
 **Building: T624 in progress since 16:49Z; 452 of 645 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 452 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T624 claimed 16:49Z, lease until 20:41Z; lane 2: T205 claimed 17:25Z, lease until 20:25Z; lane 5: T500 claimed 17:07Z, lease until 21:15Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
+- **Lane:** lane 1: T624 claimed 16:49Z, lease until 20:41Z; lane 2: T205 claimed 17:25Z, lease until 20:25Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
 - **Week:** 63% used, 65.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:15Z, 2 min before this update
+- **Last run:** 18:15Z, 3 min before this update
 - **Keeper:** last ran 17:30Z, next wake 19:51Z
 
 ## Needs attention
@@ -24,6 +24,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T500 | Decisions digest, piece 1: from the first entry, at most 300 | MERGE_PENDING | 1 | 71 min | 18:18Z |  |
 | T671 | intake (harness): a homeowner's texts after the consent text | done | 2 | 102 min | 17:25Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 | T621 | portals: the scorecard's go and stop line settings and its p | done | 1 | 38 min | 17:03Z |  |
 | T720 | Decision digest prerequisites (harness): the digest plan and | done | 1 | 67 min | 16:51Z |  |
@@ -135,8 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T624 (lease until 2026-11-18T20:41:09Z)
 - lane 2: T205 (lease until 2026-11-18T20:25:02Z)
-- lane 5: T500 (lease until 2026-11-18T21:15:19Z)
 - lane 7: T711 (lease until 2026-11-18T21:12:25Z)
 
 ## Last usage reading
-- {"task": "T671", "at": "2026-11-18T17:25:29Z", "cache_read_input_tokens": 30578798, "cache_creation_input_tokens": 359454, "input_tokens": 334, "output_tokens": 116238}
+- {"task": "T500", "at": "2026-11-18T18:18:14Z", "cache_read_input_tokens": 6278688, "output_tokens": 58532, "input_tokens": 124, "cache_creation_input_tokens": 197465}
