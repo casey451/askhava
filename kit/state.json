@@ -66058,7 +66058,7 @@
     "T528",
     "T605"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "scorecard-inputs-requests",
    "type": "build",
@@ -66082,13 +66082,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 142,
      "head_sha": "1dcfd0f294066e98ffec5cf29b5da67349539b49",
-     "pr": null,
-     "checks": null,
+     "pr": 996,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-17T23:24:36Z",
      "ended_at": "2026-11-18T01:47:47Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 5360335,
@@ -66125,7 +66182,38 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-18T01:54:00Z"
+   "merge_turn_since": "2026-11-18T01:54:00Z",
+   "merged_sha": "4fee847da1a9bd636d98ba5d72405c66d05b5274",
+   "merged_at": "2026-11-18T02:08:34Z",
+   "files": [
+    ".sqlx/query-1ce979291f3c173418b3b55687f5c9c7b0539485f44e4fe5c63b27f7e06a12f3.json",
+    ".sqlx/query-3ef1192c1b85676ec0aa9fa6e9269d83e16bc3da7e0c0df19bd0c7ff9d2d4762.json",
+    ".sqlx/query-4a917c3ac6fa40b6a3a109ff993429f50026b0c2eb338f2e19bcdad08bcab043.json",
+    ".sqlx/query-63ec7a68e1e6f310815c2b68dcc7baf7e790c2225b2c97cfb17110f51cb5abbe.json",
+    ".sqlx/query-6eb4c4dbfd4ca93a765a59b72951a5170baae5a6dde6fac3f379f98c0015046d.json",
+    ".sqlx/query-86ada14dd7459930f29f044c3da2e1286cae7bef2c71d4276c552b1a5777fb0e.json",
+    ".sqlx/query-a7c854fc5a07779b03e0519b5be8f7da8656cf0734739d4f786e3f7dd06fb660.json",
+    ".sqlx/query-bc1bf6695a34d4b6b5ac5c1b85d9c4fd3b3fffcfab821161663620a7aa08da73.json",
+    ".sqlx/query-eeb09f67fbb26f106f1b8ecd3a2b5ee4353d95f8993a4552a3c036074a938006.json",
+    "app/businesses/NOTES.md",
+    "app/businesses/src/api.rs",
+    "app/businesses/src/lib.rs",
+    "app/businesses/src/scorecard_inputs.rs",
+    "app/calls/NOTES.md",
+    "app/calls/src/api.rs",
+    "app/calls/src/lib.rs",
+    "app/calls/src/scorecard_inputs.rs",
+    "app/intake/NOTES.md",
+    "app/intake/src/api.rs",
+    "app/intake/src/lib.rs",
+    "app/intake/src/scorecard_inputs.rs",
+    "app/jobs/NOTES.md",
+    "app/jobs/src/api.rs",
+    "app/jobs/src/lib.rs",
+    "app/jobs/src/scorecard_inputs.rs",
+    "docs/decisions.md",
+    "tests/integration/tests/scorecard_inputs_requests.rs"
+   ]
   },
   {
    "id": "T479",
@@ -73597,7 +73685,7 @@
      }
     }
    ],
-   "reviewed_sha": "e857b1024068a507e4ba70d566a056cf65767c53",
+   "reviewed_sha": "2d5398225d1f034bc9516370ca1395b39473d10c",
    "review_lease": {
     "task": "T604",
     "session": "actions-44206791878",
@@ -73617,10 +73705,23 @@
      "main": "fde4fad3f9f2f9f5930bce446afc240543636363",
      "how": "hand-in",
      "at": "2026-11-18T01:49:39Z"
+    },
+    {
+     "from": "e857b1024068a507e4ba70d566a056cf65767c53",
+     "to": "2d5398225d1f034bc9516370ca1395b39473d10c",
+     "main": "4fee847da1a9bd636d98ba5d72405c66d05b5274",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-18T02:10:25Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-18T02:10:25Z"
   },
   {
    "id": "T605",
@@ -79072,7 +79173,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T02:04:32Z",
+ "updated_at": "2026-11-18T02:10:33Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -79170,7 +79271,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fde4fad3f9f2f9f5930bce446afc240543636363",
+ "runner_sha": "4fee847da1a9bd636d98ba5d72405c66d05b5274",
  "starter": "actions",
  "smoke_runs": [
   {

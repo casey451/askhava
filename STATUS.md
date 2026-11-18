@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-18T02:04:32Z by runner fde4fad3f9f2 (actions).
+Updated 2026-11-18T02:10:33Z by runner 4fee847da1a9 (actions).
 
-**Building: T618 in progress since 01:54Z; 420 of 598 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T618 in progress since 01:54Z; 421 of 598 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 420 of 598 build tasks (owner gates not counted)
+- **Tasks done:** 421 of 598 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T618 claimed 01:54Z, lease until 04:54Z; lane 4: T639 claimed 01:58Z, lease until 04:58Z; lane 5: T151 claimed 00:12Z, lease until 04:59Z; lane 6: T108 claimed 00:23Z, lease until 04:50Z
 - **Week:** 38% used, 113.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:04Z, 0 min before this update
+- **Last run:** 02:04Z, 5 min before this update
 - **Keeper:** last ran 02:04Z, next wake 04:53Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 17 problem(s) on tasks still to run (+189 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 17 problem(s) on tasks still to run (+190 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T604 | Dependencies: sentry without default features, so native-tls | MERGE_PENDING | 1 | 78 min | 01:49Z |  |
-| T478 | jobs, intake, calls, messaging and businesses: the scorecard | MERGE_PENDING | 1 | 2 h 23 min | 01:47Z |  |
+| T478 | jobs, intake, calls, messaging and businesses: the scorecard | done | 1 | 2 h 23 min | 01:47Z |  |
 | T587 | payments and picks: the old Confirm fee writer is marked tes | done | 1 | 48 min | 00:26Z |  |
 | T606 | harness: scripts/check_copy.py allows one aria-hidden arrow  | done | 1 | 62 min | 23:23Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 1 | 3 min | 23:08Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
@@ -89,15 +89,15 @@ Updated 2026-11-18T02:04:32Z by runner fde4fad3f9f2 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 735 (0.0%) · partial 677 · unstarted 58
-**Tasks merged (throughput only):** 420 of 598
+**Requirements verified:** 0 of 735 (0.0%) · partial 678 · unstarted 57
+**Tasks merged (throughput only):** 421 of 598
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 0 | 35 | 0 | 35 |
 | ai | 0 | 26 | 3 | 29 |
 | businesses | 0 | 56 | 2 | 58 |
-| calls | 0 | 24 | 1 | 25 |
+| calls | 0 | 25 | 0 | 25 |
 | consent | 0 | 34 | 1 | 35 |
 | fees | 0 | 51 | 1 | 52 |
 | intake | 0 | 43 | 0 | 43 |
@@ -126,7 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 63 of 206 done
+- stage 5: 64 of 206 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
