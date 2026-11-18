@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T03:40:02Z by runner 559670670c29 (actions).
+Updated 2026-11-18T03:40:14Z by runner 559670670c29 (actions).
 
 **Building: T638 in progress since 03:07Z; 423 of 606 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 423 of 606 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T638 claimed 03:07Z, lease until 06:07Z; lane 5: T151 claimed 03:05Z, lease until 06:38Z; lane 7: T623 claimed 02:43Z, lease until 05:43Z
+- **Lane:** lane 1: T638 claimed 03:07Z, lease until 06:07Z; lane 7: T623 claimed 02:43Z, lease until 05:43Z
 - **Week:** 41% used, 105.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:38Z, 1 min before this update
 - **Keeper:** last ran 03:36Z, next wake 05:45Z
@@ -19,11 +19,12 @@ Updated 2026-11-18T03:40:02Z by runner 559670670c29 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T151 | ops and messaging: HELP requests with one owner notification | MERGE_PENDING | 1 | 34 min | 03:40Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T647 | payments: rebuild_charge reports Booked inside a caller's tr | MERGE_PENDING | 1 | 82 min | 03:35Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | QUEUED | 1 | 69 min | 03:31Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
 | T639 | Runner (harness): the smoke warm-up is skipped when the pre- | MERGE_PENDING | 1 | 76 min | 03:14Z |  |
 | T108 | portals: owner tools for pauses, fee mode, categories and se | MERGE_PENDING | 1 | 2 h 45 min | 03:08Z |  |
-| T151 | ops and messaging: HELP requests with one owner notification | resync | 1 | 2 h 14 min | 02:26Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
+| T151 | ops and messaging: HELP requests with one owner notification | resync | 1 | 2 h 14 min | 02:26Z |  |
 | T618 | Harness: a 4-hourly advisory watch on main that alerts Casey | done | 1 | 28 min | 02:22Z |  |
 | T604 | Dependencies: sentry without default features, so native-tls | done | 1 | 78 min | 01:49Z |  |
 | T478 | jobs, intake, calls, messaging and businesses: the scorecard | done | 1 | 2 h 23 min | 01:47Z |  |
@@ -136,8 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T638 (lease until 2026-11-18T06:07:21Z)
-- lane 5: T151 (lease until 2026-11-18T06:38:17Z)
 - lane 7: T623 (lease until 2026-11-18T05:43:03Z)
 
 ## Last usage reading
-- {"task": "T647", "at": "2026-11-18T03:35:42Z", "cache_creation_input_tokens": 239341, "cache_read_input_tokens": 6086566, "input_tokens": 208, "output_tokens": 67194}
+- {"task": "T151", "at": "2026-11-18T03:40:00Z", "cache_read_input_tokens": 761684, "output_tokens": 7929, "input_tokens": 58, "cache_creation_input_tokens": 48763}
