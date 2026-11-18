@@ -1,0 +1,101 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT c.homeowner_id AS homeowner, c.closed_at IS NULL AS \"open!\", c.job_id AS job,\n             EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = c.id\n               AND a.question_id = 'zip') AS \"zip_asked!\",\n             p.town AS \"town?\", p.zip AS \"zip?\",\n             ARRAY(SELECT a.choice FROM intake.intake_answer a WHERE a.conversation_id = c.id\n               AND a.question_id = $2 AND a.choice IS NOT NULL\n               ORDER BY a.answered_at, a.id) AS \"trades!: Vec<String>\",\n             EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = c.id\n               AND a.question_id = $3) AS \"told!\",\n             EXISTS (SELECT 1 FROM intake.emergency_event e WHERE e.conversation_id = c.id\n               AND e.text_queued_at IS NOT NULL AND e.safe_at IS NULL) AS \"waiting_safe!\"\n           FROM intake.conversation c\n           LEFT JOIN LATERAL (SELECT q.town, q.zip FROM intake.property q\n             WHERE q.homeowner_id = c.homeowner_id AND q.created_at >= c.opened_at\n             ORDER BY q.created_at DESC, q.id DESC LIMIT 1) p ON true\n           WHERE c.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "homeowner",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "homeowner_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "open!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "job",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "zip_asked!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "town?",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.property",
+            "name": "town"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "zip?",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.property",
+            "name": "zip"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "trades!: Vec<String>",
+        "type_info": "TextArray",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 7,
+        "name": "told!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 8,
+        "name": "waiting_safe!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      true,
+      null,
+      true,
+      true,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "4923fa863040bbfcda5fe43f18000a950aff7b09b93eb697569fe7429d06785e"
+}

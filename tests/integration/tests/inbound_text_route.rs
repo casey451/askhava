@@ -194,7 +194,8 @@ async fn td_txt_04_the_same_message_id_three_times_is_handled_once(pool: PgPool)
         count(&pool, "SELECT count(*) FROM intake.conversation").await,
         1
     );
-    assert_eq!(templates(&pool).await, ["consent"]);
+    // CON-031, INT-043 (D-4360): the ZIP question follows the consent text as its own text.
+    assert_eq!(templates(&pool).await, ["consent", "zip_question"]);
     let fields = [
         ("MessageSid", "SM00000000000000000000000000000002"),
         ("MessageStatus", "delivered"),
@@ -237,9 +238,15 @@ async fn td_con_05_an_opt_out_ends_the_text_at_messaging(pool: PgPool) {
         ("OptOutType", "START"),
     ];
     assert_eq!(post(&h, INBOUND_PATH, &start, BASE).await, StatusCode::OK);
+    // CON-031, INT-043 (D-4360): the ZIP question follows the consent text as its own text.
     assert_eq!(
         templates(&pool).await,
-        ["opt_out_confirmation", "help_reply", "consent"]
+        [
+            "opt_out_confirmation",
+            "help_reply",
+            "consent",
+            "zip_question"
+        ]
     );
 }
 
@@ -303,13 +310,21 @@ async fn job(pool: &PgPool, h: &Arc<Webhooks>) -> Uuid {
         trade: "plumbing_repair",
         at: at() - jiff::SignedDuration::from_hours(1),
     };
-    match askhava_intake::api::begin_job(&mut db, &start)
+    // INT-009, D-4360, D-4439: the first text already opened the request's own job, so
+    // `begin_job` finds it; it is the request's first job (one job only).
+    let job = match askhava_intake::api::begin_job(&mut db, &start)
         .await
         .expect("job")
     {
-        askhava_intake::api::Opened::Created(job) => job,
-        _ => panic!("a new job"),
-    }
+        askhava_intake::api::Opened::Existing(job) => job,
+        _ => panic!("the request's early job"),
+    };
+    let first: Option<Uuid> = sqlx::query_scalar("SELECT job_id FROM intake.conversation")
+        .fetch_one(pool)
+        .await
+        .expect("first job");
+    assert_eq!(first, Some(job));
+    job
 }
 
 /// A request with one job opened through the route, moved to Open, holding one shown $190 quote

@@ -46,6 +46,7 @@ mod models;
 mod not_covered_counts;
 mod opted_out_live;
 mod order;
+mod order_dispatch;
 mod photos;
 mod purge;
 mod question_bank;
