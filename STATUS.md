@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-18T11:39:17Z by runner 54ae80c9cb15 (actions).
+Updated 2026-11-18T11:39:28Z by runner 54ae80c9cb15 (actions).
 
 **Building: T583 in progress since 11:19Z; 440 of 643 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 440 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 6: T200 claimed 09:05Z, lease until 14:29Z
-- **Week:** 53% used, 83.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 4: T700 claimed 11:39Z, lease until 14:39Z; lane 6: T200 claimed 09:05Z, lease until 14:29Z
+- **Week:** 53% used, 83.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:35Z, 3 min before this update
 - **Keeper:** last ran 11:35Z, next wake 11:55Z
 
@@ -115,7 +115,7 @@ Updated 2026-11-18T11:39:17Z by runner 54ae80c9cb15 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T11:22:33Z (week)): week: 110.3M used, 83.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-01T05:06:26Z.
+- Pacing (session_reading 2026-11-18T11:35:16Z (week)): week: 110.4M used, 83.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T07:35:24Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -132,6 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T583 (lease until 2026-11-18T14:19:34Z)
 - lane 2: T662 (lease until 2026-11-18T14:26:44Z)
+- lane 4: T700 (lease until 2026-11-18T14:39:04Z)
 - lane 6: T200 (lease until 2026-11-18T14:29:31Z)
 
 ## Last usage reading
