@@ -92,7 +92,7 @@ pub enum OwnerChange {
 impl OwnerChange {
     /// The `POST` route the change's form posts to.
     #[must_use]
-    pub fn route(&self) -> &'static str {
+    pub fn posts_to(&self) -> &'static str {
         match self {
             Self::Pause(..) => OWNER_PAUSE_ROUTE,
             Self::FeeMode(_) => OWNER_FEE_MODE_ROUTE,
@@ -181,7 +181,7 @@ pub fn parse_change(route: &str, form: &ChangeForm) -> Option<OwnerChange> {
         "acknowledge" => OwnerChange::AcknowledgeAlert(Uuid::parse_str(target).ok()?),
         _ => return None,
     };
-    (change.route() == route).then_some(change)
+    (change.posts_to() == route).then_some(change)
 }
 
 /// OPS-003, FEE-007, LIC-002, OPS-001, SEC-043, D-1843, D-1871: makes `change` for the signed-in
@@ -200,7 +200,7 @@ pub async fn apply_owner_change(
     now: Timestamp,
 ) -> Result<bool, OwnerToolError> {
     if let Some(action) = change.needs_fresh_factor() {
-        let gate = require_owner_step_up(conn, principal, (action, change.route()), now).await;
+        let gate = require_owner_step_up(conn, principal, (action, change.posts_to()), now).await;
         match gate {
             Err(OwnerAuthError::NeedsFreshFactor) => return Err(OwnerToolError::NeedsFreshFactor),
             other => other.map_err(store)?,
