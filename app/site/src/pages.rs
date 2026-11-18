@@ -6,7 +6,10 @@
 //! D-3144); there is no catch-all, so any other unknown path stays a 404. Every page extends
 //! `templates/site_layout.html` (its footer, WEB-003, WEB-004, WORD-002) and sets `banner_shown`
 //! first (WEB-007). The home page's numbers come only from `intake::api::home_numbers` (the card
-//! and quote records, WEB-028, D-466) and show nothing below [`SitePages`]' threshold; the fee
+//! and quote records, WEB-028, D-466) and show nothing below [`SitePages`]' threshold. The served
+//! `/` keeps the numbers (never the HTML) for [`HOME_NUMBERS_WINDOW`] in a [`HomeNumbersCache`]
+//! held by the router, and reads the banner and, on a miss, the numbers on one pooled connection
+//! (D-4098); [`home_html`] reads them uncached. The fee
 //! amounts come from `payments::api::Tier` (WEB-026). GET only; nothing is written.
 //!
 //! [`help_routes`] (T201) serves `/services` (one `#<category code>` section per switched-on
@@ -28,7 +31,8 @@
 //! D-3155): `docs/legal/accessibility-statement.md`, rendered once by
 //! `legal_pages::accessibility_statement` when the router is built, never a third copy.
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, PoisonError};
+use std::time::{Duration, Instant};
 
 use askama::Template;
 use askhava_businesses::api::trade_count;
@@ -40,11 +44,11 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
 use axum::{Extension, Router};
 use jiff::SignedDuration;
-use sqlx::PgPool;
+use sqlx::{PgConnection, PgPool};
 use uuid::Uuid;
 
 use crate::legal_pages::{LegalDoc, accessibility_statement};
-use crate::routes::banner_shown;
+use crate::routes::{banner_shown, banner_shown_on};
 
 /// The home page (WEB-001).
 pub const HOME_PATH: &str = "/";
@@ -167,12 +171,60 @@ impl SitePages {
 }
 
 /// WEB-028: the numbers as the home page shows them.
+#[derive(Debug, Clone)]
 struct Shown {
     requests: u32,
     wait: Option<String>,
     per_request: String,
     range: String,
     trades: String,
+}
+
+/// WEB-028, D-4098: how long the served home page keeps its numbers. Not a spec value (so not a
+/// setting): it only bounds the database work an anonymous `GET /` can cause, since site pages
+/// have no rate limit and the pool is small; the figures are public aggregates that move slowly,
+/// so a minute-old figure is still a computed one.
+pub const HOME_NUMBERS_WINDOW: Duration = Duration::from_secs(60);
+
+/// WEB-028, D-4098: the home page's last shown numbers and when they were read, held by one page
+/// router (never a process-wide static, so separate routers never share figures). It keeps the
+/// numbers only, never rendered HTML; `None` (below the threshold) is kept like a value, and a
+/// failed read is never kept.
+#[derive(Debug)]
+pub struct HomeNumbersCache {
+    window: Duration,
+    kept: Mutex<Option<(Instant, Option<Shown>)>>,
+}
+
+impl Default for HomeNumbersCache {
+    /// An empty cache keeping numbers for [`HOME_NUMBERS_WINDOW`].
+    fn default() -> Self {
+        Self::new(HOME_NUMBERS_WINDOW)
+    }
+}
+
+impl HomeNumbersCache {
+    /// An empty cache keeping numbers for `window` (a test shortens it).
+    #[must_use]
+    pub fn new(window: Duration) -> Self {
+        Self {
+            window,
+            kept: Mutex::new(None),
+        }
+    }
+
+    /// The kept numbers while still inside the window, else `None` (a miss).
+    fn fresh(&self) -> Option<Option<Shown>> {
+        let kept = self.kept.lock().unwrap_or_else(PoisonError::into_inner);
+        kept.as_ref()
+            .filter(|(at, _)| at.elapsed() < self.window)
+            .map(|(_, shown)| shown.clone())
+    }
+
+    /// Keeps `shown` from now on.
+    fn keep(&self, shown: Option<Shown>) {
+        *self.kept.lock().unwrap_or_else(PoisonError::into_inner) = Some((Instant::now(), shown));
+    }
 }
 
 /// The fee amounts in whole dollars, from the fee tiers (WEB-026).
@@ -400,12 +452,19 @@ async fn listed_page(pool: &PgPool, coverage: bool) -> Response {
     respond(page.render())
 }
 
-/// WEB-001, WEB-012: the site pages' router over `pool`, with `pages`' settings.
+/// WEB-001, WEB-012: the site pages' router over `pool`, with `pages`' settings and its own
+/// home numbers cache of [`HOME_NUMBERS_WINDOW`] (D-4098).
 pub fn page_routes(pool: PgPool, pages: SitePages) -> Router {
+    page_routes_with(pool, pages, HomeNumbersCache::default())
+}
+
+/// WEB-001, WEB-012, WEB-028, D-4098: [`page_routes`] with the home numbers cache `numbers`, which
+/// this router alone holds.
+pub fn page_routes_with(pool: PgPool, pages: SitePages, numbers: HomeNumbersCache) -> Router {
     let state = Arc::new((pool, pages));
     let home = {
-        let state = Arc::clone(&state);
-        move || async move { respond(home_html(&state.0, &state.1).await) }
+        let (state, numbers) = (Arc::clone(&state), Arc::new(numbers));
+        move || async move { respond(home_read(&state.0, &state.1, Some(&numbers)).await) }
     };
     let how = {
         let pool = state.0.clone();
@@ -549,9 +608,44 @@ fn respond(page: Result<String, askama::Error>) -> Response {
 ///
 /// The template's error.
 pub async fn home_html(pool: &PgPool, pages: &SitePages) -> Result<String, askama::Error> {
+    home_read(pool, pages, None).await
+}
+
+/// WEB-007, WEB-028, D-4098: the home page on one pooled connection: the banner, then the
+/// numbers from `cache` while fresh, else read (and kept when the read succeeds). A failed
+/// acquire shows neither (one warning, no values, R5).
+async fn home_read(
+    pool: &PgPool,
+    pages: &SitePages,
+    cache: Option<&HomeNumbersCache>,
+) -> Result<String, askama::Error> {
+    let Ok(mut db) = pool.acquire().await else {
+        tracing::warn!("home page database read failed; the page shows no banner and no numbers");
+        return home_page(pages, false, None);
+    };
+    let banner_shown = banner_shown_on(&mut db).await;
+    let numbers = match cache.and_then(HomeNumbersCache::fresh) {
+        Some(kept) => kept,
+        None => {
+            let read = numbers(&mut db, pages.min_jobs).await;
+            if let (Some(cache), Some(found)) = (cache, &read) {
+                cache.keep(found.clone());
+            }
+            read.flatten()
+        }
+    };
+    home_page(pages, banner_shown, numbers)
+}
+
+/// The home page with its banner and numbers decided.
+fn home_page(
+    pages: &SitePages,
+    banner_shown: bool,
+    numbers: Option<Shown>,
+) -> Result<String, askama::Error> {
     HomePage {
-        banner_shown: banner_shown(pool).await,
-        numbers: numbers(pool, pages.min_jobs).await,
+        banner_shown,
+        numbers,
         who: pages.who.clone(),
         fees: Fees::from_tiers(),
     }
@@ -572,21 +666,18 @@ pub async fn how_it_works_html(pool: &PgPool, spanish: bool) -> Result<String, a
     }
 }
 
-/// WEB-028, D-466: the computed numbers, or none below `min_jobs` or when the read fails (one
-/// warning, no values, R5).
-async fn numbers(pool: &PgPool, min_jobs: u32) -> Option<Shown> {
-    let read = match pool.acquire().await {
-        Ok(mut db) => askhava_intake::api::home_numbers(&mut db, min_jobs).await,
-        Err(_) => {
-            tracing::warn!("home numbers read failed; the page shows none");
-            return None;
-        }
-    };
-    let found = read
+/// WEB-028, D-466: the computed numbers (`Some(None)` below `min_jobs`), or `None` when the read
+/// fails (one warning, no values, R5).
+async fn numbers(db: &mut PgConnection, min_jobs: u32) -> Option<Option<Shown>> {
+    let read = askhava_intake::api::home_numbers(db, min_jobs).await;
+    let Some(found) = read
         .map_err(|_| tracing::warn!("home numbers read failed; the page shows none"))
-        .ok()??;
+        .ok()?
+    else {
+        return Some(None);
+    };
     let day = |at| arizona_time(at).strftime("%b %-d, %Y").to_string();
-    Some(Shown {
+    Some(Some(Shown {
         requests: found.requests,
         wait: found.median_first_quote.map(wait_words),
         per_request: format!(
@@ -596,7 +687,7 @@ async fn numbers(pool: &PgPool, min_jobs: u32) -> Option<Shown> {
         ),
         range: format!("{} to {}", day(found.cards_from), day(found.cards_to)),
         trades: plural(found.trades, "trade"),
-    })
+    }))
 }
 
 /// WEB-028: a median wait in words: whole minutes under two hours, else the nearest hour.
