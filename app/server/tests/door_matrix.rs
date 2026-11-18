@@ -1,6 +1,6 @@
 //! The HTTP probe of the authorization matrix's realm, owner, action-link and public doors
-//! (TD-SEC-61, TD-SEC-73, T348, T643; SEC-019, SEC-048, SEC-034, SEC-004 to SEC-008, SEC-026,
-//! SEC-042, SEC-009, SEC-012; D-2440, D-736, D-4292).
+//! (TD-SEC-61, TD-SEC-73, TD-SEC-79, T348, T643, T665; SEC-019, SEC-048, SEC-034, SEC-004 to
+//! SEC-008, SEC-026, SEC-042, SEC-009, SEC-012; D-2440, D-736, D-4292, D-4349).
 //!
 //! `tests/security/tests/auth_matrix.rs` gives every route a door; a test crate may not depend on
 //! `askhava-server` (D-736), so the doors whose routes it cannot reach are probed here, through
@@ -101,7 +101,18 @@ const ARCHITECTURE: &str = include_str!("../../../docs/architecture.md");
 /// The shared path-to-door cases, asserted by `auth_matrix.rs` too (D-2440).
 const DOOR_CASES: &str = include_str!("../../../tests/security/door_cases.txt");
 /// The path parameters the probe can fill from its fixtures.
-const FILLS: [&str; 5] = ["{pick}", "{complaint}", "{kind}", "{object}", "{token}"];
+const FILLS: [&str; 6] = [
+    "{pick}",
+    "{complaint}",
+    "{j}",
+    "{kind}",
+    "{object}",
+    "{token}",
+];
+/// The job number no fixture's job has: the unknown `{j}` (D-4349).
+const UNKNOWN_NUMBER: i64 = 9_999_999;
+/// T666's job page, whose `{j}` is the side's own carded job number (D-4349).
+const JOB_PAGE: &str = "/b/jobs/{j}";
 /// T300's released-job page, whose `{pick}` is the side's released pick (PICK-024, D-3106).
 const RELEASED_PAGE: &str = "/b/picks/{pick}";
 /// T306's "Why was I charged?" page, whose `{pick}` is the side's charged pick (FEE-031, D-3112).
@@ -321,33 +332,38 @@ impl Fixtures {
         all
     }
 
-    /// The `{pick}` and `{complaint}` of `side`.
-    fn ids(&self, side: usize) -> (Uuid, Uuid) {
-        (self.picks[side], self.complaints[side])
+    /// The `{pick}`, `{complaint}` and `{j}` of `side`: `{j}` is the number of the side's own
+    /// carded job (SEC-019, D-4349).
+    fn ids(&self, side: usize) -> Ids {
+        (self.picks[side], self.complaints[side], self.numbers[side])
     }
 
     /// The ids `template` is filled with for `side`: [`RELEASED_PAGE`] takes the released pick,
     /// [`CHARGES_PAGE`] the charged one, [`CANT_TAKE_PAGE`] its own waiting one, every other
     /// template the waiting one (SEC-019, PICK-024, FEE-031, PICK-050, D-3106, D-3112, D-3750).
-    fn ids_on(&self, template: &str, side: usize) -> (Uuid, Uuid) {
-        let (pick, complaint) = self.ids(side);
+    fn ids_on(&self, template: &str, side: usize) -> Ids {
+        let (pick, complaint, number) = self.ids(side);
         match template {
-            RELEASED_PAGE => (self.released[side], complaint),
-            CHARGES_PAGE => (self.charged[side], complaint),
-            CANT_TAKE_PAGE => (self.cant_take[side], complaint),
-            _ => (pick, complaint),
+            RELEASED_PAGE => (self.released[side], complaint, number),
+            CHARGES_PAGE => (self.charged[side], complaint, number),
+            CANT_TAKE_PAGE => (self.cant_take[side], complaint, number),
+            _ => (pick, complaint, number),
         }
     }
 }
 
-/// `template` with `{pick}` and `{complaint}` from `ids` and the action-link parameters from
-/// `link`; any other parameter fails naming it (D-2440).
-fn fill(template: &str, (pick, complaint): (Uuid, Uuid), link: &Minted) -> Result<String, String> {
+/// A row's `{pick}`, `{complaint}` and `{j}` (job number) values.
+type Ids = (Uuid, Uuid, i64);
+
+/// `template` with `{pick}`, `{complaint}` and `{j}` from `ids` and the action-link parameters
+/// from `link`; any other parameter fails naming it (D-2440, D-4349).
+fn fill(template: &str, (pick, complaint, number): Ids, link: &Minted) -> Result<String, String> {
     let mut path = template.to_owned();
     for seg in template.split('/').filter(|s| s.starts_with('{')) {
         let value = match seg {
             "{pick}" => pick.to_string(),
             "{complaint}" => complaint.to_string(),
+            "{j}" => number.to_string(),
             "{kind}" => link.kind.slug().to_owned(),
             "{object}" => link.object.to_string(),
             "{token}" => link.token.clone(),
@@ -1191,13 +1207,16 @@ async fn probe_page(
     };
     let reply = get(fill(template, w.fx.ids_on(template, side), link)?).await;
     judge(door, (who.actor, method), &reply, &w.fx)?;
-    let foreign = template.contains("{pick}") || template.contains("{complaint}");
+    let foreign = ["{pick}", "{complaint}", "{j}"]
+        .iter()
+        .any(|p| template.contains(p));
     let realm = matches!(door, Door::Business | Door::Homeowner);
     if !realm || !allowed(door, who.actor) || !foreign {
         return Ok(());
     }
     let theirs = get(fill(template, w.fx.ids_on(template, 1 - side), link)?).await;
-    let unknown = get(fill(template, (Uuid::new_v4(), Uuid::new_v4()), link)?).await;
+    let fresh = (Uuid::new_v4(), Uuid::new_v4(), UNKNOWN_NUMBER);
+    let unknown = get(fill(template, fresh, link)?).await;
     judge_not_found(&theirs, &unknown)
 }
 
@@ -1524,7 +1543,8 @@ fn td_sec_61_the_shared_door_cases_hold_here() {
     );
 }
 
-/// TD-SEC-61: a row with a parameter the fixtures do not fill fails naming it; the five fills work.
+/// TD-SEC-61, TD-SEC-79: a row with a parameter the fixtures do not fill fails naming it; the six
+/// fills work.
 #[test]
 fn td_sec_61_an_unknown_parameter_fails_naming_it() {
     let fx = planted_fixtures();
@@ -1540,6 +1560,42 @@ fn td_sec_61_an_unknown_parameter_fails_naming_it() {
     );
     let path = fill("/b/{pick}/{complaint}", fx.ids(1), &fx.links[1]).expect("filled");
     assert_eq!(path, format!("/b/{}/{}", fx.picks[1], fx.complaints[1]));
+    let path = fill(JOB_PAGE, fx.ids(1), &fx.links[1]).expect("filled");
+    assert_eq!(path, format!("/b/jobs/{}", fx.numbers[1]));
+}
+
+/// A planted `/b/jobs/{j}` that shows only X's own job, number 1001, and gives every other number
+/// the one not-found answer.
+async fn planted_job(Path(number): Path<i64>) -> Response {
+    let kept = [(header::CACHE_CONTROL, "no-store")];
+    match number {
+        1001 => (kept, "Job 1001").into_response(),
+        _ => (StatusCode::NOT_FOUND, kept).into_response(),
+    }
+}
+
+/// TD-SEC-79 (SEC-019, SEC-048, D-4349): on a planted router X's `{j}` fill is admitted, and Y's
+/// number and an unknown number are the one not-found answer.
+#[tokio::test]
+async fn td_sec_79_the_job_number_fill_admits_x_and_hides_y() {
+    let fx = planted_fixtures();
+    let app = Router::new().route(JOB_PAGE, get(planted_job));
+    let jar = ensure_pre_session(CookieJar::new()).expect("jar");
+    let get = |ids: Ids| {
+        let path = fill(JOB_PAGE, ids, &fx.links[0]).expect("filled");
+        let jar = &jar;
+        let app = &app;
+        async move { send(app, (&Method::GET, &path), jar, Site::Own, Uuid::new_v4()).await }
+    };
+    let as_x = (Actor::BusinessX, &Method::GET);
+    let own = get(fx.ids_on(JOB_PAGE, Actor::BusinessX.side())).await;
+    assert_eq!(judge(Door::Business, as_x, &own, &fx), Ok(()));
+    let theirs = get(fx.ids_on(JOB_PAGE, Actor::BusinessY.side())).await;
+    let unknown = get((Uuid::new_v4(), Uuid::new_v4(), UNKNOWN_NUMBER)).await;
+    assert_eq!(judge_not_found(&theirs, &unknown), Ok(()));
+    assert_eq!(theirs.status, 404);
+    let leak = judge_not_found(&own, &unknown);
+    assert!(leak.is_err(), "X's own job read as not found: {leak:?}");
 }
 
 /// Fake fixtures for the planted cases (no database).
