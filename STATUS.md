@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T12:51:36Z by runner 1fa6e8e13b65 (actions).
+Updated 2026-11-18T12:58:47Z by runner 2a0b4b2ef9c6 (actions).
 
 **Building: T200 in progress since 12:06Z; 443 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 443 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T200 claimed 12:06Z, lease until 15:06Z
+- **Lane:** lane 6: T200 claimed 12:06Z, lease until 15:58Z
 - **Week:** 54% used, 80.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:51Z, 0 min before this update
+- **Last run:** 12:51Z, 7 min before this update
 - **Keeper:** last ran 12:51Z, next wake 13:11Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-18T12:51:36Z by runner 1fa6e8e13b65 (actions).
 Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 25 problem(s) on tasks still to run (+226 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 26 problem(s) on tasks still to run (+230 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -138,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 6: T200 (lease until 2026-11-18T15:06:51Z)
+- lane 6: T200 (lease until 2026-11-18T15:58:46Z)
 
 ## Last usage reading
 - {"task": "T472", "at": "2026-11-18T12:45:57Z", "cache_read_input_tokens": 8291313, "input_tokens": 158, "output_tokens": 45548, "cache_creation_input_tokens": 216598}
