@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T03:08:57Z by runner be26890e033d (actions).
+Updated 2026-11-18T03:09:12Z by runner be26890e033d (actions).
 
 **Building: T638 in progress since 03:07Z; 423 of 598 done; week 40% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 423 of 598 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T638 claimed 03:07Z, lease until 06:07Z; lane 2: T619 claimed 02:21Z, lease until 05:59Z; lane 3: T647 claimed 02:13Z, lease until 05:54Z; lane 4: T639 claimed 01:58Z, lease until 04:58Z; lane 5: T151 claimed 03:05Z, lease until 06:05Z; lane 6: T108 claimed 00:23Z, lease until 05:42Z; lane 7: T623 claimed 02:43Z, lease until 05:43Z
+- **Lane:** lane 1: T638 claimed 03:07Z, lease until 06:07Z; lane 2: T619 claimed 02:21Z, lease until 05:59Z; lane 3: T647 claimed 02:13Z, lease until 05:54Z; lane 4: T639 claimed 01:58Z, lease until 04:58Z; lane 5: T151 claimed 03:05Z, lease until 06:05Z; lane 7: T623 claimed 02:43Z, lease until 05:43Z
 - **Week:** 40% used, 105.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:07Z, 1 min before this update
 - **Keeper:** last ran 02:42Z, next wake 05:00Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T03:08:57Z by runner be26890e033d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T108 | portals: owner tools for pauses, fee mode, categories and se | MERGE_PENDING | 1 | 2 h 45 min | 03:08Z |  |
 | T151 | ops and messaging: HELP requests with one owner notification | resync | 1 | 2 h 14 min | 02:26Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T618 | Harness: a 4-hourly advisory watch on main that alerts Casey | done | 1 | 28 min | 02:22Z |  |
 | T604 | Dependencies: sentry without default features, so native-tls | done | 1 | 78 min | 01:49Z |  |
@@ -138,8 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T647 (lease until 2026-11-18T05:54:23Z)
 - lane 4: T639 (lease until 2026-11-18T04:58:02Z)
 - lane 5: T151 (lease until 2026-11-18T06:05:05Z)
-- lane 6: T108 (lease until 2026-11-18T05:42:15Z)
 - lane 7: T623 (lease until 2026-11-18T05:43:03Z)
 
 ## Last usage reading
-- {"task": "T151", "at": "2026-11-18T02:26:53Z", "cache_creation_input_tokens": 427061, "output_tokens": 122224, "cache_read_input_tokens": 23706210, "input_tokens": 389}
+- {"task": "T108", "at": "2026-11-18T03:08:54Z", "output_tokens": 106316, "cache_read_input_tokens": 19465468, "cache_creation_input_tokens": 438970, "input_tokens": 396}
