@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T08:07:25Z by runner 18e4fd102f38 (actions).
+Updated 2026-11-18T08:08:19Z by runner d0f204103889 (actions).
 
 **Building: T660 in progress since 07:55Z; 431 of 621 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-18T08:07:25Z by runner 18e4fd102f38 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T660 claimed 07:55Z, lease until 10:55Z; lane 4: T658 claimed 06:42Z, lease until 11:07Z
 - **Week:** 48% used, 94.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:07Z, 0 min before this update
+- **Last run:** 08:08Z, 0 min before this update
 - **Keeper:** last ran 08:06Z, next wake 10:30Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 23 problem(s) on tasks still to run (+204 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 24 problem(s) on tasks still to run (+209 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -89,7 +89,7 @@ Updated 2026-11-18T08:07:25Z by runner 18e4fd102f38 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 681 · unstarted 54
-**Tasks merged (throughput only):** 431 of 613
+**Tasks merged (throughput only):** 431 of 621
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
