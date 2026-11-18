@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T09:48:11Z by runner cf216fdf5440 (actions).
+Updated 2026-11-18T09:48:24Z by runner cf216fdf5440 (actions).
 
 **Building: T641 in progress since 09:33Z; 435 of 621 done; week 50% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 435 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T641 claimed 09:33Z, lease until 12:33Z; lane 3: T644 claimed 09:04Z, lease until 12:45Z; lane 4: T650 claimed 09:08Z, lease until 12:43Z; lane 5: T408 claimed 09:13Z, lease until 12:13Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
+- **Lane:** lane 1: T641 claimed 09:33Z, lease until 12:33Z; lane 4: T650 claimed 09:08Z, lease until 12:43Z; lane 5: T408 claimed 09:13Z, lease until 12:13Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
 - **Week:** 50% used, 88.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:45Z, 2 min before this update
 - **Keeper:** last ran 09:35Z, next wake 12:06Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T09:48:11Z by runner cf216fdf5440 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T644 | tests (harness): the remaining Playwright specs and helpers  | MERGE_PENDING | 1 | 43 min | 09:48Z |  |
 | T660 | quotes (harness): the quote-note AI screener takes scrubbed  | MERGE_PENDING | 1 | 56 min | 08:52Z |  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | QUEUED | 1 | 89 min | 08:11Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T640 | harness: Ci handles the merge train's throwaway refs and cou | done | 1 | 64 min | 08:02Z |  |
@@ -131,10 +132,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T641 (lease until 2026-11-18T12:33:47Z)
-- lane 3: T644 (lease until 2026-11-18T12:45:19Z)
 - lane 4: T650 (lease until 2026-11-18T12:43:26Z)
 - lane 5: T408 (lease until 2026-11-18T12:13:07Z)
 - lane 6: T200 (lease until 2026-11-18T12:05:13Z)
 
 ## Last usage reading
-- {"task": "T660", "at": "2026-11-18T08:52:51Z", "output_tokens": 18950, "input_tokens": 84, "cache_creation_input_tokens": 83040, "cache_read_input_tokens": 1803631}
+- {"task": "T644", "at": "2026-11-18T09:48:10Z", "output_tokens": 32358, "cache_creation_input_tokens": 135408, "cache_read_input_tokens": 4754929, "input_tokens": 149}
