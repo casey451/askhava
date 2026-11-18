@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T14:11:23Z by runner ab61d455659b (actions).
+Updated 2026-11-18T14:16:56Z by runner c509877b3b22 (manual).
 
 **Building: T525 in progress since 13:59Z; 445 of 643 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-18T14:11:23Z by runner ab61d455659b (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T525 claimed 13:59Z, lease until 16:59Z; lane 6: T200 claimed 12:06Z, lease until 17:11Z
 - **Week:** 57% used, 78.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:03Z, 7 min before this update
+- **Last run:** 14:11Z, 5 min before this update
 - **Keeper:** last ran 14:03Z, next wake 16:01Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 2. tests/integration/tests/inbound_scrub_context.rs:298 (T257/T317): table scan finds "zebulon" in quotes.job_description, from OTHER homeowner's trade-naming fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T671 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 25 problem(s) on tasks still to run (+231 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 24 problem(s) on tasks still to run (+230 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
