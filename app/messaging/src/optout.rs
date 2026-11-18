@@ -328,13 +328,14 @@ pub async fn suppress(
 /// earlier time, the repeat being logged only); returns the event's ID and whether it added a
 /// suppression row. The insert waits on a concurrent opt-out's uncommitted rows, so of two at once
 /// only the first adds any: that, not an earlier read, decides "newly listed" (CON-009, CON-022,
-/// CON-035, D-870).
+/// CON-035, D-870); it first takes the number's opt-out lock, held to the commit (D-4418).
 async fn record(
     db: &mut PgConnection,
     digests: &[(u16, [u8; 32])],
     (channel, how, inbox): (RevokeChannel, &str, Option<Uuid>),
     now: Timestamp,
 ) -> Result<(Uuid, bool), OutboxError> {
+    lock_number(db, digests).await?;
     let event = OptOutEvent {
         action: "opt_out",
         channel: channel.as_str(),
@@ -445,6 +446,103 @@ fn digests(vault: &Vault, phone: &str) -> Result<Vec<(u16, [u8; 32])>, OutboxErr
         return Err(OutboxError::Database);
     }
     Ok(digests)
+}
+
+/// Takes the per-number opt-out lock inside the caller's transaction, held to its commit: one
+/// transaction-scoped advisory lock (seed 4418, used by no other lock) per distinct digest of
+/// `digests`, in ascending byte order, so two transactions locking one number take its keys in the
+/// same order (CON-022, CON-035, D-079, D-4418).
+async fn lock_number(
+    tx: &mut PgConnection,
+    digests: &[(u16, [u8; 32])],
+) -> Result<(), OutboxError> {
+    let mut keys: Vec<[u8; 32]> = digests.iter().map(|(_, digest)| *digest).collect();
+    keys.sort_unstable();
+    keys.dedup();
+    for key in keys {
+        sqlx::query!(
+            "SELECT pg_advisory_xact_lock(hashtextextended(encode($1::bytea, 'hex'), 4418))",
+            &key[..]
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| OutboxError::Database)?;
+    }
+    Ok(())
+}
+
+/// A number's homeowner-phone digests, one per configured `VAULT_INDEX_KEY` version: the key the
+/// consent sweep re-checks the suppression list by before it clears a vault phone (CON-022,
+/// CON-035, D-079, D-4418). Built only by [`listing_key`]; `Debug` prints the versions, never a
+/// digest (PRIV-002).
+pub struct ListingKey {
+    digests: Vec<(u16, [u8; 32])>,
+}
+
+impl std::fmt::Debug for ListingKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let versions: Vec<u16> = self.digests.iter().map(|(v, _)| *v).collect();
+        f.debug_struct("ListingKey")
+            .field("versions", &versions)
+            .finish_non_exhaustive()
+    }
+}
+
+/// The [`ListingKey`] of a contact whose homeowner-phone digests, as `privacy.contact_index` holds
+/// them, are `indexed`: `Some` only when it holds one digest under every version
+/// `vault.index_versions()` lists, the key then being exactly those, the set `record` computes
+/// from the number; `None` when a configured version's digest is missing (a rotation not yet run
+/// for it) or two differ under one version, and the sweep keeps the phone that run. Pure: no
+/// database, no vault plaintext read (CON-022, CON-035, PRIV-024, D-4280, D-4418).
+#[must_use]
+pub fn listing_key(vault: &Vault, indexed: &[(u16, [u8; 32])]) -> Option<ListingKey> {
+    let digests = vault
+        .index_versions()
+        .into_iter()
+        .map(|version| {
+            let mut held = indexed.iter().filter(|(v, _)| *v == version);
+            let (_, digest) = *held.next()?;
+            held.all(|(_, d)| *d == digest).then_some((version, digest))
+        })
+        .collect::<Option<Vec<_>>>()?;
+    (!digests.is_empty()).then_some(ListingKey { digests })
+}
+
+/// Whether the number with `key` is still off the suppression list, so the consent sweep may clear
+/// its vault phone (CON-022, CON-035, D-079, D-4418). It first takes the number's opt-out lock,
+/// held to the caller's commit, then, in a later statement, reads whether the number has a row
+/// under any of the key's digests or any row is held under a version outside the key's (refused
+/// at start by `check_suppression_versions`; kept as a defense); `true` only when neither holds.
+/// Call it inside a READ COMMITTED transaction, as that transaction's first statement, holding no
+/// other lock, and make no outside call in that transaction: the read's snapshot is then taken
+/// after the lock is granted and sees every opt-out committed before it. Not closed (D-4418): an
+/// opt-out whose number was resolved before this transaction and whose `record` waits on this lock
+/// commits after the clear, listed by digest and refused every text, with no vault phone behind it.
+///
+/// # Errors
+///
+/// [`OutboxError::Database`].
+pub async fn still_unlisted(tx: &mut PgConnection, key: &ListingKey) -> Result<bool, OutboxError> {
+    lock_number(tx, &key.digests).await?;
+    let versions: Vec<i16> = key
+        .digests
+        .iter()
+        .map(|(v, _)| i16::try_from(*v).map_err(|_| OutboxError::Database))
+        .collect::<Result<_, _>>()?;
+    let hashes: Vec<Vec<u8>> = key.digests.iter().map(|(_, d)| d.to_vec()).collect();
+    let held = sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM messaging.suppression s \
+         JOIN UNNEST($1::smallint[], $2::bytea[]) AS k (v, h) \
+         ON s.index_version = k.v AND s.digest = k.h) \
+         OR EXISTS (SELECT 1 FROM messaging.suppression \
+         WHERE index_version <> ALL ($1::smallint[])) AS \"held!\"",
+        &versions,
+        &hashes
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    Ok(!held)
 }
 
 /// The carrier, watched for a 21610 refusal (CON-014).
