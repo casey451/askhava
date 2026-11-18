@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n             (SELECT min(run_at) FROM core.task WHERE done_at IS NULL AND dead_at IS NULL\n                AND run_at <= $1 AND (lease_until IS NULL OR lease_until < $1)) AS oldest,\n             (SELECT max(done_at) FROM core.task) AS finished,\n             (SELECT max(lease_until) FROM core.task) AS leased",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "oldest",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "finished",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "leased",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "b3be578a78413df8e92737c14c38e679f159569a8ff5edcafc69e62602d3eeb4"
+}

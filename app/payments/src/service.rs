@@ -10,15 +10,16 @@
 //!
 //! T060 (FEE-005 to FEE-007, JOB-016, D-071, D-072): [`switch_fee_mode`] logs the owner's
 //! fee-mode switch and returns the new [`FeeTerms`]; [`accept_authorization`] records a business's
-//! acceptance of the new authorization version; [`may_confirm`] refuses a Confirm until it has
-//! and must gate the charge itself: it runs before the Stripe charge and returns the
-//! [`Authorized`] proof; [`record_fee_at_confirm`] takes that proof and writes the fee fixed at
-//! the pick to the ledger after the charge, with no second authorization read, so a charge that
-//! succeeded is always recorded (D-1415). T287 (D-1871): the switch stores the terms in
+//! acceptance of the new authorization version; [`may_confirm`] refuses a Confirm until it has and
+//! must gate the charge itself: it runs before the Stripe charge and returns the [`Authorized`]
+//! proof; `record_fee_at_confirm` (test-only; the production writers are `book_success` and
+//! `waive_at_confirm`, D-2623, D-4052) takes that proof and writes the fee fixed at the pick with
+//! no second authorization read (D-1415). T287 (D-1871): the switch stores the terms in
 //! `payments.fee_terms`; [`may_confirm`] takes the pick, reads those terms itself and refuses a
-//! pick whose stored fee was fixed under another mode before any charge; [`record_fee_at_confirm`]
-//! writes the stored fee of that pick. No function here takes a final bill or a check-in reply, so a
-//! PROBLEM reply about the bill can never change a fee (FEE-006, JOB-016, D-071).
+//! pick whose stored fee was fixed under another mode before any charge; the test-only
+//! `record_fee_at_confirm` writes the stored fee of that pick. No function here takes a final bill
+//! or a check-in reply, so a PROBLEM reply about the bill can never change a fee (FEE-006, JOB-016,
+//! D-071).
 
 use askhava_adapters::api::{IdempotencyKey, PaymentsAdapter};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
@@ -332,7 +333,8 @@ impl Authorized {
 /// business has accepted the authorization version those terms need and the current
 /// [`AUTHORIZATION_TEXT`] (D-3397, checked by `authorized`); after any fee-mode change or wording
 /// change it can't confirm until then. The Confirm step calls this before any PaymentIntent is opened or
-/// confirmed, never after, and passes the returned [`Authorized`] to [`record_fee_at_confirm`].
+/// confirmed, never after; tests pass the returned [`Authorized`] to `record_fee_at_confirm`
+/// (test-only; the production writers are `book_success` and `waive_at_confirm`, D-4052).
 ///
 /// # Errors
 ///
@@ -389,16 +391,19 @@ pub struct Confirmed<'a> {
     pub charge: Option<&'a str>,
 }
 
-/// FEE-005, FEE-006, FEE-007, FEE-045, JOB-016, D-1871: writes the fee stored at `pick` to the
-/// ledger after the charge, in the caller's transaction: a charge of exactly that amount with its
+/// Test-only; the production writers are `book_success` and `waive_at_confirm` (D-2623, D-4052):
+/// hidden from the docs, and `tests/security/tests/fee_writer_callers.rs` fails when non-test code
+/// under `app/` calls it, since its key (job and business) differs from `charge_key(pick)` and a
+/// new caller would book a second entry. FEE-005, FEE-006, FEE-007, FEE-045, JOB-016, D-1871:
+/// writes the fee stored at `pick` to the ledger after the charge, in the caller's transaction: a charge of exactly that amount with its
 /// `ch_…` ID, or a $0 fee-free entry with none. `authorized` is [`may_confirm`]'s proof for this
 /// pick, taken before the charge when the pick's mode matched the terms in force; it is compared
 /// with the stored mode, never with the terms now, so a switch committed after the gate cannot
 /// make this write fail (D-1415). The key is derived from the job and business IDs only, so a
 /// repeat appends once (SEC-018, JOB-006). The amount is never re-read from a quote, a final bill
-/// or a reply. Not the production writer (D-2623): a success's `charge` entry is written by the
-/// success path under its per-pick key (`book_success`) and a $0 entry by `waive_at_confirm`, so
-/// this must never be called for a charge; only done tests call it.
+/// or a reply. A success's `charge` entry is written by the success path under its per-pick key
+/// (`book_success`) and a $0 entry by `waive_at_confirm`, so this must never be called for a
+/// charge; only done tests call it.
 ///
 /// # Errors
 ///
@@ -406,6 +411,7 @@ pub struct Confirmed<'a> {
 /// for another pick, business, job or fee mode; [`ConfirmError::ChargeId`] for a charged fee
 /// without a `ch_…` ID, or a $0 fee with an ID; [`ConfirmError::Ledger`] when the ledger refuses
 /// the entry; [`ConfirmError::Database`].
+#[doc(hidden)]
 pub async fn record_fee_at_confirm(
     conn: &mut PgConnection,
     id_secret: &SecretString,

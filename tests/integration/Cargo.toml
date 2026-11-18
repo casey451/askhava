@@ -41,7 +41,8 @@ sha1 = { workspace = true }
 sha2 = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-tokio = { workspace = true }
+# Paused time for the liveness watch's 3-minute cases (T106, TD-OPS-24).
+tokio = { workspace = true, features = ["test-util"] }
 toml = { workspace = true }
 tower = { workspace = true }
 tower-http = { workspace = true }
