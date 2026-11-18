@@ -13,7 +13,9 @@
 //! presses never make two undecided tries) and the business's fee-limit row lock, where the limit
 //! is checked again with every undecided attempt of its other picks reserved (a hard cap,
 //! D-1758), confirms it with its own key. A confirm Stripe
-//! refuses with a 4xx (other than 402 and 429) charged nothing, so the intent is read again. No
+//! refuses with a 4xx (other than 401, 402, 403 and 429) charged nothing, so the intent is read
+//! again; a 401 or 403 (our key refused), or a 401, 403 or 404 on that read of our own stored
+//! `pi_`, is Stripe down, never the business's card (FEE-018, D-4196, T623). No
 //! transaction or pooled connection is held across a Stripe call (R11). The timers and events
 //! each answer starts are `handlers.rs`'s; a success is booked by [`book_success`] in the
 //! transaction that stores it (D-1474): the pick's one FEE-042 evidence record with its `ch_` ID,
@@ -236,7 +238,9 @@ pub async fn confirm_and_pay(
 }
 
 /// The status a confirm's answer means and the intent's `latest_charge`, which a success needs to
-/// be recorded (FEE-016, FEE-037, FEE-042, D-3134): a 4xx refusal reads the intent again.
+/// be recorded (FEE-016, FEE-037, FEE-042, D-3134): a 4xx refusal reads the intent again. That
+/// read is a GET on our own stored `pi_`, so a 401, 403 or 404 there is our key or account, not
+/// the card: `Unreachable`, FEE-018's Stripe-down path, never a decline (FEE-020, D-4196).
 async fn confirm_answer(
     stripe: &impl PaymentsAdapter,
     intent: &str,
@@ -245,7 +249,14 @@ async fn confirm_answer(
     if let Some(status) = answer_status(&answer) {
         return (status, answer.ok().and_then(|found| found.latest_charge));
     }
-    let found = stripe.fetch_payment_intent(intent).await.ok();
+    let found = match stripe.fetch_payment_intent(intent).await {
+        Ok(found) => Some(found),
+        Err(AdapterError::Vendor {
+            status: 401 | 403 | 404,
+            ..
+        }) => return (AttemptStatus::Unreachable, None),
+        Err(_) => None,
+    };
     let status = AttemptStatus::after_refusal(found.as_ref().map(|f| f.status.as_str()));
     (status, found.and_then(|f| f.latest_charge))
 }
@@ -272,16 +283,21 @@ async fn repeat_press(
     report(pool, pick, status, &intent).await
 }
 
-/// The attempt status a confirm call's answer means, or `None` for a 4xx refusal other than 402
-/// and 429, which Stripe answered without charging (the caller reads the intent again): a 402 is
-/// a decline; a request that never left, or a 429, is unreachable; a timeout or a 5xx stays
-/// `Sent` until Stripe is asked (FEE-018, FEE-037).
+/// The attempt status a confirm call's answer means, or `None` for a 4xx refusal other than 401,
+/// 402, 403 and 429, which Stripe answered without charging (the caller reads the intent again,
+/// so a confirm 404, which may be the business's missing card, is decided by that read): a 402 is
+/// a decline; a request that never left, a 429, or a 401 or 403 (a bad, revoked or
+/// under-permissioned key, D-4196) is unreachable; a timeout or a 5xx stays `Sent` until Stripe
+/// is asked (FEE-018, FEE-020, FEE-037).
 fn answer_status(answer: &Result<PaymentIntent, AdapterError>) -> Option<AttemptStatus> {
     match answer {
         Ok(intent) => Some(AttemptStatus::from_intent(&intent.status)),
         Err(AdapterError::Vendor { status: 402, .. }) => Some(AttemptStatus::Declined),
         Err(
-            AdapterError::Vendor { status: 429, .. }
+            AdapterError::Vendor {
+                status: 401 | 403 | 429,
+                ..
+            }
             | AdapterError::NotSent
             | AdapterError::BadConfig
             | AdapterError::InvalidId,
