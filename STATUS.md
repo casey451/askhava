@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T07:49:14Z by runner ce4e5243951b (actions).
+Updated 2026-11-18T07:49:28Z by runner ce4e5243951b (actions).
 
 **Building: T640 in progress since 06:58Z; 430 of 621 done; week 47% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 430 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T640 claimed 06:58Z, lease until 09:58Z; lane 3: T482 claimed 05:26Z, lease until 10:28Z; lane 4: T658 claimed 06:42Z, lease until 10:28Z; lane 5: T643 claimed 05:25Z, lease until 10:00Z; lane 6: T619 claimed 07:22Z, lease until 10:22Z
+- **Lane:** lane 1: T640 claimed 06:58Z, lease until 09:58Z; lane 3: T482 claimed 05:26Z, lease until 10:28Z; lane 4: T658 claimed 06:42Z, lease until 10:28Z; lane 6: T619 claimed 07:22Z, lease until 10:22Z
 - **Week:** 47% used, 97.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:44Z, 4 min before this update
 - **Keeper:** last ran 07:33Z, next wake 10:01Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T07:49:14Z by runner ce4e5243951b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T643 | portals (harness): a real browser's same-origin form POST pa | MERGE_PENDING | 1 | 2 h 24 min | 07:49Z |  |
 | T642 | Runner (harness): the keeper starts a run for each free lane | done | 1 | 83 min | 06:05Z |  |
 | T601 | businesses and quotes: the card pool reads every service are | MERGE_PENDING | 1 | 50 min | 05:14Z |  |
 | T523 | jobs, ops and intake: the check-in answer recorder and the c | done | 3 | 46 min | 05:06Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
@@ -131,8 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T640 (lease until 2026-11-18T09:58:42Z)
 - lane 3: T482 (lease until 2026-11-18T10:28:21Z)
 - lane 4: T658 (lease until 2026-11-18T10:28:02Z)
-- lane 5: T643 (lease until 2026-11-18T10:00:51Z)
 - lane 6: T619 (lease until 2026-11-18T10:22:07Z)
 
 ## Last usage reading
-- {"task": "T642", "at": "2026-11-18T06:05:54Z", "cache_read_input_tokens": 4619898, "output_tokens": 67328, "input_tokens": 140, "cache_creation_input_tokens": 183589}
+- {"task": "T643", "at": "2026-11-18T07:49:11Z", "cache_creation_input_tokens": 291122, "output_tokens": 70613, "cache_read_input_tokens": 10328470, "input_tokens": 270}
