@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T20:31:41Z by runner 17bc804178af (actions).
+Updated 2026-11-18T20:32:05Z by runner 17bc804178af (actions).
 
 **Building: T651 in progress since 19:44Z; 455 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 455 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T651 claimed 19:44Z, lease until 22:44Z; lane 2: T502 claimed 19:53Z, lease until 22:53Z; lane 3: T483 claimed 18:25Z, lease until 22:51Z; lane 5: T706 claimed 19:14Z, lease until 23:19Z; lane 6: T702 claimed 20:27Z, lease until 23:27Z; lane 7: T715 claimed 20:05Z, lease until 23:05Z
+- **Lane:** lane 1: T651 claimed 19:44Z, lease until 22:44Z; lane 3: T483 claimed 18:25Z, lease until 22:51Z; lane 5: T706 claimed 19:14Z, lease until 23:19Z; lane 6: T702 claimed 20:27Z, lease until 23:27Z; lane 7: T715 claimed 20:05Z, lease until 23:05Z
 - **Week:** 67% used, 53.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:31Z, 0 min before this update
 - **Keeper:** last ran 20:31Z, next wake 22:47Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T20:31:41Z by runner 17bc804178af (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T502 | Decisions digest, piece 3: the next entries after the header | MERGE_PENDING | 1 | 38 min | 20:31Z |  |
 | T364 | server and portals: the business step-up code page is served | MERGE_PENDING | 1 | 2 h 1 min | 20:29Z |  |
 | T702 | privacy and messaging: no blind-index key version is retired | resync | 1 | 59 min | 20:21Z | merging main into the reviewed head conflicts in kit/prompts/T702.md; a resync merges it in on this attempt (D-891) |
 | T501 | Decisions digest, piece 2: the next entries after the header | done | 1 | 73 min | 19:42Z |  |
@@ -129,11 +130,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T651 (lease until 2026-11-18T22:44:55Z)
-- lane 2: T502 (lease until 2026-11-18T22:53:32Z)
 - lane 3: T483 (lease until 2026-11-18T22:51:15Z)
 - lane 5: T706 (lease until 2026-11-18T23:19:53Z)
 - lane 6: T702 (lease until 2026-11-18T23:27:42Z)
 - lane 7: T715 (lease until 2026-11-18T23:05:10Z)
 
 ## Last usage reading
-- {"task": "T364", "at": "2026-11-18T20:29:26Z", "input_tokens": 214, "output_tokens": 73457, "cache_read_input_tokens": 12948727, "cache_creation_input_tokens": 248170}
+- {"task": "T502", "at": "2026-11-18T20:31:40Z", "input_tokens": 98, "cache_creation_input_tokens": 236524, "output_tokens": 53134, "cache_read_input_tokens": 4571636}
