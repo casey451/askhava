@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T06:32:56Z by runner 587ccbd0be31 (actions).
+Updated 2026-11-18T06:40:33Z by runner 1f936750f79a (actions).
 
 **Building: T482 in progress since 05:26Z; 428 of 613 done; week 46% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 428 of 613 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T482 claimed 05:26Z, lease until 08:26Z; lane 5: T643 claimed 05:25Z, lease until 09:27Z
+- **Lane:** lane 3: T482 claimed 05:26Z, lease until 09:40Z; lane 5: T643 claimed 05:25Z, lease until 09:27Z
 - **Week:** 46% used, 103.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:32Z, 0 min before this update
+- **Last run:** 06:33Z, 7 min before this update
 - **Keeper:** last ran 06:32Z, next wake 08:28Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 23 problem(s) on tasks still to run (+203 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 24 problem(s) on tasks still to run (+204 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,7 +90,7 @@ Updated 2026-11-18T06:32:56Z by runner 587ccbd0be31 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 680 · unstarted 55
-**Tasks merged (throughput only):** 428 of 612
+**Tasks merged (throughput only):** 428 of 606
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -134,7 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T482 (lease until 2026-11-18T08:26:51Z)
+- lane 3: T482 (lease until 2026-11-18T09:40:33Z)
 - lane 5: T643 (lease until 2026-11-18T09:27:50Z)
 
 ## Last usage reading
