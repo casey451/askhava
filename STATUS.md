@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T23:43:34Z by runner 0a1d8934fe08 (actions).
+Updated 2026-11-18T23:46:19Z by runner 0ad3a89064cf (actions).
 
-**Building: T488 in progress since 23:28Z; 463 of 663 done; week 70% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T488 in progress since 23:28Z; 464 of 663 done; week 70% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 463 of 663 build tasks (owner gates not counted)
+- **Tasks done:** 464 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T488 claimed 23:28Z, lease until 02:28Z; lane 2: T205 claimed 22:21Z, lease until 02:36Z; lane 4: T306 claimed 23:42Z, lease until 02:42Z; lane 7: T364 claimed 23:21Z, lease until 02:21Z
 - **Week:** 70% used, 49.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:38Z, 5 min before this update
+- **Last run:** 23:43Z, 2 min before this update
 - **Keeper:** last ran 23:37Z, next wake 23:57Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-18T23:43:34Z by runner 0a1d8934fe08 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T701 | messaging: a per-number opt-out lock, and the listing key an | MERGE_PENDING | 1 | 45 min | 23:02Z |  |
-| T583 | intake and server: the quote-count update text is sent at mo | MERGE_PENDING | 2 | 55 min | 22:50Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
+| T583 | intake and server: the quote-count update text is sent at mo | done | 2 | 55 min | 22:50Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
 | T504 | Decisions digest, piece 5: the next entries after the header | done | 1 | 39 min | 22:47Z |  |
 | T364 | server and portals: the business step-up code page is served | resync | 2 | 52 min | 22:05Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T651 | server and portals: owner step-up try limit, the passkey pat | done | 1 | 2 h 7 min | 21:52Z |  |
@@ -89,7 +89,7 @@ Updated 2026-11-18T23:43:34Z by runner 0a1d8934fe08 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 294 of 735 (40.0%) · partial 391 · unstarted 50
-**Tasks merged (throughput only):** 463 of 663
+**Tasks merged (throughput only):** 464 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -125,7 +125,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 106 of 262 done
+- stage 5: 107 of 262 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
