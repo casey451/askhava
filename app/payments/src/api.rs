@@ -17,8 +17,9 @@
 //! here takes a homeowner (FEE-009, D-1409).
 //!
 //! T060: [`fee_at_pick`] fixes the fee at the pick from the chosen quote alone (FEE-005);
-//! [`record_fee_at_confirm`] writes it to the ledger at Confirm, never adjusted afterwards
-//! (FEE-006, JOB-016); [`switch_fee_mode`] logs the owner's [`FeeMode`] switch, and
+//! `record_fee_at_confirm` writes it to the ledger at Confirm, never adjusted afterwards, and is
+//! test-only; the production writers are `book_success` and `waive_at_confirm` (FEE-006, JOB-016,
+//! D-4052); [`switch_fee_mode`] logs the owner's [`FeeMode`] switch, and
 //! [`may_confirm`] holds each business to the new [`FeeTerms`] authorization (FEE-007, D-072).
 //! T287 (D-1871): [`fee_terms_in_force`] reads the stored terms; [`fix_fee_at_pick`] stores the
 //! fee in the pick's transaction and [`pick_fee`] reads it, the only amount a press may charge.
@@ -195,7 +196,9 @@ pub use crate::service::{
     may_confirm, record_fee_at_confirm, save_card, switch_fee_mode,
 };
 pub use crate::status::{AttemptStatus, RefundStatus};
-pub use crate::three_ds::{ThreeDsStripe, record_three_ds, three_ds_authenticated};
+pub use crate::three_ds::{
+    ThreeDsStripe, record_three_ds, record_three_ds_pool, three_ds_authenticated,
+};
 pub use askhava_adapters::api::{StripeRefund, ThreeDs};
 
 /// BIZ-051, D-446, D-3046 (T228): marks every saved card of `business` removed, at the

@@ -7,14 +7,15 @@
 //! dispute opened still marks it before the submit task runs. A run gathers the pick's release row
 //! (`picks.release`), the call log of the line opened for that release (`calls::api::job_line`,
 //! `call_log`, each call read through T270's `call_record`; a business call is an attempt, D-3510) and the stored 3-D Secure result: with
-//! a Stripe client it first records it through T405's `payments::api::record_three_ds` (outside
-//! any transaction, rust brain R11), then reads `three_ds_authenticated` (no row reads `false`).
+//! a Stripe client it first records it through T405's `payments::api::record_three_ds_pool` before
+//! it takes its own connection, so no transaction and no pooled connection is held across the
+//! Stripe read (rust brain R11, D-4052), then reads `three_ds_authenticated` (no row reads `false`).
 //! The mark and its submit task commit in one transaction; a dispute already marked or submitted
 //! is unchanged, so a retried or repeated run marks nothing twice (JOB-006). Payloads hold IDs only.
 
 use askhava_calls::api::{call_log, job_line};
 use askhava_core::api::{Claimed, HandlerError};
-use askhava_payments::api::{Caller, ThreeDsStripe, record_three_ds, three_ds_authenticated};
+use askhava_payments::api::{Caller, ThreeDsStripe, record_three_ds_pool, three_ds_authenticated};
 use jiff::Timestamp;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
@@ -73,12 +74,12 @@ pub async fn run_dispute_opened<P: ThreeDsStripe>(
         .as_str()
         .and_then(|p| p.parse().ok())
         .ok_or(MALFORMED)?;
-    let mut db = pool.acquire().await.map_err(|_| FAILED)?;
     if let Some(stripe) = parts.stripe.as_ref() {
-        record_three_ds(&mut db, stripe, pick)
+        record_three_ds_pool(&pool, stripe, pick)
             .await
             .map_err(|_| FAILED)?;
     }
+    let mut db = pool.acquire().await.map_err(|_| FAILED)?;
     let (released, calls) = release_and_calls(&mut db, pick).await?;
     let three_ds = three_ds_authenticated(&mut db, pick)
         .await

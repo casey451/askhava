@@ -7,7 +7,8 @@
 //! (`picks` calls it through `api`), under a share lock of the terms row, so a fee-mode switch
 //! never commits between the terms the fee was computed under and the stored row. [`pick_fee`]
 //! reads it back: `open_intent` and `confirm_and_pay` charge only that amount, `may_confirm` holds
-//! its mode against the terms in force and `record_fee_at_confirm` writes it to the ledger. The
+//! its mode against the terms in force, and `book_success` and `waive_at_confirm` write the ledger
+//! entry (`record_fee_at_confirm` is test-only, D-4052). The
 //! table is insert-only for the app role, so nothing changes a fee after the pick.
 //!
 //! [`required_version`] lifts the stored version to at least [`AUTHORIZATION_VERSION`], so a
