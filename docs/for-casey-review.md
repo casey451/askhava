@@ -800,7 +800,7 @@ You asked to fix everything the round-7 simulations and the ChatGPT and Grok res
    (D-302)
 10. **Pilot trades (your call).** Grok's research suggests starting with HVAC, electrical and a licensed handyman, then adding pool when it's warm. The spec's launch list hasn't changed; decide it yourself. (D-301)
 11. **A fire-safety desk check** of the new carbon-monoxide, electrical and water lines, alongside the heat text. (D-272, D-273)
-12. **PROBLEM reports (your call).** Should a PROBLEM report count as a complaint and go to the business for a reply? It would mean more of your time and affect the 3-in-90 pause. (D-301)
+12. **PROBLEM reports (your call).** Should a PROBLEM report count as a complaint and go to the business for a reply? It would mean more of your time and affect the 3-in-90 pause. (D-301) **Decided Nov 18 (D-4426):** only when you press "Count as a complaint" on it in the owner portal.
 13. **Founding list.** Contact each business twice: a "check your ROC phone and email" reminder about 2 weeks before launch, then the launch notice. Get their OK for both when they join the list.
 
 **Worth a second look**
@@ -3329,7 +3329,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## The homeowner's text conversation gets wired past the consent text (D-4360)
 
 - **Today a homeowner who texts us gets the consent text and then nothing.** The pieces for every later question exist (ZIP, trade, "How soon?", emergency or regular, the trade questions, photos, the card she reviews), but nothing calls them, so no job is opened and no business ever gets a card. Six new tasks connect them in the order the spec's "Intake order" table sets (T671 to T676; a re-sent START also picks the conversation back up), ending with the J1 journey test running the real conversation instead of a shortcut.
-- **A trade with fewer than 2 active businesses now takes no requests**, as the spec says: the homeowner gets the "We don't cover <trade> jobs yet" reply and the request is logged as recruiting demand (T679). A trade marked "Coming later" takes no requests either. The minimum of 2 is a fixed value in the code for now; making it a setting you can change waits for a later change, because it touches code another queued task owns.
+- **A trade with fewer than 2 active businesses now takes no requests** (lowered to 1 on your Nov 18 instruction, D-4424), as the spec says: the homeowner gets the "We don't cover <trade> jobs yet" reply and the request is logged as recruiting demand (T679). A trade marked "Coming later" takes no requests either. The minimum (now 1) is a fixed value in the code for now; making it a setting you can change waits for a later change, because it touches code another queued task owns.
 - **A business that joins, unpauses or ticks a new job type now gets the cards of matching open jobs** (T677).
 - **The after-hours emergency tick is suspended after 2 missed night emergency cards**, as the spec says. To know whether a card was opened, the app now records each card email and when its Quote page was first opened from the email's own link (no tracking pixel) (T678). This also fills the business's notice log page, which was empty.
 - **The homeowner's photo upload page gets served** (T674); it was built but no route served it.
@@ -3345,9 +3345,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **A quote above an R-61 or R-62 project limit is refused with an explanation** (T687).
 - **A call to the Laftly main number hears the greeting with "hang up and call 911"** instead of silence (T688). The accessibility page already promises that message.
 - **Auto-confirm, once you file Stripe's written answer, actually charges a ticked quote picked with a code**, and a business whose tick was voided is told (T689).
-- **Our reading, for your review:** a business on text that replies "YES 1042" gets the Confirm link on that same phone, and the security code the Confirm page asks for also goes to that phone, so whoever holds the phone can confirm and pay. The spec allows this; say if you want the code sent elsewhere (D-4361).
+- **Our reading, for your review:** a business on text that replies "YES 1042" gets the Confirm link on that same phone, and the security code the Confirm page asks for also goes to that phone, so whoever holds the phone can confirm and pay. The spec allows this; say if you want the code sent elsewhere (D-4361). **Decided Nov 18 (D-4427):** accepted, but a session started that way lasts 30 minutes, not 30 days.
 - **Open item:** auto-confirm only works for a pick made with a code on the quote page; no task builds picking from the homeowner portal yet.
-- **Still waiting on you:** who files a complaint about a business (the earlier open question, D-301 item 12); nothing records one until that is decided.
+- **Decided Nov 18 (D-4426):** who files a complaint about a business (the earlier open question, D-301 item 12): you, with a button on a PROBLEM report (T706, T707).
 - Nothing new needs you now.
 
 ## A finished task could wait for ever to be merged (D-4392)
@@ -3355,3 +3355,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **One finished task (T623, the business charge sign-in work) sat green and reviewed for over four hours without being merged**, holding one of the seven lanes. The runner brings one finished task at a time up to date with the latest code; T623 had its turn, but the code moved on twice before it could merge, its 45-minute turn ran out, and the rule then let it try again only when no other task held the turn, which with seven lanes busy never happens.
 - **Fix, planned as T700 and claimed first:** a task whose turn runs out now goes to the back of the queue instead of out of it, so every finished task gets its turn in order, and no task holds the turn for more than 90 minutes. A task that is truly stuck still gives up the turn after 45 minutes. The cost we accepted: such a task takes another 45-minute turn once every round until someone looks at it, where today it lost the turn once.
 - Our choice; nothing needs you now.
+
+## One active business opens a trade; how complaints are filed; texted Confirm links (D-4424, D-4426, D-4427)
+
+- **A trade now opens with 1 active business, not 2**, as you said on Nov 18 ("At least one active to open a trade"). T705 changes the fixed value in the code and its tests. It is still a fixed value, not a setting you can change on the settings page; that stays for a later change. Your alert when a town or a requested trade has fewer than 2 active businesses is unchanged: a trade with one business is open but thin (D-4424).
+- **A PROBLEM report becomes a complaint only when you say so** (you left this to Fable). A new "Problem reports" page in the owner portal lists the last 30 days' PROBLEM replies with their words; "Count as a complaint" with a kind (no-show, conduct, work or price, safety, other) records it once per job. Then the complaint works as built: the business sees the kind and date and has 5 days to reply, the homeowner gets the apology text with the business's own phone and the state complaint link, the reply comes back to you, and the third in 90 days pauses the business. A PROBLEM with a safety word still reaches your phone in the 9 a.m. or 3 p.m. push, and is never filed by itself. There is no complaint page for homeowners for now (T706, T707; D-4426).
+- **Our reading, for your review:** pressing the button does not mark the PROBLEM itself done, so for a safety-word one the push can list both the PROBLEM and the new complaint until you mark each done. After 30 days a PROBLEM's words are deleted and it can no longer be counted.
+- **A business on text that replies "YES 1042" can confirm and pay from that phone alone**, at any fee (you left this to Fable). The one limit: the sign-in that Confirm link starts lasts 30 minutes instead of 30 days, so a lost or borrowed phone cannot keep using the portal afterwards. A Confirm link from the pick email works as before (T457, T683; D-4427).
+- Nothing needs you now.

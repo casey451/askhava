@@ -8363,7 +8363,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 33
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -8707,7 +8707,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 28
+    "context_pct": 37
    },
    "checks": [
     "Ci",
@@ -9001,7 +9001,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 25
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -13767,7 +13767,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 33
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -16799,7 +16799,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 17
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -21839,7 +21839,10 @@
     "T686",
     "T688",
     "T690",
-    "T691"
+    "T691",
+    "T705",
+    "T706",
+    "T707"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -24701,7 +24704,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 12
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -31194,7 +31197,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 37
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -31586,7 +31589,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 17
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -31658,7 +31661,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 20
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -31802,7 +31805,7 @@
    "budget": {
     "files": 5,
     "lines": 530,
-    "context_pct": 15
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -34229,7 +34232,7 @@
    "budget": {
     "files": 3,
     "lines": 260,
-    "context_pct": 26
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -37909,7 +37912,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 20
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -39390,7 +39393,7 @@
    "id": "T457",
    "slug": "confirm-link-served",
    "title": "portals and server: the Confirm email link asks for a code with no session, signs that device in and opens the Confirm page",
-   "goal": "Plan change D-3675 (T301 plan gap; SEC-004, SEC-027, BIZ-038, PICK-021; D-366, D-2410): the Confirm link (`ActionKind::Confirm`, `UseBy::LinkAndCode`, `app/portals/src/action_links.rs:117`) must lead to T261's served Confirm page (`GET /b/picks/{pick}/confirm`), which answers only a signed-in owner or \"Confirm and billing\" member; with no live session it asks only for a Verify code to that person's own phone, and a correct code also completes sign-in on that device (SEC-004). (1) `app/portals/src/action_links.rs` adds `confirm_link_session(tx, jar, grant, now)`: starts the business session for the grant's member and business as `business_auth::start` does (`start_session` with `BUSINESS_SESSION_LIFE`, then the `portals.business_session` row); and a page for the code step from a new `app/portals/templates/confirm_link_code.html` (the code field, its label and error, A11Y-011, A11Y-012, A11Y-030; words for the copy panel). (2) `app/server/src/action_links.rs`, the Confirm link's `POST`: when `portals::api::confirm_code_needed` says no fresh code is needed (a live session of the link's own person, inbox not shared), it uses the link and answers 303 to `/b/picks/{pick}/confirm`; otherwise the first press sends the code with `portals::api::send_confirm_code` (never using the link; see D-3889 for the `ConfirmCodes` it uses) and shows the code step, and the code's `POST` checks it with `check_confirm_code`; only a right code uses the link, starts the session with `confirm_link_session` and answers 303 to the Confirm page; a wrong, expired or capped code uses nothing and shows the step again. Tests: cases in `app/server/tests/action_links_route.rs` (TD-SEC-44) and TD-SEC-68 in `tests/e2e/confirm_link_served.spec.ts` on T452's keyed binary: the Confirm link in a browser with no session reaches the Confirm review step after the stand-in Verify's code. Update the `portals` `CLAUDE.md`, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the keyed binary's Confirm page for a pick that needs a card loads `js.stripe.com`, which nothing stubs until T496 (D-3838), so `confirm_link_served.spec.ts` either seeds D-3838's fee-free state (a $0 pick whose stored `payments.pick_fee.mode` differs from `payments.fee_terms.mode`, so the page shows `FEE_TERMS_LINE` and loads no Stripe script) or stubs `https://js.stripe.com/v3/` as `tests/e2e/confirm_pay.spec.ts:64` does; it makes no live third-party request. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): (1) T261 wired no Verify (D-3717 (7)), so this task builds the `ConfirmCodes`: `RouterParts` in the shared `app/server/src/lib.rs` gains `with_confirm_link_codes(ConfirmCodes<business_signup::IdentityCodes>)`, handed to a new `action_links::routes_with(pool, clock, codes)` (`routes` and `routes_at` keep their signatures, `app/server/src/action_links.rs:119` to `:135`); the shared `main.rs` builds it as `ServedSignIn::from_settings` builds `DeviceCodes` (`app/server/src/business_signin.rs:113` to `:131`): the Verify client from `TwilioConfig::from_settings`, `MemberCodeAddress::new(pool, clock, vault)` and `ASKHAVA_ID_SECRET`, with `business_signin::NoVerify` in dev and CI without Twilio settings and an error in test and live. Without the part the Confirm link's `POST` sends nothing, uses nothing and shows the code step with `CodeSent::Failed`'s line. `action_links_route.rs` passes a fake Verify through the same part. The code's `POST` is the same `ACTION_ROUTE` `POST` with a `code` field: no new route, so section 13 and the door matrices are unchanged. (2) A person with no phone that gets texts gets `CodeSent::NoPhone`'s line and the link stays unused; SEC-004's email code for the Confirm link is not built here (`send_confirm_code` never emails one, `app/portals/src/confirm_pay.rs:413` to `:419`): log it in `docs/for-casey-review.md`. (3) A shared-inbox person who passes the link's code lands on a Confirm page whose press is still refused (`CODE_LINE`, the known D-3717 (7) gap), with the link used up; say so in the decision so the reviewer does not charge it to this task.",
+   "goal": "Plan change D-3675 (T301 plan gap; SEC-004, SEC-027, BIZ-038, PICK-021; D-366, D-2410): the Confirm link (`ActionKind::Confirm`, `UseBy::LinkAndCode`, `app/portals/src/action_links.rs:117`) must lead to T261's served Confirm page (`GET /b/picks/{pick}/confirm`), which answers only a signed-in owner or \"Confirm and billing\" member; with no live session it asks only for a Verify code to that person's own phone, and a correct code also completes sign-in on that device (SEC-004). (1) `app/portals/src/action_links.rs` adds `confirm_link_session(tx, jar, grant, now)`: starts the business session for the grant's member and business as `business_auth::start` does (`start_session` with `BUSINESS_SESSION_LIFE`, then the `portals.business_session` row); and a page for the code step from a new `app/portals/templates/confirm_link_code.html` (the code field, its label and error, A11Y-011, A11Y-012, A11Y-030; words for the copy panel). (2) `app/server/src/action_links.rs`, the Confirm link's `POST`: when `portals::api::confirm_code_needed` says no fresh code is needed (a live session of the link's own person, inbox not shared), it uses the link and answers 303 to `/b/picks/{pick}/confirm`; otherwise the first press sends the code with `portals::api::send_confirm_code` (never using the link; see D-3889 for the `ConfirmCodes` it uses) and shows the code step, and the code's `POST` checks it with `check_confirm_code`; only a right code uses the link, starts the session with `confirm_link_session` and answers 303 to the Confirm page; a wrong, expired or capped code uses nothing and shows the step again. Tests: cases in `app/server/tests/action_links_route.rs` (TD-SEC-44) and TD-SEC-68 in `tests/e2e/confirm_link_served.spec.ts` on T452's keyed binary: the Confirm link in a browser with no session reaches the Confirm review step after the stand-in Verify's code. Update the `portals` `CLAUDE.md`, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the keyed binary's Confirm page for a pick that needs a card loads `js.stripe.com`, which nothing stubs until T496 (D-3838), so `confirm_link_served.spec.ts` either seeds D-3838's fee-free state (a $0 pick whose stored `payments.pick_fee.mode` differs from `payments.fee_terms.mode`, so the page shows `FEE_TERMS_LINE` and loads no Stripe script) or stubs `https://js.stripe.com/v3/` as `tests/e2e/confirm_pay.spec.ts:64` does; it makes no live third-party request. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): (1) T261 wired no Verify (D-3717 (7)), so this task builds the `ConfirmCodes`: `RouterParts` in the shared `app/server/src/lib.rs` gains `with_confirm_link_codes(ConfirmCodes<business_signup::IdentityCodes>)`, handed to a new `action_links::routes_with(pool, clock, codes)` (`routes` and `routes_at` keep their signatures, `app/server/src/action_links.rs:119` to `:135`); the shared `main.rs` builds it as `ServedSignIn::from_settings` builds `DeviceCodes` (`app/server/src/business_signin.rs:113` to `:131`): the Verify client from `TwilioConfig::from_settings`, `MemberCodeAddress::new(pool, clock, vault)` and `ASKHAVA_ID_SECRET`, with `business_signin::NoVerify` in dev and CI without Twilio settings and an error in test and live. Without the part the Confirm link's `POST` sends nothing, uses nothing and shows the code step with `CodeSent::Failed`'s line. `action_links_route.rs` passes a fake Verify through the same part. The code's `POST` is the same `ACTION_ROUTE` `POST` with a `code` field: no new route, so section 13 and the door matrices are unchanged. (2) A person with no phone that gets texts gets `CodeSent::NoPhone`'s line and the link stays unused; SEC-004's email code for the Confirm link is not built here (`send_confirm_code` never emails one, `app/portals/src/confirm_pay.rs:413` to `:419`): log it in `docs/for-casey-review.md`. (3) A shared-inbox person who passes the link's code lands on a Confirm page whose press is still refused (`CODE_LINE`, the known D-3717 (7) gap), with the link used up; say so in the decision so the reviewer does not charge it to this task. Plan change D-4427 (owner decision by Fable, Casey Nov 18, 2026: \"The rest let fable answer\"; SEC-004, PICK-033; D-366, D-477, D-4361): T683 texts a business that answers YES or CONFIRM a Confirm link on the same phone that then gets this task's Verify code, so a text-started Confirm proves possession of that phone alone; that is accepted at every fee tier under SEC-004's logged deviation, with one limit: a session started from a text-minted Confirm link lasts 30 minutes, not 30 days. (a) `app/portals/src/action_links.rs` adds `mint_text_confirm_link(db, target, (now, ends))`, exported through the shared `portals::api` (T683 calls it for every texted link): it mints exactly as `mint_action_link` does, for `ActionKind::Confirm` only (any other kind is `ActionLinkError::NotAllowed`), then, on the same connection, marks the new link text-started with a born-used marker row in `portals.login_link` in D-1776's form: the same member and business, `token_sha256` the SHA256 of `text-confirm:<the link's row ID>`, created at the action link's own backdated time (`now - LINK_LIFE`), expiring at `now` and used at its creation, so it opens nothing, never counts toward `LINKS_PER_LIFE` (`models::links_since`, `app/portals/src/models.rs:97`, counts only rows made inside the window, as for action links) and is never a known device (life under a day). No migration: the table takes the row as it is (`migrations/0123_portals_business_signin.sql:12` to `:21`; the app's INSERT grant, `:30`). (b) `use_action_link` reads that mark for the link it used, by one lookup of the marker's hash, and the `ActionGrant` carries it (`by_text()`; still neither `Clone` nor `Copy`). (c) `confirm_link_session` starts a by-text grant's session with a new `TEXT_CONFIRM_SESSION_LIFE` (30 minutes) in place of `BUSINESS_SESSION_LIFE` and stores no known device for it, so nothing it starts outlives the 30 minutes; an emailed Confirm link's session is unchanged. Tests: TD-SEC-80's cases in `app/server/tests/action_links_route.rs`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -39422,21 +39425,28 @@
     "docs/code-docs.md",
     "docs/spec/security.md",
     "docs/spec/businesses.md",
-    "docs/spec/accessibility.md"
+    "docs/spec/accessibility.md",
+    "docs/spec/quotes-pick.md"
    ],
    "requirements": [
-    "SEC-027"
+    "SEC-027",
+    "SEC-004",
+    "PICK-033"
    ],
    "tests": [
     "TD-SEC-44",
-    "TD-SEC-68"
+    "TD-SEC-68",
+    "TD-SEC-80"
    ],
    "decisions": [
     "D-366",
     "D-2410",
     "D-3675",
     "D-3844",
-    "D-3889"
+    "D-3889",
+    "D-477",
+    "D-1776",
+    "D-4427"
    ],
    "cites": [],
    "budget": {
@@ -40127,7 +40137,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 20
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -44563,7 +44573,8 @@
     "T673",
     "T671",
     "T585",
-    "T679"
+    "T679",
+    "T705"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -44902,7 +44913,7 @@
    "id": "T683",
    "slug": "business-yes-text",
    "title": "server and picks: a business's \"YES 1042\" or \"CONFIRM 1042\" text gets the fee and the Confirm link",
-   "goal": "Plan change D-4361 (unwired sweep orphan 6 and its second pass, `main` 77a49d7cc; round-1 review; PICK-033, FEE-036, PICK-035, BIZ-036, QH-004; D-259, D-365, D-1717, D-2042). `read_business_word` and `business_reply` (`app/picks/src/confirm.rs:315`, `:347`) have no caller: a whole-command text makes `auto_reply_due` false (`app/businesses/src/consent.rs:542`) and `auto_reply` ends with `Halt::Ends(\"business\")` (`app/server/src/inbound_text.rs:1050` to `:1057`), so a business on text that replies \"YES 1042\" hears nothing. (1) `inbound_text.rs`: after the opt-out and HELP screens (an opt-out word always wins, D-2039), a business phone's text that `read_business_word` reads goes to the new `app/picks/src/text_confirm.rs` before `auto_reply`. (2) `text_confirm.rs` (pure reads, no link): for a business whose channel preference includes text (BIZ-036), the job number names the waiting pick of that business (the word alone only when it has exactly one waiting); it answers the pick, its fee and whether the window is open, with `business_reply`'s `linked` true only for a directory line of the picked business that `acts_for_business` accepts (a staff phone still waiting for approval is not linked). (3) The link is minted in `inbound_text.rs`, never in `picks` (which may not call `portals`, `kit/layers.json`): `portals::api::mint_action_link` (`app/portals/src/action_links.rs:251`) for the member that texting line belongs to, read through a new `businesses::api::phone_member(db, line)` in `app/businesses/src/phone_approval.rs` (beside `phone_standing`, `:132`; `businesses.staff_phone.linked_by`, `migrations/0056_businesses_team_members.sql:35`; none for a line with no member), which refuses a member without \"Confirm and billing\" (`:128`). The replies: a linked member with the role gets \"Laftly: Fee $<amount>. Confirm and pay here: <link>.\"; a linked member without the role, and a directory line with no member (the business's own line), get a new reply with no link, \"Laftly: Only the owner or a Confirm and billing member can confirm job <n>. The pick email has the Confirm link.\" (English and Spanish in `app/messaging/templates/`); after the window the expired reply; another business's phone nothing. YES and CONFIRM (and SÍ, CONFIRMAR) get the same answer and neither ever confirms or charges (PICK-033, FEE-036, D-365). (4) The reply is addressed to the texting phone's line ID, as T573 addresses business texts (D-2042: a business-ID row cannot pass `may_text`), and queued with `messaging::api::enqueue_exempt` with `Exemption::DirectReply { inbound_at }` from the inbound text's time (QH-004's 15 minutes), once per inbound message (a provider resend of the same message SID replies once). Tests in the new `app/server/tests/business_yes_text.rs` (TD-PICK-69), through the assembled router with the texting stand-in, fake data only. Update `app/picks/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 6 and its second pass, `main` 77a49d7cc; round-1 review; PICK-033, FEE-036, PICK-035, BIZ-036, QH-004; D-259, D-365, D-1717, D-2042). `read_business_word` and `business_reply` (`app/picks/src/confirm.rs:315`, `:347`) have no caller: a whole-command text makes `auto_reply_due` false (`app/businesses/src/consent.rs:542`) and `auto_reply` ends with `Halt::Ends(\"business\")` (`app/server/src/inbound_text.rs:1050` to `:1057`), so a business on text that replies \"YES 1042\" hears nothing. (1) `inbound_text.rs`: after the opt-out and HELP screens (an opt-out word always wins, D-2039), a business phone's text that `read_business_word` reads goes to the new `app/picks/src/text_confirm.rs` before `auto_reply`. (2) `text_confirm.rs` (pure reads, no link): for a business whose channel preference includes text (BIZ-036), the job number names the waiting pick of that business (the word alone only when it has exactly one waiting); it answers the pick, its fee and whether the window is open, with `business_reply`'s `linked` true only for a directory line of the picked business that `acts_for_business` accepts (a staff phone still waiting for approval is not linked). (3) The link is minted in `inbound_text.rs`, never in `picks` (which may not call `portals`, `kit/layers.json`): `portals::api::mint_text_confirm_link` (T457's, beside `mint_action_link` at `app/portals/src/action_links.rs:251`; it marks the link text-started, D-4427) for the member that texting line belongs to, read through a new `businesses::api::phone_member(db, line)` in `app/businesses/src/phone_approval.rs` (beside `phone_standing`, `:132`; `businesses.staff_phone.linked_by`, `migrations/0056_businesses_team_members.sql:35`; none for a line with no member), which refuses a member without \"Confirm and billing\" (`:128`). The replies: a linked member with the role gets \"Laftly: Fee $<amount>. Confirm and pay here: <link>.\"; a linked member without the role, and a directory line with no member (the business's own line), get a new reply with no link, \"Laftly: Only the owner or a Confirm and billing member can confirm job <n>. The pick email has the Confirm link.\" (English and Spanish in `app/messaging/templates/`); after the window the expired reply; another business's phone nothing. YES and CONFIRM (and SÍ, CONFIRMAR) get the same answer and neither ever confirms or charges (PICK-033, FEE-036, D-365). (4) The reply is addressed to the texting phone's line ID, as T573 addresses business texts (D-2042: a business-ID row cannot pass `may_text`), and queued with `messaging::api::enqueue_exempt` with `Exemption::DirectReply { inbound_at }` from the inbound text's time (QH-004's 15 minutes), once per inbound message (a provider resend of the same message SID replies once). Tests in the new `app/server/tests/business_yes_text.rs` (TD-PICK-69), through the assembled router with the texting stand-in, fake data only. Update `app/picks/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-4427 (owner decision by Fable, Casey Nov 18, 2026: \"The rest let fable answer\"; SEC-004, PICK-033; D-366, D-477): the texted Confirm link and the Verify code its page asks for reach the same phone, so a text-started Confirm proves possession of that phone alone; that is accepted at every fee tier as SEC-004's logged one-factor deviation, with one limit: the link is minted only with `mint_text_confirm_link`, never `mint_action_link`, so the session its right code starts lasts 30 minutes, not 30 days (T457's `confirm_link_session`). TD-PICK-69 checks it end to end: after the code the session reaches the Confirm page at 29 minutes and is refused at 31. This answers D-4361's \"Noted for Casey\" item.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -44940,14 +44951,16 @@
     "app/businesses/src/consent.rs",
     "docs/brains/rust-production.md",
     "docs/spec/quiet-hours.md",
-    "app/portals/src/action_links.rs"
+    "app/portals/src/action_links.rs",
+    "docs/spec/security.md"
    ],
    "requirements": [
     "PICK-033",
     "FEE-036",
     "PICK-035",
     "BIZ-036",
-    "QH-004"
+    "QH-004",
+    "SEC-004"
    ],
    "tests": [
     "TD-PICK-69"
@@ -44958,7 +44971,10 @@
     "D-1717",
     "D-2042",
     "D-4361",
-    "D-4360"
+    "D-4360",
+    "D-366",
+    "D-477",
+    "D-4427"
    ],
    "cites": [],
    "budget": {
@@ -45161,7 +45177,7 @@
    "id": "T687",
    "slug": "project-limit-quotes",
    "title": "quotes: a quote above the business's only class's project limit is refused with an explanation",
-   "goal": "Plan change D-4361 (unwired sweep orphan 10 and its second pass, `main` 77a49d7cc; round-1 review; LIC-045, LIC-019; D-392, D-985). `licensing::ClassMap::check_project_limit` (`app/licensing/src/class_map.rs:343`) and `OverProjectLimit` are used nowhere outside `licensing`, and the quote form checks only the handyman limit, so an R-62-only business's $7,500 quote is accepted. `QuoteRules` (`app/quotes/src/intake.rs:257`) and `parse_quote` stay unchanged: about 18 test files build `QuoteRules` field by field. (1) The new `app/quotes/src/project_limit.rs` (exported through the shared `quotes::api`): `project_limit_check(conn, (job, business), price)` reads the business's latest Active classes (T654's shared read) and the job's category and type, and calls `ClassMap::shipped().check_project_limit` on the price's top (labor and materials, a range judged on its top); `NotCovered` passes here (card eligibility owns it). (2) The quote submit path (`app/server/src/action_links.rs`, after `parse_quote` at `:709` and before `submit_quote_with_facts` at `:650`) calls it and, on `OverProjectLimit`, stores nothing and shows the form again with an explanation of the limit on the price field, as the handyman bounce is shown (LIC-019; marked as T657 marks it). LIC-046's two-active minimum is D-4360's. Tests (TD-LIC-35), fake data only: `app/quotes/src/tests/project_limit.rs` for the rule (R-62 at $5,000.00 accepted and $5,000.01 refused, R-61 at $50,000, a range on its top, a business also holding an unlimited covering class never refused) and `app/server/tests/project_limit_route.rs` through the assembled router (an over-limit quote stores nothing and shows the explanation). Update `app/quotes/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 10 and its second pass, `main` 77a49d7cc; round-1 review; LIC-045, LIC-019; D-392, D-985). `licensing::ClassMap::check_project_limit` (`app/licensing/src/class_map.rs:343`) and `OverProjectLimit` are used nowhere outside `licensing`, and the quote form checks only the handyman limit, so an R-62-only business's $7,500 quote is accepted. `QuoteRules` (`app/quotes/src/intake.rs:257`) and `parse_quote` stay unchanged: about 18 test files build `QuoteRules` field by field. (1) The new `app/quotes/src/project_limit.rs` (exported through the shared `quotes::api`): `project_limit_check(conn, (job, business), price)` reads the business's latest Active classes (T654's shared read) and the job's category and type, and calls `ClassMap::shipped().check_project_limit` on the price's top (labor and materials, a range judged on its top); `NotCovered` passes here (card eligibility owns it). (2) The quote submit path (`app/server/src/action_links.rs`, after `parse_quote` at `:709` and before `submit_quote_with_facts` at `:650`) calls it and, on `OverProjectLimit`, stores nothing and shows the form again with an explanation of the limit on the price field, as the handyman bounce is shown (LIC-019; marked as T657 marks it). LIC-046's minimum (one active business since D-4424) is D-4360's and T705's. Tests (TD-LIC-35), fake data only: `app/quotes/src/tests/project_limit.rs` for the rule (R-62 at $5,000.00 accepted and $5,000.01 refused, R-61 at $50,000, a range on its top, a business also holding an unlimited covering class never refused) and `app/server/tests/project_limit_route.rs` through the assembled router (an over-limit quote stores nothing and shows the explanation). Update `app/quotes/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -45594,6 +45610,216 @@
    "branch": "claude/task/T700-runner-merge-line-rotation",
    "prompt": "kit/prompts/T700.md",
    "acceptance": "`python3 -m pytest tests/test_runner_merge_line_rotation.py tests/test_runner_merge_line.py tests/test_runner_merge_early.py tests/test_runner_merge_train.py tests/test_failure_drills.py` passes, the T623 reproduction failing against `main`'s runner; no existing test changes apart from a late-B case in `tests/test_runner_merge_train.py` under the goal's licence, logged; every other `tests/test_runner_*.py` passes unchanged."
+  },
+  {
+   "id": "T705",
+   "slug": "lic046-minimum-one",
+   "title": "quotes (harness): a launch-open category takes requests with at least 1 active business (LIC-046, D-4424)",
+   "goal": "Plan change D-4424 (Casey Nov 18, 2026, about 5:50 am MST: \"At least one active to open a trade. The rest let fable answer\"; LIC-046, INT-017; D-4360, D-4408). LIC-046 now says at least 1 active business (`docs/spec/licensing.md:50`), but T679 built the minimum as `quotes::api::MIN_ACTIVE_BUSINESSES = 2` (`app/quotes/src/service.rs:35`, a constant, not an `ASKHAVA_*` setting, D-4360) and its done tests assert 2. This is a harness task because it changes done tests, only to follow the spec change (D-4424). (1) `app/quotes/src/service.rs`: the constant becomes 1 and its doc comment, the module doc (`:15` to `:19`) and `request_coverage`'s doc say one; nothing else in the function changes (it still passes the constant to `licensing::api::request_intake`, `app/licensing/src/class_map.rs:124`). (2) `tests/integration/tests/request_coverage_minimum.rs` (TD-LIC-34): `assert_eq!(MIN_ACTIVE_BUSINESSES, 1)` (`:109`); the first case becomes: a paused and a removed business ticking the category in the job's town leave it `Coverage::NotCovered` (none active), then one active business in another town opens it (the count is category-wide) and the coverage is the count of the job's town, then one in the job's town gives `Coverage::Send(1)`; the \"Coming later\" and off cases stay `NotCovered` however many businesses tick them; the module and case doc comments say one. (3) `app/licensing/src/tests/class_map.rs` (TD-LIC-21, `:303` to `:328`): the case passes the minimum 1, so 0 active is `TooFewBusinesses` and 1 is `Open`, and its doc comment says 1 active business; `request_intake` itself is unchanged (the minimum is its argument). OPS-006's alert below 2 active businesses (`docs/spec/ops-recovery.md:10`) is a separate rule and is not changed: `tests/integration/tests/ops_alert_conditions.rs` stays as it is. Update the `request_coverage` line of `docs/architecture.md` (\"(2, a constant, not yet a setting)\" becomes 1), the `MIN_ACTIVE_BUSINESSES` line of `app/quotes/NOTES.md` and `docs/decisions.md`. The setting key stays open (D-4360).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "quotes",
+   "deps": [
+    "T679"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing",
+    "compliance",
+    "harness"
+   ],
+   "owns": [
+    "app/quotes/src/service.rs",
+    "tests/integration/tests/request_coverage_minimum.rs",
+    "app/licensing/src/tests/class_map.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/licensing.md",
+    "docs/spec/intake.md",
+    "app/licensing/src/class_map.rs"
+   ],
+   "requirements": [
+    "LIC-046",
+    "INT-017"
+   ],
+   "tests": [
+    "TD-LIC-34",
+    "TD-LIC-21"
+   ],
+   "decisions": [
+    "D-4360",
+    "D-4408",
+    "D-4424"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 120,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T705-lic046-minimum-one",
+   "prompt": "kit/prompts/T705.md",
+   "acceptance": "TD-LIC-34 and TD-LIC-21 pass; `MIN_ACTIVE_BUSINESSES` is 1; no active business gives `Coverage::NotCovered` and one active business, in any town, opens the category; the Coming-later and off cases are unchanged; OPS-006's tests pass unchanged."
+  },
+  {
+   "id": "T706",
+   "slug": "problem-to-complaint",
+   "title": "businesses, picks, intake and portals: Casey's \"Count as a complaint\" turns a PROBLEM report into one complaint and texts the homeowner BIZ-011's reply",
+   "goal": "Plan change D-4426 (owner decision by Fable, Casey Nov 18, 2026: \"The rest let fable answer\"; closes D-3055 (4)'s and D-4361 (11)'s open `record_complaint` caller and `docs/for-casey-review.md` D-301 item 12; BIZ-011, BIZ-012, JOB-016, OPS-005, OPS-032). Nothing files a complaint today: `businesses::api::record_complaint` (`app/businesses/src/complaints.rs:205`) has no production caller, and BIZ-011's homeowner reply exists only as `ReplyFacts::text` (`:145`), in no template file and sent by nothing (D-1720). A check-in PROBLEM closes the job and raises `jobs.problem_report`, or with a safety word `jobs.problem_report_safety`, whose subject is the `messaging.inbox` row (`app/jobs/src/followups.rs:34`, `:36`, `:239` to `:249`); its scrubbed words are kept 30 days with the job in `privacy.message_body` (TXT-020), read only through `privacy::api::problem_words` with an `OwnerSessionProof` (`app/privacy/src/message_body.rs:86`). A PROBLEM is a complaint only when Casey presses \"Count as a complaint\" on it in the owner portal and picks its kind; this task builds that rule, T707 serves the page. (1) The new `app/businesses/src/complaint_once.rs` (through the shared `businesses::api`): `record_complaint_for_job(conn, complaint, now)` locks the business row (`SELECT id FROM businesses.business WHERE id = $1 FOR UPDATE`, the lock `pause_on_count` takes, `complaints.rs:256`), returns `None` when a `businesses.complaint` row for that business and job exists, else calls `record_complaint` unchanged on the same connection, so two presses at once record one; no migration (the table has no per-job key, `migrations/0122_businesses_complaints.sql:10` to `:24`). It also reads the business's public name and own phone for the text (BIZ-011; through an existing `businesses::api` read where one fits). (2) The new `app/picks/src/released_business.rs` (through the shared `picks::api`): `released_business(db, job)`, the business of the job's released pick, `None` when nothing was released. (3) The new `app/portals/src/owner_problems.rs` (through the shared `portals::api`): `problem_reports(conn, proof, now)`, the `jobs.problem_report` and `jobs.problem_report_safety` alerts raised in the last 30 days (`ops::api::digest_alerts`, T528), each with its job number, its kept words and safety mark from `problem_words`, and whether it can be counted (kept words, a released pick and no complaint on that job yet); and `count_as_complaint(conn, proof, (inbox, kind), now)`, which re-reads all of that, refuses any kind but `no_show`, `conduct`, `work_or_price`, `safety` and `other`, calls `record_complaint_for_job` with the kept words (so the complaint's safety mark is computed as built) and, only when it recorded one, writes one `ops.problem_counted_as_complaint` audit row (actor the owner, subject the complaint) and queues the homeowner text, all in one transaction; nothing it returns holds a homeowner contact detail (PRIV-006). From there `record_complaint` does what it does as built: the business sees kind and date only with a 5-day reply box (BIZ-029), the complaint returns to Casey with the reply in the digest, the third in 90 days pauses the business (BIZ-012), and a safety word raises `businesses.complaint_safety`. The press never resolves the PROBLEM alert: a safety-word PROBLEM still reaches Casey in the 9 a.m. and 3 p.m. push (OPS-005, OPS-032) until he marks it done, and nothing is ever filed automatically. (4) BIZ-011's text: `complaint_reply` is added to the shared `app/messaging/templates/en.json` and `es.json` with `ReplyFacts::text`'s words in English and its Spanish draft (TXT-003; slots `brand_short`, `brand`, `business`, `job`, `trade`, `number`, `domain`, all already in use), so every text kind keeps a Spanish template; the new `app/intake/src/complaint_text.rs` handles a new `intake.complaint_reply` task (payload: the complaint, job and business IDs only) registered in the shared `app/server/src/lib.rs` worker registry: it finds her and sends as `job_texts`' `pick_lapsed` path does (no consent record or opted out: nothing, the complaint still stands, CON-021, CON-028; the area-code table, QH-003; the 8 a.m. to 8 p.m. window with a re-queue, QH-001), with one outbox row keyed on the complaint; `app/intake/src/job_texts.rs` is read, not edited (T402 owns it); no email (a PROBLEM arrives only by text, D-2415). Tests TD-BIZ-58 in the new `tests/integration/tests/problem_to_complaint.rs`. Update the `businesses`, `picks`, `intake` and `portals` NOTES.md, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T662"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance",
+    "security"
+   ],
+   "owns": [
+    "app/businesses/src/complaint_once.rs",
+    "app/picks/src/released_business.rs",
+    "app/intake/src/complaint_text.rs",
+    "app/portals/src/owner_problems.rs",
+    "tests/integration/tests/problem_to_complaint.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/privacy.md",
+    "app/businesses/src/complaints.rs",
+    "app/intake/src/job_texts.rs",
+    "app/privacy/src/message_body.rs",
+    "app/ops/src/digest_rows.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-011",
+    "BIZ-012",
+    "JOB-016",
+    "OPS-005",
+    "OPS-032",
+    "PRIV-006"
+   ],
+   "tests": [
+    "TD-BIZ-58"
+   ],
+   "decisions": [
+    "D-1720",
+    "D-2415",
+    "D-3055",
+    "D-4361",
+    "D-4426"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 560,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T706-problem-to-complaint",
+   "prompt": "kit/prompts/T706.md",
+   "acceptance": "TD-BIZ-58 passes against PostgreSQL and the texting stand-in; a PROBLEM report alone files no complaint; one press records one complaint per job and queues one `complaint_reply` text in her language; `record_complaint` and `job_texts.rs` are unchanged."
+  },
+  {
+   "id": "T707",
+   "slug": "owner-problems-served",
+   "title": "portals and server: the owner's \"Problem reports\" page with \"Count as a complaint\" is built and served",
+   "goal": "Plan change D-4426 (owner decision by Fable, Casey Nov 18, 2026: \"The rest let fable answer\"; BIZ-012, JOB-016, OPS-005; D-2128, D-2440, D-3890). No owner page lists PROBLEM reports today: the owner home lists only alerts that pushed (`ops::api::pushed_alerts`, `app/ops/src/owner_alerts.rs`), so a safety-word PROBLEM shows there only after a push and a plain one never, and T524's digest view serves no route. (1) `app/portals/src/owner_problems.rs` (T706's, extended here) renders `owner_problems_page(conn, proof, csrf, now)` from the new `app/portals/templates/owner_problems.html`: one row per T706 `problem_reports` entry with the job number, the date, the scrubbed words and a visible safety mark, and, on a row that can be counted, a \"Count as a complaint\" form with a labelled kind choice (No-show, Conduct, Work or price, Safety, Other) and a CSRF field; a counted row says so and has no form; no homeowner contact detail (PRIV-006). The owner home (`app/portals/templates/owner_home.html`) gets one \"Problem reports\" link. (2) The new `app/server/src/owner_problems.rs`, merged in the shared `app/server/src/lib.rs` behind T303's owner session as T310 serves the owner home: `GET /owner/problems` and `POST /owner/problem-complaint` (fixed paths under `/owner/`, the inbox ID and kind in the form body, D-3890 (1)); the `POST` runs `refuse_cross_site` and the CSRF check before the owner-session check (D-3878), calls T706's `count_as_complaint` and answers 303 to the page; no fresh second factor (recording a complaint is not in SEC-043's list, as a pause is not); none or another realm gets a 4xx with a link to `/owner/sign-in`; every response `no_store`; a refusal is a security event (SEC-048). Each `.route(` call is one line with a bare constant path; one row per method and path in `docs/architecture.md` section 13 (module `server`, Wired `yes`); the page's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts`. Its routes pass T348's doors unchanged (`tests/security/tests/auth_matrix.rs`, `app/server/tests/door_matrix.rs`); this task edits neither. (3) Tests TD-BIZ-59: `app/server/tests/owner_problems_route.rs` and `tests/e2e/owner_problems_served.spec.ts` (signing in only through T303's `tests/e2e/owner_session.ts`; the end-to-end database is shared, so the spec seeds its own PROBLEM and job). Build notes at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T706",
+    "T310",
+    "T484"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "copy": true,
+   "owns": [
+    "app/portals/src/owner_problems.rs",
+    "app/portals/templates/owner_problems.html",
+    "app/portals/templates/owner_home.html",
+    "app/server/src/owner_problems.rs",
+    "app/server/tests/owner_problems_route.rs",
+    "tests/e2e/owner_problems_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/privacy.md",
+    "docs/spec/accessibility.md",
+    "app/server/src/owner_portal.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-012",
+    "JOB-016",
+    "OPS-005",
+    "SEC-043",
+    "SEC-048",
+    "SEC-034",
+    "SEC-042",
+    "PRIV-006"
+   ],
+   "tests": [
+    "TD-BIZ-59"
+   ],
+   "decisions": [
+    "D-2128",
+    "D-2440",
+    "D-3878",
+    "D-3890",
+    "D-4426"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 560,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T707-owner-problems-served",
+   "prompt": "kit/prompts/T707.md",
+   "acceptance": "TD-BIZ-59 passes through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page state; T706's TD-BIZ-58 and every owner-portal case still pass."
   }
  ]
 }
