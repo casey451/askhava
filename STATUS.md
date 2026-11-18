@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T05:07:58Z by runner 7dd3ec99cddf (actions).
+Updated 2026-11-18T05:10:59Z by runner c91eb753ef55 (actions).
 
 **Building: T601 in progress since 04:24Z; 426 of 606 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 426 of 606 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T601 claimed 04:24Z, lease until 07:24Z; lane 4: T642 claimed 04:42Z, lease until 07:42Z
+- **Lane:** lane 2: T601 claimed 04:24Z, lease until 07:24Z; lane 4: T642 claimed 04:42Z, lease until 08:10Z
 - **Week:** 43% used, 106.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:07Z, 0 min before this update
+- **Last run:** 05:08Z, 2 min before this update
 - **Keeper:** last ran 05:07Z, next wake 07:26Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 22 problem(s) on tasks still to run (+194 on DONE tasks); first: T151: stored context_pct 31% but it measures 35%; regenerate
+- Strict plan check red: 22 problem(s) on tasks still to run (+195 on DONE tasks); first: T151: stored context_pct 31% but it measures 35%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -84,8 +84,6 @@ Updated 2026-11-18T05:07:58Z by runner 7dd3ec99cddf (actions).
 | T586 | calls and privacy: TwiML text is escaped, a full number pool | done | 1 | 88 min | 06:17Z |  |
 | T481 | messaging and payments: mark a replayed text sent from the c | done | 1 | 114 min | 05:36Z |  |
 | T103 | intake: the web-chat conversation, where typing a verified m | done | 1 | 106 min | 05:27Z |  |
-| T585 | businesses and licensing: a license change that drops job ty | done | 1 | 43 min | 05:10Z |  |
-| T571 | server and calls: a press of 9 on the safety call is never l | done | 1 | 45 min | 05:08Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -138,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T601 (lease until 2026-11-18T07:24:12Z)
-- lane 4: T642 (lease until 2026-11-18T07:42:08Z)
+- lane 4: T642 (lease until 2026-11-18T08:10:59Z)
 
 ## Last usage reading
 - {"task": "T523", "at": "2026-11-18T05:06:38Z", "cache_read_input_tokens": 5539493, "output_tokens": 44410, "cache_creation_input_tokens": 154067, "input_tokens": 158}
