@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T21:52:20Z by runner 6a6063698617 (actions).
+Updated 2026-11-18T21:52:49Z by runner 6a6063698617 (actions).
 
-**Building: T651 in progress since 19:44Z; 459 of 663 done; week 68% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T364 in progress since 21:12Z; 459 of 663 done; week 68% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 459 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T651 claimed 19:44Z, lease until 00:24Z; lane 4: T364 claimed 21:12Z, lease until 00:12Z
+- **Lane:** lane 4: T364 claimed 21:12Z, lease until 00:12Z
 - **Week:** 68% used, 55.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:49Z, 3 min before this update
 - **Keeper:** last ran 21:35Z, next wake 21:55Z
@@ -20,6 +20,7 @@ Updated 2026-11-18T21:52:20Z by runner 6a6063698617 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T651 | server and portals: owner step-up try limit, the passkey pat | MERGE_PENDING | 1 | 2 h 7 min | 21:52Z |  |
 | T722 | payments: read a pick's disputes and record Casey's evidence | MERGE_PENDING | 1 | 45 min | 21:33Z |  |
 | T503 | Decisions digest, piece 4: the next entries after the header | done | 1 | 31 min | 21:30Z |  |
 | T483 | messaging, portals and server: the owner's "away until" date | MERGE_PENDING | 1 | 2 h 48 min | 21:13Z |  |
@@ -132,8 +133,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T651 (lease until 2026-11-19T00:24:06Z)
+- nothing
 - lane 4: T364 (lease until 2026-11-19T00:12:55Z)
 
 ## Last usage reading
-- {"task": "T722", "at": "2026-11-18T21:33:29Z", "input_tokens": 88, "output_tokens": 27053, "cache_read_input_tokens": 2530183, "cache_creation_input_tokens": 125633}
+- {"task": "T651", "at": "2026-11-18T21:52:18Z", "cache_creation_input_tokens": 268928, "cache_read_input_tokens": 5770520, "output_tokens": 68905, "input_tokens": 176}
