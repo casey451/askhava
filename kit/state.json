@@ -78309,7 +78309,7 @@
     "T321",
     "T489"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "web-chat-consent-stops",
    "type": "build",
@@ -78327,8 +78327,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "plan gap reported: PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 \"at once\") without a signature change; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T645 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 \"at once\") without a signature change in chat.rs, which T645 does not own and is not ordered after T593 (D-4294, docs/decisions.md:2365, gives the vault hand-off to T649, which runs after T645).\nReviewer confirmed: T645 owns only web_chat.rs, optout.rs, migrations 0210/0211 and app/server/tests/web_chat_stops.rs (kit/tasks.json). No workaround in those files: privacy.contact_index holds digests but privacy::api exposes no vault-free lookup and optout.rs may not read privacy.* (docs/architecture.md:102); a Vault is only built in the server from secret keys (app/server/src/lib.rs:599, :646, :1465). Test-seam claim is partly overstated (stand-in Twilio mode exists, app/adapters/src/config.rs:110-113; a test can seed the session row), but the vault gap alone blocks.\nSuggested fix: have the chat.rs/chat_codes.rs owner add `vault()` to `ChatKeys` and pass it to `chat_message` before T645 (order T645 after T593/T649's hand-off), or move the web-chat suppression cases of TD-CON-36 out of T645. Also note: `order::spanish_line` has no production caller, so open_verified must queue `spanish_not_yet` itself for TXT-041.\nNo files changed, no commits, no decision IDs used.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 \"at once\") without a signature change in chat.rs, which T645 does not own and is not ordered after T593 (D-4294, docs/decisions.md:2365, gives the vault hand-off to T649, which runs after T645).\nReviewer confirmed: T645 owns only web_chat.rs, optout.rs, migrations 0210/0211 and app/server/tests/web_chat_stops.rs (kit/tasks.json). No workaround in those files: privacy.contact_index holds digests but privacy::api exposes no vault-free lookup and optout.rs may not read privacy.* (docs/architecture.md:102); a Vault is only built in the server from secret keys (app/server/src/lib.rs:599, :646, :1465). Test-seam claim is partly overstated (stand-in Twilio mode exists, app/adapters/src/config.rs:110-113; a test can seed the session row), but the vault gap alone blocks.\nSuggested fix: have the chat.rs/chat_codes.rs owner add `vault()` to `ChatKeys` and pass it to `chat_message` before T645 (order T645 after T593/T649's hand-off), or move the web-chat suppression cases of TD-CON-36 out of T645. Also note: `order::spanish_line` has no production caller, so open_verified must queue `spanish_not_yet` itself for TXT-041.\nNo files changed, no commits, no decision IDs used.\nre-queued after plan fix D-4473: web-chat-opt-out-by-stored-blind-indexes (PR #1052)",
    "history": [
     {
      "attempt": 1,
@@ -78352,6 +78352,21 @@
        "turns": 13
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-18T18:44:18Z",
+     "reason": "web-chat-opt-out-by-stored-blind-indexes (PR #1052)",
+     "by": "manual-3c201a99d91a",
+     "was": "plan gap reported: PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 \"at once\") without a signature change; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T645 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4473",
+     "plan_since": "2026-11-18T16:01:06Z",
+     "plan_base": "fdf87f6f847416bd6573c0ee2d0f90933f91b25e",
+     "plan_head": "935e6983d16cf4a603927b944ffaab5743158a45",
+     "plan_then": "83ffcdb349e2c5f96560659819026fdf36227e39b4deb7f6d6f1dd4e03429128",
+     "plan_now": "1dfe7f698b030588f0faa5de8c525eeb9d1465fbdc6427d7133bdc0443376dca"
     }
    ]
   },
@@ -85536,7 +85551,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T18:43:55Z",
+ "updated_at": "2026-11-18T18:44:18Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
