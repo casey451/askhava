@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH sent AS (\n             SELECT DISTINCT ON (a.conversation_id, a.question_id)\n                    a.conversation_id, a.question_id, a.answered_at\n             FROM intake.intake_answer a\n             WHERE a.question_id = ANY(SELECT 'card.' || replace(j::text, '-', '')\n                                       FROM unnest($1::uuid[]) j)\n               AND a.choice LIKE 'sent.%' AND a.answered_at >= $2 AND a.answered_at < $3\n             ORDER BY a.conversation_id, a.question_id, a.answered_at)\n           SELECT count(*) AS \"approved!\",\n                  count(*) FILTER (WHERE NOT EXISTS (SELECT 1 FROM intake.intake_answer e\n                    WHERE e.conversation_id = s.conversation_id AND e.question_id = s.question_id\n                      AND e.choice = 'edit' AND e.answered_at < s.answered_at)) AS \"without_edit!\"\n           FROM sent s",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "approved!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "without_edit!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "3ef1192c1b85676ec0aa9fa6e9269d83e16bc3da7e0c0df19bd0c7ff9d2d4762"
+}

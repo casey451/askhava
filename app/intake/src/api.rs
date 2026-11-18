@@ -119,6 +119,10 @@ pub use crate::routing_confidence::{
     keyword_scored, unsure_reach,
 };
 pub use crate::safety_text::{SAFETY_WITHIN, safety_outgoing, safety_text, sent_in_time};
+pub use crate::scorecard_inputs::{
+    CardApprovals, IntakeCompletion, SourceCount, StopCount, cards_approved, intake_completion,
+    requests_by_source,
+};
 /// The first-reply step without the consent record, for this crate's own tests only.
 #[cfg(test)]
 pub(crate) use crate::service::on_text;

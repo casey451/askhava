@@ -1,0 +1,36 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT f.category AS \"trade!\",\n                  array_agg(j.id ORDER BY j.created_at, j.id) AS \"jobs!\"\n           FROM jobs.job j JOIN jobs.job_facts f ON f.job_id = j.id AND f.seq = 1\n           WHERE j.created_at >= $1 AND j.created_at < $2\n           GROUP BY f.category ORDER BY f.category",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "trade!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "jobs.job_facts",
+            "name": "category"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "jobs!",
+        "type_info": "UuidArray",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "1ce979291f3c173418b3b55687f5c9c7b0539485f44e4fe5c63b27f7e06a12f3"
+}
