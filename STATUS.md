@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T15:56:50Z by runner a14c7a0112d0 (actions).
+Updated 2026-11-18T15:59:10Z by runner fdf87f6f8474 (actions).
 
-**Building: T624 in progress since 15:49Z; 446 of 645 done; week 62% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T624 in progress since 15:49Z; 447 of 645 done; week 62% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 446 of 645 build tasks (owner gates not counted)
+- **Tasks done:** 447 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T624 claimed 15:49Z, lease until 18:49Z; lane 4: T592 claimed 15:38Z, lease until 18:38Z; lane 5: T720 claimed 15:43Z, lease until 18:43Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
 - **Week:** 62% used, 68.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:56Z, 0 min before this update
+- **Last run:** 15:56Z, 2 min before this update
 - **Keeper:** last ran 15:56Z, next wake 18:41Z
 
 ## Needs attention
@@ -18,14 +18,14 @@ Updated 2026-11-18T15:56:50Z by runner a14c7a0112d0 (actions).
 Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 31 problem(s) on tasks still to run (+240 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 30 problem(s) on tasks still to run (+247 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T621 | portals: the scorecard's go and stop line settings and its p | MERGE_PENDING | 1 | 55 min | 15:55Z |  |
 | T665 | server tests (harness): the door matrix fills a business job | MERGE_PENDING | 1 | 81 min | 15:47Z |  |
-| T525 | server and ops: the hourly vault-read check and the daily da | MERGE_PENDING | 1 | 102 min | 15:41Z |  |
+| T525 | server and ops: the hourly vault-read check and the daily da | done | 1 | 102 min | 15:41Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | done | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
 | T671 | intake (harness): a homeowner's texts after the consent text | BLOCKED | 1 | 44 min | 13:58Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 | T472 | server (harness): serve the "Can't take it" page and button  | done | 1 | 62 min | 12:45Z |  |
@@ -90,8 +90,8 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 735 (0.0%) · partial 684 · unstarted 51
-**Tasks merged (throughput only):** 446 of 643
+**Requirements verified:** 0 of 735 (0.0%) · partial 685 · unstarted 50
+**Tasks merged (throughput only):** 447 of 645
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -106,7 +106,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 | licensing | 0 | 48 | 0 | 48 |
 | lifecycle | 0 | 28 | 0 | 28 |
 | messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 0 | 34 | 20 | 54 |
+| ops-recovery | 0 | 35 | 19 | 54 |
 | privacy | 0 | 30 | 1 | 31 |
 | quiet-hours | 0 | 9 | 0 | 9 |
 | quotes-pick | 0 | 56 | 0 | 56 |
@@ -127,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 89 of 246 done
+- stage 5: 90 of 246 done
 - stage 6: 0 of 46 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
