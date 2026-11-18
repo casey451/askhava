@@ -233,6 +233,7 @@ async fn a_401_key_refusal_is_stripe_down(pool: PgPool) {
     let outcome = pay(&pool, &stripe, 0x6231).await;
     assert_stripe_down(&pool, outcome, 0x6231).await;
     assert_eq!(stripe.count("confirm"), 1);
+    assert_eq!(stripe.count("fetch"), 0, "decided without a re-read");
 }
 
 /// D-4196: a 403 on the confirm and on the intent read is Stripe down, not a decline.
@@ -241,6 +242,7 @@ async fn a_403_key_refusal_is_stripe_down(pool: PgPool) {
     let stripe = FakeStripe::new(vec![vendor(403)], vec![vendor(403)]);
     let outcome = pay(&pool, &stripe, 0x6232).await;
     assert_stripe_down(&pool, outcome, 0x6232).await;
+    assert_eq!(stripe.count("fetch"), 0, "decided without a re-read");
 }
 
 /// D-4196: a confirm 404 reads the intent again; a 404 on our own stored `pi_` is our key or
