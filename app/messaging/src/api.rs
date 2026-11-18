@@ -104,6 +104,7 @@ pub use crate::purge::{
     DELETE_KIND as BODY_DELETE_KIND, SCAN_KIND as BODY_SCAN_KIND, queue_body_deletes,
     register_body_deletes, run_body_delete, schedule_body_scan,
 };
+pub use crate::quote_text_sent::{QUOTE_TEXT_TEMPLATES, QuoteTextSent, last_quote_text};
 pub use crate::receipt_email::{
     RECEIPT_EMAIL_KIND, RECEIPT_TEMPLATE, ReceiptFacts, ReceiptSender, WHY_CHARGED_PREFIX,
     render_receipt, run_receipt_email,

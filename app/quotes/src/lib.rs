@@ -44,6 +44,7 @@ mod capability_match;
 mod card_notices;
 mod card_pool;
 mod cards;
+mod count_update;
 mod edit_withdraw;
 mod emergency_card_notice;
 mod formats;

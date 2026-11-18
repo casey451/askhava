@@ -80,6 +80,7 @@ pub use crate::card_notices::{
 };
 pub use crate::card_pool::{CardPool, card_pool};
 pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
+pub use crate::count_update::COUNT_UPDATE_KIND;
 pub use crate::edit_withdraw::{Saved, Withdrawal, save_quote, withdraw_quote};
 pub use crate::emergency_card_notice::{
     CardTiming, EMERGENCY_FIRST_LINE, emergency_card_subject, queue_emergency_card, split,

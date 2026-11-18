@@ -1,0 +1,49 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT o.id, o.template_id, coalesce((SELECT min(d.received_at) FROM messaging.delivery_event d WHERE d.provider_sid = o.provider_sid AND d.status = 'delivered'), o.sent_at, o.created_at) AS \"at!\" FROM messaging.outbox o WHERE o.recipient_id = $1 AND $2 = ANY(o.subject_ids) AND o.template_id = ANY($3::text[]) AND o.status NOT IN ('blocked', 'failed', 'expired') ORDER BY o.created_at DESC, o.id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "template_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "template_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "at!",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "200332f2d9bcef443483870c65417db13fc276b47835ffb7a82827672f2c451b"
+}

@@ -13,13 +13,15 @@
 //! `register_handlers()`; [`Worker::run`] is the claim loop, which `app/server/src/bin/worker.rs`
 //! starts with that registry and the shutdown signal (D-710). Every handler
 //! first re-checks the current status and does nothing if the job has moved on (JOB-006), so a
-//! second run is harmless.
+//! second run is harmless. [`Worker::run_watched`] stamps a [`ClaimTick`] on each pass of the
+//! loop, which `server`'s liveness watch reads to tell a hung loop (OPS-049, D-3881).
 
 use std::collections::HashMap;
 use std::fmt;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use jiff::{SignedDuration, Timestamp};
@@ -491,7 +493,23 @@ impl Worker {
         shutdown: impl Future<Output = ()>,
         drain: Duration,
     ) -> Result<u64, TaskError> {
-        let mut running = self.claim_loop(shutdown).await;
+        self.run_watched(shutdown, drain, &ClaimTick::default())
+            .await
+    }
+
+    /// [`Worker::run`], stamping `tick` once per pass of the claim loop, so a watcher can tell a
+    /// loop that stopped turning (OPS-049, TD-OPS-24, D-3881).
+    ///
+    /// # Errors
+    ///
+    /// As [`Worker::run`].
+    pub async fn run_watched(
+        &self,
+        shutdown: impl Future<Output = ()>,
+        drain: Duration,
+        tick: &ClaimTick,
+    ) -> Result<u64, TaskError> {
+        let mut running = self.claim_loop(shutdown, tick).await;
         if tokio::time::timeout(drain, join_all(&mut running))
             .await
             .is_err()
@@ -503,11 +521,16 @@ impl Worker {
     }
 
     /// Claims and spawns tasks until `shutdown` finishes; returns the runs still going.
-    async fn claim_loop(&self, shutdown: impl Future<Output = ()>) -> JoinSet<()> {
+    async fn claim_loop(
+        &self,
+        shutdown: impl Future<Output = ()>,
+        tick: &ClaimTick,
+    ) -> JoinSet<()> {
         let mut shutdown = std::pin::pin!(shutdown);
         let mut running = JoinSet::new();
         let mut idle = POLL_MIN;
         loop {
+            tick.stamp();
             while running.try_join_next().is_some() {}
             let free = WORKER_CONCURRENCY.saturating_sub(running.len());
             let started = if free == 0 {
@@ -558,6 +581,24 @@ impl Worker {
             });
         }
         started
+    }
+}
+
+/// How many passes the claim loop has made (OPS-049, D-3881): [`Worker::run_watched`] stamps it,
+/// a liveness watch reads it; a count that stops rising means the loop is stuck.
+#[derive(Debug, Default)]
+pub struct ClaimTick(AtomicU64);
+
+impl ClaimTick {
+    /// Counts one pass of the claim loop.
+    pub fn stamp(&self) {
+        self.0.fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// The passes counted so far.
+    #[must_use]
+    pub fn count(&self) -> u64 {
+        self.0.load(Ordering::Relaxed)
     }
 }
 

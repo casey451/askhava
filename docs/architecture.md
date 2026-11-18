@@ -206,6 +206,7 @@ wargames/            the Phase 2 war games (Python, standard library): personas,
 - Safety key kept (T571, D-4051, D-4088; CON-035): `server::voice_status`'s key route, when `calls::api::safety_key_once` fails, queues the core task `calls.safety_key_retry` (`calls::safety_key_retry`, IDs, arrival and key only; up to 8 claims, then one High `calls.safety_key_lost` alert about the safety alert); when the queue fails too it answers 200 with a 2-second `<Pause>` and a POST `<Redirect>` to itself carrying `Digits` and `attempt` (at most 3), then the spoken STOP line and the same alert if it can. Registered in `register_safety_call` with the safety parts' vault.
 - Weekly opt-out rates (T107, D-3880, D-3881, D-4082, D-4059; CON-022 to CON-024): `messaging::consent_alerts` counts each Arizona week (Monday 00:00 to Monday 00:00, UTC-7, `messaging::api::Week`) by audience: texted is the distinct `recipient_id` of sent `messaging.outbox` rows, opted out the distinct digests whose `messaging.optout_event` newly listed the number (a repeat STOP is not counted; STOP, START, STOP is), a business's being one whose inbox row has the `businesses.phone_stopped` audit row (read through `ops::api::audited`). The weekly core task `messaging.optout_rate_check` (registered in `server::worker_registry`, first queued by `schedule_start` under a per-week dedupe key) checks the week just ended and raises one Normal `messaging.optout_rate_homeowners` (3%) or `messaging.optout_rate_businesses` (5%) alert per week through `ops::api::raise_alert_once`, subject `messaging.optout_week`. T108's dashboard and T524's digest read `weekly_optout_rates`; counts only leave `messaging`. No new table.
 - Weekly digest counts (T605, D-4202, D-4218; OPS-030, OPS-041, BIZ-054): read-only readers over a half-open window (`from` counted, `to` not), returning IDs, codes, counts and job numbers only. `businesses::digest_counts` gives `leaving_answers` (business, who asked, choice or `None`, never the "Something else" words) through the crate-private `leaving::answers_between`, so `leaving.rs` stays the only file naming the answers table (TD-BIZ-32), and `license_paused` (paused with reason `license`, by `status_changed_at`); `intake::not_covered_counts::not_covered_by_trade` counts distinct requests per trade from `intake.recruiting_demand` by `created_at`; `picks::digest_counts::no_shows` reads `no_show` picks by `ended_at` with `jobs::api::job_number`. T524 and T478 call them.
+- Health probe and liveness exits (T106, D-3144, D-3881, D-4044, D-4224; OPS-007, OPS-049): `server::healthz` serves `GET /healthz` (merged first in `build_router`, under every layer): `liveness::round_trip`'s schema-less `SELECT 1`, then `core::api::queue_health` (the oldest task due with no `done_at`, `dead_at` or live lease, and the newest finish or lease start), with a 5-second limit on each; 200 unless the database fails or due work has waited past `ASKHAVA_WORKER_DOWN_SECS` (default 600), then 503; `no-store` JSON naming `status`, `database`, `worker` and `last_activity_secs` only. `healthz::check` has no HTTP type (T518 calls it); `healthz::web_health` gives T476 the start time and that state. `server::liveness` checks every 10 seconds, in `web` the round trip and in `worker` that and a new `ClaimTick` pass (`Worker::run_watched`); after `ASKHAVA_LIVENESS_LIMIT_SECS` (default 180) of failures in a row the binary returns an error and exits non-zero for the host's On Failure restart.
 
 ## 3. Modules, what each owns, and its tables
 
@@ -550,7 +551,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /webhooks/twilio/voice/dialed-status | server | yes |
 | POST | /webhooks/twilio/voice/safety-key | server | yes |
 | POST | /webhooks/stripe | payments | yes |
-| GET | /healthz | server | T106 |
+| GET | /healthz | server | yes |
 | GET | /b | portals | yes |
 | POST | /b/open-cards | portals | yes |
 | GET | /b/picks/{pick} | portals | yes |
@@ -613,7 +614,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /es/your-data | site | yes |
 | GET | /es/business-data | site | yes |
 | GET | /help | site | yes |
-| GET | /accessibility | site | T115 |
+| GET | /accessibility | site | yes |
 | GET | /help/roc-complaint | site | yes |
 | GET | / | site | yes |
 | GET | /how-it-works | site | yes |

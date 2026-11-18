@@ -40,6 +40,7 @@ mod optout;
 mod optout_email;
 mod outbox_sender;
 mod purge;
+mod quote_text_sent;
 mod receipt_email;
 mod replay_sent;
 mod retention;
