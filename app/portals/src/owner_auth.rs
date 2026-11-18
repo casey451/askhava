@@ -23,7 +23,7 @@ use rand::rngs::SysRng;
 use secrecy::SecretString;
 use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
-use sqlx::{Connection, PgConnection};
+use sqlx::{Connection, PgConnection, PgPool};
 use thiserror::Error;
 use webauthn_rs::prelude::{
     Passkey, PasskeyAuthentication, PasskeyRegistration, PublicKeyCredential,
@@ -50,8 +50,9 @@ pub const MIN_OWNER_FACTORS: i64 = 2;
 pub const OWNER_SIGNIN_ROUTE: &str = "/owner/sign-in";
 /// The `POST` that issues a passkey sign-in challenge: [`passkey_sign_in_options`] (D-1919).
 pub const OWNER_PASSKEY_ROUTE: &str = "/owner/sign-in/passkey";
-/// The most passkey sign-in challenges live at once; another is refused until one ends (D-1919).
-pub const MAX_LIVE_SIGN_IN_CHALLENGES: i64 = 20;
+/// The most passkey sign-in challenges live at once, a table-size bound only: each address is
+/// held back by `admit_owner_passkey_challenge` long before it (D-1919, D-4294).
+pub const MAX_LIVE_SIGN_IN_CHALLENGES: i64 = 10_000;
 /// The host variable holding the one-time bootstrap token (SEC-044).
 pub const BOOTSTRAP_TOKEN_VAR: &str = "ASKHAVA_OWNER_BOOTSTRAP_TOKEN";
 const MIN_BOOTSTRAP_TOKEN_CHARS: usize = 32;
@@ -287,8 +288,11 @@ fn hash_password(password: &str) -> Result<String, OwnerAuthError> {
         .map_err(|_| OwnerAuthError::Hash)
 }
 
+/// The argon2id check, logged (no value) as `owner password checked` so a test can see that a
+/// refused passkey answer ran none (D-4294).
 fn password_matches(password: &str, hash: &str) -> bool {
     use argon2::{Argon2, PasswordHash, PasswordVerifier};
+    tracing::debug!("owner password checked");
     PasswordHash::new(hash).is_ok_and(|parsed| {
         Argon2::default()
             .verify_password(password.as_bytes(), &parsed)
@@ -485,6 +489,22 @@ pub async fn owner_sign_in(
         let why = (SecurityEventKind::AuthFailed, OWNER_SIGNIN_ROUTE, None);
         return Err(refuse(conn, why, OwnerAuthError::Refused, now).await?);
     };
+    // A recovery code is not a fresh factor (SEC-043, D-1917): its session starts stale.
+    let factor_at = match factor {
+        SecondFactor::RecoveryCode(_) => Timestamp::UNIX_EPOCH,
+        _ => now,
+    };
+    start_owner_session(conn, jar, owner, (now, factor_at)).await
+}
+
+/// Starts `owner`'s 12-hour session at `now` with its step-up clock at `factor_at` and a
+/// `portals.owner_signed_in` audit row, in one transaction (SEC-005, SEC-043).
+async fn start_owner_session(
+    conn: &mut PgConnection,
+    jar: CookieJar,
+    owner: Uuid,
+    (now, factor_at): (Timestamp, Timestamp),
+) -> Result<CookieJar, OwnerAuthError> {
     let mut tx = db(conn.begin().await)?;
     let started = start_session(&mut tx, jar, (Realm::Owner, owner), OWNER_SESSION_LIFE, now);
     let jar = started.await.map_err(|e| match e {
@@ -493,13 +513,7 @@ pub async fn owner_sign_in(
     })?;
     let token = jar.get(SESSION_COOKIE).map(|c| c.value().to_owned());
     let token = token.ok_or(OwnerAuthError::Database)?;
-    // A recovery code is not a fresh factor (SEC-043, D-1917): its session starts stale.
-    let factor_at = match factor {
-        SecondFactor::RecoveryCode(_) => Timestamp::UNIX_EPOCH,
-        _ => now,
-    };
-    let times = (now, factor_at);
-    let session = db(m::insert_owner_session(&mut tx, &sha256(&token), times).await)?;
+    let session = db(m::insert_owner_session(&mut tx, &sha256(&token), (now, factor_at)).await)?;
     let ends = (now, owner_session_end(now, now));
     db(m::touch_owner_session(&mut tx, session, ends).await)?;
     let entry = owner_entry(
@@ -510,6 +524,42 @@ pub async fn owner_sign_in(
     record(&mut tx, entry).await?;
     db(tx.commit().await)?;
     Ok(jar)
+}
+
+/// Signs the owner in by a passkey answer to `challenge` and `password` (SEC-005, SEC-040,
+/// D-492, D-4294): the assertion is checked first, with no argon2; an unverified one is counted
+/// in `OWNER_TRIES_ALL` (`admit_owner_account`, its answer unused) and refused with no password
+/// check, and only a verified one goes on to the password, never through the account limit, so
+/// junk passwords never lock this path. Either failure is one `auth_failed` event.
+///
+/// # Errors
+///
+/// [`OwnerAuthError::Refused`], or a random or database failure; nothing is signed in then.
+pub async fn owner_passkey_sign_in(
+    pool: &PgPool,
+    jar: CookieJar,
+    (password, challenge, credential): (&str, Uuid, &str),
+    auth: &OwnerAuth,
+    now: Timestamp,
+) -> Result<CookieJar, OwnerAuthError> {
+    let mut conn = db(pool.acquire().await)?;
+    let account = db(m::owner_password(&mut conn).await)?;
+    let mut verified = false;
+    if let Some((owner, _)) = &account {
+        let answer = (auth, challenge, credential);
+        verified = passkey_ok(&mut conn, *owner, answer, now).await?;
+    }
+    if !verified {
+        db(crate::limits::admit_owner_account(pool, now).await)?;
+    }
+    let owner = account
+        .filter(|(_, hash)| verified && password_matches(password, hash))
+        .map(|(owner, _)| owner);
+    let Some(owner) = owner else {
+        let why = (SecurityEventKind::AuthFailed, OWNER_SIGNIN_ROUTE, None);
+        return Err(refuse(&mut conn, why, OwnerAuthError::Refused, now).await?);
+    };
+    start_owner_session(&mut conn, jar, owner, (now, now)).await
 }
 
 /// The signed-in owner, or `None` for no cookie, a non-owner or expired session, or one idle for
