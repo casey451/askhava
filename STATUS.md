@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T17:03:51Z by runner 0aa7374b9a56 (actions).
+Updated 2026-11-18T17:04:05Z by runner 0aa7374b9a56 (actions).
 
 **Building: T624 in progress since 16:49Z; 449 of 645 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 449 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T624 claimed 16:49Z, lease until 19:49Z; lane 2: T621 claimed 16:25Z, lease until 19:25Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
+- **Lane:** lane 1: T624 claimed 16:49Z, lease until 19:49Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
 - **Week:** 63% used, 66.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:03Z, 0 min before this update
 - **Keeper:** last ran 17:03Z, next wake 18:45Z
@@ -24,11 +24,12 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T621 | portals: the scorecard's go and stop line settings and its p | MERGE_PENDING | 1 | 38 min | 17:03Z | merging main into the reviewed head conflicts in app/core/src/settings.rs; a resync merges it in on this attempt (D-891) |
 | T720 | Decision digest prerequisites (harness): the digest plan and | MERGE_PENDING | 1 | 67 min | 16:51Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | resync | 1 | 49 min | 16:38Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
 | T592 | jobs, quotes and site: the home page's numbers read every jo | done | 1 | 40 min | 16:19Z |  |
 | T645 | intake and messaging: the web chat honours an opt-out word,  | BLOCKED | 1 | 4 min | 16:05Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
-| T621 | portals: the scorecard's go and stop line settings and its p | resync | 1 | 55 min | 15:55Z | merging main into the reviewed head conflicts in app/core/src/settings.rs; a resync merges it in on this attempt (D-891) |
+| T621 | portals: the scorecard's go and stop line settings and its p | resync | 1 | 55 min | 15:55Z |  |
 | T665 | server tests (harness): the door matrix fills a business job | done | 1 | 81 min | 15:47Z |  |
 | T525 | server and ops: the hourly vault-read check and the daily da | done | 1 | 102 min | 15:41Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | done | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
@@ -136,8 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T624 (lease until 2026-11-18T19:49:16Z)
-- lane 2: T621 (lease until 2026-11-18T19:25:25Z)
 - lane 7: T671 (lease until 2026-11-18T18:43:09Z)
 
 ## Last usage reading
-- {"task": "T720", "at": "2026-11-18T16:51:22Z", "output_tokens": 34339, "input_tokens": 71, "cache_read_input_tokens": 1591988, "cache_creation_input_tokens": 94360}
+- {"task": "T621", "at": "2026-11-18T17:03:49Z", "input_tokens": 60, "cache_read_input_tokens": 821009, "cache_creation_input_tokens": 65463, "output_tokens": 8830}
