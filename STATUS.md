@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T14:16:56Z by runner c509877b3b22 (manual).
+Updated 2026-11-18T14:25:46Z by runner 164e7e994839 (actions).
 
-**Building: T525 in progress since 13:59Z; 445 of 643 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T665 in progress since 14:25Z; 445 of 643 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 445 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T525 claimed 13:59Z, lease until 16:59Z; lane 6: T200 claimed 12:06Z, lease until 17:11Z
-- **Week:** 57% used, 78.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:11Z, 5 min before this update
+- **Lane:** lane 1: T665 claimed 14:25Z, lease until 17:25Z; lane 2: T525 claimed 13:59Z, lease until 16:59Z; lane 6: T200 claimed 12:06Z, lease until 17:11Z
+- **Week:** 57% used, 77.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 14:17Z, 8 min before this update
 - **Keeper:** last ran 14:03Z, next wake 16:01Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 2. tests/integration/tests/inbound_scrub_context.rs:298 (T257/T317): table scan finds "zebulon" in quotes.job_description, from OTHER homeowner's trade-naming fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T671 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 24 problem(s) on tasks still to run (+230 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 31 problem(s) on tasks still to run (+236 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -84,7 +84,6 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 | T595 | server and site: a same-site web chat POST passes its CSRF c | done | 1 | 45 min | 16:19Z |  |
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | done | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T113 | Draft the Twilio campaign description from the real template | done | 2 | 35 min | 15:39Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
-| T471 | picks and intake: her "backup has your pick" text on every p | done | 1 | 47 min | 14:20Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -120,7 +119,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T13:58:40Z (week)): week: 115.9M used, 78.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T02:15:58Z.
+- Pacing (session_reading 2026-11-18T14:03:14Z (week)): week: 116.9M used, 77.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T02:43:38Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -135,7 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T665 (lease until 2026-11-18T17:25:29Z)
 - lane 2: T525 (lease until 2026-11-18T16:59:19Z)
 - lane 6: T200 (lease until 2026-11-18T17:11:22Z)
 
