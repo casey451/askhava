@@ -3362,3 +3362,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Fix:** T671 may now change those three files, each only in the way the plan spells out; every other check in them stays. We checked that the second one is not a privacy leak: the name is still removed from the homeowner who gave it.
 - **Also split in two:** the first try at that task came out about 60% bigger than its size limit, so the "That's 2 jobs" text and its ALSO and SPLIT replies are now their own small task (T711), right after it. Until T711 lands, a message naming two trades is handled as one job for the first trade.
 - Our choice; nothing needs you now.
+
+## Three tasks per area at once, as a trial (D-4440)
+
+- **You said yes to letting the build work on up to three tasks in the same part of the code at once, instead of two.** The trial helps the server and picks parts only after their short guides are trimmed (D-4433, about to merge); the portals part stays at one task at a time until its own guide is trimmed after T200. Smaller parts can use the third slot now.
+- If more than 1 in 3 merges needs a redo, first tries drop under 70%, or the checks start queuing, we go back to two.
+- Your choice, recorded; nothing more needs you now.
