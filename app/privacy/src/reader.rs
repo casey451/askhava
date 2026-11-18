@@ -272,14 +272,16 @@ fn email_flags(raw: Flags, text: &str, words: &InboundWords<'_>, standing: Stand
 }
 
 /// Svix: HMAC-SHA256 under the decoded `whsec_` key over `<id>.<timestamp>.<body>`, compared in
-/// constant time with every `v1,` entry, and the timestamp within [`WEBHOOK_TOLERANCE_SECS`].
-fn verify(
+/// constant time with every `v1,` entry, and the timestamp within [`WEBHOOK_TOLERANCE_SECS`];
+/// a gap that overflows `i64` is stale, never a panic or a wrapped pass (PRIV-026, SEC-016, D-4196).
+pub(crate) fn verify(
     d: &SignedDelivery<'_>,
     secret: &SecretString,
     now: Timestamp,
 ) -> Result<(), InboundError> {
     let sent: i64 = d.timestamp.parse().map_err(|_| InboundError::Stale)?;
-    if (now.as_second() - sent).abs() > WEBHOOK_TOLERANCE_SECS {
+    let gap = now.as_second().checked_sub(sent).map(i64::unsigned_abs);
+    if !gap.is_some_and(|g| g <= WEBHOOK_TOLERANCE_SECS.unsigned_abs()) {
         return Err(InboundError::Stale);
     }
     let key = secret.expose_secret().strip_prefix("whsec_");

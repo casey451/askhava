@@ -13,6 +13,7 @@ mod db;
 mod db_metrics;
 mod ids;
 mod logging;
+mod queue_health;
 mod rate_limit;
 mod settings;
 mod task_queries;
