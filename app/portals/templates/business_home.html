@@ -3,14 +3,20 @@
     The numbers come from the composition; the times are the signed-in person's own. No homeowner
     detail. More than two times shows the A11Y-030 error summary, focused. T199: the homeowner
     calls card with the current masked pool numbers (BIZ-046) and the "This inbox is shared"
-    switch (SEC-027), which needs a fresh code and, to turn on, a phone that gets texts. -#}
-{% block title %}{% if too_many %}Error: {% endif %}Your business account{% endblock %}
+    switch (SEC-027), which needs a fresh code and, to turn on, a phone that gets texts. T483: the
+    review and dispute lines with the owner's away date (OPS-026) and the Google and Yelp links
+    form (BIZ-052), whose refusal shows its reason beside the field, focused. -#}
+{% block title %}{% if too_many || link_error.is_some() %}Error: {% endif %}Your business account{% endblock %}
 {% block main %}
 <link rel="stylesheet" href="/static/portals/forms.css">
 <h1>Your business account</h1>
 {% if too_many %}<div role="alert" tabindex="-1" autofocus id="error-summary">
 <h2>There is a problem</h2>
 <p><a href="#time-8am">Pick two times at most.</a></p>
+</div>
+{% endif %}{% if let Some((field, reason)) = link_error %}<div role="alert" tabindex="-1" autofocus id="links-error-summary">
+<h2>There is a problem</h2>
+<p><a href="#link-{{ field }}">{{ reason }}</a></p>
 </div>
 {% endif %}<h2>Your numbers this month</h2>
 <dl>
@@ -19,6 +25,12 @@
 <h3>Typical quotes per job in your trades</h3>
 {% if typical.is_empty() %}<p>None yet.</p>
 {% else %}<ul>{% for (trade, n) in typical %}<li>{{ trade }}: {{ n }}</li>{% endfor %}</ul>
+{% endif %}<h2 id="reviews-disputes">Feedback reviews and charge questions</h2>
+{% if let Some(date) = away %}<p id="away-line">We're away until {{ date }}. Your own deadlines don't change.</p>
+<p id="review-line">If you asked us to look again at a homeowner's feedback, we'll reply by {{ date }}.</p>
+<p id="dispute-line">If you asked about a charge, we'll reply by {{ date }}.</p>
+{% else %}<p id="review-line">If you asked us to look again at a homeowner's feedback, one of us reads it and replies, oldest first.</p>
+<p id="dispute-line">If you asked about a charge, one of us reads it and replies, oldest first.</p>
 {% endif %}<h2>Emails about job requests you haven't quoted</h2>
 <form method="post" action="/b/open-cards" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -45,4 +57,13 @@
 <button type="submit" aria-describedby="shared-hint">{% if inbox.shared %}Mark my inbox not shared{% else %}Mark my inbox shared{% endif %}</button>
 </form>
 {% else %}<p id="shared-needs-phone">To mark it shared, first add a mobile number that gets texts. A code sent by email would land in the shared inbox, where others could see it.</p>
-{% endif %}{% endblock %}
+{% endif %}<h2 id="review-links">Put your Google and Yelp pages on your quotes</h2>
+<form method="post" action="{{ crate::business_portal::REVIEW_LINKS_ROUTE }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<p id="links-hint">Homeowners see these links on every quote you send. Both are optional. Leave a box empty to take a link off. We only save a link that opens.</p>
+{% for (field, label, value) in link_fields %}<p><label for="link-{{ field }}">{{ label }}</label>
+{% if let Some((bad, reason)) = link_error %}{% if bad == field %}<span id="link-{{ field }}-error">Error: {{ reason }}</span>
+{% endif %}{% endif %}<input type="url" id="link-{{ field }}" name="{{ field }}" value="{{ value }}" autocomplete="url" aria-describedby="links-hint{% if let Some((bad, _)) = link_error %}{% if bad == field %} link-{{ field }}-error{% endif %}{% endif %}"></p>
+{% endfor %}<button type="submit">Save links</button>
+</form>
+{% endblock %}
