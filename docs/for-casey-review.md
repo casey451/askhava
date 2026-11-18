@@ -3360,3 +3360,20 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **The server and picks crate notes had grown so close to their size limit that the runner let only one task work in each**, while almost every task waiting to start touches the server crate, so five of seven lanes sat idle.
 - **Fix:** the longer rules in those two notes now keep their first part (the rule and its requirement numbers) and point to the rest, which moved word for word to each crate's searchable notes file; a check confirms no word was lost. Each crate can now hold two tasks again.
 - Our choice; nothing needs you now.
+## Three older tests updated for the new texting order (D-4439)
+
+- **The task that walks a homeowner's texts through the intake steps (T671) found three older tests that still expected the old order.** One expected a fresh job where the new order has already opened her job at her first text; one expected no stored text anywhere to contain a test word, but another (fictional) homeowner's own request now keeps that word, as it should; one checks that every new homeowner text is listed, and the new "That's 2 jobs" text is not listed yet.
+- **Fix:** T671 may now change those three files, each only in the way the plan spells out; every other check in them stays. We checked that the second one is not a privacy leak: the name is still removed from the homeowner who gave it.
+- **Also split in two:** the first try at that task came out about 60% bigger than its size limit, so the "That's 2 jobs" text and its ALSO and SPLIT replies are now their own small task (T711), right after it. Until T711 lands, a message naming two trades is handled as one job for the first trade.
+- Our choice; nothing needs you now.
+
+## Three tasks per area at once, as a trial (D-4440)
+
+- **You said yes to letting the build work on up to three tasks in the same part of the code at once, instead of two.** The trial helps the server and picks parts only after their short guides are trimmed (D-4433, about to merge); the portals part stays at one task at a time until its own guide is trimmed after T200. Smaller parts can use the third slot now.
+- If more than 1 in 3 merges needs a redo, first tries drop under 70%, or the checks start queuing, we go back to two.
+- Your choice, recorded; nothing more needs you now.
+
+## The longest line of remaining work in stage 5 got shorter (D-4447)
+- **The longest chain of tasks that must run one after another fell from 37 to 23.** Three changes: the decision-log digest starts now, as you approved this morning; the home-page and site design work no longer waits behind the business-texting tasks (they only shared one file, and now take it in a different order); and one stale link, left over from a feature that moved to a finished task, was removed.
+- The digest's check can't break other tasks' builds while new decisions keep landing: it runs only on a change to the digest itself.
+- Our choice apart from the digest, which was yours; nothing needs you now.
