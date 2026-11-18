@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-18T06:27:50Z by runner a855bfdf4318 (actions).
+Updated 2026-11-18T06:32:08Z by runner 587ccbd0be31 (actions).
 
-**Building: T482 in progress since 05:26Z; 427 of 613 done; week 45% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T482 in progress since 05:26Z; 428 of 613 done; week 45% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 427 of 613 build tasks (owner gates not counted)
+- **Tasks done:** 428 of 613 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T482 claimed 05:26Z, lease until 08:26Z; lane 5: T643 claimed 05:25Z, lease until 09:27Z
 - **Week:** 45% used, 103.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:15Z, 12 min before this update
+- **Last run:** 06:27Z, 4 min before this update
 - **Keeper:** last ran 06:15Z, next wake 08:27Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 26 problem(s) on tasks still to run (+207 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 23 problem(s) on tasks still to run (+203 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T642 | Runner (harness): the keeper starts a run for each free lane | MERGE_PENDING | 1 | 83 min | 06:05Z |  |
+| T642 | Runner (harness): the keeper starts a run for each free lane | done | 1 | 83 min | 06:05Z |  |
 | T601 | businesses and quotes: the card pool reads every service are | MERGE_PENDING | 1 | 50 min | 05:14Z |  |
 | T523 | jobs, ops and intake: the check-in answer recorder and the c | MERGE_PENDING | 3 | 46 min | 05:06Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 | T638 | harness: Ci skips a compile its job already passed on a prov | MERGE_PENDING | 1 | 88 min | 04:35Z |  |
@@ -90,7 +90,7 @@ Updated 2026-11-18T06:27:50Z by runner a855bfdf4318 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 680 · unstarted 55
-**Tasks merged (throughput only):** 427 of 606
+**Tasks merged (throughput only):** 428 of 612
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -126,7 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 70 of 220 done
+- stage 5: 71 of 220 done
 - stage 6: 0 of 40 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

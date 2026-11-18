@@ -75379,7 +75379,7 @@
      }
     }
    ],
-   "reviewed_sha": "2209cd773a3a018e95520b4d1220ceb25d759a24",
+   "reviewed_sha": "b1761bf1970cacc69ea1f0968a87877372542cd8",
    "review_lease": {
     "task": "T638",
     "session": "actions-44226378604",
@@ -75410,6 +75410,17 @@
       "Ally": "success"
      },
      "at": "2026-11-18T06:09:45Z"
+    },
+    {
+     "from": "2209cd773a3a018e95520b4d1220ceb25d759a24",
+     "to": "b1761bf1970cacc69ea1f0968a87877372542cd8",
+     "main": "990f58962c7adb3335b1c69f7d2f5de99ccb78ee",
+     "how": "runner",
+     "checks": {
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-18T06:31:54Z"
     }
    ],
    "update_waiting_since": null,
@@ -75598,7 +75609,7 @@
    "deps": [
     "T639"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "runner-keeper-free-lanes",
    "type": "harness",
@@ -75622,13 +75633,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 74,
      "head_sha": "c91eb753ef55b8a38aff9800156e783814e4eba3",
-     "pr": null,
-     "checks": null,
+     "pr": 1013,
+     "checks": [
+      {
+       "name": "backup lane 4",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-18T04:42:08Z",
      "ended_at": "2026-11-18T06:05:54Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 3175814,
@@ -75664,7 +75732,16 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "990f58962c7adb3335b1c69f7d2f5de99ccb78ee",
+   "merged_at": "2026-11-18T06:29:48Z",
+   "files": [
+    ".github/workflows/backup-runner.yml",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "runner/keeper.py",
+    "tests/test_runner_keeper.py"
+   ]
   },
   {
    "id": "T643",
@@ -80781,7 +80858,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T06:27:50Z",
+ "updated_at": "2026-11-18T06:32:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -80879,7 +80956,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a855bfdf43185be159ecefee4aa4b061ba7f1c4d",
+ "runner_sha": "587ccbd0be3156c854d77dafe1b33f96850a7e73",
  "starter": "actions",
  "smoke_runs": [
   {
