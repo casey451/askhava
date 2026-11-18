@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T09:31:20Z by runner 9f71d076749f (actions).
+Updated 2026-11-18T09:34:02Z by runner 9f71d076749f (actions).
 
-**Building: T644 in progress since 09:04Z; 435 of 621 done; week 50% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T641 in progress since 09:33Z; 435 of 621 done; week 50% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 435 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T644 claimed 09:04Z, lease until 12:04Z; lane 4: T650 claimed 09:08Z, lease until 12:08Z; lane 5: T408 claimed 09:13Z, lease until 12:13Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
-- **Week:** 50% used, 91.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:29Z, 2 min before this update
+- **Lane:** lane 1: T641 claimed 09:33Z, lease until 12:33Z; lane 3: T644 claimed 09:04Z, lease until 12:04Z; lane 4: T650 claimed 09:08Z, lease until 12:08Z; lane 5: T408 claimed 09:13Z, lease until 12:13Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
+- **Week:** 50% used, 88.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 09:31Z, 2 min before this update
 - **Keeper:** last ran 09:28Z, next wake 12:06Z
 
 ## Needs attention
@@ -115,7 +115,7 @@ Updated 2026-11-18T09:31:20Z by runner 9f71d076749f (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T08:53:30Z (week)): week: 102.4M used, 91.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-01T09:00:31Z.
+- Pacing (session_reading 2026-11-18T09:28:34Z (week)): week: 105.7M used, 88.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-01T09:22:16Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -130,7 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T641 (lease until 2026-11-18T12:33:47Z)
 - lane 3: T644 (lease until 2026-11-18T12:04:22Z)
 - lane 4: T650 (lease until 2026-11-18T12:08:14Z)
 - lane 5: T408 (lease until 2026-11-18T12:13:07Z)
