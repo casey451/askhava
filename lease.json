@@ -11,12 +11,7 @@
    "expires": "2026-11-19T00:24:06Z",
    "lane": "1"
   },
-  "2": {
-   "task": "T722",
-   "session": "actions-44393982180",
-   "expires": "2026-11-19T00:31:18Z",
-   "lane": "2"
-  },
+  "2": null,
   "3": null,
   "4": {
    "task": "T364",
@@ -29,7 +24,7 @@
   "7": null,
   "fix": null
  },
- "seq": 7363,
+ "seq": 7364,
  "runner_sha": "31e63603a2cc7814327b03ec6cdc133922879060",
  "starter": "actions"
 }
