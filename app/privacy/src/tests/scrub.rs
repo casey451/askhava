@@ -1,12 +1,12 @@
-//! The scrubber's fixed cases and the adversarial corpus (TD-AI-01, TD-AI-05, TD-AI-09; AI-002, AI-003, AI-004, AI-009, AI-020).
+//! The scrubber's fixed cases and the adversarial corpus (TD-AI-01, TD-AI-05, TD-AI-09, TD-AI-31; AI-002, PRIV-005, AI-003, AI-004, AI-009, AI-020).
 //!
 //! The corpus is 74 English and Spanish contact snippets (fullwidth and Arabic-Indic digits,
 //! zero-width characters inside numbers, spelled-out, compound ("twenty-eight", "double five")
 //! and mixed numbers, "O"/"l" for 0/1, "at"/"dot" emails, @handles, bare domains, cross streets,
 //! house numbers without a suffix, gate codes, sign-offs, "mi nombre es"; T351's spaced gate
 //! codes, lower-case streets, spoken dashes, "it is"/"its"/"<name> here" names, "Best," sign-offs
-//! and `(at)`/`(dot)` and spaced `@` emails, D-2622), each placed in four message frames: 296
-//! cases. Recall on the listed contact tokens must be at least 99%, or this test, and so `Ci`,
+//! and `(at)`/`(dot)` and spaced `@` emails, D-2622; T658's lower-case Spanish and all-caps
+//! addresses, D-4327), each placed in four message frames. Recall on the listed contact tokens must be at least 99%, or this test, and so `Ci`,
 //! fails (AI-020). All names, numbers and addresses are fake.
 
 use secrecy::SecretString;
@@ -117,6 +117,30 @@ const CONTACTS: &[(&str, &[&str])] = &[
     ),
     ("steve(at)gmail(dot)com", &["steve", "gmail"]),
     ("reach me at steve @ gmail.com", &["steve", "gmail"]),
+    ("vivo en 3301 palo verde", &["3301", "palo", "verde"]),
+    ("estoy en el 3301 palo verde", &["3301", "palo", "verde"]),
+    ("mi casa es 2150 mesquite", &["2150", "mesquite"]),
+    (
+        "mi dirección es 3301 palo verde",
+        &["3301", "palo", "verde"],
+    ),
+    (
+        "mi direccion es 3301 palo verde",
+        &["3301", "palo", "verde"],
+    ),
+    (
+        "se me rompió el calentador, vivo en 3301 palo verde",
+        &["3301", "palo", "verde"],
+    ),
+    (
+        "WATER HEATER LEAKING 2150 MESQUITE LAKE HAVASU",
+        &["2150", "mesquite"],
+    ),
+    ("2150 MESQUITE", &["2150", "mesquite"]),
+    (
+        "AC OUT AT THE HOUSE 4410 SAGUARO PLEASE CALL",
+        &["4410", "saguaro"],
+    ),
 ];
 
 /// Message frames the snippets are placed in; each ends with the snippet, as sign-offs do.
@@ -283,5 +307,78 @@ fn ci_configuration_holds_no_ai_key() {
             !text.contains(&marker),
             "an AI key marker in CI configuration"
         );
+    }
+}
+
+/// TD-AI-31 (AI-002, AI-020, PRIV-005; D-4327): lower-case Spanish addresses after a cue and
+/// all-caps house numbers with all-caps street words lose the number and the street words.
+#[test]
+fn spanish_and_all_caps_addresses_are_removed() {
+    let cases: &[(&str, &[&str])] = &[
+        ("vivo en 3301 palo verde", &["3301", "palo", "verde"]),
+        ("estoy en el 3301 palo verde", &["3301", "palo", "verde"]),
+        ("mi casa es 2150 mesquite", &["2150", "mesquite"]),
+        (
+            "mi dirección es 3301 palo verde",
+            &["3301", "palo", "verde"],
+        ),
+        (
+            "mi direccion es 3301 palo verde",
+            &["3301", "palo", "verde"],
+        ),
+        (
+            "se me rompió el calentador, vivo en 3301 palo verde",
+            &["3301", "palo", "verde"],
+        ),
+        (
+            "WATER HEATER LEAKING 2150 MESQUITE LAKE HAVASU",
+            &["2150", "MESQUITE"],
+        ),
+        ("2150 MESQUITE", &["2150", "MESQUITE"]),
+        (
+            "AC OUT AT THE HOUSE 4410 SAGUARO PLEASE CALL",
+            &["4410", "SAGUARO"],
+        ),
+        ("WATER HEATER LEAKING 2150 O'LEARY", &["2150", "O'LEARY"]),
+        (
+            "WATER HEATER LEAKING 2150 PALO-VERDE",
+            &["2150", "PALO-VERDE"],
+        ),
+        (
+            "AC quit last night. WE ARE HOME, 4410 SAGUARO",
+            &["4410", "SAGUARO"],
+        ),
+    ];
+    for (text, gone) in cases {
+        let out = run(text);
+        for word in *gone {
+            assert!(!out.as_str().contains(word), "{word} kept in {out:?}");
+        }
+    }
+}
+
+/// TD-AI-31 (AI-002, D-4327): sizes, short numbers, Spanish non-addresses, mixed-case acronyms
+/// and texting reply or command words keep every word.
+#[test]
+fn sizes_replies_and_acronyms_keep_every_word() {
+    for text in [
+        "WATER HEATER 2 YEARS OLD",
+        "50 GALLON WATER HEATER LEAKING",
+        "TANK IS 120 GALLONS",
+        "ROOF IS 1500 SQ FT",
+        "ERROR CODE 41 ON THE AC",
+        "instalado en 2015 junto al garaje",
+        "la casa es 1500 pies cuadrados",
+        "el calentador tiene 10 años",
+        "YES PLEASE SEND SOMEONE",
+        "My GFCI trips",
+        "CLOSE 1042 YES",
+        "HOLD 1042 BUSY",
+        "CONFIRM 2150 SI",
+        "el voltaje es 220 voltios",
+        "la cuenta es 1500 dólares",
+        "Unit 1042 YES works fine",
+    ] {
+        assert_eq!(run(text).as_str(), text);
     }
 }
