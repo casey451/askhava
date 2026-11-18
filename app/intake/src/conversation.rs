@@ -17,7 +17,7 @@
 //! while its switch is on (INT-045, INT-046, `design.rs`), then the name and address (INT-027).
 
 use askhava_core::api::Guarded;
-use askhava_jobs::api::{JobStatus, create, current, move_to};
+use askhava_jobs::api::{JobStatus, LineCloseReason, create, current, move_to, queue_line_close};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use askhava_privacy::api::{Vault, purge_contact, purge_photos, set_name_address};
@@ -366,7 +366,9 @@ async fn purge_child(
     Ok(())
 }
 
-/// Cancels a job of a request that closed for INT-038, unless it already reached a final status.
+/// Cancels a job of a request that closed for INT-038, unless it already reached a final status;
+/// an applied cancel queues the masked line's close in the same transaction (CALL-009, CALL-010,
+/// D-4338).
 async fn cancel_job(db: &mut PgConnection, job: Uuid, at: Timestamp) -> Result<(), IntakeError> {
     let status = current(db, job).await.map_err(|_| IntakeError::Job)?.status;
     if !status.is_final() {
@@ -377,6 +379,9 @@ async fn cancel_job(db: &mut PgConnection, job: Uuid, at: Timestamp) -> Result<(
         if let Guarded::MovedOn = moved {
             return Ok(());
         }
+        queue_line_close(db, job, LineCloseReason::Cancelled, at)
+            .await
+            .map_err(|_| IntakeError::Job)?;
     }
     Ok(())
 }

@@ -136,8 +136,8 @@ pub use crate::scorecard_inputs::{
     request_quotes, requests_with_quotes,
 };
 pub use crate::service::{
-    card_holders, coverage, coverage_in_reach, send_cards, send_job_cards, send_job_cards_in_reach,
-    send_late_cards, send_late_cards_in_reach,
+    MIN_ACTIVE_BUSINESSES, card_holders, coverage, coverage_in_reach, request_coverage, send_cards,
+    send_job_cards, send_job_cards_in_reach, send_late_cards, send_late_cards_in_reach,
 };
 pub use crate::update_texts::{
     LIMIT, NOT_UPDATE_TEXTS, Problem, SHORT, Shape, UPDATE_TEXTS, check, scan,

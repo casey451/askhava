@@ -13,8 +13,9 @@
 //! [`retry_line`] is the [`LINE_RETRY_KIND`] handler `release` queues when a shown release's
 //! masked line fails to open (D-1688). It opens the line from the release row's bound contact
 //! (T253) only when the job never had one (`calls::api::job_had_line`), so a line closed after
-//! 30 days is never reopened and a job whose line is open is left alone, and only while the pick
-//! is still `paid` or `free` (`status::release_shown_codes`, D-2017); a failure is the task's
+//! 30 days is never reopened and a job whose line is open is left alone, only while the pick
+//! is still `paid` or `free` (`status::release_shown_codes`, D-2017), and never for a job in a
+//! final status (`jobs::api::current`, D-4338: a cancel's close may have run first); a failure is the task's
 //! error, so the worker's retries and dead letter apply, and the release's High alert stays.
 //!
 //! The move is the Confirm (PICK-042, T388, D-3074): in the same transaction [`settle`] queues one
@@ -166,8 +167,9 @@ pub async fn accepted_pick(
 
 /// The [`LINE_RETRY_KIND`] handler: opens the released job's masked line from `masked` for the
 /// release row's bound contact, only when the job never had one and the pick is still `paid` or
-/// `free` (`status::shows_release`; a no-show or fraud-refunded pick gets nothing) (CALL-001,
-/// CALL-010, D-1688, D-2017). Safe to run twice: once a line exists it does nothing.
+/// `free` (`status::shows_release`; a no-show or fraud-refunded pick gets nothing) and the job is
+/// not final (a cancel, PROBLEM or NO that ran first leaves no line to open; D-4338) (CALL-001,
+/// CALL-009, CALL-010, D-1688, D-2017). Safe to run twice: once a line exists it does nothing.
 ///
 /// # Errors
 /// A [`HandlerError`] when the payload has no pick or the line still fails to open; the worker
@@ -195,9 +197,10 @@ pub async fn retry_line(
     let Some(bound) = bound.filter(|b| b.shown) else {
         return Ok(());
     };
-    if job_had_line(&mut conn, bound.job_id)
-        .await
-        .map_err(|_| RETRY_FAILED)?
+    if job_ended(&mut conn, bound.job_id).await?
+        || job_had_line(&mut conn, bound.job_id)
+            .await
+            .map_err(|_| RETRY_FAILED)?
     {
         return Ok(());
     }
@@ -209,6 +212,16 @@ pub async fn retry_line(
     assign_number(&mut conn, &masked, job, at)
         .await
         .map(|_| ())
+        .map_err(|_| RETRY_FAILED)
+}
+
+/// CALL-009, CALL-010, D-4338: whether job `job` reached a final status (cancelled, closed, done,
+/// closed early or not covered), so a late line retry opens nothing after the close ran. Connected
+/// is not required: released jobs sit in Awaiting confirm today (D-2015).
+async fn job_ended(conn: &mut PgConnection, job: Uuid) -> Result<bool, HandlerError> {
+    askhava_jobs::api::current(conn, job)
+        .await
+        .map(|row| row.status.is_final())
         .map_err(|_| RETRY_FAILED)
 }
 
@@ -315,5 +328,26 @@ mod tests {
             .await
             .expect("opened");
         assert!(job_had_line(&mut db, job).await.expect("line"));
+    }
+    /// TD-CALL-27, D-4338 (CALL-009, CALL-010): a paid pick's retry for a job cancelled before it
+    /// ran opens no line.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn td_call_27_the_line_retry_opens_nothing_for_a_final_job(pool: PgPool) {
+        let mut db = pool.acquire().await.expect("db");
+        let (pick, job) = released(&mut db, PickStatus::Paid).await;
+        let status = askhava_jobs::api::current(&mut db, job)
+            .await
+            .expect("job")
+            .status;
+        let to = askhava_jobs::api::JobStatus::Cancelled;
+        let moved =
+            askhava_jobs::api::move_to(&mut db, job, (status, to), Timestamp::now(), Actor::System)
+                .await
+                .expect("moved");
+        assert!(moved.applied().is_some(), "cancelled");
+        retry_line(pool.clone(), masked(), task(pick), Timestamp::now())
+            .await
+            .expect("nothing");
+        assert!(!job_had_line(&mut db, job).await.expect("line"));
     }
 }

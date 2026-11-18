@@ -1839,6 +1839,14 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
 /// `schedule_start` in `worker.rs` seeds both. OPS-046, D-3883 (T531): `messaging`'s daily
 /// deferral check the same way; CON-024, D-3881 (T107): its weekly opt-out rate check.
 fn register_daily_sweeps(registry: &mut Registry, clock: &Arc<dyn Clock>) {
+    let at = Arc::clone(clock);
+    registry.register(askhava_calls::api::CLOSE_EXPIRED_KIND, move |pool, task| {
+        askhava_calls::api::run_close_expired_at(pool, task, at.now())
+    });
+    let at = Arc::clone(clock);
+    registry.register(askhava_jobs::api::LINE_CLOSE_KIND, move |pool, task| {
+        askhava_calls::api::run_close_line(pool, task, at.now())
+    });
     askhava_messaging::api::register_deferral_check(registry, Arc::clone(clock));
     askhava_messaging::api::register_optout_rate_check(registry, Arc::clone(clock));
     let at = Arc::clone(clock);
