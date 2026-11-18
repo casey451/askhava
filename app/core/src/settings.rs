@@ -81,6 +81,11 @@ const KEYS: &[&str] = &[
     CITY_LICENSE_COST,
     CITY_LICENSE_TIME,
     CITY_LICENSE_URL,
+    // T106 (OPS-007, OPS-049, D-3144, D-4044): parsed by `server`'s `liveness` and `healthz`: how
+    // long a failed liveness check may last before the process exits, and how long due work may
+    // wait before `/healthz` reports the worker down.
+    "ASKHAVA_LIVENESS_LIMIT_SECS",
+    "ASKHAVA_WORKER_DOWN_SECS",
     "ASKHAVA_TWILIO_ACCOUNT_SID",
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",

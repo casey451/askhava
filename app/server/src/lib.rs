@@ -44,9 +44,11 @@ pub mod catalog_start;
 pub mod chat_codes;
 pub mod checkin;
 pub mod email_provider;
+pub mod healthz;
 pub mod inbound_retry;
 pub mod inbound_text;
 pub mod inbound_voice;
+pub mod liveness;
 pub mod no_handler_alert;
 pub mod offdb_stream;
 pub mod owner_signin;
@@ -411,9 +413,11 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
     });
     let voice = voice.map_or_else(Router::new, |v| refused(inbound_voice::routes(v)));
     let stripe = stripe.map_or_else(Router::new, |s| refused(stripe_webhook_routes(s)));
+    let health = healthz::routes(pool.clone());
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
         .merge(test_control)
+        .merge(health)
         .merge(quote_page)
         .merge(pick_flow)
         .merge(pages)

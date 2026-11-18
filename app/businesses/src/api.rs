@@ -79,6 +79,7 @@ pub use crate::deliverability_check::{
     offer_sample_pick, queue_pick_retests, record_inbox_answer, record_ok_reply, record_pick_alert,
     sample_card_words, sample_pick_words, send_sample_card, send_sample_pick,
 };
+pub use crate::digest_counts::{LeavingAnswer, leaving_answers, license_paused};
 pub use crate::email_verification::{
     ACTED_BY_ACTION, CHANGED_KIND, CHECK_TRIES, CODE_LIFE, EmailCheckError, RETURNED_KIND,
     Returned, SOFT_SPAN_DAYS, STEP_UP_LIFE, confirm as confirm_mailbox, log_notice_change,

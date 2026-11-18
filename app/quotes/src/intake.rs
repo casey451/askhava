@@ -14,6 +14,7 @@ use jiff::{SignedDuration, Timestamp};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
+use crate::count_update;
 use crate::gate::final_gate;
 use crate::models::{self, QuotesError};
 
@@ -628,7 +629,8 @@ pub enum Submitted {
 /// quote row, so the job lock comes first, D-1051): an Open or No quotes yet job moves to Quotes
 /// ready with the one first-quote text, rolled back with the quote on any error; in any other
 /// status nothing moves (JOB-009, JOB-011, TXT-016, D-1517). A confirmed quote takes the job's row
-/// lock first and gets its shown number, kept from then on, in the upsert (PICK-008, D-2632).
+/// lock first and gets its shown number, kept from then on, in the upsert (PICK-008, D-2632); one
+/// newly shown on a job already Quotes ready queues the count-update event (TXT-017, D-4052).
 ///
 /// # Errors
 ///
@@ -656,11 +658,18 @@ pub async fn submit_quote(
     if edit && (picked || !status.status.takes_quote_edits()) {
         return Ok(Submitted::EditClosed);
     }
-    if !quote.form.ai_read {
-        lock_job(&mut tx, job).await?;
+    let shown = if quote.form.ai_read {
+        None
+    } else {
+        let locked = lock_job(&mut tx, job).await?;
+        let was_shown = count_update::shown_now(&mut tx, job, business).await?;
         first_quote(&mut tx, job, now).await?;
-    }
+        Some((locked, was_shown))
+    };
     models::upsert_quote(&mut tx, (job, business), quote, now).await?;
+    if let Some(facts) = shown {
+        count_update::queue_if_new(&mut tx, (job, business), facts, now).await?;
+    }
     crate::handlers::schedule(&mut tx, job).await?;
     tx.commit().await.map_err(|_| QuotesError::Database)?;
     Ok(Submitted::Saved)
@@ -686,7 +695,9 @@ pub async fn confirm_quote(
 /// [`confirm_quote`] at `now`, the instant a first quote's move and Quotes ready's 3-day wait
 /// count from (JOB-009, JOB-011, JOB-012, TXT-016, PICK-006, D-1517). The job's status is read
 /// under its row lock, and a quote shown for the first time gets its shown number (PICK-008,
-/// D-2632).
+/// D-2632). PICK-001, D-4052: moved on, storing nothing, once the business's card's 24 hours have
+/// ended or when it holds no card on the job. TXT-017: a quote newly shown on a Quotes ready job
+/// queues the count-update event in this transaction (`crate::count_update`).
 ///
 /// # Errors
 ///
@@ -697,12 +708,19 @@ pub async fn confirm_quote_at(
     now: Timestamp,
 ) -> Result<Guarded<()>, QuotesError> {
     let mut tx = db.begin().await.map_err(|_| QuotesError::Database)?;
-    if !lock_job(&mut tx, job).await?.takes_quotes() {
+    let status = lock_job(&mut tx, job).await?;
+    if !status.takes_quotes() {
         return Ok(Guarded::MovedOn);
     }
+    let sent_at = models::card_sent_at(&mut tx, job, business).await?;
+    if !sent_at.is_some_and(|sent| window_open(sent, now)) {
+        return Ok(Guarded::MovedOn);
+    }
+    let was_shown = count_update::shown_now(&mut tx, job, business).await?;
     let done = models::confirm_quote(&mut tx, job, business).await?;
     if done == Guarded::Applied(()) {
         first_quote(&mut tx, job, now).await?;
+        count_update::queue_if_new(&mut tx, (job, business), (status, was_shown), now).await?;
     }
     tx.commit().await.map_err(|_| QuotesError::Database)?;
     Ok(done)

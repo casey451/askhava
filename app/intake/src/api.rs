@@ -83,6 +83,7 @@ pub use crate::models::{
     ConsentRecordRow, ConversationRow, EmergencyEventRow, GoldenResultRow, HomeownerRow,
     IntakeAnswerRow, IntakeError, PropertyRow, RecruitingDemandRow, TermsAcceptanceRow,
 };
+pub use crate::not_covered_counts::{NotCoveredCount, not_covered_by_trade};
 pub use crate::opted_out_live::{STILL_OPEN_EMAIL, StillOpenSender, run_opted_out_live};
 pub use crate::order::ask_last_question;
 pub use crate::order::{
