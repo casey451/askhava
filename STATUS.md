@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T12:16:49Z by runner 3cb957d20dde (actions).
+Updated 2026-11-18T12:17:24Z by runner 807ab3718336 (actions).
 
 **Building: T662 in progress since 11:26Z; 441 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-18T12:16:49Z by runner 3cb957d20dde (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 5: T679 claimed 11:39Z, lease until 15:15Z; lane 6: T200 claimed 12:06Z, lease until 15:06Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
 - **Week:** 54% used, 80.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:15Z, 0 min before this update
+- **Last run:** 12:16Z, 0 min before this update
 - **Keeper:** last ran 12:14Z, next wake 14:29Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-18T12:16:49Z by runner 3cb957d20dde (actions).
 Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 25 problem(s) on tasks still to run (+226 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 25 problem(s) on tasks still to run (+229 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
