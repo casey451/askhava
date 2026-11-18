@@ -3316,3 +3316,12 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Open item, being routed separately:** the job page link in business emails (the job card email's link, and where signing in from a notice lands) leads to a page that is not built yet, so it shows "not found". Building it needs a test-harness change first; it is not in this batch.
 - **The "Sign in" button on notice emails now has the same request limits as the sign-in form**, so nobody holding one link can flood a business's inbox (T382).
 - Nothing needs you now.
+
+## A confirmed job now reaches "connected", and the business job page gets built (D-4349)
+
+- **Jobs never moved past "waiting for the business to confirm".** After a business confirmed and paid, the app shared the homeowner's details but left the job's status behind, so the day-3 and day-14 check-in texts never went out and the call-line closes from D-4338 could not fire. Now the Confirm tap moves the job to "payment pending" and the successful payment (or a free first win) moves it to "connected" (T663, T664). A payment that succeeds after the job has moved on is refunded automatically, as before, and the business is never marked as having "let the pick lapse" when it did tap Confirm.
+- **The Confirm tap now re-checks the business's license and account**, as the spec says, before any charge (T664).
+- **The 1-business-hour window to fix a declined card is unchanged**, and the job only goes back to the homeowner's other quotes once that hour (or the 4-hour Stripe-outage wait) is really over; while safe mode pauses charges, the wait is paused too. The job moves to "payment pending" only when a card is actually being charged, so a business with no card on hand or caught by a charging pause keeps its normal Confirm window. "Can't take it" and a business leaving still end the pick at any point, and any charge that lands afterwards is refunded (T663, T664, T669, T670).
+- **Our reading:** while the payment is going through, the homeowner already sees "the business accepted your pick"; her details are still shared only after payment.
+- **The job page link in business emails gets built** (T665, T666; "Not a fit for us" on it in T668). A business that confirmed lands straight on the homeowner's details. Open item: the page shows the job card, photos and counts, but not yet the homeowner's individual intake answers, because nothing reads them out yet; that needs its own task later.
+- Nothing needs you now.
