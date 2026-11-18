@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T20:28:07Z by runner 8ba862b4c752 (actions).
+Updated 2026-11-18T20:28:32Z by runner 8ba862b4c752 (actions).
 
 **Building: T651 in progress since 19:44Z; 455 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 455 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T651 claimed 19:44Z, lease until 22:44Z; lane 2: T502 claimed 19:53Z, lease until 22:53Z; lane 3: T483 claimed 18:25Z, lease until 22:51Z; lane 4: T364 claimed 18:28Z, lease until 23:25Z; lane 5: T706 claimed 19:14Z, lease until 23:19Z; lane 7: T715 claimed 20:05Z, lease until 23:05Z
-- **Week:** 67% used, 55.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:25Z, 2 min before this update
+- **Lane:** lane 1: T651 claimed 19:44Z, lease until 22:44Z; lane 2: T502 claimed 19:53Z, lease until 22:53Z; lane 3: T483 claimed 18:25Z, lease until 22:51Z; lane 4: T364 claimed 18:28Z, lease until 23:25Z; lane 5: T706 claimed 19:14Z, lease until 23:19Z; lane 6: T702 claimed 20:27Z, lease until 23:27Z; lane 7: T715 claimed 20:05Z, lease until 23:05Z
+- **Week:** 67% used, 53.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 20:25Z, 3 min before this update
 - **Keeper:** last ran 20:23Z, next wake 21:31Z
 
 ## Needs attention
@@ -112,7 +112,7 @@ Updated 2026-11-18T20:28:07Z by runner 8ba862b4c752 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T19:48:40Z (week)): week: 138.9M used, 55.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T02:49:20Z.
+- Pacing (session_reading 2026-11-18T20:22:36Z (week)): week: 141.0M used, 53.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T04:19:18Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -132,6 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T483 (lease until 2026-11-18T22:51:15Z)
 - lane 4: T364 (lease until 2026-11-18T23:25:10Z)
 - lane 5: T706 (lease until 2026-11-18T23:19:53Z)
+- lane 6: T702 (lease until 2026-11-18T23:27:42Z)
 - lane 7: T715 (lease until 2026-11-18T23:05:10Z)
 
 ## Last usage reading
