@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:13:05Z by runner 42b0b6bcb0ae (actions).
+Updated 2026-11-18T22:13:51Z by runner 7d58f8e9c040 (actions).
 
 **Building: T583 in progress since 21:55Z; 460 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-18T22:13:05Z by runner 42b0b6bcb0ae (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T583 claimed 21:55Z, lease until 00:55Z; lane 7: T504 claimed 22:07Z, lease until 01:07Z
 - **Week:** 69% used, 54.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:12Z, 0 min before this update
+- **Last run:** 22:13Z, 0 min before this update
 - **Keeper:** last ran 22:13Z, next wake 22:33Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-18T22:13:05Z by runner 42b0b6bcb0ae (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T701 (since 2026-11-18T21:55:41Z, no attempt used; a plan change fixes it): T701: dependency T702 is DONE but its owned file app/messaging/src/suppression_versions.rs is not on main; T701: dependency T702 is DONE but its owned file tests/integration/tests/suppression_key_versions.rs is not on main
-- Strict plan check red: 50 problem(s) on tasks still to run (+265 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 51 problem(s) on tasks still to run (+265 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
