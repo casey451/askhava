@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT (SELECT count(*) FROM quotes.quote q WHERE q.job_id = c.job_id AND q.confirmed AND q.received_at < $3) AS \"quotes!\" FROM quotes.shown_card c WHERE c.job_id = ANY($1) AND c.sent_at < $3 GROUP BY c.job_id HAVING min(c.sent_at) >= $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "quotes!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "ad956300b2e8ca5009b500d02ae5973876cd498d97dc030e4adccf694c98a575"
+}
