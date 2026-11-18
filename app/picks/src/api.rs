@@ -123,6 +123,7 @@ pub use crate::email_code::{
     opted_out_yes, send_email_code,
 };
 pub use crate::emergency_emails::{EmergencyPick, emergency_pick_plan, emergency_pick_subject};
+pub use crate::flag_inputs::{lapsed_businesses, picked_jobs, wins};
 pub use crate::handlers::{
     CONFIRM_ENDS_KIND, notice_sent, run_confirm_ends, run_confirm_ends_at, run_pick_notice,
 };

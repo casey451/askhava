@@ -47,6 +47,7 @@ mod cards;
 mod count_update;
 mod edit_withdraw;
 mod emergency_card_notice;
+mod flag_inputs;
 mod formats;
 mod gate;
 mod handlers;
