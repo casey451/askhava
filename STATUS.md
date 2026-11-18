@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T12:49:47Z by runner 1fa6e8e13b65 (actions).
+Updated 2026-11-18T12:50:53Z by runner 1fa6e8e13b65 (actions).
 
-**Building: T200 in progress since 12:06Z; 442 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T200 in progress since 12:06Z; 443 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 442 of 643 build tasks (owner gates not counted)
+- **Tasks done:** 443 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 6: T200 claimed 12:06Z, lease until 15:06Z
 - **Week:** 54% used, 80.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:49Z, 0 min before this update
+- **Last run:** 12:49Z, 1 min before this update
 - **Keeper:** last ran 12:49Z, next wake 15:09Z
 
 ## Needs attention
@@ -25,7 +25,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 |---|---|---|---|---|---|---|
 | T472 | server (harness): serve the "Can't take it" page and button  | MERGE_PENDING | 1 | 62 min | 12:45Z |  |
 | T662 | jobs, intake, calls and server: a masked call line closes wh | MERGE_PENDING | 1 | 73 min | 12:39Z |  |
-| T679 | quotes and businesses: a launch-open category takes requests | MERGE_PENDING | 1 | 37 min | 12:17Z |  |
+| T679 | quotes and businesses: a launch-open category takes requests | done | 1 | 37 min | 12:17Z |  |
 | T583 | intake and server: the quote-count update text is sent, at m | BLOCKED | 1 | 53 min | 12:13Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
 | T700 | Runner (harness): a merge-line task whose turn ran out goes  | done | 1 | 29 min | 12:08Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | QUEUED | 1 | 2 h 57 min | 12:02Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
@@ -94,7 +94,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 683 · unstarted 52
-**Tasks merged (throughput only):** 442 of 643
+**Tasks merged (throughput only):** 443 of 643
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -130,7 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 85 of 244 done
+- stage 5: 86 of 244 done
 - stage 6: 0 of 46 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
