@@ -1,0 +1,39 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"signups!\",\n                  count(*) FILTER (WHERE s.identity_step = 'letter' OR s.review_since IS NOT NULL)\n                    AS \"letter_or_review!\",\n                  count(*) FILTER (WHERE b.status = 'active'\n                    AND b.status_changed_at <= s.submitted_at + interval '15 minutes')\n                    AS \"active_within_15_minutes_approx!\"\n           FROM businesses.signup s JOIN businesses.business b ON b.id = s.business_id\n           WHERE s.submitted_at >= $1 AND s.submitted_at < $2\n             AND ($3::text IS NULL OR $3 = ANY(s.trades))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "signups!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "letter_or_review!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "active_within_15_minutes_approx!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "63ec7a68e1e6f310815c2b68dcc7baf7e790c2225b2c97cfb17110f51cb5abbe"
+}

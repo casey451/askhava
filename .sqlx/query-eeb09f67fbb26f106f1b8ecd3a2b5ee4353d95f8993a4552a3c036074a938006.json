@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"complaints!\" FROM businesses.complaint\n           WHERE job_id = ANY($1) AND received_at >= $2 AND received_at < $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "complaints!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "eeb09f67fbb26f106f1b8ecd3a2b5ee4353d95f8993a4552a3c036074a938006"
+}
