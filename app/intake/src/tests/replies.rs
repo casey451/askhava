@@ -60,9 +60,13 @@ async fn request(db: &mut Db, contact: u128, at: Timestamp) -> (Uuid, Uuid) {
         trade: "plumbing_repair",
         at,
     };
-    let Opened::Created(job) = begin_job(db, &start).await.expect("job") else {
-        panic!("a new job");
+    // INT-009, D-4360, D-4439: the first text already opened the request's own job, so
+    // `begin_job` finds it; it is the request's first job (one job only).
+    let Opened::Existing(job) = begin_job(db, &start).await.expect("job") else {
+        panic!("the request's early job");
     };
+    let row = crate::models::conversation(db, id).await.expect("request");
+    assert_eq!(row.expect("request").job_id, Some(job));
     (id, job)
 }
 
