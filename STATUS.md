@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T06:15:14Z by runner 587ccbd0be31 (actions).
+Updated 2026-11-18T06:27:50Z by runner a855bfdf4318 (actions).
 
 **Building: T482 in progress since 05:26Z; 427 of 613 done; week 45% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 427 of 613 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T482 claimed 05:26Z, lease until 08:26Z; lane 5: T643 claimed 05:25Z, lease until 08:25Z
+- **Lane:** lane 3: T482 claimed 05:26Z, lease until 08:26Z; lane 5: T643 claimed 05:25Z, lease until 09:27Z
 - **Week:** 45% used, 103.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:15Z, 0 min before this update
+- **Last run:** 06:15Z, 12 min before this update
 - **Keeper:** last ran 06:15Z, next wake 08:27Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 23 problem(s) on tasks still to run (+203 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 26 problem(s) on tasks still to run (+207 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -83,7 +83,6 @@ Updated 2026-11-18T06:15:14Z by runner 587ccbd0be31 (actions).
 | T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z |  |
 | T564 | quotes, picks and intake: the LIST, text picks, lapse text a | done | 1 | 43 min | 06:47Z |  |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | resync | 1 | 2 h 21 min | 06:44Z |  |
-| T586 | calls and privacy: TwiML text is escaped, a full number pool | done | 1 | 88 min | 06:17Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -91,7 +90,7 @@ Updated 2026-11-18T06:15:14Z by runner 587ccbd0be31 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 680 · unstarted 55
-**Tasks merged (throughput only):** 427 of 612
+**Tasks merged (throughput only):** 427 of 606
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -136,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T482 (lease until 2026-11-18T08:26:51Z)
-- lane 5: T643 (lease until 2026-11-18T08:25:10Z)
+- lane 5: T643 (lease until 2026-11-18T09:27:50Z)
 
 ## Last usage reading
 - {"task": "T642", "at": "2026-11-18T06:05:54Z", "cache_read_input_tokens": 4619898, "output_tokens": 67328, "input_tokens": 140, "cache_creation_input_tokens": 183589}
