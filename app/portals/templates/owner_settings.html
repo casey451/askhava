@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{#- The owner settings page (T108; LIC-002, SEC-043; D-3744, D-3890): one switch per category.
+    A change needs a code from the last 5 minutes. The category code goes in the form body. -#}
+{% block title %}Category settings{% endblock %}
+{% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>Category settings</h1>
+<p><a href="{{ home_route }}">Owner home</a></p>
+<p>Each change needs a code from your authenticator app in the last 5 minutes. If yours is older, <a href="{{ step_up_route }}">get a new code</a> first. Every change is logged.</p>
+<ul id="categories">
+{% for c in categories %}<li><form method="post" action="{{ category_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="change" value="{{ c.change }}"><input type="hidden" name="target" value="{{ c.target }}"><input type="hidden" name="to" value="{% if c.on %}off{% else %}on{% endif %}">
+<p>{{ c.label }} is {% if c.on %}on{% else %}off{% endif %}. <button type="submit">Turn {{ c.label }} {% if c.on %}off{% else %}on{% endif %}</button></p>
+</form></li>
+{% endfor %}</ul>
+{% endblock %}

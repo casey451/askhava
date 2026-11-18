@@ -36,6 +36,10 @@ pub use crate::digest_rows::{
 pub use crate::models::{
     Actor, AuditEntry, AuditRow, Change, NewAlert, OpsError, Severity, Switch, is_code_name,
 };
+pub use crate::owner_alerts::{
+    AlertSubject, OWNER_ACK_ACTION, PushedAlert, acknowledge_pushed_alert, alert_subject,
+    pushed_alerts,
+};
 pub use crate::safe_mode::{
     SAFE_MODE_AFTER, SAFE_MODE_EVERY, SAFE_MODE_KIND, SAFE_MODE_OFF_ACTION, SAFE_MODE_ON_ACTION,
     check_safe_mode, run_safe_mode_check, safe_mode_on, schedule_safe_mode,

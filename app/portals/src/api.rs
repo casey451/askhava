@@ -160,6 +160,12 @@ pub use crate::owner_auth::{
     passkey_registered, passkey_registration_options, passkey_sign_in_options, password_problem,
     require_owner_step_up, sign_out_everywhere,
 };
+pub use crate::owner_portal::{
+    ChangeForm, OPT_OUT_WEEKS, OWNER_ALERT_ACK_ROUTE, OWNER_BANNER_ROUTE, OWNER_CATEGORY_ROUTE,
+    OWNER_FEE_MODE_ROUTE, OWNER_HOME_ROUTE, OWNER_PAUSE_ROUTE, OWNER_SETTINGS_ROUTE,
+    OWNER_TEXTING_ROUTE, OwnerChange, OwnerToolError, PauseSwitch, apply_owner_change,
+    owner_home_page, owner_settings_page, parse_change,
+};
 pub use crate::owner_step_up_page::{
     OWNER_SIGN_OUT_ALL_ROUTE, OWNER_SIGN_OUT_ROUTE, OWNER_STEP_UP_ROUTE, StepUpScreen,
     owner_signed_out, owner_step_up_page,
