@@ -1,0 +1,36 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT request_source AS source, count(*) AS \"requests!\" FROM intake.conversation\n           WHERE opened_at >= $1 AND opened_at < $2\n           GROUP BY request_source ORDER BY request_source",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "source",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "request_source"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "requests!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "bc1bf6695a34d4b6b5ac5c1b85d9c4fd3b3fffcfab821161663620a7aa08da73"
+}

@@ -63,6 +63,7 @@ mod phone_approval;
 mod public_name;
 mod reply_link;
 mod rules;
+mod scorecard_inputs;
 mod service;
 mod service_area;
 mod sign_in_lines;

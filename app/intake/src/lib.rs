@@ -54,6 +54,7 @@ mod routing;
 mod routing_confidence;
 mod rules;
 mod safety_text;
+mod scorecard_inputs;
 mod service;
 mod status;
 mod summary_step;
